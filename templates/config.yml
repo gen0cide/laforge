@@ -1,0 +1,48 @@
+#########################################################
+## LaForge LF_HOME Config
+## 
+## This file is global to your competition.
+## All environments inherit their properties from here.
+##
+## ** DO NOT ATTEMPT TO RUN LAFORGE WITHOUT CONFIGURING
+##    THIS FILE **
+#########################################################
+
+#########################################################
+# AWS Configuration
+# Provide your AWS API credentials here
+aws_creds:
+  api_key: ""
+  api_secret: ""
+
+#########################################################
+# Google Cloud Configuration
+# Generate a JSON credential file for GCP API.
+# Supply the absolute path to this file.
+# Also supply the project in GCP for the competition.
+gcp_creds:
+  credfile: ""
+  project: ""
+
+#########################################################
+# Route53 External Configuration
+# Provide a Route53 Zone ID
+# This Zone will be used to create records allowing
+# for easy access to VDI jump hosts
+external_r53_zone_id: ""
+
+#########################################################
+# S3 Configuration
+# LaForge uses S3 to store state and other static assets.
+# Make sure this bucket is already created.
+s3_config:
+  region: ""
+  bucket: ""
+
+#########################################################
+# Admin IPs
+# Any IPs listed here will have full access to the entire
+# competition infrastructure. All firewalls and security
+# groups will whitelist these IPs for all ports.
+admin_ips:
+  - 127.0.0.99
