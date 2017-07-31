@@ -1,0 +1,17 @@
+resource "aws_security_group" "{{ .Name }}" {
+  name = "{{ .Name }}"
+  description = "{{ .Description }}"
+  vpc_id = "${aws_vpc.{{ .VPC.Name }}.id}"
+
+  {{range .IngressRules}}
+    {{ .Template.Rendered }}
+  {{end}}
+
+  {{range .EgressRules}}
+    {{ .Template.Rendered }}
+  {{end}}
+
+  tags {
+    Name = "{{ .Name }}"
+  }
+}

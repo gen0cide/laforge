@@ -1,0 +1,4 @@
+resource "aws_key_pair" "{{.Name}}" {
+  key_name = "{{ .Name }}"
+  public_key = "{{ .PublicKey }}"
+}

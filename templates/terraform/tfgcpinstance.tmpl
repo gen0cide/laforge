@@ -1,0 +1,43 @@
+resource "google_compute_instance" "{{ .Name }}" {
+  name = "{{ .HostName }}"
+  machine_type = "{{ .InstanceType }}"
+  zone = "{{ .AvailabilityZone }}"
+  tags = [
+    {{range Tags}}
+      "{{.}}",
+    {{end}}
+  ]
+
+  disk {
+    image = "{{ .AMI }}"
+  }
+
+  network_interface {
+    subnetwork = "${google_compute_subnetwork.{{ .Subnet.Name }}.name}"
+    address = "{{ .PrivateIP }}"
+
+    access_config {
+      nat_ip = "${google_compute_address.{{ .ElasticIP.Name }}.address"
+    }
+  }
+
+  metadata {
+    ssh-keys = "root:{{ .SSHPublicKey }}"
+  }
+
+  metadata_startup_script = {{ .UserDataScript.Template.Rendered }}
+
+  {{ .Connection.TFTemplate.Rendered }}
+  
+  {{range .FileProvisioners}}
+    {{.TFTemplate.Rendered}}
+  {{end}}
+
+  {{range .InlineProvisioners}}
+    {{.TFTemplate.Rendered}}
+  {{end}}
+
+  {{range .ScriptProvisioners}}
+    {{.TFTemplate.Rendered}}
+  {{end}}
+}

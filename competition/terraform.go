@@ -4,6 +4,7 @@ type TFVar struct {
 	Name        string
 	Description string
 	Value       string
+	Template    TFTemplate
 }
 
 type TFAWSProvider struct {
@@ -12,6 +13,7 @@ type TFAWSProvider struct {
 	SecretKey string
 	Region    string
 	Profile   string
+	Template  TFTemplate
 }
 
 type TFAWSKeyPair struct {
@@ -19,6 +21,7 @@ type TFAWSKeyPair struct {
 	KeyName    string
 	PublicKey  string
 	PrivateKey string
+	Template   TFTemplate
 }
 
 type TFAWSVirtualPrivateCloud struct {
@@ -26,41 +29,49 @@ type TFAWSVirtualPrivateCloud struct {
 	CIDR               string
 	EnableDNSHostnames bool
 	Tags               []string
+	Template           TFTemplate
 }
 
-type TFAWSInternetGateway struct {
-	Name  string
-	VPCID string
+type TFAWSNATGateway struct {
+	Name      string
+	VPC       TFAWSVirtualPrivateCloud
+	ElasticIP TFAWSElasticIP
+	Subnet    TFAWSSubnet
+	Template  TFTemplate
 }
 
 type TFAWSSubnet struct {
 	Name                string
-	VPCID               string
+	VPC                 TFAWSVirtualPrivateCloud
 	CIDR                string
 	AvailabilityZone    string
 	MapPublicIPOnLaunch bool
 	DependsOn           []string
 	Tags                []string
+	Template            TFTemplate
 }
 
 type TFAWSRouteTable struct {
-	Name   string
-	VPCID  string
-	Routes []TFAWSRoute
-	Tags   []string
+	Name     string
+	VPC      TFAWSVirtualPrivateCloud
+	Routes   []TFAWSRoute
+	Tags     []string
+	Template TFTemplate
 }
 
 type TFAWSRoute struct {
-	Name      string
-	CIDR      string
-	GatewayID string
+	Name       string
+	CIDR       string
+	NATGateway TFAWSNATGateway
+	Template   TFTemplate
 }
 
 type TFAWSRouteTableAssociation struct {
-	Name         string
-	SubnetID     string
-	RouteTableID string
-	Tags         []string
+	Name       string
+	Subnet     TFAWSSubnet
+	RouteTable TFAWSRouteTable
+	Tags       []string
+	Template   TFTemplate
 }
 
 type TFAWSDHCPOptions struct {
@@ -68,12 +79,14 @@ type TFAWSDHCPOptions struct {
 	DomainName string
 	DNSServers []string
 	Tags       []string
+	Template   TFTemplate
 }
 
 type TFAWSDHCPOptionsAssociation struct {
-	Name          string
-	VPCID         string
-	DHCPOptionsID string
+	Name        string
+	VPC         TFAWSVirtualPrivateCloud
+	DHCPOptions TFAWSDHCPOptions
+	Template    TFTemplate
 }
 
 type TFAWSIngressRule struct {
@@ -81,6 +94,7 @@ type TFAWSIngressRule struct {
 	ToPort   string
 	Protocol string
 	CIDRs    []string
+	Template TFTemplate
 }
 
 type TFAWSEgressRule struct {
@@ -88,34 +102,39 @@ type TFAWSEgressRule struct {
 	ToPort   string
 	Protocol string
 	CIDRs    []string
+	Template TFTemplate
 }
 
 type TFAWSSecurityGroup struct {
 	Name         string
 	Description  string
-	VPCID        string
+	VPC          TFAWSVirtualPrivateCloud
 	IngressRules []TFAWSIngressRule
 	EgressRules  []TFAWSEgressRule
 	Tags         []string
+	Template     TFTemplate
 }
 
 type TFAWSElasticIP struct {
 	Name     string
 	VPC      bool
-	Instance string
+	Attach   bool
+	Instance TFAWSInstance
+	Template TFTemplate
 }
 
 type TFOutput struct {
-	Name  string
-	Value string
+	Name     string
+	Value    string
+	Template TFTemplate
 }
 
 type TFAWSInstance struct {
 	Name                     string
 	AMI                      string
 	InstanceType             string
-	SubnetID                 string
-	KeyName                  string
+	Subnet                   TFAWSSubnet
+	KeyPair                  TFAWSKeyPair
 	PrivateIP                string
 	AssociatePublicIPAddress bool
 	SecurityGroups           []TFAWSSecurityGroup
@@ -125,13 +144,12 @@ type TFAWSInstance struct {
 	InlineProvisioners       []TFInlineProvisioner
 	ScriptProvisioners       []TFScriptProvisioner
 	Tags                     []string
+	Template                 TFTemplate
 }
 
 type TFUserDataScript struct {
 	Name     string
-	Builder  TemplateBuilder
-	Template string
-	Rendered string
+	Template TFTemplate
 }
 
 type TFInstanceConnection struct {
@@ -143,6 +161,7 @@ type TFInstanceConnection struct {
 	BastionUser       string
 	BastionPrivateKey string
 	WinRMInsecure     bool
+	Template          TFTemplate
 }
 
 type TFFileProvisioner struct {
@@ -150,26 +169,27 @@ type TFFileProvisioner struct {
 	Source      string
 	Content     string
 	Destination string
-	TFTemplate
+	Template    TFTemplate
 }
 
 type TFInlineProvisioner struct {
 	Name     string
 	Commands []string
-	TFTemplate
+	Template TFTemplate
 }
 
 type TFScriptProvisioner struct {
-	Scripts []TFTemplate
+	Scripts  []TFTemplate
+	Template TFTemplate
 }
 
 type TFAWSRoute53ARecord struct {
-	Name       string
-	ZoneID     string
-	Hostname   string
-	RecordType string
-	TTL        int
-	Records    []string
+	Name     string
+	ZoneID   string
+	Hostname string
+	TTL      int
+	Records  []string
+	Template TFTemplate
 }
 
 type TFGCPProvider struct {
@@ -177,50 +197,58 @@ type TFGCPProvider struct {
 	CredentialFile string
 	Project        string
 	Region         string
+	Template       TFTemplate
 }
 
 type TFGCPNetwork struct {
 	Name              string
 	AutoCreateSubnets bool
+	Template          TFTemplate
 }
 
 type TFGCPSubnet struct {
-	Name    string
-	CIDIR   string
-	Network string
+	Name     string
+	CIDR     string
+	Network  TFGCPNetwork
+	Template TFTemplate
 }
 
 type TFGCPFirewall struct {
 	Name         string
-	Network      string
+	Network      TFGCPNetwork
 	SourceRanges []string
 	SourceTags   []string
 	TargetTags   []string
 	Rules        []TFGCPFirewallAllowRule
+	Template     TFTemplate
 }
 
 type TFGCPFirewallAllowRule struct {
 	Protocol string
 	Ports    []int
+	Template TFTemplate
 }
 
 type TFGCPElasticIP struct {
-	Name string
+	Name     string
+	Template TFTemplate
 }
 
 type TFGCPInstance struct {
 	Name               string
+	HostName           string
 	InstanceType       string
-	Zone               string
+	AvailabilityZone   string
 	Tags               []string
-	Image              string
-	Subnet             string
+	AMI                string
+	Subnet             TFGCPSubnet
 	PrivateIP          string
-	ElasticIP          string
+	ElasticIP          TFGCPElasticIP
 	SSHPublicKey       string
 	UserDataScript     TFUserDataScript
 	Connection         TFInstanceConnection
 	FileProvisioners   []TFFileProvisioner
 	InlineProvisioners []TFInlineProvisioner
 	ScriptProvisioners []TFScriptProvisioner
+	Template           TFTemplate
 }

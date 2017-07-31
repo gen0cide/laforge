@@ -1,0 +1,8 @@
+allow {
+  protocol = "{{.Protocol}}"
+  ports    = [
+    {{range .Ports}}
+      "{{.}}",
+    {{end}}
+  ]
+}

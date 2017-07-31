@@ -1,0 +1,14 @@
+resource "aws_subnet" "{{ .Name }}" {
+  vpc_id            = "${aws_vpc.{{ .VPC.Name }}.id}"
+  cidr_block        = "{{ .CIDR }}"
+  availability_zone = "{{ .AvailabilityZone }}"
+  map_public_ip_on_launch = {{ .MapPublicIPOnLaunch }}
+  depends_on = [
+    {{range .DependsOn}}
+      "{{.}}",
+    {{end}}
+  ]
+  tags { 
+    Name = "{{ .Name }}" 
+  }
+}

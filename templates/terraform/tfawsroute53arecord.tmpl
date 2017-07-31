@@ -1,0 +1,11 @@
+resource "aws_route53_record" "{{ .Name }}" {
+  zone_id = "{{ .ZoneID }}"
+  name = "{{ .Hostname }}"
+  type = "A"
+  ttl = "{{ .TTL }}"
+  records = [
+    {{range .Records}}
+      "{{.}}",
+    {{end}}
+  ]
+}
