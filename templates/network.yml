@@ -1,0 +1,34 @@
+#########################################################
+## LaForge NETWORK Config
+## 
+## This file is unique to your competition environment.
+## These values will only effect objects in this environment.
+##
+## ** DO NOT ATTEMPT TO RUN LAFORGE WITHOUT CONFIGURING
+##    THIS FILE **
+#########################################################
+
+#########################################################
+# Environment Configuration
+name: {{ .Name }}
+
+#########################################################
+# Subdomain off the Config.pod.domain
+subdomain: {{ .Subdomain }}
+
+#########################################################
+# CIDR of the Network
+cidr: {{ .CIDR }}
+
+#########################################################
+# Provider (Either "aws" or "gcp")
+provider: {{ .Provider }}
+
+#########################################################
+# Variables for the specific network.
+variables:
+  example: variable
+
+#########################################################
+# What hosts should we include in this network?
+included_hosts: []

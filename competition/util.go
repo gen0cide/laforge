@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
-
-	yaml "gopkg.in/yaml.v2"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 
@@ -23,27 +23,95 @@ const (
 	// LF_HOME is the base directory for competition development
 	LF_HOME = "LF_HOME"
 
+	LF_HOME_FILE = ".lf_home"
+
 	// LF_ENV is the currently assigned LF environment
 	LF_ENV = "LF_ENV"
+
+	LF_ENV_FILE = ".lf_env"
 )
 
 func GetHome() string {
-	return os.Getenv(LF_HOME)
+	val := os.Getenv(LF_HOME)
+	if len(val) > 1 {
+		return val
+	}
+	u, err := user.Current()
+	if err != nil {
+		LogFatal("Error getting current user: " + err.Error())
+	}
+	hf := filepath.Join(u.HomeDir, LF_HOME_FILE)
+	if PathExists(hf) {
+		d, err := ioutil.ReadFile(hf)
+		if err != nil {
+			LogFatal("Error reading LF_HOME_FILE: " + err.Error())
+		}
+		if len(d) > 1 {
+			return string(d)
+		}
+	}
+
+	return ""
 }
 
 func GetEnv() string {
-	return os.Getenv(LF_ENV)
+	val := os.Getenv(LF_ENV)
+	if len(val) > 1 {
+		return val
+	}
+	u, err := user.Current()
+	if err != nil {
+		LogFatal("Error getting current user: " + err.Error())
+	}
+	ef := filepath.Join(u.HomeDir, LF_ENV_FILE)
+	if PathExists(ef) {
+		d, err := ioutil.ReadFile(ef)
+		if err != nil {
+			LogFatal("Error reading LF_ENV_FILE: " + err.Error())
+		}
+		if len(d) > 1 {
+			return string(d)
+		}
+	}
+
+	return ""
+}
+
+func SetHome(val string) {
+	os.Setenv(LF_HOME, val)
+	u, err := user.Current()
+	if err != nil {
+		LogFatal("Error getting current user: " + err.Error())
+	}
+	ef := filepath.Join(u.HomeDir, LF_HOME_FILE)
+	err = ioutil.WriteFile(ef, []byte(val), 0644)
+	if err != nil {
+		LogFatal("Could not write LF_HOME_FILE! (~/.lf_home): " + err.Error())
+	}
+}
+
+func SetEnv(val string) {
+	os.Setenv(LF_ENV, val)
+	u, err := user.Current()
+	if err != nil {
+		LogFatal("Error getting current user: " + err.Error())
+	}
+	ef := filepath.Join(u.HomeDir, LF_ENV_FILE)
+	err = ioutil.WriteFile(ef, []byte(val), 0644)
+	if err != nil {
+		LogFatal("Could not write LF_ENV_FILE! (~/.lf_env): " + err.Error())
+	}
 }
 
 func EnvSet() bool {
-	if len(os.Getenv(LF_ENV)) > 1 {
+	if len(GetEnv()) > 1 {
 		return true
 	}
 	return false
 }
 
 func HomeSet() bool {
-	if len(os.Getenv(LF_HOME)) > 1 {
+	if len(GetHome()) > 1 {
 		return true
 	}
 	return false
@@ -51,7 +119,7 @@ func HomeSet() bool {
 
 func ValidateHome() {
 	if !HomeSet() {
-		LogFatal("LF_HOME environment variable is not set. Run the init command to configure this.")
+		LogFatal("LF_HOME is not defined. Run the init command to configure this.")
 	}
 	if !HomeExists() || !HomeValid() {
 		LogFatal("LF_HOME is corrupted or not set to a valid laforge specification. Check the docs!")
@@ -61,7 +129,7 @@ func ValidateHome() {
 func ValidateEnv() {
 	ValidateHome()
 	if !EnvSet() {
-		LogFatal("LF_ENV environment variable is not set. List known environments with the ls subcommand or create a new one with create.")
+		LogFatal("LF_ENV is not defined. List known environments with the ls subcommand or create a new one with create.")
 	}
 	if !EnvExists() || !EnvValid() {
 		LogFatal("LF_ENV is corrupted or not set to a valid laforge specification. Check the docs!")
@@ -73,7 +141,15 @@ func HomeExists() bool {
 }
 
 func EnvExists() bool {
-	return PathExists(GetEnv())
+	return EnvDirExistsByName(GetEnv())
+}
+
+func EnvDirByName(name string) string {
+	return filepath.Join(GetHome(), "environments", name)
+}
+
+func CurrentEnvDir() string {
+	return EnvDirByName(GetEnv())
 }
 
 func EnvDirExistsByName(name string) bool {
@@ -105,14 +181,12 @@ func MakeSSHKeyPair(pubKeyPath, privateKeyPath string) error {
 	return ioutil.WriteFile(pubKeyPath, ssh.MarshalAuthorizedKey(pub), 0644)
 }
 
-func CreateHomeConfig() {
-	starterComp := Competition{}
+func TouchFile(path string) {
+	os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0644)
+}
 
-	yamlOutput, err := yaml.Marshal(&starterComp)
-	if err != nil {
-		LogFatal("YAML Marshaling Error: " + err.Error())
-	}
-	err = ioutil.WriteFile(filepath.Join(GetHome(), "config", "config.yml"), yamlOutput, 0644)
+func CreateHomeConfig() {
+	err := ioutil.WriteFile(filepath.Join(GetHome(), "config", "config.yml"), MustAsset("env.yml"), 0644)
 	if err != nil {
 		LogError("Error generating SSH Key: " + err.Error())
 	}
@@ -134,7 +208,7 @@ func CreateHome() {
 	os.MkdirAll(filepath.Join(GetHome(), "scripts"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "files"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "apps"), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetHome(), "templates"), os.ModePerm)
+	os.MkdirAll(filepath.Join(GetHome(), "utils"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "users"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "environments"), os.ModePerm)
 	err := MakeSSHKeyPair(filepath.Join(GetHome(), "config", "infra.pem.pub"), filepath.Join(GetHome(), "config", "infra.pem"))
@@ -157,7 +231,7 @@ func HomeValid() bool {
 	//   scripts (folder)
 	//   files (folder)
 	//   apps (folder)
-	//   templates (folder)
+	//   utils (folder)
 	//   users (folder)
 	//   environments (folder)
 
@@ -191,8 +265,8 @@ func HomeValid() bool {
 		LogError("No apps/ located in LF_HOME")
 		homeValid = false
 	}
-	if !PathExists(path.Join(GetHome(), "templates")) {
-		LogError("No templates/ located in LF_HOME")
+	if !PathExists(path.Join(GetHome(), "utils")) {
+		LogError("No utils/ located in LF_HOME")
 		homeValid = false
 	}
 	if !PathExists(path.Join(GetHome(), "users")) {
@@ -215,21 +289,27 @@ func EnvValid() bool {
 	// LF_ENV should look like this:
 	// folder =>
 	//   terraform (folder)
+	//   hosts (folder)
+	//   networks (folder)
 	//   env.yml
 	//   history.log
 
 	envValid := true
 
-	if !PathExists(path.Join(GetEnv(), "terraform")) {
+	if !PathExists(path.Join(CurrentEnvDir(), "terraform")) {
 		LogError("No terraform/ located in LF_ENV")
 		envValid = false
 	}
-	if !PathExists(path.Join(GetEnv(), "env.yml")) {
-		LogError("No env.yml located in LF_ENV")
+	if !PathExists(path.Join(CurrentEnvDir(), "hosts")) {
+		LogError("No terraform/ located in LF_ENV")
 		envValid = false
 	}
-	if !PathExists(path.Join(GetEnv(), "history.log")) {
-		LogError("No history.log located in LF_ENV")
+	if !PathExists(path.Join(CurrentEnvDir(), "networks")) {
+		LogError("No terraform/ located in LF_ENV")
+		envValid = false
+	}
+	if !PathExists(path.Join(CurrentEnvDir(), "env.yml")) {
+		LogError("No env.yml located in LF_ENV")
 		envValid = false
 	}
 
@@ -262,11 +342,15 @@ func LogFatal(msg string) {
 	os.Exit(1)
 }
 
+func FileToName(path string) string {
+	return strings.TrimSuffix(filepath.Base(path), ".yml")
+}
+
 func Log(msg string) {
 	white := color.New(color.FgHiWhite).SprintFunc()
 	blue := color.New(color.FgHiBlue).SprintFunc()
 	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Printf(" %s%s%s %s\n", white("["), blue("INFO"), white("]"), green(msg))
+	fmt.Printf("%s%s%s %s\n", white("["), blue("LAFORGE"), white("]"), green(msg))
 }
 
 func LogPlain(msg string) {

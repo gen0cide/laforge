@@ -1,10 +1,10 @@
 ingress {
-    from_port   = "{{ .FromPort }}"
-    to_port     = "{{ .ToPort }}"
-    protocol    = "{{ .Protocol }}"
-    cidr_blocks = [
-      {{range .CIDRs}}
-        "{{.}}",
-      {{end}}
-    ]
-  }
+  from_port   = "{{ .FromPort }}"
+  to_port     = "{{ .ToPort }}"
+  protocol    = "{{ .Protocol }}"
+  cidr_blocks = [
+    {{range .CIDRs}}
+      "{{.}}",
+    {{end}}
+  ]
+}

@@ -24,6 +24,16 @@ type TFTemplate struct {
 	Rendered string
 }
 
+func NewTemplateContext(c *Competition, e *Environment, p *Pod, n *Network, h *Host) *TemplateBuilder {
+	return &TemplateBuilder{
+		Competition: c,
+		Environment: e,
+		Pod:         p,
+		Network:     n,
+		Host:        h,
+	}
+}
+
 func TFRender(tfobj interface{}) (string, error) {
 	tmplName := strings.ToLower(reflect.TypeOf(tfobj).Name())
 	filename := tmplName + ".tmpl"

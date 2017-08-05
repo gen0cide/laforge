@@ -2,18 +2,18 @@ package command
 
 import "testing"
 
-func TestCmdEnv(t *testing.T) {
+func TestCmdApp(t *testing.T) {
 	// Write your code here
 }
 
-func TestCmdEnvLs(t *testing.T) {
+func TestCmdAppLs(t *testing.T) {
 	// Write your code here
 }
 
-func TestCmdEnvUse(t *testing.T) {
+func TestCmdAppCreate(t *testing.T) {
 	// Write your code here
 }
 
-func TestCmdEnvCreate(t *testing.T) {
+func TestCmdAppPkg(t *testing.T) {
 	// Write your code here
 }

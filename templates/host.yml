@@ -1,0 +1,66 @@
+#########################################################
+## LaForge NETWORK Config
+## 
+## This file is unique to your competition environment.
+## These values will only effect objects in this environment.
+##
+## ** DO NOT ATTEMPT TO RUN LAFORGE WITHOUT CONFIGURING
+##    THIS FILE **
+#########################################################
+
+#########################################################
+# Host name (do not include suffix for environment)
+hostname: {{ .Hostname }}
+
+#########################################################
+# What is the last octet of the internal IP address?
+last_octet: {{ .LastOctet }}
+
+#########################################################
+# List any internal CNAMEs you want pointing at this host
+# These CNAMEs will be scoped to the subdomain of the
+# Network they belong to.
+# Example:
+#    pod_domain=foo.com, network=bar, cname=baz
+#    CNAME will point to baz.bar.foo.com
+internal_cnames: []
+
+#########################################################
+# Should this host have a publicly available IP address
+# or should the host go through the NAT gateway?
+has_public_ip: false
+
+#########################################################
+# Should an external CNAME exist for this host on it's
+# public IP address?
+# This CNAME will *NOT* be scoped to the subdomain!!!
+# Technically, this will be an A record, but we use CNAME as term here.
+# Example:
+#    pod_domain=foo.com, network=bar, cname=woz
+#    CNAME will point to woz.foo.com
+external_cnames: []
+
+#########################################################
+# What is the instance size? (specific to network)
+instance_size: {{ .InstanceSize }}
+
+#########################################################
+# Scripts to run at instance creation
+scripts: []
+
+#########################################################
+# What security groups should this host belong to?
+security_groups: []
+
+#########################################################
+# Override default admin password? (Administrator on windows, root on *nix)
+admin_password: ""
+
+#########################################################
+# What users should be created as local users on this host?
+user_groups: []
+
+#########################################################
+# Additional Variables scoped to this host
+variables:
+  example: variable

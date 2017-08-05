@@ -25,7 +25,7 @@ func CmdInit(c *cli.Context) {
 	if err != nil {
 		comp.LogFatal("Fatal Error: " + err.Error())
 	}
-	os.Setenv("LF_HOME", newHome)
+	comp.SetHome(newHome)
 	if !comp.HomeExists() {
 		query = "LF_HOME doesn't exist. Create it? [Y/n]"
 		createDir, err := ui.Ask(query, &input.Options{
@@ -48,8 +48,5 @@ func CmdInit(c *cli.Context) {
 		}
 	}
 	comp.ValidateHome()
-	comp.Log("LF_HOME is valid! To begin using laforge, issue the following command:")
-	comp.LogPlain("export LF_HOME=" + comp.GetHome())
-	comp.Log("Make sure to add this to your rc files:")
-	comp.LogPlain("export LF_HOME=" + comp.GetHome())
+	comp.Log("LF_HOME has been defined. Laforge is now chrooted into " + newHome)
 }

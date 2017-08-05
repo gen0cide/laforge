@@ -57,6 +57,30 @@ func (c *Competition) GetEnvs() map[*Environment]bool {
 	return envs
 }
 
+func (c *Competition) EnvMap() map[string]*Environment {
+	ValidateHome()
+	envs := make(map[string]*Environment)
+	files, _ := ioutil.ReadDir(filepath.Join(GetHome(), "environments", "."))
+	for _, f := range files {
+		e, err := LoadEnvironment(f.Name())
+		if err != nil {
+			LogError("Error parsing environments list: " + err.Error())
+		} else {
+			envs[f.Name()] = e
+		}
+	}
+
+	return envs
+}
+
+func (c *Competition) GetEnvByName(name string) *Environment {
+	return c.EnvMap()[name]
+}
+
+func (c *Competition) CurrentEnv() *Environment {
+	return c.GetEnvByName(GetEnv())
+}
+
 func (c *Competition) CreateEnv(name, prefix string) {
 	ValidateHome()
 	if !ValidName(name) {
@@ -80,6 +104,8 @@ func (c *Competition) CreateEnv(name, prefix string) {
 		Prefix: prefix,
 	}
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "terraform", "scripts"), os.ModePerm)
+	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "networks"), os.ModePerm)
+	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "hosts"), os.ModePerm)
 	var tpl bytes.Buffer
 	tmpl, err := template.New(name).Parse(string(MustAsset("env.yml")))
 	if err != nil {
@@ -99,9 +125,8 @@ func (c *Competition) ChangeEnv(name string) {
 	if !EnvDirExistsByName(name) {
 		LogFatal("The environment you're trying to switch to doesn't exist!")
 	}
-	os.Setenv(LF_ENV, name)
-	Log("Run the following command:")
-	LogPlain("export LF_ENV=" + name)
+	SetEnv(name)
+	Log("Current environment is now set to " + name)
 }
 
 func LoadCompetition() (*Competition, error) {

@@ -1,12 +1,12 @@
 package competition
 
 type Pod struct {
-	Domain       string `yaml:"domain"`
-	PodID        string `yaml:"-"`
-	JumpHosts    `yaml:"jump_hosts"`
-	*Environment `yaml:"-"`
-	Vars         `yaml:"variables"`
-	Networks     []Network `yaml:"networks"`
+	Domain           string `yaml:"domain"`
+	PodID            string `yaml:"-"`
+	JumpHosts        `yaml:"jump_hosts"`
+	*Environment     `yaml:"-"`
+	Vars             `yaml:"variables"`
+	IncludedNetworks []string `yaml:"included_networks"`
 }
 
 type JumpHosts struct {
