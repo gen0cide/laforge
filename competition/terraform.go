@@ -1,10 +1,19 @@
 package competition
 
+import "fmt"
+
+type TFObject interface {
+	Mix(tpl *TemplateBuilder)
+}
+
 type TFVar struct {
 	Name        string
 	Description string
 	Value       string
-	Template    TFTemplate
+}
+
+func (t *TFVar) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSProvider struct {
@@ -13,7 +22,12 @@ type TFAWSProvider struct {
 	SecretKey string
 	Region    string
 	Profile   string
-	Template  TFTemplate
+}
+
+func (t *TFAWSProvider) Mix(tpl *TemplateBuilder) {
+	t.AccessKey = tpl.Competition.AWSCred.APIKey
+	t.SecretKey = tpl.Competition.AWSCred.APISecret
+	t.Region = tpl.Environment.AWSConfig.Region
 }
 
 type TFAWSKeyPair struct {
@@ -21,7 +35,14 @@ type TFAWSKeyPair struct {
 	KeyName    string
 	PublicKey  string
 	PrivateKey string
-	Template   TFTemplate
+}
+
+func (t *TFAWSKeyPair) Mix(tpl *TemplateBuilder) {
+	keyName := fmt.Sprintf("sshkey_%s", tpl.Environment.Name)
+	t.Name = keyName
+	t.KeyName = keyName
+	t.PublicKey = tpl.Competition.SSHPublicKey()
+	t.PrivateKey = tpl.Competition.SSHPrivateKey()
 }
 
 type TFAWSVirtualPrivateCloud struct {
@@ -29,7 +50,12 @@ type TFAWSVirtualPrivateCloud struct {
 	CIDR               string
 	EnableDNSHostnames bool
 	Tags               []string
-	Template           TFTemplate
+}
+
+func (t *TFAWSVirtualPrivateCloud) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.EnvItemName(t)
+	t.CIDR = tpl.Environment.DefaultCIDR()
+	t.EnableDNSHostnames = true
 }
 
 type TFAWSNATGateway struct {
@@ -37,7 +63,10 @@ type TFAWSNATGateway struct {
 	VPC       TFAWSVirtualPrivateCloud
 	ElasticIP TFAWSElasticIP
 	Subnet    TFAWSSubnet
-	Template  TFTemplate
+}
+
+func (t *TFAWSNATGateway) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.NetItemName(t)
 }
 
 type TFAWSSubnet struct {
@@ -48,22 +77,34 @@ type TFAWSSubnet struct {
 	MapPublicIPOnLaunch bool
 	DependsOn           []string
 	Tags                []string
-	Template            TFTemplate
+}
+
+func (t *TFAWSSubnet) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.NetItemName(t)
+	t.CIDR = tpl.Network.CIDR
+	t.AvailabilityZone = tpl.Competition.AWSCred.Zone
+	t.MapPublicIPOnLaunch = false
 }
 
 type TFAWSRouteTable struct {
-	Name     string
-	VPC      TFAWSVirtualPrivateCloud
-	Routes   []TFAWSRoute
-	Tags     []string
-	Template TFTemplate
+	Name   string
+	VPC    TFAWSVirtualPrivateCloud
+	Routes []TFAWSRoute
+	Tags   []string
+}
+
+func (t *TFAWSRouteTable) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.NetItemName(t)
 }
 
 type TFAWSRoute struct {
 	Name       string
 	CIDR       string
 	NATGateway TFAWSNATGateway
-	Template   TFTemplate
+}
+
+func (t *TFAWSRoute) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSRouteTableAssociation struct {
@@ -71,7 +112,10 @@ type TFAWSRouteTableAssociation struct {
 	Subnet     TFAWSSubnet
 	RouteTable TFAWSRouteTable
 	Tags       []string
-	Template   TFTemplate
+}
+
+func (t *TFAWSRouteTableAssociation) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.NetItemName(t)
 }
 
 type TFAWSDHCPOptions struct {
@@ -79,14 +123,21 @@ type TFAWSDHCPOptions struct {
 	DomainName string
 	DNSServers []string
 	Tags       []string
-	Template   TFTemplate
+}
+
+func (t *TFAWSDHCPOptions) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.EnvItemName(t)
+	t.DomainName = tpl.Environment.Domain
 }
 
 type TFAWSDHCPOptionsAssociation struct {
 	Name        string
 	VPC         TFAWSVirtualPrivateCloud
 	DHCPOptions TFAWSDHCPOptions
-	Template    TFTemplate
+}
+
+func (t *TFAWSDHCPOptionsAssociation) Mix(tpl *TemplateBuilder) {
+	t.Name = tpl.EnvItemName(t)
 }
 
 type TFAWSIngressRule struct {
@@ -94,7 +145,10 @@ type TFAWSIngressRule struct {
 	ToPort   string
 	Protocol string
 	CIDRs    []string
-	Template TFTemplate
+}
+
+func (t *TFAWSIngressRule) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSEgressRule struct {
@@ -102,7 +156,10 @@ type TFAWSEgressRule struct {
 	ToPort   string
 	Protocol string
 	CIDRs    []string
-	Template TFTemplate
+}
+
+func (t *TFAWSEgressRule) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSSecurityGroup struct {
@@ -112,7 +169,10 @@ type TFAWSSecurityGroup struct {
 	IngressRules []TFAWSIngressRule
 	EgressRules  []TFAWSEgressRule
 	Tags         []string
-	Template     TFTemplate
+}
+
+func (t *TFAWSSecurityGroup) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSElasticIP struct {
@@ -120,13 +180,19 @@ type TFAWSElasticIP struct {
 	VPC      bool
 	Attach   bool
 	Instance TFAWSInstance
-	Template TFTemplate
+}
+
+func (t *TFAWSElasticIP) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFOutput struct {
-	Name     string
-	Value    string
-	Template TFTemplate
+	Name  string
+	Value string
+}
+
+func (t *TFOutput) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSInstance struct {
@@ -144,12 +210,18 @@ type TFAWSInstance struct {
 	InlineProvisioners       []TFInlineProvisioner
 	ScriptProvisioners       []TFScriptProvisioner
 	Tags                     []string
-	Template                 TFTemplate
+}
+
+func (t *TFAWSInstance) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFUserDataScript struct {
-	Name     string
-	Template TFTemplate
+	Name string
+}
+
+func (t *TFUserDataScript) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFInstanceConnection struct {
@@ -161,7 +233,10 @@ type TFInstanceConnection struct {
 	BastionUser       string
 	BastionPrivateKey string
 	WinRMInsecure     bool
-	Template          TFTemplate
+}
+
+func (t *TFInstanceConnection) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFFileProvisioner struct {
@@ -169,18 +244,27 @@ type TFFileProvisioner struct {
 	Source      string
 	Content     string
 	Destination string
-	Template    TFTemplate
+}
+
+func (t *TFFileProvisioner) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFInlineProvisioner struct {
 	Name     string
 	Commands []string
-	Template TFTemplate
+}
+
+func (t *TFInlineProvisioner) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFScriptProvisioner struct {
-	Scripts  []TFTemplate
-	Template TFTemplate
+	Scripts []TFTemplate
+}
+
+func (t *TFScriptProvisioner) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFAWSRoute53ARecord struct {
@@ -189,7 +273,10 @@ type TFAWSRoute53ARecord struct {
 	Hostname string
 	TTL      int
 	Records  []string
-	Template TFTemplate
+}
+
+func (t *TFAWSRoute53ARecord) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPProvider struct {
@@ -197,20 +284,29 @@ type TFGCPProvider struct {
 	CredentialFile string
 	Project        string
 	Region         string
-	Template       TFTemplate
+}
+
+func (t *TFGCPProvider) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPNetwork struct {
 	Name              string
 	AutoCreateSubnets bool
-	Template          TFTemplate
+}
+
+func (t *TFGCPNetwork) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPSubnet struct {
-	Name     string
-	CIDR     string
-	Network  TFGCPNetwork
-	Template TFTemplate
+	Name    string
+	CIDR    string
+	Network TFGCPNetwork
+}
+
+func (t *TFGCPSubnet) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPFirewall struct {
@@ -220,18 +316,27 @@ type TFGCPFirewall struct {
 	SourceTags   []string
 	TargetTags   []string
 	Rules        []TFGCPFirewallAllowRule
-	Template     TFTemplate
+}
+
+func (t *TFGCPFirewall) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPFirewallAllowRule struct {
 	Protocol string
 	Ports    []int
-	Template TFTemplate
+}
+
+func (t *TFGCPFirewallAllowRule) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPElasticIP struct {
-	Name     string
-	Template TFTemplate
+	Name string
+}
+
+func (t *TFGCPElasticIP) Mix(tpl *TemplateBuilder) {
+	return
 }
 
 type TFGCPInstance struct {
@@ -250,5 +355,8 @@ type TFGCPInstance struct {
 	FileProvisioners   []TFFileProvisioner
 	InlineProvisioners []TFInlineProvisioner
 	ScriptProvisioners []TFScriptProvisioner
-	Template           TFTemplate
+}
+
+func (t *TFGCPInstance) Mix(tpl *TemplateBuilder) {
+	return
 }

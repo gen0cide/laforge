@@ -45,4 +45,4 @@ s3_config:
 # competition infrastructure. All firewalls and security
 # groups will whitelist these IPs for all ports.
 admin_ips:
-  - 127.0.0.99
+  - 127.0.0.99/32

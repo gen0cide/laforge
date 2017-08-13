@@ -2,6 +2,7 @@ package competition
 
 import (
 	"io/ioutil"
+	"path/filepath"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -11,9 +12,11 @@ type Network struct {
 	Name          string `yaml:"name"`
 	Subdomain     string `yaml:"subdomain"`
 	Provider      string `yaml:"provider"`
+	VDIVisible    bool   `yaml:"vdi_visible"`
 	Vars          `yaml:"variables"`
-	IncludedHosts []string `yaml:"included_hosts"`
-	Pod           `yaml:"-"`
+	IncludedHosts []string         `yaml:"included_hosts"`
+	ResolvedHosts map[string]*Host `yaml:"-"`
+	Environment   `yaml:"-"`
 }
 
 func LoadNetworkFromFile(file string) (*Network, error) {
@@ -27,6 +30,25 @@ func LoadNetworkFromFile(file string) (*Network, error) {
 		return nil, err
 	}
 	return &network, nil
+}
+
+func (n *Network) ResolveIncludedHosts() map[string]*Host {
+	hosts := make(map[string]*Host)
+	hostFiles, _ := filepath.Glob(filepath.Join(n.Environment.HostsDir(), "*.yml"))
+	for _, file := range hostFiles {
+		if !Contains(FileToName(file), n.IncludedHosts) {
+			continue
+		}
+		host, err := LoadHostFromFile(file)
+		if err != nil {
+			LogError("Error reading host file: " + file)
+			continue
+		}
+		host.Network = *n
+		hosts[FileToName(file)] = host
+	}
+
+	return hosts
 }
 
 func (n *Network) ToYAML() string {

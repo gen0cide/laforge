@@ -25,6 +25,11 @@ cidr: {{ .CIDR }}
 provider: {{ .Provider }}
 
 #########################################################
+# Is this network suppose to be visible internally from
+# the VDI network?
+vdi_visible: true
+
+#########################################################
 # Variables for the specific network.
 variables:
   example: variable

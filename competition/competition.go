@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -42,6 +43,9 @@ func (c *Competition) GetEnvs() map[*Environment]bool {
 	envs := make(map[*Environment]bool)
 	files, _ := ioutil.ReadDir(filepath.Join(GetHome(), "environments", "."))
 	for _, f := range files {
+		if f.Name() == ".DS_Store" {
+			continue
+		}
 		e, err := LoadEnvironment(f.Name())
 		if err != nil {
 			LogError("Error parsing environments list: " + err.Error())
@@ -62,6 +66,9 @@ func (c *Competition) EnvMap() map[string]*Environment {
 	envs := make(map[string]*Environment)
 	files, _ := ioutil.ReadDir(filepath.Join(GetHome(), "environments", "."))
 	for _, f := range files {
+		if f.Name() == ".DS_Store" {
+			continue
+		}
 		e, err := LoadEnvironment(f.Name())
 		if err != nil {
 			LogError("Error parsing environments list: " + err.Error())
@@ -127,6 +134,33 @@ func (c *Competition) ChangeEnv(name string) {
 	}
 	SetEnv(name)
 	Log("Current environment is now set to " + name)
+}
+
+func (c *Competition) SSHPublicKey() string {
+	data, err := ioutil.ReadFile(c.SSHPublicKeyPath())
+	if err != nil {
+		LogError("Could not read SSH public key for environment!")
+		return ""
+	}
+	return strings.TrimSpace(string(data))
+
+}
+
+func (c *Competition) SSHPrivateKey() string {
+	data, err := ioutil.ReadFile(c.SSHPrivateKeyPath())
+	if err != nil {
+		LogError("Could not read SSH private key for environment!")
+		return ""
+	}
+	return string(data)
+}
+
+func (c *Competition) SSHPublicKeyPath() string {
+	return filepath.Join(GetHome(), "config", "infra.pem.pub")
+}
+
+func (c *Competition) SSHPrivateKeyPath() string {
+	return filepath.Join(GetHome(), "config", "infra.pem")
 }
 
 func LoadCompetition() (*Competition, error) {

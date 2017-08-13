@@ -64,3 +64,11 @@ user_groups: []
 # Additional Variables scoped to this host
 variables:
   example: variable
+
+#########################################################
+# List of public TCP ports to be exposed
+public_tcp: []
+
+#########################################################
+# List of public UDP ports to be exposed
+public_udp: []

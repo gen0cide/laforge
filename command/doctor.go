@@ -1,8 +1,10 @@
 package command
 
-import "github.com/codegangsta/cli"
+import (
+	"github.com/codegangsta/cli"
+	"github.com/gen0cide/laforge/competition"
+)
 
 func CmdDoctor(c *cli.Context) {
-	// Write your code here
-
+	competition.Log("Download Terraform binary into your path: https://www.terraform.io/downloads.html")
 }

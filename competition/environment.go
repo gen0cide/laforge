@@ -3,6 +3,7 @@ package competition
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"path/filepath"
@@ -14,18 +15,21 @@ import (
 type Vars map[string]string
 
 type Environment struct {
-	Name         string   `yaml:"name"`
-	Prefix       string   `yaml:"prefix"`
-	WhitelistIPs []string `yaml:"ip_whitelist"`
-	Vars         `yaml:"variables"`
-	AWSConfig    `yaml:"aws_config"`
-	GCPConfig    `yaml:"gcp_config"`
-	PodCount     int `yaml:"pod_count"`
-	Pod          `yaml:"pod"`
-	Competition  `yaml:"-"`
-	Users        []*User    `yaml:"-"`
-	Networks     []*Network `yaml:"-"`
-	Hosts        []*Host    `yaml:"-"`
+	Name             string   `yaml:"name"`
+	Prefix           string   `yaml:"prefix"`
+	WhitelistIPs     []string `yaml:"ip_whitelist"`
+	Vars             `yaml:"variables"`
+	AWSConfig        `yaml:"aws_config"`
+	GCPConfig        `yaml:"gcp_config"`
+	PodCount         int                 `yaml:"pod_count"`
+	Domain           string              `yaml:"domain"`
+	IncludedNetworks []string            `yaml:"included_networks"`
+	ResolvedNetworks map[string]*Network `yaml:"-"`
+	Competition      `yaml:"-"`
+	Users            []*User    `yaml:"-"`
+	Networks         []*Network `yaml:"-"`
+	Hosts            []*Host    `yaml:"-"`
+	JumpHosts        `yaml:"jump_hosts"`
 }
 
 type AWSConfig struct {
@@ -38,6 +42,20 @@ type GCPConfig struct {
 	CIDR   string `yaml:"cidr"`
 	Region string `yaml:"region"`
 	Zone   string `yaml:"zone"`
+}
+
+type JumpHosts struct {
+	CIDR    string `yaml:"cidr"`
+	Windows struct {
+		AMI   string `yaml:"ami"`
+		Count int    `yaml:"count"`
+		Size  string `yaml:"size"`
+	} `yaml:"windows"`
+	Kali struct {
+		AMI   string `yaml:"ami"`
+		Count int    `yaml:"count"`
+		Size  string `yaml:"size"`
+	} `yaml:"kali"`
 }
 
 func (e *Environment) EnvRoot() string {
@@ -58,6 +76,10 @@ func (e *Environment) TfDir() string {
 
 func (e *Environment) TfScriptsDir() string {
 	return filepath.Join(e.EnvRoot(), "terraform", "scripts")
+}
+
+func (e *Environment) DefaultCIDR() string {
+	return "10.0.0.0/8"
 }
 
 func LoadEnvironment(name string) (*Environment, error) {
@@ -81,6 +103,10 @@ func LoadEnvironment(name string) (*Environment, error) {
 	err = yaml.Unmarshal(envConfig, &env)
 	if err != nil {
 		return nil, err
+	}
+	env.ResolvedNetworks = env.ResolveIncludedNetworks()
+	for _, network := range env.ResolvedNetworks {
+		network.ResolvedHosts = network.ResolveIncludedHosts()
 	}
 	return &env, nil
 }
@@ -113,6 +139,33 @@ func (e *Environment) ParseNetworks() map[string]*Network {
 	}
 
 	return networks
+}
+
+func (e *Environment) ResolveIncludedNetworks() map[string]*Network {
+	networks := make(map[string]*Network)
+	networkFiles, _ := filepath.Glob(filepath.Join(e.NetworksDir(), "*.yml"))
+	for _, file := range networkFiles {
+		if !Contains(FileToName(file), e.IncludedNetworks) {
+			continue
+		}
+		network, err := LoadNetworkFromFile(file)
+		if err != nil {
+			LogError("Error reading network file: " + file)
+			continue
+		}
+		network.Environment = *e
+		networks[FileToName(file)] = network
+	}
+
+	return networks
+}
+
+func (e *Environment) Suffix(podOffset int) string {
+	return fmt.Sprintf("%s%d", e.Prefix, podOffset)
+}
+
+func (e *Environment) TFName(name string, offset int) string {
+	return fmt.Sprintf("%s_%s", name, e.Suffix(offset))
 }
 
 func (e *Environment) CreateNetwork(n *Network) {
@@ -158,3 +211,8 @@ func (e *Environment) CreateHost(h *Host) {
 	}
 	Log("Host created: " + h.Hostname)
 }
+
+// func (e *Environment) BuildTerraform() []byte {
+// 	buf := bytes.buffer
+
+// }

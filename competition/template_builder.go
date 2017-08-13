@@ -3,6 +3,7 @@ package competition
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"path/filepath"
 	"reflect"
@@ -12,9 +13,27 @@ import (
 type TemplateBuilder struct {
 	Competition *Competition
 	Environment *Environment
-	Pod         *Pod
+	PodID       int
 	Network     *Network
 	Host        *Host
+}
+
+func (t *TemplateBuilder) EnvItemName(i interface{}, opts ...string) string {
+	optString := ""
+	if len(opts) > 0 {
+		optString = fmt.Sprintf("_%s", strings.Join(opts, "_"))
+	}
+	name := strings.ToLower(reflect.TypeOf(i).Name())
+	return fmt.Sprintf("%s_%s%s", t.Environment.Suffix(t.PodID), name, optString)
+}
+
+func (t *TemplateBuilder) NetItemName(i interface{}, opts ...string) string {
+	optString := ""
+	if len(opts) > 0 {
+		optString = fmt.Sprintf("_%s", strings.Join(opts, "_"))
+	}
+	name := strings.ToLower(reflect.TypeOf(i).Name())
+	return fmt.Sprintf("%s_%s_%s%s", t.Environment.Suffix(t.PodID), t.Network.Name, name, optString)
 }
 
 type TFTemplate struct {
@@ -24,11 +43,11 @@ type TFTemplate struct {
 	Rendered string
 }
 
-func NewTemplateContext(c *Competition, e *Environment, p *Pod, n *Network, h *Host) *TemplateBuilder {
+func NewTemplateContext(c *Competition, e *Environment, pid int, n *Network, h *Host) *TemplateBuilder {
 	return &TemplateBuilder{
 		Competition: c,
 		Environment: e,
-		Pod:         p,
+		PodID:       pid,
 		Network:     n,
 		Host:        h,
 	}
