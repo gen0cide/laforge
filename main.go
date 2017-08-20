@@ -1,5 +1,7 @@
 package main
 
+//go:generate go-bindata -nometadata -pkg competition -prefix templates/ -o competition/bindata.go templates templates/terraform
+
 import (
 	"os"
 

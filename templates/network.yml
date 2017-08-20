@@ -21,7 +21,7 @@ subdomain: {{ .Subdomain }}
 cidr: {{ .CIDR }}
 
 #########################################################
-# Provider (Either "aws" or "gcp")
+# Provider (aws is the only supported option)
 provider: {{ .Provider }}
 
 #########################################################

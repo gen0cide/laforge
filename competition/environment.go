@@ -47,14 +47,16 @@ type GCPConfig struct {
 type JumpHosts struct {
 	CIDR    string `yaml:"cidr"`
 	Windows struct {
-		AMI   string `yaml:"ami"`
-		Count int    `yaml:"count"`
-		Size  string `yaml:"size"`
+		AMI     string   `yaml:"ami"`
+		Count   int      `yaml:"count"`
+		Size    string   `yaml:"size"`
+		Scripts []string `yaml:"scripts"`
 	} `yaml:"windows"`
 	Kali struct {
-		AMI   string `yaml:"ami"`
-		Count int    `yaml:"count"`
-		Size  string `yaml:"size"`
+		AMI     string   `yaml:"ami"`
+		Count   int      `yaml:"count"`
+		Size    string   `yaml:"size"`
+		Scripts []string `yaml:"scripts"`
 	} `yaml:"kali"`
 }
 
@@ -160,6 +162,34 @@ func (e *Environment) ResolveIncludedNetworks() map[string]*Network {
 	return networks
 }
 
+func (e *Environment) ResolvePublicTCP() map[int]bool {
+	portMap := map[int]bool{}
+	networks := e.ResolveIncludedNetworks()
+	for _, network := range networks {
+		hosts := network.ResolveIncludedHosts()
+		for _, host := range hosts {
+			for _, port := range host.TCPPorts {
+				portMap[port] = true
+			}
+		}
+	}
+	return portMap
+}
+
+func (e *Environment) ResolvePublicUDP() map[int]bool {
+	portMap := map[int]bool{}
+	networks := e.ResolveIncludedNetworks()
+	for _, network := range networks {
+		hosts := network.ResolveIncludedHosts()
+		for _, host := range hosts {
+			for _, port := range host.UDPPorts {
+				portMap[port] = true
+			}
+		}
+	}
+	return portMap
+}
+
 func (e *Environment) Suffix(podOffset int) string {
 	return fmt.Sprintf("%s%d", e.Prefix, podOffset)
 }
@@ -212,7 +242,16 @@ func (e *Environment) CreateHost(h *Host) {
 	Log("Host created: " + h.Hostname)
 }
 
-// func (e *Environment) BuildTerraform() []byte {
-// 	buf := bytes.buffer
+func (e *Environment) KaliJumpAMI() string {
+	if e.JumpHosts.Kali.AMI != "" {
+		return e.JumpHosts.Kali.AMI
+	}
+	return "${data.aws_ami.ubuntu.id}"
+}
 
-// }
+func (e *Environment) WindowsJumpAMI() string {
+	if e.JumpHosts.Windows.AMI != "" {
+		return e.JumpHosts.Windows.AMI
+	}
+	return "${data.aws_ami.ubuntu.id}"
+}

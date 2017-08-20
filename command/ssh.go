@@ -1,8 +1,13 @@
 package command
 
-import "github.com/codegangsta/cli"
+import (
+	"fmt"
+
+	"github.com/codegangsta/cli"
+	"github.com/gen0cide/laforge/competition"
+)
 
 func CmdSsh(c *cli.Context) {
-	// Write your code here
+	fmt.Println(competition.GetPublicIP())
 
 }

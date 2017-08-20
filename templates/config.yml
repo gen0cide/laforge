@@ -46,3 +46,10 @@ s3_config:
 # groups will whitelist these IPs for all ports.
 admin_ips:
   - 127.0.0.99/32
+
+#########################################################
+# Admin IPs
+# Any IPs listed here will have full access to the entire
+# competition infrastructure. All firewalls and security
+# groups will whitelist these IPs for all ports.
+root_password: ""

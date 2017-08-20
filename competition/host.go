@@ -9,12 +9,11 @@ import (
 type Host struct {
 	Hostname       string   `yaml:"hostname"`
 	OS             string   `yaml:"os"`
+	AMI            string   `yaml:"ami"`
 	InstanceSize   string   `yaml:"instance_size"`
 	LastOctet      int      `yaml:"last_octet"`
 	InternalCNAMEs []string `yaml:"internal_cnames"`
-	HasPublicIP    bool     `yaml:"has_public_ip"`
 	ExternalCNAMEs []string `yaml:"external_cnames"`
-	SecurityGroups []string `yaml:"security_groups"`
 	AdminPassword  string   `yaml:"admin_password"`
 	TCPPorts       []int    `yaml:"public_tcp"`
 	UDPPorts       []int    `yaml:"public_udp"`

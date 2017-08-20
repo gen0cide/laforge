@@ -12,11 +12,12 @@ import (
 )
 
 type Competition struct {
-	R53ZoneID string `yaml:"external_r53_zone_id"`
-	AWSCred   `yaml:"aws_creds"`
-	GCPCred   `yaml:"gcp_creds"`
-	S3Config  `yaml:"s3_config"`
-	AdminIPs  []string `yaml:"admin_ips"`
+	R53ZoneID    string `yaml:"external_r53_zone_id"`
+	AWSCred      `yaml:"aws_creds"`
+	GCPCred      `yaml:"gcp_creds"`
+	S3Config     `yaml:"s3_config"`
+	AdminIPs     []string `yaml:"admin_ips"`
+	RootPassword string   `yaml:"root_password"`
 }
 
 type AWSCred struct {
@@ -144,6 +145,20 @@ func (c *Competition) SSHPublicKey() string {
 	}
 	return strings.TrimSpace(string(data))
 
+}
+
+func (c *Competition) ParseScripts() map[string]*Script {
+	scripts := make(map[string]*Script)
+	scriptFiles, _ := filepath.Glob(filepath.Join(GetHome(), "scripts", "*"))
+	for _, file := range scriptFiles {
+		script, err := LoadScript(file)
+		if err != nil {
+			continue
+		}
+		scripts[FileToName(file)] = script
+	}
+
+	return scripts
 }
 
 func (c *Competition) SSHPrivateKey() string {

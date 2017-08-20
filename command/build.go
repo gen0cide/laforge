@@ -1,11 +1,8 @@
 package command
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 
-	"github.com/bradfitz/iter"
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
 	"github.com/hashicorp/hcl/hcl/printer"
@@ -26,20 +23,7 @@ func CmdBuild(c *cli.Context) {
 		Competition: comp,
 	}
 
-	var tpl bytes.Buffer
-
-	tmpl := template.New("test")
-	tmpl.Funcs(template.FuncMap{"N": iter.N})
-	newTmpl, err := tmpl.Parse(string(competition.MustAsset("infra.tf")))
-	if err != nil {
-		panic(err)
-	}
-
-	if err := newTmpl.Execute(&tpl, tb); err != nil {
-		panic(err)
-	}
-
-	finalTFTemplate, err := printer.Format(tpl.Bytes())
+	finalTFTemplate, err := printer.Format(competition.RenderTB("infra.tf", &tb))
 	if err != nil {
 		panic(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/user"
 	"path"
@@ -186,7 +187,7 @@ func TouchFile(path string) {
 }
 
 func CreateHomeConfig() {
-	err := ioutil.WriteFile(filepath.Join(GetHome(), "config", "config.yml"), MustAsset("env.yml"), 0644)
+	err := ioutil.WriteFile(filepath.Join(GetHome(), "config", "config.yml"), MustAsset("config.yml"), 0644)
 	if err != nil {
 		LogError("Error generating SSH Key: " + err.Error())
 	}
@@ -377,4 +378,17 @@ func LogEnvs(envs map[*Environment]bool) {
 			fmt.Printf("        %s\n", white(env.Name))
 		}
 	}
+}
+
+func GetPublicIP() string {
+	resp, err := http.Get("http://ipv4.myexternalip.com/raw")
+	if err != nil {
+		LogFatal("Cannot connect to the internet: " + err.Error())
+	}
+	defer resp.Body.Close()
+	ipData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		LogFatal("Could not read body of IP: " + err.Error())
+	}
+	return strings.TrimSpace(string(ipData))
 }
