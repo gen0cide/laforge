@@ -498,17 +498,29 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   }
 }
 
-{{ range $_, $cname := $host.InternalCNAMEs }}
+{{ $fqdn := printf "%s-%s.%s.%s" $hostname $id $network.Subdomain $.Environment.Domain }}
 
-{{ $recordValue := CustomInternalCNAME $.Environment $network $cname }}
-
-resource "aws_route53_record" "{{ $id }}_icname_{{ $cname }}" {
+resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname }}" {
   zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $recordValue }}"
+  name    = "{{ $fqdn }}"
   type    = "A"
   ttl     = "60"
   records = [
     "{{ $hostIP }}"
+  ]
+}
+
+{{ range $_, $cname := $host.InternalCNAMEs }}
+
+{{ $recordValue := CustomInternalCNAME $.Environment $network $cname }}
+
+resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_icname_{{ $cname }}" {
+  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
+  name    = "{{ $recordValue }}"
+  type    = "CNAME"
+  ttl     = "60"
+  records = [
+    "{{ $fqdn }}"
   ]
 }
 
@@ -518,13 +530,13 @@ resource "aws_route53_record" "{{ $id }}_icname_{{ $cname }}" {
 
 {{ $recordValue := CustomExternalCNAME $.Environment $cname }}
 
-resource "aws_route53_record" "{{ $id }}_ecname_{{ $cname }}" {
+resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $cname }}" {
   zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
   name    = "{{ $recordValue }}"
-  type    = "A"
+  type    = "CNAME"
   ttl     = "60"
   records = [
-    "{{ $hostIP }}"
+    "{{ $fqdn }}"
   ]
 }
 
