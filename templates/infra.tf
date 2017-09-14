@@ -13,23 +13,6 @@ provider "aws" {
   profile = ""
 }
 
-# Ubuntu AMI
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-16.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-
 # Key Pair
 resource "aws_key_pair" "ssh_{{ .Environment.Name }}" {
   key_name = "ssh_{{ .Environment.Name }}"
@@ -82,6 +65,7 @@ resource "aws_route_table" "{{ $id }}_default_gateway" {
 resource "aws_subnet" "{{ $id }}_vdi_subnet" {
   vpc_id     = "${aws_vpc.{{ $id }}_vpc.id}"
   cidr_block = "{{ $.Environment.JumpHosts.CIDR }}"
+  map_public_ip_on_launch = true
 
   tags {
     Name = "{{ $id }}_vdi_subnet"
@@ -98,20 +82,13 @@ resource "aws_route_table_association" "{{ $id }}_rt_assoc" {
 
 # r53:{{ $id }}
 resource "aws_route53_zone" "{{ $id }}_r53" {
-  name = "{{ $.Environment.Domain }}"
-  description = "Laforge - {{ $id }}"
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
+  name = "{{ $.Environment.Domain }}"  
 
   tags {
     Environment = "{{ $.Environment.Name }}"
     Team = "{{ $id }}"
   }
-}
-
-# r53_assoc:{{ $id }}
-resource "aws_route53_zone_association" "{{ $id }}_r53_assoc" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  vpc_id  = "${aws_vpc.{{ $id }}_vpc.id}"
 }
 
 # sg_admin:{{ $id }}
@@ -247,20 +224,26 @@ resource "aws_security_group_rule" "{{ $id }}_admin_callback" {
 
 {{ $hostname := printf "%s-jump-win-%d" $id $wjh }}
 
+{{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
+
 resource "aws_instance" "{{ $hostname }}" {
 
   ami = "{{ $.Environment.WindowsJumpAMI }}"
   instance_type = "{{ $.Environment.JumpHosts.Windows.Size }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}}"
+  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 20 $wjh }}
+
+  {{ $script_path := ScriptRender "jump_windows_uds.xml" $.Competition $.Environment $i nil nil $hostname}}
+
+  user_data = "${file("{{ $script_path }}")}"
 
   private_ip = "{{ $customIP }}"
 
   vpc_security_group_ids = [
     "${aws_security_group.{{ $id }}_base.id}",
-    "${aws_security_group.{{ $id }}_{{ $id }}_vdi.id}",
+    "${aws_security_group.{{ $id }}_vdi.id}",
   ]
 
   tags {
@@ -271,26 +254,42 @@ resource "aws_instance" "{{ $hostname }}" {
   }
 }
 
+resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
+  zone_id = "{{ $.Competition.R53ZoneID }}"
+  name    = "{{ $fqdn }}"
+  type    = "A"
+  ttl     = "60"
+  records = [
+    "${aws_instance.{{ $hostname }}.public_ip}",
+  ]
+}
+
 {{end}}
 
 {{range $wjh, $_ := N $.Environment.JumpHosts.Kali.Count }}
 
 {{ $hostname := printf "%s-jump-kali-%d" $id $wjh }}
 
+{{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
+
 resource "aws_instance" "{{ $hostname }}" {
 
   ami = "{{ $.Environment.KaliJumpAMI }}"
   instance_type = "{{ $.Environment.JumpHosts.Kali.Size }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}}"
+  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 30 $wjh }}
+
+  {{ $script_path := ScriptRender "jump_ubuntu_uds.sh" $.Competition $.Environment $i nil nil $hostname}}
+
+  user_data = "${file("{{ $script_path }}")}"
 
   private_ip = "{{ $customIP }}"
 
   vpc_security_group_ids = [
     "${aws_security_group.{{ $id }}_base.id}",
-    "${aws_security_group.{{ $id }}_{{ $id }}_vdi.id}",
+    "${aws_security_group.{{ $id }}_vdi.id}",
   ]
 
   tags {
@@ -299,6 +298,16 @@ resource "aws_instance" "{{ $hostname }}" {
     Network = "{{ $id }}-vdi"
     Team = "{{ $id }}"
   }
+}
+
+resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
+  zone_id = "{{ $.Competition.R53ZoneID }}"
+  name    = "{{ $fqdn }}"
+  type    = "A"
+  ttl     = "60"
+  records = [
+    "${aws_instance.{{ $hostname }}.public_ip}",
+  ]
 }
 
 {{end}}
@@ -361,6 +370,7 @@ resource "aws_security_group" "{{ $id }}_public_sg_udp_{{ $port }}" {
 resource "aws_subnet" "{{ $id }}_{{ $network.Name }}" {
   vpc_id     = "${aws_vpc.{{ $id }}_vpc.id}"
   cidr_block = "{{ $network.CIDR }}"
+  map_public_ip_on_launch = true
 
   tags {
     Name = "{{ $id }}_{{ $network.Name }}"
@@ -414,9 +424,9 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
 # instance:{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}
 resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
-  ami = "${data.aws_ami.ubuntu.id}"
+  ami = "{{ $host.AMI }}"
   instance_type = "{{ $host.InstanceSize }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}}"
+  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_{{ $network.Name }}.id}"
 
   private_ip = "{{ $hostIP }}"
@@ -492,10 +502,14 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     scripts = [
       {{range $_, $sname := $host.Scripts }}
         {{ $script_path := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
-        "${file("{{ $script_path }}"}",
+        "{{ $script_path }}",
       {{end}}
     ]
   }
+}
+
+output "public_ips.{{ $id }}.{{ $network.Subdomain }}.{{ $hostname }}" {
+  value = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.public_ip}"
 }
 
 {{ $fqdn := printf "%s-%s.%s.%s" $hostname $id $network.Subdomain $.Environment.Domain }}

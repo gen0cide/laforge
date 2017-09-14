@@ -76,12 +76,20 @@ func (e *Environment) TfDir() string {
 	return filepath.Join(e.EnvRoot(), "terraform")
 }
 
+func (e *Environment) TfFile() string {
+	return filepath.Join(e.TfDir(), "infra.tf")
+}
+
 func (e *Environment) TfScriptsDir() string {
 	return filepath.Join(e.EnvRoot(), "terraform", "scripts")
 }
 
 func (e *Environment) DefaultCIDR() string {
 	return "10.0.0.0/8"
+}
+
+func (e *Environment) PodPassword(podID int) string {
+	return DeterminedPassword(fmt.Sprintf("%s-%d", e.Name, podID))
 }
 
 func LoadEnvironment(name string) (*Environment, error) {

@@ -1,7 +1,7 @@
 package command
 
 import (
-	"fmt"
+	"io/ioutil"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
@@ -9,15 +9,8 @@ import (
 )
 
 func CmdBuild(c *cli.Context) {
-	competition.ValidateEnv()
-	comp, err := competition.LoadCompetition()
-	if err != nil {
-		competition.LogFatal("Cannot Load LF_HOME Config: " + err.Error())
-	}
-	env := comp.CurrentEnv()
-	if env == nil {
-		competition.LogFatal("Cannot load environment! (Check ~/.lf_env)")
-	}
+	comp, env := InitConfig()
+
 	tb := competition.TemplateBuilder{
 		Environment: env,
 		Competition: comp,
@@ -28,6 +21,8 @@ func CmdBuild(c *cli.Context) {
 		panic(err)
 	}
 
-	fmt.Println(string(finalTFTemplate))
+	ioutil.WriteFile(env.TfFile(), finalTFTemplate, 0644)
+
+	competition.Log("Wrote Terraform configuration to: " + env.TfFile())
 
 }

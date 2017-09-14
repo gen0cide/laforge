@@ -1,19 +1,27 @@
 package competition
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha512"
 	"crypto/x509"
+	"encoding/binary"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	mr "math/rand"
 
 	"golang.org/x/crypto/ssh"
 
@@ -380,6 +388,46 @@ func LogEnvs(envs map[*Environment]bool) {
 	}
 }
 
+func DictionaryWords() (words []string) {
+	file, err := os.Open("/usr/share/dict/words")
+	if err != nil {
+		LogFatal(err.Error())
+	}
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		LogFatal(err.Error())
+	}
+
+	words = strings.Split(string(bytes), "\n")
+	return
+}
+
+func DeterminedPassword(seed string) string {
+	data := []byte{}
+	hVal := sha512.Sum512([]byte(seed))
+	for _, i := range hVal {
+		data = append(data, i)
+	}
+	genesis := binary.BigEndian.Uint64(data)
+	return RandomPasswordFromSeed(int64(genesis))
+}
+
+func RandomPasswordFromSeed(seed int64) string {
+	r := mr.New(mr.NewSource(seed))
+	dict := DictionaryWords()
+	passWords := []string{}
+	idx := 0
+	for idx < 4 {
+		word := dict[r.Intn(len(dict))]
+		if len(word) > 4 && len(word) < 10 {
+			passWords = append(passWords, word)
+			idx++
+		}
+	}
+	return strings.Join(passWords, "-")
+}
+
 func GetPublicIP() string {
 	resp, err := http.Get("http://ipv4.myexternalip.com/raw")
 	if err != nil {
@@ -391,4 +439,64 @@ func GetPublicIP() string {
 		LogFatal("Could not read body of IP: " + err.Error())
 	}
 	return strings.TrimSpace(string(ipData))
+}
+
+// Ugly hack, this is bufio.ScanLines with ? added as an other delimiter :D
+func NewTermScanner(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
+		// We have a full newline-terminated line.
+		fmt.Printf("nn\n")
+		return i + 1, data[0:i], nil
+	}
+	if i := bytes.IndexByte(data, '?'); i >= 0 {
+		// We have a full ?-terminated line.
+		return i + 1, data[0:i], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
+}
+
+func ExecInteractiveCommand(command string, args []string) {
+	cmd := exec.Command(command, args...)
+
+	// Stdout + stderr
+	out, err := cmd.StderrPipe() // Again, rm writes prompts to stderr
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(out)
+	scanner.Split(NewTermScanner)
+
+	// Stdin
+	in, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer in.Close()
+
+	// Start the command!
+	err = cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Start scanning
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "rm: remove regular empty file ‘somefile.txt’" {
+			in.Write([]byte("y\n"))
+		}
+	}
+	// Report scanner's errors
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }

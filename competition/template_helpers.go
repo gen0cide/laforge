@@ -13,28 +13,15 @@ import (
 	"github.com/bradfitz/iter"
 )
 
-// var tpl bytes.Buffer
+const (
+	charset = "abcdefghijklmnopqrstuvwxyz" +
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	entropySize = 32
+)
 
-// tmpl := template.New("test")
-// tmpl.Funcs(template.FuncMap{"N": iter.N})
-// newTmpl, err := tmpl.Parse(string(competition.MustAsset("infra.tf")))
-// if err != nil {
-//   panic(err)
-// }
-
-// if err := newTmpl.Execute(&tpl, tb); err != nil {
-//   panic(err)
-// }
-
-// finalTFTemplate, err := printer.Format(tpl.Bytes())
-// if err != nil {
-//   panic(err)
-// }
-
-const charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-const entropySize = 32
+var (
+	seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+)
 
 func StringWithCharset(length int, charset string) string {
 	b := make([]byte, length)
@@ -47,10 +34,6 @@ func StringWithCharset(length int, charset string) string {
 func RandomString(length int) string {
 	return StringWithCharset(length, charset)
 }
-
-var (
-	seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
-)
 
 func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 
@@ -127,7 +110,6 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 
 }
 
-//ScriptRender "windows_uds.xml" .Competition .Environment $id $network $host $hostname}
 func EmbedRender(t string, c *Competition, e *Environment, i int, n *Network, h *Host, hn string) string {
 	tmpl := Render(t, c, e, i, n, h)
 	filename := filepath.Join(e.TfScriptsDir(), fmt.Sprintf("%s%d_%s_%s", e.Prefix, i, hn, t))
@@ -139,6 +121,11 @@ func EmbedRender(t string, c *Competition, e *Environment, i int, n *Network, h 
 }
 
 func ScriptRender(t string, c *Competition, e *Environment, i int, n *Network, h *Host, hn string) string {
+	if h == nil {
+		h = &Host{
+			Hostname: hn,
+		}
+	}
 	tmpl := Render(t, c, e, i, n, h)
 	filename := filepath.Join(e.TfScriptsDir(), fmt.Sprintf("%s%d_%s_%s", e.Prefix, i, hn, t))
 	err := ioutil.WriteFile(filename, tmpl, 0644)

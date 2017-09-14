@@ -16,6 +16,7 @@ type TemplateBuilder struct {
 	PodID       int
 	Network     *Network
 	Host        *Host
+	HostIndex   int
 }
 
 func (t *TemplateBuilder) EnvItemName(i interface{}, opts ...string) string {
