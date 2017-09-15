@@ -21,10 +21,6 @@ subdomain: {{ .Subdomain }}
 cidr: {{ .CIDR }}
 
 #########################################################
-# Provider (aws is the only supported option)
-provider: {{ .Provider }}
-
-#########################################################
 # Is this network suppose to be visible internally from
 # the VDI network?
 vdi_visible: true
