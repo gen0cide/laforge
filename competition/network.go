@@ -11,7 +11,6 @@ type Network struct {
 	CIDR          string `yaml:"cidr"`
 	Name          string `yaml:"name"`
 	Subdomain     string `yaml:"subdomain"`
-	Provider      string `yaml:"provider"`
 	VDIVisible    bool   `yaml:"vdi_visible"`
 	Vars          `yaml:"variables"`
 	IncludedHosts []string         `yaml:"included_hosts"`

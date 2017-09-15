@@ -20,7 +20,6 @@ type Environment struct {
 	WhitelistIPs     []string `yaml:"ip_whitelist"`
 	Vars             `yaml:"variables"`
 	AWSConfig        `yaml:"aws_config"`
-	GCPConfig        `yaml:"gcp_config"`
 	PodCount         int                 `yaml:"pod_count"`
 	Domain           string              `yaml:"domain"`
 	IncludedNetworks []string            `yaml:"included_networks"`
@@ -33,12 +32,6 @@ type Environment struct {
 }
 
 type AWSConfig struct {
-	CIDR   string `yaml:"cidr"`
-	Region string `yaml:"region"`
-	Zone   string `yaml:"zone"`
-}
-
-type GCPConfig struct {
 	CIDR   string `yaml:"cidr"`
 	Region string `yaml:"region"`
 	Zone   string `yaml:"zone"`

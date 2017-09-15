@@ -16,15 +16,6 @@ aws_creds:
   api_secret: ""
 
 #########################################################
-# Google Cloud Configuration
-# Generate a JSON credential file for GCP API.
-# Supply the absolute path to this file.
-# Also supply the project in GCP for the competition.
-gcp_creds:
-  credfile: ""
-  project: ""
-
-#########################################################
 # Route53 External Configuration
 # Provide a Route53 Zone ID
 # This Zone will be used to create records allowing

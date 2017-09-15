@@ -2,6 +2,7 @@ package competition
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -14,10 +15,10 @@ import (
 type Competition struct {
 	R53ZoneID    string `yaml:"external_r53_zone_id"`
 	AWSCred      `yaml:"aws_creds"`
-	GCPCred      `yaml:"gcp_creds"`
 	S3Config     `yaml:"s3_config"`
 	AdminIPs     []string `yaml:"admin_ips"`
 	RootPassword string   `yaml:"root_password"`
+	UserList     map[string][]User
 }
 
 type AWSCred struct {
@@ -30,13 +31,6 @@ type AWSCred struct {
 type S3Config struct {
 	Region string `yaml:"region"`
 	Bucket string `yaml:"bucket"`
-}
-
-type GCPCred struct {
-	CredFile string `yaml:"credfile"`
-	Project  string `yaml:"project"`
-	Region   string `yaml:"region"`
-	Zone     string `yaml:"zone"`
 }
 
 func (c *Competition) GetEnvs() map[*Environment]bool {
@@ -174,6 +168,10 @@ func (c *Competition) SSHPublicKeyPath() string {
 	return filepath.Join(GetHome(), "config", "infra.pem.pub")
 }
 
+func (c *Competition) EmployeeDBPath() string {
+	return filepath.Join(GetHome(), "config", "employees.json")
+}
+
 func (c *Competition) SSHPrivateKeyPath() string {
 	return filepath.Join(GetHome(), "config", "infra.pem")
 }
@@ -189,5 +187,22 @@ func LoadCompetition() (*Competition, error) {
 	if err != nil {
 		return nil, err
 	}
+	comp.UserList = LoadUsersFromDB(comp.EmployeeDBPath())
 	return &comp, nil
+}
+
+func LoadUsersFromDB(path string) map[string][]User {
+	if !PathExists(path) {
+		LogFatal("User Database does not exist at config/employees.json")
+	}
+	var users map[string][]User
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		LogFatal(err.Error())
+	}
+	err = json.Unmarshal(data, &users)
+	if err != nil {
+		panic(err)
+	}
+	return users
 }

@@ -24,5 +24,4 @@ func CmdBuild(c *cli.Context) {
 	ioutil.WriteFile(env.TfFile(), finalTFTemplate, 0644)
 
 	competition.Log("Wrote Terraform configuration to: " + env.TfFile())
-
 }

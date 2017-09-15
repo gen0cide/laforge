@@ -23,6 +23,20 @@ var (
 	seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
+func GetUsersForHost(c *Competition, h *Host) []User {
+	users := []User{}
+	for _, userGroup := range h.UserGroups {
+		for _, u := range c.UserList[userGroup] {
+			users = append(users, u)
+		}
+	}
+	return users
+}
+
+func GetUsersByOU(c *Competition, ou string) []User {
+	return c.UserList[ou]
+}
+
 func StringWithCharset(length int, charset string) string {
 	b := make([]byte, length)
 	for i := range b {
@@ -43,6 +57,8 @@ func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 		"CustomInternalCNAME": CustomInternalCNAME,
 		"CustomExternalCNAME": CustomExternalCNAME,
 		"MyIP":                GetPublicIP,
+		"GetUsersForHost":     GetUsersForHost,
+		"GetUsersByOU":        GetUsersByOU,
 	}
 
 	tmp := template.New(RandomString(entropySize))
@@ -76,6 +92,8 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 		"CustomInternalCNAME": CustomInternalCNAME,
 		"CustomExternalCNAME": CustomExternalCNAME,
 		"MyIP":                GetPublicIP,
+		"GetUsersForHost":     GetUsersForHost,
+		"GetUsersByOU":        GetUsersByOU,
 	}
 
 	tmp := template.New(RandomString(entropySize))

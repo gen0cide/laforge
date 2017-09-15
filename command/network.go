@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"regexp"
@@ -93,21 +92,10 @@ func CmdNetworkCreate(c *cli.Context) {
 		competition.LogFatal("Fatal Error: " + err.Error())
 	}
 
-	query = "Which provider should this network live in"
-	provider, err := ui.Select(query, []string{"aws", "gcp"}, &input.Options{
-		Required:  true,
-		Loop:      true,
-		HideOrder: true,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	network := competition.Network{
 		Name:      networkName,
 		Subdomain: subdomain,
 		CIDR:      cidr,
-		Provider:  provider,
 	}
 
 	comp, err := competition.LoadCompetition()

@@ -37,7 +37,8 @@ const (
 	// LF_ENV is the currently assigned LF environment
 	LF_ENV = "LF_ENV"
 
-	LF_ENV_FILE = ".lf_env"
+	LF_ENV_FILE   = ".lf_env"
+	SPECIAL_CHARS = "!@#$%^"
 )
 
 func GetHome() string {
@@ -425,7 +426,8 @@ func RandomPasswordFromSeed(seed int64) string {
 			idx++
 		}
 	}
-	return strings.Join(passWords, "-")
+	newPw := strings.Title(strings.Join(passWords, "-"))
+	return fmt.Sprintf("%s%s%d", newPw, string(SPECIAL_CHARS[r.Intn(len(SPECIAL_CHARS))]), r.Intn(9))
 }
 
 func GetPublicIP() string {

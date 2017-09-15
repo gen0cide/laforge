@@ -232,6 +232,7 @@ resource "aws_instance" "{{ $hostname }}" {
   instance_type = "{{ $.Environment.JumpHosts.Windows.Size }}"
   key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
+  ebs_optimized = true
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 20 $wjh }}
 
@@ -278,6 +279,7 @@ resource "aws_instance" "{{ $hostname }}" {
   instance_type = "{{ $.Environment.JumpHosts.Kali.Size }}"
   key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
+  ebs_optimized = true
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 30 $wjh }}
 
@@ -428,6 +430,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   instance_type = "{{ $host.InstanceSize }}"
   key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_{{ $network.Name }}.id}"
+  ebs_optimized = true
 
   private_ip = "{{ $hostIP }}"
 
