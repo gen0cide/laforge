@@ -426,7 +426,7 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
 # instance:{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}
 resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
-  ami = "{{ $host.AMI }}"
+  ami = "{{ $host.GetAMI }}"
   instance_type = "{{ $host.InstanceSize }}"
   key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_{{ $network.Name }}.id}"
@@ -453,7 +453,33 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
-  {{if eq $host.OS "windows" }}
+  {{if eq $host.OS "w2k16" }}
+    {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
+
+
+    user_data = "${file("{{ $script_path }}")}"
+
+    connection {
+      type     = "winrm"
+      user     = "Administrator"
+      password = "{{ $.Competition.RootPassword }}"
+    }
+  {{end}}
+
+  {{if eq $host.OS "w2k16sql" }}
+    {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
+
+
+    user_data = "${file("{{ $script_path }}")}"
+
+    connection {
+      type     = "winrm"
+      user     = "Administrator"
+      password = "{{ $.Competition.RootPassword }}"
+    }
+  {{end}}
+
+  {{if eq $host.OS "w2k12" }}
     {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
 
 
@@ -481,6 +507,9 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   {{end}}
 
   {{if eq $host.OS "centos" }}
+    {{ $script_path := ScriptRender "centos_uds.sh" $.Competition $.Environment $i $network $host $hostname}}
+
+    user_data = "${file("{{ $script_path }}")}"
 
     connection {
       type     = "ssh"
@@ -490,11 +519,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
   {{end}}
 
-  {{if eq $host.OS "freebsd" }}
+  {{if eq $host.OS "coreos" }}
 
     connection {
       type     = "ssh"
-      user     = "root"
+      user     = "core"
       private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
     }
 

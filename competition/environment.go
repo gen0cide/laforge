@@ -118,6 +118,9 @@ func (e *Environment) ParseHosts() map[string]*Host {
 	hosts := make(map[string]*Host)
 	hostFiles, _ := filepath.Glob(filepath.Join(e.HostsDir(), "*.yml"))
 	for _, file := range hostFiles {
+		if filepath.Base(file) == ".gitkeep" {
+			continue
+		}
 		host, err := LoadHostFromFile(file)
 		if err != nil {
 			LogError("Error reading host file: " + file)
@@ -133,6 +136,9 @@ func (e *Environment) ParseNetworks() map[string]*Network {
 	networks := make(map[string]*Network)
 	networkFiles, _ := filepath.Glob(filepath.Join(e.NetworksDir(), "*.yml"))
 	for _, file := range networkFiles {
+		if filepath.Base(file) == ".gitkeep" {
+			continue
+		}
 		network, err := LoadNetworkFromFile(file)
 		if err != nil {
 			LogError("Error reading network file: " + file)
@@ -148,6 +154,9 @@ func (e *Environment) ResolveIncludedNetworks() map[string]*Network {
 	networks := make(map[string]*Network)
 	networkFiles, _ := filepath.Glob(filepath.Join(e.NetworksDir(), "*.yml"))
 	for _, file := range networkFiles {
+		if filepath.Base(file) == ".gitkeep" {
+			continue
+		}
 		if !Contains(FileToName(file), e.IncludedNetworks) {
 			continue
 		}
@@ -247,12 +256,12 @@ func (e *Environment) KaliJumpAMI() string {
 	if e.JumpHosts.Kali.AMI != "" {
 		return e.JumpHosts.Kali.AMI
 	}
-	return "${data.aws_ami.ubuntu.id}"
+	return AMIMap["ubuntu"].Regions[e.AWSConfig.Region]
 }
 
 func (e *Environment) WindowsJumpAMI() string {
 	if e.JumpHosts.Windows.AMI != "" {
 		return e.JumpHosts.Windows.AMI
 	}
-	return "${data.aws_ami.ubuntu.id}"
+	return AMIMap["w2k16"].Regions[e.AWSConfig.Region]
 }

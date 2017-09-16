@@ -226,9 +226,11 @@ func CreateHome() {
 	os.MkdirAll(filepath.Join(GetHome(), "config"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "scripts"), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "files"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "files", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "apps"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "apps", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "utils"), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetHome(), "users"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "utils", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments"), os.ModePerm)
 	err := MakeSSHKeyPair(filepath.Join(GetHome(), "config", "infra.pem.pub"), filepath.Join(GetHome(), "config", "infra.pem"))
 	if err != nil {
@@ -251,7 +253,6 @@ func HomeValid() bool {
 	//   files (folder)
 	//   apps (folder)
 	//   utils (folder)
-	//   users (folder)
 	//   environments (folder)
 
 	homeValid := true
@@ -288,10 +289,6 @@ func HomeValid() bool {
 		LogError("No utils/ located in LF_HOME")
 		homeValid = false
 	}
-	if !PathExists(path.Join(GetHome(), "users")) {
-		LogError("No users/ located in LF_HOME")
-		homeValid = false
-	}
 	if !PathExists(path.Join(GetHome(), "environments")) {
 		LogError("No environments/ located in LF_HOME")
 		homeValid = false
@@ -311,7 +308,6 @@ func EnvValid() bool {
 	//   hosts (folder)
 	//   networks (folder)
 	//   env.yml
-	//   history.log
 
 	envValid := true
 

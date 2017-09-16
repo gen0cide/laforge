@@ -15,13 +15,18 @@ hostname: {{ .Hostname }}
 
 #########################################################
 # Operating System (Required for proper Conn Types)
-# Valid: windows, ubuntu, centos, freebsd
+# ** Case Sensitive **
+# Valid: ubuntu, centos, coreos, w2k16, w2k16sql, w2k12
 os: ubuntu
 
 #########################################################
-# AMI ID
+# AMI ID (Optional - auto populates otherwise)
+#
 # This should be the AMI ID of the host you're using
-ami: theamiid
+# You should not need to fill this out unless you have a
+# AMI ID you want to use for this image. Make sure the
+# Base OS aligns with the above described "os".
+ami:
 
 #########################################################
 # What is the last octet of the internal IP address?
@@ -35,11 +40,6 @@ last_octet: {{ .LastOctet }}
 #    pod_domain=foo.com, network=bar, cname=baz
 #    CNAME will point to baz.bar.foo.com
 internal_cnames: []
-
-#########################################################
-# Should this host have a publicly available IP address
-# or should the host go through the NAT gateway?
-# has_public_ip: false
 
 #########################################################
 # Should an external CNAME exist for this host on it's
@@ -58,10 +58,6 @@ instance_size: {{ .InstanceSize }}
 #########################################################
 # Scripts to run at instance creation
 scripts: []
-
-#########################################################
-# Override default admin password? (Administrator on windows, root on *nix)
-admin_password: ""
 
 #########################################################
 # What users should be created as local users on this host?

@@ -1,10 +1,32 @@
 package competition
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
 	yaml "gopkg.in/yaml.v2"
 )
+
+var (
+	AMIMap map[string]*AMI
+)
+
+type AMI struct {
+	OS       string            `json:"os"`
+	Regions  map[string]string `json:"regions"`
+	Username string            `json:"username"`
+}
+
+func LoadAMIs() {
+	var amis []*AMI
+	amiMap := make(map[string]*AMI)
+	json.Unmarshal(MustAsset("amis.json"), &amis)
+	for _, a := range amis {
+		amiMap[a.OS] = a
+	}
+	AMIMap = amiMap
+}
 
 type Host struct {
 	Hostname       string   `yaml:"hostname"`
@@ -14,7 +36,6 @@ type Host struct {
 	LastOctet      int      `yaml:"last_octet"`
 	InternalCNAMEs []string `yaml:"internal_cnames"`
 	ExternalCNAMEs []string `yaml:"external_cnames"`
-	AdminPassword  string   `yaml:"admin_password"`
 	TCPPorts       []int    `yaml:"public_tcp"`
 	UDPPorts       []int    `yaml:"public_udp"`
 	Scripts        []string `yaml:"scripts"`
@@ -22,6 +43,17 @@ type Host struct {
 	UserGroups     []string `yaml:"user_groups"`
 	Vars           `yaml:"variables"`
 	Network        `yaml:"-"`
+}
+
+func (h *Host) GetAMI() string {
+	if len(h.AMI) > 0 {
+		return h.AMI
+	}
+	if _, ok := AMIMap[h.OS]; ok {
+		return AMIMap[h.OS].Regions[h.Network.Environment.AWSConfig.Region]
+	}
+	LogFatal(fmt.Sprintf("OS is invalid for host! host=%s os=%s", h.Hostname, h.OS))
+	return ""
 }
 
 func LoadHostFromFile(file string) (*Host, error) {

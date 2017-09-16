@@ -106,8 +106,11 @@ func (c *Competition) CreateEnv(name, prefix string) {
 		Prefix: prefix,
 	}
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "terraform", "scripts"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "environments", name, "terraform", "scripts", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "networks"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "environments", name, "networks", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "hosts"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "environments", name, "hosts", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	var tpl bytes.Buffer
 	tmpl, err := template.New(name).Parse(string(MustAsset("env.yml")))
 	if err != nil {
@@ -145,6 +148,9 @@ func (c *Competition) ParseScripts() map[string]*Script {
 	scripts := make(map[string]*Script)
 	scriptFiles, _ := filepath.Glob(filepath.Join(GetHome(), "scripts", "*"))
 	for _, file := range scriptFiles {
+		if filepath.Base(file) == ".gitkeep" {
+			continue
+		}
 		script, err := LoadScript(file)
 		if err != nil {
 			continue
@@ -179,6 +185,7 @@ func (c *Competition) SSHPrivateKeyPath() string {
 func LoadCompetition() (*Competition, error) {
 	ValidateHome()
 	comp := Competition{}
+	LoadAMIs()
 	compConfig, err := ioutil.ReadFile(filepath.Join(GetHome(), "config", "config.yml"))
 	if err != nil {
 		return nil, err

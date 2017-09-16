@@ -2,21 +2,80 @@
 
 Competition infrastructure management for the cloud.
 
+![laforge](http://vignette4.wikia.nocookie.net/p__/images/0/04/GeordiLaForge.jpg/revision/latest?cb=20151015040039&path-prefix=protagonist)
+
 ## Description
 
-This is a WIP. Basic structure is ported from the private Ruby version.
+LaForge is a command line tool I developed to automate creating competition infrastructure. It automates and abstracts much of the terraform config writing into CLI and YAML.
+
+At this time, LaForge only works on OS X and Linux systems.
 
 ## Usage
 
-Do not use this at this time.
+If you are starting from scratch, download the binary and place it in your path.
+
+After that, you can run:
+
+```
+$ laforge init
+```
+
+This will walk you through a wizard to create a LaForge base directory and save it to `~/.lf_home`. This file will be referenced by LaForge to find your base directory for all subsequent commands.
+
+After that, you can list the environments:
+
+```
+$ laforge env ls
+```
+
+You should see no environments. You should create one now:
+
+```
+$ laforge env create
+```
+
+Afterwards, you can use the following commands to list and create a network and a host.
+
+```
+$ laforge network ls
+$ laforge network create
+$ laforge host ls
+$ laforge host create
+```
+
+**NOTE** - Make sure to read through ALL the YAML files created by laforge. There are required settings in some of them.
+
+When you are ready to deploy your configuration, start by issuing the `build` subcommand:
+
+```
+$ laforge build
+```
+
+This will generate the `terraform/infra.tf` file as well as the `terraform/scripts` files needed by terraform. If this step fails, you have a bug in your configurations, or you have discovered a laforge bug!
+
+When you want to use `terraform`, laforge aliases some subcommands to help you know what to run. None of these commands will be executed, it just prints the command you should run to the console.
+
+```
+$ laforge tf plan
+$ laforge tf apply
+$ laforge tf destroy
+$ laforge tf nuke
+```
+
+You might need to install terraform plugins (AWS provider for example). This is a one time thing and can be done by issuing a `terraform get` command in your `terraform` root.
 
 ## Install
 
-To install, use `go get`:
+Download a release binary to a place in your `$PATH`.
 
-```bash
-$ go get -d github.com/gen0cide/laforge
-```
+## Known Issues
+There are a few unimplemented subcommands:
+
+ * `app` - Will be for package management.
+ * `ssh` - Will eventually allow direct connection to hosts.
+ * `doctor` - Will eventually troubleshoot issues in your environment.
+ * `cd` - Will eventually drop you into locations in your filesystem.
+ * `tf`* - Partially completed. Eventually will wrap terraform for you.
 
 ## Contribution
 

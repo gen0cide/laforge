@@ -21,9 +21,9 @@ subdomain: {{ .Subdomain }}
 cidr: {{ .CIDR }}
 
 #########################################################
-# Is this network suppose to be visible internally from
-# the VDI network?
-vdi_visible: true
+# Is this network suppose to be fully open FWs to
+# the VDI network? (Excludes public_* ports - those are)
+vdi_visible: false
 
 #########################################################
 # Variables for the specific network.
