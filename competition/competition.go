@@ -41,6 +41,9 @@ func (c *Competition) GetEnvs() map[*Environment]bool {
 		if f.Name() == ".DS_Store" {
 			continue
 		}
+		if f.Name() == ".gitkeep" {
+			continue
+		}
 		e, err := LoadEnvironment(f.Name())
 		if err != nil {
 			LogError("Error parsing environments list: " + err.Error())
@@ -62,6 +65,9 @@ func (c *Competition) EnvMap() map[string]*Environment {
 	files, _ := ioutil.ReadDir(filepath.Join(GetHome(), "environments", "."))
 	for _, f := range files {
 		if f.Name() == ".DS_Store" {
+			continue
+		}
+		if f.Name() == ".gitkeep" {
 			continue
 		}
 		e, err := LoadEnvironment(f.Name())
@@ -200,7 +206,7 @@ func LoadCompetition() (*Competition, error) {
 
 func LoadUsersFromDB(path string) map[string][]User {
 	if !PathExists(path) {
-		LogFatal("User Database does not exist at config/employees.json")
+		LogError("User Database does not exist at config/employees.json")
 	}
 	var users map[string][]User
 	data, err := ioutil.ReadFile(path)

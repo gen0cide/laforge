@@ -224,7 +224,9 @@ func Contains(a string, list []string) bool {
 func CreateHome() {
 	os.MkdirAll(GetHome(), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "config"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "config", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "scripts"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "scripts", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "files"), os.ModePerm)
 	os.OpenFile(filepath.Join(GetHome(), "files", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "apps"), os.ModePerm)
@@ -232,6 +234,7 @@ func CreateHome() {
 	os.MkdirAll(filepath.Join(GetHome(), "utils"), os.ModePerm)
 	os.OpenFile(filepath.Join(GetHome(), "utils", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "environments", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	err := MakeSSHKeyPair(filepath.Join(GetHome(), "config", "infra.pem.pub"), filepath.Join(GetHome(), "config", "infra.pem"))
 	if err != nil {
 		LogError("Error generating SSH Key: " + err.Error())
