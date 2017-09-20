@@ -10,7 +10,7 @@ builds:
       - linux
     goarch:
       - amd64
-    ldflags: -s -w -X main.Name={{.Name}} -X main.Version={{.Version}} -X main.ReleaseDate={{.Date}} -X main.CommitRef={{.Commit}}
+    ldflags: -s -w -X main.Version={{.Version}} -X main.ReleaseDate={{.Date}} -X main.CommitRef={{.Commit}}
 # Archive customization
 archive:
   format: zip
