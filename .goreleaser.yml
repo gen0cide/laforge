@@ -1,5 +1,6 @@
 # .goreleaser.yml
 # Build customization
+project_name: laforge
 builds:
   - main: main.go
     binary: laforge
@@ -9,6 +10,7 @@ builds:
       - linux
     goarch:
       - amd64
+    ldflags: -s -w -X main.Name={{.ProjectName}} -X main.Version={{.Version}} -X main.ReleaseDate={{.Date}} -X main.CommitRef={{.Commit}}
 # Archive customization
 archive:
   format: zip
