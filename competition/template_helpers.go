@@ -138,6 +138,42 @@ func EmbedRender(t string, c *Competition, e *Environment, i int, n *Network, h 
 	return filename
 }
 
+func StringRender(t string, c *Competition, e *Environment, i int, n *Network, h *Host) string {
+	tb := TemplateBuilder{
+		Competition: c,
+		Environment: e,
+		PodID:       i,
+		Network:     n,
+		Host:        h,
+	}
+
+	tmplFuncs := template.FuncMap{
+		"N":                   iter.N,
+		"CustomIP":            CustomIP,
+		"CustomInternalCNAME": CustomInternalCNAME,
+		"CustomExternalCNAME": CustomExternalCNAME,
+		"MyIP":                GetPublicIP,
+		"GetUsersForHost":     GetUsersForHost,
+		"GetUsersByOU":        GetUsersByOU,
+	}
+
+	tmp := template.New(RandomString(entropySize))
+
+	tmp.Funcs(tmplFuncs)
+	newTmpl, err := tmp.Parse(t)
+	if err != nil {
+		panic(err)
+	}
+
+	var tpl bytes.Buffer
+
+	if err := newTmpl.Execute(&tpl, tb); err != nil {
+		panic(err)
+	}
+
+	return tpl.String()
+}
+
 func ScriptRender(t string, c *Competition, e *Environment, i int, n *Network, h *Host, hn string) string {
 	if h == nil {
 		h = &Host{

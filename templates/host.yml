@@ -1,5 +1,5 @@
 #########################################################
-## LaForge NETWORK Config
+## LaForge HOST Config
 ## 
 ## This file is unique to your competition environment.
 ## These values will only effect objects in this environment.
@@ -75,3 +75,26 @@ public_tcp: []
 #########################################################
 # List of public UDP ports to be exposed
 public_udp: []
+
+#########################################################
+# Host Dependencies
+# -- Uncomment and fill out array if you wish to specify
+# -- hosts that should be built BEFORE this host.
+# -- Note this is a YAML array of { host: "", network: "" }
+#
+# dependencies:
+#   -
+#     host: dc01
+#     network: corp
+
+#########################################################
+# Host Dependencies
+# -- Uncomment and fill out array if you wish to specify
+# -- hosts that should be built BEFORE this host.
+# -- Note this is a YAML array of { name: "", value: "" , type: ""}
+#
+# dns_entries:
+#   -
+#     name: AmazonTest-{{ $.Host.Hostname }}-{{ $.Environment.Prefix }}{{ $.PodID }}.{{ $.Network.Subdomain }}.{{ $.Environment.Domain }}
+#     value: 127.0.0.1
+#     type: A

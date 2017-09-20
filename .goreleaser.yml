@@ -1,0 +1,14 @@
+# .goreleaser.yml
+# Build customization
+builds:
+  - main: main.go
+    binary: laforge
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+# Archive customization
+archive:
+  format: zip

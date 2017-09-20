@@ -538,11 +538,24 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{end}}
     ]
   }
+
+  {{ $depLen := len $host.Dependencies }}
+  {{if gt $depLen 0}}
+
+    depends_on = [
+      {{ range $_, $dependency := $host.Dependencies }}
+        "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
+      {{end}}
+    ]
+
+  {{end}}
 }
 
 output "public_ips.{{ $id }}.{{ $network.Subdomain }}.{{ $hostname }}" {
   value = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.public_ip}"
 }
+
+{{ $fullHostname := printf "%s-%s" $hostname $id }}
 
 {{ $fqdn := printf "%s-%s.%s.%s" $hostname $id $network.Subdomain $.Environment.Domain }}
 
@@ -555,6 +568,20 @@ resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname
     "{{ $hostIP }}"
   ]
 }
+
+{{ range $dnsIdx, $dnsEntry := $host.RenderedDNSEntries $i }}
+
+resource "aws_route53_record" "{{ $id }}_dns_record_{{ $dnsIdx }}" {
+  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
+  name    = "{{ $dnsEntry.Name }}"
+  type    = "{{ $dnsEntry.Type }}"
+  ttl     = "60"
+  records = [
+    "{{ $dnsEntry.Value }}"
+  ]
+}
+
+{{end}}
 
 {{ range $_, $cname := $host.InternalCNAMEs }}
 
