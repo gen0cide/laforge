@@ -2,15 +2,14 @@
 # Build customization
 project_name: laforge
 builds:
-  - main: main.go
-    binary: laforge
+  - binary: laforge
     goos:
       - windows
       - darwin
       - linux
     goarch:
       - amd64
-    ldflags: -s -w
+    ldflags: -s
     hooks:
       pre: go-bindata -nometadata -pkg competition -prefix templates/ -o competition/bindata.go templates templates/terraform
 # Archive customization
