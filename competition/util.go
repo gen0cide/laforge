@@ -42,10 +42,6 @@ const (
 )
 
 func GetHome() string {
-	val := os.Getenv(LF_HOME)
-	if len(val) > 1 {
-		return val
-	}
 	u, err := user.Current()
 	if err != nil {
 		LogFatal("Error getting current user: " + err.Error())
@@ -65,10 +61,6 @@ func GetHome() string {
 }
 
 func GetEnv() string {
-	val := os.Getenv(LF_ENV)
-	if len(val) > 1 {
-		return val
-	}
 	u, err := user.Current()
 	if err != nil {
 		LogFatal("Error getting current user: " + err.Error())
@@ -88,7 +80,6 @@ func GetEnv() string {
 }
 
 func SetHome(val string) {
-	os.Setenv(LF_HOME, val)
 	u, err := user.Current()
 	if err != nil {
 		LogFatal("Error getting current user: " + err.Error())
@@ -101,7 +92,6 @@ func SetHome(val string) {
 }
 
 func SetEnv(val string) {
-	os.Setenv(LF_ENV, val)
 	u, err := user.Current()
 	if err != nil {
 		LogFatal("Error getting current user: " + err.Error())
@@ -389,16 +379,7 @@ func LogEnvs(envs map[*Environment]bool) {
 }
 
 func DictionaryWords() (words []string) {
-	file, err := os.Open("/usr/share/dict/words")
-	if err != nil {
-		LogFatal(err.Error())
-	}
-
-	bytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		LogFatal(err.Error())
-	}
-
+	file := MustAsset("dictionary.dat")
 	words = strings.Split(string(bytes), "\n")
 	return
 }

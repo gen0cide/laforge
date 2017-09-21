@@ -18,7 +18,6 @@ func CmdInit(c *cli.Context) {
 	query := "What directory would you like to set LF_HOME to?"
 	newHome, err := ui.Ask(query, &input.Options{
 		// Read the default val from env var
-		Default:  os.Getenv("LF_HOME"),
 		Required: true,
 		Loop:     true,
 	})

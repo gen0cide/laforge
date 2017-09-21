@@ -9,7 +9,10 @@ import (
 
 func CmdSsh(c *cli.Context) {
 	TFCheck()
-	this := "alextest-a0"
-	dp := competition.DeterminedPassword(this)
+	hostName := c.Args().Get(0)
+	if len(hostName) < 1 {
+		competition.LogFatal("You did not provide an environment to use.")
+	}
+	dp := competition.DeterminedPassword(hostName)
 	competition.Log(fmt.Sprintf("Determined Password: %s", dp))
 }
