@@ -380,7 +380,7 @@ func LogEnvs(envs map[*Environment]bool) {
 
 func DictionaryWords() (words []string) {
 	file := MustAsset("dictionary.dat")
-	words = strings.Split(string(bytes), "\n")
+	words = strings.Split(string(file), "\n")
 	return
 }
 
