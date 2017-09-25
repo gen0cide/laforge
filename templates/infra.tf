@@ -253,6 +253,22 @@ resource "aws_instance" "{{ $hostname }}" {
     Network = "{{ $id }}-vdi"
     Team = "{{ $id }}"
   }
+
+  connection {
+    type     = "winrm"
+    user     = "Administrator"
+    timeout  = "15m"
+    password = "{{ $.Environment.PodPassword $.PodID }}"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      {{range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
+        {{ $script_path := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+        "{{ $script_path }}",
+      {{end}}
+    ]
+  }
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
@@ -299,6 +315,22 @@ resource "aws_instance" "{{ $hostname }}" {
     Environment = "{{ $.Environment.Name }}"
     Network = "{{ $id }}-vdi"
     Team = "{{ $id }}"
+  }
+
+  connection {
+    type     = "ssh"
+    user     = "root"
+    timeout  = "15m"
+    private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      {{range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
+        {{ $script_path := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+        "{{ $script_path }}",
+      {{end}}
+    ]
   }
 }
 
