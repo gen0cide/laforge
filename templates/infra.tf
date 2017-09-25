@@ -462,6 +462,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
+      timeout  = "15m"
       password = "{{ $.Competition.RootPassword }}"
     }
   {{end}}
@@ -475,6 +476,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
+      timeout  = "15m"
       password = "{{ $.Competition.RootPassword }}"
     }
   {{end}}
@@ -488,6 +490,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
+      timeout  = "15m"
       password = "{{ $.Competition.RootPassword }}"
     }
   {{end}}
@@ -501,6 +504,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "ssh"
       user     = "root"
+      timeout  = "15m"
       private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
     }
 
@@ -514,6 +518,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "ssh"
       user     = "root"
+      timeout  = "15m"
       private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
     }
 
