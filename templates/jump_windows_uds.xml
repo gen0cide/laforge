@@ -1,6 +1,4 @@
 <powershell>
-  {{ $hn := printf "%s-%s%d.%s.vdi.%s" $.Host.Hostname $.Environment.Prefix $.PodID $.Environment.Name $.Environment.Domain }}
-  Rename-Computer -NewName {{ $.Host.Hostname }}
   secedit /export /cfg c:\secpol.cfg
   (gc C:\secpol.cfg).replace("PasswordComplexity = 1", "PasswordComplexity = 0") | Out-File C:\secpol.cfg
   secedit /configure /db c:\windows\security\local.sdb /cfg c:\secpol.cfg /areas SECURITYPOLICY
@@ -12,5 +10,5 @@
   winrm set winrm/config/service '@{AllowUnencrypted="true"}'
   winrm set winrm/config/service/auth '@{Basic="true"}'
   netsh advfirewall firewall add rule name="WinRM in" protocol=TCP dir=in profile=any localport=5985 remoteip=any localip=any action=allow
-  netdom renamecomputer "$env:COMPUTERNAME" /Newname "{{ $hn }}" /Force /REboot 0
+  netdom renamecomputer "$env:COMPUTERNAME" /Newname "{{ $.Host.Hostname }}" /Force /REboot 0
 </powershell>
