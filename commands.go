@@ -18,6 +18,34 @@ var Commands = []cli.Command{
 		Flags:  []cli.Flag{},
 	},
 	{
+		Name:   "cdn",
+		Usage:  "Manipulate files in the CDN.",
+		Action: command.CmdCDN,
+		Flags:  []cli.Flag{},
+		Subcommands: []cli.Command{
+			{
+				Name:   "ls",
+				Usage:  "List files in the CDN.",
+				Action: command.CmdCDNLs,
+			},
+			{
+				Name:   "link",
+				Usage:  "Get the public URL for a file in the CDN.",
+				Action: command.CmdCDNLink,
+			},
+			{
+				Name:   "upload",
+				Usage:  "Upload a file to the CDN.",
+				Action: command.CmdCDNUpload,
+			},
+			{
+				Name:   "rm",
+				Usage:  "Delete a file from the CDN.",
+				Action: command.CmdCDNRm,
+			},
+		},
+	},
+	{
 		Name:   "doctor",
 		Usage:  "Check to see if you have the required dependencies to use LaForge.",
 		Action: command.CmdDoctor,

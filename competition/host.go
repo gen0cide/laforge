@@ -37,8 +37,8 @@ type Host struct {
 	LastOctet      int          `yaml:"last_octet"`
 	InternalCNAMEs []string     `yaml:"internal_cnames"`
 	ExternalCNAMEs []string     `yaml:"external_cnames"`
-	TCPPorts       []int        `yaml:"public_tcp"`
-	UDPPorts       []int        `yaml:"public_udp"`
+	TCPPorts       []string     `yaml:"public_tcp"`
+	UDPPorts       []string     `yaml:"public_udp"`
 	Scripts        []string     `yaml:"scripts"`
 	UserGroups     []string     `yaml:"user_groups"`
 	DNSEntries     []DNSEntry   `yaml:"dns_entries"`

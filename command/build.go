@@ -2,6 +2,7 @@ package command
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
@@ -15,6 +16,9 @@ func CmdBuild(c *cli.Context) {
 		Environment: env,
 		Competition: comp,
 	}
+
+	os.RemoveAll(env.TfScriptsDir())
+	os.MkdirAll(env.TfScriptsDir(), 0755)
 
 	finalTFTemplate, err := printer.Format(competition.RenderTB("infra.tf", &tb))
 	if err != nil {

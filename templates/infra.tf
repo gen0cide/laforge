@@ -139,8 +139,8 @@ resource "aws_security_group" "{{ $id }}_base" {
   }
 
   ingress {
-    from_port = 8
-    to_port = 0
+    from_port = 0
+    to_port = 8
     protocol = "icmp"
     self = true
   }
@@ -222,7 +222,7 @@ resource "aws_security_group_rule" "{{ $id }}_admin_callback" {
 
 {{range $wjh, $_ := N $.Environment.JumpHosts.Windows.Count }}
 
-{{ $hostname := printf "%s-jump-win-%d" $id $wjh }}
+{{ $hostname := printf "windowsvdi0%d-%s" $wjh $id }}
 
 {{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
 
@@ -285,7 +285,7 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
 
 {{range $wjh, $_ := N $.Environment.JumpHosts.Kali.Count }}
 
-{{ $hostname := printf "%s-jump-kali-%d" $id $wjh }}
+{{ $hostname := printf "kalivdi0%d-%s" $wjh $id }}
 
 {{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
 
@@ -318,8 +318,8 @@ resource "aws_instance" "{{ $hostname }}" {
   }
 
   connection {
-    type     = "ssh"
-    user     = "root"
+    type     = "ssh"  
+    user     = "ec2-user"
     timeout  = "15m"
     private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
   }
@@ -347,24 +347,24 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
 {{end}}
 
 
-{{range $port, $_ := $.Environment.ResolvePublicTCP }}
+{{range $port, $securityGroup := $.Environment.ResolvePublicTCP }}
 
-resource "aws_security_group" "{{ $id }}_public_sg_tcp_{{ $port }}" {
-  name = "{{ $id }}_public_sg_tcp_{{ $port }}"
-  description = "Laforge - {{ $id }}_public tcp/{{ $port }} SG"
+resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}" {
+  name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
+  description = "Laforge - {{ $id }}_public {{ $securityGroup.Protocol }}/{{ $port }} SG"
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
 
   ingress {
-    from_port = {{ $port }}
-    to_port = {{ $port }}
-    protocol = "tcp"
+    from_port = {{ $securityGroup.FromPort }}
+    to_port = {{ $securityGroup.ToPort }}
+    protocol = "{{ $securityGroup.Protocol }}"
     security_groups = [
       "${aws_security_group.{{ $id }}_base.id}",
     ]
   }
 
   tags {
-    Name = "{{ $id }}_public_sg_tcp_{{ $port }}"
+    Name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
     Environment = "{{ $.Environment.Name }}"
     Team = "{{ $id }}"
   }
@@ -372,28 +372,29 @@ resource "aws_security_group" "{{ $id }}_public_sg_tcp_{{ $port }}" {
 
 {{end}}
 
-{{range $port, $_ := $.Environment.ResolvePublicUDP }}
+{{range $port, $securityGroup := $.Environment.ResolvePublicUDP }}
 
-resource "aws_security_group" "{{ $id }}_public_sg_udp_{{ $port }}" {
-  name = "{{ $id }}_public_sg_udp_{{ $port }}"
-  description = "Laforge - {{ $id }}_public udp/{{ $port }} SG"
+resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}" {
+  name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
+  description = "Laforge - {{ $id }}_public {{ $securityGroup.Protocol }}/{{ $port }} SG"
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
 
   ingress {
-    from_port = {{ $port }}
-    to_port = {{ $port }}
-    protocol = "udp"
+    from_port = {{ $securityGroup.FromPort }}
+    to_port = {{ $securityGroup.ToPort }}
+    protocol = "{{ $securityGroup.Protocol }}"
     security_groups = [
       "${aws_security_group.{{ $id }}_base.id}",
     ]
   }
 
   tags {
-    Name = "{{ $id }}_public_sg_tcp_{{ $port }}"
+    Name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
     Environment = "{{ $.Environment.Name }}"
     Team = "{{ $id }}"
   }
 }
+
 
 {{end}}
 

@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
@@ -51,6 +53,12 @@ type JumpHosts struct {
 		Size    string   `yaml:"size"`
 		Scripts []string `yaml:"scripts"`
 	} `yaml:"kali"`
+}
+
+type SecurityGroup struct {
+	Protocol string
+	FromPort int
+	ToPort   int
 }
 
 func (e *Environment) EnvRoot() string {
@@ -172,28 +180,90 @@ func (e *Environment) ResolveIncludedNetworks() map[string]*Network {
 	return networks
 }
 
-func (e *Environment) ResolvePublicTCP() map[int]bool {
-	portMap := map[int]bool{}
+func (e *Environment) ResolvePublicTCP() map[string]SecurityGroup {
+	portMap := map[string]SecurityGroup{}
 	networks := e.ResolveIncludedNetworks()
 	for _, network := range networks {
 		hosts := network.ResolveIncludedHosts()
 		for _, host := range hosts {
 			for _, port := range host.TCPPorts {
-				portMap[port] = true
+				i, err := strconv.Atoi(port)
+				if err == nil {
+					portMap[port] = SecurityGroup{
+						Protocol: "tcp",
+						FromPort: i,
+						ToPort:   i,
+					}
+					continue
+				} else {
+					matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+					if err == nil && matched {
+						portRange := strings.Split(port, "-")
+						fp, err := strconv.Atoi(portRange[0])
+						if err != nil {
+							LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp", port, host.Hostname))
+							continue
+						}
+						tp, err := strconv.Atoi(portRange[1])
+						if err != nil {
+							LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp", port, host.Hostname))
+							continue
+						}
+						portMap[port] = SecurityGroup{
+							Protocol: "tcp",
+							FromPort: fp,
+							ToPort:   tp,
+						}
+						continue
+					}
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp", port, host.Hostname))
+					continue
+				}
 			}
 		}
 	}
 	return portMap
 }
 
-func (e *Environment) ResolvePublicUDP() map[int]bool {
-	portMap := map[int]bool{}
+func (e *Environment) ResolvePublicUDP() map[string]SecurityGroup {
+	portMap := map[string]SecurityGroup{}
 	networks := e.ResolveIncludedNetworks()
 	for _, network := range networks {
 		hosts := network.ResolveIncludedHosts()
 		for _, host := range hosts {
 			for _, port := range host.UDPPorts {
-				portMap[port] = true
+				i, err := strconv.Atoi(port)
+				if err == nil {
+					portMap[port] = SecurityGroup{
+						Protocol: "udp",
+						FromPort: i,
+						ToPort:   i,
+					}
+					continue
+				} else {
+					matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+					if err == nil && matched {
+						portRange := strings.Split(port, "-")
+						fp, err := strconv.Atoi(portRange[0])
+						if err != nil {
+							LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=udp", port, host.Hostname))
+							continue
+						}
+						tp, err := strconv.Atoi(portRange[1])
+						if err != nil {
+							LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=udp", port, host.Hostname))
+							continue
+						}
+						portMap[port] = SecurityGroup{
+							Protocol: "udp",
+							FromPort: fp,
+							ToPort:   tp,
+						}
+						continue
+					}
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=udp", port, host.Hostname))
+					continue
+				}
 			}
 		}
 	}
@@ -256,7 +326,7 @@ func (e *Environment) KaliJumpAMI() string {
 	if e.JumpHosts.Kali.AMI != "" {
 		return e.JumpHosts.Kali.AMI
 	}
-	return AMIMap["ubuntu"].Regions[e.AWSConfig.Region]
+	return AMIMap["kali"].Regions[e.AWSConfig.Region]
 }
 
 func (e *Environment) WindowsJumpAMI() string {

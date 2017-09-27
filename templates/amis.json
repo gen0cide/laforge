@@ -52,5 +52,14 @@
       "us-west-2": "ami-5e6f9b26"
     },
     "username": "core"    
+  },
+  {
+    "os": "kali",
+    "regions": {
+      "us-east-1": "ami-bf7870c4",
+      "us-east-2": "ami-10b19275",
+      "us-west-2": "ami-3fcd2747"
+    },
+    "username": "ec2-user"
   }
 ]

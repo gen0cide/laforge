@@ -10,14 +10,10 @@ func TestCmdCDNLs(t *testing.T) {
 	// Write your code here
 }
 
-func TestCmdCDNLink(t *testing.T) {
+func TestCmdEnvUse(t *testing.T) {
 	// Write your code here
 }
 
-func TestCmdCDNUpload(t *testing.T) {
-	// Write your code here
-}
-
-func TestCmdCDNRm(t *testing.T) {
+func TestCmdEnvCreate(t *testing.T) {
 	// Write your code here
 }
