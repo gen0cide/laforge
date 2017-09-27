@@ -197,6 +197,11 @@ var Commands = []cli.Command{
 			},
 		},
 	},
+	{
+		Name:   "update",
+		Usage:  "Updates laforge to your the latest release.",
+		Action: command.CmdUpdate,
+	},
 }
 
 func CommandNotFound(c *cli.Context, command string) {
