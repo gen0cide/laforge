@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"regexp"
+	"strconv"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -45,6 +47,42 @@ type Host struct {
 	Dependencies   []Dependency `yaml:"dependencies"`
 	Vars           `yaml:"variables"`
 	Network        `yaml:"-"`
+}
+
+func (h *Host) ValidTCPPorts() []string {
+	ports := []string{}
+	for _, port := range h.TCPPorts {
+		_, err := strconv.Atoi(port)
+		if err == nil {
+			ports = append(ports, port)
+			continue
+		} else {
+			matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+			if err == nil && matched {
+				ports = append(ports, port)
+				continue
+			}
+		}
+	}
+	return ports
+}
+
+func (h *Host) ValidUDPPorts() []string {
+	ports := []string{}
+	for _, port := range h.UDPPorts {
+		_, err := strconv.Atoi(port)
+		if err == nil {
+			ports = append(ports, port)
+			continue
+		} else {
+			matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+			if err == nil && matched {
+				ports = append(ports, port)
+				continue
+			}
+		}
+	}
+	return ports
 }
 
 func (h *Host) RenderedDNSEntries(podOffset int) []DNSEntry {

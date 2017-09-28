@@ -1,7 +1,9 @@
 package command
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
@@ -65,4 +67,31 @@ func CmdEnvCreate(c *cli.Context) {
 		competition.LogFatal("Cannot Load LF_HOME: " + err.Error())
 	}
 	comp.CreateEnv(newEnvName, newEnvPrefix)
+}
+
+func CmdEnvBashConfig(c *cli.Context) {
+	comp, env := InitConfig()
+	fmt.Println("# ---------------------------------------------")
+	fmt.Println("# Laforge Environment Configuration -----------")
+	fmt.Println("# ---------------------------------------------")
+	fmt.Println("# To apply the changes to your current shell:")
+	fmt.Println("# ")
+	fmt.Println("# laforge env bashconfig > /tmp/lf.env && source /tmp/lf.env && rm /tmp/lf.env")
+	fmt.Println("# ")
+	fmt.Println("# ---------------------------------------------")
+	fmt.Printf("export LF_HOME=\"%s\";\n", competition.GetHome())
+	fmt.Printf("export LF_ENV=\"%s\";\n", env.Name)
+	fmt.Printf("export LF_ENV_HOME=\"%s\";\n", filepath.Join(competition.GetHome(), "environments", env.Name))
+	fmt.Printf("export LF_ENV_TF_DIR=\"%s\";\n", env.TfDir())
+	fmt.Printf("export LF_SSH_CONFIG=\"%s\";\n", filepath.Join(competition.GetHome(), "environments", env.Name, "ssh.conf"))
+	fmt.Printf("export LF_SSH_KEY=\"%s\";\n", comp.SSHPrivateKeyPath())
+	fmt.Println("alias lfhome=\"cd $LF_HOME\";")
+	fmt.Println("alias lfenv=\"cd $LF_ENV_HOME\";")
+	fmt.Println("alias tfhome=\"cd $LF_ENV_TF_DIR\";")
+	fmt.Println("alias lfssh=\"ssh -F $LF_SSH_CONFIG -i $LF_SSH_KEY\";")
+	fmt.Println("alias lfscp=\"scp -F $LF_SSH_CONFIG -i $LF_SSH_KEY\";")
+	fmt.Println("alias tfp=\"cd $LF_ENV_TF_DIR && terraform plan -parallelism=50\";")
+	fmt.Println("alias tfa=\"cd $LF_ENV_TF_DIR && terraform apply -parallelism=50\";")
+	fmt.Println("alias tfd=\"cd $LF_ENV_TF_DIR && terraform destroy -force -parallelism=50\";")
+	fmt.Println("alias lfnm=\"nmap -sS -T4 -Pn\";")
 }

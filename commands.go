@@ -52,15 +52,6 @@ var Commands = []cli.Command{
 		Flags:  []cli.Flag{},
 	},
 	{
-		Name:   "cd",
-		Usage:  "Changes your current directory to your comeptition environment's directory.",
-		Action: command.CmdCd,
-		Flags:  []cli.Flag{},
-	},
-	{
-		// laforge network ls
-		// laforge network create
-
 		Name:   "network",
 		Usage:  "Manage Networks within your current LaForge environment.",
 		Action: command.CmdNetwork,
@@ -79,9 +70,6 @@ var Commands = []cli.Command{
 		},
 	},
 	{
-		// laforge host ls
-		// laforge host create
-
 		Name:   "host",
 		Usage:  "Manage Hosts within your networks.",
 		Action: command.CmdHost,
@@ -100,9 +88,6 @@ var Commands = []cli.Command{
 		},
 	},
 	{
-		// laforge env ls
-		// laforge env use
-		// laforge env create
 		Name:   "env",
 		Usage:  "Manage LaForge competition environment.",
 		Action: command.CmdEnv,
@@ -123,6 +108,11 @@ var Commands = []cli.Command{
 				Usage:  "List the current competition environments located in the LF_HOME path.",
 				Action: command.CmdEnvCreate,
 			},
+			{
+				Name:   "bashconfig",
+				Usage:  "Generate a bash env config for some productive aliases.",
+				Action: command.CmdEnvBashConfig,
+			},
 		},
 	},
 	{
@@ -132,11 +122,6 @@ var Commands = []cli.Command{
 		Flags:  []cli.Flag{},
 	},
 	{
-		// laforge tf plan
-		// laforge tf apply
-		// laforge tf destroy
-		// laforge tf nuke
-
 		Name:   "tf",
 		Usage:  "Perform terraform functions on the current competition environment.",
 		Action: command.CmdTf,
@@ -169,12 +154,20 @@ var Commands = []cli.Command{
 		Usage:  "Wrapper for SSH functionality in the current competition environment.",
 		Action: command.CmdSsh,
 		Flags:  []cli.Flag{},
+		Subcommands: []cli.Command{
+			{
+				Name:   "password",
+				Usage:  "Deterministically generate the password for a given Pod ID.",
+				Action: command.CmdSshPassword,
+			},
+			{
+				Name:   "config",
+				Usage:  "Write an SSH configuration to TF_HOME/environments/TF_ENV/ssh.conf",
+				Action: command.CmdSshConfig,
+			},
+		},
 	},
 	{
-		// laforge app ls
-		// laforge app create
-		// laforge app pkg
-
 		Name:   "app",
 		Usage:  "Custom application package management within the current environment.",
 		Action: command.CmdApp,

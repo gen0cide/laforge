@@ -470,10 +470,10 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   vpc_security_group_ids = [
     "${aws_security_group.{{ $id }}_base.id}",
     "${aws_security_group.{{ $id }}_{{ $network.Name }}.id}",
-    {{ range $_, $port := $host.TCPPorts }}
+    {{ range $_, $port := $host.ValidTCPPorts }}
       "${aws_security_group.{{ $id }}_public_sg_tcp_{{ $port }}.id}",
     {{end}}
-    {{ range $_, $port := $host.UDPPorts }}
+    {{ range $_, $port := $host.ValidUDPPorts }}
       "${aws_security_group.{{ $id }}_public_sg_udp_{{ $port }}.id}",
     {{end}}
   ]
@@ -589,11 +589,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   {{end}}
 }
 
-output "public_ips.{{ $id }}.{{ $network.Subdomain }}.{{ $hostname }}" {
+{{ $fullHostname := printf "%s-%s" $hostname $id }}
+
+output "public_ips.{{ $fullHostname }}" {
   value = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.public_ip}"
 }
-
-{{ $fullHostname := printf "%s-%s" $hostname $id }}
 
 {{ $fqdn := printf "%s-%s.%s.%s" $hostname $id $network.Subdomain $.Environment.Domain }}
 

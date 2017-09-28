@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/terraform"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -61,6 +64,11 @@ type SecurityGroup struct {
 	ToPort   int
 }
 
+type SSHConfig struct {
+	SSHKey string
+	Hosts  map[string]string
+}
+
 func (e *Environment) EnvRoot() string {
 	return filepath.Join(GetHome(), "environments", e.Name)
 }
@@ -81,8 +89,16 @@ func (e *Environment) TfFile() string {
 	return filepath.Join(e.TfDir(), "infra.tf")
 }
 
+func (e *Environment) TfStateFile() string {
+	return filepath.Join(e.TfDir(), "terraform.tfstate")
+}
+
 func (e *Environment) TfScriptsDir() string {
 	return filepath.Join(e.EnvRoot(), "terraform", "scripts")
+}
+
+func (e *Environment) SSHConfigPath() string {
+	return filepath.Join(e.EnvRoot(), "ssh.conf")
 }
 
 func (e *Environment) DefaultCIDR() string {
@@ -120,6 +136,52 @@ func LoadEnvironment(name string) (*Environment, error) {
 		network.ResolvedHosts = network.ResolveIncludedHosts()
 	}
 	return &env, nil
+}
+
+func (e *Environment) GenerateSSHConfig() {
+	log.SetFlags(0)
+	log.SetOutput(ioutil.Discard)
+	fileData, err := ioutil.ReadFile(e.TfStateFile())
+	if err != nil {
+		LogFatal("Fatal Error Reading Terraform State: " + err.Error())
+	}
+	tfState, err := terraform.ReadStateV3(fileData)
+	if err != nil {
+		LogFatal("Fatal Error Parsing Terraform State: " + err.Error())
+	}
+
+	ipMap := map[string]string{}
+
+	for _, module := range tfState.Modules {
+		for outputKey, outputState := range module.Outputs {
+			if strings.Contains(outputKey, "public_ips") {
+				explode := strings.Split(outputKey, ".")
+				ipMap[explode[1]] = outputState.Value.(string)
+			}
+		}
+	}
+
+	sshConf := SSHConfig{
+		SSHKey: e.Competition.SSHPrivateKeyPath(),
+		Hosts:  ipMap,
+	}
+
+	tmp := template.New(RandomString(entropySize))
+	newTmpl, err := tmp.Parse(string(MustAsset("ssh.conf")))
+	if err != nil {
+		panic(err)
+	}
+
+	var tpl bytes.Buffer
+
+	if err := newTmpl.Execute(&tpl, sshConf); err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile(e.SSHConfigPath(), tpl.Bytes(), 0644)
+	if err != nil {
+		LogFatal("Error Writing SSH Config: " + err.Error())
+	}
 }
 
 func (e *Environment) ParseHosts() map[string]*Host {
