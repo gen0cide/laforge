@@ -49,6 +49,11 @@ func RandomString(length int) string {
 	return StringWithCharset(length, charset)
 }
 
+func SetZero(val int) error {
+	val = 0
+	return nil
+}
+
 func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 
 	tmplFuncs := template.FuncMap{
@@ -59,6 +64,8 @@ func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 		"MyIP":                GetPublicIP,
 		"GetUsersForHost":     GetUsersForHost,
 		"GetUsersByOU":        GetUsersByOU,
+		"Incr":                Incr,
+		"SetZero":             SetZero,
 	}
 
 	tmp := template.New(RandomString(entropySize))
@@ -94,6 +101,8 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 		"MyIP":                GetPublicIP,
 		"GetUsersForHost":     GetUsersForHost,
 		"GetUsersByOU":        GetUsersByOU,
+		"Incr":                Incr,
+		"SetZero":             SetZero,
 	}
 
 	tmp := template.New(RandomString(entropySize))
@@ -101,28 +110,32 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 	tmp.Funcs(tmplFuncs)
 	newTmpl, err := tmp.Parse(string(script.Contents))
 	if err != nil {
-		panic(err)
+		LogError("Error parsing script: script=" + name + " host=" + hn)
+		return "SCRIPT_PARSING_ERROR"
 	}
 
 	filename := filepath.Join(e.TfScriptsDir(), fmt.Sprintf("%s%d_%s_%s", e.Prefix, i, hn, name))
 
 	tb := TemplateBuilder{
-		Competition: c,
-		Environment: e,
-		PodID:       i,
-		Network:     n,
-		Host:        h,
+		Competition:      c,
+		Environment:      e,
+		PodID:            i,
+		Network:          n,
+		Host:             h,
+		ScriptErrorCount: 0,
 	}
 
 	var tpl bytes.Buffer
 
 	if err := newTmpl.Execute(&tpl, tb); err != nil {
-		panic(err)
+		LogError("Error proccessing script: script=" + name + " host=" + hn)
+		return "SCRIPT_PARSING_ERROR"
 	}
 
 	err = ioutil.WriteFile(filename, tpl.Bytes(), 0644)
 	if err != nil {
-		panic(err)
+		LogError("Error writing script: script=" + name + " path=" + filename)
+		return "SCRIPT_PARSING_ERROR"
 	}
 	return filename
 
@@ -140,11 +153,12 @@ func EmbedRender(t string, c *Competition, e *Environment, i int, n *Network, h 
 
 func StringRender(t string, c *Competition, e *Environment, i int, n *Network, h *Host) string {
 	tb := TemplateBuilder{
-		Competition: c,
-		Environment: e,
-		PodID:       i,
-		Network:     n,
-		Host:        h,
+		Competition:      c,
+		Environment:      e,
+		PodID:            i,
+		Network:          n,
+		Host:             h,
+		ScriptErrorCount: 0,
 	}
 
 	tmplFuncs := template.FuncMap{
@@ -155,6 +169,8 @@ func StringRender(t string, c *Competition, e *Environment, i int, n *Network, h
 		"MyIP":                GetPublicIP,
 		"GetUsersForHost":     GetUsersForHost,
 		"GetUsersByOU":        GetUsersByOU,
+		"Incr":                Incr,
+		"SetZero":             SetZero,
 	}
 
 	tmp := template.New(RandomString(entropySize))
@@ -191,11 +207,12 @@ func ScriptRender(t string, c *Competition, e *Environment, i int, n *Network, h
 
 func Render(tmpName string, c *Competition, e *Environment, t int, n *Network, h *Host) []byte {
 	tb := TemplateBuilder{
-		Competition: c,
-		Environment: e,
-		PodID:       t,
-		Network:     n,
-		Host:        h,
+		Competition:      c,
+		Environment:      e,
+		PodID:            t,
+		Network:          n,
+		Host:             h,
+		ScriptErrorCount: 0,
 	}
 
 	tmpl := NewTemplate(tmpName, false)

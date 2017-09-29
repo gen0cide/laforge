@@ -11,12 +11,18 @@ import (
 )
 
 type TemplateBuilder struct {
-	Competition *Competition
-	Environment *Environment
-	PodID       int
-	Network     *Network
-	Host        *Host
-	HostIndex   int
+	Competition      *Competition
+	Environment      *Environment
+	PodID            int
+	Network          *Network
+	Host             *Host
+	HostIndex        int
+	ScriptErrorCount int
+}
+
+func Incr(val int) error {
+	val = val + 1
+	return nil
 }
 
 func (t *TemplateBuilder) EnvItemName(i interface{}, opts ...string) string {
@@ -46,11 +52,12 @@ type TFTemplate struct {
 
 func NewTemplateContext(c *Competition, e *Environment, pid int, n *Network, h *Host) *TemplateBuilder {
 	return &TemplateBuilder{
-		Competition: c,
-		Environment: e,
-		PodID:       pid,
-		Network:     n,
-		Host:        h,
+		Competition:      c,
+		Environment:      e,
+		PodID:            pid,
+		Network:          n,
+		Host:             h,
+		ScriptErrorCount: 0,
 	}
 }
 

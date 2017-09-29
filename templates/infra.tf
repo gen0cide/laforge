@@ -19,7 +19,7 @@ resource "aws_key_pair" "ssh_{{ .Environment.Name }}" {
   public_key = "{{ .Competition.SSHPublicKey | html }}"
 }
 
-{{range $i, $_ := N .Environment.PodCount }}
+{{ range $i, $_ := N .Environment.PodCount }}
 
 {{ $id := printf "%s%d" $.Environment.Prefix $i }}
 
@@ -110,9 +110,9 @@ resource "aws_security_group" "{{ $id }}_base" {
     to_port = 0
     protocol = "-1"
     cidr_blocks = [
-      {{range $_, $AdminIP := $.Competition.AdminIPs }}
+      {{ range $_, $AdminIP := $.Competition.AdminIPs }}
       "{{ $AdminIP }}",
-      {{end}}
+      {{ end }}
       # FIX PUBLIC IP: "{{/* MyIP */}}/32",
     ]
   }
@@ -156,9 +156,9 @@ resource "aws_security_group" "{{ $id }}_vdi" {
   #   to_port           = 22
   #   protocol          = "tcp"
   #   cidr_blocks       = [
-  #     {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
+  #     {{ range $_, $whitelistIP := $.Environment.WhitelistIPs }}
   #     "{{ $whitelistIP }}",
-  #     {{end}}
+  #     {{ end }}
   #   ]
   # }
 
@@ -167,9 +167,9 @@ resource "aws_security_group" "{{ $id }}_vdi" {
   #   to_port           = 3389
   #   protocol          = "tcp"
   #   cidr_blocks       = [
-  #     {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
+  #     {{ range $_, $whitelistIP := $.Environment.WhitelistIPs }}
   #     "{{ $whitelistIP }}",
-  #     {{end}}
+  #     {{ end }}
   #   ]
   # }
 
@@ -209,7 +209,7 @@ resource "aws_security_group" "{{ $id }}_vdi" {
 
 {{/* TODO: VDI Network Creation */}}
 
-{{range $wjh, $_ := N $.Environment.JumpHosts.Windows.Count }}
+{{ range $wjh, $_ := N $.Environment.JumpHosts.Windows.Count }}
 
 {{ $hostname := printf "windowsvdi0%d-%s" $wjh $id }}
 
@@ -225,9 +225,9 @@ resource "aws_instance" "{{ $hostname }}" {
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 20 $wjh }}
 
-  {{ $script_path := ScriptRender "jump_windows_uds.xml" $.Competition $.Environment $i nil nil $hostname}}
+  {{ $scriptPath := ScriptRender "jump_windows_uds.xml" $.Competition $.Environment $i nil nil $hostname }}
 
-  user_data = "${file("{{ $script_path }}")}"
+  user_data = "${file("{{ $scriptPath }}")}"
 
   private_ip = "{{ $customIP }}"
 
@@ -252,10 +252,10 @@ resource "aws_instance" "{{ $hostname }}" {
 
   provisioner "remote-exec" {
     scripts = [
-      {{range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
-        {{ $script_path := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
-        "{{ $script_path }}",
-      {{end}}
+      {{ range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+        "{{ $scriptPath }}",
+      {{ end }}
     ]
   }
 }
@@ -274,9 +274,9 @@ output "public_ips.{{ $hostname }}" {
   value = "${aws_instance.{{ $hostname }}.public_ip}"
 }
 
-{{end}}
+{{ end }}
 
-{{range $wjh, $_ := N $.Environment.JumpHosts.Kali.Count }}
+{{ range $wjh, $_ := N $.Environment.JumpHosts.Kali.Count }}
 
 {{ $hostname := printf "kalivdi0%d-%s" $wjh $id }}
 
@@ -292,9 +292,9 @@ resource "aws_instance" "{{ $hostname }}" {
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 30 $wjh }}
 
-  {{ $script_path := ScriptRender "jump_ubuntu_uds.sh" $.Competition $.Environment $i nil nil $hostname}}
+  {{ $scriptPath := ScriptRender "jump_ubuntu_uds.sh" $.Competition $.Environment $i nil nil $hostname }}
 
-  user_data = "${file("{{ $script_path }}")}"
+  user_data = "${file("{{ $scriptPath }}")}"
 
   private_ip = "{{ $customIP }}"
 
@@ -319,10 +319,10 @@ resource "aws_instance" "{{ $hostname }}" {
 
   provisioner "remote-exec" {
     scripts = [
-      {{range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
-        {{ $script_path := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
-        "{{ $script_path }}",
-      {{end}}
+      {{ range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+        "{{ $scriptPath }}",
+      {{ end }}
     ]
   }
 }
@@ -341,35 +341,10 @@ output "public_ips.{{ $hostname }}" {
   value = "${aws_instance.{{ $hostname }}.public_ip}"
 }
 
-{{end}}
+{{ end }}
 
 
-{{range $port, $securityGroup := $.Environment.ResolvePublicTCP }}
-
-resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}" {
-  name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
-  description = "Laforge - {{ $id }}_public {{ $securityGroup.Protocol }}/{{ $port }} SG"
-  vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
-
-  ingress {
-    from_port = {{ $securityGroup.FromPort }}
-    to_port = {{ $securityGroup.ToPort }}
-    protocol = "{{ $securityGroup.Protocol }}"
-    security_groups = [
-      "${aws_security_group.{{ $id }}_base.id}",
-    ]
-  }
-
-  tags {
-    Name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
-    Environment = "{{ $.Environment.Name }}"
-    Team = "{{ $id }}"
-  }
-}
-
-{{end}}
-
-{{range $port, $securityGroup := $.Environment.ResolvePublicUDP }}
+{{ range $port, $securityGroup := $.Environment.ResolvePublicTCP }}
 
 resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}" {
   name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
@@ -392,11 +367,36 @@ resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}
   }
 }
 
+{{ end }}
 
-{{end}}
+{{ range $port, $securityGroup := $.Environment.ResolvePublicUDP }}
+
+resource "aws_security_group" "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}" {
+  name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
+  description = "Laforge - {{ $id }}_public {{ $securityGroup.Protocol }}/{{ $port }} SG"
+  vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
+
+  ingress {
+    from_port = {{ $securityGroup.FromPort }}
+    to_port = {{ $securityGroup.ToPort }}
+    protocol = "{{ $securityGroup.Protocol }}"
+    security_groups = [
+      "${aws_security_group.{{ $id }}_base.id}",
+    ]
+  }
+
+  tags {
+    Name = "{{ $id }}_public_sg_{{ $securityGroup.Protocol }}_{{ $port }}"
+    Environment = "{{ $.Environment.Name }}"
+    Team = "{{ $id }}"
+  }
+}
 
 
-{{range $_, $network := $.Environment.ResolvedNetworks }}
+{{ end }}
+
+
+{{ range $_, $network := $.Environment.ResolvedNetworks }}
 
 # subnet:{{ $network.Name }}:{{ $id }}
 resource "aws_subnet" "{{ $id }}_{{ $network.Name }}" {
@@ -431,7 +431,7 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
     self = true
   }
 
-  {{if $network.VDIVisible }}
+  {{ if $network.VDIVisible }}
   ingress {
     from_port = 0
     to_port = 0
@@ -440,7 +440,7 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
       "${aws_security_group.{{ $id }}_vdi.id}"
     ]
   }
-  {{end}}
+  {{ end }}
 
   tags {
     Name = "{{ $id }}_{{ $network.Name }}"
@@ -449,7 +449,7 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
   }
 }
 
-{{range $hostname, $host := $network.ResolvedHosts }}
+{{ range $hostname, $host := $network.ResolvedHosts }}
 
 {{ $hostIP := CustomIP $network.CIDR 0 $host.LastOctet }}
 
@@ -469,10 +469,10 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     "${aws_security_group.{{ $id }}_{{ $network.Name }}.id}",
     {{ range $_, $port := $host.ValidTCPPorts }}
       "${aws_security_group.{{ $id }}_public_sg_tcp_{{ $port }}.id}",
-    {{end}}
+    {{ end }}
     {{ range $_, $port := $host.ValidUDPPorts }}
       "${aws_security_group.{{ $id }}_public_sg_udp_{{ $port }}.id}",
-    {{end}}
+    {{ end }}
   ]
 
   tags {
@@ -483,25 +483,10 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
-  {{if eq $host.OS "w2k16" }}
-    {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
+  {{ if eq $host.OS "w2k16" }}
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
 
-
-    user_data = "${file("{{ $script_path }}")}"
-
-    connection {
-      type     = "winrm"
-      user     = "Administrator"
-      timeout  = "15m"
-      password = "{{ $.Competition.RootPassword }}"
-    }
-  {{end}}
-
-  {{if eq $host.OS "w2k16sql" }}
-    {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
-
-
-    user_data = "${file("{{ $script_path }}")}"
+    user_data = "${file("{{ $scriptPath }}")}"
 
     connection {
       type     = "winrm"
@@ -509,13 +494,40 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       timeout  = "15m"
       password = "{{ $.Competition.RootPassword }}"
     }
-  {{end}}
 
-  {{if eq $host.OS "w2k12" }}
-    {{ $script_path := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname}}
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
 
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
 
-    user_data = "${file("{{ $script_path }}")}"
+          provisioner "remote-exec" {
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          inline = [       
+            "rmdir /s /q C:/laforge",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ if eq $host.OS "w2k16sql" }}
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
+
+    user_data = "${file("{{ $scriptPath }}")}"
 
     connection {
       type     = "winrm"
@@ -523,67 +535,193 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       timeout  = "15m"
       password = "{{ $.Competition.RootPassword }}"
     }
-  {{end}}
 
-  {{if eq $host.OS "ubuntu" }}
-    {{ $script_path := ScriptRender "ubuntu_uds.sh" $.Competition $.Environment $i $network $host $hostname}}
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
 
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
 
-    user_data = "${file("{{ $script_path }}")}"
+          provisioner "remote-exec" {
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          inline = [       
+            "rmdir /s /q C:/laforge",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ if eq $host.OS "w2k12" }}
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
+
+    user_data = "${file("{{ $scriptPath }}")}"
 
     connection {
-      type     = "ssh"
-      user     = "root"
+      type     = "winrm"
+      user     = "Administrator"
       timeout  = "15m"
-      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      password = "{{ $.Competition.RootPassword }}"
     }
 
-  {{end}}
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
 
-  {{if eq $host.OS "centos" }}
-    {{ $script_path := ScriptRender "centos_uds.sh" $.Competition $.Environment $i $network $host $hostname}}
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
 
-    user_data = "${file("{{ $script_path }}")}"
+          provisioner "remote-exec" {
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          inline = [       
+            "rmdir /s /q C:/laforge",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ if eq $host.OS "ubuntu" }}
+    {{ $scriptPath := ScriptRender "ubuntu_uds.sh" $.Competition $.Environment $i $network $host $hostname }}
+
+    user_data = "${file("{{ $scriptPath }}")}"
 
     connection {
-      type     = "ssh"
-      user     = "root"
+      type     = "winrm"
+      user     = "Administrator"
       timeout  = "15m"
-      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      password = "{{ $.Competition.RootPassword }}"
     }
 
-  {{end}}
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
 
-  {{if eq $host.OS "coreos" }}
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
 
-    connection {
-      type     = "ssh"
-      user     = "core"
-      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
-    }
+          provisioner "remote-exec" {
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
 
-  {{end}}
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          inline = [       
+            "rmdir /s /q C:/laforge",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+  {{ end }}
 
+  {{ if eq $host.OS "centos" }}
+    {{ $scriptPath := ScriptRender "centos_uds.sh" $.Competition $.Environment $i $network $host $hostname }}
 
-  provisioner "remote-exec" {
-    scripts = [
-      {{range $_, $sname := $host.Scripts }}
-        {{ $script_path := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
-        "{{ $script_path }}",
-      {{end}}
-    ]
-  }
+    user_data = "${file("{{ $scriptPath }}")}"
+
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
+      connection {
+        type     = "ssh"
+        user     = "root"
+        timeout  = "15m"
+        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      }
+
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "/tmp/{{ $sname }}"
+          }
+
+          provisioner "remote-exec" {
+            inline = [
+              "chmod +x /tmp/{{ $sname }}",
+              "/tmp/{{ $sname }}",
+              "rm -f /tmp/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ if eq $host.OS "coreos" }}
+
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
+      connection {
+        type     = "ssh"
+        user     = "core"
+        timeout  = "15m"
+        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      }
+
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            source      = "{{ $scriptPath }}"
+            destination = "/tmp/{{ $sname }}"
+          }
+
+          provisioner "remote-exec" {
+            inline = [
+              "chmod +x /tmp/{{ $sname }}",
+              "/tmp/{{ $sname }}",
+              "rm -f /tmp/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
 
   {{ $depLen := len $host.Dependencies }}
-  {{if gt $depLen 0}}
+  {{ if gt $depLen 0 }}
 
     depends_on = [
       {{ range $_, $dependency := $host.Dependencies }}
         "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
-      {{end}}
+      {{ end }}
     ]
 
-  {{end}}
+  {{ end }}
 }
 
 {{ $fullHostname := printf "%s-%s" $hostname $id }}
@@ -616,7 +754,7 @@ resource "aws_route53_record" "{{ $id }}_dns_record_{{ $dnsIdx }}" {
   ]
 }
 
-{{end}}
+{{ end }}
 
 {{ range $_, $cname := $host.InternalCNAMEs }}
 
@@ -632,7 +770,7 @@ resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_icname_{{ $cna
   ]
 }
 
-{{end}} {{/* End ExternalCNAME Iterator */}}
+{{ end }} {{/* End ExternalCNAME Iterator */}}
 
 {{ range $_, $cname := $host.ExternalCNAMEs }}
 
@@ -648,8 +786,8 @@ resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $cna
   ]
 }
 
-{{end}} {{/* End InternalCNAME Iterator */}}
+{{ end }} {{/* End InternalCNAME Iterator */}}
 
-{{end}} {{/* End Host Iterator */}}
-{{end}} {{/* End Network Iterator */}}
-{{end}} {{/* End Pod Iterator */}}
+{{ end }} {{/* End Host Iterator */}}
+{{ end }} {{/* End Network Iterator */}}
+{{ end }} {{/* End Pod Iterator */}}
