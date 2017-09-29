@@ -84,6 +84,7 @@ resource "aws_route_table_association" "{{ $id }}_rt_assoc" {
 resource "aws_route53_zone" "{{ $id }}_r53" {
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
   name = "{{ $.Environment.Domain }}"  
+  comment = "{{ $id }}_internal_zone"
 
   tags {
     Environment = "{{ $.Environment.Name }}"
@@ -104,17 +105,17 @@ resource "aws_security_group" "{{ $id }}_base" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # ingress {
-  #   from_port = 0
-  #   to_port = 0
-  #   protocol = "-1"
-  #   cidr_blocks = [
-  #     {{range $_, $AdminIP := $.Competition.AdminIPs }}
-  #     "{{ $AdminIP }}",
-  #     {{end}}
-  #     # FIX PUBLIC IP: "{{/* MyIP */}}/32",
-  #   ]
-  # }
+  ingress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      {{range $_, $AdminIP := $.Competition.AdminIPs }}
+      "{{ $AdminIP }}",
+      {{end}}
+      # FIX PUBLIC IP: "{{/* MyIP */}}/32",
+    ]
+  }
 
   ingress {
     from_port = 22
@@ -269,6 +270,10 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
   ]
 }
 
+output "public_ips.{{ $hostname }}" {
+  value = "${aws_instance.{{ $hostname }}.public_ip}"
+}
+
 {{end}}
 
 {{range $wjh, $_ := N $.Environment.JumpHosts.Kali.Count }}
@@ -330,6 +335,10 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
   records = [
     "${aws_instance.{{ $hostname }}.public_ip}",
   ]
+}
+
+output "public_ips.{{ $hostname }}" {
+  value = "${aws_instance.{{ $hostname }}.public_ip}"
 }
 
 {{end}}
