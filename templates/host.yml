@@ -88,7 +88,7 @@ public_udp: []
 #     network: corp
 
 #########################################################
-# Host Dependencies
+# Custom DNS Entries
 # -- Uncomment and fill out array if you wish to specify
 # -- hosts that should be built BEFORE this host.
 # -- Note this is a YAML array of { name: "", value: "" , type: ""}

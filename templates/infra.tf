@@ -91,19 +91,6 @@ resource "aws_route53_zone" "{{ $id }}_r53" {
   }
 }
 
-# sg_admin:{{ $id }}
-resource "aws_security_group" "{{ $id }}_admin" {
-  name = "{{ $id }}_admin"
-  description = "Laforge - {{ $id }}_admin SG"
-  vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
-
-  tags {
-    Name = "{{ $id }}_admin"
-    Environment = "{{ $.Environment.Name }}"
-    Team = "{{ $id }}"
-  }
-}
-
 # sg_base:{{ $id }}
 resource "aws_security_group" "{{ $id }}_base" {
   name = "{{ $id }}_base"
@@ -117,32 +104,37 @@ resource "aws_security_group" "{{ $id }}_base" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ingress {
+  #   from_port = 0
+  #   to_port = 0
+  #   protocol = "-1"
+  #   cidr_blocks = [
+  #     {{range $_, $AdminIP := $.Competition.AdminIPs }}
+  #     "{{ $AdminIP }}",
+  #     {{end}}
+  #     # FIX PUBLIC IP: "{{/* MyIP */}}/32",
+  #   ]
+  # }
+
   ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [
-      {{range $_, $AdminIP := $.Competition.AdminIPs }}
-      "{{ $AdminIP }}",
-      {{end}}
-      # FIX PUBLIC IP: "{{/* MyIP */}}/32",
-    ]
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    security_groups = [
-      "${aws_security_group.{{ $id }}_admin.id}",
-    ]
+    from_port = 5985
+    to_port = 5985
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = 0
-    to_port = 8
+    from_port = 8
+    to_port = 0
     protocol = "icmp"
-    self = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags {
@@ -158,14 +150,34 @@ resource "aws_security_group" "{{ $id }}_vdi" {
   description = "Laforge - {{ $id }}_vdi SG"
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
 
+  # ingress {
+  #   from_port         = 22
+  #   to_port           = 22
+  #   protocol          = "tcp"
+  #   cidr_blocks       = [
+  #     {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
+  #     "{{ $whitelistIP }}",
+  #     {{end}}
+  #   ]
+  # }
+
+  # ingress {
+  #   from_port         = 3389
+  #   to_port           = 3389
+  #   protocol          = "tcp"
+  #   cidr_blocks       = [
+  #     {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
+  #     "{{ $whitelistIP }}",
+  #     {{end}}
+  #   ]
+  # }
+
   ingress {
     from_port         = 22
     to_port           = 22
     protocol          = "tcp"
     cidr_blocks       = [
-      {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
-      "{{ $whitelistIP }}",
-      {{end}}
+      "0.0.0.0/0",
     ]
   }
 
@@ -174,20 +186,7 @@ resource "aws_security_group" "{{ $id }}_vdi" {
     to_port           = 3389
     protocol          = "tcp"
     cidr_blocks       = [
-      {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
-      "{{ $whitelistIP }}",
-      {{end}}
-    ]
-  }
-
-  ingress {
-    from_port         = 5900
-    to_port           = 5900
-    protocol          = "tcp"
-    cidr_blocks       = [
-      {{range $_, $whitelistIP := $.Environment.WhitelistIPs }}
-      "{{ $whitelistIP }}",
-      {{end}}
+      "0.0.0.0/0",
     ]
   }
 
@@ -205,17 +204,6 @@ resource "aws_security_group" "{{ $id }}_vdi" {
     Environment = "{{ $.Environment.Name }}"
     Team = "{{ $id }}"
   }
-}
-
-
-# sg_rule_admin:{{ $id }}
-resource "aws_security_group_rule" "{{ $id }}_admin_callback" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  source_security_group_id = "${aws_security_group.{{ $id }}_base.id}"
-  security_group_id = "${aws_security_group.{{ $id }}_admin.id}"
 }
 
 {{/* TODO: VDI Network Creation */}}
