@@ -612,10 +612,10 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     user_data = "${file("{{ $scriptPath }}")}"
 
     connection {
-      type     = "winrm"
-      user     = "Administrator"
+      type     = "ssh"
+      user     = "root"
       timeout  = "60m"
-      password = "{{ $.Competition.RootPassword }}"
+      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
     }
 
     {{ $scriptCount := len $host.Scripts }}
@@ -626,24 +626,18 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
             source      = "{{ $scriptPath }}"
-            destination = "C:/laforge/{{ $sname }}"
+            destination = "/tmp/{{ $sname }}"
           }
 
           provisioner "remote-exec" {
             inline = [
-              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+              "chmod +x /tmp/{{ $sname }}",
+              "/tmp/{{ $sname }}",
+              "rm -f /tmp/{{ $sname }}",
             ]
           }
         {{ end }}
-      {{ end }}
-
-      {{ if gt $scriptCount 0 }}
-        provisioner "remote-exec" {
-          inline = [       
-            "rmdir /s /q C:/laforge",
-          ]
-        }
-      {{ end }}
+      {{ end }}      
     {{ end }}
   {{ end }}
 
