@@ -246,7 +246,7 @@ resource "aws_instance" "{{ $hostname }}" {
   connection {
     type     = "winrm"
     user     = "Administrator"
-    timeout  = "15m"
+    timeout  = "60m"
     password = "{{ $.Environment.PodPassword $.PodID }}"
   }
 
@@ -313,7 +313,7 @@ resource "aws_instance" "{{ $hostname }}" {
   connection {
     type     = "ssh"  
     user     = "ec2-user"
-    timeout  = "15m"
+    timeout  = "60m"
     private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
   }
 
@@ -491,7 +491,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
-      timeout  = "15m"
+      timeout  = "60m"
       password = "{{ $.Competition.RootPassword }}"
     }
 
@@ -532,7 +532,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
-      timeout  = "15m"
+      timeout  = "60m"
       password = "{{ $.Competition.RootPassword }}"
     }
 
@@ -573,7 +573,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
-      timeout  = "15m"
+      timeout  = "60m"
       password = "{{ $.Competition.RootPassword }}"
     }
 
@@ -614,7 +614,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     connection {
       type     = "winrm"
       user     = "Administrator"
-      timeout  = "15m"
+      timeout  = "60m"
       password = "{{ $.Competition.RootPassword }}"
     }
 
@@ -657,7 +657,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       connection {
         type     = "ssh"
         user     = "root"
-        timeout  = "15m"
+        timeout  = "60m"
         private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
       }
 
@@ -688,7 +688,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       connection {
         type     = "ssh"
         user     = "core"
-        timeout  = "15m"
+        timeout  = "60m"
         private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
       }
 
