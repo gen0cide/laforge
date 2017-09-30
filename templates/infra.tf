@@ -517,7 +517,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
           inline = [       
-            "rmdir /s /q C:/laforge",
+            "rmdir /s /q \"C:/laforge\" || ver>nul",
           ]
         }
       {{ end }}
@@ -558,7 +558,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
           inline = [       
-            "rmdir /s /q C:/laforge",
+            "rmdir /s /q \"C:/laforge\" || ver>nul",
           ]
         }
       {{ end }}
@@ -599,7 +599,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
           inline = [       
-            "rmdir /s /q C:/laforge",
+            "rmdir /s /q \"C:/laforge\" || ver>nul",
           ]
         }
       {{ end }}

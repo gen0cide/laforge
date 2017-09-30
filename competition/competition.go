@@ -215,7 +215,7 @@ func LoadUsersFromDB(path string) map[string][]User {
 	}
 	err = json.Unmarshal(data, &users)
 	if err != nil {
-		panic(err)
+		LogFatal("Could not unmarshal users file: " + path)
 	}
 	return users
 }

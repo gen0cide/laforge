@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,14 +30,9 @@ import (
 )
 
 const (
-	// LF_HOME is the base directory for competition development
-	LF_HOME = "LF_HOME"
-
-	LF_HOME_FILE = ".lf_home"
-
-	// LF_ENV is the currently assigned LF environment
-	LF_ENV = "LF_ENV"
-
+	LF_HOME       = "LF_HOME"
+	LF_HOME_FILE  = ".lf_home"
+	LF_ENV        = "LF_ENV"
 	LF_ENV_FILE   = ".lf_env"
 	SPECIAL_CHARS = "!@#$%^"
 )
@@ -236,18 +232,6 @@ func CreateHome() {
 }
 
 func HomeValid() bool {
-	// LF_HOME should look like this:
-	// folder =>
-	//   config (folder)
-	//    - config.yml
-	//    - infra.pem
-	//    - infra.pem.pub
-	//   scripts (folder)
-	//   files (folder)
-	//   apps (folder)
-	//   utils (folder)
-	//   environments (folder)
-
 	homeValid := true
 
 	if !PathExists(path.Join(GetHome(), "config")) {
@@ -295,13 +279,6 @@ func HomeValid() bool {
 }
 
 func EnvValid() bool {
-	// LF_ENV should look like this:
-	// folder =>
-	//   terraform (folder)
-	//   hosts (folder)
-	//   networks (folder)
-	//   env.yml
-
 	envValid := true
 
 	if !PathExists(path.Join(CurrentEnvDir(), "terraform")) {
@@ -423,33 +400,27 @@ func GetPublicIP() string {
 	return strings.TrimSpace(string(ipData))
 }
 
-// Ugly hack, this is bufio.ScanLines with ? added as an other delimiter :D
 func NewTermScanner(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
 	if i := bytes.IndexByte(data, '\n'); i >= 0 {
-		// We have a full newline-terminated line.
 		fmt.Printf("nn\n")
 		return i + 1, data[0:i], nil
 	}
 	if i := bytes.IndexByte(data, '?'); i >= 0 {
-		// We have a full ?-terminated line.
 		return i + 1, data[0:i], nil
 	}
-	// If we're at EOF, we have a final, non-terminated line. Return it.
 	if atEOF {
 		return len(data), data, nil
 	}
-	// Request more data.
 	return 0, nil, nil
 }
 
 func ExecInteractiveCommand(command string, args []string) {
 	cmd := exec.Command(command, args...)
 
-	// Stdout + stderr
-	out, err := cmd.StderrPipe() // Again, rm writes prompts to stderr
+	out, err := cmd.StderrPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -457,28 +428,44 @@ func ExecInteractiveCommand(command string, args []string) {
 	scanner := bufio.NewScanner(out)
 	scanner.Split(NewTermScanner)
 
-	// Stdin
 	in, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer in.Close()
 
-	// Start the command!
 	err = cmd.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Start scanning
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "rm: remove regular empty file ‘somefile.txt’" {
+		if line == "rm: remove regular empty file 'somefile.txt'" {
 			in.Write([]byte("y\n"))
 		}
 	}
-	// Report scanner's errors
+
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CustomInternalCNAME(e *Environment, n *Network, c string) string {
+	return fmt.Sprintf("%s.%s.%s", c, n.Subdomain, e.Domain)
+}
+
+func CustomExternalCNAME(e *Environment, c string) string {
+	return fmt.Sprintf("%s.%s", c, e.Domain)
+}
+
+func CustomIP(cidr string, offset, id int) string {
+	ip, _, err := net.ParseCIDR(cidr)
+	if err != nil {
+		LogFatal("Not a valid CIDR: " + cidr)
+	}
+	newIP := ip.To4()
+	lastOctet := offset + id
+	newIP[3] = byte(lastOctet)
+	return newIP.String()
 }

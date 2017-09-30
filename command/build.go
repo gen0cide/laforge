@@ -22,7 +22,7 @@ func CmdBuild(c *cli.Context) {
 
 	finalTFTemplate, err := printer.Format(competition.RenderTB("infra.tf", &tb))
 	if err != nil {
-		panic(err)
+		competition.LogFatal("Terraform Configuration Syntax Error - Contact alex ASAP.")
 	}
 
 	ioutil.WriteFile(env.TfFile(), finalTFTemplate, 0644)

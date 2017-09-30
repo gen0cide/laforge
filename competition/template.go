@@ -2,26 +2,62 @@ package competition
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/bradfitz/iter"
 )
 
 const (
-	charset = "abcdefghijklmnopqrstuvwxyz" +
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	charset     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	entropySize = 32
 )
 
 var (
 	seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
+
+type TemplateBuilder struct {
+	Competition      *Competition
+	Environment      *Environment
+	PodID            int
+	Network          *Network
+	Host             *Host
+	HostIndex        int
+	ScriptErrorCount int
+}
+
+type TFTemplate struct {
+	Name     string
+	Builder  TemplateBuilder
+	Template string
+	Rendered string
+}
+
+func (t *TemplateBuilder) EnvItemName(i interface{}, opts ...string) string {
+	optString := ""
+	if len(opts) > 0 {
+		optString = fmt.Sprintf("_%s", strings.Join(opts, "_"))
+	}
+	name := strings.ToLower(reflect.TypeOf(i).Name())
+	return fmt.Sprintf("%s_%s%s", t.Environment.Suffix(t.PodID), name, optString)
+}
+
+func (t *TemplateBuilder) NetItemName(i interface{}, opts ...string) string {
+	optString := ""
+	if len(opts) > 0 {
+		optString = fmt.Sprintf("_%s", strings.Join(opts, "_"))
+	}
+	name := strings.ToLower(reflect.TypeOf(i).Name())
+	return fmt.Sprintf("%s_%s_%s%s", t.Environment.Suffix(t.PodID), t.Network.Name, name, optString)
+}
 
 func GetUsersForHost(c *Competition, h *Host) []User {
 	users := []User{}
@@ -79,7 +115,7 @@ func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 
 	newTmpl, err := tmp.Parse(string(MustAsset(tmpl)))
 	if err != nil {
-		panic(err)
+		LogFatal("Error parsing template: template=" + tmpl)
 	}
 
 	return newTmpl
@@ -146,7 +182,8 @@ func EmbedRender(t string, c *Competition, e *Environment, i int, n *Network, h 
 	filename := filepath.Join(e.TfScriptsDir(), fmt.Sprintf("%s%d_%s_%s", e.Prefix, i, hn, t))
 	err := ioutil.WriteFile(filename, tmpl, 0644)
 	if err != nil {
-		panic(err)
+		LogError("Error writing embed script in EmbedRender(): path=" + filename)
+		return filename
 	}
 	return filename
 }
@@ -178,13 +215,13 @@ func StringRender(t string, c *Competition, e *Environment, i int, n *Network, h
 	tmp.Funcs(tmplFuncs)
 	newTmpl, err := tmp.Parse(t)
 	if err != nil {
-		panic(err)
+		LogFatal("Error Parsing Template String in StringRender(): " + t)
 	}
 
 	var tpl bytes.Buffer
 
 	if err := newTmpl.Execute(&tpl, tb); err != nil {
-		panic(err)
+		LogFatal("Error Rendering Template String in StringRender(): " + t)
 	}
 
 	return tpl.String()
@@ -200,7 +237,8 @@ func ScriptRender(t string, c *Competition, e *Environment, i int, n *Network, h
 	filename := filepath.Join(e.TfScriptsDir(), fmt.Sprintf("%s%d_%s_%s", e.Prefix, i, hn, t))
 	err := ioutil.WriteFile(filename, tmpl, 0644)
 	if err != nil {
-		panic(err)
+		LogError("Error writing script in ScriptRender(): path=" + filename)
+		return filename
 	}
 	return filename
 }
@@ -220,7 +258,7 @@ func Render(tmpName string, c *Competition, e *Environment, t int, n *Network, h
 	var tpl bytes.Buffer
 
 	if err := tmpl.Execute(&tpl, tb); err != nil {
-		panic(err)
+		LogFatal("Error rendering template on Render(): " + tmpName)
 	}
 
 	return tpl.Bytes()
@@ -232,27 +270,44 @@ func RenderTB(tmpName string, tb *TemplateBuilder) []byte {
 	var tpl bytes.Buffer
 
 	if err := tmpl.Execute(&tpl, tb); err != nil {
-		panic(err)
+		LogFatal("Error rendering template on RenderTB(): " + tmpName)
 	}
 
 	return tpl.Bytes()
 }
 
-func CustomInternalCNAME(e *Environment, n *Network, c string) string {
-	return fmt.Sprintf("%s.%s.%s", c, n.Subdomain, e.Domain)
+func Incr(val int) error {
+	val = val + 1
+	return nil
 }
 
-func CustomExternalCNAME(e *Environment, c string) string {
-	return fmt.Sprintf("%s.%s", c, e.Domain)
-}
-
-func CustomIP(cidr string, offset, id int) string {
-	ip, _, err := net.ParseCIDR(cidr)
-	if err != nil {
-		panic(err)
+func NewTemplateContext(c *Competition, e *Environment, pid int, n *Network, h *Host) *TemplateBuilder {
+	return &TemplateBuilder{
+		Competition:      c,
+		Environment:      e,
+		PodID:            pid,
+		Network:          n,
+		Host:             h,
+		ScriptErrorCount: 0,
 	}
-	newIP := ip.To4()
-	lastOctet := offset + id
-	newIP[3] = byte(lastOctet)
-	return newIP.String()
+}
+
+func TFRender(tfobj interface{}) (string, error) {
+	tmplName := strings.ToLower(reflect.TypeOf(tfobj).Name())
+	filename := tmplName + ".tmpl"
+	tmplFile := filepath.Join("terraform", filename)
+	asset, err := Asset(tmplFile)
+	if err != nil {
+		return "", err
+	}
+	var tmplBuffer bytes.Buffer
+	tmpl, err := template.New(tmplName).Parse(string(asset))
+	if err != nil {
+		return "", errors.New("Fatal Error parsing terraform template (" + tmplFile + "): " + err.Error())
+	}
+	if err := tmpl.Execute(&tmplBuffer, tfobj); err != nil {
+		return "", errors.New("Fatal Error rendering terraform template (" + tmplFile + "): " + err.Error())
+	}
+
+	return tmplBuffer.String(), nil
 }

@@ -169,13 +169,13 @@ func (e *Environment) GenerateSSHConfig() {
 	tmp := template.New(RandomString(entropySize))
 	newTmpl, err := tmp.Parse(string(MustAsset("ssh.conf")))
 	if err != nil {
-		panic(err)
+		LogFatal("Could not parse SSH Config Template.")
 	}
 
 	var tpl bytes.Buffer
 
 	if err := newTmpl.Execute(&tpl, sshConf); err != nil {
-		panic(err)
+		LogFatal("Could not render SSH Config Template.")
 	}
 
 	err = ioutil.WriteFile(e.SSHConfigPath(), tpl.Bytes(), 0644)
