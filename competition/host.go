@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 
@@ -31,6 +33,8 @@ type Dependency struct {
 	Network string `yaml:"network"`
 }
 
+type RemoteFiles map[string]string
+
 type Host struct {
 	Hostname       string       `yaml:"hostname"`
 	OS             string       `yaml:"os"`
@@ -45,8 +49,22 @@ type Host struct {
 	UserGroups     []string     `yaml:"user_groups"`
 	DNSEntries     []DNSEntry   `yaml:"dns_entries"`
 	Dependencies   []Dependency `yaml:"dependencies"`
+	Files          RemoteFiles  `yaml:"files"`
 	Vars           `yaml:"variables"`
 	Network        `yaml:"-"`
+}
+
+func (h *Host) UploadFiles() map[string]string {
+	newFiles := map[string]string{}
+	for file, path := range h.Files {
+		fileName := filepath.Join(GetHome(), "files", file)
+		if _, err := os.Stat(fileName); os.IsNotExist(err) {
+			LogError(fmt.Sprintf("File not found: file=%s host=%s", fileName, h.Hostname))
+			continue
+		}
+		newFiles[fileName] = path
+	}
+	return newFiles
 }
 
 func (h *Host) ValidTCPPorts() []string {

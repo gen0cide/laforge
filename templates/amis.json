@@ -45,15 +45,6 @@
     "username": "administrator"    
   },
   {
-    "os": "coreos",
-    "regions": {
-      "us-east-1": "ami-7500100e",
-      "us-east-2": "ami-c77351a2",
-      "us-west-2": "ami-5e6f9b26"
-    },
-    "username": "core"    
-  },
-  {
     "os": "kali",
     "regions": {
       "us-east-1": "ami-bf7870c4",

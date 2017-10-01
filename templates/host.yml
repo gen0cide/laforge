@@ -16,7 +16,7 @@ hostname: {{ .Hostname }}
 #########################################################
 # Operating System (Required for proper Conn Types)
 # ** Case Sensitive **
-# Valid: ubuntu, centos, coreos, w2k16, w2k16sql, w2k12
+# Valid: ubuntu, centos, kali, w2k16, w2k16sql, w2k12
 os: ubuntu
 
 #########################################################

@@ -495,6 +495,18 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       password = "{{ $.Competition.RootPassword }}"
     }
 
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
+
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
 
@@ -535,6 +547,17 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       timeout  = "60m"
       password = "{{ $.Competition.RootPassword }}"
     }
+
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
 
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
@@ -577,6 +600,17 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       password = "{{ $.Competition.RootPassword }}"
     }
 
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
 
@@ -618,6 +652,17 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
     }
 
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
 
@@ -646,45 +691,26 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
     user_data = "${file("{{ $scriptPath }}")}"
 
-    {{ $scriptCount := len $host.Scripts }}
-    {{ if gt $scriptCount 0 }}
-      connection {
-        type     = "ssh"
-        user     = "root"
-        timeout  = "60m"
-        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
-      }
+    connection {
+      type     = "ssh"
+      user     = "root"
+      timeout  = "60m"
+      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+    }
 
-      {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
-        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
-          provisioner "file" {
-            source      = "{{ $scriptPath }}"
-            destination = "/tmp/{{ $sname }}"
-          }
-
-          provisioner "remote-exec" {
-            inline = [
-              "chmod +x /tmp/{{ $sname }}",
-              "/tmp/{{ $sname }}",
-              "rm -f /tmp/{{ $sname }}",
-            ]
-          }
-        {{ end }}
-      {{ end }}
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
     {{ end }}
-  {{ end }}
-
-  {{ if eq $host.OS "coreos" }}
 
     {{ $scriptCount := len $host.Scripts }}
-    {{ if gt $scriptCount 0 }}
-      connection {
-        type     = "ssh"
-        user     = "core"
-        timeout  = "60m"
-        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
-      }
+    {{ if gt $scriptCount 0 }}      
 
       {{ range $_, $sname := $host.Scripts }}
         {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
