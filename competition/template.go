@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/bradfitz/iter"
