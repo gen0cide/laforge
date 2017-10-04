@@ -126,7 +126,7 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 	script := c.ParseScripts()[name]
 
 	if script == nil {
-		LogFatal("Script not found: " + name)
+		LogFatal(fmt.Sprintf("Script not found! script=%s env=%s network=%s host=%s", name, e.Name, n.Name, h.Hostname))
 	}
 
 	tmplFuncs := template.FuncMap{
