@@ -114,13 +114,13 @@ func LoadEnvironment(name string) (*Environment, error) {
 	envNetworkPath := filepath.Join(GetHome(), "environments", name, "networks")
 	envHostPath := filepath.Join(GetHome(), "environments", name, "hosts")
 	if !PathExists(envConfigFile) {
-		return nil, errors.New("not a valid environment: no env.yml file")
+		return nil, fmt.Errorf("not a valid environment: no env.yml file located at %s", name)
 	}
 	if !PathExists(envNetworkPath) {
 		return nil, errors.New("not a valid environment: no networks directory located at " + envNetworkPath)
 	}
 	if !PathExists(envHostPath) {
-		return nil, errors.New("not a valid environment: no networks directory located at " + envNetworkPath)
+		return nil, errors.New("not a valid environment: no hosts directory located at " + envHostPath)
 	}
 	env := Environment{}
 	envConfig, err := ioutil.ReadFile(envConfigFile)
