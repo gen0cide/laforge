@@ -39,8 +39,14 @@ admin_ips:
   - 127.0.0.99/32
 
 #########################################################
-# Admin IPs
-# Any IPs listed here will have full access to the entire
-# competition infrastructure. All firewalls and security
-# groups will whitelist these IPs for all ports.
+# Root Password
+# Root passwords will be set to this on hosts.
 root_password: ""
+
+#########################################################
+# DHCP Options
+# Sets up the AWS VPC Properly
+dhcp:
+  domain: ""
+  nameservers: []    
+  ntp_servers: []
