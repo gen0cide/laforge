@@ -16,9 +16,15 @@ type Competition struct {
 	R53ZoneID    string `yaml:"external_r53_zone_id"`
 	AWSCred      `yaml:"aws_creds"`
 	S3Config     `yaml:"s3_config"`
-	AdminIPs     []string `yaml:"admin_ips"`
-	RootPassword string   `yaml:"root_password"`
+	AdminIPs     []string   `yaml:"admin_ips"`
+	RootPassword string     `yaml:"root_password"`
+	NSRecords    []NSRecord `yaml:"ns_records"`
 	UserList     map[string][]User
+}
+
+type NSRecord struct {
+	Name        string   `yaml:"name"`
+	Nameservers []string `yaml:"nameservers"`
 }
 
 type AWSCred struct {

@@ -92,6 +92,23 @@ resource "aws_route53_zone" "{{ $id }}_r53" {
   }
 }
 
+{{ range $nsid, $nsr := $.Competition.NSRecords }}
+
+resource "aws_route53_record" "{{ $id }}_vpc_nsr_{{ $nsid }}" {
+  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
+  name    = "{{ $nsr.Name }}"
+  type    = "NS"
+  ttl     = "300"
+  records = [
+    {{ range $_, $rec := $nsr.Nameservers }}
+      "{{ $rec }}",
+    {{ end }}
+  ]
+}
+
+{{ end }}
+
+
 # sg_base:{{ $id }}
 resource "aws_security_group" "{{ $id }}_base" {
   name = "{{ $id }}_base"
