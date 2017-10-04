@@ -92,22 +92,32 @@ resource "aws_route53_zone" "{{ $id }}_r53" {
   }
 }
 
-{{ range $nsid, $nsr := $.Competition.NSRecords }}
-
-resource "aws_route53_record" "{{ $id }}_vpc_nsr_{{ $nsid }}" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $nsr.Name }}"
-  type    = "NS"
-  ttl     = "300"
-  records = [
-    {{ range $_, $rec := $nsr.Nameservers }}
-      "{{ $rec }}",
+# dhcp:{{ $id }}
+resource "aws_vpc_dhcp_options" "{{ $id }}_dhcp" {
+  domain_name = "{{ $.Competition.DHCPConfig.DNSName }}"
+  domain_name_servers = [
+    {{ range $_, $nameserver := $.Competition.DHCPConfig.Nameservers }}
+      "{{ $nameserver }}",
     {{ end }}
   ]
+  ntp_servers = [
+    {{ range $_, $ntpserver := $.Competition.DHCPConfig.NTPServers }}
+      "{{ $ntpserver }}",
+    {{ end }}
+  ]  
+
+  tags {
+    Name = "{{ $id }}_dhcp"
+    Environment = "{{ $.Environment.Name }}"
+    Team = "{{ $id }}"
+  }
 }
 
-{{ end }}
-
+# dhcp_assoc:{{ $id }}
+resource "aws_vpc_dhcp_options_association" "{{ $id }}_dhcp_assoc" {
+  vpc_id          = "${aws_vpc.{{ $id }}_vpc.id}"
+  dhcp_options_id = "${aws_vpc_dhcp_options.{{ $id }}_dhcp.id}"
+}
 
 # sg_base:{{ $id }}
 resource "aws_security_group" "{{ $id }}_base" {
