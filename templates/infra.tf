@@ -550,7 +550,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       inline = [
         "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
-        "del C:\pw.ps1 || ver1>nul",
+        "del \"C:/pw.ps1\" || ver1>nul",
       ]
     }
 
@@ -667,7 +667,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       inline = [
         "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
-        "del C:\pw.ps1 || ver1>nul",
+        "del \"C:/pw.ps1\" || ver1>nul",
       ]
     }
 
@@ -784,7 +784,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       inline = [
         "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
-        "del C:\pw.ps1 || ver1>nul",
+        "del \"C:/pw.ps1\" || ver1>nul",
       ]
     }
 

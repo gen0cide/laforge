@@ -20,9 +20,13 @@ func CmdBuild(c *cli.Context) {
 	os.RemoveAll(env.TfScriptsDir())
 	os.MkdirAll(env.TfScriptsDir(), 0755)
 
-	finalTFTemplate, err := printer.Format(competition.RenderTB("infra.tf", &tb))
+	raw := competition.RenderTB("infra.tf", &tb)
+
+	finalTFTemplate, err := printer.Format(raw)
 	if err != nil {
-		competition.LogFatal("Terraform Configuration Syntax Error - Contact alex ASAP.")
+		competition.LogError("Terraform Configuration Syntax Error: " + err.Error())
+		competition.LogPlain(string(raw))
+		competition.LogFatal(" - Contact alex ASAP.")
 	}
 
 	ioutil.WriteFile(env.TfFile(), finalTFTemplate, 0644)
