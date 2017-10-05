@@ -10,8 +10,3 @@ echo -e "{{ $.Environment.PodPassword $.PodID }}\n{{ $.Environment.PodPassword $
 echo ""
 hostname -F /etc/hostname
 service networking reload
-export DEBCONF_NONINTERACTIVE_SEEN=true
-export DEBIAN_FRONTEND=noninteractive
-# apt-get -y update
-# apt-get -y upgrade
-reboot

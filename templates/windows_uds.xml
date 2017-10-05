@@ -4,8 +4,7 @@
   (gc C:\secpol.cfg).replace("PasswordComplexity = 1", "PasswordComplexity = 0") | Out-File C:\secpol.cfg
   secedit /configure /db c:\windows\security\local.sdb /cfg c:\secpol.cfg /areas SECURITYPOLICY
   rm -force c:\secpol.cfg -confirm:$false
-  $admin = [adsi]("WinNT://./Administrator, user")
-  $admin.psbase.invoke("SetPassword", "{{ $.Competition.RootPassword }}")
+  ([adsi]"WinNT://$env:computername/Administrator").SetPassword('LaForgeTempPassword!12345')  
   winrm quickconfig -q
   winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="1024"}'
   winrm set winrm/config '@{MaxTimeoutms="1800000"}'

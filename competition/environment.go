@@ -25,15 +25,21 @@ type Environment struct {
 	WhitelistIPs     []string `yaml:"ip_whitelist"`
 	Vars             `yaml:"variables"`
 	AWSConfig        `yaml:"aws_config"`
-	PodCount         int                 `yaml:"pod_count"`
-	Domain           string              `yaml:"domain"`
-	IncludedNetworks []string            `yaml:"included_networks"`
+	PodCount         int      `yaml:"pod_count"`
+	Domain           string   `yaml:"domain"`
+	IncludedNetworks []string `yaml:"included_networks"`
+	GenesisHost      `yaml:"entry_point"`
 	ResolvedNetworks map[string]*Network `yaml:"-"`
 	Competition      `yaml:"-"`
 	Users            []*User    `yaml:"-"`
 	Networks         []*Network `yaml:"-"`
 	Hosts            []*Host    `yaml:"-"`
 	JumpHosts        `yaml:"jump_hosts"`
+}
+
+type GenesisHost struct {
+	Hostname string `yaml:"hostname"`
+	Network  string `yaml:"network"`
 }
 
 type AWSConfig struct {

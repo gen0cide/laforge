@@ -98,3 +98,7 @@ public_udp: []
 #     name: AmazonTest-{{ $.Host.Hostname }}-{{ $.Environment.Prefix }}{{ $.PodID }}.{{ $.Network.Subdomain }}.{{ $.Environment.Domain }}
 #     value: 127.0.0.1
 #     type: A
+
+#########################################################
+# Override Local Admin Password (windows only)
+# override_password: Foobar123

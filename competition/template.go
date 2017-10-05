@@ -270,7 +270,7 @@ func RenderTB(tmpName string, tb *TemplateBuilder) []byte {
 	var tpl bytes.Buffer
 
 	if err := tmpl.Execute(&tpl, tb); err != nil {
-		LogFatal("Error rendering template on RenderTB(): " + tmpName)
+		LogFatal("Error rendering template on RenderTB(): " + tmpName + " error: " + err.Error())
 	}
 
 	return tpl.Bytes()

@@ -138,24 +138,9 @@ resource "aws_security_group" "{{ $id }}_base" {
     protocol = "-1"
     cidr_blocks = [
       {{ range $_, $AdminIP := $.Competition.AdminIPs }}
-      "{{ $AdminIP }}",
+        "{{ $AdminIP }}",
       {{ end }}
-      # FIX PUBLIC IP: "{{/* MyIP */}}/32",
     ]
-  }
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 5985
-    to_port = 5985
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -202,7 +187,16 @@ resource "aws_security_group" "{{ $id }}_vdi" {
 
   ingress {
     from_port         = 22
-    to_port           = 5986
+    to_port           = 22
+    protocol          = "tcp"
+    cidr_blocks       = [
+      "0.0.0.0/0",
+    ]
+  }
+
+  ingress {
+    from_port         = 3389
+    to_port           = 3389
     protocol          = "tcp"
     cidr_blocks       = [
       "0.0.0.0/0",
@@ -328,21 +322,47 @@ resource "aws_instance" "{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
-  connection {
-    type     = "ssh"  
-    user     = "ec2-user"
-    timeout  = "60m"
-    private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
-  }
-
   provisioner "remote-exec" {
-    scripts = [
-      {{ range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
-        "{{ $scriptPath }}",
-      {{ end }}
+    connection {
+      type     = "ssh"  
+      user     = "ec2-user"
+      timeout  = "60m"
+      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+    }
+    inline = [
+      "curl -sL -o /tmp/userdata.sh 'http://169.254.169.254/latest/user-data'",
+      "sudo bash /tmp/userdata.sh",
+      "rm -f /tmp/userdata.sh",
     ]
   }
+
+  {{ range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
+    {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+    provisioner "file" {
+      connection {
+        type     = "ssh"  
+        user     = "root"
+        timeout  = "60m"
+        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      }
+      source      = "{{ $scriptPath }}"
+      destination = "/tmp/{{ $sname }}"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        type     = "ssh"  
+        user     = "root"
+        timeout  = "60m"
+        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      }
+      inline = [
+        "chmod +x /tmp/{{ $sname }}",
+        "/tmp/{{ $sname }}",
+        "rm -f /tmp/{{ $sname }}",
+      ]
+    }
+  {{ end }}  
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
@@ -504,13 +524,34 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   {{ if eq $host.OS "w2k16" }}
     {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
 
+    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
+
     user_data = "${file("{{ $scriptPath }}")}"
 
-    connection {
-      type     = "winrm"
-      user     = "Administrator"
-      timeout  = "60m"
-      password = "{{ $.Competition.RootPassword }}"
+    provisioner "file" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del C:\pw.ps1 || ver1>nul",
+      ]
     }
 
     {{ $fileUploads := $host.UploadFiles }}
@@ -518,6 +559,13 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $fileUploadCount 0 }}
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
           source      = "{{ $localFile }}"
           destination = "{{ $remoteFile }}"
         }
@@ -532,11 +580,25 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             source      = "{{ $scriptPath }}"
             destination = "C:/laforge/{{ $sname }}"
           }
 
           provisioner "remote-exec" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             inline = [
               "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
             ]
@@ -546,24 +608,67 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
           inline = [       
-            "rmdir /s /q \"C:/laforge\" || ver>nul",
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
           ]
         }
       {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
     {{ end }}
   {{ end }}
 
   {{ if eq $host.OS "w2k16sql" }}
     {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
 
+    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
+
     user_data = "${file("{{ $scriptPath }}")}"
 
-    connection {
-      type     = "winrm"
-      user     = "Administrator"
-      timeout  = "60m"
-      password = "{{ $.Competition.RootPassword }}"
+    provisioner "file" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del C:\pw.ps1 || ver1>nul",
+      ]
     }
 
     {{ $fileUploads := $host.UploadFiles }}
@@ -571,11 +676,19 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $fileUploadCount 0 }}
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
           source      = "{{ $localFile }}"
           destination = "{{ $remoteFile }}"
         }
       {{ end }}    
     {{ end }}
+
 
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
@@ -584,11 +697,25 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             source      = "{{ $scriptPath }}"
             destination = "C:/laforge/{{ $sname }}"
           }
 
           provisioner "remote-exec" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             inline = [
               "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
             ]
@@ -598,24 +725,67 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+          
           inline = [       
-            "rmdir /s /q \"C:/laforge\" || ver>nul",
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
           ]
         }
       {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
     {{ end }}
   {{ end }}
 
   {{ if eq $host.OS "w2k12" }}
     {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
 
+    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
+
     user_data = "${file("{{ $scriptPath }}")}"
 
-    connection {
-      type     = "winrm"
-      user     = "Administrator"
-      timeout  = "60m"
-      password = "{{ $.Competition.RootPassword }}"
+    provisioner "file" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        type = "winrm"
+        user = "Administrator"
+        timeout = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del C:\pw.ps1 || ver1>nul",
+      ]
     }
 
     {{ $fileUploads := $host.UploadFiles }}
@@ -623,11 +793,19 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $fileUploadCount 0 }}
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
           source      = "{{ $localFile }}"
           destination = "{{ $remoteFile }}"
         }
       {{ end }}    
     {{ end }}
+
 
     {{ $scriptCount := len $host.Scripts }}
     {{ if gt $scriptCount 0 }}
@@ -636,11 +814,25 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             source      = "{{ $scriptPath }}"
             destination = "C:/laforge/{{ $sname }}"
           }
 
           provisioner "remote-exec" {
+            connection {
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
             inline = [
               "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
             ]
@@ -650,11 +842,33 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+          
           inline = [       
-            "rmdir /s /q \"C:/laforge\" || ver>nul",
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
           ]
         }
       {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
     {{ end }}
   {{ end }}
 
@@ -750,16 +964,32 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ end }}
   {{ end }}
 
-  {{ $depLen := len $host.Dependencies }}
-  {{ if gt $depLen 0 }}
+  {{ if ne $.Environment.GenesisHost.Hostname "" }}
+    {{ if ne $hostname $.Environment.GenesisHost.Hostname }}
+      {{ $depLen := len $host.Dependencies }}
+      {{ if gt $depLen 0 }}
 
-    depends_on = [
-      {{ range $_, $dependency := $host.Dependencies }}
-        "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
-      {{ end }}
-    ]
+        depends_on = [
+          "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
+          {{ range $_, $dependency := $host.Dependencies }}
+            "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
+          {{ end }}
+        ]
 
-  {{ end }}
+      {{ end }}    
+    {{ end }}
+  {{ else }}
+    {{ $depLen := len $host.Dependencies }}
+    {{ if gt $depLen 0 }}
+
+      depends_on = [
+        {{ range $_, $dependency := $host.Dependencies }}
+          "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
+        {{ end }}
+      ]
+
+    {{ end }}
+  {{ end }}    
 }
 
 {{ $fullHostname := printf "%s-%s" $hostname $id }}

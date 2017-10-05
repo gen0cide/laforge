@@ -36,22 +36,23 @@ type Dependency struct {
 type RemoteFiles map[string]string
 
 type Host struct {
-	Hostname       string       `yaml:"hostname"`
-	OS             string       `yaml:"os"`
-	AMI            string       `yaml:"ami"`
-	InstanceSize   string       `yaml:"instance_size"`
-	LastOctet      int          `yaml:"last_octet"`
-	InternalCNAMEs []string     `yaml:"internal_cnames"`
-	ExternalCNAMEs []string     `yaml:"external_cnames"`
-	TCPPorts       []string     `yaml:"public_tcp"`
-	UDPPorts       []string     `yaml:"public_udp"`
-	Scripts        []string     `yaml:"scripts"`
-	UserGroups     []string     `yaml:"user_groups"`
-	DNSEntries     []DNSEntry   `yaml:"dns_entries"`
-	Dependencies   []Dependency `yaml:"dependencies"`
-	Files          RemoteFiles  `yaml:"files"`
-	Vars           `yaml:"variables"`
-	Network        `yaml:"-"`
+	Hostname         string       `yaml:"hostname"`
+	OS               string       `yaml:"os"`
+	AMI              string       `yaml:"ami"`
+	InstanceSize     string       `yaml:"instance_size"`
+	LastOctet        int          `yaml:"last_octet"`
+	InternalCNAMEs   []string     `yaml:"internal_cnames"`
+	ExternalCNAMEs   []string     `yaml:"external_cnames"`
+	TCPPorts         []string     `yaml:"public_tcp"`
+	UDPPorts         []string     `yaml:"public_udp"`
+	Scripts          []string     `yaml:"scripts"`
+	OverridePassword string       `yaml:"override_password"`
+	UserGroups       []string     `yaml:"user_groups"`
+	DNSEntries       []DNSEntry   `yaml:"dns_entries"`
+	Dependencies     []Dependency `yaml:"dependencies"`
+	Files            RemoteFiles  `yaml:"files"`
+	Vars             `yaml:"variables"`
+	Network          `yaml:"-"`
 }
 
 func (h *Host) UploadFiles() map[string]string {
