@@ -255,21 +255,53 @@ resource "aws_instance" "{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
-  connection {
-    type     = "winrm"
-    user     = "Administrator"
-    timeout  = "60m"
-    password = "{{ $.Environment.PodPassword $.PodID }}"
-  }
+  {{ $scriptCount := len $host.Scripts }}
+  {{ if gt $scriptCount 0 }}
+    {{ range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
+      {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+      {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+        provisioner "file" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Environment.PodPassword $.PodID }}"
+          }
 
-  provisioner "remote-exec" {
-    scripts = [
-      {{ range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
-        "{{ $scriptPath }}",
+          source      = "{{ $scriptPath }}"
+          destination = "C:/laforge/{{ $sname }}"
+        }
+
+        provisioner "remote-exec" {
+          connection {
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Environment.PodPassword $.PodID }}"
+          }
+
+          inline = [
+            "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+          ]
+        }
       {{ end }}
-    ]
-  }
+    {{ end }}
+
+    {{ if gt $scriptCount 0 }}
+      provisioner "remote-exec" {
+        connection {
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Environment.PodPassword $.PodID }}"
+        }
+        
+        inline = [       
+          "rmdir /s /q \"C:/laforge\" || ver1>nul",
+        ]
+      }
+    {{ end }}
+  {{ end }}
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
