@@ -891,7 +891,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       }
 
       inline = [
-        "sed -i 's/^.*ssh-/ssh-/;' /root/.ssh/authorized_keys",
+        "sudo sed -i 's/^.*ssh-/ssh-/;' /root/.ssh/authorized_keys",
       ]
     }
 
