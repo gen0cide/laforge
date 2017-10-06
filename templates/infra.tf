@@ -877,11 +877,17 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
     user_data = "${file("{{ $scriptPath }}")}"
 
-    connection {
-      type     = "ssh"
-      user     = "root"
-      timeout  = "60m"
-      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+    provisioner "remote-exec" {
+      connection {
+        type     = "ssh"
+        user     = "ubuntu"
+        timeout  = "60m"
+        private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+      }
+
+      inline = [
+        "/bin/bash -c \"timeout 300 sed '/finished-user-data/q' <(tail -f /var/log/cloud-init-output.log)\""
+      ]
     }
 
     {{ $fileUploads := $host.UploadFiles }}
@@ -889,6 +895,13 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $fileUploadCount 0 }}
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
+          connection {
+            type     = "ssh"
+            user     = "root"
+            timeout  = "60m"
+            private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+          }
+
           source      = "{{ $localFile }}"
           destination = "{{ $remoteFile }}"
         }
@@ -902,11 +915,24 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
+            connection {
+              type     = "ssh"
+              user     = "root"
+              timeout  = "60m"
+              private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+            }
             source      = "{{ $scriptPath }}"
             destination = "/tmp/{{ $sname }}"
           }
 
           provisioner "remote-exec" {
+            connection {
+              type     = "ssh"
+              user     = "root"
+              timeout  = "60m"
+              private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+            }
+
             inline = [
               "chmod +x /tmp/{{ $sname }}",
               "/tmp/{{ $sname }}",
