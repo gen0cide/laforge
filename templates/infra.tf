@@ -891,7 +891,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       }
 
       inline = [
-        "/bin/bash -c \"timeout 300 sed '/finished-user-data/q' <(tail -f /var/log/cloud-init-output.log)\""
+        "sed -i 's/^.*ssh-/ssh-/;' /root/.ssh/authorized_keys",
       ]
     }
 
