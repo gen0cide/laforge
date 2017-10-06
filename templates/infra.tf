@@ -255,7 +255,7 @@ resource "aws_instance" "{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
-  {{ $scriptCount := len $host.Scripts }}
+  {{ $scriptCount := len $.Environment.JumpHosts.Windows.Scripts }}
   {{ if gt $scriptCount 0 }}
     {{ range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
       {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}

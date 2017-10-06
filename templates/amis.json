@@ -40,7 +40,7 @@
     "regions": {
       "us-east-1": "ami-e87d4993",
       "us-east-2": "ami-3fa9895a",
-      "us-west-2": "ami-353fdf4d"
+      "us-west-2": "ami-fc8a7984"
     },
     "username": "administrator"    
   },
