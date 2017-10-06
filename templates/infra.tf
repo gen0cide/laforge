@@ -500,6 +500,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   subnet_id = "${aws_subnet.{{ $id }}_{{ $network.Name }}.id}"
   ebs_optimized = true
 
+  root_block_device {
+    delete_on_termination = true
+    volume_size = 50
+  }
+
   private_ip = "{{ $hostIP }}"
 
   vpc_security_group_ids = [
