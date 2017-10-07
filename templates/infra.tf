@@ -302,6 +302,10 @@ resource "aws_instance" "{{ $hostname }}" {
       }
     {{ end }}
   {{ end }}
+
+  depends_on = [
+    "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
+  ]
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
@@ -394,7 +398,11 @@ resource "aws_instance" "{{ $hostname }}" {
         "rm -f /tmp/{{ $sname }}",
       ]
     }
-  {{ end }}  
+  {{ end }}
+
+  depends_on = [
+    "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
+  ]  
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
