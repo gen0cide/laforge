@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
@@ -67,6 +68,28 @@ func CmdEnvCreate(c *cli.Context) {
 		competition.LogFatal("Cannot Load LF_HOME: " + err.Error())
 	}
 	comp.CreateEnv(newEnvName, newEnvPrefix)
+}
+
+func CmdEnvPassword(c *cli.Context) {
+	_, env := InitConfig()
+	TFCheck()
+	podID := c.Args().Get(0)
+	if len(podID) < 1 {
+		competition.LogFatal("You did not provide a Pod ID to use.")
+	}
+	podVal, err := strconv.Atoi(podID)
+	if err != nil {
+		competition.LogFatal("You did not supply a valid team number.")
+	}
+	dp := env.PodPassword(podVal)
+	competition.Log(fmt.Sprintf("Determined Password: %s", dp))
+}
+
+func CmdEnvSshConfig(c *cli.Context) {
+	_, env := InitConfig()
+	env.GenerateSSHConfig()
+	competition.Log("SSH Config successfully saved to: " + env.SSHConfigPath())
+	return
 }
 
 func CmdEnvBashConfig(c *cli.Context) {

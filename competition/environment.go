@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bradfitz/iter"
 	"github.com/hashicorp/terraform/terraform"
 
 	yaml "gopkg.in/yaml.v2"
@@ -20,32 +21,18 @@ import (
 type Vars map[string]string
 
 type Environment struct {
-	Name             string   `yaml:"name"`
-	Prefix           string   `yaml:"prefix"`
-	WhitelistIPs     []string `yaml:"ip_whitelist"`
+	Name             string `yaml:"name"`
+	Prefix           string `yaml:"prefix"`
 	Vars             `yaml:"variables"`
-	AWSConfig        `yaml:"aws_config"`
-	PodCount         int      `yaml:"pod_count"`
-	Domain           string   `yaml:"domain"`
-	IncludedNetworks []string `yaml:"included_networks"`
-	GenesisHost      `yaml:"entry_point"`
+	PodCount         int                 `yaml:"pod_count"`
+	IncludedNetworks []string            `yaml:"included_networks"`
 	ResolvedNetworks map[string]*Network `yaml:"-"`
 	Competition      `yaml:"-"`
 	Users            []*User    `yaml:"-"`
 	Networks         []*Network `yaml:"-"`
 	Hosts            []*Host    `yaml:"-"`
 	JumpHosts        `yaml:"jump_hosts"`
-}
-
-type GenesisHost struct {
-	Hostname string `yaml:"hostname"`
-	Network  string `yaml:"network"`
-}
-
-type AWSConfig struct {
-	CIDR   string `yaml:"cidr"`
-	Region string `yaml:"region"`
-	Zone   string `yaml:"zone"`
+	GenesisHost      *Host `yaml:"genesis_host"`
 }
 
 type JumpHosts struct {
@@ -91,16 +78,28 @@ func (e *Environment) TfDir() string {
 	return filepath.Join(e.EnvRoot(), "terraform")
 }
 
-func (e *Environment) TfFile() string {
-	return filepath.Join(e.TfDir(), "infra.tf")
+func (e *Environment) TeamIDs() []int {
+	teams := []int{}
+	for i := range iter.N(e.PodCount) {
+		teams = append(teams, i)
+	}
+	return teams
 }
 
-func (e *Environment) TfStateFile() string {
-	return filepath.Join(e.TfDir(), "terraform.tfstate")
+func (e *Environment) TfDirForTeam(teamID int) string {
+	return filepath.Join(e.TfDir(), strconv.Itoa(teamID))
 }
 
-func (e *Environment) TfScriptsDir() string {
-	return filepath.Join(e.EnvRoot(), "terraform", "scripts")
+func (e *Environment) TfFile(teamID int) string {
+	return filepath.Join(e.TfDirForTeam(teamID), "infra.tf")
+}
+
+func (e *Environment) TfStateFile(teamID int) string {
+	return filepath.Join(e.TfDirForTeam(teamID), "terraform.tfstate")
+}
+
+func (e *Environment) TfScriptsDir(teamID int) string {
+	return filepath.Join(e.TfDirForTeam(teamID), "scripts")
 }
 
 func (e *Environment) SSHConfigPath() string {
@@ -108,7 +107,7 @@ func (e *Environment) SSHConfigPath() string {
 }
 
 func (e *Environment) DefaultCIDR() string {
-	return "10.0.0.0/8"
+	return "10.0.0.0/16"
 }
 
 func (e *Environment) PodPassword(podID int) string {
@@ -144,25 +143,27 @@ func LoadEnvironment(name string) (*Environment, error) {
 	return &env, nil
 }
 
-func (e *Environment) GenerateSSHConfig() {
+func (e *Environment) NewSSHConfig() *SSHConfig {
 	log.SetFlags(0)
 	log.SetOutput(ioutil.Discard)
-	fileData, err := ioutil.ReadFile(e.TfStateFile())
-	if err != nil {
-		LogFatal("Fatal Error Reading Terraform State: " + err.Error())
-	}
-	tfState, err := terraform.ReadStateV3(fileData)
-	if err != nil {
-		LogFatal("Fatal Error Parsing Terraform State: " + err.Error())
-	}
-
+	teams := e.TeamIDs()
 	ipMap := map[string]string{}
 
-	for _, module := range tfState.Modules {
-		for outputKey, outputState := range module.Outputs {
-			if strings.Contains(outputKey, "public_ips") {
-				explode := strings.Split(outputKey, ".")
-				ipMap[explode[1]] = outputState.Value.(string)
+	for _, t := range teams {
+		fileData, err := ioutil.ReadFile(e.TfStateFile(t))
+		if err != nil {
+			LogFatal("Fatal Error Reading Terraform State: " + err.Error())
+		}
+		tfState, err := terraform.ReadStateV3(fileData)
+		if err != nil {
+			LogFatal("Fatal Error Parsing Terraform State: " + err.Error())
+		}
+		for _, module := range tfState.Modules {
+			for outputKey, outputState := range module.Outputs {
+				if strings.Contains(outputKey, "public_ips") {
+					explode := strings.Split(outputKey, ".")
+					ipMap[explode[1]] = outputState.Value.(string)
+				}
 			}
 		}
 	}
@@ -171,6 +172,12 @@ func (e *Environment) GenerateSSHConfig() {
 		SSHKey: e.Competition.SSHPrivateKeyPath(),
 		Hosts:  ipMap,
 	}
+
+	return &sshConf
+}
+
+func (e *Environment) GenerateSSHConfig() {
+	sshConf := e.NewSSHConfig()
 
 	tmp := template.New(RandomString(entropySize))
 	newTmpl, err := tmp.Parse(string(MustAsset("ssh.conf")))
@@ -290,6 +297,40 @@ func (e *Environment) ResolvePublicTCP() map[string]SecurityGroup {
 			}
 		}
 	}
+	for _, port := range e.GenesisHost.TCPPorts {
+		i, err := strconv.Atoi(port)
+		if err == nil {
+			portMap[port] = SecurityGroup{
+				Protocol: "tcp",
+				FromPort: i,
+				ToPort:   i,
+			}
+			continue
+		} else {
+			matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+			if err == nil && matched {
+				portRange := strings.Split(port, "-")
+				fp, err := strconv.Atoi(portRange[0])
+				if err != nil {
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+					continue
+				}
+				tp, err := strconv.Atoi(portRange[1])
+				if err != nil {
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+					continue
+				}
+				portMap[port] = SecurityGroup{
+					Protocol: "tcp",
+					FromPort: fp,
+					ToPort:   tp,
+				}
+				continue
+			}
+			LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+			continue
+		}
+	}
 	return portMap
 }
 
@@ -333,6 +374,40 @@ func (e *Environment) ResolvePublicUDP() map[string]SecurityGroup {
 					continue
 				}
 			}
+		}
+	}
+	for _, port := range e.GenesisHost.UDPPorts {
+		i, err := strconv.Atoi(port)
+		if err == nil {
+			portMap[port] = SecurityGroup{
+				Protocol: "udp",
+				FromPort: i,
+				ToPort:   i,
+			}
+			continue
+		} else {
+			matched, err := regexp.MatchString("^\\d+-\\d+$", port)
+			if err == nil && matched {
+				portRange := strings.Split(port, "-")
+				fp, err := strconv.Atoi(portRange[0])
+				if err != nil {
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+					continue
+				}
+				tp, err := strconv.Atoi(portRange[1])
+				if err != nil {
+					LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+					continue
+				}
+				portMap[port] = SecurityGroup{
+					Protocol: "udp",
+					FromPort: fp,
+					ToPort:   tp,
+				}
+				continue
+			}
+			LogError(fmt.Sprintf("invalid port: port=%s host=%s protocol=tcp (genesis host)", port, e.GenesisHost.Hostname))
+			continue
 		}
 	}
 	return portMap
@@ -394,12 +469,12 @@ func (e *Environment) KaliJumpAMI() string {
 	if e.JumpHosts.Kali.AMI != "" {
 		return e.JumpHosts.Kali.AMI
 	}
-	return AMIMap["kali"].Regions[e.AWSConfig.Region]
+	return AMIMap["kali"].Regions[e.AWS.Region]
 }
 
 func (e *Environment) WindowsJumpAMI() string {
 	if e.JumpHosts.Windows.AMI != "" {
 		return e.JumpHosts.Windows.AMI
 	}
-	return AMIMap["w2k16"].Regions[e.AWSConfig.Region]
+	return AMIMap["w2k16"].Regions[e.AWS.Region]
 }

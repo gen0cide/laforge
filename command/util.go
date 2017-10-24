@@ -14,5 +14,6 @@ func InitConfig() (*competition.Competition, *competition.Environment) {
 	if env == nil {
 		competition.LogFatal("Cannot load environment! (Check ~/.lf_env)")
 	}
+	env.Competition = *comp
 	return comp, env
 }

@@ -7,30 +7,23 @@
 
 # AWS Configuration
 provider "aws" {
-  access_key = "{{ .Competition.AWSCred.APIKey }}"
-  secret_key = "{{ .Competition.AWSCred.APISecret }}"
-  region = "{{ .Environment.AWSConfig.Region }}"
+  access_key = "{{ .Competition.AWS.APIKey }}"
+  secret_key = "{{ .Competition.AWS.APISecret }}"
+  region = "{{ .Competition.AWS.Region }}"
   profile = ""
 }
 
+{{ $id := printf "%s%d" $.Environment.Prefix $.PodID }}
+
 # Key Pair
-resource "aws_key_pair" "ssh_{{ .Environment.Name }}" {
-  key_name = "ssh_{{ .Environment.Name }}"
+resource "aws_key_pair" "{{ $id }}_ssh_keypair" {
+  key_name = "{{ $id }}_ssh_keypair"
   public_key = "{{ .Competition.SSHPublicKey | html }}"
 }
 
-{{ range $i, $_ := N .Environment.PodCount }}
-
-{{ $id := printf "%s%d" $.Environment.Prefix $i }}
-
-###########################################################
-# BEGIN TEAM BLOCK
-# team:{{ $id }}
-###########################################################
-
 # vpc:{{ $id }}
 resource "aws_vpc" "{{ $id }}_vpc" {
-  cidr_block = "{{ $.Environment.AWSConfig.CIDR }}"
+  cidr_block = "{{ $.Competition.AWS.CIDR }}"
   enable_dns_hostnames = true
 
   tags {
@@ -80,28 +73,16 @@ resource "aws_route_table_association" "{{ $id }}_rt_assoc" {
   route_table_id = "${aws_route_table.{{ $id }}_default_gateway.id}"
 }
 
-# r53:{{ $id }}
-resource "aws_route53_zone" "{{ $id }}_r53" {
-  vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
-  name = "{{ $.Environment.Domain }}"  
-  comment = "{{ $id }}_internal_zone"
-
-  tags {
-    Environment = "{{ $.Environment.Name }}"
-    Team = "{{ $id }}"
-  }
-}
-
 # dhcp:{{ $id }}
 resource "aws_vpc_dhcp_options" "{{ $id }}_dhcp" {
-  domain_name = "{{ $.Competition.DHCPConfig.DNSName }}"
+  domain_name = "{{ $.Competition.AWS.DHCPOptions.DNSName }}"
   domain_name_servers = [
-    {{ range $_, $nameserver := $.Competition.DHCPConfig.Nameservers }}
+    {{ range $_, $nameserver := $.Competition.AWS.DHCPOptions.Nameservers }}
       "{{ $nameserver }}",
     {{ end }}
   ]
   ntp_servers = [
-    {{ range $_, $ntpserver := $.Competition.DHCPConfig.NTPServers }}
+    {{ range $_, $ntpserver := $.Competition.AWS.DHCPOptions.NTPServers }}
       "{{ $ntpserver }}",
     {{ end }}
   ]  
@@ -163,28 +144,6 @@ resource "aws_security_group" "{{ $id }}_vdi" {
   description = "Laforge - {{ $id }}_vdi SG"
   vpc_id = "${aws_vpc.{{ $id }}_vpc.id}"
 
-  # ingress {
-  #   from_port         = 22
-  #   to_port           = 22
-  #   protocol          = "tcp"
-  #   cidr_blocks       = [
-  #     {{ range $_, $whitelistIP := $.Environment.WhitelistIPs }}
-  #     "{{ $whitelistIP }}",
-  #     {{ end }}
-  #   ]
-  # }
-
-  # ingress {
-  #   from_port         = 3389
-  #   to_port           = 3389
-  #   protocol          = "tcp"
-  #   cidr_blocks       = [
-  #     {{ range $_, $whitelistIP := $.Environment.WhitelistIPs }}
-  #     "{{ $whitelistIP }}",
-  #     {{ end }}
-  #   ]
-  # }
-
   ingress {
     from_port         = 22
     to_port           = 22
@@ -219,6 +178,137 @@ resource "aws_security_group" "{{ $id }}_vdi" {
   }
 }
 
+{{ $genesis_hostname := printf "%s-%s" $.Environment.GenesisHost.Hostname $id }}
+
+resource "aws_eip" "{{ $genesis_hostname }}_eip" {
+  instance = "${aws_instance.{{ $genesis_hostname }}.id}"
+  depends_on = ["aws_instance.{{ $genesis_hostname }}"]
+  vpc      = true
+}
+
+resource "aws_instance" "{{ $genesis_hostname }}" {
+
+  ami = "{{ $.Environment.GenesisHost.GetAMI $.Competition.AWS.Region }}"
+  instance_type = "{{ $.Environment.GenesisHost.InstanceSize }}"
+  key_name = "${aws_key_pair.{{ $id }}_ssh_keypair.key_name}"
+  subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
+  ebs_optimized = true
+
+  {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 0 $.Environment.GenesisHost.LastOctet }}
+
+  {{ $scriptPath := ScriptRender "genesis_ubuntu_uds.sh" $.Competition $.Environment $.PodID nil nil $genesis_hostname }}
+
+  user_data = "${file("{{ $scriptPath }}")}"
+
+  private_ip = "{{ $customIP }}"
+
+  vpc_security_group_ids = [
+    "${aws_security_group.{{ $id }}_base.id}",
+    "${aws_security_group.{{ $id }}_vdi.id}",
+    {{ range $_, $port := $.Environment.GenesisHost.ValidTCPPorts }}
+      "${aws_security_group.{{ $id }}_public_sg_tcp_{{ $port }}.id}",
+    {{ end }}
+    {{ range $_, $port := $.Environment.GenesisHost.ValidUDPPorts }}
+      "${aws_security_group.{{ $id }}_public_sg_udp_{{ $port }}.id}",
+    {{ end }}
+  ]
+
+  tags {
+    Name = "{{ $genesis_hostname }}"
+    Environment = "{{ $.Environment.Name }}"
+    Network = "{{ $id }}-vdi"
+    Team = "{{ $id }}"
+  }
+
+}
+
+resource "null_resource" "configure_{{ $genesis_hostname }}" {
+  triggers {
+    instance = "${aws_instance.{{ $genesis_hostname }}.id}"
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      host     = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+      type     = "ssh"
+      user     = "ubuntu"
+      timeout  = "60m"
+      private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+    }
+
+    inline = [
+      "sudo sed -i 's/^.*ssh-/ssh-/;' /root/.ssh/authorized_keys",
+    ]
+  }
+
+  {{ $fileUploads := $.Environment.GenesisHost.UploadFiles }}
+  {{ $fileUploadCount := len $fileUploads }}
+  {{ if gt $fileUploadCount 0 }}
+    {{ range $localFile, $remoteFile := $fileUploads }}
+      provisioner "file" {
+        connection {
+          host     = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+          type     = "ssh"
+          user     = "root"
+          timeout  = "60m"
+          private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+        }
+
+        source      = "{{ $localFile }}"
+        destination = "{{ $remoteFile }}"
+      }
+    {{ end }}    
+  {{ end }}
+
+  {{ $scriptCount := len $.Environment.GenesisHost.Scripts }}
+  {{ if gt $scriptCount 0 }}
+
+    {{ range $_, $sname := $.Environment.GenesisHost.Scripts }}
+      {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID nil $.Environment.GenesisHost $genesis_hostname }}
+      {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+        provisioner "file" {
+          connection {
+            host     = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+            type     = "ssh"
+            user     = "root"
+            timeout  = "60m"
+            private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+          }
+          source      = "{{ $scriptPath }}"
+          destination = "/tmp/{{ $sname }}"
+        }
+
+        provisioner "remote-exec" {
+          connection {
+            host     = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+            type     = "ssh"
+            user     = "root"
+            timeout  = "60m"
+            private_key = "${file("{{ $.Competition.SSHPrivateKeyPath }}")}"
+          }
+
+          inline = [
+            "chmod +x /tmp/{{ $sname }}",
+            "/tmp/{{ $sname }}",
+            "rm -f /tmp/{{ $sname }}",
+          ]
+        }
+      {{ end }}
+    {{ end }}      
+  {{ end }}
+}
+
+output "public_ips.{{ $genesis_hostname }}" {
+  value = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+}
+
+# Configure the DNS Provider
+provider "dns" {
+  update {
+    server = "${aws_eip.{{ $genesis_hostname }}_eip.public_ip}"
+  }
+}
+
 {{/* TODO: VDI Network Creation */}}
 
 {{ range $wjh, $_ := N $.Environment.JumpHosts.Windows.Count }}
@@ -228,25 +318,22 @@ resource "aws_security_group" "{{ $id }}_vdi" {
 {{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
 
 resource "aws_eip" "{{ $hostname }}_eip" {
-  vpc = true
-}
-
-resource "aws_eip_association" "{{ $hostname }}_eip_assoc" {
-  instance_id   = "${aws_instance.{{ $hostname }}.id}"
-  allocation_id = "${aws_eip.{{ $hostname }}_eip.id}"
+  instance = "${aws_instance.{{ $hostname }}.id}"
+  depends_on = ["aws_instance.{{ $hostname }}"]
+  vpc      = true
 }
 
 resource "aws_instance" "{{ $hostname }}" {
 
   ami = "{{ $.Environment.WindowsJumpAMI }}"
   instance_type = "{{ $.Environment.JumpHosts.Windows.Size }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
+  key_name = "${aws_key_pair.{{ $id }}_ssh_keypair.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
   ebs_optimized = true
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 20 $wjh }}
 
-  {{ $scriptPath := ScriptRender "jump_windows_uds.xml" $.Competition $.Environment $i nil nil $hostname }}
+  {{ $scriptPath := ScriptRender "jump_windows_uds.xml" $.Competition $.Environment $.PodID nil nil $hostname }}
 
   user_data = "${file("{{ $scriptPath }}")}"
 
@@ -264,13 +351,28 @@ resource "aws_instance" "{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
+  depends_on = [
+    {{ range $_, $network := $.Environment.ResolvedNetworks }}
+      {{ range $hostname, $host := $network.ResolvedHosts }}
+        "aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}",
+      {{ end }}
+    {{ end }}    
+  ]
+}
+
+resource "null_resource" "configure_{{ $hostname }}" {
+  triggers {
+    instance = "${aws_instance.{{ $hostname }}.id}"
+  }
+
   {{ $scriptCount := len $.Environment.JumpHosts.Windows.Scripts }}
   {{ if gt $scriptCount 0 }}
     {{ range $_, $sname := $.Environment.JumpHosts.Windows.Scripts }}
-      {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+      {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID nil nil $hostname }}
       {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
         provisioner "file" {
           connection {
+            host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
             type     = "winrm"
             user     = "Administrator"
             timeout  = "60m"
@@ -283,6 +385,7 @@ resource "aws_instance" "{{ $hostname }}" {
 
         provisioner "remote-exec" {
           connection {
+            host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
             type     = "winrm"
             user     = "Administrator"
             timeout  = "60m"
@@ -299,6 +402,7 @@ resource "aws_instance" "{{ $hostname }}" {
     {{ if gt $scriptCount 0 }}
       provisioner "remote-exec" {
         connection {
+          host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
           type     = "winrm"
           user     = "Administrator"
           timeout  = "60m"
@@ -311,10 +415,6 @@ resource "aws_instance" "{{ $hostname }}" {
       }
     {{ end }}
   {{ end }}
-
-  depends_on = [
-    "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
-  ]
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
@@ -323,12 +423,12 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
   type    = "A"
   ttl     = "60"
   records = [
-    "${aws_instance.{{ $hostname }}.public_ip}",
+    "${aws_eip.{{ $hostname }}_eip.public_ip}",
   ]
 }
 
 output "public_ips.{{ $hostname }}" {
-  value = "${aws_instance.{{ $hostname }}.public_ip}"
+  value = "${aws_eip.{{ $hostname }}_eip.public_ip}"
 }
 
 {{ end }}
@@ -340,25 +440,22 @@ output "public_ips.{{ $hostname }}" {
 {{ $fqdn := printf "%s.%s" $hostname $.Environment.Name }}
 
 resource "aws_eip" "{{ $hostname }}_eip" {
-  vpc = true
-}
-
-resource "aws_eip_association" "{{ $hostname }}_eip_assoc" {
-  instance_id   = "${aws_instance.{{ $hostname }}.id}"
-  allocation_id = "${aws_eip.{{ $hostname }}_eip.id}"
+  instance = "${aws_instance.{{ $hostname }}.id}"
+  depends_on = ["aws_instance.{{ $hostname }}"]
+  vpc      = true
 }
 
 resource "aws_instance" "{{ $hostname }}" {
 
   ami = "{{ $.Environment.KaliJumpAMI }}"
-  instance_type = "{{ $.Environment.JumpHosts.Kali.Size }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
+  instance_type = "{{ $.Environment.JumpHosts.Windows.Size }}"
+  key_name = "${aws_key_pair.{{ $id }}_ssh_keypair.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_vdi_subnet.id}"
   ebs_optimized = true
 
   {{ $customIP := CustomIP $.Environment.JumpHosts.CIDR 30 $wjh }}
 
-  {{ $scriptPath := ScriptRender "jump_ubuntu_uds.sh" $.Competition $.Environment $i nil nil $hostname }}
+  {{ $scriptPath := ScriptRender "jump_ubuntu_uds.sh" $.Competition $.Environment $.PodID nil nil $hostname }}
 
   user_data = "${file("{{ $scriptPath }}")}"
 
@@ -376,8 +473,23 @@ resource "aws_instance" "{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
+  depends_on = [
+    {{ range $_, $network := $.Environment.ResolvedNetworks }}
+      {{ range $hostname, $host := $network.ResolvedHosts }}
+        "aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}",
+      {{ end }}
+    {{ end }}    
+  ]
+}
+
+resource "null_resource" "configure_{{ $hostname }}" {
+  triggers {
+    instance = "${aws_instance.{{ $hostname }}.id}"
+  }
+
   provisioner "remote-exec" {
     connection {
+      host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
       type     = "ssh"  
       user     = "ec2-user"
       timeout  = "60m"
@@ -391,9 +503,10 @@ resource "aws_instance" "{{ $hostname }}" {
   }
 
   {{ range $_, $sname := $.Environment.JumpHosts.Kali.Scripts }}
-    {{ $scriptPath := DScript $sname $.Competition $.Environment $i nil nil $hostname }}
+    {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID nil nil $hostname }}
     provisioner "file" {
       connection {
+        host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
         type     = "ssh"  
         user     = "root"
         timeout  = "60m"
@@ -405,6 +518,7 @@ resource "aws_instance" "{{ $hostname }}" {
 
     provisioner "remote-exec" {
       connection {
+        host     = "${aws_eip.{{ $hostname }}_eip.public_ip}"
         type     = "ssh"  
         user     = "root"
         timeout  = "60m"
@@ -417,10 +531,6 @@ resource "aws_instance" "{{ $hostname }}" {
       ]
     }
   {{ end }}
-
-  depends_on = [
-    "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
-  ]  
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
@@ -429,12 +539,12 @@ resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
   type    = "A"
   ttl     = "60"
   records = [
-    "${aws_instance.{{ $hostname }}.public_ip}",
+    "${aws_eip.{{ $hostname }}_eip.public_ip}",
   ]
 }
 
 output "public_ips.{{ $hostname }}" {
-  value = "${aws_instance.{{ $hostname }}.public_ip}"
+  value = "${aws_eip.{{ $hostname }}_eip.public_ip}"
 }
 
 {{ end }}
@@ -549,21 +659,18 @@ resource "aws_security_group" "{{ $id }}_{{ $network.Name }}" {
 
 {{ $hostIP := CustomIP $network.CIDR 0 $host.LastOctet }}
 
+
 resource "aws_eip" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip" {
-  vpc = true
+  instance   = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+  depends_on = ["aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}"]
+  vpc        = true
 }
 
-resource "aws_eip_association" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip_assoc" {
-  instance_id   = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
-  allocation_id = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.id}"
-}
-
-# instance:{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}
 resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
-  ami = "{{ $host.GetAMI }}"
+  ami = "{{ $host.GetAMI $.Competition.AWS.Region }}"
   instance_type = "{{ $host.InstanceSize }}"
-  key_name = "${aws_key_pair.ssh_{{ $.Environment.Name }}.key_name}"
+  key_name = "${aws_key_pair.{{ $id }}_ssh_keypair.key_name}"
   subnet_id = "${aws_subnet.{{ $id }}_{{ $network.Name }}.id}"
   ebs_optimized = true
 
@@ -588,270 +695,57 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     Team = "{{ $id }}"
   }
 
+  root_block_device {
+    delete_on_termination = true
+    volume_size = {{ $host.GetDiskSize }}
+  }
+
   {{ if eq $host.OS "w2k16" }}
-
-    root_block_device {
-      delete_on_termination = true
-      volume_size = 30
-    }
-
-    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
-
-    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
-
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $.PodID $network $host $hostname }}
     user_data = "${file("{{ $scriptPath }}")}"
-
-    provisioner "file" {
-      connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
-        password = "LaForgeTempPassword!12345"
-      }
-
-      source = "{{ $pwScriptPath }}"
-      destination = "C:/pw.ps1"
-    }
-
-    provisioner "remote-exec" {
-      connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
-        password = "LaForgeTempPassword!12345"
-      }
-
-      inline = [
-        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
-        "del \"C:/pw.ps1\" || ver1>nul",
-      ]
-    }
-
-    {{ $fileUploads := $host.UploadFiles }}
-    {{ $fileUploadCount := len $fileUploads }}
-    {{ if gt $fileUploadCount 0 }}
-      {{ range $localFile, $remoteFile := $fileUploads }}
-        provisioner "file" {
-          connection {
-            type     = "winrm"
-            user     = "Administrator"
-            timeout  = "60m"
-            password = "{{ $.Competition.RootPassword }}"
-          }
-
-          source      = "{{ $localFile }}"
-          destination = "{{ $remoteFile }}"
-        }
-      {{ end }}    
-    {{ end }}
-
-
-    {{ $scriptCount := len $host.Scripts }}
-    {{ if gt $scriptCount 0 }}
-
-      {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
-        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
-          provisioner "file" {
-            connection {
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
-            }
-
-            source      = "{{ $scriptPath }}"
-            destination = "C:/laforge/{{ $sname }}"
-          }
-
-          provisioner "remote-exec" {
-            connection {
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
-            }
-
-            inline = [
-              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
-            ]
-          }
-        {{ end }}
-      {{ end }}
-
-      {{ if gt $scriptCount 0 }}
-        provisioner "remote-exec" {
-          connection {
-            type     = "winrm"
-            user     = "Administrator"
-            timeout  = "60m"
-            password = "{{ $.Competition.RootPassword }}"
-          }
-
-          inline = [       
-            "rmdir /s /q \"C:/laforge\" || ver1>nul",
-          ]
-        }
-      {{ end }}
-    {{ end }}
-
-    {{ if gt (len $host.OverridePassword) 0 }}
-      provisioner "remote-exec" {
-        connection {
-          type     = "winrm"
-          user     = "Administrator"
-          timeout  = "60m"
-          password = "{{ $.Competition.RootPassword }}"
-        }
-        
-        inline = [       
-          "net user Administrator {{ $host.OverridePassword }}",
-        ]
-      }
-    {{ end }}
   {{ end }}
 
   {{ if eq $host.OS "w2k16sql" }}
-
-    root_block_device {
-      delete_on_termination = true
-      volume_size = 30
-    }
-
-    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
-
-    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
-
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $.PodID $network $host $hostname }}
     user_data = "${file("{{ $scriptPath }}")}"
-
-    provisioner "file" {
-      connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
-        password = "LaForgeTempPassword!12345"
-      }
-
-      source = "{{ $pwScriptPath }}"
-      destination = "C:/pw.ps1"
-    }
-
-    provisioner "remote-exec" {
-      connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
-        password = "LaForgeTempPassword!12345"
-      }
-
-      inline = [
-        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
-        "del \"C:/pw.ps1\" || ver1>nul",
-      ]
-    }
-
-    {{ $fileUploads := $host.UploadFiles }}
-    {{ $fileUploadCount := len $fileUploads }}
-    {{ if gt $fileUploadCount 0 }}
-      {{ range $localFile, $remoteFile := $fileUploads }}
-        provisioner "file" {
-          connection {
-            type     = "winrm"
-            user     = "Administrator"
-            timeout  = "60m"
-            password = "{{ $.Competition.RootPassword }}"
-          }
-
-          source      = "{{ $localFile }}"
-          destination = "{{ $remoteFile }}"
-        }
-      {{ end }}    
-    {{ end }}
-
-
-    {{ $scriptCount := len $host.Scripts }}
-    {{ if gt $scriptCount 0 }}
-
-      {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
-        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
-          provisioner "file" {
-            connection {
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
-            }
-
-            source      = "{{ $scriptPath }}"
-            destination = "C:/laforge/{{ $sname }}"
-          }
-
-          provisioner "remote-exec" {
-            connection {
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
-            }
-
-            inline = [
-              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
-            ]
-          }
-        {{ end }}
-      {{ end }}
-
-      {{ if gt $scriptCount 0 }}
-        provisioner "remote-exec" {
-          connection {
-            type     = "winrm"
-            user     = "Administrator"
-            timeout  = "60m"
-            password = "{{ $.Competition.RootPassword }}"
-          }
-          
-          inline = [       
-            "rmdir /s /q \"C:/laforge\" || ver1>nul",
-          ]
-        }
-      {{ end }}
-    {{ end }}
-
-    {{ if gt (len $host.OverridePassword) 0 }}
-      provisioner "remote-exec" {
-        connection {
-          type     = "winrm"
-          user     = "Administrator"
-          timeout  = "60m"
-          password = "{{ $.Competition.RootPassword }}"
-        }
-        
-        inline = [       
-          "net user Administrator {{ $host.OverridePassword }}",
-        ]
-      }
-    {{ end }}
   {{ end }}
 
   {{ if eq $host.OS "w2k12" }}
-
-    root_block_device {
-      delete_on_termination = true
-      volume_size = 30
-    }
-
-    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $i $network $host $hostname }}
-
-    {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $i $network $host $hostname }}
-
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $.PodID $network $host $hostname }}
     user_data = "${file("{{ $scriptPath }}")}"
+  {{ end }}
+
+  {{ if eq $host.OS "ubuntu" }}
+    {{ $scriptPath := ScriptRender "ubuntu_uds.sh" $.Competition $.Environment $.PodID $network $host $hostname }}
+    user_data = "${file("{{ $scriptPath }}")}"
+  {{ end }}
+
+  {{ if eq $host.OS "centos" }}
+    {{ $scriptPath := ScriptRender "centos_uds.sh" $.Competition $.Environment $.PodID $network $host $hostname }}
+    user_data = "${file("{{ $scriptPath }}")}"
+  {{ end }}
+
+  depends_on = [
+    "null_resource.configure_{{ $genesis_hostname }}",
+    {{ range $_, $dependency := $host.Dependencies }}
+      "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
+    {{ end }}
+  ]
+}
+
+{{ if eq $host.OS "w2k16" }}
+  {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $.PodID $network $host $hostname }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
 
     provisioner "file" {
       connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
         password = "LaForgeTempPassword!12345"
       }
 
@@ -861,9 +755,10 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
     provisioner "remote-exec" {
       connection {
-        type = "winrm"
-        user = "Administrator"
-        timeout = "60m"
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
         password = "LaForgeTempPassword!12345"
       }
 
@@ -879,6 +774,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
           connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
             type     = "winrm"
             user     = "Administrator"
             timeout  = "60m"
@@ -896,10 +792,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $scriptCount 0 }}
 
       {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
             connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
               type     = "winrm"
               user     = "Administrator"
               timeout  = "60m"
@@ -912,6 +809,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
           provisioner "remote-exec" {
             connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
               type     = "winrm"
               user     = "Administrator"
               timeout  = "60m"
@@ -928,12 +826,13 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ if gt $scriptCount 0 }}
         provisioner "remote-exec" {
           connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
             type     = "winrm"
             user     = "Administrator"
             timeout  = "60m"
             password = "{{ $.Competition.RootPassword }}"
           }
-          
+
           inline = [       
             "rmdir /s /q \"C:/laforge\" || ver1>nul",
           ]
@@ -944,6 +843,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt (len $host.OverridePassword) 0 }}
       provisioner "remote-exec" {
         connection {
+          host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
           type     = "winrm"
           user     = "Administrator"
           timeout  = "60m"
@@ -955,21 +855,268 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         ]
       }
     {{ end }}
-  {{ end }}
+  }
+{{ end }}
 
-  {{ if eq $host.OS "ubuntu" }}
-
-    root_block_device {
-      delete_on_termination = true
-      volume_size = 15
+{{ if eq $host.OS "w2k16sql" }}
+  {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $.PodID $network $host $hostname }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
     }
 
-    {{ $scriptPath := ScriptRender "ubuntu_uds.sh" $.Competition $.Environment $i $network $host $hostname }}
+    provisioner "file" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
 
-    user_data = "${file("{{ $scriptPath }}")}"
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
 
     provisioner "remote-exec" {
       connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del \"C:/pw.ps1\" || ver1>nul",
+      ]
+    }
+
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
+
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
+
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
+
+          provisioner "remote-exec" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          inline = [       
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
+    {{ end }}
+  }
+{{ end }}
+
+{{ if eq $host.OS "w2k12" }}
+  {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $.PodID $network $host $hostname }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
+
+    provisioner "file" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del \"C:/pw.ps1\" || ver1>nul",
+      ]
+    }
+
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
+
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
+
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
+
+          provisioner "remote-exec" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          inline = [       
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
+    {{ end }}
+  }
+{{ end }}
+
+{{ if eq $host.OS "ubuntu" }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
         type     = "ssh"
         user     = "ubuntu"
         timeout  = "60m"
@@ -987,6 +1134,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ range $localFile, $remoteFile := $fileUploads }}
         provisioner "file" {
           connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
             type     = "ssh"
             user     = "root"
             timeout  = "60m"
@@ -1003,10 +1151,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $scriptCount 0 }}
 
       {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
             connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
               type     = "ssh"
               user     = "root"
               timeout  = "60m"
@@ -1018,6 +1167,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
 
           provisioner "remote-exec" {
             connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
               type     = "ssh"
               user     = "root"
               timeout  = "60m"
@@ -1033,14 +1183,18 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ end }}
       {{ end }}      
     {{ end }}
-  {{ end }}
+  }
+{{ end }}
 
-  {{ if eq $host.OS "centos" }}
-    {{ $scriptPath := ScriptRender "centos_uds.sh" $.Competition $.Environment $i $network $host $hostname }}
-
-    user_data = "${file("{{ $scriptPath }}")}"
+{{ if eq $host.OS "centos" }}
+  {{ $scriptPath := ScriptRender "centos_uds.sh" $.Competition $.Environment $.PodID $network $host $hostname }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
 
     connection {
+      host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
       type     = "ssh"
       user     = "root"
       timeout  = "60m"
@@ -1062,7 +1216,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     {{ if gt $scriptCount 0 }}      
 
       {{ range $_, $sname := $host.Scripts }}
-        {{ $scriptPath := DScript $sname $.Competition $.Environment $i $network $host $hostname }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
           provisioner "file" {
             source      = "{{ $scriptPath }}"
@@ -1079,95 +1233,42 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
         {{ end }}
       {{ end }}
     {{ end }}
-  {{ end }}
-
-  {{ if ne $.Environment.GenesisHost.Hostname "" }}
-    {{ if ne $hostname $.Environment.GenesisHost.Hostname }}
-      {{ $depLen := len $host.Dependencies }}
-      {{ if gt $depLen 0 }}
-
-        depends_on = [
-          "aws_instance.{{ $id }}_{{ $.Environment.GenesisHost.Network }}_{{ $.Environment.GenesisHost.Hostname }}",
-          {{ range $_, $dependency := $host.Dependencies }}
-            "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
-          {{ end }}
-        ]
-
-      {{ end }}    
-    {{ end }}
-  {{ else }}
-    {{ $depLen := len $host.Dependencies }}
-    {{ if gt $depLen 0 }}
-
-      depends_on = [
-        {{ range $_, $dependency := $host.Dependencies }}
-          "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
-        {{ end }}
-      ]
-
-    {{ end }}
-  {{ end }}    
-}
+  }
+{{ end }}
 
 {{ $fullHostname := printf "%s-%s" $hostname $id }}
 
 output "public_ips.{{ $fullHostname }}" {
-  value = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.public_ip}"
+  value = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
 }
 
-{{ $fqdn := printf "%s-%s.%s.%s" $hostname $id $network.Subdomain $.Environment.Domain }}
+{{ $fqdn := printf "%s-%s" $hostname $id }}
 
-resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname }}" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $fqdn }}"
-  type    = "A"
-  ttl     = "60"
-  records = [
+resource "dns_a_record_set" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname }}" {
+  zone = "{{ $.Competition.Domain }}."
+  name = "{{ $fqdn }}"
+  addresses = [
     "{{ $hostIP }}"
   ]
-}
 
-{{ range $dnsIdx, $dnsEntry := $host.RenderedDNSEntries $i }}
-
-resource "aws_route53_record" "{{ $id }}_dns_record_{{ $dnsIdx }}" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $dnsEntry.Name }}"
-  type    = "{{ $dnsEntry.Type }}"
-  ttl     = "60"
-  records = [
-    "{{ $dnsEntry.Value }}"
+  ttl = 60
+  depends_on = [
+    "null_resource.configure_{{ $genesis_hostname }}",
   ]
 }
-
-{{ end }}
-
-{{ range $_, $cname := $host.InternalCNAMEs }}
-
-{{ $recordValue := CustomInternalCNAME $.Environment $network $cname }}
-
-resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_icname_{{ $cname }}" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $recordValue }}"
-  type    = "CNAME"
-  ttl     = "60"
-  records = [
-    "{{ $fqdn }}"
-  ]
-}
-
-{{ end }} {{/* End ExternalCNAME Iterator */}}
 
 {{ range $_, $cname := $host.ExternalCNAMEs }}
 
 {{ $recordValue := CustomExternalCNAME $.Environment $cname }}
 
-resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $cname }}" {
-  zone_id = "${aws_route53_zone.{{ $id }}_r53.zone_id}"
-  name    = "{{ $recordValue }}"
-  type    = "CNAME"
-  ttl     = "60"
-  records = [
-    "{{ $fqdn }}"
+resource "dns_cname_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $hostname }}" {
+  zone = "{{ $.Competition.Domain }}."
+  name = "{{ $cname }}"
+  cname = "{{ $fqdn }}.{{ $.Competition.Domain }}."
+  ttl = 60
+
+  depends_on = [
+    "null_resource.configure_{{ $genesis_hostname }}",
   ]
 }
 
@@ -1175,4 +1276,3 @@ resource "aws_route53_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $cna
 
 {{ end }} {{/* End Host Iterator */}}
 {{ end }} {{/* End Network Iterator */}}
-{{ end }} {{/* End Pod Iterator */}}

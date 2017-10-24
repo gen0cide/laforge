@@ -1,56 +1,96 @@
 package command
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
+	"github.com/shiena/ansicolor"
+)
+
+var (
+	TeamID int
 )
 
 func CmdTf(c *cli.Context) {
-	// a := competition.TFVar{
-	// 	Name:        "mygod",
-	// 	Description: "what in the hell",
-	// 	Value:       "ohyea1234",
-	// }
-
-	// b, err := competition.TFRender(a)
-	// if err != nil {
-	// 	competition.LogFatal(err.Error())
-	// }
-	// fmt.Printf("%s\n", b)
-
 	cli.ShowAppHelpAndExit(c, 0)
+}
 
+func SetTeamID(c *cli.Context, e *competition.Environment) {
+	teamID := c.Int("team")
+	teams := e.TeamIDs()
+	if teamID >= 0 && teamID <= teams[len(teams)-1] {
+		TeamID = teamID
+	} else {
+		competition.LogFatal(fmt.Sprintf("Error: %d is not within the valid team range. (0-%d)", teamID, teams[len(teams)-1]))
+	}
+}
+
+func CmdTfInit(c *cli.Context) {
+	TFCheck()
+	_, env := InitConfig()
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"init", tfDir}
+	TFRun(cmdArgs)
 }
 
 func CmdTfPlan(c *cli.Context) {
 	TFCheck()
 	_, env := InitConfig()
-	competition.Log("** Run the following command **")
-	competition.LogPlain(fmt.Sprintf("cd %s && terraform plan", env.TfDir()))
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"plan", "-parallelism=25", tfDir}
+	TFRun(cmdArgs)
 }
 
 func CmdTfApply(c *cli.Context) {
 	TFCheck()
 	_, env := InitConfig()
-	competition.Log("** Run the following command **")
-	competition.LogPlain(fmt.Sprintf("cd %s && terraform apply", env.TfDir()))
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"apply", "-parallelism=25", tfDir}
+	TFRun(cmdArgs)
+}
+
+func CmdTfOutput(c *cli.Context) {
+	TFCheck()
+	_, env := InitConfig()
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"output", tfDir}
+	TFRun(cmdArgs)
+}
+
+func CmdTfRefresh(c *cli.Context) {
+	TFCheck()
+	_, env := InitConfig()
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"refresh", "-force", "-parallelism=25", tfDir}
+	TFRun(cmdArgs)
+}
+
+func CmdTfState(c *cli.Context) {
+	TFCheck()
+	_, env := InitConfig()
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"state", "-parallelism=25", tfDir}
+	TFRun(cmdArgs)
 }
 
 func CmdTfDestroy(c *cli.Context) {
 	TFCheck()
 	_, env := InitConfig()
-	competition.Log("** Run the following command **")
-	competition.LogPlain(fmt.Sprintf("cd %s && terraform destroy", env.TfDir()))
-}
-
-func CmdTfNuke(c *cli.Context) {
-	TFCheck()
-	_, env := InitConfig()
-	competition.Log("** Run the following command **")
-	competition.LogPlain(fmt.Sprintf("cd %s && terraform destroy -force -parallelism=50", env.TfDir()))
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	cmdArgs := []string{"destroy", "-force", "-parallelism=25", tfDir}
+	TFRun(cmdArgs)
 }
 
 func TFCheck() {
@@ -58,4 +98,38 @@ func TFCheck() {
 	if err != nil {
 		competition.LogFatal("The terraform executable could not be found in your $PATH!\n\t* Download it at https://www.terraform.io/downloads.html")
 	}
+}
+
+func TFRun(args []string) {
+	cmdName := "terraform"
+	cmd := exec.Command(cmdName, args...)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmdReader, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for terraform", err)
+		os.Exit(1)
+	}
+
+	scanner := bufio.NewScanner(cmdReader)
+	w := ansicolor.NewAnsiColorWriter(os.Stdout)
+	go func() {
+		for scanner.Scan() {
+			fmt.Fprintf(w, "%s[%sLAFORGE%s]%s %s%s\n", "\x1b[97m", "\x1b[94m", "\x1b[97m", "\x1b[0m", scanner.Text(), "\x1b[0m")
+		}
+	}()
+
+	err = cmd.Start()
+	if err != nil {
+		competition.LogError("Terraform Error:")
+		fmt.Println(stderr.String())
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		competition.LogError("Terraform Error:")
+		fmt.Println(stderr.String())
+	}
+
+	fmt.Printf("\n")
 }

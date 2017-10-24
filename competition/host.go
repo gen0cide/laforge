@@ -40,6 +40,7 @@ type Host struct {
 	OS               string       `yaml:"os"`
 	AMI              string       `yaml:"ami"`
 	InstanceSize     string       `yaml:"instance_size"`
+	DiskSize         int          `yaml:"disk_size"`
 	LastOctet        int          `yaml:"last_octet"`
 	InternalCNAMEs   []string     `yaml:"internal_cnames"`
 	ExternalCNAMEs   []string     `yaml:"external_cnames"`
@@ -53,6 +54,13 @@ type Host struct {
 	Files            RemoteFiles  `yaml:"files"`
 	Vars             `yaml:"variables"`
 	Network          `yaml:"-"`
+}
+
+func (h *Host) GetDiskSize() int {
+	if h.DiskSize > 0 {
+		return h.DiskSize
+	}
+	return 30
 }
 
 func (h *Host) UploadFiles() map[string]string {
@@ -132,12 +140,12 @@ func LoadAMIs() {
 	AMIMap = amiMap
 }
 
-func (h *Host) GetAMI() string {
+func (h *Host) GetAMI(region string) string {
 	if len(h.AMI) > 0 {
 		return h.AMI
 	}
 	if _, ok := AMIMap[h.OS]; ok {
-		return AMIMap[h.OS].Regions[h.Network.Environment.AWSConfig.Region]
+		return AMIMap[h.OS].Regions[region]
 	}
 	LogFatal(fmt.Sprintf("OS is invalid for host! host=%s os=%s", h.Hostname, h.OS))
 	return ""

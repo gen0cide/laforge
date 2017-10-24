@@ -13,13 +13,22 @@ import (
 )
 
 type Competition struct {
-	R53ZoneID    string `yaml:"external_r53_zone_id"`
-	AWSCred      `yaml:"aws_creds"`
-	S3Config     `yaml:"s3_config"`
-	AdminIPs     []string `yaml:"admin_ips"`
-	RootPassword string   `yaml:"root_password"`
-	DHCPConfig   `yaml:"dhcp"`
+	AdminIPs     []string  `yaml:"admin_ips"`
+	RootPassword string    `yaml:"root_password"`
+	AWS          AWSConfig `yaml:"aws"`
+	Domain       string    `yaml:"domain"`
+	WhitelistIPs []string  `yaml:"ip_whitelist"`
 	UserList     map[string][]User
+}
+
+type AWSConfig struct {
+	CIDR        string     `yaml:"cidr"`
+	Region      string     `yaml:"region"`
+	APIKey      string     `yaml:"api_key"`
+	APISecret   string     `yaml:"api_secret"`
+	R53ZoneID   string     `yaml:"external_r53_zone_id"`
+	S3          S3Config   `yaml:"s3"`
+	DHCPOptions DHCPConfig `yaml:"dhcp"`
 }
 
 type DHCPConfig struct {
@@ -31,13 +40,6 @@ type DHCPConfig struct {
 type NSRecord struct {
 	Name        string   `yaml:"name"`
 	Nameservers []string `yaml:"nameservers"`
-}
-
-type AWSCred struct {
-	APIKey    string `yaml:"api_key"`
-	APISecret string `yaml:"api_secret"`
-	Region    string `yaml:"region"`
-	Zone      string `yaml:"zone"`
 }
 
 type S3Config struct {

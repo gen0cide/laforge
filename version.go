@@ -1,4 +1,4 @@
 package main
 
 const Name string = "laforge"
-const Version string = "1.1.9"
+const Version string = "2.0.0"

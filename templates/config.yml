@@ -11,42 +11,42 @@
 #########################################################
 # AWS Configuration
 # Provide your AWS API credentials here
-aws_creds:
+aws:
+  cidr: ""
+  region: ""
   api_key: ""
   api_secret: ""
-
+  external_r53_zone_id: ""
+  s3:
+    region: ""
+    bucket: ""
+  dhcp:
+    domain: ""
+    nameservers: []
+    ntp_servers: []
 #########################################################
-# Route53 External Configuration
-# Provide a Route53 Zone ID
-# This Zone will be used to create records allowing
-# for easy access to VDI jump hosts
-external_r53_zone_id: ""
-
-#########################################################
-# S3 Configuration
-# LaForge uses S3 to store state and other static assets.
-# Make sure this bucket is already created.
-s3_config:
-  region: ""
-  bucket: ""
 
 #########################################################
 # Admin IPs
 # Any IPs listed here will have full access to the entire
 # competition infrastructure. All firewalls and security
 # groups will whitelist these IPs for all ports.
-admin_ips:
-  - 127.0.0.99/32
+admin_ips: []
+#########################################################
 
 #########################################################
 # Root Password
 # Root passwords will be set to this on hosts.
 root_password: ""
+#########################################################
 
 #########################################################
-# DHCP Options
-# Sets up the AWS VPC Properly
-dhcp:
-  domain: ""
-  nameservers: []    
-  ntp_servers: []
+# IP Configuration
+# Must be in a CIDR notation: 127.5.5.5/32
+ip_whitelist: []
+#########################################################
+
+#########################################################
+# Competition Domain
+domain: grandchasm.com
+#########################################################

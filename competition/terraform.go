@@ -25,9 +25,9 @@ type TFAWSProvider struct {
 }
 
 func (t *TFAWSProvider) Mix(tpl *TemplateBuilder) {
-	t.AccessKey = tpl.Competition.AWSCred.APIKey
-	t.SecretKey = tpl.Competition.AWSCred.APISecret
-	t.Region = tpl.Environment.AWSConfig.Region
+	t.AccessKey = tpl.Competition.AWS.APIKey
+	t.SecretKey = tpl.Competition.AWS.APISecret
+	t.Region = tpl.Competition.AWS.Region
 }
 
 type TFAWSKeyPair struct {
@@ -82,7 +82,6 @@ type TFAWSSubnet struct {
 func (t *TFAWSSubnet) Mix(tpl *TemplateBuilder) {
 	t.Name = tpl.NetItemName(t)
 	t.CIDR = tpl.Network.CIDR
-	t.AvailabilityZone = tpl.Competition.AWSCred.Zone
 	t.MapPublicIPOnLaunch = false
 }
 

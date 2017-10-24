@@ -27,7 +27,7 @@ func CmdCDNLs(c *cli.Context) {
 	comp, env := InitConfig()
 	conn := GetS3Service(comp, env)
 	input := &s3.ListObjectsInput{
-		Bucket:  aws.String(comp.S3Config.Bucket),
+		Bucket:  aws.String(comp.AWS.S3.Bucket),
 		MaxKeys: aws.Int64(9001),
 	}
 
@@ -71,7 +71,7 @@ func CmdCDNLink(c *cli.Context) {
 	comp, env := InitConfig()
 	conn := GetS3Service(comp, env)
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(comp.S3Config.Bucket),
+		Bucket: aws.String(comp.AWS.S3.Bucket),
 		Key:    aws.String(objKey),
 	}
 
@@ -92,7 +92,7 @@ func CmdCDNLink(c *cli.Context) {
 		return
 	}
 
-	u, err := url.Parse(fmt.Sprintf("https://s3-%s.amazonaws.com/%s", comp.S3Config.Region, filepath.Join(comp.S3Config.Bucket, objKey)))
+	u, err := url.Parse(fmt.Sprintf("https://s3-%s.amazonaws.com/%s", comp.AWS.S3.Region, filepath.Join(comp.AWS.S3.Bucket, objKey)))
 	if err != nil {
 		competition.LogFatal("url error: " + err.Error())
 	}
@@ -128,7 +128,7 @@ func CmdCDNUpload(c *cli.Context) {
 	fileType := http.DetectContentType(buffer)
 
 	params := &s3.PutObjectInput{
-		Bucket:        aws.String(comp.S3Config.Bucket),
+		Bucket:        aws.String(comp.AWS.S3.Bucket),
 		Key:           aws.String(objKey),
 		Body:          fileBytes,
 		ContentLength: aws.Int64(size),
@@ -142,7 +142,7 @@ func CmdCDNUpload(c *cli.Context) {
 	}
 	competition.Log(fmt.Sprintf("File successfully uploaded:"))
 	competition.Log(fmt.Sprintf("%s => %s", srcFile, objKey))
-	u, err := url.Parse(fmt.Sprintf("https://s3-%s.amazonaws.com/%s", comp.S3Config.Region, filepath.Join(comp.S3Config.Bucket, objKey)))
+	u, err := url.Parse(fmt.Sprintf("https://s3-%s.amazonaws.com/%s", comp.AWS.S3.Region, filepath.Join(comp.AWS.S3.Bucket, objKey)))
 	if err != nil {
 		competition.LogFatal("url error: " + err.Error())
 	}
@@ -157,7 +157,7 @@ func CmdCDNRm(c *cli.Context) {
 	comp, env := InitConfig()
 	conn := GetS3Service(comp, env)
 	input := &s3.DeleteObjectInput{
-		Bucket: aws.String(comp.S3Config.Bucket),
+		Bucket: aws.String(comp.AWS.S3.Bucket),
 		Key:    aws.String(objKey),
 	}
 
@@ -183,12 +183,12 @@ func CmdCDNRm(c *cli.Context) {
 func GetS3Service(c *competition.Competition, e *competition.Environment) *s3.S3 {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
-			Region:      aws.String(e.AWSConfig.Region),
-			Credentials: credentials.NewStaticCredentials(c.AWSCred.APIKey, c.AWSCred.APISecret, ""),
+			Region:      aws.String(e.AWS.Region),
+			Credentials: credentials.NewStaticCredentials(c.AWS.APIKey, c.AWS.APISecret, ""),
 		},
 	}))
 
 	return s3.New(sess, &aws.Config{
-		Region: aws.String(c.S3Config.Region),
+		Region: aws.String(c.AWS.S3.Region),
 	})
 }

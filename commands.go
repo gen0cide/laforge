@@ -113,6 +113,16 @@ var Commands = []cli.Command{
 				Usage:  "Generate a bash env config for some productive aliases.",
 				Action: command.CmdEnvBashConfig,
 			},
+			{
+				Name:   "team-password",
+				Usage:  "Deterministically generate the password for a given Pod ID.",
+				Action: command.CmdEnvPassword,
+			},
+			{
+				Name:   "sshconfig",
+				Usage:  "Write an SSH configuration to TF_HOME/environments/TF_ENV/ssh.conf",
+				Action: command.CmdEnvSshConfig,
+			},
 		},
 	},
 	{
@@ -128,44 +138,102 @@ var Commands = []cli.Command{
 		Flags:  []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
+				Name:   "init",
+				Usage:  "Initialize the terraform directory.",
+				Action: command.CmdTfInit,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
+			},
+			{
 				Name:   "plan",
 				Usage:  "Plan the terraform changes with the state delta.",
 				Action: command.CmdTfPlan,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
 			},
 			{
 				Name:   "apply",
 				Usage:  "Apply the current terraform plan.",
 				Action: command.CmdTfApply,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
+			},
+			{
+				Name:   "output",
+				Usage:  "Show the terraform outputs.",
+				Action: command.CmdTfOutput,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
+			},
+			{
+				Name:   "refresh",
+				Usage:  "Refresh the terraform state.",
+				Action: command.CmdTfRefresh,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
+			},
+			{
+				Name:   "state",
+				Usage:  "Show the current dependency tree.",
+				Action: command.CmdTfState,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
 			},
 			{
 				Name:   "destroy",
 				Usage:  "Destroy the current environment.",
 				Action: command.CmdTfDestroy,
-			},
-			{
-				Name:   "nuke",
-				Usage:  "Force destroy the current environment with maximum parallelism.",
-				Action: command.CmdTfNuke,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
 			},
 		},
 	},
 	{
 		Name:   "ssh",
-		Usage:  "Wrapper for SSH functionality in the current competition environment.",
+		Usage:  "Allows for administrative SSH access to hosts in the current competition environment.",
 		Action: command.CmdSsh,
 		Flags:  []cli.Flag{},
-		Subcommands: []cli.Command{
-			{
-				Name:   "password",
-				Usage:  "Deterministically generate the password for a given Pod ID.",
-				Action: command.CmdSshPassword,
-			},
-			{
-				Name:   "config",
-				Usage:  "Write an SSH configuration to TF_HOME/environments/TF_ENV/ssh.conf",
-				Action: command.CmdSshConfig,
-			},
-		},
+	},
+	{
+		Name:   "powershell",
+		Usage:  "Creates an interactive powershell session for a host in the current competition environment.",
+		Action: command.CmdPowershell,
+		Flags:  []cli.Flag{},
 	},
 	{
 		Name:   "app",
