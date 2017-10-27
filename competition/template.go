@@ -116,12 +116,18 @@ func NewTemplate(tmpl string, includeScripts bool) *template.Template {
 
 	tmp := template.New(RandomString(entropySize))
 
-	if includeScripts {
-		tmplFuncs["ScriptRender"] = ScriptRender
-		tmplFuncs["DScript"] = DScript
+	newFuncMap := template.FuncMap{}
+
+	for funcName, funcHandler := range tmplFuncs {
+		newFuncMap[funcName] = funcHandler
 	}
 
-	tmp.Funcs(tmplFuncs)
+	if includeScripts {
+		newFuncMap["ScriptRender"] = ScriptRender
+		newFuncMap["DScript"] = DScript
+	}
+
+	tmp.Funcs(newFuncMap)
 
 	newTmpl, err := tmp.Parse(string(MustAsset(tmpl)))
 	if err != nil {

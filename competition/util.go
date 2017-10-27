@@ -282,8 +282,7 @@ func EnvValid() bool {
 	envValid := true
 
 	if !PathExists(path.Join(CurrentEnvDir(), "terraform")) {
-		LogError("No terraform/ located in LF_ENV")
-		envValid = false
+		os.MkdirAll(path.Join(CurrentEnvDir(), "terraform"), 0755)
 	}
 	if !PathExists(path.Join(CurrentEnvDir(), "hosts")) {
 		LogError("No terraform/ located in LF_ENV")

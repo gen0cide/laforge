@@ -418,7 +418,7 @@ resource "null_resource" "configure_{{ $hostname }}" {
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
-  zone_id = "{{ $.Competition.R53ZoneID }}"
+  zone_id = "{{ $.Competition.AWS.R53ZoneID }}"
   name    = "{{ $fqdn }}"
   type    = "A"
   ttl     = "60"
@@ -534,7 +534,7 @@ resource "null_resource" "configure_{{ $hostname }}" {
 }
 
 resource "aws_route53_record" "{{ $id }}_vdi_ecname_{{ $hostname }}" {
-  zone_id = "{{ $.Competition.R53ZoneID }}"
+  zone_id = "{{ $.Competition.AWS.R53ZoneID }}"
   name    = "{{ $fqdn }}"
   type    = "A"
   ttl     = "60"
@@ -1257,11 +1257,11 @@ resource "dns_a_record_set" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname }
   ]
 }
 
-{{ range $_, $cname := $host.ExternalCNAMEs }}
+{{ range $cname_id, $cname := $host.ExternalCNAMEs }}
 
 {{ $recordValue := CustomExternalCNAME $.Environment $cname }}
 
-resource "dns_cname_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $hostname }}" {
+resource "dns_cname_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $hostname }}_{{ $cname_id }}" {
   zone = "{{ $.Competition.Domain }}."
   name = "{{ $cname }}"
   cname = "{{ $fqdn }}.{{ $.Competition.Domain }}."

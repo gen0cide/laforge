@@ -52,5 +52,12 @@
       "us-west-2": "ami-3fcd2747"
     },
     "username": "ec2-user"
+  },
+  {
+    "os": "w2k16core",
+    "regions": {
+      "us-west-1": "ami-cd8675b5"
+    },
+    "username": "administrator"
   }
 ]
