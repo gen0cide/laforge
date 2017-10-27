@@ -35,6 +35,7 @@ func CmdTfInit(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"init", tfDir}
 	TFRun(cmdArgs)
 }
@@ -44,6 +45,7 @@ func CmdTfPlan(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"plan", "-parallelism=25", tfDir}
 	TFRun(cmdArgs)
 }
@@ -53,6 +55,7 @@ func CmdTfApply(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"apply", "-parallelism=25", tfDir}
 	TFRun(cmdArgs)
 }
@@ -62,6 +65,7 @@ func CmdTfOutput(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"output", tfDir}
 	TFRun(cmdArgs)
 }
@@ -71,6 +75,7 @@ func CmdTfRefresh(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"refresh", "-force", "-parallelism=25", tfDir}
 	TFRun(cmdArgs)
 }
@@ -80,6 +85,7 @@ func CmdTfState(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"state", "-parallelism=25", tfDir}
 	TFRun(cmdArgs)
 }
@@ -89,6 +95,7 @@ func CmdTfDestroy(c *cli.Context) {
 	_, env := InitConfig()
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
+	os.Chdir(tfDir)
 	cmdArgs := []string{"destroy", "-force", "-parallelism=25", tfDir}
 	TFRun(cmdArgs)
 }
