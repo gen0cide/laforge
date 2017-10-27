@@ -147,6 +147,11 @@ var Commands = []cli.Command{
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
 					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
+					},
 				},
 			},
 			{
@@ -159,6 +164,11 @@ var Commands = []cli.Command{
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
 					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
+					},
 				},
 			},
 			{
@@ -170,6 +180,11 @@ var Commands = []cli.Command{
 						Name:  "team, t",
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
 					},
 				},
 			},
@@ -195,6 +210,11 @@ var Commands = []cli.Command{
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
 					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
+					},
 				},
 			},
 			{
@@ -207,6 +227,11 @@ var Commands = []cli.Command{
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
 					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
+					},
 				},
 			},
 			{
@@ -218,6 +243,11 @@ var Commands = []cli.Command{
 						Name:  "team, t",
 						Value: 0,
 						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+					cli.IntFlag{
+						Name:  "parallelism, p",
+						Value: 10,
+						Usage: "The number of parallel workers you want terraform to use. (Default = 10)",
 					},
 				},
 			},

@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	TeamID int
+	TeamID      int
+	Parallelism int
 )
 
 func CmdTf(c *cli.Context) {
@@ -23,6 +24,7 @@ func CmdTf(c *cli.Context) {
 func SetTeamID(c *cli.Context, e *competition.Environment) {
 	teamID := c.Int("team")
 	teams := e.TeamIDs()
+	Parallelism = c.Int("parallelism")
 	if teamID >= 0 && teamID <= teams[len(teams)-1] {
 		TeamID = teamID
 	} else {
@@ -46,7 +48,7 @@ func CmdTfPlan(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"plan", "-parallelism=25", tfDir}
+	cmdArgs := []string{"plan", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
 	TFRun(cmdArgs)
 }
 
@@ -56,7 +58,7 @@ func CmdTfApply(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"apply", "-parallelism=25", tfDir}
+	cmdArgs := []string{"apply", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
 	TFRun(cmdArgs)
 }
 
@@ -76,7 +78,7 @@ func CmdTfRefresh(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"refresh", "-force", "-parallelism=25", tfDir}
+	cmdArgs := []string{"refresh", "-force", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
 	TFRun(cmdArgs)
 }
 
@@ -86,7 +88,7 @@ func CmdTfState(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"state", "-parallelism=25", tfDir}
+	cmdArgs := []string{"state", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
 	TFRun(cmdArgs)
 }
 
@@ -96,7 +98,7 @@ func CmdTfDestroy(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"destroy", "-force", "-parallelism=25", tfDir}
+	cmdArgs := []string{"destroy", "-force", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
 	TFRun(cmdArgs)
 }
 
