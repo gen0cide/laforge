@@ -218,6 +218,18 @@ var Commands = []cli.Command{
 				},
 			},
 			{
+				Name:   "taint",
+				Usage:  "Taint an object in the dependency graph.",
+				Action: command.CmdTfTaint,
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "team, t",
+						Value: 0,
+						Usage: "The team you wish to perform the terraform actions on. (Default = 0)",
+					},
+				},
+			},
+			{
 				Name:   "state",
 				Usage:  "Show the current dependency tree.",
 				Action: command.CmdTfState,

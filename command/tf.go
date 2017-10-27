@@ -62,6 +62,20 @@ func CmdTfApply(c *cli.Context) {
 	TFRun(cmdArgs)
 }
 
+func CmdTfTaint(c *cli.Context) {
+	TFCheck()
+	_, env := InitConfig()
+	SetTeamID(c, env)
+	tfDir := env.TfDirForTeam(TeamID)
+	object := c.Args().Get(0)
+	if len(object) < 1 {
+		competition.LogFatal("You did not specify a terraform object to taint! Example: laforge tf taint aws_instance.t0_test_host01")
+	}
+	os.Chdir(tfDir)
+	cmdArgs := []string{"taint", object}
+	TFRun(cmdArgs)
+}
+
 func CmdTfOutput(c *cli.Context) {
 	TFCheck()
 	_, env := InitConfig()
@@ -88,7 +102,7 @@ func CmdTfState(c *cli.Context) {
 	SetTeamID(c, env)
 	tfDir := env.TfDirForTeam(TeamID)
 	os.Chdir(tfDir)
-	cmdArgs := []string{"state", fmt.Sprintf("-parallelism=%d", Parallelism), tfDir}
+	cmdArgs := []string{"state", "list"}
 	TFRun(cmdArgs)
 }
 

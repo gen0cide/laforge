@@ -153,6 +153,7 @@ func (e *Environment) NewSSHConfig() *SSHConfig {
 		fileData, err := ioutil.ReadFile(e.TfStateFile(t))
 		if err != nil {
 			LogError("Cannot Read terraform.tfstate. You've likely not provisioned that team. team=" + strconv.Itoa(t))
+			continue
 		}
 		tfState, err := terraform.ReadStateV3(fileData)
 		if err != nil {

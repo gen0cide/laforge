@@ -302,7 +302,7 @@ func EnvValid() bool {
 
 func CalculateReversePTR(n *Network, h *Host) string {
 	octets := strings.Split(n.CIDR, ".")
-	return fmt.Sprintf("%s.%d", octets[2], h.LastOctet)
+	return fmt.Sprintf("%d.%s", h.LastOctet, octets[2])
 }
 
 func PathExists(path string) bool {
