@@ -1242,37 +1242,5 @@ output "public_ips.{{ $fullHostname }}" {
   value = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
 }
 
-{{ $fqdn := printf "%s-%s" $hostname $id }}
-
-resource "dns_a_record_set" "{{ $id }}_{{ $network.Subdomain }}_a_{{ $hostname }}" {
-  zone = "{{ $.Competition.Domain }}."
-  name = "{{ $fqdn }}"
-  addresses = [
-    "{{ $hostIP }}"
-  ]
-
-  ttl = 60
-  depends_on = [
-    "null_resource.configure_{{ $genesis_hostname }}",
-  ]
-}
-
-{{ range $cname_id, $cname := $host.ExternalCNAMEs }}
-
-{{ $recordValue := CustomExternalCNAME $.Environment $cname }}
-
-resource "dns_cname_record" "{{ $id }}_{{ $network.Subdomain }}_ecname_{{ $hostname }}_{{ $cname_id }}" {
-  zone = "{{ $.Competition.Domain }}."
-  name = "{{ $cname }}"
-  cname = "{{ $fqdn }}.{{ $.Competition.Domain }}."
-  ttl = 60
-
-  depends_on = [
-    "null_resource.configure_{{ $genesis_hostname }}",
-  ]
-}
-
-{{ end }} {{/* End InternalCNAME Iterator */}}
-
 {{ end }} {{/* End Host Iterator */}}
 {{ end }} {{/* End Network Iterator */}}

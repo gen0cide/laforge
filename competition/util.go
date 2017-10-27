@@ -300,6 +300,11 @@ func EnvValid() bool {
 	return envValid
 }
 
+func CalculateReversePTR(n *Network, h *Host) string {
+	octets := strings.Split(n.CIDR, ".")
+	return fmt.Sprintf("%s.%d", octets[2], h.LastOctet)
+}
+
 func PathExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {

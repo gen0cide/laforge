@@ -56,7 +56,7 @@
   {
     "os": "w2k16core",
     "regions": {
-      "us-west-1": "ami-cd8675b5"
+      "us-west-2": "ami-cd8675b5"
     },
     "username": "administrator"
   }

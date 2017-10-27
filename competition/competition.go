@@ -29,6 +29,7 @@ type AWSConfig struct {
 	R53ZoneID   string     `yaml:"external_r53_zone_id"`
 	S3          S3Config   `yaml:"s3"`
 	DHCPOptions DHCPConfig `yaml:"dhcp"`
+	KeyName     string     `yaml:"key_name"`
 }
 
 type DHCPConfig struct {

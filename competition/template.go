@@ -33,6 +33,7 @@ var (
 		"GetAllUsers":         GetAllUsers,
 		"Incr":                Incr,
 		"SetZero":             SetZero,
+		"CalculateReversePTR": CalculateReversePTR,
 	}
 )
 
@@ -150,7 +151,7 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 	tmp.Funcs(tmplFuncs)
 	newTmpl, err := tmp.Parse(string(script.Contents))
 	if err != nil {
-		LogError("Error parsing script: script=" + name + " host=" + hn)
+		LogError("Error parsing script: script=" + name + " host=" + hn + " error=" + err.Error())
 		return "SCRIPT_PARSING_ERROR"
 	}
 
