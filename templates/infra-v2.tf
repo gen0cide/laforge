@@ -728,7 +728,7 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   depends_on = [
     "null_resource.configure_{{ $genesis_hostname }}",
     {{ range $_, $dependency := $host.Dependencies }}
-      "aws_instance.{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
+      "null_resource.configure_{{ $id }}_{{ $dependency.Network }}_{{ $dependency.Host }}"
     {{ end }}
   ]
 }
