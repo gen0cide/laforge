@@ -705,6 +705,11 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     user_data = "${file("{{ $scriptPath }}")}"
   {{ end }}
 
+  {{ if eq $host.OS "w2k16core" }}
+    {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $.PodID $network $host $hostname }}
+    user_data = "${file("{{ $scriptPath }}")}"
+  {{ end }}
+
   {{ if eq $host.OS "w2k16sql" }}
     {{ $scriptPath := ScriptRender "windows_uds.xml" $.Competition $.Environment $.PodID $network $host $hostname }}
     user_data = "${file("{{ $scriptPath }}")}"
@@ -738,6 +743,167 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     triggers {
       instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "hostname",
+      ]
+    }
+
+    provisioner "local-exec" {
+      command = "sleep 10"
+    }
+
+    provisioner "file" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      source = "{{ $pwScriptPath }}"
+      destination = "C:/pw.ps1"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "powershell -NoProfile -ExecutionPolicy Bypass C:/pw.ps1",
+        "del \"C:/pw.ps1\" || ver1>nul",
+      ]
+    }
+
+    {{ $fileUploads := $host.UploadFiles }}
+    {{ $fileUploadCount := len $fileUploads }}
+    {{ if gt $fileUploadCount 0 }}
+      {{ range $localFile, $remoteFile := $fileUploads }}
+        provisioner "file" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          source      = "{{ $localFile }}"
+          destination = "{{ $remoteFile }}"
+        }
+      {{ end }}    
+    {{ end }}
+
+
+    {{ $scriptCount := len $host.Scripts }}
+    {{ if gt $scriptCount 0 }}
+
+      {{ range $_, $sname := $host.Scripts }}
+        {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
+        {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
+          provisioner "file" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            source      = "{{ $scriptPath }}"
+            destination = "C:/laforge/{{ $sname }}"
+          }
+
+          provisioner "remote-exec" {
+            connection {
+              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+              type     = "winrm"
+              user     = "Administrator"
+              timeout  = "60m"
+              password = "{{ $.Competition.RootPassword }}"
+            }
+
+            inline = [
+              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+            ]
+          }
+        {{ end }}
+      {{ end }}
+
+      {{ if gt $scriptCount 0 }}
+        provisioner "remote-exec" {
+          connection {
+            host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+
+          inline = [       
+            "rmdir /s /q \"C:/laforge\" || ver1>nul",
+          ]
+        }
+      {{ end }}
+    {{ end }}
+
+    {{ if gt (len $host.OverridePassword) 0 }}
+      provisioner "remote-exec" {
+        connection {
+          host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+          type     = "winrm"
+          user     = "Administrator"
+          timeout  = "60m"
+          password = "{{ $.Competition.RootPassword }}"
+        }
+        
+        inline = [       
+          "net user Administrator {{ $host.OverridePassword }}",
+        ]
+      }
+    {{ end }}
+  }
+{{ end }}
+
+{{ if eq $host.OS "w2k16core" }}
+  {{ $pwScriptPath := ScriptRender "windows_pw.ps1" $.Competition $.Environment $.PodID $network $host $hostname }}
+  resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
+    triggers {
+      instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "hostname",
+      ]
+    }
+
+    provisioner "local-exec" {
+      command = "sleep 10"
     }
 
     provisioner "file" {
@@ -865,6 +1031,24 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
     }
 
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "hostname",
+      ]
+    }
+
+    provisioner "local-exec" {
+      command = "sleep 10"
+    }
+
     provisioner "file" {
       connection {
         host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
@@ -988,6 +1172,24 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
   resource "null_resource" "configure_{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
     triggers {
       instance = "${aws_instance.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}.id}"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "LaForgeTempPassword!12345"
+      }
+
+      inline = [
+        "hostname",
+      ]
+    }
+
+    provisioner "local-exec" {
+      command = "sleep 10"
     }
 
     provisioner "file" {
