@@ -207,7 +207,7 @@ func (e *Environment) ParseHosts() map[string]*Host {
 		}
 		host, err := LoadHostFromFile(file)
 		if err != nil {
-			LogError("Error reading host file: " + file)
+			LogError("Error reading host file: " + file + " error=" + err.Error())
 			continue
 		}
 		hosts[FileToName(file)] = host
@@ -225,7 +225,7 @@ func (e *Environment) ParseNetworks() map[string]*Network {
 		}
 		network, err := LoadNetworkFromFile(file)
 		if err != nil {
-			LogError("Error reading network file: " + file)
+			LogError("Error reading network file: " + file + " error=" + err.Error())
 			continue
 		}
 		networks[FileToName(file)] = network
