@@ -960,32 +960,39 @@ resource "aws_instance" "{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}" {
       {{ range $_, $sname := $host.Scripts }}
         {{ $scriptPath := DScript $sname $.Competition $.Environment $.PodID $network $host $hostname }}
         {{ if ne $scriptPath "SCRIPT_PARSING_ERROR" }}
-          provisioner "file" {
-            connection {
-              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
+          {{ if eq $sname "LOCAL_SLEEP_20.ps1" }}
+            provisioner "local-exec" {
+              command = "sleep 20"
+            }
+          {{ else }}
+            provisioner "file" {
+              connection {
+                host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+                type     = "winrm"
+                user     = "Administrator"
+                timeout  = "60m"
+                password = "{{ $.Competition.RootPassword }}"
+              }
+
+              source      = "{{ $scriptPath }}"
+              destination = "C:/laforge/{{ $sname }}"
             }
 
-            source      = "{{ $scriptPath }}"
-            destination = "C:/laforge/{{ $sname }}"
-          }
+            provisioner "remote-exec" {
+              connection {
+                host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
+                type     = "winrm"
+                user     = "Administrator"
+                timeout  = "60m"
+                password = "{{ $.Competition.RootPassword }}"
+              }
 
-          provisioner "remote-exec" {
-            connection {
-              host     = "${aws_eip.{{ $id }}_{{ $network.Subdomain }}_{{ $hostname }}_eip.public_ip}"
-              type     = "winrm"
-              user     = "Administrator"
-              timeout  = "60m"
-              password = "{{ $.Competition.RootPassword }}"
+              inline = [
+                "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
+              ]
             }
-
-            inline = [
-              "powershell -NoProfile -ExecutionPolicy Bypass C:/laforge/{{ $sname }}",
-            ]
-          }
+          {{ end }}
+            
         {{ end }}
       {{ end }}
 

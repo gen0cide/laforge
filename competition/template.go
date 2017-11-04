@@ -169,7 +169,7 @@ func DScript(name string, c *Competition, e *Environment, i int, n *Network, h *
 	var tpl bytes.Buffer
 
 	if err := newTmpl.Execute(&tpl, tb); err != nil {
-		LogError("Error proccessing script: script=" + name + " host=" + hn)
+		LogError("Error proccessing script: script=" + name + " host=" + hn + " error=" + err.Error())
 		return "SCRIPT_PARSING_ERROR"
 	}
 
