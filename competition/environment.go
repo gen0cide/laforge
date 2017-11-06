@@ -157,7 +157,7 @@ func (e *Environment) NewSSHConfig() *SSHConfig {
 		}
 		tfState, err := terraform.ReadStateV3(fileData)
 		if err != nil {
-			LogFatal("Fatal Error Parsing Terraform State: " + err.Error())
+			LogFatal("Fatal Error Parsing Terraform State. tfstate=" + e.TfStateFile(t) + " error=" + err.Error())
 		}
 		for _, module := range tfState.Modules {
 			for outputKey, outputState := range module.Outputs {
