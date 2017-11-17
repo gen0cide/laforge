@@ -1,11 +1,14 @@
 package command
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 
+	"github.com/alecthomas/chroma/quick"
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
 	input "github.com/tcnksm/go-input"
@@ -27,8 +30,18 @@ func CmdHostLs(c *cli.Context) {
 	}
 	hosts := env.ParseHosts()
 	for name, host := range hosts {
+		competition.Log("----------------------------------------------------------------------")
 		competition.Log("HOST >>> " + name)
-		fmt.Println(host.ToYAML())
+		competition.Log(filepath.Join(env.HostsDir(), fmt.Sprintf("%s.yml", name)))
+		data, err := json.MarshalIndent(host, "", "  ")
+		if err != nil {
+			competition.LogError(fmt.Sprintf("Error printing host information: host=%s.yml error=%s", name, err.Error()))
+		}
+		err = quick.Highlight(os.Stdout, string(data), "json", "terminal", "vim")
+		if err != nil {
+			competition.LogError(fmt.Sprintf("Error printing host information: host=%s.yml error=%s", name, err.Error()))
+		}
+		fmt.Println()
 	}
 }
 

@@ -1,15 +1,12 @@
 package command
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
-	"github.com/shiena/ansicolor"
 )
 
 var (
@@ -126,32 +123,18 @@ func TFCheck() {
 func TFRun(args []string) {
 	cmdName := "terraform"
 	cmd := exec.Command(cmdName, args...)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmdReader, err := cmd.StdoutPipe()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for terraform", err)
-		os.Exit(1)
-	}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	scanner := bufio.NewScanner(cmdReader)
-	w := ansicolor.NewAnsiColorWriter(os.Stdout)
-	go func() {
-		for scanner.Scan() {
-			fmt.Fprintf(w, "%s[%sLAFORGE%s]%s %s%s\n", "\x1b[97m", "\x1b[94m", "\x1b[97m", "\x1b[0m", scanner.Text(), "\x1b[0m")
-		}
-	}()
-
-	err = cmd.Start()
+	err := cmd.Start()
 	if err != nil {
-		competition.LogError("Terraform Error:")
-		fmt.Println(stderr.String())
+		competition.LogError("Terraform Error: " + err.Error())
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		competition.LogError("Terraform Error:")
-		fmt.Println(stderr.String())
+		competition.LogError("Terraform Error: " + err.Error())
 	}
 
 	fmt.Printf("\n")

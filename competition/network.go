@@ -14,8 +14,8 @@ type Network struct {
 	VDIVisible    bool   `yaml:"vdi_visible"`
 	Vars          `yaml:"variables"`
 	IncludedHosts []string         `yaml:"included_hosts"`
-	ResolvedHosts map[string]*Host `yaml:"-"`
-	Environment   `yaml:"-"`
+	ResolvedHosts map[string]*Host `yaml:"-" json:"-"`
+	Environment   `yaml:"-" json:"-"`
 }
 
 func LoadNetworkFromFile(file string) (*Network, error) {

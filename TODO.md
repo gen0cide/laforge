@@ -93,5 +93,6 @@ The DNS server, as well as potential jump hosts should live not inside VDI but i
 ## De-duplicate Terraform modules on host
 There is no need to `terraform init` on every team. This is just stupid.
 
-##
+## Method for attaching external DNS records to host
+We should be able to attach external 
  

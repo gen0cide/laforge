@@ -7,13 +7,25 @@
 
 # AWS Configuration
 provider "aws" {
-  access_key = "{{ .Competition.AWS.APIKey }}"
-  secret_key = "{{ .Competition.AWS.APISecret }}"
-  region = "{{ .Competition.AWS.Region }}"
+  access_key = "{{ $.Competition.AWS.APIKey }}"
+  secret_key = "{{ $.Competition.AWS.APISecret }}"
+  region = "{{ $.Competition.AWS.Region }}"
   profile = ""
 }
 
 {{ $id := printf "%s%d" $.Environment.Prefix $.PodID }}
+
+terraform {
+  backend "s3" {
+    bucket = "{{ $.Competition.AWS.StateStore.Bucket }}"
+    region = "{{ $.Competition.AWS.Region }}"
+    key = "{{ $.Competition.Domain }}/{{ $.Environment.Name }}/{{ $.PodID }}/terraform.tfstate"
+    access_key = "{{ $.Competition.AWS.APIKey }}"
+    secret_key = "{{ $.Competition.AWS.APISecret }}"
+    region = "{{ $.Competition.AWS.Region }}"
+    encrypt = true
+  }
+}
 
 # Key Pair
 resource "aws_key_pair" "{{ $id }}_ssh_keypair" {

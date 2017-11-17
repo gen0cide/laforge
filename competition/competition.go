@@ -28,6 +28,7 @@ type AWSConfig struct {
 	APISecret   string     `yaml:"api_secret"`
 	R53ZoneID   string     `yaml:"external_r53_zone_id"`
 	S3          S3Config   `yaml:"s3"`
+	StateStore  S3Config   `yaml:"state_store"`
 	DHCPOptions DHCPConfig `yaml:"dhcp"`
 	KeyName     string     `yaml:"key_name"`
 }
@@ -126,8 +127,8 @@ func (c *Competition) CreateEnv(name, prefix string) {
 		Name:   name,
 		Prefix: prefix,
 	}
-	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "terraform", "scripts"), os.ModePerm)
-	os.OpenFile(filepath.Join(GetHome(), "environments", name, "terraform", "scripts", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
+	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "terraform"), os.ModePerm)
+	os.OpenFile(filepath.Join(GetHome(), "environments", name, "terraform", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "networks"), os.ModePerm)
 	os.OpenFile(filepath.Join(GetHome(), "environments", name, "networks", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "environments", name, "hosts"), os.ModePerm)

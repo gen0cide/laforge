@@ -49,11 +49,11 @@ type Host struct {
 	Scripts          []string     `yaml:"scripts"`
 	OverridePassword string       `yaml:"override_password"`
 	UserGroups       []string     `yaml:"user_groups"`
-	DNSEntries       []DNSEntry   `yaml:"dns_entries"`
+	DNSEntries       []DNSEntry   `yaml:"dns_entries" json:"-"`
 	Dependencies     []Dependency `yaml:"dependencies"`
 	Files            RemoteFiles  `yaml:"files"`
 	Vars             `yaml:"variables"`
-	Network          `yaml:"-"`
+	Network          `yaml:"-" json:"-"`
 }
 
 func (h *Host) GetDiskSize() int {

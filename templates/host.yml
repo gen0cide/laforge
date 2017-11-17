@@ -33,13 +33,11 @@ ami:
 last_octet: {{ .LastOctet }}
 
 #########################################################
-# List any internal CNAMEs you want pointing at this host
-# These CNAMEs will be scoped to the subdomain of the
-# Network they belong to.
-# Example:
-#    pod_domain=foo.com, network=bar, cname=baz
-#    CNAME will point to baz.bar.foo.com
-internal_cnames: []
+# Disk Size
+# What size would you like the root disk to be?
+# Value will be interpreted as GB
+# (Default = 30)
+# disk_size: 100
 
 #########################################################
 # Should an external CNAME exist for this host on it's
@@ -65,39 +63,41 @@ user_groups: []
 
 #########################################################
 # Additional Variables scoped to this host
-variables:
-  example: variable
+# variables:
+#   example: variable
 
 #########################################################
 # List of public TCP ports to be exposed
+# Can be either a single port or a range.
+# Examples:
+# - 80
+# - 80-443
 public_tcp: []
 
 #########################################################
 # List of public UDP ports to be exposed
+# Can be either a single port or a range.
+# Examples:
+# - 80
+# - 80-443
 public_udp: []
 
 #########################################################
 # Host Dependencies
-# -- Uncomment and fill out array if you wish to specify
-# -- hosts that should be built BEFORE this host.
-# -- Note this is a YAML array of { host: "", network: "" }
+# Uncomment and fill out array if you wish to specify
+#  hosts that should be built BEFORE this host.
+#  Note this is a YAML array of { host: "", network: "" }
 #
 # dependencies:
-#   -
-#     host: dc01
+#   - host: dc01
 #     network: corp
 
 #########################################################
-# Custom DNS Entries
-# -- Uncomment and fill out array if you wish to specify
-# -- hosts that should be built BEFORE this host.
-# -- Note this is a YAML array of { name: "", value: "" , type: ""}
-#
-# dns_entries:
-#   -
-#     name: AmazonTest-{{ $.Host.Hostname }}-{{ $.Environment.Prefix }}{{ $.PodID }}.{{ $.Network.Subdomain }}.{{ $.Environment.Domain }}
-#     value: 127.0.0.1
-#     type: A
+# File Uploads
+# Move files from your local files/ directory
+# onto the host.
+# files:
+#   localfile.jpg: "C:/pic.jpg"
 
 #########################################################
 # Override Local Admin Password (windows only)

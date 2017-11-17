@@ -1,11 +1,14 @@
 package command
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"regexp"
 
+	"github.com/alecthomas/chroma/quick"
 	"github.com/codegangsta/cli"
 	"github.com/gen0cide/laforge/competition"
 	input "github.com/tcnksm/go-input"
@@ -27,8 +30,18 @@ func CmdNetworkLs(c *cli.Context) {
 	}
 	networks := env.ParseNetworks()
 	for name, network := range networks {
+		competition.Log("----------------------------------------------------------------------")
 		competition.Log("NETWORK >>> " + name)
-		fmt.Println(network.ToYAML())
+		competition.Log(filepath.Join(env.NetworksDir(), fmt.Sprintf("%s.yml", name)))
+		data, err := json.MarshalIndent(network, "", "  ")
+		if err != nil {
+			competition.LogError(fmt.Sprintf("Error printing network information: network=%s.yml error=%s", name, err.Error()))
+		}
+		err = quick.Highlight(os.Stdout, string(data), "json", "terminal", "vim")
+		if err != nil {
+			competition.LogError(fmt.Sprintf("Error printing network information: network=%s.yml error=%s", name, err.Error()))
+		}
+		fmt.Println()
 	}
 }
 
