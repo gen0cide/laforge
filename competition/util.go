@@ -211,6 +211,7 @@ func CreateHome() {
 	os.MkdirAll(GetHome(), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetHome(), "config"), os.ModePerm)
 	os.OpenFile(filepath.Join(GetHome(), "config", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
+	ioutil.WriteFile(filepath.Join(GetHome(), "config", "employees.json"), MustAsset("employees.json"), 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "scripts"), os.ModePerm)
 	os.OpenFile(filepath.Join(GetHome(), "scripts", ".gitkeep"), os.O_RDONLY|os.O_CREATE, 0644)
 	os.MkdirAll(filepath.Join(GetHome(), "files"), os.ModePerm)

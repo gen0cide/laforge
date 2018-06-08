@@ -15,10 +15,10 @@ These would be compiled as part of the final environment's output state.
 Laforge Environments should share their terraform states. Not sure how we want to do this, but will figure something out.
 
 ## Universal Host & Network YAMLs
-Host and Network YAMLs should reside within top level directories. Network definitions should be defined within the env.yml. 
+Host and Network YAMLs should reside within top level directories. Network definitions should be defined within the env.yml.
 
 ## Terraform Top Level Directory
-Move terraform states to a top level directory. 
+Move terraform states to a top level directory.
 
 ## Multi-Level path referencing for scripts/files.
 Scripts should be able to be pathed within subfolders for clarity.
@@ -32,12 +32,12 @@ Examples:
  * Local sleep
  * Reboot machine
  * Run local script
- 
+
 Features:
 
  * Logs output for each provisioning step uniquely
  * Allows debug output to not be piped directly to the console
- 
+
 ## Remove environment prefixes for hostnames
 This was only needed because of Splunk, but now that we have Elastic IPs we can easily just have a laforge mapping that maps IP to hostname and team ID.
 
@@ -68,7 +68,7 @@ With R53, we had the ability to define custom DNS records - we should make sure 
 ## More laforge terraform subcommands
 
  * `laforge tf taint $objname`
- 
+
 ## Laforge should handle signal traps gracefully
 CTRL+C should do what it's expected to do and gracefully terminate terraform. Also timeouts for provisioners should be configurable in the host YAML.
 
@@ -94,5 +94,4 @@ The DNS server, as well as potential jump hosts should live not inside VDI but i
 There is no need to `terraform init` on every team. This is just stupid.
 
 ## Method for attaching external DNS records to host
-We should be able to attach external 
- 
+We should be able to attach external
