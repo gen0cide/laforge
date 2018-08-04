@@ -1,0 +1,35 @@
+laforge self boot:
+1) do i have a global config? (~/.laforge/user.laforge)
+  yes) continue
+  no) inform user no global config exists - suggest laforge global
+2) am I in a directory with env.laforge?
+  yes) continue
+  no) inverse walk FS looking for a parent directory with it
+    notfound) note that no environment configuration was found
+3) am I in a directory with base.laforge?
+  yes) continue
+  no) inverse walk fs looking for a parent directory with it
+    notfound) note that no competition configuration was found
+4) did we find either a env.laforge or a base.laforge?
+  yes) load whichever one we found, preference to env.laforge
+  no) inform the user that neither an env.laforge or a comp.laforge file was found (likely not in a laforge home?)
+
+
+
+laforge folder structure:
+
+base.laforge
+config/remote.laforge
+config/dns.laforge
+scripts/
+commands/
+hosts/
+networks/
+environments/
+environments/$name/
+environments/$name/env.laforge
+environments/$name/dist/$build_output
+environments/$name/dist/files/
+environments/$name/dist/scripts/
+environments/$name/dist/states/
+environments/$name/logs/$log_output

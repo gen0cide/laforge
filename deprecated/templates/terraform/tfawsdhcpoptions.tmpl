@@ -1,0 +1,13 @@
+resource "aws_vpc_dhcp_potions" "{{ .Name }}" {
+  domain_name = "{{ .DomainName }}"
+  domain_name_servers = [
+    {{range .DNSServers}}
+      "{{.}}",
+    {{end}}
+  ]
+  tags = [
+    {{range .Tags}}
+      "{{.}}",
+    {{end}}
+  ]
+}

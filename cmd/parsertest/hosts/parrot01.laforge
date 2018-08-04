@@ -1,0 +1,16 @@
+host "parrot01" {
+  os = "ubuntu"
+  maintainer {
+      name = "alex"
+      email = "alexl@uber.com"
+  }
+  vars = {
+    west = "world"
+    forward = "onward"
+  }
+
+  tags = {
+    mycity = "oakland"
+    fancount = 3
+  }
+}

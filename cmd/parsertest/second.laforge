@@ -1,0 +1,22 @@
+include {
+  path = "./user.laforge"
+}
+
+competition {
+  root_password = "helloworld"
+  remote {
+    region = "us-west-2"
+    key = "akey"
+    secret = "asecret"
+    state_bucket = "sbucket"
+    storage_bucket = "storagebucket"
+  }
+}
+
+user {
+  name = "geordie"
+}
+
+environment {
+  type = "terraform"
+}

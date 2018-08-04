@@ -1,0 +1,9 @@
+identity "infowars" {
+  firstname = "alex"
+  lastname = "jones"
+}
+
+identity "npr" {
+  firstname = "sarah"
+  lastname = "myers"
+}

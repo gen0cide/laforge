@@ -1,0 +1,56 @@
+#########################################################
+## LaForge LF_HOME Config
+## 
+## This file is global to your competition.
+## All environments inherit their properties from here.
+##
+## ** DO NOT ATTEMPT TO RUN LAFORGE WITHOUT CONFIGURING
+##    THIS FILE **
+#########################################################
+
+#########################################################
+# AWS Configuration
+# Provide your AWS API credentials here
+aws:
+  cidr: ""
+  region: ""
+  api_key: ""
+  api_secret: ""
+  external_r53_zone_id: ""
+  s3:
+    region: ""
+    bucket: ""
+  dhcp:
+    domain: ""
+    nameservers: []
+    ntp_servers: []
+  state_store:
+    region: ""
+    bucket: ""
+#########################################################
+
+#########################################################
+# Admin IPs
+# Any IPs listed here will have full access to the entire
+# competition infrastructure. All firewalls and security
+# groups will whitelist these IPs for all ports.
+admin_ips: []
+#########################################################
+
+#########################################################
+# Root Password
+# Root passwords will be set to this on hosts.
+root_password: ""
+#########################################################
+
+#########################################################
+# !! Deprecated temporarily !!!
+# IP Configuration
+# Must be in a CIDR notation: 127.5.5.5/32
+ip_whitelist: []
+#########################################################
+
+#########################################################
+# Competition Domain
+domain: grandchasm.com
+#########################################################

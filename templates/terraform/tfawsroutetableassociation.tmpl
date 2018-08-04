@@ -1,4 +1,0 @@
-resource "aws_route_table_association" "{{ .Name }}" {
-  subnet_id = "${aws_subnet.{{ .Subnet.Name }}.id}"
-  route_table_id = "${aws_route_table.{{ .RouteTable.Name }}.id}"
-}

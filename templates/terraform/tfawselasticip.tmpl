@@ -1,6 +1,0 @@
-resource "aws_eip" "{{ .Name }}" {
-  vpc = {{ .VPC }}
-  {{ if .Attach }}
-  instance = "${aws_instance.{{ .Instance.Name }}.id}"
-  {{ end }}
-}

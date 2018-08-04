@@ -1,0 +1,20 @@
+resource "google_compute_firewall" "{{ .Name }}" {
+  name    = "{{ .Name }}"
+  network = "${google_compute_network.{{ .Network.Name }}.name}"
+
+  {{range .Rules}}
+    {{.Template.Rendered}}
+  {{end}}
+
+  source_ranges = [ 
+    {{range .SourceRanges}}
+      "{{.}}",
+    {{end}}
+  ]
+
+  target_tags = [
+    {{range .TargetTags}}
+      "{{.}}",
+    {{end}}
+  ]
+}

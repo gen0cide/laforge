@@ -1,0 +1,51 @@
+include {
+  path = "./second.laforge"
+}
+
+include {
+  path = "./comp.laforge"
+}
+
+include {
+  path = "./hosts/*.laforge"
+}
+
+include {
+  path = "./networks/*.laforge"
+}
+
+include {
+  path = "./scripts/*.laforge"
+}
+
+config {
+  root = "/Users/flint/Code/cptc"
+}
+
+host "parrot01" {
+  override_password = "newrootpassword"
+  script "startup.sh" {
+    cooldown = 55
+  }
+}
+
+environment {
+  type = "stupid"
+  option "ralph" {
+    value = "smash dat like button"
+  }
+  network "george" {
+    included_hosts = [
+      "parrot01"
+    ]
+  }
+}
+
+identity "npr" {
+  on_conflict {
+    do = "inherit"
+  }
+  firstname = "jamis"
+  lastname = ""
+  email = "winston@football.com"
+}

@@ -1,0 +1,12 @@
+{{if eq .ConnType "windows"}}
+connection {
+  type = "winrm"
+  user = "Administrator"
+  password = "{{ .Password }}"
+}
+{{else}}
+connection {
+  user = "{{ .User }}"
+  private_key = "{{ .PrivateKey }}"
+}
+{{end}}

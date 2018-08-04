@@ -1,0 +1,7 @@
+provisioner "remote-exec" {
+  scripts = [
+    {{range .Scripts}}
+      "{{.Destination}}",
+    {{end}}
+  ]
+}

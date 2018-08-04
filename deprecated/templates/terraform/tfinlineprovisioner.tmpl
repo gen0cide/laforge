@@ -1,0 +1,7 @@
+provisioner "remote-exec" {
+  inline = [
+    {{range .Commands }}
+      "{{.}}",
+    {{end}}
+  ]
+}

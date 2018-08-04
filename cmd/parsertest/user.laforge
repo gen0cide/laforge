@@ -1,0 +1,14 @@
+include {
+  path = "hello.laforge"
+}
+
+include {
+  path = "rekt.laforge"
+}
+
+user {
+  name = "alex"
+  id = "gelly"
+  email = "alexl@uber.com"
+}
+

@@ -1,0 +1,17 @@
+# .goreleaser.yml
+# Build customization
+project_name: laforge
+builds:
+  - binary: laforge
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+    ldflags: -s
+    hooks:
+      pre: go-bindata -nometadata -pkg competition -prefix templates/ -o competition/bindata.go templates templates/terraform
+# Archive customization
+archive:
+  format: zip

@@ -1,0 +1,13 @@
+script "startup.sh" {
+  language = "bash"
+  description = "simple bash startup configurator"
+  maintainer {
+    name = "alex"
+    email = "alexl@uber.com"
+  }
+  source = "./startup.sh"
+  ignore_errors = true
+  args = [
+    "-f"
+  ]
+}

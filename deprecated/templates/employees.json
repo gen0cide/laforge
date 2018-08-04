@@ -1,0 +1,14 @@
+{
+  "it": [
+    {
+      "first_name": "John",
+      "last_name": "Logan",
+      "username": "jlogan",
+      "email": "john@notarealdomain.com",
+      "department": "Information Technology",
+      "title": "Engineering Director",
+      "password": "BadPassword123#",
+      "ou": "IT"
+    }
+  ]
+}
