@@ -1,0 +1,13 @@
+host "parrot01" {
+  override_password = "newrootpassword"
+  script "startup.sh" {
+    cooldown = 55
+  }
+}
+
+
+host "jira01" {
+  disk {
+    size = 20
+  }
+}

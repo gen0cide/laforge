@@ -1,0 +1,26 @@
+include {
+  path = "./scripts/*.laforge"
+}
+
+include {
+  path = "./hosts/*.laforge"
+}
+
+include {
+  path = "./networks/*.laforge"
+}
+
+include {
+  path = "./identities/*.laforge"
+}
+
+competition {
+  root_password = "helloworld"
+  remote {
+    region = "us-west-2"
+    key = "akey"
+    secret = "asecret"
+    state_bucket = "sbucket"
+    storage_bucket = "storagebucket"
+  }
+}

@@ -1,0 +1,8 @@
+identity "npr" {
+  on_conflict {
+    do = "inherit"
+  }
+  firstname = "jamis"
+  lastname = ""
+  email = "winston@football.com"
+}

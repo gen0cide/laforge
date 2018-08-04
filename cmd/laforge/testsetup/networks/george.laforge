@@ -1,0 +1,7 @@
+network "george" {
+  cidr = "10.254.0.0/24"
+  vdi_visible = false
+  vars = {
+    vagrant_disabled = true
+  }
+}

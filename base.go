@@ -8,7 +8,7 @@ type Laforge struct {
 	Includes    []string             `json:"include,omitempty"`
 	BaseDir     string               `hcl:"base_dir,attr" json:"base_dir,omitempty"`
 	CurrDir     string               `json:"current_dir,omitempty"`
-	User        User                 `hcl:"user,block" json:"user,omitempty"`
+	User        User                 `hcl:"user,block" cty:"user" json:"user,omitempty"`
 	Competition Competition          `hcl:"competition,block" json:"competition,omitempty"`
 	Environment Environment          `hcl:"environment,block" json:"environment,omitempty"`
 	Hosts       []*Host              `hcl:"host,block" json:"hosts,omitempty"`

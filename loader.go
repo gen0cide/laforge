@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/ext/include"
 	"github.com/hashicorp/hcl2/ext/transform"
 	gohcl2 "github.com/hashicorp/hcl2/gohcl"
@@ -74,11 +75,10 @@ type fileGlobResolver struct {
 }
 
 func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl2.Body, hcl2.Diagnostics) {
-	callerFile := filepath.Join(r.BaseDir, refRange.Filename)
+	callerFile := filepath.Join(refRange.Filename)
 	callerDir := filepath.Dir(callerFile)
 	targetFile := filepath.Join(callerDir, path)
 	body := hcl2.EmptyBody()
-	var f *hcl2.File
 	var diags hcl2.Diagnostics
 	if strings.Contains(targetFile, `*`) {
 		matches, err := filepath.Glob(targetFile)
@@ -109,14 +109,14 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		}
 	} else {
 		if strings.HasSuffix(targetFile, ".json") {
-			f, diags = r.Parser.ParseJSONFile(targetFile)
+			_, diags = r.Parser.ParseJSONFile(targetFile)
 		} else {
-			f, diags = r.Parser.ParseHCLFile(targetFile)
+			_, diags = r.Parser.ParseHCLFile(targetFile)
 		}
 		r.Loader.CallerMap[targetFile] = NewCaller(targetFile)
-		return f.Body, diags
+		return nil, diags
 	}
-
+	spew.Dump(diags)
 	return body, diags
 }
 
@@ -163,7 +163,15 @@ func NewMergeConflict(
 // Bind enumerates the Loader's original file, performing recursive include loads to the
 // Loader, generating ASTs for each dependency. Bind finishes with a call to Deconflict().
 func (l *Loader) Bind() (*Laforge, error) {
-	transformer := include.Transformer("include", nil, FileGlobResolver(".", l.Parser, l))
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	root, err := filepath.Abs(cwd)
+	if err != nil {
+		return nil, err
+	}
+	transformer := include.Transformer("include", nil, FileGlobResolver(root, l.Parser, l))
 	filenames := []string{}
 	for name := range l.Parser.Files() {
 		filenames = append([]string{name}, filenames...)
