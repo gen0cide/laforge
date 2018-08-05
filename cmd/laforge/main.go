@@ -74,6 +74,7 @@ func main() {
 		shellCommand,
 		uploadCommand,
 		downloadCommand,
+		exampleCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

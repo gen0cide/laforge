@@ -1,0 +1,33 @@
+/*
+
+  EXAMPLE LAFORGE IDENTITY CONFIGURATION
+
+*/
+
+/* declare a unique ID in the object initialization */
+identity "{{ $.ID }}" {
+
+  /* typical persona details */
+  firstname = "{{ $.Firstname }}"
+  lastname = "{{ $.Lastname }}"
+  email = "{{ $.Email }}"
+  password = "{{ $.Password }}"
+
+  description = "{{ $.Description }}"
+
+  /* you can specify a custom user avatar if you wish (default = "") */
+  avatar_file = "{{ $.AvatarFile }}"
+
+  /* vars let you define custom configuration parameters which can be retrived by scripts etc. */
+  vars = {
+    {{ range $key, $val := $.Vars -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  on_conflict {
+    do = "{{ $.OnConflict.Do }}"
+    append = {{ $.OnConflict.Append }}
+  }
+}

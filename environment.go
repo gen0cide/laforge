@@ -9,17 +9,19 @@ import (
 // Environment represents the basic configurable type for a Laforge environment container
 type Environment struct {
 	ID               string              `hcl:",label" json:"id,omitempty"`
-	BaseDir          string              `json:"base_dir,omitempty"`
 	Name             string              `hcl:"name,attr" json:"name,omitempty"`
+	Description      string              `hcl:"description,attr" json:"description,omitempty"`
 	Type             string              `hcl:"type,attr" json:"type,omitempty"`
 	Config           map[string]string   `hcl:"config,attr" json:"config,omitempty"`
 	Vars             map[string]string   `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string   `hcl:"tags,attr" json:"tags,omitempty"`
-	Networks         []*IncludedNetwork  `hcl:"network,block" json:"included_networks,omitempty"`
+	Networks         []*IncludedNetwork  `hcl:"included_network,block" json:"included_networks,omitempty"`
+	Maintainer       *User               `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	BaseDir          string              `json:"base_dir,omitempty"`
 	IncludedNetworks map[string]*Network `json:"-"`
 	IncludedHosts    map[string]*Host    `json:"-"`
 	HostByNetwork    map[string][]*Host  `json:"-"`
-	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller           Caller              `json:"-"`
 }
 

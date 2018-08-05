@@ -1,0 +1,29 @@
+/*
+
+  EXAMPLE LAFORGE DNS RECORD CONFIGURATION
+
+*/
+
+/* declare a unique ID in the object initialization */
+dns_record "{{ $.ID }}" {
+
+
+  /*
+    type - describes A/CNAME/TXT/etc.
+    name - the dns "key" for the zone (CNAME www.bar.com -> foo01.bar.com, name would = "www")
+    value - the value of the dns entry (foo01 given the above example)
+  */
+
+  type = "{{ $.Type }}"
+  name = "{{ $.Name }}"
+  value = "{{ $.Value }}"
+
+  /* disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP */
+  disabled = {{ $.Disabled }}
+
+  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  on_conflict {
+    do = "{{ $.OnConflict.Do }}"
+    append = {{ $.OnConflict.Append }}
+  }
+}

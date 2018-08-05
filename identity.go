@@ -9,15 +9,16 @@ import (
 
 // Identity defines a generic human identity primative that can be extended into Employee, Customer, Client, etc.
 type Identity struct {
-	ID          string     `hcl:",label" json:"id,omitempty"`
-	Firstname   string     `hcl:"firstname,attr" json:"firstname,omitempty"`
-	Lastname    string     `hcl:"lastname,attr" json:"lastname,omitempty"`
-	Email       string     `hcl:"email,attr" json:"email,omitempty"`
-	Password    string     `hcl:"password,attr" json:"password,omitempty"`
-	Description string     `hcl:"description,attr" json:"description,omitempty"`
-	AvatarFile  string     `hcl:"avatar_file,attr" json:"avatar_file,omitempty"`
-	OnConflict  OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller      Caller     `json:"-"`
+	ID          string            `hcl:",label" json:"id,omitempty"`
+	Firstname   string            `hcl:"firstname,attr" json:"firstname,omitempty"`
+	Lastname    string            `hcl:"lastname,attr" json:"lastname,omitempty"`
+	Email       string            `hcl:"email,attr" json:"email,omitempty"`
+	Password    string            `hcl:"password,attr" json:"password,omitempty"`
+	Description string            `hcl:"description,attr" json:"description,omitempty"`
+	AvatarFile  string            `hcl:"avatar_file,attr" json:"avatar_file,omitempty"`
+	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
+	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller      Caller            `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface

@@ -8,33 +8,30 @@ import (
 
 // Host defines a configurable type for customizing host parameters within the infrastructure.
 type Host struct {
-	ID                   string                 `hcl:",label" json:"id,omitempty"`
-	Hostname             string                 `hcl:"hostname,attr" cty:"hostname" json:"hostname,omitempty"`
-	OS                   string                 `hcl:"os,attr" json:"os,omitempty"`
-	AMI                  string                 `hcl:"ami,attr" json:"ami,omitempty"`
-	LastOctet            int                    `hcl:"last_octet,attr" json:"last_octet,omitempty"`
-	InstanceSize         string                 `hcl:"instance_size,attr" json:"instance_size,omitempty"`
-	Disk                 Disk                   `hcl:"disk,block" json:"disk,omitempty"`
-	IncludedDNSRecords   []string               `hcl:"dns_records,attr" json:"included_dns_records,omitempty"`
-	ExposedTCPPorts      []string               `hcl:"exposed_tcp_ports,attr" json:"exposed_tcp_ports,omitempty"`
-	ExposedUDPPorts      []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
-	IncludedScripts      []string               `hcl:"scripts,attr" json:"included_scripts,omitempty"`
-	IncludedCommands     []string               `hcl:"commands,attr" json:"included_commands,omitempty"`
-	IncludedDependencies []string               `hcl:"dependencies,attr" json:"included_dependencies,omitempty"`
-	IncludedFiles        []string               `hcl:"files,attr" json:"included_files,omitempty"`
-	Scripts              map[string]*Script     `json:"scripts,omitempty"`
-	Commands             map[string]*Command    `json:"commands,omitempty"`
-	Files                map[string]*RemoteFile `json:"files,omitempty"`
-	DNSRecords           map[string]*DNSRecord  `json:"dns_records,omitempty"`
-	Dependencies         map[string]interface{} `json:"dependencies,omitempty"`
-	OverridePassword     string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
-	UserGroups           []string               `hcl:"user_groups,attr" json:"user_groups,omitempty"`
-	IO                   IO                     `hcl:"io,block" json:"io,omitempty"`
-	Vars                 map[string]string      `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags                 map[string]string      `hcl:"tags,attr" json:"tags,omitempty"`
-	Maintainer           User                   `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	OnConflict           OnConflict             `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller               Caller                 `json:"-"`
+	ID               string                 `hcl:",label" json:"id,omitempty"`
+	Hostname         string                 `hcl:"hostname,attr" cty:"hostname" json:"hostname,omitempty"`
+	Description      string                 `hcl:"description,attr" json:"description,omitempty"`
+	OS               string                 `hcl:"os,attr" json:"os,omitempty"`
+	AMI              string                 `hcl:"ami,attr" json:"ami,omitempty"`
+	LastOctet        int                    `hcl:"last_octet,attr" json:"last_octet,omitempty"`
+	InstanceSize     string                 `hcl:"instance_size,attr" json:"instance_size,omitempty"`
+	Disk             Disk                   `hcl:"disk,block" json:"disk,omitempty"`
+	ProvisionSteps   []string               `hcl:"provision_steps,attr" json:"provision_steps,omitempty"`
+	ExposedTCPPorts  []string               `hcl:"exposed_tcp_ports,attr" json:"exposed_tcp_ports,omitempty"`
+	ExposedUDPPorts  []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
+	OverridePassword string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
+	UserGroups       []string               `hcl:"user_groups,attr" json:"user_groups,omitempty"`
+	IO               IO                     `hcl:"io,block" json:"io,omitempty"`
+	Vars             map[string]string      `hcl:"vars,attr" json:"vars,omitempty"`
+	Tags             map[string]string      `hcl:"tags,attr" json:"tags,omitempty"`
+	Maintainer       *User                  `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	OnConflict       OnConflict             `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller           Caller                 `json:"-"`
+	Scripts          map[string]*Script     `json:"scripts,omitempty"`
+	Commands         map[string]*Command    `json:"commands,omitempty"`
+	Files            map[string]*RemoteFile `json:"files,omitempty"`
+	DNSRecords       map[string]*DNSRecord  `json:"dns_records,omitempty"`
+	Dependencies     map[string]interface{} `json:"dependencies,omitempty"`
 }
 
 // Disk is a configurable type for setting the root volume's disk size in GB
@@ -90,85 +87,59 @@ func (h *Host) Index(base *Laforge) error {
 	h.Commands = map[string]*Command{}
 	h.Files = map[string]*RemoteFile{}
 	h.DNSRecords = map[string]*DNSRecord{}
-	iscripts := map[string]string{}
-	icommands := map[string]string{}
-	ifiles := map[string]string{}
-	irecords := map[string]string{}
-	for _, s := range h.IncludedScripts {
-		Logger.Debugf("indexing script %s for host %s", s, h.ID)
-		iscripts[s] = "included"
-	}
-	for _, c := range h.IncludedCommands {
-		icommands[c] = "included"
-	}
-	for _, c := range h.IncludedFiles {
-		ifiles[c] = "included"
-	}
-	for _, c := range h.IncludedDNSRecords {
-		irecords[c] = "included"
+	iprov := map[string]string{}
+
+	for _, s := range h.ProvisionSteps {
+		Logger.Debugf("indexing provision step %s for host %s", s, h.ID)
+		iprov[s] = "included"
 	}
 	for name, script := range base.Scripts {
-		status, found := iscripts[name]
+		status, found := iprov[name]
 		if !found {
 			continue
 		}
 		if status == "included" {
 			h.Scripts[name] = script
-			iscripts[name] = "resolved"
+			iprov[name] = "resolved"
 			Logger.Debugf("Resolved %T dependency %s for %s", script, script.ID, h.ID)
 		}
 	}
 	for name, command := range base.Commands {
-		status, found := icommands[name]
+		status, found := iprov[name]
 		if !found {
 			continue
 		}
 		if status == "included" {
 			h.Commands[name] = command
-			icommands[name] = "resolved"
+			iprov[name] = "resolved"
 			Logger.Debugf("Resolved %T dependency %s for %s", command, command.ID, h.ID)
 		}
 	}
 	for name, file := range base.Files {
-		status, found := ifiles[name]
+		status, found := iprov[name]
 		if !found {
 			continue
 		}
 		if status == "included" {
 			h.Files[name] = file
-			ifiles[name] = "resolved"
+			iprov[name] = "resolved"
 			Logger.Debugf("Resolved %T dependency %s for %s", file, file.ID, h.ID)
 		}
 	}
 	for name, record := range base.DNSRecords {
-		status, found := irecords[name]
+		status, found := iprov[name]
 		if !found {
 			continue
 		}
 		if status == "included" {
 			h.DNSRecords[name] = record
-			irecords[name] = "resolved"
+			iprov[name] = "resolved"
 			Logger.Debugf("Resolved %T dependency %s for %s", record, record.ID, h.ID)
 		}
 	}
-	for x, status := range iscripts {
+	for x, status := range iprov {
 		if status == "included" {
-			return fmt.Errorf("unmet %s dependency %s for host %s\n%s", "script", x, h.ID, h.Caller.Error())
-		}
-	}
-	for x, status := range icommands {
-		if status == "included" {
-			return fmt.Errorf("unmet %s dependency %s for host %s\n%s", "command", x, h.ID, h.Caller.Error())
-		}
-	}
-	for x, status := range ifiles {
-		if status == "included" {
-			return fmt.Errorf("unmet %s dependency %s for host %s\n%s", "remote_file", x, h.ID, h.Caller.Error())
-		}
-	}
-	for x, status := range irecords {
-		if status == "included" {
-			return fmt.Errorf("unmet %s dependency %s for host %s\n%s", "dns_record", x, h.ID, h.Caller.Error())
+			return fmt.Errorf("unmet provision_step dependency %s for host %s\n%s", x, h.ID, h.Caller.Error())
 		}
 	}
 	return nil

@@ -1,0 +1,42 @@
+/*
+
+  EXAMPLE LAFORGE AMI CONFIGURATION
+
+*/
+
+/* declare a unique ID in the object initialization */
+ami "{{ $.ID }}" {
+
+  /* a more human readable name if you prefer, and a description (optional) */
+  name = "{{ $.Name }}"
+  description = "{{ $.Description }}"
+
+  /* the provider attribute is what laforge uses to determine under what conditions
+     this AMI can be used in a given environment. See the docs for its options. */
+  provider = "{{ $.Provider }}"
+
+  /* username will be the base username which laforge needs to know to configure the host */
+  username = "{{ $.Username }}"
+
+  /* config holds a variable set of options that are entirely dependent
+     on the value of the "provider" attribute defined above */
+  config = {
+    {{ range $key, $val := $.Config -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  /* tags express general information which will be able to be
+     queried on in the future */
+  tags = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  /* maintainer is completely optional, but note team organization! */
+  maintainer "{{ $.Maintainer.ID }}" {
+    name = "{{ $.Maintainer.Name }}"
+    email = "{{ $.Maintainer.Email }}"
+  }
+}

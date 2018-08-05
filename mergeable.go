@@ -38,8 +38,9 @@ func SmartMerge(m, diff Mergeable, appendSlices bool) (Mergeable, error) {
 	strats := []func(*mergo.Config){mergo.WithOverride}
 	newCaller := m.GetCaller().Stack(diff.GetCaller())
 	conflict := m.GetOnConflict()
-	switch diff.GetOnConflict().Do {
-	case "":
+	meth := diff.GetOnConflict().Do
+	switch {
+	case meth == "" || meth == "default":
 		if diff.GetOnConflict().Append {
 			strats = append(strats, mergo.WithAppendSlice)
 		}
@@ -49,11 +50,11 @@ func SmartMerge(m, diff Mergeable, appendSlices bool) (Mergeable, error) {
 			return m, errors.WithStack(err)
 		}
 		return m, nil
-	case "overwrite":
+	case meth == "overwrite":
 		swapErr := m.Swap(diff)
 		m.SetOnConflict(conflict)
 		return m, swapErr
-	case "inherit":
+	case meth == "inherit":
 		if m.GetOnConflict().Append {
 			strats = append(strats, mergo.WithAppendSlice)
 		}
@@ -68,7 +69,9 @@ func SmartMerge(m, diff Mergeable, appendSlices bool) (Mergeable, error) {
 			return m, swapErr
 		}
 		return m, nil
-	case "panic":
+	case meth == "skip":
+		return m, nil
+	case meth == "panic":
 		return m, NewMergeConflict(m, diff, m.GetID(), diff.GetID(), m.GetCaller().Current(), diff.GetCaller().Current())
 	default:
 		return m, fmt.Errorf("invalid conflict strategy %s in %s", diff.GetOnConflict().Do, diff.GetCaller().Current().CallerFile)

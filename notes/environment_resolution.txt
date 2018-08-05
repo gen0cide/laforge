@@ -44,6 +44,7 @@ laforge init        // creates competition
 laforge status      // shows current laforge status in an ENV config compatible output
 laforge dump        // shows a pretty print of your current state
 laforge build       // generate a build for the current environment
+laforge example name // render an example object of the given type
 laforge env list    // paths to current resolutions
 laforge env create  // creates an environment for the current competition
 laforge query       // query an element within your current environment

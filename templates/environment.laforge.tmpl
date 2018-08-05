@@ -1,0 +1,87 @@
+/*
+
+  DEFAULT LAFORGE COMPETITION ENVIRONMENT CONFIGURATION
+
+*/
+
+/* environment unique ID */
+environment "{{ $.ID }}" {
+
+  /*
+    environment details
+  */
+  name = "{{ $.Name }}"
+  description = "{{ $.Description }}"
+
+  /*
+    this setting determines what type of provisioning will occur (aws, vagrant, native)
+  */
+  type = "{{ $.Type }}"
+
+  /*
+    based on your type, you likely will have type-specific configuration values here
+  */
+  config = {
+    {{ range $key, $val := $.Config -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+
+  /*
+
+  ** INCLUDING NETWORKS AND HOSTS IN YOUR ENVIRONMENT **
+  > simply declare these included_network blocks within your environment {}
+    configuration to include networks and hosts.
+
+  {{ range $net, $hosts := $.HostByNetwork -}}
+  included_network "{{ $net }}" {
+    included_hosts = [
+      {{ range $_, $h := $hosts -}}
+      "{{ $h.ID }}",
+      {{ end -}}
+    ]
+  }
+
+  {{ end -}}
+
+  */
+
+
+  /*
+    you can tag your environment as well
+  */
+  tags = {
+    {{ range $key, $val := $.Vars -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+
+  /*
+    and define any variables you might
+  */
+  vars = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+
+  /*
+    just like with other types, you can specify a conflict strategy here (read the docs!)
+  */
+  on_conflict {
+    do = "{{ $.OnConflict.Do }}"
+    append = {{ $.OnConflict.Append }}
+  }
+
+
+  /*
+    maintainer is completely optional, but note team organization!
+  */
+  maintainer "{{ $.Maintainer.ID }}" {
+    name = "{{ $.Maintainer.Name }}"
+    email = "{{ $.Maintainer.Email }}"
+  }
+}

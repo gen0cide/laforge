@@ -1,0 +1,54 @@
+/*
+
+  EXAMPLE LAFORGE COMMAND CONFIGURATION
+
+*/
+
+/* declare a unique ID in the object initialization */
+command "{{ $.ID }}" {
+
+  /* a more human readable name if you prefer, and a description (optional) */
+  name = "{{ $.Name }}"
+  description = "{{ $.Description }}"
+
+  /* the program is the the base command to run (no arguments) */
+  program = "{{ $.Program }}"
+
+  /* supply arguments here */
+  args = [
+    {{ range $_, $arg := $.Args -}}
+    "{{ $arg }}",
+    {{ end -}}
+  ]
+
+  /* if ignore_errors is not true, laforge will halt provisioning upon an error response */
+  ignore_errors = {{ $.IgnoreErrors }}
+
+  /* cooldown specifies a custom wait time should you wish to wait after the command exits (default = 0) */
+  cooldown = {{ $.Cooldown }}
+
+  /* disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP */
+  disabled = {{ $.Disabled }}
+
+  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  on_conflict {
+    do = "{{ $.OnConflict.Do }}"
+    append = {{ $.OnConflict.Append }}
+  }
+
+  /* the io block lets you define custom output (and input in command's case) for this execution */
+  io {
+    /* stdin = path to a file to cat into STDIN for the program's execution */
+    stdin = "{{ $.IO.Stdin }}"
+
+    /* stdout, stderr are blank ("") by default, and will log to the build dir and stdout during provisioning */
+    stdout = "{{ $.IO.Stdout }}"
+    stderr = "{{ $.IO.Stderr }}"
+  }
+
+  /* maintainer is completely optional, but note team organization! */
+  maintainer "{{ $.Maintainer.ID }}" {
+    name = "{{ $.Maintainer.Name }}"
+    email = "{{ $.Maintainer.Email }}"
+  }
+}

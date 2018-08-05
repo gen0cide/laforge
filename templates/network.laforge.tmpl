@@ -1,0 +1,39 @@
+/*
+
+  EXAMPLE LAFORGE NETWORK CONFIGURATION
+
+*/
+
+/* declare a unique ID in the object initialization */
+network "{{ $.ID }}" {
+
+  /* name will be the network's subdomain */
+  name = "{{ $.Name }}"
+
+  /* cidr is the network range for this network */
+  cidr = "{{ $.CIDR }}"
+
+  /* allows all traffic from the team's jump boxes to this network (simulates locality) */
+  vdi_visible = {{ $.VDIVisible }}
+
+  /* vars let you define custom configuration parameters which may be needed for specific provisioning builders. */
+  vars = {
+    {{ range $key, $val := $.Vars -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  /* tags express general information which will be able to be
+     queried on in the future */
+  tags = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  on_conflict {
+    do = "{{ $.OnConflict.Do }}"
+    append = {{ $.OnConflict.Append }}
+  }
+}

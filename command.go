@@ -8,6 +8,7 @@ import (
 type Command struct {
 	ID           string     `hcl:",label" json:"id,omitempty"`
 	Name         string     `hcl:"name,attr" json:"name,omitempty"`
+	Description  string     `hcl:"description,attr" json:"description,omitempty"`
 	Program      string     `hcl:"program,attr" json:"program,omitempty"`
 	Args         []string   `hcl:"args,attr" json:"args,omitempty"`
 	IgnoreErrors bool       `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
@@ -16,6 +17,7 @@ type Command struct {
 	Disabled     bool       `hcl:"disabled,attr" json:"disabled,omitempty"`
 	OnConflict   OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller       Caller     `json:"-"`
+	Maintainer   *User      `hcl:"maintainer,block" json:"maintainer,omitempty"`
 }
 
 // GetCaller implements the Mergeable interface

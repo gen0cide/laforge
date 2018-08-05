@@ -13,7 +13,7 @@ type Script struct {
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
 	Language     string            `hcl:"language,attr" json:"language,omitempty"`
 	Description  string            `hcl:"description,attr" json:"description,omitempty"`
-	Maintainer   User              `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	Maintainer   *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	Source       string            `hcl:"source,attr" json:"source,omitempty"`
 	SourceType   string            `hcl:"source_type,attr" json:"source_type,omitempty"`
 	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`

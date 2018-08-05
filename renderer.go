@@ -7,6 +7,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/static"
@@ -15,8 +17,12 @@ import (
 // RenderHCLv2Object is a generic templating function for HCLv2 compatible types
 func RenderHCLv2Object(i interface{}) ([]byte, error) {
 	t := reflect.TypeOf(i)
-	tname := strings.ToLower(t.Name())
-	tmplname := fmt.Sprintf("%s.hcl.tmpl", tname)
+	if t.Kind() == reflect.Ptr {
+		v := reflect.ValueOf(i)
+		t = reflect.Indirect(v).Type()
+	}
+	tname := strings.ToLower(strcase.ToSnake(t.Name()))
+	tmplname := fmt.Sprintf("%s.laforge.tmpl", tname)
 	Logger.Debugf("Searching for template %s", tmplname)
 	tmpldata, err := static.ReadFile(tmplname)
 	if err != nil {
