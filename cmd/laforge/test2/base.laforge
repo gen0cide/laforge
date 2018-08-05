@@ -1,0 +1,72 @@
+/*
+
+  DEFAULT LAFORGE BASE COMPETITION CONFIGURATION
+
+*/
+
+/* IMPORT ALL .laforge FILES IN config/ DIRECTORY */
+include {
+  path = "./config/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN scripts/ DIRECTORY */
+include {
+  path = "./scripts/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN commands/ DIRECTORY */
+include {
+  path = "./commands/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN hosts/ DIRECTORY */
+include {
+  path = "./hosts/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN networks/ DIRECTORY */
+include {
+  path = "./networks/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN identities/ DIRECTORY */
+include {
+  path = "./identities/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN files/ DIRECTORY */
+include {
+  path = "./files/*.laforge"
+}
+
+competition "test2" {
+  root_password = "Ad^Qh~I$ol4mx,f5O302BW{K"
+
+  dns "default" {
+    type = "disabled"
+
+    root_domain = "CHANGEME.LOCAL"
+
+    dns_servers = [
+      "127.0.0.1",
+      "127.0.0.2",
+    ]
+
+    ntp_servers = [
+      "127.0.0.1",
+      "127.0.0.2",
+    ]
+  }
+
+  remote "default" {
+    type = "disabled"
+
+    region = "us-west-2"
+
+    key    = "AWS_API_KEY"
+    secret = "AWS_API_SECRET"
+
+    state_bucket   = "S3_BUCKET_FOR_STATE"
+    storage_bucket = "S3_BUCKET_FOR_STORAGE"
+  }
+}

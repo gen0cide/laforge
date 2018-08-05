@@ -13,4 +13,11 @@ host "parrot01" {
     mycity = "oakland"
     fancount = 3
   }
+
+  scripts = [
+    "startup.sh",
+    "foobar.sh"
+  ]
 }
+
+script "foobar.sh" {}

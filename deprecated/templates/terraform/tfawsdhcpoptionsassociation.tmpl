@@ -1,4 +1,0 @@
-resource aws_vpc_dhcp_options_association "{{ .Name }}" {
-  vpc_id = "${aws_vpc.{{ .VPC.Name }}.id}"
-  dhcp_options_id = "${aws_vpc_dhcp_options.{{ .DHCPOptions.Name }}.id}"
-}

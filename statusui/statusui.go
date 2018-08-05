@@ -101,13 +101,13 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 	objecttypes.AddItem("hosts", "", 0, func() {
 		objlist.Clear()
 		objtree.SetRoot(nil)
-		for name := range base.HostMap {
+		for name := range base.Hosts {
 			objlist.AddItem(name, "", 0, nil)
 		}
 		sa.app.SetFocus(objlist)
 		objlist.SetChangedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.HostMap[name])
+			node.SetReference(base.Hosts[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -115,7 +115,7 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 		objlist.SetCurrentItem(0)
 		objlist.SetSelectedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.HostMap[name])
+			node.SetReference(base.Hosts[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -124,13 +124,13 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 	objecttypes.AddItem("networks", "", 0, func() {
 		objlist.Clear()
 		objtree.SetRoot(nil)
-		for name := range base.NetworkMap {
+		for name := range base.Networks {
 			objlist.AddItem(name, "", 0, nil)
 		}
 		sa.app.SetFocus(objlist)
 		objlist.SetChangedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.NetworkMap[name])
+			node.SetReference(base.Networks[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -138,7 +138,7 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 		objlist.SetCurrentItem(0)
 		objlist.SetSelectedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.NetworkMap[name])
+			node.SetReference(base.Networks[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -147,13 +147,13 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 	objecttypes.AddItem("identities", "", 0, func() {
 		objlist.Clear()
 		objtree.SetRoot(nil)
-		for name := range base.IdentityMap {
+		for name := range base.Identities {
 			objlist.AddItem(name, "", 0, nil)
 		}
 		sa.app.SetFocus(objlist)
 		objlist.SetChangedFunc(func(i int, name string, t string, s rune) {
-			node := identityTreeNode(name, base.IdentityMap[name])
-			node.SetReference(base.IdentityMap[name])
+			node := identityTreeNode(name, base.Identities[name])
+			node.SetReference(base.Identities[name])
 			node.SetExpanded(true)
 			node.SetSelectable(true)
 			node.ExpandAll()
@@ -162,8 +162,8 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 		})
 		objlist.SetCurrentItem(0)
 		objlist.SetSelectedFunc(func(i int, name string, t string, s rune) {
-			node := identityTreeNode(name, base.IdentityMap[name])
-			node.SetReference(base.IdentityMap[name])
+			node := identityTreeNode(name, base.Identities[name])
+			node.SetReference(base.Identities[name])
 			node.SetExpanded(true)
 			node.SetSelectable(true)
 			node.ExpandAll()
@@ -174,13 +174,13 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 	objecttypes.AddItem("scripts", "", 0, func() {
 		objlist.Clear()
 		objtree.SetRoot(nil)
-		for name := range base.ScriptMap {
+		for name := range base.Scripts {
 			objlist.AddItem(name, "", 0, nil)
 		}
 		sa.app.SetFocus(objlist)
 		objlist.SetChangedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.ScriptMap[name])
+			node.SetReference(base.Scripts[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -188,7 +188,7 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 		objlist.SetCurrentItem(0)
 		objlist.SetSelectedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.ScriptMap[name])
+			node.SetReference(base.Scripts[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -197,13 +197,13 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 	objecttypes.AddItem("commands", "", 0, func() {
 		objlist.Clear()
 		objtree.SetRoot(nil)
-		for name := range base.CommandMap {
+		for name := range base.Commands {
 			objlist.AddItem(name, "", 0, nil)
 		}
 		sa.app.SetFocus(objlist)
 		objlist.SetChangedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.CommandMap[name])
+			node.SetReference(base.Commands[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)
@@ -211,7 +211,7 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 		objlist.SetCurrentItem(0)
 		objlist.SetSelectedFunc(func(i int, name string, t string, s rune) {
 			node := tview.NewTreeNode(name)
-			node.SetReference(base.CommandMap[name])
+			node.SetReference(base.Commands[name])
 			node.SetExpanded(true)
 			objtree.SetRoot(node)
 			objtree.SetCurrentNode(node)

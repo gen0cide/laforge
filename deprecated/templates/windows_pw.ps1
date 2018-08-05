@@ -1,1 +1,0 @@
-([adsi]"WinNT://$env:computername/Administrator").SetPassword('{{ $.Competition.RootPassword }}')  

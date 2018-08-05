@@ -11,10 +11,10 @@ import (
 
 // User defines a laforge command line user and their properties
 type User struct {
-	Name      string `hcl:"name,attr" cty:"name" json:"name,omitempty"`
-	ID        string `hcl:"id,attr" cty:"id" json:"id,omitempty"`
-	Email     string `hcl:"email,attr" cty:"email" json:"email,omitempty"`
-	Confirmed bool   `json:"-"`
+	ID    string `hcl:",label" cty:"id" json:"id,omitempty"`
+	Name  string `hcl:"name,attr" cty:"name" json:"name,omitempty"`
+	UUID  string `hcl:"uuid,attr" cty:"uuid" json:"uuid,omitempty"`
+	Email string `hcl:"email,attr" cty:"email" json:"email,omitempty"`
 }
 
 // UserWizard runs an interactive prompt to get the user's information.
@@ -24,8 +24,10 @@ func UserWizard() error {
 		return err
 	}
 	user := User{
-		ID: uuid.New().String(),
+		ID:   u.Username,
+		UUID: uuid.New().String(),
 	}
+	confirmed := false
 	qs := []*survey.Question{
 		{
 			Name: "Name",
@@ -42,20 +44,24 @@ func UserWizard() error {
 			},
 			Validate: survey.Required,
 		},
-		{
-			Name: "Confirmed",
-			Prompt: &survey.Confirm{
-				Message: "Write configuration to ~/.laforge/global.laforge?",
-			},
-		},
 	}
 	err = survey.Ask(qs, &user)
 	if err != nil {
 		return err
 	}
-	if !user.Confirmed {
+	qs2 := []*survey.Question{
+		{
+			Name: "confirmed",
+			Prompt: &survey.Confirm{
+				Message: "Write configuration to ~/.laforge/global.laforge?",
+			},
+		},
+	}
+	err = survey.Ask(qs2, &confirmed)
+	if !confirmed {
 		return errors.New("write authorization not granted")
 	}
+
 	err = CreateGlobalConfig(user)
 	if err != nil {
 		return err

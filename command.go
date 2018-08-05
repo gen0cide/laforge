@@ -1,14 +1,13 @@
 package laforge
 
 import (
-	"fmt"
-
-	"github.com/imdario/mergo"
+	"github.com/pkg/errors"
 )
 
 // Command represents an executable command that can be defined as part of a host configuration step
 type Command struct {
-	Name         string     `hcl:"name,label" json:"name,omitempty"`
+	ID           string     `hcl:",label" json:"id,omitempty"`
+	Name         string     `hcl:"name,attr" json:"name,omitempty"`
 	Program      string     `hcl:"program,attr" json:"program,omitempty"`
 	Args         []string   `hcl:"args,attr" json:"args,omitempty"`
 	IgnoreErrors bool       `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
@@ -19,27 +18,37 @@ type Command struct {
 	Caller       Caller     `json:"-"`
 }
 
-// Update performs a patching operation on source (c) with diff (diff), using the diff's merge conflict settings as appropriate.
-func (c *Command) Update(diff *Command) error {
-	switch diff.OnConflict.Do {
-	case "":
-		return mergo.Merge(c, diff, mergo.WithOverride)
-	case "overwrite":
-		conflict := c.OnConflict
-		*c = *diff
-		c.OnConflict = conflict
-		return nil
-	case "inherit":
-		callerCopy := diff.Caller
-		conflict := c.OnConflict
-		err := mergo.Merge(diff, c, mergo.WithOverride)
-		*c = *diff
-		c.Caller = callerCopy
-		c.OnConflict = conflict
-		return err
-	case "panic":
-		return NewMergeConflict(c, diff, c.Name, diff.Name, c.Caller.Current(), diff.Caller.Current())
-	default:
-		return fmt.Errorf("invalid conflict strategy %s in %s", diff.OnConflict.Do, diff.Caller.Current().CallerFile)
+// GetCaller implements the Mergeable interface
+func (c *Command) GetCaller() Caller {
+	return c.Caller
+}
+
+// GetID implements the Mergeable interface
+func (c *Command) GetID() string {
+	return c.ID
+}
+
+// GetOnConflict implements the Mergeable interface
+func (c *Command) GetOnConflict() OnConflict {
+	return c.OnConflict
+}
+
+// SetCaller implements the Mergeable interface
+func (c *Command) SetCaller(ca Caller) {
+	c.Caller = ca
+}
+
+// SetOnConflict implements the Mergeable interface
+func (c *Command) SetOnConflict(o OnConflict) {
+	c.OnConflict = o
+}
+
+// Swap implements the Mergeable interface
+func (c *Command) Swap(m Mergeable) error {
+	rawVal, ok := m.(*Command)
+	if !ok {
+		return errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", c, m)
 	}
+	*c = *rawVal
+	return nil
 }

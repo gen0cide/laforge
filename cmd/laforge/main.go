@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	cli.HelpFlag = cli.BoolFlag{Name: "help"}
+	cli.HelpFlag = cli.BoolFlag{Name: "help, h"}
 	cli.VersionFlag = cli.BoolFlag{Name: "version"}
 
 	cli.VersionPrinter = func(c *cli.Context) {
@@ -33,8 +33,8 @@ func main() {
 	app.Writer = color.Output
 	app.ErrWriter = color.Output
 	app.Name = "laforge"
+	app.Usage = "Distributed competition development and automation"
 	app.Description = "Security competition infrastructure automation framework"
-	app.Email = laforge.AuthorEmail
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -62,8 +62,18 @@ func main() {
 	}
 	app.Copyright = `(c) 2018 Alex Levinson`
 	app.Commands = []cli.Command{
-		globalCommand,
+		configureCommand,
+		initCommand,
 		statusCommand,
+		dumpCommand,
+		buildCommand,
+		envCommand,
+		queryCommand,
+		doctorCommand,
+		serveCommand,
+		shellCommand,
+		uploadCommand,
+		downloadCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

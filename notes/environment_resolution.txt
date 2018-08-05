@@ -19,17 +19,40 @@ laforge self boot:
 laforge folder structure:
 
 base.laforge
-config/remote.laforge
-config/dns.laforge
-scripts/
-commands/
-hosts/
-networks/
-environments/
-environments/$name/
-environments/$name/env.laforge
-environments/$name/dist/$build_output
-environments/$name/dist/files/
-environments/$name/dist/scripts/
-environments/$name/dist/states/
-environments/$name/logs/$log_output
+config/.gitkeep
+scripts/.gitkeep
+commands/.gitkeep
+hosts/.gitkeep
+networks/.gitkeep
+identities/.gitkeep
+files/.gitkeep
+envs/.gitkeep
+envs/$name/
+envs/$name/env.laforge
+envs/$name/dist/$build_output
+envs/$name/dist/files/
+envs/$name/dist/scripts/
+envs/$name/dist/states/
+envs/$name/logs/$log_output
+envs/$name/overrides/
+
+
+
+
+laforge configure   // sets up user account
+laforge init        // creates competition
+laforge status      // shows current laforge status in an ENV config compatible output
+laforge dump        // shows a pretty print of your current state
+laforge build       // generate a build for the current environment
+laforge env list    // paths to current resolutions
+laforge env create  // creates an environment for the current competition
+laforge query       // query an element within your current environment
+laforge doctor      // checks to see if you have all neccessary dependencies
+laforge serve       // starts a laforge asset server
+laforge shell       // connects to a given host in your environment config
+laforge upload      // uploads a file to the remote host
+laforge download    // downloads a file from a remote host
+
+
+
+laforge explorer    //

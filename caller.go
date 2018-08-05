@@ -1,6 +1,12 @@
 package laforge
 
-import "path/filepath"
+import (
+	"fmt"
+	"path/filepath"
+	"strings"
+
+	"github.com/fatih/color"
+)
 
 // CallFile is a debug type for tracking any file a configuration object was referenced in
 type CallFile struct {
@@ -10,6 +16,14 @@ type CallFile struct {
 
 // Caller represents a call chain in FIFO order of all a configuration object's CallFiles
 type Caller []CallFile
+
+func (c Caller) Error() string {
+	files := []string{"  Object Definition Trace:"}
+	for _, cf := range c {
+		files = append(files, fmt.Sprintf("    - %s", color.YellowString(cf.CallerFile)))
+	}
+	return strings.Join(files, "\n")
+}
 
 // NewCaller returns a first generation Caller with a origin CallFile embedded inside
 func NewCaller(src string) Caller {

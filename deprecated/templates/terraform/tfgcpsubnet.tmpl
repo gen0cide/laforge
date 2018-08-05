@@ -1,5 +1,0 @@
-resource "google_compute_subnetwork" "{{ .Name }}" {
-  name          = "{{ .Name }}"
-  ip_cidr_range = "{{ .CIDR }}"
-  network       = "${google_compute_network.{{ .Network.Name }}.self_link}"
-}

@@ -1,8 +1,17 @@
 host "parrot01" {
-  override_password = "newrootpassword"
-  script "startup.sh" {
-    cooldown = 55
+  on_conflict {
+    do = inherit
+    append = false
   }
+  override_password = "newrootpassword"
+  scripts = [
+    "jammin.sh",
+    "startup.sh",
+  ]
+}
+
+script "jammin.sh" {
+  cooldown = 55
 }
 
 

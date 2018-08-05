@@ -39,6 +39,19 @@ func CreateGlobalConfig(u User) error {
 	return ioutil.WriteFile(globconf, data, 0700)
 }
 
+// PathExists is a convenience function to determine if a path exists at it's location
+func PathExists(loc string) bool {
+	absp, err := filepath.Abs(loc)
+	if err != nil {
+		Logger.Debugf("Error determining absolute path of %s: %v", loc, err)
+		return false
+	}
+	if _, err := os.Stat(absp); err == nil {
+		return true
+	}
+	return false
+}
+
 // GlobalConfigDir attempts to retrieve the user's global configuration directory (dotfile in $HOME)
 func GlobalConfigDir() (string, error) {
 	home := os.Getenv("HOME")
@@ -67,6 +80,24 @@ func LocateGlobalConfig() (string, error) {
 		return "", ErrNoGlobalConfig
 	}
 	return globconf, nil
+}
+
+// LocateTeamConfig attempts to locate a valid team.laforge in the current directory or it's parents
+func LocateTeamConfig() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return TraverseUpForFile("team.laforge", cwd)
+}
+
+// LocateBuildConfig attempts to locate a valid env.laforge in the current directory or it's parents
+func LocateBuildConfig() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return TraverseUpForFile("build.laforge", cwd)
 }
 
 // LocateEnvConfig attempts to locate a valid env.laforge in the current directory or it's parents
@@ -98,12 +129,6 @@ func LoadFiles(envpath ...string) (*Laforge, error) {
 	}
 	return loader.Bind()
 }
-
-// // LoadFromBase loads a configuration from the currently defined competition state
-// func LoadFromBase(basepath string) (*Laforge, error) {
-// 	loader := NewLoader()
-
-// }
 
 // TraverseUpForFile looks for a file by the given filename upwards in the file structure
 func TraverseUpForFile(filename, startdir string) (string, error) {

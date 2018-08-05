@@ -1,19 +1,61 @@
 package laforge
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
 
 // Environment represents the basic configurable type for a Laforge environment container
 type Environment struct {
+	ID               string              `hcl:",label" json:"id,omitempty"`
 	BaseDir          string              `json:"base_dir,omitempty"`
-	Name             string              `json:"name,omitempty"`
+	Name             string              `hcl:"name,attr" json:"name,omitempty"`
 	Type             string              `hcl:"type,attr" json:"type,omitempty"`
 	Config           map[string]string   `hcl:"config,attr" json:"config,omitempty"`
 	Vars             map[string]string   `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string   `hcl:"tags,attr" json:"tags,omitempty"`
-	Networks         []IncludedNetwork   `hcl:"network,block" json:"included_networks,omitempty"`
+	Networks         []*IncludedNetwork  `hcl:"network,block" json:"included_networks,omitempty"`
 	IncludedNetworks map[string]*Network `json:"-"`
 	IncludedHosts    map[string]*Host    `json:"-"`
 	HostByNetwork    map[string][]*Host  `json:"-"`
+	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller           Caller              `json:"-"`
+}
+
+// GetCaller implements the Mergeable interface
+func (e *Environment) GetCaller() Caller {
+	return e.Caller
+}
+
+// GetID implements the Mergeable interface
+func (e *Environment) GetID() string {
+	return e.ID
+}
+
+// GetOnConflict implements the Mergeable interface
+func (e *Environment) GetOnConflict() OnConflict {
+	return e.OnConflict
+}
+
+// SetCaller implements the Mergeable interface
+func (e *Environment) SetCaller(c Caller) {
+	e.Caller = c
+}
+
+// SetOnConflict implements the Mergeable interface
+func (e *Environment) SetOnConflict(o OnConflict) {
+	e.OnConflict = o
+}
+
+// Swap implements the Mergeable interface
+func (e *Environment) Swap(m Mergeable) error {
+	rawVal, ok := m.(*Environment)
+	if !ok {
+		return errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", e, m)
+	}
+	*e = *rawVal
+	return nil
 }
 
 // ResolveIncludedNetworks walks the included_networks and included_hosts within the environment configuration
@@ -31,7 +73,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 			ihost[h] = "included"
 		}
 	}
-	for name, net := range base.NetworkMap {
+	for name, net := range base.Networks {
 		status, found := inet[name]
 		if !found {
 			Logger.Debugf("Skipping network %s", name)
@@ -43,7 +85,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 			Logger.Infof("Resolved network %s", name)
 		}
 	}
-	for name, host := range base.HostMap {
+	for name, host := range base.Hosts {
 		status, found := ihost[name]
 		if !found {
 			Logger.Debugf("Skipping host %s", name)
@@ -60,6 +102,10 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 			host, found := e.IncludedHosts[h]
 			if !found {
 				return fmt.Errorf("unknown host included: %s", h)
+			}
+			err := host.Index(base)
+			if err != nil {
+				return err
 			}
 			e.HostByNetwork[n.Name] = append(e.HostByNetwork[n.Name], host)
 		}

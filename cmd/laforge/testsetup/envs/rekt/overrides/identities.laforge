@@ -1,6 +1,6 @@
 identity "npr" {
   on_conflict {
-    do = "inherit"
+    do = ""
   }
   firstname = "jamis"
   lastname = ""

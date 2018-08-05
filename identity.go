@@ -1,9 +1,10 @@
 package laforge
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
 
-	"github.com/imdario/mergo"
+	"github.com/pkg/errors"
 )
 
 // Identity defines a generic human identity primative that can be extended into Employee, Customer, Client, etc.
@@ -19,29 +20,65 @@ type Identity struct {
 	Caller      Caller     `json:"-"`
 }
 
-// Update performs a patching operation on source (i) with diff (diff), using the diff's merge conflict settings as appropriate.
-func (i *Identity) Update(diff *Identity) error {
-	newCaller := i.Caller.Stack(diff.Caller)
-	switch diff.OnConflict.Do {
-	case "":
-		err := mergo.Merge(i, diff, mergo.WithOverride)
-		i.Caller = newCaller
-		return err
-	case "overwrite":
-		conflict := i.OnConflict
-		*i = *diff
-		i.OnConflict = conflict
-		return nil
-	case "inherit":
-		conflict := i.OnConflict
-		err := mergo.Merge(diff, i, mergo.WithOverride)
-		*i = *diff
-		i.Caller = newCaller
-		i.OnConflict = conflict
-		return err
-	case "panic":
-		return NewMergeConflict(i, diff, i.ID, diff.ID, i.Caller.Current(), diff.Caller.Current())
-	default:
-		return fmt.Errorf("invalid conflict strategy %s in %s", diff.OnConflict.Do, diff.Caller.Current().CallerFile)
+// GetCaller implements the Mergeable interface
+func (i *Identity) GetCaller() Caller {
+	return i.Caller
+}
+
+// GetID implements the Mergeable interface
+func (i *Identity) GetID() string {
+	return i.ID
+}
+
+// GetOnConflict implements the Mergeable interface
+func (i *Identity) GetOnConflict() OnConflict {
+	return i.OnConflict
+}
+
+// SetCaller implements the Mergeable interface
+func (i *Identity) SetCaller(c Caller) {
+	i.Caller = c
+}
+
+// SetOnConflict implements the Mergeable interface
+func (i *Identity) SetOnConflict(o OnConflict) {
+	i.OnConflict = o
+}
+
+// Swap implements the Mergeable interface
+func (i *Identity) Swap(m Mergeable) error {
+	rawVal, ok := m.(*Identity)
+	if !ok {
+		return errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", i, m)
 	}
+	*i = *rawVal
+	return nil
+}
+
+// ResolveSource attempts to locate the referenced source file with a laforge base configuration
+func (i *Identity) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile) error {
+	if i.AvatarFile == "" {
+		return nil
+	}
+	cwd, _ := os.Getwd()
+	testSrc := i.AvatarFile
+	if !filepath.IsAbs(i.AvatarFile) {
+		testSrc = filepath.Join(caller.CallerDir, i.AvatarFile)
+	}
+	if !PathExists(testSrc) {
+		pr.Unresolved[i.AvatarFile] = true
+		return errors.Wrapf(ErrAbsPathDeclNotExist, "caller=%s path=%s", caller.CallerFile, i.AvatarFile)
+	}
+	rel, _ := filepath.Rel(cwd, testSrc)
+	rel2, _ := filepath.Rel(caller.CallerDir, testSrc)
+	lfr := &LocalFileRef{
+		Base:          filepath.Base(testSrc),
+		AbsPath:       testSrc,
+		RelPath:       rel,
+		Cwd:           cwd,
+		DeclaredPath:  i.AvatarFile,
+		RelToCallFile: rel2,
+	}
+	pr.Mapping[i.AvatarFile] = lfr
+	return nil
 }

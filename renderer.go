@@ -17,6 +17,7 @@ func RenderHCLv2Object(i interface{}) ([]byte, error) {
 	t := reflect.TypeOf(i)
 	tname := strings.ToLower(t.Name())
 	tmplname := fmt.Sprintf("%s.hcl.tmpl", tname)
+	Logger.Debugf("Searching for template %s", tmplname)
 	tmpldata, err := static.ReadFile(tmplname)
 	if err != nil {
 		return []byte{}, err

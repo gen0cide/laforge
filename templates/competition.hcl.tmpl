@@ -1,0 +1,76 @@
+/*
+
+  DEFAULT LAFORGE BASE COMPETITION CONFIGURATION
+
+*/
+
+
+/* IMPORT ALL .laforge FILES IN config/ DIRECTORY */
+include {
+  path = "./config/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN scripts/ DIRECTORY */
+include {
+  path = "./scripts/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN commands/ DIRECTORY */
+include {
+  path = "./commands/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN hosts/ DIRECTORY */
+include {
+  path = "./hosts/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN networks/ DIRECTORY */
+include {
+  path = "./networks/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN identities/ DIRECTORY */
+include {
+  path = "./identities/*.laforge"
+}
+
+/* IMPORT ALL .laforge FILES IN files/ DIRECTORY */
+include {
+  path = "./files/*.laforge"
+}
+
+
+competition "{{ $.ID }}" {
+  root_password = "{{ $.RootPassword }}"
+
+  dns "{{ $.DNS.ID }}" {
+    type = "{{ $.DNS.Type }}"
+
+    root_domain = "{{ $.DNS.RootDomain }}"
+
+    dns_servers = [
+      {{ range $_, $srv := $.DNS.DNSServers -}}
+      "{{ $srv }}",
+      {{ end -}}
+    ]
+
+    ntp_servers = [
+      {{ range $_, $srv := $.DNS.NTPServers -}}
+      "{{ $srv }}",
+      {{ end -}}
+    ]
+  }
+
+  remote "{{ $.Remote.ID }}" {
+    type = "{{ $.Remote.Type }}"
+
+    region = "{{ $.Remote.Region }}"
+
+    key = "{{ $.Remote.Key }}"
+    secret = "{{ $.Remote.Secret }}"
+
+    state_bucket = "{{ $.Remote.StateBucket }}"
+    storage_bucket = "{{ $.Remote.StorageBucket }}"
+  }
+}

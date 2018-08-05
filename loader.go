@@ -6,13 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/ext/include"
 	"github.com/hashicorp/hcl2/ext/transform"
 	gohcl2 "github.com/hashicorp/hcl2/gohcl"
 	hcl2 "github.com/hashicorp/hcl2/hcl"
 	hcl2parse "github.com/hashicorp/hcl2/hclparse"
-	"github.com/sirupsen/logrus"
 )
 
 // Loader defines the Laforge configuration loader object
@@ -116,7 +114,6 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		r.Loader.CallerMap[targetFile] = NewCaller(targetFile)
 		return nil, diags
 	}
-	spew.Dump(diags)
 	return body, diags
 }
 
@@ -129,6 +126,7 @@ func (l *Loader) Deconflict(filenames []string) (*Laforge, error) {
 	}
 	lf := &Laforge{
 		CurrDir: cwd,
+		Caller:  l.CallerMap[l.SourceFile],
 	}
 	lf.CreateIndex()
 	for _, fname := range filenames {
@@ -137,7 +135,7 @@ func (l *Loader) Deconflict(filenames []string) (*Laforge, error) {
 			return lf, err
 		}
 		lf.Includes = append(lf.Includes, fname)
-		logrus.Infof("Config Imported From: %s", fname)
+		Logger.Infof("Config Imported From: %s", fname)
 	}
 	return lf, nil
 }

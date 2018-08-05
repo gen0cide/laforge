@@ -14,7 +14,7 @@ include {
   path = "./identities/*.laforge"
 }
 
-competition {
+competition "cptc2018" {
   root_password = "helloworld"
   remote {
     region = "us-west-2"
