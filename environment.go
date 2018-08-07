@@ -2,8 +2,19 @@ package laforge
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"regexp"
+	"sync"
 
+	"github.com/karrick/godirwalk"
 	"github.com/pkg/errors"
+)
+
+var (
+	// ValidEnvNameRegexp is a regular expression that can be used to validate environment names
+	ValidEnvNameRegexp = regexp.MustCompile(`\A[a-z0-9][a-z0-9\-]*?[a-z0-9]\z`)
 )
 
 // Environment represents the basic configurable type for a Laforge environment container
@@ -123,4 +134,136 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 		}
 	}
 	return nil
+}
+
+// ValidEnvName is a helper function to determine if a supplied name is a valid environment name
+func ValidEnvName(name string) bool {
+	return ValidEnvNameRegexp.MatchString(name)
+}
+
+// InitializeEnv attempts to initialize a new environment of a given name
+func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
+	err := l.AssertExactContext(BaseContext)
+	if err != nil && !overwrite {
+		return errors.WithStack(err)
+	}
+
+	if !ValidEnvName(name) {
+		return errors.WithStack(ErrInvalidEnvName)
+	}
+
+	envDir := filepath.Join(l.BaseRoot, "envs", name)
+	envDefPath := filepath.Join(envDir, "env.laforge")
+
+	_, dirErr := os.Stat(envDir)
+	_, defErr := os.Stat(envDefPath)
+
+	if defErr == nil || dirErr == nil {
+		if !overwrite {
+			return fmt.Errorf("Cannot initialize env directory - path is dirty: %s (--force/-f to overwrite)", envDir)
+		}
+		os.RemoveAll(envDir)
+	}
+
+	os.MkdirAll(envDir, 0755)
+	keeper := filepath.Join(envDir, ".gitkeep")
+	newFile, err := os.Create(keeper)
+	if err != nil {
+		return errors.WithMessage(err, fmt.Sprintf("cannot touch .gitkeep inside env directory subfolder %s", envDir))
+	}
+	newFile.Close()
+
+	envData, err := RenderHCLv2Object(baseEnvironment(name, &l.User))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return ioutil.WriteFile(envDefPath, envData, 0644)
+}
+
+// GetAllEnvs recursively traverses the BaseRoot/envs/ folder looking for valid environments.
+func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
+	emap := map[string]*Laforge{}
+	err := l.AssertMinContext(BaseContext)
+	if err != nil {
+		return emap, errors.WithStack(err)
+	}
+
+	basePath := filepath.Join(l.BaseRoot, "envs")
+
+	envConfigs := []string{}
+
+	err = godirwalk.Walk(basePath, &godirwalk.Options{
+		Callback: func(osPathname string, de *godirwalk.Dirent) error {
+			if de.Name() == "env.laforge" {
+				envConfigs = append(envConfigs, osPathname)
+			}
+			return nil
+		},
+		ErrorCallback: func(osPathname string, err error) godirwalk.ErrorAction {
+			Logger.Debugf("Envwalker encountered a filesystem issue at %s: %v", osPathname, err)
+			return godirwalk.SkipNode
+		},
+	})
+	if err != nil {
+		return emap, err
+	}
+
+	wg := new(sync.WaitGroup)
+	resChan := make(chan *Laforge, len(envConfigs))
+	errChan := make(chan error, 1)
+	finChan := make(chan bool, 1)
+	baseCfg := filepath.Join(l.BaseRoot, "base.laforge")
+
+	for _, p := range envConfigs {
+		wg.Add(1)
+		go func(s string) {
+			defer wg.Done()
+			lf, err := LoadFiles(baseCfg, s)
+			if err != nil {
+				errChan <- errors.Wrapf(err, "issue parsing environment for %s", s)
+				return
+			}
+			resChan <- lf
+			return
+		}(p)
+	}
+
+	go func() {
+		wg.Wait()
+		finChan <- true
+	}()
+
+	for {
+		select {
+		case res := <-resChan:
+			if res.Environment == nil {
+				Logger.Errorf("Nil environment found during directory walk... (this should of errored, but didn't)")
+				continue
+			}
+			if emap[res.Environment.ID] != nil {
+				origPath := ""
+				badPath := ""
+				for cf := range emap[res.Environment.ID].PathRegistry.DB {
+					if filepath.Base(cf.CallerFile) == "env.laforge" {
+						origPath = cf.CallerDir
+						break
+					}
+				}
+				for cf := range res.PathRegistry.DB {
+					if filepath.Base(cf.CallerFile) == "env.laforge" {
+						badPath = cf.CallerDir
+						break
+					}
+				}
+				Logger.Errorf("Name collision between two environments! Check env.laforge environment IDs in these directories:\n  %s\n  %s", origPath, badPath)
+				continue
+			}
+			emap[res.Environment.ID] = res
+		case resErr := <-errChan:
+			Logger.Errorf("An error was found with an environment: %v", resErr)
+		case <-finChan:
+			return emap, nil
+		}
+	}
 }

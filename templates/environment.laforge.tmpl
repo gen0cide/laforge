@@ -1,26 +1,21 @@
-/*
+// DEFAULT LAFORGE COMPETITION ENVIRONMENT CONFIGURATION
 
-  DEFAULT LAFORGE COMPETITION ENVIRONMENT CONFIGURATION
+// Import base modules
+include {
+  path = "../../base.laforge"
+}
 
-*/
-
-/* environment unique ID */
+// declare a unique ID in the object initialization
 environment "{{ $.ID }}" {
 
-  /*
-    environment details
-  */
+  // describe your env
   name = "{{ $.Name }}"
   description = "{{ $.Description }}"
 
-  /*
-    this setting determines what type of provisioning will occur (aws, vagrant, native)
-  */
+  // this setting determines what type of provisioning will occur (aws, vagrant, native)
   type = "{{ $.Type }}"
 
-  /*
-    based on your type, you likely will have type-specific configuration values here
-  */
+  // based on your type, you likely will have type-specific configuration values here
   config = {
     {{ range $key, $val := $.Config -}}
     {{ $key }} = "{{ $val }}"
@@ -28,29 +23,23 @@ environment "{{ $.ID }}" {
   }
 
 
-  /*
-
-  ** INCLUDING NETWORKS AND HOSTS IN YOUR ENVIRONMENT **
-  > simply declare these included_network blocks within your environment {}
-    configuration to include networks and hosts.
+  // INCLUDING NETWORKS AND HOSTS IN YOUR ENVIRONMENT
+  // simply declare these included_network blocks within your environment block.
 
   {{ range $net, $hosts := $.HostByNetwork -}}
-  included_network "{{ $net }}" {
-    included_hosts = [
+  // included_network "{{ $net }}" {
+  //   included_hosts = [
       {{ range $_, $h := $hosts -}}
-      "{{ $h.ID }}",
+  //     "{{ $h.ID }}",
       {{ end -}}
-    ]
-  }
+  //   ]
+  // }
 
   {{ end -}}
 
-  */
 
 
-  /*
-    you can tag your environment as well
-  */
+  // you can tag your environment as well
   tags = {
     {{ range $key, $val := $.Vars -}}
     {{ $key }} = "{{ $val }}"
@@ -58,9 +47,7 @@ environment "{{ $.ID }}" {
   }
 
 
-  /*
-    and define any variables you might
-  */
+  // and define any variables you might
   vars = {
     {{ range $key, $val := $.Tags -}}
     {{ $key }} = "{{ $val }}"
@@ -68,18 +55,14 @@ environment "{{ $.ID }}" {
   }
 
 
-  /*
-    just like with other types, you can specify a conflict strategy here (read the docs!)
-  */
+  // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
     append = {{ $.OnConflict.Append }}
   }
 
 
-  /*
-    maintainer is completely optional, but note team organization!
-  */
+  // maintainer is completely optional, but note team organization!
   maintainer "{{ $.Maintainer.ID }}" {
     name = "{{ $.Maintainer.Name }}"
     email = "{{ $.Maintainer.Email }}"

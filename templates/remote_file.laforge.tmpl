@@ -1,26 +1,22 @@
-/*
-
-  EXAMPLE LAFORGE REMOTE FILE CONFIGURATION
-
-*/
+// EXAMPLE LAFORGE REMOTE FILE CONFIGURATION
 
 remote_file "{{ $.ID }}" {
-  /* describes the current locality of this file (local, url, s3 - default = "" (local)) */
+  // describes the current locality of this file (local, url, s3 - default = "" (local))
   source_type = "{{ $.SourceType }}"
 
-  /* the unique address to locate the file based on source_type */
+  // the unique address to locate the file based on source_type
   source = "{{ $.Source }}"
 
-  /* location on the remote system the file should be placed */
+  // location on the remote system the file should be placed
   destination = "{{ $.Destination }}"
 
-  /* unix perms in octal notation */
+  // unix perms in octal notation
   perms = "{{ $.Perms }}"
 
-  /* disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP */
+  // disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP
   disabled = {{ $.Disabled }}
 
-  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
     append = {{ $.OnConflict.Append }}

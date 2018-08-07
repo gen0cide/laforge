@@ -59,6 +59,21 @@ func defaultRemoteFile() *RemoteFile {
 	}
 }
 
+func baseEnvironment(name string, maint *User) *Environment {
+	return &Environment{
+		ID:            name,
+		Name:          name,
+		Description:   "",
+		Type:          "null",
+		Config:        map[string]string{},
+		Vars:          map[string]string{},
+		Tags:          map[string]string{},
+		Maintainer:    maint,
+		OnConflict:    defaultOnConflict(),
+		HostByNetwork: map[string][]*Host{},
+	}
+}
+
 func defaultEnvironment() *Environment {
 	return &Environment{
 		ID:          "fake_environment",
@@ -190,7 +205,7 @@ func defaultNetwork() *Network {
 }
 
 func defaultCompetition(name string) *Competition {
-	res, err := password.Generate(24, 5, 5, false, false)
+	res, err := password.Generate(32, 10, 0, false, true)
 	if err != nil {
 		Logger.Errorf("Error generating random password: %v", err)
 	}

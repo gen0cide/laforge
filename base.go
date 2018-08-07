@@ -35,6 +35,9 @@ var (
 
 	//ErrAbsPathDeclNotExist is thrown when an absolute path is listed in a file yet it cannot be resolved on the local system
 	ErrAbsPathDeclNotExist = errors.New("absolute path was not found on local system")
+
+	// ErrInvalidEnvName is thrown when an environment name does not meet specified regulations around environment naming conventions
+	ErrInvalidEnvName = errors.New("environment names can only contain lowercase alphanumeric and dash characters (a valid subdomain)")
 )
 
 // Laforge defines the type that holds the global namespace within the laforge configuration engine
@@ -604,25 +607,4 @@ func (l *Laforge) InitializeBaseDirectory(overwrite bool) error {
 	}
 	newFile.Close()
 	return nil
-}
-
-// PathRegistry is a type that tracks the relative file paths of state configurations that include external sources
-type PathRegistry struct {
-	DB map[CallFile]*PathResolver // key = composite of $type.$id, value = PathResolver
-}
-
-// PathResolver defines the mapping of paths declared in a CallFile and their mapping to files on local disk or lack of resolution
-type PathResolver struct {
-	Mapping    map[string]*LocalFileRef // map[provided_path_declaration] => LocalFileRef
-	Unresolved map[string]bool          // map[provided_path_declaration] => true when we can't resolve it
-}
-
-// LocalFileRef is a basic type to hold information about a resolved file that was declared inside a state declaration
-type LocalFileRef struct {
-	Base          string
-	AbsPath       string
-	RelPath       string
-	Cwd           string
-	DeclaredPath  string
-	RelToCallFile string
 }

@@ -1,46 +1,37 @@
-/*
-
-  DEFAULT LAFORGE BASE COMPETITION CONFIGURATION
-
-*/
+// DEFAULT LAFORGE BASE COMPETITION CONFIGURATION
 
 
-/* IMPORT ALL .laforge FILES IN config/ DIRECTORY */
+// Import all base modules
 include {
   path = "./config/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN scripts/ DIRECTORY */
 include {
   path = "./scripts/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN commands/ DIRECTORY */
 include {
   path = "./commands/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN hosts/ DIRECTORY */
 include {
   path = "./hosts/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN networks/ DIRECTORY */
 include {
   path = "./networks/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN identities/ DIRECTORY */
 include {
   path = "./identities/*.laforge"
 }
 
-/* IMPORT ALL .laforge FILES IN files/ DIRECTORY */
 include {
   path = "./files/*.laforge"
 }
 
-
+//
+// Declare Competition
 competition "{{ $.ID }}" {
   root_password = "{{ $.RootPassword }}"
 

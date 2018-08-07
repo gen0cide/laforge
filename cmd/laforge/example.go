@@ -19,7 +19,7 @@ var (
 		Action:    performexample,
 		Flags: []cli.Flag{
 			cli.BoolFlag{
-				Name:        "no-color",
+				Name:        "no-color, c",
 				Usage:       "does not perform syntax highlighting on standard out - good for writing to files",
 				Destination: &noColor,
 			},

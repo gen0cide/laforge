@@ -1,8 +1,4 @@
-/*
-
-  EXAMPLE LAFORGE DNS RECORD CONFIGURATION
-
-*/
+// EXAMPLE LAFORGE DNS RECORD CONFIGURATION
 
 /* declare a unique ID in the object initialization */
 dns_record "{{ $.ID }}" {
@@ -18,10 +14,10 @@ dns_record "{{ $.ID }}" {
   name = "{{ $.Name }}"
   value = "{{ $.Value }}"
 
-  /* disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP */
+  // disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP
   disabled = {{ $.Disabled }}
 
-  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
     append = {{ $.OnConflict.Append }}

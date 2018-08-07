@@ -1,73 +1,68 @@
-/*
+// EXAMPLE LAFORGE SCRIPT CONFIGURATION
 
-  EXAMPLE LAFORGE SCRIPT CONFIGURATION
-
-*/
-
-/* declare a unique ID in the object initialization */
+// declare a unique ID in the object initialization
 script "{{ $.ID }}" {
 
-  /* a more human readable name if you prefer, and a description (optional) */
+  // a more human readable name if you prefer, and a description (optional) */
   name = "{{ $.Name }}"
   description = "{{ $.Description }}"
 
-  /* the language the script is written in (shell, powershell) */
+  // the language the script is written in (shell, powershell)
   language = "{{ $.Language }}"
 
-  /* describes the current locality of this script (local, url, s3 - default = "" (local)) */
+  // describes the current locality of this script (local, url, s3 - default = "" (local))
   source_type = "{{ $.SourceType }}"
 
-  /* the unique address to locate the script based on source_type */
+  // the unique address to locate the script based on source_type
   source = "{{ $.Source }}"
 
-  /* supply arguments here */
+  // supply arguments here
   args = [
     {{ range $_, $arg := $.Args -}}
     "{{ $arg }}",
     {{ end -}}
   ]
 
-  /* if ignore_errors is not true, laforge will halt provisioning upon an error response */
+  // if ignore_errors is not true, laforge will halt provisioning upon an error response
   ignore_errors = {{ $.IgnoreErrors }}
 
-  /* cooldown specifies a custom wait time should you wish to wait after the command exits (default = 0) */
+  // cooldown specifies a custom wait time should you wish to wait after the command exits (default = 0)
   cooldown = {{ $.Cooldown }}
 
-  /* disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP */
+  // disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP
   disabled = {{ $.Disabled }}
 
-  /* just like with other types, you can specify a conflict strategy here (read the docs!) */
+  // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
     append = {{ $.OnConflict.Append }}
   }
 
-  /* the io block lets you define custom output (and input in command's case) for this execution */
+  // the io block lets you define custom output (and input in command's case) for this execution
   io {
-    /* stdin = path to a file to cat into STDIN for the program's execution */
+    // stdin = path to a file to cat into STDIN for the program's execution
     stdin = "{{ $.IO.Stdin }}"
 
-    /* stdout, stderr are blank ("") by default, and will log to the build dir and stdout during provisioning */
+    // stdout, stderr are blank ("") by default, and will log to the build dir and stdout during provisioning
     stdout = "{{ $.IO.Stdout }}"
     stderr = "{{ $.IO.Stderr }}"
   }
 
-  /* vars let you define custom configuration parameters which may be needed for specific provisioning builders. */
+  // vars let you define custom configuration parameters which may be needed for specific provisioning builders.
   vars = {
     {{ range $key, $val := $.Vars -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
 
-  /* tags express general information which will be able to be
-     queried on in the future */
+  // tags express general information which will be able to be queried on in the future
   tags = {
     {{ range $key, $val := $.Tags -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
 
-  /* maintainer is completely optional, but note team organization! */
+  // maintainer is completely optional, but note team organization!
   maintainer "{{ $.Maintainer.ID }}" {
     name = "{{ $.Maintainer.Name }}"
     email = "{{ $.Maintainer.Email }}"
