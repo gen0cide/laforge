@@ -16,6 +16,20 @@ remote_file "{{ $.ID }}" {
   // disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP
   disabled = {{ $.Disabled }}
 
+  // vars let you define custom configuration parameters which may be needed for specific provisioning builders.
+  vars = {
+    {{ range $key, $val := $.Vars -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  //tags express general information which will be able to be queried on in the future
+  tags = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
   // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"

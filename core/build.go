@@ -153,6 +153,16 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 		return errors.Wrapf(errors.WithStack(err), "could not write build.db for build %s", bid)
 	}
 
+	bconfData, err := RenderHCLv2Object(b)
+	if err != nil {
+		return errors.Wrapf(errors.WithStack(err), "could not generate build config for %s", bid)
+	}
+
+	err = ioutil.WriteFile(buildDefPath, bconfData, 0644)
+	if err != nil {
+		return errors.Wrapf(errors.WithStack(err), "could not write build.laforge for build %s", bid)
+	}
+
 	l.Build = b
 	l.ClearToBuild = true
 	return nil

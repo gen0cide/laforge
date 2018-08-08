@@ -14,10 +14,10 @@ ami "{{ $.ID }}" {
   // username will be the base username which laforge needs to know to configure the host
   username = "{{ $.Username }}"
 
-  // config holds a variable set of options that are
+  // vars holds a variable set of options that are
   // entirely dependent on the value of the "provider" attribute defined above
-  config = {
-    {{ range $key, $val := $.Config -}}
+  vars = {
+    {{ range $key, $val := $.Vars -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }

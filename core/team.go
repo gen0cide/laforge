@@ -58,6 +58,16 @@ type WinRMAuthConfig struct {
 	Password      string        `hcl:"password,attr" json:"password,omitempty"`
 }
 
+// IsSSH is a convenience method for checking if the provisioned host is setup for remote SSH
+func (p *ProvisionedHost) IsSSH() bool {
+	return p.SSHAuthConfig != nil
+}
+
+// IsWinRM is a convenience method for checking if the provisioned host is setup for remote WinRM
+func (p *ProvisionedHost) IsWinRM() bool {
+	return p.WinRMAuthConfig != nil
+}
+
 // LoadFileDeps attempts ot load important key material in the team configuration for connecting to remote team hosts
 func (t *Team) LoadFileDeps(base *Laforge, pr *PathResolver, caller CallFile) error {
 	for _, ph := range t.ProvisionedHosts {

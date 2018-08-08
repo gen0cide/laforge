@@ -16,7 +16,7 @@ environment "{{ $.ID }}" {
   team_count = {{ $.TeamCount }}
 
   // this setting determines what type of provisioning will occur (aws, vagrant, native)
-  builder = "{{ $.Type }}"
+  builder = "{{ $.Builder }}"
 
   // based on your type, you likely will have type-specific configuration values here
   config = {
@@ -48,15 +48,6 @@ environment "{{ $.ID }}" {
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
-
-
-  // and define any variables you might
-  vars = {
-    {{ range $key, $val := $.Vars -}}
-    {{ $key }} = "{{ $val }}"
-    {{ end -}}
-  }
-
 
   // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {

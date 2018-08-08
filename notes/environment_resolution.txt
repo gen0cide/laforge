@@ -27,10 +27,14 @@ networks/.gitkeep
 identities/.gitkeep
 files/.gitkeep
 envs/.gitkeep
+
+
 envs/$name/
 envs/$name/env.laforge
+envs/$name/build/
 envs/$name/build/build.laforge
-envs/$name/build/db/build.db
+envs/$name/build/data/
+envs/$name/build/data/build.db
 envs/$name/build/cache/
 envs/$name/build/teams/
 envs/$name/build/teams/$tid/team.laforge

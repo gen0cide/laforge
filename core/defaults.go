@@ -240,7 +240,7 @@ func defaultAMI() *AMI {
 		Description: "example AMI config block - should not be used!",
 		Provider:    "aws",
 		Username:    "ubuntu",
-		Config: map[string]string{
+		Vars: map[string]string{
 			"ami_id":        "ami40abc1140",
 			"region":        "us-west-2",
 			"requires_sudo": "true",
