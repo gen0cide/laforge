@@ -62,3 +62,25 @@ laforge download    // downloads a file from a remote host
 
 
 laforge explorer    //
+
+
+
+CheckRequirements
+HasConfigKey(core.Environment, "vpc_cidr")
+HasConfigKey(core.Environment, "aws_access_key")
+HasConfigKey(core.Environment, "aws_secret_key")
+HasConfigKey(core.Environment, "aws_region")
+FieldNotEmpty(core.Environment, "Networks")
+FieldNotEmpty(core.Network, "CIDR")
+FieldNotEmpty(core.Host, "OS")
+FieldNotEmpty(core.Host, "Hostname")
+FieldNotEmpty(core.Host, "InstanceSize")
+FieldNotEmpty(core.Host, "Disk")
+
+PrepareAssets
+
+GenerateScripts
+
+StageDependencies
+
+Render

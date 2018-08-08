@@ -25,7 +25,6 @@ type Environment struct {
 	Builder          string              `hcl:"builder,attr" json:"builder,omitempty"`
 	TeamCount        int                 `hcl:"team_count,attr" json:"team_count,omitempty"`
 	Config           map[string]string   `hcl:"config,attr" json:"config,omitempty"`
-	Vars             map[string]string   `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string   `hcl:"tags,attr" json:"tags,omitempty"`
 	Networks         []*IncludedNetwork  `hcl:"included_network,block" json:"included_networks,omitempty"`
 	Maintainer       *User               `hcl:"maintainer,block" json:"maintainer,omitempty"`

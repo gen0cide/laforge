@@ -17,6 +17,7 @@ type Identity struct {
 	Description string            `hcl:"description,attr" json:"description,omitempty"`
 	AvatarFile  string            `hcl:"avatar_file,attr" json:"avatar_file,omitempty"`
 	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
+	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
 	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller      Caller            `json:"-"`
 }

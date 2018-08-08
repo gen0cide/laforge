@@ -66,7 +66,6 @@ func baseEnvironment(name string, maint *User) *Environment {
 		Description:   "",
 		Builder:       "null",
 		Config:        map[string]string{},
-		Vars:          map[string]string{},
 		Tags:          map[string]string{},
 		Maintainer:    maint,
 		OnConflict:    defaultOnConflict(),
@@ -82,9 +81,6 @@ func defaultEnvironment() *Environment {
 		Builder:     "null",
 		Config: map[string]string{
 			"combine_scripts": "true",
-		},
-		Vars: map[string]string{
-			"no_users": "true",
 		},
 		Tags: map[string]string{
 			"example": "yes",

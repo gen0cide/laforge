@@ -2,6 +2,7 @@ package tfaws
 
 import (
 	"github.com/gen0cide/gscript/logger"
+	"github.com/gen0cide/laforge/builder/buildutil"
 	"github.com/gen0cide/laforge/core"
 )
 
@@ -11,6 +12,16 @@ const (
 	_description = `generates terraform configurations that isolate teams into VPCs`
 	_author      = `Alex Levinson <github.com/gen0cide>`
 	_version     = `0.0.1`
+)
+
+var (
+	validations = buildutil.Validations{
+		buildutil.Requirement{
+			Name:       "Environment maintainer not defined",
+			Resolution: "add a maintainer block to your environment configuration",
+			Check:      buildutil.FieldNotEmpty(core.Environment{}, "Maintainer"),
+		},
+	}
 )
 
 // TerraformAWSBuilder implements a laforge builder that packages an environment into
@@ -48,6 +59,11 @@ func (t *TerraformAWSBuilder) Author() string {
 // Version implements the Builder interface (builder version)
 func (t *TerraformAWSBuilder) Version() string {
 	return _version
+}
+
+// Validations implements the Builder interface (builder checks)
+func (t *TerraformAWSBuilder) Validations() buildutil.Validations {
+	return validations
 }
 
 // SetLaforge implements the Builder interface

@@ -4,24 +4,27 @@ import "github.com/pkg/errors"
 
 // DNS represents a configurable type for the creation of competition DNS infrastructure
 type DNS struct {
-	ID         string     `hcl:",label" json:"id,omitempty"`
-	Type       string     `hcl:"type,attr" json:"type,omitempty"`
-	RootDomain string     `hcl:"root_domain,attr" json:"root_domain,omitempty"`
-	DNSServers []string   `hcl:"dns_servers,attr" json:"dns_servers,omitempty"`
-	NTPServers []string   `hcl:"ntp_servers,attr" json:"ntp_servers,omitempty"`
-	OnConflict OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller     Caller     `json:"-"`
+	ID         string            `hcl:",label" json:"id,omitempty"`
+	Type       string            `hcl:"type,attr" json:"type,omitempty"`
+	RootDomain string            `hcl:"root_domain,attr" json:"root_domain,omitempty"`
+	DNSServers []string          `hcl:"dns_servers,attr" json:"dns_servers,omitempty"`
+	NTPServers []string          `hcl:"ntp_servers,attr" json:"ntp_servers,omitempty"`
+	Config     map[string]string `hcl:"config,attr" json:"config,omitempty"`
+	OnConflict OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller     Caller            `json:"-"`
 }
 
 // DNSRecord is a configurable type for defining DNS entries related to this host in the core DNS infrastructure (if enabled)
 type DNSRecord struct {
-	ID         string     `hcl:",label" json:"id,omitempty"`
-	Name       string     `hcl:"name,attr" json:"name,omitempty"`
-	Value      string     `hcl:"value,attr" json:"value,omitempty"`
-	Type       string     `hcl:"type,attr" json:"type,omitempty"`
-	Disabled   bool       `hcl:"disabled,attr" json:"disabled,omitempty"`
-	OnConflict OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller     Caller     `json:"-"`
+	ID         string            `hcl:",label" json:"id,omitempty"`
+	Name       string            `hcl:"name,attr" json:"name,omitempty"`
+	Value      string            `hcl:"value,attr" json:"value,omitempty"`
+	Type       string            `hcl:"type,attr" json:"type,omitempty"`
+	Vars       map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
+	Tags       map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Disabled   bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
+	OnConflict OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller     Caller            `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface

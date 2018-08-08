@@ -6,13 +6,14 @@ import (
 
 // Competition is a configurable type that holds competition wide settings
 type Competition struct {
-	ID           string     `hcl:",label" json:"id,omitempty"`
-	BaseDir      string     `hcl:"base_dir,attr" json:"base_dir,omitempty"`
-	RootPassword string     `hcl:"root_password,attr" json:"root_password,omitempty"`
-	DNS          *DNS       `hcl:"dns,block" json:"dns,omitempty"`
-	Remote       *Remote    `hcl:"remote,block" json:"remote,omitempty"`
-	OnConflict   OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller       Caller     `json:"-"`
+	ID           string            `hcl:",label" json:"id,omitempty"`
+	BaseDir      string            `hcl:"base_dir,attr" json:"base_dir,omitempty"`
+	RootPassword string            `hcl:"root_password,attr" json:"root_password,omitempty"`
+	DNS          *DNS              `hcl:"dns,block" json:"dns,omitempty"`
+	Remote       *Remote           `hcl:"remote,block" json:"remote,omitempty"`
+	Config       map[string]string `hcl:"config,attr" json:"config,omitempty"`
+	OnConflict   OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller       Caller            `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface

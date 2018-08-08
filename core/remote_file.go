@@ -9,14 +9,16 @@ import (
 
 // RemoteFile is a configurable type that defines a static file that will be placed on a configured target host.
 type RemoteFile struct {
-	ID          string     `hcl:",label" json:"id,omitempty"`
-	SourceType  string     `hcl:"source_type,attr" json:"source_type,omitempty"`
-	Source      string     `hcl:"source_path,attr" json:"source_path,omitempty"`
-	Destination string     `hcl:"destination,label" json:"destination,omitempty"`
-	Perms       string     `hcl:"perms,attr" json:"perms,omitempty"`
-	Disabled    bool       `hcl:"disabled,attr" json:"disabled,omitempty"`
-	OnConflict  OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller      Caller     `json:"-"`
+	ID          string            `hcl:",label" json:"id,omitempty"`
+	SourceType  string            `hcl:"source_type,attr" json:"source_type,omitempty"`
+	Source      string            `hcl:"source_path,attr" json:"source_path,omitempty"`
+	Destination string            `hcl:"destination,label" json:"destination,omitempty"`
+	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
+	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Perms       string            `hcl:"perms,attr" json:"perms,omitempty"`
+	Disabled    bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
+	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Caller      Caller            `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface

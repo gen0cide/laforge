@@ -49,6 +49,9 @@ type Builder interface {
 	// Version of the builder implementation
 	Version() string
 
+	// Validations returns a list of requirements that need to be met for a builder to be successful
+	Validations() buildutil.Validations
+
 	// Set's a Laforge base instance to work off
 	SetLaforge(*core.Laforge) error
 
@@ -101,6 +104,15 @@ func (b *BuildEngine) Do() error {
 		return buildutil.Throw(err, "failed to set laforge", nil)
 	}
 	core.Logger.Infof("Injected context into builder")
+	vals := b.Builder.Validations()
+	for _, x := range vals {
+		core.Logger.Debugf("Checking validation: %s", x.Name)
+		if !x.Check(b.Base) {
+			core.Logger.Errorf("Build Requirement Failed: %s", x.Name)
+			core.Logger.Errorf("  Resolution > %s", x.Resolution)
+			return errors.New("")
+		}
+	}
 	err = b.Builder.CheckRequirements()
 	if err != nil {
 		return buildutil.Throw(err, "failed checking requirements", nil)
