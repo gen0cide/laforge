@@ -293,7 +293,7 @@ func (t *TerraformAWSBuilder) GenerateScripts() error {
 
 // StageDependencies implements the Builder interface
 func (t *TerraformAWSBuilder) StageDependencies() error {
-	for i := 1; i < t.Base.Environment.TeamCount; i++ {
+	for i := 0; i < t.Base.Environment.TeamCount; i++ {
 		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
 		os.MkdirAll(teamDir, 0755)
 		core.TouchGitKeep(teamDir)
@@ -303,54 +303,76 @@ func (t *TerraformAWSBuilder) StageDependencies() error {
 
 // Render implements the Builder interface
 func (t *TerraformAWSBuilder) Render() error {
-	for i := 1; i < t.Base.Environment.TeamCount; i++ {
-		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
-		team := &core.Team{
-			TeamNumber:    i,
-			BuildID:       t.Base.Build.ID,
-			Build:         t.Base.Build,
-			EnvironmentID: t.Base.Environment.ID,
-			Environment:   t.Base.Environment,
-			Maintainer:    &t.Base.User,
-			RelBuildPath:  teamDir,
-		}
-		t.Base.Build.Teams[i] = team
-		team.ID = team.Name()
-		user := t.Base.User
-		t.Base.Team = team
-		ctx, err := templates.NewContext(
-			t.Base,
-			t.Base.Build,
-			t.Base.Competition,
-			t.Base.Competition.DNS,
-			t.Base.Environment,
-			&user,
-			team,
-		)
-		if err != nil {
-			return err
-		}
-		cfgData, err := t.Library.Execute(primaryTemplate, ctx)
-		if err != nil {
-			return buildutil.Throw(err, "template failed", &buildutil.V{
-				"team": i,
-				"dir":  teamDir,
-			})
-		}
-		cfgFile := filepath.Join(teamDir, "infra.tf")
-		err = ioutil.WriteFile(cfgFile, cfgData, 0644)
-		if err != nil {
-			return err
-		}
-		teamCfg, err := core.RenderHCLv2Object(team)
-		if err != nil {
-			return err
-		}
-		teamCfgFile := filepath.Join(teamDir, "team.laforge")
-		err = ioutil.WriteFile(teamCfgFile, teamCfg, 0644)
-		if err != nil {
-			return err
-		}
+	wg := new(sync.WaitGroup)
+	errChan := make(chan error, 1)
+	finChan := make(chan bool, 1)
+	for i := 0; i < t.Base.Environment.TeamCount; i++ {
+		wg.Add(1)
+		go func(teamid int) {
+			defer wg.Done()
+			teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", teamid))
+			team := &core.Team{
+				TeamNumber:    teamid,
+				BuildID:       t.Base.Build.ID,
+				Build:         t.Base.Build,
+				EnvironmentID: t.Base.Environment.ID,
+				Environment:   t.Base.Environment,
+				Maintainer:    &t.Base.User,
+				RelBuildPath:  teamDir,
+			}
+			// t.Base.Build.Teams[teamid] = team
+			team.ID = team.Name()
+			user := t.Base.User
+			t.Base.Team = team
+			ctx, err := templates.NewContext(
+				t.Base,
+				t.Base.Build,
+				t.Base.Competition,
+				t.Base.Competition.DNS,
+				t.Base.Environment,
+				&user,
+				team,
+			)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			cfgData, err := t.Library.Execute(primaryTemplate, ctx)
+			if err != nil {
+				errChan <- buildutil.Throw(err, "template failed", &buildutil.V{
+					"team": teamid,
+					"dir":  teamDir,
+				})
+				return
+			}
+			cfgFile := filepath.Join(teamDir, "infra.tf")
+			err = ioutil.WriteFile(cfgFile, cfgData, 0644)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			teamCfg, err := core.RenderHCLv2Object(team)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			teamCfgFile := filepath.Join(teamDir, "team.laforge")
+			err = ioutil.WriteFile(teamCfgFile, teamCfg, 0644)
+			if err != nil {
+				errChan <- err
+				return
+			}
+		}(i)
 	}
-	return nil
+	go func() {
+		wg.Wait()
+		close(finChan)
+	}()
+
+	select {
+	case <-finChan:
+		return nil
+	case err := <-errChan:
+		return err
+	}
 }
