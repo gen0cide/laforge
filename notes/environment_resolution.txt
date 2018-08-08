@@ -29,11 +29,16 @@ files/.gitkeep
 envs/.gitkeep
 envs/$name/
 envs/$name/env.laforge
-envs/$name/dist/$build_output
-envs/$name/dist/files/
-envs/$name/dist/scripts/
-envs/$name/dist/states/
-envs/$name/logs/$log_output
+envs/$name/build/build.laforge
+envs/$name/build/db/build.db
+envs/$name/build/cache/
+envs/$name/build/teams/
+envs/$name/build/teams/$tid/team.laforge
+envs/$name/build/teams/$tid/config
+envs/$name/build/teams/$tid/Vagrantfile
+envs/$name/build/teams/$tid/$tid.tf
+envs/$name/build/teams/$tid/scripts/
+envs/$name/logs/$EPOCH_$BUILD_ID/$logs
 envs/$name/overrides/
 
 

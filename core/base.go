@@ -1,4 +1,4 @@
-package laforge
+package core
 
 import (
 	"fmt"
@@ -49,6 +49,8 @@ type Laforge struct {
 	User              User                   `hcl:"user,block" cty:"user" json:"user,omitempty"`
 	Competition       *Competition           `hcl:"competition,block" json:"competition,omitempty"`
 	Environment       *Environment           `hcl:"environment,block" json:"environment,omitempty"`
+	Build             *Build                 `hcl:"build,block" json:"build,omitempty"`
+	Team              *Team                  `hcl:"team,block" json:"team,omitempty"`
 	DefinedHosts      []*Host                `hcl:"host,block" json:"defined_hosts,omitempty"`
 	DefinedNetworks   []*Network             `hcl:"network,block" json:"defined_networks,omitempty"`
 	DefinedIdentities []*Identity            `hcl:"identity,block" json:"defined_identities,omitempty"`
@@ -399,6 +401,54 @@ func (l *Laforge) LoadFromContext() error {
 	var clone *Laforge
 	var err error
 	switch l.GetContext() {
+	case TeamContext:
+		clone, err = LoadFiles(l.GlobalConfigFile(), l.TeamConfigFile())
+		if err != nil {
+			return err
+		}
+
+		if clone.Team != nil {
+			if l.PathRegistry == nil {
+				l.PathRegistry = &PathRegistry{
+					DB: map[CallFile]*PathResolver{},
+				}
+			}
+			if l.PathRegistry.DB[l.Caller.Current()] == nil {
+				l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
+					Mapping:    map[string]*LocalFileRef{},
+					Unresolved: map[string]bool{},
+				}
+			}
+			currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
+			err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
+			if err != nil {
+				return err
+			}
+		}
+	case BuildContext:
+		clone, err = LoadFiles(l.GlobalConfigFile(), l.BuildConfigFile())
+		if err != nil {
+			return err
+		}
+
+		if clone.Build != nil {
+			if l.PathRegistry == nil {
+				l.PathRegistry = &PathRegistry{
+					DB: map[CallFile]*PathResolver{},
+				}
+			}
+			if l.PathRegistry.DB[l.Caller.Current()] == nil {
+				l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
+					Mapping:    map[string]*LocalFileRef{},
+					Unresolved: map[string]bool{},
+				}
+			}
+			currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
+			err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
+			if err != nil {
+				return err
+			}
+		}
 	case EnvContext:
 		clone, err = LoadFiles(l.GlobalConfigFile(), l.EnvConfigFile())
 		if err != nil {
@@ -453,6 +503,16 @@ func (l *Laforge) EnvConfigFile() string {
 // BaseConfigFile is a helper method for creating an absolute path to the base configuration file
 func (l *Laforge) BaseConfigFile() string {
 	return filepath.Join(l.BaseRoot, "base.laforge")
+}
+
+// BuildConfigFile is a helper method for creating an absolute path to the build results file
+func (l *Laforge) BuildConfigFile() string {
+	return filepath.Join(l.BuildRoot, "build.laforge")
+}
+
+// TeamConfigFile is a helper method for creating an absolute path to the build results file
+func (l *Laforge) TeamConfigFile() string {
+	return filepath.Join(l.TeamRoot, "team.laforge")
 }
 
 // InitializeContext attempts to resolve the current state context from path traversal

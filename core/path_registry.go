@@ -1,4 +1,4 @@
-package laforge
+package core
 
 // PathRegistry is a type that tracks the relative file paths of state configurations that include external sources
 type PathRegistry struct {

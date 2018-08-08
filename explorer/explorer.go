@@ -1,7 +1,7 @@
-package statusui
+package explorer
 
 import (
-	"github.com/gen0cide/laforge"
+	"github.com/gen0cide/laforge/core"
 	"github.com/rivo/tview"
 )
 
@@ -11,10 +11,10 @@ type statusapp struct {
 	app         *tview.Application
 	pages       *tview.Pages
 	finderFocus tview.Primitive
-	base        *laforge.Laforge
+	base        *core.Laforge
 }
 
-func newstatusapp(base *laforge.Laforge) *statusapp {
+func newstatusapp(base *core.Laforge) *statusapp {
 	sa := &statusapp{
 		app:  tview.NewApplication(),
 		base: base,
@@ -23,7 +23,7 @@ func newstatusapp(base *laforge.Laforge) *statusapp {
 	return sa
 }
 
-func (sa *statusapp) finder(base *laforge.Laforge) {
+func (sa *statusapp) finder(base *core.Laforge) {
 	objecttypes := tview.NewList().ShowSecondaryText(false)
 	objecttypes.SetBorder(true).SetTitle("Object Types")
 	objtree := tview.NewTreeView()
@@ -222,12 +222,12 @@ func (sa *statusapp) finder(base *laforge.Laforge) {
 }
 
 // RenderLaforgeStatusUI renders an interactive console for exploring your data
-func RenderLaforgeStatusUI(base *laforge.Laforge) error {
+func RenderLaforgeStatusUI(base *core.Laforge) error {
 	sa := newstatusapp(base)
 	return sa.app.Run()
 }
 
-func identityTreeNode(name string, i *laforge.Identity) *tview.TreeNode {
+func identityTreeNode(name string, i *core.Identity) *tview.TreeNode {
 	newnode := tview.NewTreeNode(name)
 	idnode := tview.NewTreeNode("ID")
 	idnode.SetIndent(1)

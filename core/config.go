@@ -1,11 +1,13 @@
-package laforge
+package core
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -154,4 +156,15 @@ func TraverseUpForFile(filename, startdir string) (string, error) {
 		return "", ErrNoConfigRootReached
 	}
 	return TraverseUpForFile(filename, filepath.Dir(absPath))
+}
+
+// TouchGitKeep is a helper function to touch a .gitkeep file within a given directory.
+func TouchGitKeep(p string) error {
+	keeper := filepath.Join(p, ".gitkeep")
+	newFile, err := os.Create(keeper)
+	if err != nil {
+		return errors.WithMessage(err, fmt.Sprintf("cannot touch .gitkeep inside directory %s", p))
+	}
+	newFile.Close()
+	return nil
 }

@@ -1,4 +1,4 @@
-package laforge
+package core
 
 import (
 	"os"

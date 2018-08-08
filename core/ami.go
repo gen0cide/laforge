@@ -1,4 +1,4 @@
-package laforge
+package core
 
 // AMI represents a configurable object for defining custom AMIs in cloud infrastructure
 type AMI struct {

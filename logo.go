@@ -27,26 +27,28 @@ var (
 	plainblue  = color.New(color.FgHiBlue)
 )
 
-var logong2Backup = []string{
-	boldb("                                               _______----_______               "),
-	boldb("                                    ___---~~~~~.. ... .... ... ..~~~~~---___    "),
-	boldb("                              _ ==============================================  "),
-	boldb("  __________________________ - .. ..   _--~~~~~-------____-------~~~~~          "),
-	boldb(" (______________________][__)____     -                                         "),
-	boldb("    /       /______---~~~.. .. ..~~-_~                      [VERSION] 0.0.1     "),
-	boldb("   <_______________________________-                         [AUTHOR] gen0cide  "),
-	boldw(" dP    ~~~~~~~-----__     ^    __-                                              "),
-	boldw(" 88                     _' `_      88888888b                                    "),
-	boldw(" 88        .d8888b.  .-~'   `~-.   88      .d8888b. 88d888b. .d8888b. .d8888b.  "),
-	boldw(" 88        88'  `88 (  ' __. `  ) a88aaaaa 88'  `88 88'  `88 88'  `88 88ooood8  "),
-	boldw(" 88        88.  .88  `-''___``-'   88      88.  .88 88       88.  .88 88.  ...  "),
-	boldw(" 88888888P `88888P8a   `     '     dP      `88888P' dP       `8888P88 `88888P'  "),
-	normb(" ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo~~~~.88~ooooooooo "),
-	boldg(" github.com/gen0cide/laforge                                   d8888P           "),
-	nocol("                                                                                "),
+// MonoLogo is a monochromatic representation of the laforge ASCII banner.
+var MonoLogo = []string{
+	"                                              _______----_______               ",
+	"                                   ___---~~~~~.. ... .... ... ..~~~~~---___    ",
+	"                             _ ==============================================  ",
+	" __________________________ - .. ..   _--~~~~~-------____-------~~~~~          ",
+	"(______________________][__)____     -                                         ",
+	fmt.Sprintf("   /       /______---~~~.. .. ..~~-_~                      [VERSION] %s     ", Version),
+	fmt.Sprintf("  <_______________________________-                         [AUTHOR] %s  ", AuthorHandle),
+	"dP    ~~~~~~~-----__     ^    __-                                              ",
+	"88                     _' `_      88888888b                                    ",
+	"88        .d8888b.  .-~'   `~-.   88      .d8888b. 88d888b. .d8888b. .d8888b.  ",
+	"88        88'  `88 (  ' __. `  ) a88aaaaa 88'  `88 88'  `88 88'  `88 88ooood8  ",
+	"88        88.  .88  `-''___``-'   88      88.  .88 88       88.  .88 88.  ...  ",
+	"88888888P `88888P8a   `     '     dP      `88888P' dP       `8888P88 `88888P'  ",
+	"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo~~~~.88~ooooooooo ",
+	fmt.Sprintf("%s                                   d8888P           ", RepoURL),
+	"------------------------------------------------------------------------------ ",
 }
 
-var logong2 = []string{
+// ColorLogo is a line slice of a colorized version of the logo
+var ColorLogo = []string{
 	nocol("------------------------------------------------------------------------------"),
 	boldb("                                              _______%s%s               ", boldm("----"), boldb("_______")),
 	boldb("                                   ___---~~~~~%s%s", boldw(".. ... .... ... .."), boldb("~~~~~---___    ")),
@@ -64,58 +66,11 @@ var logong2 = []string{
 	normb("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo~~~~%s%s ", boldw(".88"), normb("~ooooooooo")),
 	boldg("github.com/gen0cide/laforge                                   %s           ", boldw("d8888P")),
 	nocol("------------------------------------------------------------------------------"),
-	nocol("                                                                              "),
 	"",
 }
-
-var logong = []string{
-	"",
-	boldblue("                                               _______----_______                  "),
-	boldblue("                                    ___---~~~~~.. ... .... ... ..~~~~~---___       "),
-	boldblue("                              _ ==============================================     "),
-	boldblue("  __________________________ - .. ..   _--~~~~~-------____-------~~~~~             "),
-	boldblue(" (______________________][__)____     -                                            "),
-	boldblue("    /       /______---~~~.. .. ..~~-_~                      %s%s%s %s        ", boldgreen("["), color.HiWhiteString("VERSION"), boldgreen("]"), boldred(Version)),
-	boldblue("   <_______________________________-                         %s%s%s %s     ", boldgreen("["), color.HiWhiteString("AUTHOR"), boldgreen("]"), boldred(AuthorHandle)),
-	boldwhite(" dP    %s                                                ", boldblue("~~~~~~~-----__           __-")),
-	boldwhite(" 88                  %s %s                                         ", boldblue("~~~~~~~~~~~"), boldwhite("88888888b")),
-	boldwhite(" 88        .d8888b.              88        .d8888b. 88d888b. .d8888b. .d8888b.     "),
-	boldwhite(" 88        88'  `88             a88aaaaa   88'  `88 88'  `88 88'  `88 88ooood8     "),
-	boldwhite(" 88        88.  .88              88        88.  .88 88       88.  .88 88.  ...     "),
-	boldwhite(" 88888888P `88888P8a             dP        `88888P' dP       `8888P88 `88888P'     "),
-	color.HiBlueString(" ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo~~~~.%s%s    ", boldwhite("88"), color.HiBlueString("~ooooooooo")),
-	fmt.Sprintf(" %s                                   %s              ", boldgreen(RepoURL), boldwhite("d8888P")),
-	"                                                                                      ",
-	"",
-}
-
-var logo = `
-          ((((            ,(((/         ((((((((       ./(((/        ,(((((((,           *((((,        ((((((((
-         @@@@          @@@@@@@@@       @@@@@@@@      @@@@@@@@@      ,@@@@@@@@@/       @@@@@@@@@,      @@@@@@@@
-        @@@@          @@@/ .@@@      .@@@          .@@@  (@@@      &@@@  ,@@@(       @@@/  @@@*     .@@@
-       @@@%%          @@@  .@@@      (@@@          .@@@  (@@@      &@@@  ,@@@.       @@@*  &.*      (@@@
-      @@@%%         .@@@ *@@@@      (@@@ @@@@     (@@@  @@@@      &@@@ %%@@@@.       @@@*.@@@@      (@@@ @@@@
-     @@@(         *@@@@@@@@@      %%@@@@@@@*     %%@@@  @@@@      @@@@@@@@#         @@@ (@@@@      %%@@@@@@@,
-    @@@.         *@@@  %%@@@      @@@@/         %%@@@  @@@@      @@@@@@@@          @@@ ,*@@@      @@@@,
-   @@@.         %%@@@  %%@@@      @@@@          @@@@  @@@&      @@@@ @@@@        *@@@  %%@@@      @@@@      %s%s
-`
-var logo2 = `  @@@.         %%@@@  @@@@      @@@@          @@@@  @@@&      @@@(  @@@@       *@@@  %%@@@      @@@@
-,@@@@@@@@     @@@@  @@@@      @@@%%          @@@@@@@@@*      @@@*   @@@@      ,@@@@@@@@%%      @@@@@@@@*  /by/
-                                                                                                        %s
-                %s   %s   %s
-                                     %s
-
-`
-var subTitle = `S E C U R I T Y    C O M P E T I T I O N    A U T O M A T I O N`
-var url = `github.com/gen0cide/laforge`
 
 // PrintLogo prints the Laforge logo to Stdout with color if possible.
 func PrintLogo() {
-	logoText := strings.Join(logong2, "\n")
-	// logoText := fmt.Sprintf(
-	// 	"%s%s",
-	// 	color.HiBlueString(logo, boldyellow("v"), boldwhite(Version)),
-	// 	color.HiBlueString(logo2, boldred(AuthorHandle), boldgreen(`--`), boldwhite(subTitle), boldgreen(`--`), boldyellow(url)),
-	// )
+	logoText := strings.Join(ColorLogo, "\n")
 	fmt.Fprint(color.Output, logoText)
 }

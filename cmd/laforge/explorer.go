@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gen0cide/laforge"
-	"github.com/gen0cide/laforge/statusui"
+	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/explorer"
 	"github.com/urfave/cli"
 )
 
@@ -16,10 +16,10 @@ var (
 )
 
 func performexplorer(c *cli.Context) error {
-	laforge.SetLogLevel("info")
-	base, err := laforge.Bootstrap()
+	core.SetLogLevel("info")
+	base, err := core.Bootstrap()
 	if err != nil {
 		return err
 	}
-	return statusui.RenderLaforgeStatusUI(base)
+	return explorer.RenderLaforgeStatusUI(base)
 }

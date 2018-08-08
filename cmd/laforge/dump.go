@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gen0cide/laforge"
+	"github.com/gen0cide/laforge/core"
 	"github.com/k0kubun/pp"
 	"github.com/urfave/cli"
 )
@@ -16,7 +16,7 @@ var (
 )
 
 func performdump(c *cli.Context) error {
-	base, err := laforge.Bootstrap()
+	base, err := core.Bootstrap()
 	if err != nil {
 		return err
 	}

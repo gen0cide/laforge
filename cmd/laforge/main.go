@@ -6,13 +6,14 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge"
+	"github.com/gen0cide/laforge/core"
 	"github.com/urfave/cli"
 )
 
 var (
 	displayBefore = true
 	debugOutput   = false
-	cliLogger     = laforge.Logger
+	cliLogger     = core.Logger
 	defaultLevel  = "warn"
 	verboseOutput = false
 	noBanner      = false
@@ -79,10 +80,10 @@ func main() {
 
 	app.Before = func(c *cli.Context) error {
 		if verboseOutput {
-			laforge.SetLogLevel("info")
+			core.SetLogLevel("info")
 		}
 		if debugOutput {
-			laforge.SetLogLevel("debug")
+			core.SetLogLevel("debug")
 		}
 		if !noBanner {
 			laforge.PrintLogo()
@@ -92,7 +93,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		laforge.Logger.Fatalf("Terminated due to error: %v", err)
+		core.Logger.Fatalf("Terminated due to error: %v", err)
 	}
 }
 

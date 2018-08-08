@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/gen0cide/laforge"
+	"github.com/gen0cide/laforge/core"
 
 	"github.com/alecthomas/chroma/quick"
 	"github.com/urfave/cli"
@@ -29,7 +29,7 @@ var (
 
 func performexample(c *cli.Context) error {
 	validTypes := []string{}
-	for k := range laforge.ExampleObjects {
+	for k := range core.ExampleObjects {
 		validTypes = append(validTypes, k)
 	}
 	requestedType := c.Args().Get(0)
@@ -37,7 +37,7 @@ func performexample(c *cli.Context) error {
 		return fmt.Errorf("example command must be passed a known type: %v", validTypes)
 	}
 
-	obj, err := laforge.ExampleObjectByName(requestedType)
+	obj, err := core.ExampleObjectByName(requestedType)
 	if err != nil {
 		return err
 	}

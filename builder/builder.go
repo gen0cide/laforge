@@ -1,0 +1,130 @@
+package builder
+
+import (
+	"fmt"
+
+	"github.com/fatih/color"
+	"github.com/gen0cide/laforge/builder/buildutil"
+	"github.com/gen0cide/laforge/builder/null"
+	"github.com/gen0cide/laforge/builder/tfaws"
+	"github.com/gen0cide/laforge/core"
+	"github.com/pkg/errors"
+)
+
+var (
+	// ValidBuilders retains a map of ID to empty Builder objects.
+	ValidBuilders = map[string]Builder{
+		"tfaws": tfaws.New(),
+		"null":  null.New(),
+	}
+
+	// ErrNoBuilderFound is thrown when a builder is not a known valid builder parameter
+	ErrNoBuilderFound = errors.New("builder type defined in environment was not recognized")
+)
+
+// BuildEngine is the primary interface for building components in gscript.
+type BuildEngine struct {
+	Base    *core.Laforge
+	Builder Builder
+}
+
+// Steps
+// CheckRequirements(l *core.Laforge) error
+
+// Builder is a generic interface used to implement various builders.
+type Builder interface {
+	// ID of the builder - usually the go package name
+	// - Must be unique and be a valid golang package name.
+	ID() string
+
+	// Name of the builder - usually titleized version of the type
+	Name() string
+
+	// Human readable description information
+	Description() string
+
+	// Author name and contact information
+	Author() string
+
+	// Version of the builder implementation
+	Version() string
+
+	// Set's a Laforge base instance to work off
+	SetLaforge(*core.Laforge) error
+
+	// Check the provided base instance for any dynamic
+	// configuration and ensure build requirements are met.
+	CheckRequirements() error
+
+	// Gather remote assets, upload to S3, create a unique names, etc.
+	PrepareAssets() error
+
+	// Run all the scripts through a rendering step, templating them out
+	// if needed.
+	GenerateScripts() error
+
+	// Stage any dependencies (or preform pre-rendering tasks)
+	StageDependencies() error
+
+	// Attempt to render the actual configuration
+	Render() error
+}
+
+// New attempts to create a new BuildEngine based on the laforge state parameters
+func New(base *core.Laforge, overwrite bool) (*BuildEngine, error) {
+	err := base.AssertMinContext(core.EnvContext)
+	if err != nil {
+		return nil, buildutil.Throw(err, "Cannot perform a build without being in an EnvContext.", nil)
+	}
+
+	setup := core.InitializeBuildDirectory(base, overwrite)
+	if setup != nil {
+		return nil, buildutil.Throw(err, "Cannot initialize build directory", nil)
+	}
+
+	bldr, found := ValidBuilders[base.Environment.Builder]
+	if !found {
+		return nil, buildutil.Throw(ErrNoBuilderFound, "Invalid builder defined", &buildutil.V{"provided": base.Environment.Builder})
+	}
+
+	core.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.Environment.Builder)))
+	return &BuildEngine{
+		Base:    base,
+		Builder: bldr,
+	}, nil
+}
+
+// Do performs the waterfall of functions on the given context with it's designated builder
+func (b *BuildEngine) Do() error {
+	err := b.Builder.SetLaforge(b.Base)
+	if err != nil {
+		return buildutil.Throw(err, "failed to set laforge", nil)
+	}
+	core.Logger.Infof("Injected context into builder")
+	err = b.Builder.CheckRequirements()
+	if err != nil {
+		return buildutil.Throw(err, "failed checking requirements", nil)
+	}
+	core.Logger.Infof("Requirements checks passed")
+	err = b.Builder.PrepareAssets()
+	if err != nil {
+		return buildutil.Throw(err, "failed preparing assets", nil)
+	}
+	core.Logger.Infof("Resolved and cached required assets")
+	err = b.Builder.GenerateScripts()
+	if err != nil {
+		return buildutil.Throw(err, "failed generating scripts", nil)
+	}
+	core.Logger.Infof("Generated scripts and templates")
+	err = b.Builder.StageDependencies()
+	if err != nil {
+		return buildutil.Throw(err, "failed staging dependencies", nil)
+	}
+	core.Logger.Infof("Staged dependencies for rendering")
+	err = b.Builder.Render()
+	if err != nil {
+		return buildutil.Throw(err, "failed rendering build", nil)
+	}
+	core.Logger.Infof("Successfully rendered build")
+	return nil
+}

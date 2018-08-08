@@ -1,4 +1,4 @@
-package laforge
+package core
 
 import (
 	"fmt"
@@ -22,7 +22,8 @@ type Environment struct {
 	ID               string              `hcl:",label" json:"id,omitempty"`
 	Name             string              `hcl:"name,attr" json:"name,omitempty"`
 	Description      string              `hcl:"description,attr" json:"description,omitempty"`
-	Type             string              `hcl:"type,attr" json:"type,omitempty"`
+	Builder          string              `hcl:"builder,attr" json:"builder,omitempty"`
+	TeamCount        int                 `hcl:"team_count,attr" json:"team_count,omitempty"`
 	Config           map[string]string   `hcl:"config,attr" json:"config,omitempty"`
 	Vars             map[string]string   `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string   `hcl:"tags,attr" json:"tags,omitempty"`
@@ -30,9 +31,9 @@ type Environment struct {
 	Maintainer       *User               `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	BaseDir          string              `json:"base_dir,omitempty"`
-	IncludedNetworks map[string]*Network `json:"-"`
+	IncludedNetworks map[string]*Network `json:"networks"`
 	IncludedHosts    map[string]*Host    `json:"-"`
-	HostByNetwork    map[string][]*Host  `json:"-"`
+	HostByNetwork    map[string][]*Host  `json:"hosts_by_network"`
 	Caller           Caller              `json:"-"`
 }
 
@@ -179,6 +180,31 @@ func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 	}
 
 	return ioutil.WriteFile(envDefPath, envData, 0644)
+}
+
+// CleanBuildDirectory attempts to purge the current environment context's build directory (rm -r basically)
+func (l *Laforge) CleanBuildDirectory(overwrite bool) error {
+	pn := ""
+	for cf := range l.PathRegistry.DB {
+		if filepath.Base(cf.CallerFile) == "env.laforge" {
+			pn = cf.CallerDir
+			break
+		}
+	}
+
+	if pn == "" {
+		return fmt.Errorf("strange things have happened trying to find the env.laforge path")
+	}
+
+	buildDir := filepath.Join(pn, "build")
+	_, e0 := os.Stat(buildDir)
+	if e0 == nil {
+		if !overwrite {
+			return fmt.Errorf("Cannot clean build directory - path is dirty: %s (--force/-f to overwrite)", buildDir)
+		}
+	}
+
+	return os.RemoveAll(buildDir)
 }
 
 // GetAllEnvs recursively traverses the BaseRoot/envs/ folder looking for valid environments.

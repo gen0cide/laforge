@@ -1,4 +1,4 @@
-package laforge
+package core
 
 import (
 	"fmt"
@@ -15,6 +15,24 @@ import (
 var (
 	// Logger is a global singleton logger used by Laforge
 	Logger logger.Logger
+
+	boldgreen  = color.New(color.FgHiGreen, color.Bold).SprintfFunc()
+	boldwhite  = color.New(color.FgHiWhite, color.Bold).SprintfFunc()
+	boldred    = color.New(color.FgHiRed, color.Bold).SprintfFunc()
+	boldyellow = color.New(color.FgHiYellow, color.Bold).SprintfFunc()
+	boldcyan   = color.New(color.FgHiCyan, color.Bold).SprintfFunc()
+	boldb      = color.New(color.FgHiBlue, color.Bold).SprintfFunc()
+	boldg      = color.New(color.FgHiGreen, color.Bold).SprintfFunc()
+	boldw      = color.New(color.FgHiWhite, color.Bold).SprintfFunc()
+	boldr      = color.New(color.FgHiRed, color.Bold).SprintfFunc()
+	boldy      = color.New(color.FgHiYellow, color.Bold).SprintfFunc()
+	boldc      = color.New(color.FgHiCyan, color.Bold).SprintfFunc()
+	boldm      = color.New(color.FgHiMagenta, color.Bold).SprintfFunc()
+	britw      = color.New(color.FgHiWhite).SprintfFunc()
+	normb      = color.New(color.FgBlue).SprintfFunc()
+	nocol      = color.New(color.Reset).SprintfFunc()
+	boldblue   = color.New(color.FgHiBlue, color.Bold).SprintfFunc()
+	plainblue  = color.New(color.FgHiBlue)
 )
 
 var (

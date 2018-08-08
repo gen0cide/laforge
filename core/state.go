@@ -1,4 +1,4 @@
-package laforge
+package core
 
 // Remote defines a configuration object that keeps terraform and remote files synchronized
 type Remote struct {

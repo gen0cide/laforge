@@ -5,9 +5,9 @@ import (
 
 	"github.com/alecthomas/chroma/quick"
 	"github.com/fatih/color"
+	"github.com/gen0cide/laforge/core"
 	survey "gopkg.in/AlecAivazis/survey.v1"
 
-	"github.com/gen0cide/laforge"
 	"github.com/urfave/cli"
 )
 
@@ -24,14 +24,14 @@ var (
 )
 
 func performconfigure(c *cli.Context) error {
-	laforge.SetLogLevel("info")
-	gcl, err := laforge.LocateGlobalConfig()
+	core.SetLogLevel("info")
+	gcl, err := core.LocateGlobalConfig()
 	if err != nil {
-		if err != laforge.ErrNoGlobalConfig {
+		if err != core.ErrNoGlobalConfig {
 			return err
 		}
 		cliLogger.Infof("No config found!")
-		return laforge.UserWizard()
+		return core.UserWizard()
 	}
 	data, err := ioutil.ReadFile(gcl)
 	if err != nil {
@@ -48,7 +48,7 @@ func performconfigure(c *cli.Context) error {
 	}
 	survey.AskOne(prompt, &name, nil)
 	if name {
-		return laforge.UserWizard()
+		return core.UserWizard()
 	}
 	return nil
 }

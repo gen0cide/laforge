@@ -1,4 +1,4 @@
-package laforge
+package core
 
 import (
 	"fmt"
@@ -64,7 +64,7 @@ func baseEnvironment(name string, maint *User) *Environment {
 		ID:            name,
 		Name:          name,
 		Description:   "",
-		Type:          "null",
+		Builder:       "null",
 		Config:        map[string]string{},
 		Vars:          map[string]string{},
 		Tags:          map[string]string{},
@@ -79,7 +79,7 @@ func defaultEnvironment() *Environment {
 		ID:          "fake_environment",
 		Name:        "fake_env_for_demo_purposes",
 		Description: "not a real environment, please configure!",
-		Type:        "native",
+		Builder:     "null",
 		Config: map[string]string{
 			"combine_scripts": "true",
 		},

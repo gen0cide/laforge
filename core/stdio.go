@@ -1,4 +1,4 @@
-package laforge
+package core
 
 // IO represents a configuration type to define file locations for Stdin, Stdout, Stderr
 type IO struct {

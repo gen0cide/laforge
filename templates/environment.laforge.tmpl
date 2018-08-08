@@ -12,8 +12,11 @@ environment "{{ $.ID }}" {
   name = "{{ $.Name }}"
   description = "{{ $.Description }}"
 
+  // Number of teams you want run in this environment
+  team_count = {{ $.TeamCount }}
+
   // this setting determines what type of provisioning will occur (aws, vagrant, native)
-  type = "{{ $.Type }}"
+  builder = "{{ $.Type }}"
 
   // based on your type, you likely will have type-specific configuration values here
   config = {
@@ -41,7 +44,7 @@ environment "{{ $.ID }}" {
 
   // you can tag your environment as well
   tags = {
-    {{ range $key, $val := $.Vars -}}
+    {{ range $key, $val := $.Tags -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
@@ -49,7 +52,7 @@ environment "{{ $.ID }}" {
 
   // and define any variables you might
   vars = {
-    {{ range $key, $val := $.Tags -}}
+    {{ range $key, $val := $.Vars -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }

@@ -1,0 +1,30 @@
+// WARNING! FILE IS GENERATED... DO NOT EDIT!
+//
+// Laforge Build Result Definition
+//
+// -- Details --
+//          id = {{ $.ID }}
+//     builder = {{ $.Builder }}
+//  team_count = {{ $.TeamCount }}
+// environment = {{ $.EnvironmentID }}
+//
+
+include {
+  path = "{{ $.RelEnvPath }}"
+}
+
+build "{{ $.ID }}" {
+  db_file = "{{ $.DBFile }}"
+
+  config = {
+    {{ range $key, $val := $.Config -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  tags = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+}
