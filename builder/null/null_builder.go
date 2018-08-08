@@ -1,3 +1,5 @@
+// Package null implements a Laforge Builder module that is effectively a NOOP. It should be used
+// as the spec reference for building builder modules as it's probably got the easiest learning curve.
 package null
 
 import (
@@ -6,12 +8,13 @@ import (
 	"github.com/gen0cide/laforge/core"
 )
 
+// Definition of builder meta-data.
 const (
-	_id          = `null`
-	_name        = `Null Builder`
-	_description = `NOOP builder used for testing, debugging, and research.`
-	_author      = `Alex Levinson <github.com/gen0cide>`
-	_version     = `0.0.1`
+	ID          = `null`
+	Name        = `Null Builder`
+	Description = `NOOP builder used for testing, debugging, and research.`
+	Author      = `Alex Levinson <github.com/gen0cide>`
+	Version     = `0.0.1`
 )
 
 var (
@@ -38,27 +41,27 @@ func New() *Builder {
 
 // ID implements the Builder interface (returns the ID of the builder - usually the go package name)
 func (b *Builder) ID() string {
-	return _id
+	return ID
 }
 
 // Name implements the Builder interface (returns the name of the builder - usually titleized version of the type)
 func (b *Builder) Name() string {
-	return _name
+	return Name
 }
 
 // Description implements the Builder interface (returns the builder's description)
 func (b *Builder) Description() string {
-	return _description
+	return Description
 }
 
 // Author implements the Builder interface (author's name and contact info)
 func (b *Builder) Author() string {
-	return _author
+	return Author
 }
 
 // Version implements the Builder interface (builder version)
 func (b *Builder) Version() string {
-	return _version
+	return Version
 }
 
 // Validations implements the Builder interface (builder checks)
@@ -95,4 +98,14 @@ func (b *Builder) StageDependencies() error {
 // Render implements the Builder interface
 func (b *Builder) Render() error {
 	return nil
+}
+
+// Set implements the Builder interface
+func (b *Builder) Set(key string, val interface{}) {
+	return
+}
+
+// Get implements the Builder interface
+func (b *Builder) Get(key string) string {
+	return ""
 }

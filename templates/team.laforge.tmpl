@@ -20,7 +20,7 @@ team "{{ $.ID }}" {
 
   // config let you define custom configuration parameters which may be needed for specific provisioning builders.
   config = {
-    {{ range $key, $val := $.Vars -}}
+    {{ range $key, $val := $.Config -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }

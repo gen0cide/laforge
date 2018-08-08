@@ -38,7 +38,7 @@ func CreateGlobalConfig(u User) error {
 		return err
 	}
 	globconf := filepath.Join(configDir, "global.laforge")
-	return ioutil.WriteFile(globconf, data, 0700)
+	return ioutil.WriteFile(globconf, data, 0600)
 }
 
 // PathExists is a convenience function to determine if a path exists at it's location

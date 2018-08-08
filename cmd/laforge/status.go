@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gen0cide/laforge/core"
 	"github.com/urfave/cli"
 )
 
@@ -14,5 +15,9 @@ var (
 )
 
 func performstatus(c *cli.Context) error {
-	return commandNotImplemented(c)
+	base, _ := core.Bootstrap()
+
+	core.SetLogLevel("info")
+	cliLogger.Infof("Current Context Level\n%s", core.StatusMap(base.GetContext()))
+	return nil
 }

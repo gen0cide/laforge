@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge"
@@ -33,6 +34,8 @@ func main() {
 
 	app.Writer = color.Output
 	app.ErrWriter = color.Output
+
+	cli.AppHelpTemplate = fmt.Sprintf("%s\n%s", strings.Join(laforge.ColorLogo, "\n"), cli.AppHelpTemplate)
 	app.Name = "laforge"
 	app.Usage = "Distributed competition development and automation"
 	app.Description = "Security competition infrastructure automation framework"
@@ -47,11 +50,6 @@ func main() {
 			Name:        "debug, d",
 			Usage:       "Enables low level debug output",
 			Destination: &debugOutput,
-		},
-		cli.BoolFlag{
-			Name:        "no-banner, n",
-			Usage:       "Disables the ASCII text banner",
-			Destination: &noBanner,
 		},
 	}
 	app.Version = laforge.Version
@@ -70,12 +68,12 @@ func main() {
 		buildCommand,
 		envCommand,
 		queryCommand,
-		doctorCommand,
 		serveCommand,
 		shellCommand,
 		uploadCommand,
 		downloadCommand,
 		exampleCommand,
+		depsCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -84,9 +82,6 @@ func main() {
 		}
 		if debugOutput {
 			core.SetLogLevel("debug")
-		}
-		if !noBanner {
-			laforge.PrintLogo()
 		}
 		return nil
 	}

@@ -1,10 +1,16 @@
+// Package tfaws implements a Laforge Builder module for generating terraform configurations that target AWS.
 package tfaws
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/gen0cide/laforge/builder/tfaws/static"
+
+	"github.com/gen0cide/laforge/builder/buildutil/templates"
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/pkg/errors"
@@ -13,12 +19,13 @@ import (
 	"github.com/gen0cide/laforge/core"
 )
 
+// Definition of builder meta-data.
 const (
-	_id          = `tfaws`
-	_name        = `Terraform AWS Builder`
-	_description = `generates terraform configurations that isolate teams into VPCs`
-	_author      = `Alex Levinson <github.com/gen0cide>`
-	_version     = `0.0.1`
+	ID          = `tfaws`
+	Name        = `Terraform AWS Builder`
+	Description = `generates terraform configurations that isolate teams into VPCs`
+	Author      = `Alex Levinson <github.com/gen0cide>`
+	Version     = `0.0.1`
 )
 
 var (
@@ -27,6 +34,21 @@ var (
 			Name:       "Environment maintainer not defined",
 			Resolution: "add a maintainer block to your environment configuration",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "Maintainer"),
+		},
+		validations.Requirement{
+			Name:       "DNS not defined",
+			Resolution: "add a DNS block to your competition configuration",
+			Check:      validations.FieldNotEmpty(core.Competition{}, "DNS"),
+		},
+		validations.Requirement{
+			Name:       "DNS type not listed as route53",
+			Resolution: "Make sure your dns block declaration has route53 as it's type.",
+			Check:      validations.FieldEquals(core.DNS{}, "Type", "route53"),
+		},
+		validations.Requirement{
+			Name:       "DNS Root Domain not defined",
+			Resolution: "set the root_domain parameter in your DNS config block",
+			Check:      validations.FieldNotEmpty(core.DNS{}, "RootDomain"),
 		},
 		validations.Requirement{
 			Name:       "terraform executable not located in path",
@@ -39,18 +61,33 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
 		},
 		validations.Requirement{
+			Name:       "vdi Network CIDR not defined",
+			Resolution: "define a vdi_network_cidr value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "vdi_network_cidr"),
+		},
+		validations.Requirement{
+			Name:       "no teams specified",
+			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
+			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
+		},
+		validations.Requirement{
+			Name:       "admin IP not defined",
+			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
+		},
+		validations.Requirement{
 			Name:       "AWS Access Key not defined",
-			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
+			Resolution: "define a aws_access_key value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "aws_access_key"),
 		},
 		validations.Requirement{
 			Name:       "AWS Secret Key not defined",
-			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
+			Resolution: "define a aws_secret_key value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "aws_secret_key"),
 		},
 		validations.Requirement{
 			Name:       "AWS Region not defined",
-			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
+			Resolution: "define a aws_region value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "aws_region"),
 		},
 		validations.Requirement{
@@ -89,10 +126,25 @@ var (
 			Check:      validations.FieldNotEmpty(core.Host{}, "Disk"),
 		},
 		validations.Requirement{
-			Name:       "No disk defined for a host",
-			Resolution: "Ensure that every host declaration has an accompanied disk { size = ... } block defined.",
+			Name:       "No user_data_script_id defined for a host",
+			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
 			Check:      validations.HasVarDefined(core.Host{}, "user_data_script_id"),
 		},
+		validations.Requirement{
+			Name:       "No AMI defined for host",
+			Resolution: "Ensure that every host declaration has an accompanied ami_id var set",
+			Check:      validations.HasVarDefined(core.Host{}, "ami_id"),
+		},
+		validations.Requirement{
+			Name:       "IP needs to be overridden",
+			Resolution: "Ensure that every host declaration has an accompanied ip_override var set",
+			Check:      validations.HasVarDefined(core.Host{}, "ip_override"),
+		},
+	}
+
+	primaryTemplate = "demo_infra.tf.tmpl"
+	templatesToLoad = []string{
+		primaryTemplate,
 	}
 )
 
@@ -103,13 +155,25 @@ type TerraformAWSBuilder struct {
 
 	// Required for the Builder interface
 	Base *core.Laforge
+
+	// A place to store the templates
+	Library *templates.Library
 }
 
 // Get retrieves an element from the embedded KV store
 func (t *TerraformAWSBuilder) Get(key string) string {
 	t.Lock()
 	defer t.Unlock()
-	return t.Base.Build.Config[key]
+	res, ok := t.Base.Build.Config[key]
+	if ok {
+		return res
+	}
+	r0, e0 := t.Base.Environment.Config[key]
+	if e0 {
+		defer t.Set(key, r0)
+		return r0
+	}
+	return ""
 }
 
 // Set assigns an element to the embedded KV store
@@ -121,32 +185,35 @@ func (t *TerraformAWSBuilder) Set(key string, val interface{}) {
 
 // New creates an empty TerraformAWSBuilder
 func New() *TerraformAWSBuilder {
-	return &TerraformAWSBuilder{}
+	lib := templates.NewLibrary()
+	return &TerraformAWSBuilder{
+		Library: lib,
+	}
 }
 
 // ID implements the Builder interface (returns the ID of the builder - usually the go package name)
 func (t *TerraformAWSBuilder) ID() string {
-	return _id
+	return ID
 }
 
 // Name implements the Builder interface (returns the name of the builder - usually titleized version of the type)
 func (t *TerraformAWSBuilder) Name() string {
-	return _name
+	return Name
 }
 
 // Description implements the Builder interface (returns the builder's description)
 func (t *TerraformAWSBuilder) Description() string {
-	return _description
+	return Description
 }
 
 // Author implements the Builder interface (author's name and contact info)
 func (t *TerraformAWSBuilder) Author() string {
-	return _author
+	return Author
 }
 
 // Version implements the Builder interface (builder version)
 func (t *TerraformAWSBuilder) Version() string {
-	return _version
+	return Version
 }
 
 // Validations implements the Builder interface (builder checks)
@@ -159,6 +226,16 @@ func (t *TerraformAWSBuilder) SetLaforge(base *core.Laforge) error {
 	t.Base = base
 	if !base.ClearToBuild {
 		return buildutil.Throw(errors.New("context is not cleared to build"), "Laforge has encountered an error and cannot continue to build. This is likely a bug in LaForge.", nil)
+	}
+	for _, x := range templatesToLoad {
+		d, err := static.ReadFile(x)
+		if err != nil {
+			return buildutil.Throw(err, "could not read template", &buildutil.V{"template_name": x})
+		}
+		_, err = t.Library.AddBook(x, d)
+		if err != nil {
+			return buildutil.Throw(err, "could not parse template", &buildutil.V{"template_name": x})
+		}
 	}
 	return nil
 }
@@ -184,8 +261,10 @@ func (t *TerraformAWSBuilder) PrepareAssets() error {
 	if err != nil {
 		return buildutil.Throw(err, "Could not write the the SSH public key to the build directory", &buildutil.V{"path": pathToPubkey})
 	}
-	t.Set("ssh_public_key", pathToPubkey)
-	t.Set("ssh_private_key", pathToPrivkey)
+	t.Set("ssh_public_key_file", pathToPubkey)
+	t.Set("ssh_private_key_file", pathToPrivkey)
+	t.Set("ssh_public_key", pubkey)
+	t.Set("ssh_private_key", privkey)
 
 	for hostid, host := range t.Base.Environment.IncludedHosts {
 		uds, found := host.Vars["user_data_script_id"]
@@ -214,10 +293,64 @@ func (t *TerraformAWSBuilder) GenerateScripts() error {
 
 // StageDependencies implements the Builder interface
 func (t *TerraformAWSBuilder) StageDependencies() error {
+	for i := 1; i < t.Base.Environment.TeamCount; i++ {
+		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
+		os.MkdirAll(teamDir, 0755)
+		core.TouchGitKeep(teamDir)
+	}
 	return nil
 }
 
 // Render implements the Builder interface
 func (t *TerraformAWSBuilder) Render() error {
+	for i := 1; i < t.Base.Environment.TeamCount; i++ {
+		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
+		team := &core.Team{
+			TeamNumber:    i,
+			BuildID:       t.Base.Build.ID,
+			Build:         t.Base.Build,
+			EnvironmentID: t.Base.Environment.ID,
+			Environment:   t.Base.Environment,
+			Maintainer:    &t.Base.User,
+			RelBuildPath:  teamDir,
+		}
+		t.Base.Build.Teams[i] = team
+		team.ID = team.Name()
+		user := t.Base.User
+		t.Base.Team = team
+		ctx, err := templates.NewContext(
+			t.Base,
+			t.Base.Build,
+			t.Base.Competition,
+			t.Base.Competition.DNS,
+			t.Base.Environment,
+			&user,
+			team,
+		)
+		if err != nil {
+			return err
+		}
+		cfgData, err := t.Library.Execute(primaryTemplate, ctx)
+		if err != nil {
+			return buildutil.Throw(err, "template failed", &buildutil.V{
+				"team": i,
+				"dir":  teamDir,
+			})
+		}
+		cfgFile := filepath.Join(teamDir, "infra.tf")
+		err = ioutil.WriteFile(cfgFile, cfgData, 0644)
+		if err != nil {
+			return err
+		}
+		teamCfg, err := core.RenderHCLv2Object(team)
+		if err != nil {
+			return err
+		}
+		teamCfgFile := filepath.Join(teamDir, "team.laforge")
+		err = ioutil.WriteFile(teamCfgFile, teamCfg, 0644)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

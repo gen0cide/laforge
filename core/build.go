@@ -28,6 +28,7 @@ type Build struct {
 	Dir              string             `json:"-"`
 	Caller           Caller             `json:"-"`
 	LocalDBFile      *LocalFileRef      `json:"-"`
+	Teams            map[int]*Team      `json:"teams,omitempty"`
 }
 
 // MergeFromDB loads and merges the build's DB file into the current build object
@@ -141,6 +142,7 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 		Networks:         l.Environment.Networks,
 		EnvironmentCache: l.Environment,
 		RelEnvPath:       relEnvPath,
+		Teams:            map[int]*Team{},
 	}
 
 	jsonData, err := json.Marshal(b)

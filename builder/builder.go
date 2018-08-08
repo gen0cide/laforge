@@ -1,3 +1,5 @@
+// Package builder defines the types and interfaces that are used to transpile laforge states
+// into other infrastructure and automation tools.
 package builder
 
 import (

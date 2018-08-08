@@ -11,6 +11,7 @@ import (
 	gohcl2 "github.com/hashicorp/hcl2/gohcl"
 	hcl2 "github.com/hashicorp/hcl2/hcl"
 	hcl2parse "github.com/hashicorp/hcl2/hclparse"
+	"github.com/xlab/treeprint"
 )
 
 // Loader defines the Laforge configuration loader object
@@ -26,6 +27,57 @@ type Loader struct {
 
 	// CallerMap contains a reference of what files call what other files
 	CallerMap map[string]Caller
+
+	// Includes is a map of the dependency graph
+	Includes treeprint.Tree
+
+	// FileTree is used to map various parts of the call field
+	FileTree map[string]treeprint.Tree
+}
+
+// AddToTree effectively tracks the filetree as it grows from dependencies for the Loader
+func (l *Loader) AddToTree(filename, parentname string) treeprint.Tree {
+	if t, ok := l.FileTree[filename]; ok {
+		return t
+	}
+	parent, found := l.FileTree[parentname]
+	var child treeprint.Tree
+	if !found {
+		switch filepath.Base(parentname) {
+		case "team.laforge":
+			parent = l.Includes.AddMetaNode(boldc("TEAM"), boldw(parentname))
+		case "build.laforge":
+			parent = l.Includes.AddMetaNode(boldg("BUILD"), boldw(parentname))
+		case "env.laforge":
+			parent = l.Includes.AddMetaNode(boldy("ENV"), boldw(parentname))
+		case "base.laforge":
+			parent = l.Includes.AddMetaNode(boldr("BASE"), boldw(parentname))
+		case "global.laforge":
+			parent = l.Includes.AddMetaNode(boldb("GLOBAL"), boldw(parentname))
+		case ".":
+			l.Includes.SetValue(boldw("."))
+			parent = l.Includes
+		default:
+			parent = l.Includes.AddNode(filename)
+		}
+		l.FileTree[parentname] = parent
+	}
+	switch filepath.Base(filename) {
+	case "team.laforge":
+		child = parent.AddMetaBranch(boldc("TEAM"), boldw(filename))
+	case "build.laforge":
+		child = parent.AddMetaBranch(boldg("BUILD"), boldw(filename))
+	case "env.laforge":
+		child = parent.AddMetaBranch(boldy("ENV"), boldw(filename))
+	case "base.laforge":
+		child = parent.AddMetaBranch(boldr("BASE"), boldw(filename))
+	case "global.laforge":
+		child = parent.AddMetaBranch(boldb("GLOBAL"), boldw(filename))
+	default:
+		child = parent.AddNode(filename)
+	}
+	l.FileTree[filename] = child
+	return child
 }
 
 // ParseConfigFile loads a root file into Loader
@@ -39,6 +91,7 @@ func (l *Loader) ParseConfigFile(filename string) error {
 	if diags.HasErrors() {
 		return diags
 	}
+	l.AddToTree(filename, ".")
 	l.SourceFile = filename
 	l.CallerMap[filename] = NewCaller(filename)
 	return nil
@@ -50,6 +103,8 @@ func NewLoader() *Loader {
 		Parser:    hcl2parse.NewParser(),
 		ConfigMap: map[string]*Laforge{},
 		CallerMap: map[string]Caller{},
+		Includes:  treeprint.New(),
+		FileTree:  map[string]treeprint.Tree{},
 	}
 }
 
@@ -89,10 +144,12 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		}
 		for _, m := range matches {
 			if strings.HasSuffix(m, ".json") {
+				r.Loader.AddToTree(m, refRange.Filename)
 				r.Loader.CallerMap[m] = NewCaller(m)
 				_, newDiags := r.Parser.ParseJSONFile(m)
 				diags = diags.Extend(newDiags)
 			} else if strings.HasSuffix(m, ".laforge") {
+				r.Loader.AddToTree(m, refRange.Filename)
 				r.Loader.CallerMap[m] = NewCaller(m)
 				_, newDiags := r.Parser.ParseHCLFile(m)
 				diags = diags.Extend(newDiags)
@@ -111,6 +168,7 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		} else {
 			_, diags = r.Parser.ParseHCLFile(targetFile)
 		}
+		r.Loader.AddToTree(targetFile, refRange.Filename)
 		r.Loader.CallerMap[targetFile] = NewCaller(targetFile)
 		return nil, diags
 	}
@@ -137,6 +195,7 @@ func (l *Loader) Deconflict(filenames []string) (*Laforge, error) {
 		lf.Includes = append(lf.Includes, fname)
 		Logger.Infof("Config Imported From: %s", fname)
 	}
+	lf.DependencyGraph = l.Includes
 	return lf, nil
 }
 

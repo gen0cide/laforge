@@ -1,8 +1,12 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/iancoleman/strcase"
 
 	"github.com/pkg/errors"
 )
@@ -20,6 +24,7 @@ type Team struct {
 	Build            *Build             `json:"build,omitempty"`
 	Environment      *Environment       `json:"environment,omitempty"`
 	RelBuildPath     string             `json:"-"`
+	OnConflict       OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller           Caller             `json:"-"`
 }
 
@@ -56,6 +61,17 @@ type WinRMAuthConfig struct {
 	KeyFileRef    *LocalFileRef `json:"-"`
 	User          string        `hcl:"user,attr" json:"user,omitempty"`
 	Password      string        `hcl:"password,attr" json:"password,omitempty"`
+}
+
+// Name is a helper function to calculate a team unique name on the fly
+func (t *Team) Name() string {
+	labels := []string{
+		t.EnvironmentID,
+		t.BuildID,
+		t.Build.Builder,
+		fmt.Sprintf("%v", t.TeamNumber),
+	}
+	return strcase.ToSnake(strings.Join(labels, ""))
 }
 
 // IsSSH is a convenience method for checking if the provisioned host is setup for remote SSH

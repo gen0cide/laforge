@@ -1,9 +1,14 @@
+// Package core contains the entire implementation of the Laforge configuration language. It includes
+// it's own loader and dependency resolution mechanisms and is meant to be the source of truth around
+// declaration logic.
 package core
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/xlab/treeprint"
 
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
@@ -44,6 +49,7 @@ var (
 type Laforge struct {
 	Filename          string                 `json:"filename"`
 	Includes          []string               `json:"include,omitempty"`
+	DependencyGraph   treeprint.Tree         `json:"-"`
 	BaseDir           string                 `hcl:"base_dir,attr" json:"base_dir,omitempty"`
 	CurrDir           string                 `json:"current_dir,omitempty"`
 	User              User                   `hcl:"user,block" cty:"user" json:"user,omitempty"`
