@@ -120,6 +120,11 @@ func LocateBaseConfig() (string, error) {
 	return TraverseUpForFile("base.laforge", cwd)
 }
 
+// BuildDirFromEnvRoot is a convenience function to get a prebuilt filepath to the build directory for an env root.
+func BuildDirFromEnvRoot(envroot string) string {
+	return filepath.Join(envroot, "build")
+}
+
 // LoadFiles loads a configuration from configuration files passed to it
 func LoadFiles(envpath ...string) (*Laforge, error) {
 	loader := NewLoader()

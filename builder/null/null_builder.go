@@ -2,7 +2,7 @@ package null
 
 import (
 	"github.com/gen0cide/gscript/logger"
-	"github.com/gen0cide/laforge/builder/buildutil"
+	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 	"github.com/gen0cide/laforge/core"
 )
 
@@ -15,11 +15,11 @@ const (
 )
 
 var (
-	validations = buildutil.Validations{
-		buildutil.Requirement{
+	rules = validations.Validations{
+		validations.Requirement{
 			Name:       "environment maintainer not defined",
 			Resolution: "add a maintainer block to your environment configuration",
-			Check:      buildutil.FieldNotEmpty(core.Environment{}, "Maintainer"),
+			Check:      validations.FieldNotEmpty(core.Environment{}, "Maintainer"),
 		},
 	}
 )
@@ -62,8 +62,8 @@ func (b *Builder) Version() string {
 }
 
 // Validations implements the Builder interface (builder checks)
-func (b *Builder) Validations() buildutil.Validations {
-	return validations
+func (b *Builder) Validations() validations.Validations {
+	return rules
 }
 
 // SetLaforge implements the Builder interface

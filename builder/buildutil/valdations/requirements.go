@@ -1,4 +1,4 @@
-package buildutil
+package validations
 
 import (
 	"os"

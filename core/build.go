@@ -25,6 +25,7 @@ type Build struct {
 	Networks         []*IncludedNetwork `hcl:"included_network,block" json:"included_networks,omitempty"`
 	EnvironmentCache *Environment       `json:"environment_cache,omitempty"`
 	RelEnvPath       string             `json:"rel_env_path"`
+	Dir              string             `json:"-"`
 	Caller           Caller             `json:"-"`
 	LocalDBFile      *LocalFileRef      `json:"-"`
 }
@@ -91,9 +92,8 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 
 	buildDir := filepath.Join(l.EnvRoot, "build")
 	buildDefPath := filepath.Join(buildDir, "build.laforge")
-	bdbDir := filepath.Join(buildDir, "db")
+	bdbDir := filepath.Join(buildDir, "data")
 	bdbDefPath := filepath.Join(bdbDir, "build.db")
-	cacheDir := filepath.Join(buildDir, "cache")
 	teamsDir := filepath.Join(buildDir, "teams")
 
 	_, e0 := os.Stat(buildDir)
@@ -108,7 +108,7 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 		os.RemoveAll(buildDir)
 	}
 
-	dirs := []string{buildDir, bdbDir, cacheDir, teamsDir}
+	dirs := []string{buildDir, bdbDir, teamsDir}
 	for _, d := range dirs {
 		os.MkdirAll(d, 0755)
 		err = TouchGitKeep(d)
@@ -130,7 +130,8 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 
 	b := &Build{
 		ID:               bid,
-		DBFile:           "./db/build.db",
+		Dir:              buildDir,
+		DBFile:           "./data/build.db",
 		Builder:          builder,
 		TeamCount:        l.Environment.TeamCount,
 		EnvironmentID:    l.Environment.ID,
@@ -153,5 +154,6 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 	}
 
 	l.Build = b
+	l.ClearToBuild = true
 	return nil
 }

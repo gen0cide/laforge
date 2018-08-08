@@ -2,6 +2,9 @@ package builder
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/builder/buildutil"
@@ -50,13 +53,16 @@ type Builder interface {
 	Version() string
 
 	// Validations returns a list of requirements that need to be met for a builder to be successful
-	Validations() buildutil.Validations
+	Validations() validations.Validations
 
 	// Set's a Laforge base instance to work off
 	SetLaforge(*core.Laforge) error
 
 	// Check the provided base instance for any dynamic
 	// configuration and ensure build requirements are met.
+	// While it might seem redundant with Validations(), the point
+	// of CheckRequirements is to be able to provide more
+	// stateful analysis of the context instead of just true/false fields.
 	CheckRequirements() error
 
 	// Gather remote assets, upload to S3, create a unique names, etc.
@@ -110,7 +116,7 @@ func (b *BuildEngine) Do() error {
 		if !x.Check(b.Base) {
 			core.Logger.Errorf("Build Requirement Failed: %s", x.Name)
 			core.Logger.Errorf("  Resolution > %s", x.Resolution)
-			return errors.New("")
+			os.Exit(1)
 		}
 	}
 	err = b.Builder.CheckRequirements()

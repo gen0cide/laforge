@@ -71,6 +71,7 @@ type Laforge struct {
 	ValidEnv          bool                   `json:"-"`
 	ValidBase         bool                   `json:"-"`
 	ValidGlobal       bool                   `json:"-"`
+	ClearToBuild      bool                   `json:"-"`
 	TeamRoot          string                 `json:"-"`
 	BuildRoot         string                 `json:"-"`
 	EnvRoot           string                 `json:"-"`
@@ -148,6 +149,12 @@ func (l *Laforge) AssertExactContext(s StateContext) error {
 
 // GetContext returns the current state's context
 func (l *Laforge) GetContext() StateContext {
+	if l.ValidTeam {
+		return TeamContext
+	}
+	if l.ValidBuild {
+		return BuildContext
+	}
 	if l.ValidEnv {
 		return EnvContext
 	}
