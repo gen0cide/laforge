@@ -52,15 +52,15 @@ No need to go into a flame war over this tool or that. We frankly like them. Our
 
 ### How does it scale?
 
-TBD
+We have used the various iterations of LaForge to generate competition environments with hundreds of total hosts for almost 30 teams.  In short, it can scale as large as your imagination (and budget / resources) allows.  Furthermore, we have used this tool across a team of over 15 volunteer developers each working on their own components and have used that feedback in the most recent versions.  
 
 ### What about performance?
 
-TBD
+Depending on the complexity of your environment, building LaForge output may take seconds or minutes.  In the end you will spend more time spinning up systems in the environment of your choice with Terraform or Vagrant than you will generating the relevant configurations for either of them.  
 
 ### Is it production-ready?
 
-TBD
+If by production, you mean developing live competition environments, LaForge has been used for over three years in a "production" capacity.  If you mean live systems at your company or organization, it will probably work well, but use at your own risk.
 
 ## Installation
 
@@ -69,12 +69,23 @@ $ go get github.com/gen0cide/laforge/cmd/laforge
 ```
 
 ## Quick Start
-
-Talk about `laforge configure`, `laforge init` and how Context works.
+```
+laforge configure
+laforge init
+laforge example <model>
+```
 
 ## Object Models
 
-Show a reference for all the various object formats here.
+- Network
+- Script
+- Environment
+- AMI
+- DNS Record
+- Identity
+- Command
+- Remote File
+- Host
 
 ## Roadmap
 
@@ -151,4 +162,4 @@ mentors, contributors, and great friends of Laforge
 ## Acknowledgements
 
 - [National CPTC](https://nationalcptc.org) and the CPTC Advisory Board who's been so patient with me as I worked through this.
-- [RIT](https://www.rit.edu) For giving us a place to expiriment and advance both the technology as well as the workforce of our industry.
+- [Rochester Institute of Technology](https://www.rit.edu) For giving us a place to expiriment and advance both the technology as well as the workforce of our industry.
