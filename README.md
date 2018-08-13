@@ -138,7 +138,8 @@ laforge example <model>
   - [ ] Laforge Server & Gateway
   - [ ] Conditional Logic in Syntax
   - [ ] Remote Includes
-  - [ ]
+  
+
 
 ## Hall of Fame
 
