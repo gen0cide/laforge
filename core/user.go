@@ -2,7 +2,9 @@ package core
 
 import (
 	"errors"
+	"net/mail"
 	"os/user"
+	"reflect"
 
 	"github.com/google/uuid"
 
@@ -42,7 +44,11 @@ func UserWizard() error {
 			Prompt: &survey.Input{
 				Message: "Enter your email address:",
 			},
-			Validate: survey.Required,
+			Validate: func(val interface{}) error {
+				value := reflect.ValueOf(val)
+				_, err := mail.ParseAddress(value.String())
+				return err
+			},
 		},
 	}
 	err = survey.Ask(qs, &user)
