@@ -20,6 +20,7 @@ type DNSRecord struct {
 	Name       string            `hcl:"name,attr" json:"name,omitempty"`
 	Value      string            `hcl:"value,attr" json:"value,omitempty"`
 	Type       string            `hcl:"type,attr" json:"type,omitempty"`
+	Zone       string            `hcl:"zone,attr" json:"zone,omitempty"`
 	Vars       map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags       map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
 	Disabled   bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
@@ -50,6 +51,11 @@ func (r *DNSRecord) SetCaller(c Caller) {
 // SetOnConflict implements the Mergeable interface
 func (r *DNSRecord) SetOnConflict(o OnConflict) {
 	r.OnConflict = o
+}
+
+// Kind implements the Provisioner interface
+func (r *DNSRecord) Kind() string {
+	return "dns_record"
 }
 
 // Swap implements the Mergeable interface

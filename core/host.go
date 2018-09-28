@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -17,6 +18,7 @@ type Host struct {
 	InstanceSize     string                 `hcl:"instance_size,attr" json:"instance_size,omitempty"`
 	Disk             Disk                   `hcl:"disk,block" json:"disk,omitempty"`
 	ProvisionSteps   []string               `hcl:"provision_steps,attr" json:"provision_steps,omitempty"`
+	Provisioners     []Provisioner          `json:"-"`
 	ExposedTCPPorts  []string               `hcl:"exposed_tcp_ports,attr" json:"exposed_tcp_ports,omitempty"`
 	ExposedUDPPorts  []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
 	OverridePassword string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
@@ -81,6 +83,24 @@ func (h *Host) Swap(m Mergeable) error {
 	return nil
 }
 
+// IsWindows is a template helper function to determine if the underlying operating system is windows
+func (h *Host) IsWindows() bool {
+	switch strings.ToLower(h.OS) {
+	case "w2k3":
+		return true
+	case "w2k8":
+		return true
+	case "w2k12":
+		return true
+	case "w2k16":
+		return true
+	case "windows":
+		return true
+	default:
+		return false
+	}
+}
+
 // Index attempts to index all children dependencies of this type
 func (h *Host) Index(base *Laforge) error {
 	h.Scripts = map[string]*Script{}
@@ -88,6 +108,7 @@ func (h *Host) Index(base *Laforge) error {
 	h.Files = map[string]*RemoteFile{}
 	h.DNSRecords = map[string]*DNSRecord{}
 	iprov := map[string]string{}
+	h.Provisioners = []Provisioner{}
 
 	for _, s := range h.ProvisionSteps {
 		Logger.Debugf("indexing provision step %s for host %s", s, h.ID)
@@ -100,7 +121,7 @@ func (h *Host) Index(base *Laforge) error {
 		}
 		if status == "included" {
 			h.Scripts[name] = script
-			iprov[name] = "resolved"
+			iprov[name] = "script"
 			Logger.Debugf("Resolved %T dependency %s for %s", script, script.ID, h.ID)
 		}
 	}
@@ -111,7 +132,7 @@ func (h *Host) Index(base *Laforge) error {
 		}
 		if status == "included" {
 			h.Commands[name] = command
-			iprov[name] = "resolved"
+			iprov[name] = "command"
 			Logger.Debugf("Resolved %T dependency %s for %s", command, command.ID, h.ID)
 		}
 	}
@@ -122,7 +143,7 @@ func (h *Host) Index(base *Laforge) error {
 		}
 		if status == "included" {
 			h.Files[name] = file
-			iprov[name] = "resolved"
+			iprov[name] = "remote_file"
 			Logger.Debugf("Resolved %T dependency %s for %s", file, file.ID, h.ID)
 		}
 	}
@@ -133,13 +154,27 @@ func (h *Host) Index(base *Laforge) error {
 		}
 		if status == "included" {
 			h.DNSRecords[name] = record
-			iprov[name] = "resolved"
+			iprov[name] = "dns_record"
 			Logger.Debugf("Resolved %T dependency %s for %s", record, record.ID, h.ID)
 		}
 	}
 	for x, status := range iprov {
 		if status == "included" {
 			return fmt.Errorf("unmet provision_step dependency %s for host %s\n%s", x, h.ID, h.Caller.Error())
+		}
+	}
+	for _, s := range h.ProvisionSteps {
+		switch iprov[s] {
+		case "script":
+			h.Provisioners = append(h.Provisioners, h.Scripts[s])
+		case "command":
+			h.Provisioners = append(h.Provisioners, h.Commands[s])
+		case "remote_file":
+			h.Provisioners = append(h.Provisioners, h.Files[s])
+		case "dns_record":
+			h.Provisioners = append(h.Provisioners, h.DNSRecords[s])
+		default:
+			return fmt.Errorf("unmet provision_step dependency %s for host %s\n%s", s, h.ID, h.Caller.Error())
 		}
 	}
 	return nil

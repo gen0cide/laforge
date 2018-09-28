@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gen0cide/laforge/builder/tfibm"
+
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/fatih/color"
@@ -20,6 +22,7 @@ var (
 	// ValidBuilders retains a map of ID to empty Builder objects.
 	ValidBuilders = map[string]Builder{
 		"tfaws": tfaws.New(),
+		"tfibm": tfibm.New(),
 		"null":  null.New(),
 	}
 
@@ -131,14 +134,14 @@ func (b *BuildEngine) Do() error {
 		return buildutil.Throw(err, "failed preparing assets", nil)
 	}
 	core.Logger.Infof("Resolved and cached required assets")
-	err = b.Builder.GenerateScripts()
-	if err != nil {
-		return buildutil.Throw(err, "failed generating scripts", nil)
-	}
-	core.Logger.Infof("Generated scripts and templates")
 	err = b.Builder.StageDependencies()
 	if err != nil {
 		return buildutil.Throw(err, "failed staging dependencies", nil)
+	}
+	core.Logger.Infof("Generated scripts and templates")
+	err = b.Builder.GenerateScripts()
+	if err != nil {
+		return buildutil.Throw(err, "failed generating scripts", nil)
 	}
 	core.Logger.Infof("Staged dependencies for rendering")
 	err = b.Builder.Render()

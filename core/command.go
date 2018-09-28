@@ -1,6 +1,8 @@
 package core
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 )
 
@@ -45,6 +47,20 @@ func (c *Command) SetCaller(ca Caller) {
 // SetOnConflict implements the Mergeable interface
 func (c *Command) SetOnConflict(o OnConflict) {
 	c.OnConflict = o
+}
+
+// Kind implements the Provisioner interface
+func (c *Command) Kind() string {
+	return "command"
+}
+
+// CommandString is a template helper function to embed commands into the output
+func (c *Command) CommandString() string {
+	cmd := []string{c.Program}
+	for _, x := range c.Args {
+		cmd = append(cmd, x)
+	}
+	return strings.Join(cmd, " ")
 }
 
 // Swap implements the Mergeable interface

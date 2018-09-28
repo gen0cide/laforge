@@ -2,9 +2,11 @@ package templates
 
 import (
 	"bytes"
+	"strconv"
 	"sync"
 	"text/template"
 
+	"github.com/bradfitz/iter"
 	"github.com/pkg/errors"
 )
 
@@ -37,6 +39,11 @@ func (l *Library) AddBook(name string, data []byte) (*Book, error) {
 	}
 
 	t := template.New(name)
+	t.Funcs(template.FuncMap{
+		"N":          iter.N,
+		"UnsafeAtoi": UnsafeStringAsInt,
+		"Decr":       Decr,
+	})
 	newT, err := t.Parse(string(data))
 	if err != nil {
 		return nil, err
@@ -47,6 +54,7 @@ func (l *Library) AddBook(name string, data []byte) (*Book, error) {
 		Original: data,
 		Template: newT,
 	}
+
 	l.Books[name] = b
 	return b, nil
 }
@@ -64,4 +72,52 @@ func (l *Library) Execute(name string, context *Context) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := book.Template.Execute(buf, context)
 	return buf.Bytes(), err
+}
+
+// ExecuteGroup uses the denoted book with all secondary books chained and renders a template based off of the passed context
+func (l *Library) ExecuteGroup(baseID string, appendIDs []string, context *Context) ([]byte, error) {
+	l.Lock()
+	defer l.Unlock()
+
+	book, found := l.Books[baseID]
+	if !found {
+		return []byte{}, errors.Errorf("could not locate template book named %s", baseID)
+	}
+	appendMap := map[string]bool{}
+	for _, x := range appendIDs {
+		if x == baseID {
+			continue
+		}
+		appendMap[x] = true
+	}
+	tmpl := book.Template
+	var err error
+	for bn, bk := range l.Books {
+		_, ok := appendMap[bn]
+		if !ok {
+			continue
+		}
+		tmpl, err = tmpl.Parse(string(bk.Original))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, context)
+	return buf.Bytes(), err
+}
+
+// UnsafeStringAsInt is a template helper function that will return -1 if it cannot convert the string to an integer.
+func UnsafeStringAsInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return -1
+	}
+	return i
+}
+
+// Decr is a template helper function to non-destructively decrement an integer
+func Decr(i int) int {
+	return i - 1
 }

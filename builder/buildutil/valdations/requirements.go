@@ -590,7 +590,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 	switch obj.(type) {
 	case core.Host:
 		return func(base *core.Laforge) bool {
-			for n, o := range base.Hosts {
+			for n, o := range base.Environment.IncludedHosts {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}

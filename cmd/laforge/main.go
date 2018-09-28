@@ -25,7 +25,7 @@ func init() {
 	cli.VersionFlag = cli.BoolFlag{Name: "version"}
 
 	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Fprintf(c.App.Writer, "%s", laforge.Version)
+		fmt.Fprintf(c.App.Writer, "%s\n", laforge.Version)
 	}
 }
 

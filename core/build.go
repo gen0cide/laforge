@@ -31,6 +31,16 @@ type Build struct {
 	Teams            map[int]*Team      `json:"teams,omitempty"`
 }
 
+// AssetForTeam is a template helper function that returns the location of team specific assets
+func (b *Build) AssetForTeam(teamID int, assetName string) string {
+	return filepath.Join(b.Dir, fmt.Sprintf("%d", teamID), "assets", assetName)
+}
+
+// RelAssetForTeam is a template helper function that returns the relative location of team specific assets
+func (b *Build) RelAssetForTeam(teamID int, assetName string) string {
+	return filepath.Join(".", "assets", assetName)
+}
+
 // MergeFromDB loads and merges the build's DB file into the current build object
 func (b *Build) MergeFromDB() error {
 	if b.LocalDBFile == nil {

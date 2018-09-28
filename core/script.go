@@ -3,6 +3,7 @@ package core
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -52,6 +53,11 @@ func (s *Script) SetOnConflict(o OnConflict) {
 	s.OnConflict = o
 }
 
+// Kind implements the Provisioner interface
+func (s *Script) Kind() string {
+	return "script"
+}
+
 // Swap implements the Mergeable interface
 func (s *Script) Swap(m Mergeable) error {
 	rawVal, ok := m.(*Script)
@@ -60,6 +66,23 @@ func (s *Script) Swap(m Mergeable) error {
 	}
 	*s = *rawVal
 	return nil
+}
+
+// ArgString is a template helper function to embed the arg string into the output
+func (s *Script) ArgString() string {
+	if len(s.Args) == 0 {
+		return ""
+	}
+	ret := []string{" "}
+	for _, x := range s.Args {
+		ret = append(ret, x)
+	}
+	return strings.Join(ret, " ")
+}
+
+// Base is a template helper function to return the base filename of a source script
+func (s *Script) Base() string {
+	return filepath.Base(s.Source)
 }
 
 // ResolveSource attempts to locate the referenced source file with a laforge base configuration

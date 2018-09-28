@@ -33,13 +33,50 @@ type Context struct {
 	Remote      *core.Remote
 	AMI         *core.AMI
 	Laforge     *core.Laforge
+	Dict        Dict
 }
+
+// Dict is a temporary dictionary to be used for context
+type Dict map[string]string
 
 // NewContext takes a varadic list of objects to be embedded into the returned template context
 func NewContext(i ...interface{}) (*Context, error) {
-	c := &Context{}
+	c := &Context{Dict: map[string]string{}}
 	err := c.Attach(i...)
 	return c, err
+}
+
+// Clone duplicates the current contexts including pointer references to the dependent objects. Note it does not clone the Dict - that remains locally resident.
+func (c *Context) Clone() *Context {
+	newC := &Context{Dict: map[string]string{}}
+	newC.Build = c.Build
+	newC.Competition = c.Competition
+	newC.Command = c.Command
+	newC.DNS = c.DNS
+	newC.DNSRecord = c.DNSRecord
+	newC.Environment = c.Environment
+	newC.Host = c.Host
+	newC.Identity = c.Identity
+	newC.Network = c.Network
+	newC.RemoteFile = c.RemoteFile
+	newC.Script = c.Script
+	newC.Team = c.Team
+	newC.User = c.User
+	newC.Remote = c.Remote
+	newC.AMI = c.AMI
+	newC.Laforge = c.Laforge
+	return newC
+}
+
+// Set attachs the val string to the key in the Context dictionary and returns the val for pipelining.
+func (c *Context) Set(key, val string) string {
+	c.Dict[key] = val
+	return val
+}
+
+// Get returns a temp value set in the context's dictionary.
+func (c *Context) Get(key string) string {
+	return c.Dict[key]
 }
 
 // Attach wires up all the core Laforge types into a cohesive Context bundle for template rendering

@@ -46,6 +46,11 @@ func (r *RemoteFile) SetOnConflict(o OnConflict) {
 	r.OnConflict = o
 }
 
+// Kind implements the Provisioner interface
+func (r *RemoteFile) Kind() string {
+	return "remote_file"
+}
+
 // Swap implements the Mergeable interface
 func (r *RemoteFile) Swap(m Mergeable) error {
 	rawVal, ok := m.(*RemoteFile)
