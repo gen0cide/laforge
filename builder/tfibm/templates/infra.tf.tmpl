@@ -260,8 +260,8 @@ resource "ibm_security_group_rule" "int_{{ $net.ID }}_1" {
     {{ range $id, $host := $hosts }}
       {{ $resource_name := printf "t%d-%s-%s" $.Team.TeamNumber $net $host.Hostname }}
       resource "ibm_compute_vm_instance" "{{ $resource_name }}" {
-        hostname = "{{ $resource_name }}"
-        domain = "vdi.nationalcptc.org"
+        hostname = "{{ $host.Hostname }}"
+        domain = "{{ $net }}.t{{ $.Team.TeamNumber }}.nationalcptc.org"
         os_reference_code = "${var.vmos["{{ $host.OS }}"]}"
         datacenter = "{{ index $.Build.Config "datacenter" }}"
         network_speed = 1000
