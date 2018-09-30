@@ -272,16 +272,20 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
       {{ end }}
     {{ end }}
 
+    {{ if eq $host.ID "root-dns" }}
+      {{ $last_step_num := Decr (len $host.Provisioners) }}
+      resource "null_resource" "dns_provisioned" {
+        depends_on = [
+          "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
+        ]
+      }
+    {{ end }}
     {{ if eq (index $host.Tags "domain-controller") "true" }}
       {{ $last_step_num := Decr (len $host.Provisioners) }}
       resource "null_resource" "ad_provisioned" {
         depends_on = [
           "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
         ]
-
-        provisioner "local-exec" {
-          command = "say 'Root Domain Controller successfully provisioned!' || true"
-        }
       }
     {{ end }}
   {{ end }}
