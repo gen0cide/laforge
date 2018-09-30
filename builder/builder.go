@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gen0cide/laforge/builder/tfgcp"
+
 	"github.com/gen0cide/laforge/builder/tfibm"
 
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
@@ -21,6 +23,7 @@ import (
 var (
 	// ValidBuilders retains a map of ID to empty Builder objects.
 	ValidBuilders = map[string]Builder{
+		"tfgcp": tfgcp.New(),
 		"tfaws": tfaws.New(),
 		"tfibm": tfibm.New(),
 		"null":  null.New(),

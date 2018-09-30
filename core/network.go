@@ -1,6 +1,8 @@
 package core
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 )
 
@@ -55,4 +57,17 @@ func (n *Network) Swap(m Mergeable) error {
 	}
 	*n = *rawVal
 	return nil
+}
+
+// Octet is a template helper function to get a network's octet at a specified offset
+func (n *Network) Octet() string {
+	if n.CIDR == "" {
+		return "NO_CIDR"
+	}
+	octets := strings.Split(n.CIDR, ".")
+	if len(octets) <= 3 {
+		return "INVALID_CIDR"
+	}
+
+	return octets[2]
 }

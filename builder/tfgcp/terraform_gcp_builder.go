@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/gen0cide/laforge/builder/tfgcp/static"
+	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/builder/buildutil/templates"
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
@@ -41,9 +42,9 @@ var (
 			Check:      validations.FieldNotEmpty(core.Competition{}, "DNS"),
 		},
 		validations.Requirement{
-			Name:       "DNS type not listed as route53",
-			Resolution: "Make sure your dns block declaration has route53 as it's type.",
-			Check:      validations.FieldEquals(core.DNS{}, "Type", "route53"),
+			Name:       "DNS type not listed as bind",
+			Resolution: "Make sure your dns block declaration has bind as it's type.",
+			Check:      validations.FieldEquals(core.DNS{}, "Type", "bind"),
 		},
 		validations.Requirement{
 			Name:       "DNS Root Domain not defined",
@@ -56,14 +57,39 @@ var (
 			Check:      validations.ExistsInPath("terraform"),
 		},
 		validations.Requirement{
+			Name:       "etcd server password not defined",
+			Resolution: "define a etcd_password attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "etcd_password"),
+		},
+		validations.Requirement{
+			Name:       "etcd username not defined",
+			Resolution: "define an etcd_username attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "etcd_username"),
+		},
+		validations.Requirement{
+			Name:       "etcd master server not defined",
+			Resolution: "define a etcd_master (host:port) attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "etcd_master"),
+		},
+		validations.Requirement{
+			Name:       "etcd slave server not defined",
+			Resolution: "define a etcd_slave (host:port) attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "etcd_slave"),
+		},
+		validations.Requirement{
 			Name:       "vpc CIDR not defined",
 			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
 		},
 		validations.Requirement{
-			Name:       "vdi Network CIDR not defined",
-			Resolution: "define a vdi_network_cidr value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "vdi_network_cidr"),
+			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
+			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
+		},
+		validations.Requirement{
+			Name:       "GCP Project not defined",
+			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
 		},
 		validations.Requirement{
 			Name:       "no teams specified",
@@ -76,19 +102,14 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
 		},
 		validations.Requirement{
-			Name:       "AWS Access Key not defined",
-			Resolution: "define a aws_access_key value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_access_key"),
+			Name:       "GCP Region not defined",
+			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
 		},
 		validations.Requirement{
-			Name:       "AWS Secret Key not defined",
-			Resolution: "define a aws_secret_key value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_secret_key"),
-		},
-		validations.Requirement{
-			Name:       "AWS Region not defined",
-			Resolution: "define a aws_region value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_region"),
+			Name:       "GCP Zone not defined",
+			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
 		},
 		validations.Requirement{
 			Name:       "No networks have been included",
@@ -130,27 +151,22 @@ var (
 			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
 			Check:      validations.HasVarDefined(core.Host{}, "user_data_script_id"),
 		},
-		validations.Requirement{
-			Name:       "No AMI defined for host",
-			Resolution: "Ensure that every host declaration has an accompanied ami_id var set",
-			Check:      validations.HasVarDefined(core.Host{}, "ami_id"),
-		},
-		validations.Requirement{
-			Name:       "IP needs to be overridden",
-			Resolution: "Ensure that every host declaration has an accompanied ip_override var set",
-			Check:      validations.HasVarDefined(core.Host{}, "ip_override"),
-		},
 	}
 
-	primaryTemplate = "demo_infra.tf.tmpl"
 	templatesToLoad = []string{
-		primaryTemplate,
+		"infra.tf.tmpl",
+		"command.tf.tmpl",
+		"script.tf.tmpl",
+		"remote_file.tf.tmpl",
+		"dns_record.tf.tmpl",
 	}
+
+	primaryTemplate = "infra.tf.tmpl"
 )
 
-// TerraformAWSBuilder implements a laforge builder that packages an environment into
-// a terraform configuration targeting AWS with each team isolated into their own VPC.
-type TerraformAWSBuilder struct {
+// TerraformGCPBuilder implements a laforge builder that packages an environment into
+// a terraform configuration targeting GCP with each team isolated into their own VPC.
+type TerraformGCPBuilder struct {
 	sync.RWMutex
 
 	// Required for the Builder interface
@@ -161,7 +177,7 @@ type TerraformAWSBuilder struct {
 }
 
 // Get retrieves an element from the embedded KV store
-func (t *TerraformAWSBuilder) Get(key string) string {
+func (t *TerraformGCPBuilder) Get(key string) string {
 	t.Lock()
 	defer t.Unlock()
 	res, ok := t.Base.Build.Config[key]
@@ -177,52 +193,52 @@ func (t *TerraformAWSBuilder) Get(key string) string {
 }
 
 // Set assigns an element to the embedded KV store
-func (t *TerraformAWSBuilder) Set(key string, val interface{}) {
+func (t *TerraformGCPBuilder) Set(key string, val interface{}) {
 	t.Lock()
 	defer t.Unlock()
 	t.Base.Build.Config[key] = fmt.Sprintf("%v", val)
 }
 
-// New creates an empty TerraformAWSBuilder
-func New() *TerraformAWSBuilder {
+// New creates an empty TerraformGCPBuilder
+func New() *TerraformGCPBuilder {
 	lib := templates.NewLibrary()
-	return &TerraformAWSBuilder{
+	return &TerraformGCPBuilder{
 		Library: lib,
 	}
 }
 
 // ID implements the Builder interface (returns the ID of the builder - usually the go package name)
-func (t *TerraformAWSBuilder) ID() string {
+func (t *TerraformGCPBuilder) ID() string {
 	return ID
 }
 
 // Name implements the Builder interface (returns the name of the builder - usually titleized version of the type)
-func (t *TerraformAWSBuilder) Name() string {
+func (t *TerraformGCPBuilder) Name() string {
 	return Name
 }
 
 // Description implements the Builder interface (returns the builder's description)
-func (t *TerraformAWSBuilder) Description() string {
+func (t *TerraformGCPBuilder) Description() string {
 	return Description
 }
 
 // Author implements the Builder interface (author's name and contact info)
-func (t *TerraformAWSBuilder) Author() string {
+func (t *TerraformGCPBuilder) Author() string {
 	return Author
 }
 
 // Version implements the Builder interface (builder version)
-func (t *TerraformAWSBuilder) Version() string {
+func (t *TerraformGCPBuilder) Version() string {
 	return Version
 }
 
 // Validations implements the Builder interface (builder checks)
-func (t *TerraformAWSBuilder) Validations() validations.Validations {
+func (t *TerraformGCPBuilder) Validations() validations.Validations {
 	return rules
 }
 
 // SetLaforge implements the Builder interface
-func (t *TerraformAWSBuilder) SetLaforge(base *core.Laforge) error {
+func (t *TerraformGCPBuilder) SetLaforge(base *core.Laforge) error {
 	t.Base = base
 	if !base.ClearToBuild {
 		return buildutil.Throw(errors.New("context is not cleared to build"), "Laforge has encountered an error and cannot continue to build. This is likely a bug in LaForge.", nil)
@@ -241,12 +257,12 @@ func (t *TerraformAWSBuilder) SetLaforge(base *core.Laforge) error {
 }
 
 // CheckRequirements implements the Builder interface
-func (t *TerraformAWSBuilder) CheckRequirements() error {
+func (t *TerraformGCPBuilder) CheckRequirements() error {
 	return nil
 }
 
 // PrepareAssets implements the Builder interface
-func (t *TerraformAWSBuilder) PrepareAssets() error {
+func (t *TerraformGCPBuilder) PrepareAssets() error {
 	privkey, pubkey, err := buildutil.GenerateSSHKeyPair(2048)
 	if err != nil {
 		return buildutil.Throw(err, "Could not generate a 2048-bit RSA SSH key.", nil)
@@ -263,6 +279,8 @@ func (t *TerraformAWSBuilder) PrepareAssets() error {
 	}
 	t.Set("ssh_public_key_file", pathToPubkey)
 	t.Set("ssh_private_key_file", pathToPrivkey)
+	t.Set("rel_ssh_public_key_file", "../../data/ssh.pem.pub")
+	t.Set("rel_ssh_private_key_file", "../../data/ssh.pem")
 	t.Set("ssh_public_key", pubkey)
 	t.Set("ssh_private_key", privkey)
 
@@ -287,22 +305,127 @@ func (t *TerraformAWSBuilder) PrepareAssets() error {
 }
 
 // GenerateScripts implements the Builder interface
-func (t *TerraformAWSBuilder) GenerateScripts() error {
-	return nil
+func (t *TerraformGCPBuilder) GenerateScripts() error {
+	wg := new(sync.WaitGroup)
+	errChan := make(chan error, 1)
+	finChan := make(chan bool, 1)
+	user := t.Base.User
+	ctx, err := templates.NewContext(
+		t.Base,
+		t.Base.Build,
+		t.Base.Competition,
+		t.Base.Competition.DNS,
+		t.Base.Environment,
+		&user,
+	)
+	if err != nil {
+		return err
+	}
+	for tid, teamObj := range t.Base.Build.Teams {
+		wg.Add(1)
+		go func(teamNum int, team *core.Team) {
+			defer wg.Done()
+			for netName, hosts := range t.Base.Environment.HostByNetwork {
+				network := t.Base.Environment.IncludedNetworks[netName]
+				for _, host := range hosts {
+					for sid, script := range host.Scripts {
+						wg.Add(1)
+						go func(scriptID string, scriptObj *core.Script, hostObj *core.Host) {
+							defer wg.Done()
+							scriptCtx := ctx.Clone()
+							err := scriptCtx.Attach(team, network, hostObj, scriptObj)
+							if err != nil {
+								errChan <- err
+								return
+							}
+							filename := fmt.Sprintf("%s_%s", hostObj.Hostname, filepath.Base(scriptObj.Source))
+							assetDir := filepath.Join(team.RelBuildPath, "assets")
+							assetPath := filepath.Join(assetDir, filename)
+							fileData, err := t.Library.Execute(fmt.Sprintf("script_%s", scriptID), scriptCtx)
+							if err != nil {
+								errChan <- err
+								return
+							}
+							err = ioutil.WriteFile(assetPath, fileData, 0644)
+							if err != nil {
+								errChan <- err
+								return
+							}
+							return
+						}(sid, script, host)
+					}
+				}
+			}
+
+		}(tid, teamObj)
+	}
+
+	go func() {
+		wg.Wait()
+		close(finChan)
+	}()
+
+	select {
+	case <-finChan:
+		return nil
+	case err := <-errChan:
+		return err
+	}
 }
 
 // StageDependencies implements the Builder interface
-func (t *TerraformAWSBuilder) StageDependencies() error {
+func (t *TerraformGCPBuilder) StageDependencies() error {
 	for i := 0; i < t.Base.Environment.TeamCount; i++ {
 		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
-		os.MkdirAll(teamDir, 0755)
-		core.TouchGitKeep(teamDir)
+		team := &core.Team{
+			TeamNumber:    i,
+			BuildID:       t.Base.Build.ID,
+			Build:         t.Base.Build,
+			EnvironmentID: t.Base.Environment.ID,
+			Environment:   t.Base.Environment,
+			Maintainer:    &t.Base.User,
+			RelBuildPath:  teamDir,
+		}
+		t.Base.Build.Teams[i] = team
+		assetDir := filepath.Join(teamDir, "assets")
+		os.MkdirAll(assetDir, 0755)
+		core.TouchGitKeep(assetDir)
+	}
+
+	for _, host := range t.Base.Environment.IncludedHosts {
+		for sid, script := range host.Scripts {
+			if _, ok := t.Library.Books[sid]; ok {
+				continue
+			}
+			if script.Source == "" {
+				continue
+			}
+			for _, callfile := range script.Caller {
+				pr, ok := t.Base.PathRegistry.DB[callfile]
+				if !ok {
+					continue
+				}
+				lfr, ok := pr.Mapping[script.Source]
+				if !ok {
+					continue
+				}
+				data, err := ioutil.ReadFile(lfr.AbsPath)
+				if err != nil {
+					return err
+				}
+				_, err = t.Library.AddBook(fmt.Sprintf("script_%s", sid), data)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
 	}
 	return nil
 }
 
 // Render implements the Builder interface
-func (t *TerraformAWSBuilder) Render() error {
+func (t *TerraformGCPBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
 	finChan := make(chan bool, 1)
@@ -310,20 +433,16 @@ func (t *TerraformAWSBuilder) Render() error {
 		wg.Add(1)
 		go func(teamid int) {
 			defer wg.Done()
-			teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", teamid))
-			team := &core.Team{
-				TeamNumber:    teamid,
-				BuildID:       t.Base.Build.ID,
-				Build:         t.Base.Build,
-				EnvironmentID: t.Base.Environment.ID,
-				Environment:   t.Base.Environment,
-				Maintainer:    &t.Base.User,
-				RelBuildPath:  teamDir,
+			t.Lock()
+			team, ok := t.Base.Build.Teams[teamid]
+			t.Unlock()
+			if !ok {
+				errChan <- fmt.Errorf("team number %d not found in team index", teamid)
+				return
 			}
-			// t.Base.Build.Teams[teamid] = team
+			teamDir := team.RelBuildPath
 			team.ID = team.Name()
 			user := t.Base.User
-			t.Base.Team = team
 			ctx, err := templates.NewContext(
 				t.Base,
 				t.Base.Build,
@@ -337,7 +456,7 @@ func (t *TerraformAWSBuilder) Render() error {
 				errChan <- err
 				return
 			}
-			cfgData, err := t.Library.Execute(primaryTemplate, ctx)
+			cfgData, err := t.Library.ExecuteGroup(primaryTemplate, templatesToLoad, ctx)
 			if err != nil {
 				errChan <- buildutil.Throw(err, "template failed", &buildutil.V{
 					"team": teamid,
@@ -345,8 +464,14 @@ func (t *TerraformAWSBuilder) Render() error {
 				})
 				return
 			}
+			hclPretty, err := printer.Format(cfgData)
 			cfgFile := filepath.Join(teamDir, "infra.tf")
-			err = ioutil.WriteFile(cfgFile, cfgData, 0644)
+			if err != nil {
+				ioutil.WriteFile(cfgFile, cfgData, 0644)
+				errChan <- err
+				return
+			}
+			err = ioutil.WriteFile(cfgFile, hclPretty, 0644)
 			if err != nil {
 				errChan <- err
 				return
