@@ -135,6 +135,7 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 	bid := fmt.Sprintf("%s_%s", l.Environment.ID, builder)
 
 	relEnvPath, err := filepath.Rel(buildDir, filepath.Join(l.EnvRoot, "env.laforge"))
+
 	if err != nil {
 		return errors.Wrapf(errors.WithStack(err), "could not get relative path of build directory %s to env root %s", buildDir, l.EnvRoot)
 	}

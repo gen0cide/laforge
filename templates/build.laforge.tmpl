@@ -10,7 +10,7 @@
 //
 
 include {
-  path = "{{ $.RelEnvPath }}"
+  path = "{{ $.RelEnvPath | html }}"
 }
 
 build "{{ $.ID }}" {

@@ -96,7 +96,7 @@ func New(base *core.Laforge, overwrite bool) (*BuildEngine, error) {
 
 	setup := core.InitializeBuildDirectory(base, overwrite)
 	if setup != nil {
-		return nil, buildutil.Throw(err, "Cannot initialize build directory", nil)
+		return nil, buildutil.Throw(setup, "Cannot initialize build directory", nil)
 	}
 
 	bldr, found := ValidBuilders[base.Environment.Builder]
