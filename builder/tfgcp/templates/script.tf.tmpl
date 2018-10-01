@@ -45,7 +45,6 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
       inline = [
         "powershell -NoProfile -ExecutionPolicy Bypass {{ $dstfile }}",
-        "del {{ $dstfile }}",
       ]
     {{ else }}
       {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}
@@ -61,6 +60,36 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       inline = [
         "chmod +x {{ $dstfile }}",
         "{{ $dstfile }}{{ .Script.ArgString }}",
+      ]
+    {{ end }}
+  }
+
+  provisioner "remote-exec" {
+    {{ if .Host.IsWindows }}
+      {{ $dstfile := printf "C:/laforge_script_%s.ps1" (.Get "step_number") }}
+      connection {
+        host     = "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.access_config.0.assigned_nat_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "{{ .Competition.RootPassword }}"
+      }
+
+      inline = [
+        "del {{ $dstfile }}",
+      ]
+    {{ else }}
+      {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}
+      connection {
+        agent       = "false"
+        host        = "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.access_config.0.assigned_nat_ip}"
+        type        = "ssh"
+        user        = "root"
+        timeout     = "60m"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
+      }
+
+      inline = [
         "rm -f {{ $dstfile }}",
       ]
     {{ end }}
