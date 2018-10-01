@@ -88,13 +88,13 @@ type Builder interface {
 }
 
 // New attempts to create a new BuildEngine based on the laforge state parameters
-func New(base *core.Laforge, overwrite bool) (*BuildEngine, error) {
+func New(base *core.Laforge, overwrite, update bool) (*BuildEngine, error) {
 	err := base.AssertMinContext(core.EnvContext)
 	if err != nil {
 		return nil, buildutil.Throw(err, "Cannot perform a build without being in an EnvContext.", nil)
 	}
 
-	setup := core.InitializeBuildDirectory(base, overwrite)
+	setup := core.InitializeBuildDirectory(base, overwrite, update)
 	if setup != nil {
 		return nil, buildutil.Throw(setup, "Cannot initialize build directory", nil)
 	}

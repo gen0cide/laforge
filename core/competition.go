@@ -50,3 +50,16 @@ func (c *Competition) Swap(m Mergeable) error {
 	*c = *rawVal
 	return nil
 }
+
+// PasswordForHost is a template helper function to allow a overridden password to be retrieved
+func (c *Competition) PasswordForHost(h *Host) string {
+	if h == nil {
+		return c.RootPassword
+	}
+
+	if h.OverridePassword == "" {
+		return c.RootPassword
+	}
+
+	return h.OverridePassword
+}

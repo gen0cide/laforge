@@ -92,6 +92,11 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
 		},
 		validations.Requirement{
+			Name:       "Root DNS Server not defined",
+			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
+			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
+		},
+		validations.Requirement{
 			Name:       "no teams specified",
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
@@ -263,20 +268,36 @@ func (t *TerraformGCPBuilder) CheckRequirements() error {
 
 // PrepareAssets implements the Builder interface
 func (t *TerraformGCPBuilder) PrepareAssets() error {
-	privkey, pubkey, err := buildutil.GenerateSSHKeyPair(2048)
-	if err != nil {
-		return buildutil.Throw(err, "Could not generate a 2048-bit RSA SSH key.", nil)
-	}
+	var privkey, pubkey string
 	pathToPubkey := filepath.Join(t.Base.Build.Dir, "data", "ssh.pem.pub")
 	pathToPrivkey := filepath.Join(t.Base.Build.Dir, "data", "ssh.pem")
-	err = buildutil.WriteKeyfile([]byte(privkey), pathToPrivkey)
-	if err != nil {
-		return buildutil.Throw(err, "Could not write the the SSH private key to the build directory", &buildutil.V{"path": pathToPrivkey})
+
+	if _, err := os.Stat(pathToPubkey); os.IsNotExist(err) {
+		privkey, pubkey, err := buildutil.GenerateSSHKeyPair(2048)
+		if err != nil {
+			return buildutil.Throw(err, "Could not generate a 2048-bit RSA SSH key.", nil)
+		}
+		err = buildutil.WriteKeyfile([]byte(privkey), pathToPrivkey)
+		if err != nil {
+			return buildutil.Throw(err, "Could not write the the SSH private key to the build directory", &buildutil.V{"path": pathToPrivkey})
+		}
+		err = buildutil.WriteKeyfile([]byte(pubkey), pathToPubkey)
+		if err != nil {
+			return buildutil.Throw(err, "Could not write the the SSH public key to the build directory", &buildutil.V{"path": pathToPubkey})
+		}
+	} else {
+		pubkeyData, pubkeyErr := ioutil.ReadFile(pathToPubkey)
+		if pubkeyErr != nil {
+			return buildutil.Throw(pubkeyErr, "could not read already established public key", nil)
+		}
+		privkeyData, privkeyErr := ioutil.ReadFile(pathToPrivkey)
+		if privkeyErr != nil {
+			return buildutil.Throw(privkeyErr, "could not read already established private key", nil)
+		}
+		privkey = string(privkeyData)
+		pubkey = string(pubkeyData)
 	}
-	err = buildutil.WriteKeyfile([]byte(pubkey), pathToPubkey)
-	if err != nil {
-		return buildutil.Throw(err, "Could not write the the SSH public key to the build directory", &buildutil.V{"path": pathToPubkey})
-	}
+
 	t.Set("ssh_public_key_file", pathToPubkey)
 	t.Set("ssh_private_key_file", pathToPrivkey)
 	t.Set("rel_ssh_public_key_file", "../../data/ssh.pem.pub")

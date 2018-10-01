@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	updateConfig = false
 	buildCommand = cli.Command{
 		Name:      "build",
 		Usage:     "builds environment specific infrastructure configurations",
@@ -19,6 +20,11 @@ var (
 				Name:        "force, f",
 				Usage:       "force removes and deletes any conflicting directories (dangerous)",
 				Destination: &overwrite,
+			},
+			cli.BoolFlag{
+				Name:        "update, u",
+				Usage:       "Updates a build directory (expirimental)",
+				Destination: &updateConfig,
 			},
 		},
 	}
@@ -31,7 +37,7 @@ func performbuild(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	bldr, err := builder.New(base, overwrite)
+	bldr, err := builder.New(base, overwrite, updateConfig)
 	if err != nil {
 		cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
 		os.Exit(1)

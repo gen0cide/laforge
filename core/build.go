@@ -96,9 +96,13 @@ func (b *Build) LoadDBFile(base *Laforge, pr *PathResolver, caller CallFile) err
 }
 
 // InitializeBuildDirectory creates a build directory structure and writes the build.db as a precursor to builder's taking over.
-func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
+func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	err := l.AssertExactContext(EnvContext)
-	if err != nil && !overwrite {
+	if err != nil && !overwrite && !update {
+		return errors.WithStack(err)
+	}
+	err = l.AssertMinContext(EnvContext)
+	if err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -114,10 +118,33 @@ func InitializeBuildDirectory(l *Laforge, overwrite bool) error {
 	_, e3 := os.Stat(bdbDefPath)
 
 	if e0 == nil || e1 == nil || e2 == nil || e3 == nil {
-		if !overwrite {
+		if !overwrite && !update {
 			return fmt.Errorf("Cannot initialize build directory - path is dirty: %s (--force/-f to overwrite)", buildDir)
 		}
-		os.RemoveAll(buildDir)
+		if !update {
+			os.RemoveAll(buildDir)
+		}
+	}
+
+	if update {
+		clone, err := LoadFiles(l.GlobalConfigFile(), l.EnvConfigFile())
+		if err != nil {
+			return err
+		}
+		if clone != nil && clone.Environment != nil {
+			err = clone.IndexHostDependencies()
+			if err != nil {
+				return err
+			}
+			err = clone.Environment.ResolveIncludedNetworks(clone)
+			if err != nil {
+				return err
+			}
+		}
+		l, err = Mask(l, clone)
+		if err != nil {
+			return err
+		}
 	}
 
 	dirs := []string{buildDir, bdbDir, teamsDir}

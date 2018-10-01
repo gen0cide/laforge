@@ -1,5 +1,5 @@
 {{ define "script" }}
-resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload" {
   depends_on = [
     "{{ .Get "depends_on" }}"
   ]
@@ -31,6 +31,12 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       destination = "{{ $dstfile }}"
     {{ end }}
   }
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_exec" {
+  depends_on = [
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload"
+  ]
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}
@@ -63,6 +69,12 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       ]
     {{ end }}
   }
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  depends_on = [
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_exec"
+  ]
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}

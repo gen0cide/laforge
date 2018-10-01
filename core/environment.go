@@ -138,6 +138,9 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 
 // ValidEnvName is a helper function to determine if a supplied name is a valid environment name
 func ValidEnvName(name string) bool {
+	if len(name) > 16 {
+		return false
+	}
 	return ValidEnvNameRegexp.MatchString(name)
 }
 
