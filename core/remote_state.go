@@ -87,8 +87,6 @@ func GetState(base *Laforge) (*RemoteState, error) {
 		return nil, errors.New("remote state was empty for etcd key")
 	}
 
-	ioutil.WriteFile("data.json", data, 0644)
-
 	state, err := ParseTerraformStateFromBytes(data)
 	if err != nil {
 		return nil, err
