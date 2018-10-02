@@ -10,11 +10,6 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
   provisioner "file" {
     {{ if .Host.IsWindows }}
-      {{ if eq .Script.Language "shell" }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}
-      {{ else }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}
-      {{ end }}
       connection {
         host     = "${google_compute_address.{{ .Get "resource_name" }}.address}"
         type     = "winrm"
@@ -24,7 +19,11 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
 
       source      = "assets/{{ .Host.Hostname }}_{{ .Script.Base }}"
-      destination = "{{ $dstfile }}"
+      {{ if eq .Script.Language "shell" }}
+        destination = "{{ $dstfile := printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}"
+      {{ else }}
+        destination = "{{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}"
+      {{ end }}
     {{ else }}
       {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
       connection {
@@ -52,11 +51,6 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}
-      {{ if eq .Script.Language "shell" }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}
-      {{ else }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}
-      {{ end }}
       connection {
         host     = "${google_compute_address.{{ .Get "resource_name" }}.address}"
         type     = "winrm"
@@ -67,9 +61,9 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
       inline = [
         {{ if eq .Script.Language "shell" }}
-        "{{ $dstfile }}",
+        "{{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}",
         {{ else }}
-        "powershell -NoProfile -ExecutionPolicy Bypass -File \"{{ $dstfile }}\"",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File \"{{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}\"",
         {{ end }}
       ]
     {{ else }}
@@ -134,11 +128,6 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}
-      {{ if eq .Script.Language "shell" }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}
-      {{ else }}
-        {{ $dstfile := printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}
-      {{ end }}
       connection {
         host     = "${google_compute_address.{{ .Get "resource_name" }}.address}"
         type     = "winrm"
@@ -148,7 +137,11 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
 
       inline = [
-        "del {{ $dstfile }}",
+        {{ if eq .Script.Language "shell" }}
+          "del {{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}",
+        {{ else }}
+          "del {{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}",
+        {{ end }}
       ]
     {{ else }}
       {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
