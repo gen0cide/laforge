@@ -146,7 +146,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
 
       inline = [
-        "rm -f {{ $dstfile }}",
+        "rm -f {{ $dstfile }} || true",
       ]
     {{ end }}
   }
