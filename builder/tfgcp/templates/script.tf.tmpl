@@ -22,7 +22,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       source      = "assets/{{ .Host.Hostname }}_{{ .Script.Base }}"
       destination = "{{ $dstfile }}"
     {{ else }}
-      {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
       connection {
         agent       = "false"
         host        = "${google_compute_address.{{ .Get "resource_name" }}.address}"
@@ -61,7 +61,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
         "powershell -NoProfile -ExecutionPolicy Bypass -File \"{{ $dstfile }}\"",
       ]
     {{ else }}
-      {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
       connection {
         agent       = "false"
         host        = "${google_compute_address.{{ .Get "resource_name" }}.address}"
@@ -135,7 +135,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
         "del {{ $dstfile }}",
       ]
     {{ else }}
-      {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
       connection {
         agent       = "false"
         host        = "${google_compute_address.{{ .Get "resource_name" }}.address}"
