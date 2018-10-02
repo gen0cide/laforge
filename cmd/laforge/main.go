@@ -18,6 +18,10 @@ var (
 	defaultLevel  = "warn"
 	verboseOutput = false
 	noBanner      = false
+
+	apiFuncs = map[string]func(){
+		"WRITE_PROVISIONED_HOST": writeProvisionedHostConfig,
+	}
 )
 
 func init() {

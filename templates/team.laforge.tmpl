@@ -4,6 +4,10 @@ include {
   path = "../../build.laforge"
 }
 
+include {
+  path = "./provisioned_hosts/*.laforge"
+}
+
 // declare a unique ID in the object initialization
 team "{{ $.ID }}" {
 

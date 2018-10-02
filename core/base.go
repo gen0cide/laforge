@@ -27,7 +27,7 @@ const (
 	// BaseContext is a context level representing just a base.laforge was located
 	BaseContext
 
-	//GlobalContext is a context level representing a valid global configuration was found
+	// GlobalContext is a context level representing a valid global configuration was found
 	GlobalContext
 
 	// NoContext is a context level representing neither a env.laforge or base.laforge was found
@@ -38,7 +38,7 @@ var (
 	// ErrContextViolation is an error thrown when an action is taken that attempts to exceed the current state's ScopeContext
 	ErrContextViolation = errors.New("context scope violation")
 
-	//ErrAbsPathDeclNotExist is thrown when an absolute path is listed in a file yet it cannot be resolved on the local system
+	// ErrAbsPathDeclNotExist is thrown when an absolute path is listed in a file yet it cannot be resolved on the local system
 	ErrAbsPathDeclNotExist = errors.New("absolute path was not found on local system")
 
 	// ErrInvalidEnvName is thrown when an environment name does not meet specified regulations around environment naming conventions
@@ -47,44 +47,48 @@ var (
 
 // Laforge defines the type that holds the global namespace within the laforge configuration engine
 type Laforge struct {
-	Filename          string                 `json:"filename"`
-	Includes          []string               `json:"include,omitempty"`
-	DependencyGraph   treeprint.Tree         `json:"-"`
-	BaseDir           string                 `hcl:"base_dir,attr" json:"base_dir,omitempty"`
-	CurrDir           string                 `json:"current_dir,omitempty"`
-	User              User                   `hcl:"user,block" cty:"user" json:"user,omitempty"`
-	Competition       *Competition           `hcl:"competition,block" json:"competition,omitempty"`
-	Environment       *Environment           `hcl:"environment,block" json:"environment,omitempty"`
-	Build             *Build                 `hcl:"build,block" json:"build,omitempty"`
-	Team              *Team                  `hcl:"team,block" json:"team,omitempty"`
-	DefinedHosts      []*Host                `hcl:"host,block" json:"defined_hosts,omitempty"`
-	DefinedNetworks   []*Network             `hcl:"network,block" json:"defined_networks,omitempty"`
-	DefinedIdentities []*Identity            `hcl:"identity,block" json:"defined_identities,omitempty"`
-	DefinedScripts    []*Script              `hcl:"script,block" json:"defined_scripts,omitempty"`
-	DefinedCommands   []*Command             `hcl:"command,block" json:"defined_commands,omitempty"`
-	DefinedFiles      []*RemoteFile          `hcl:"remote_file,block" json:"defined_files,omitempty"`
-	DefinedDNSRecords []*DNSRecord           `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
-	Hosts             map[string]*Host       `json:"-"`
-	Networks          map[string]*Network    `json:"-"`
-	Identities        map[string]*Identity   `json:"-"`
-	Scripts           map[string]*Script     `json:"-"`
-	Commands          map[string]*Command    `json:"-"`
-	Files             map[string]*RemoteFile `json:"-"`
-	DNSRecords        map[string]*DNSRecord  `json:"-"`
-	Caller            Caller                 `json:"-"`
-	ValidTeam         bool                   `json:"-"`
-	ValidBuild        bool                   `json:"-"`
-	ValidEnv          bool                   `json:"-"`
-	ValidBase         bool                   `json:"-"`
-	ValidGlobal       bool                   `json:"-"`
-	ClearToBuild      bool                   `json:"-"`
-	TeamRoot          string                 `json:"-"`
-	BuildRoot         string                 `json:"-"`
-	EnvRoot           string                 `json:"-"`
-	BaseRoot          string                 `json:"-"`
-	GlobalRoot        string                 `json:"-"`
-	InitialContext    StateContext           `json:"-"`
-	PathRegistry      *PathRegistry          `json:"-"`
+	Filename                string                      `json:"filename"`
+	Includes                []string                    `json:"include,omitempty"`
+	DependencyGraph         treeprint.Tree              `json:"-"`
+	BaseDir                 string                      `hcl:"base_dir,attr" json:"base_dir,omitempty"`
+	CurrDir                 string                      `json:"current_dir,omitempty"`
+	User                    User                        `hcl:"user,block" cty:"user" json:"user,omitempty"`
+	Competition             *Competition                `hcl:"competition,block" json:"competition,omitempty"`
+	Environment             *Environment                `hcl:"environment,block" json:"environment,omitempty"`
+	Build                   *Build                      `hcl:"build,block" json:"build,omitempty"`
+	Team                    *Team                       `hcl:"team,block" json:"team,omitempty"`
+	DefinedHosts            []*Host                     `hcl:"host,block" json:"defined_hosts,omitempty"`
+	DefinedNetworks         []*Network                  `hcl:"network,block" json:"defined_networks,omitempty"`
+	DefinedIdentities       []*Identity                 `hcl:"identity,block" json:"defined_identities,omitempty"`
+	DefinedScripts          []*Script                   `hcl:"script,block" json:"defined_scripts,omitempty"`
+	DefinedCommands         []*Command                  `hcl:"command,block" json:"defined_commands,omitempty"`
+	DefinedFiles            []*RemoteFile               `hcl:"remote_file,block" json:"defined_files,omitempty"`
+	DefinedDNSRecords       []*DNSRecord                `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
+	DefinedProvisionedHosts []*ProvisionedHost          `hcl:"provisioned_host,block" json:"defined_provisioned_hosts"`
+	Hosts                   map[string]*Host            `json:"-"`
+	Networks                map[string]*Network         `json:"-"`
+	Identities              map[string]*Identity        `json:"-"`
+	Scripts                 map[string]*Script          `json:"-"`
+	Commands                map[string]*Command         `json:"-"`
+	Files                   map[string]*RemoteFile      `json:"-"`
+	DNSRecords              map[string]*DNSRecord       `json:"-"`
+	Teams                   map[string]*Team            `json:"-"`
+	Builds                  map[string]*Build           `json:"-"`
+	ProvisionedHosts        map[string]*ProvisionedHost `json:"-"`
+	Caller                  Caller                      `json:"-"`
+	ValidTeam               bool                        `json:"-"`
+	ValidBuild              bool                        `json:"-"`
+	ValidEnv                bool                        `json:"-"`
+	ValidBase               bool                        `json:"-"`
+	ValidGlobal             bool                        `json:"-"`
+	ClearToBuild            bool                        `json:"-"`
+	TeamRoot                string                      `json:"-"`
+	BuildRoot               string                      `json:"-"`
+	EnvRoot                 string                      `json:"-"`
+	BaseRoot                string                      `json:"-"`
+	GlobalRoot              string                      `json:"-"`
+	InitialContext          StateContext                `json:"-"`
+	PathRegistry            *PathRegistry               `json:"-"`
 }
 
 // Opt defines a basic HCLv2 option label:
@@ -194,6 +198,9 @@ func (l *Laforge) CreateIndex() {
 	l.Commands = map[string]*Command{}
 	l.Files = map[string]*RemoteFile{}
 	l.DNSRecords = map[string]*DNSRecord{}
+	l.Teams = map[string]*Team{}
+	l.ProvisionedHosts = map[string]*ProvisionedHost{}
+	l.Builds = map[string]*Build{}
 	for _, x := range l.DefinedHosts {
 		l.Hosts[x.ID] = x
 		x.Caller = l.Caller
@@ -232,6 +239,10 @@ func (l *Laforge) CreateIndex() {
 	}
 	for _, x := range l.DefinedDNSRecords {
 		l.DNSRecords[x.ID] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedProvisionedHosts {
+		l.ProvisionedHosts[x.ID] = x
 		x.Caller = l.Caller
 	}
 }
@@ -284,8 +295,31 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 			l.Environment.BaseDir = l.EnvRoot
 		}
 	}
-	if diff.Team != nil {
+	if l.Team == nil && diff.Team != nil {
 		l.Team = diff.Team
+	} else if l.Team != nil && diff.Team != nil {
+		res, err := SmartMerge(l.Team, diff.Team, true)
+		if err != nil {
+			return l, errors.WithStack(err)
+		}
+		orig, ok := res.(*Team)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+		l.Team = orig
+	}
+	if l.Build == nil && diff.Build != nil {
+		l.Build = diff.Build
+	} else if l.Build != nil && diff.Build != nil {
+		res, err := SmartMerge(l.Build, diff.Build, true)
+		if err != nil {
+			return l, errors.WithStack(err)
+		}
+		orig, ok := res.(*Build)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+		l.Build = orig
 	}
 
 	if diff.Build != nil {
@@ -403,6 +437,21 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
 		}
 	}
+	for id, obj := range layer.ProvisionedHosts {
+		orig, found := base.ProvisionedHosts[id]
+		if !found {
+			base.ProvisionedHosts[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*ProvisionedHost)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
 	return base.Update(layer)
 }
 
@@ -417,6 +466,32 @@ func (l *Laforge) IndexHostDependencies() error {
 	return nil
 }
 
+// IndexProvisionedHostDependencies enumerates all provisioend host objects in the state and indexes them by team, reporting errors.
+func (l *Laforge) IndexProvisionedHostDependencies() error {
+	if l.Team == nil {
+		return nil
+	}
+	if len(l.Team.ActiveHosts) == 0 {
+		l.Team.ActiveHosts = map[string]*ProvisionedHost{}
+	}
+	for _, h := range l.ProvisionedHosts {
+		if h.Active == false {
+			continue
+		}
+		if h.TeamID != l.Team.ID {
+			return fmt.Errorf("issue indexing provisioned hosts: host %s belongs to team %s (current context is team %s)", h.ID, h.TeamID, l.Team.ID)
+		}
+		host, found := l.Hosts[h.HostID]
+		if !found {
+			return fmt.Errorf("issue indexing provisioned hosts: provisioned_host %s references an unknown host_id %s", h.ID, host.ID)
+		}
+		h.Host = host
+		h.Team = l.Team
+		l.Team.ActiveHosts[h.ID] = h
+	}
+	return nil
+}
+
 // LoadFromContext attempts to bootstrap the given state from it's assumed Context Level
 func (l *Laforge) LoadFromContext() error {
 	var clone *Laforge
@@ -426,6 +501,22 @@ func (l *Laforge) LoadFromContext() error {
 		clone, err = LoadFiles(l.GlobalConfigFile(), l.TeamConfigFile())
 		if err != nil {
 			return err
+		}
+		if clone != nil && clone.Environment != nil {
+			err = clone.IndexHostDependencies()
+			if err != nil {
+				return err
+			}
+			err = clone.Environment.ResolveIncludedNetworks(clone)
+			if err != nil {
+				return err
+			}
+		}
+		if clone != nil && clone.Team != nil {
+			err = clone.IndexProvisionedHostDependencies()
+			if err != nil {
+				return err
+			}
 		}
 
 		// if clone.Team != nil {

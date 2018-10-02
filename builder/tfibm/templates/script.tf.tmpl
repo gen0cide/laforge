@@ -20,7 +20,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
       source      = "assets/{{ .Host.Hostname }}_{{ .Script.Base }}"
       {{ if eq .Script.Language "shell" }}
-        destination = "{{ $dstfile := printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}"
+        destination = "{{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}"
       {{ else }}
         destination = "{{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}"
       {{ end }}

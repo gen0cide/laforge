@@ -30,6 +30,7 @@ type Build struct {
 	Caller           Caller             `json:"-"`
 	LocalDBFile      *LocalFileRef      `json:"-"`
 	Teams            map[int]*Team      `json:"teams,omitempty"`
+	OnConflict       OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 }
 
 // AssetForTeam is a template helper function that returns the location of team specific assets
@@ -206,5 +207,40 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 
 	l.Build = b
 	l.ClearToBuild = true
+	return nil
+}
+
+// GetCaller implements the Mergeable interface
+func (b *Build) GetCaller() Caller {
+	return b.Caller
+}
+
+// GetID implements the Mergeable interface
+func (b *Build) GetID() string {
+	return b.ID
+}
+
+// GetOnConflict implements the Mergeable interface
+func (b *Build) GetOnConflict() OnConflict {
+	return b.OnConflict
+}
+
+// SetCaller implements the Mergeable interface
+func (b *Build) SetCaller(ca Caller) {
+	b.Caller = ca
+}
+
+// SetOnConflict implements the Mergeable interface
+func (b *Build) SetOnConflict(o OnConflict) {
+	b.OnConflict = o
+}
+
+// Swap implements the Mergeable interface
+func (b *Build) Swap(m Mergeable) error {
+	rawVal, ok := m.(*Build)
+	if !ok {
+		return errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", b, m)
+	}
+	*b = *rawVal
 	return nil
 }

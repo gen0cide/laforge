@@ -171,6 +171,10 @@ var (
 		"dns_record.tf.tmpl",
 	}
 
+	additionalTemplates = []string{
+		"provisioned_host.tf.tmpl",
+	}
+
 	primaryTemplate = "infra.tf.tmpl"
 )
 
@@ -254,6 +258,16 @@ func (t *TerraformGCPBuilder) SetLaforge(base *core.Laforge) error {
 		return buildutil.Throw(errors.New("context is not cleared to build"), "Laforge has encountered an error and cannot continue to build. This is likely a bug in LaForge.", nil)
 	}
 	for _, x := range templatesToLoad {
+		d, err := static.ReadFile(x)
+		if err != nil {
+			return buildutil.Throw(err, "could not read template", &buildutil.V{"template_name": x})
+		}
+		_, err = t.Library.AddBook(x, d)
+		if err != nil {
+			return buildutil.Throw(err, "could not parse template", &buildutil.V{"template_name": x})
+		}
+	}
+	for _, x := range additionalTemplates {
 		d, err := static.ReadFile(x)
 		if err != nil {
 			return buildutil.Throw(err, "could not read template", &buildutil.V{"template_name": x})
@@ -380,6 +394,30 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 							return
 						}(sid, script, host)
 					}
+					wg.Add(1)
+					go func(h *core.Host) {
+						defer wg.Done()
+						scriptCtx := ctx.Clone()
+						err := scriptCtx.Attach(team, network, h)
+						if err != nil {
+							errChan <- err
+							return
+						}
+						filename := fmt.Sprintf("%s_%s", h.Hostname, "provisioned_host.tpl")
+						assetDir := filepath.Join(team.RelBuildPath, "assets")
+						assetPath := filepath.Join(assetDir, filename)
+						fileData, err := t.Library.Execute("provisioned_host.tf.tmpl", scriptCtx)
+						if err != nil {
+							errChan <- err
+							return
+						}
+						err = ioutil.WriteFile(assetPath, fileData, 0644)
+						if err != nil {
+							errChan <- err
+							return
+						}
+						return
+					}(host)
 				}
 			}
 

@@ -328,6 +328,25 @@ resource "ibm_security_group_rule" "int_{{ $net.ID }}_1" {
       value = "${ibm_compute_vm_instance.{{ $resource_name }}.ipv4_address}"
     }
 
+    data "template_file" "{{ $resource_name }}" {
+      template = "${file("{{ $.Build.RelAssetForTeam $.Team.TeamNumber (printf "%s_%s" $host.Hostname "provisioned_host.tpl") }}")}"
+
+      vars {
+        remote_addr = "${ibm_compute_vm_instance.{{ $resource_name }}.ipv4_address}"
+        host_active = "true"
+        {{ if $host.IsWindows }}
+        password = "{{ $.Competition.RootPassword }}"
+        {{ else }}
+        identity_file = "{{ index $.Build.Config "rel_ssh_private_key_file" }}"
+        {{ end }}
+      }
+    }
+
+    resource "local_file" "{{ $resource_name }}_provisioning_file" {
+      content = "${data.template_file.{{ $resource_name }}.rendered}"
+      filename = "./provisioned_hosts/{{ $host.ID }}.laforge"
+    }
+
     {{ if gt (len $host.Provisioners) 0 }}
       {{ range $step_number, $prov := $host.Provisioners }}
         {{ $subcontext := $.Clone }}
