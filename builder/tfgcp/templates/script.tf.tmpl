@@ -40,7 +40,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}
-      {{ $dstfile := printf "C:/laforge_script_%s.ps1" (.Get "step_number") }}
+      {{ $dstfile := printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}
       connection {
         host     = "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.access_config.0.assigned_nat_ip}"
         type     = "winrm"
@@ -50,7 +50,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
 
       inline = [
-        "powershell -NoProfile -ExecutionPolicy Bypass {{ $dstfile }}",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File \"{{ $dstfile }}\"",
       ]
     {{ else }}
       {{ $dstfile := printf "/tmp/laforge_script_%s.sh" (.Get "step_number") }}

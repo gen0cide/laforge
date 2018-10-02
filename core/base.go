@@ -284,6 +284,14 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 			l.Environment.BaseDir = l.EnvRoot
 		}
 	}
+	if diff.Team != nil {
+		l.Team = diff.Team
+	}
+
+	if diff.Build != nil {
+		l.Build = diff.Build
+	}
+
 	return l, nil
 }
 
@@ -420,24 +428,24 @@ func (l *Laforge) LoadFromContext() error {
 			return err
 		}
 
-		if clone.Team != nil {
-			if l.PathRegistry == nil {
-				l.PathRegistry = &PathRegistry{
-					DB: map[CallFile]*PathResolver{},
-				}
-			}
-			if l.PathRegistry.DB[l.Caller.Current()] == nil {
-				l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
-					Mapping:    map[string]*LocalFileRef{},
-					Unresolved: map[string]bool{},
-				}
-			}
-			currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
-			err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
-			if err != nil {
-				return err
-			}
-		}
+		// if clone.Team != nil {
+		// 	if l.PathRegistry == nil {
+		// 		l.PathRegistry = &PathRegistry{
+		// 			DB: map[CallFile]*PathResolver{},
+		// 		}
+		// 	}
+		// 	if l.PathRegistry.DB[l.Caller.Current()] == nil {
+		// 		l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
+		// 			Mapping:    map[string]*LocalFileRef{},
+		// 			Unresolved: map[string]bool{},
+		// 		}
+		// 	}
+		// 	currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
+		// 	err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
 	case BuildContext:
 		clone, err = LoadFiles(l.GlobalConfigFile(), l.BuildConfigFile())
 		if err != nil {
