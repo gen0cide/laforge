@@ -3,6 +3,7 @@ package templates
 import (
 	"errors"
 	"fmt"
+	"runtime"
 
 	"github.com/gen0cide/laforge/builder/buildutil"
 	"github.com/gen0cide/laforge/core"
@@ -17,6 +18,7 @@ var (
 // inside of a build template. This uinfied struct helps keep a single convention
 // on how to get to and access data inside of build templates.
 type Context struct {
+	Local       *core.Local
 	Build       *core.Build
 	Competition *core.Competition
 	Command     *core.Command
@@ -43,6 +45,7 @@ type Dict map[string]string
 func NewContext(i ...interface{}) (*Context, error) {
 	c := &Context{Dict: map[string]string{}}
 	err := c.Attach(i...)
+	c.Localize()
 	return c, err
 }
 
@@ -65,6 +68,7 @@ func (c *Context) Clone() *Context {
 	newC.Remote = c.Remote
 	newC.AMI = c.AMI
 	newC.Laforge = c.Laforge
+	newC.Local = c.Local
 	return newC
 }
 
@@ -77,6 +81,19 @@ func (c *Context) Set(key, val string) string {
 // Get returns a temp value set in the context's dictionary.
 func (c *Context) Get(key string) string {
 	return c.Dict[key]
+}
+
+// Localize is a function to set the context's localization
+func (c *Context) Localize() {
+	if c.Local != nil {
+		return
+	}
+	locale := &core.Local{
+		OS:   runtime.GOOS,
+		Arch: runtime.GOARCH,
+	}
+	c.Local = locale
+	return
 }
 
 // Attach wires up all the core Laforge types into a cohesive Context bundle for template rendering

@@ -112,6 +112,11 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
 		},
 		validations.Requirement{
+			Name:       "GCP Storage Bucket not defined",
+			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
+		},
+		validations.Requirement{
 			Name:       "GCP Zone not defined",
 			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),

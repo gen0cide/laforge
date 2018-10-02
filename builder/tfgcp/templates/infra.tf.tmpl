@@ -171,6 +171,11 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 {{ range $net, $hosts := $.Environment.HostByNetwork }}
   {{ range $hostidx, $host := $hosts }}
     {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $net $host.Hostname }}
+
+    resource "google_compute_address" "{{ $resource_name }}" {
+      name = "{{ $resource_name }}"
+    }
+
     resource "google_compute_instance" "{{ $resource_name }}" {
       name = "{{ $resource_name }}"
       machine_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
@@ -189,7 +194,7 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
         address = "${cidrhost("{{ (index $.Environment.IncludedNetworks $net).CIDR }}", {{ $host.LastOctet }})}"
 
         access_config {
-          // Ephemeral IP
+          nat_ip = "${google_compute_address.{{ $resource_name }}.address}"
         }
       }
 
@@ -280,8 +285,26 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 
     {{ if eq $host.ID "root-dns" }}
       {{ $last_step_num := Decr (len $host.Provisioners) }}
-      resource "null_resource" "dns_provisioned" {
+
+      resource "google_storage_bucket_object" "{{ $resource_name }}-root-dns" {
+        name   = "{{ $.Environment.Builder }}-{{ $.Environment.ID }}-t{{ $.Team.TeamNumber}}-root-dns.txt"
+        content = "${google_compute_instance.{{ $resource_name }}.network_interface.0.address}"
+        bucket = "{{ index $.Build.Config "gcp_storage_bucket" }}"
+
         depends_on = [
+          "google_compute_instance.{{ $resource_name }}",
+          "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
+        ]
+      }
+
+      resource "null_resource" "dns_provisioned" {
+        triggers {
+          instance_id = "${google_compute_instance.{{ $resource_name }}.instance_id},${google_storage_bucket_object.{{ $resource_name }}-root-dns.md5hash}"
+        }
+
+        depends_on = [
+          "google_compute_instance.{{ $resource_name }}",
+          "google_storage_bucket_object.{{ $resource_name }}-root-dns",
           "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
         ]
       }
