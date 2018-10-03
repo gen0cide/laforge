@@ -119,8 +119,6 @@ resource "ibm_security_group_rule" "ext_base_1" {
 resource "ibm_security_group_rule" "ext_base_2" {
   direction = "ingress"
   ether_type = "IPv4"
-  port_range_min = 0
-  port_range_max = 254
   protocol = "icmp"
   remote_ip = "{{ index $.Build.Config "admin_ip" }}/32"
   security_group_id = "${ibm_security_group.ext_base.id}"
@@ -149,8 +147,6 @@ resource "ibm_security_group_rule" "ext_base_4" {
 resource "ibm_security_group_rule" "ext_base_5" {
   direction = "egress"
   ether_type = "IPv4"
-  port_range_min = 0
-  port_range_max = 254
   protocol = "icmp"
   remote_ip = "0.0.0.0/0"
   security_group_id = "${ibm_security_group.ext_base.id}"
@@ -161,7 +157,7 @@ resource "ibm_security_group_rule" "ext_vdi_0" {
   ether_type = "IPv4"
   port_range_min = 22
   port_range_max = 22
-  protocol = "icmp"
+  protocol = "tcp"
   remote_ip = "0.0.0.0/0"
   security_group_id = "${ibm_security_group.ext_vdi.id}"
 }
@@ -199,8 +195,6 @@ resource "ibm_security_group_rule" "int_egress_1" {
 resource "ibm_security_group_rule" "int_egress_2" {
   direction = "egress"
   ether_type = "IPv4"
-  port_range_min = 0
-  port_range_max = 254
   protocol = "icmp"
   remote_group_id = "${ibm_security_group.int_base.id}"
   security_group_id = "${ibm_security_group.int_egress.id}"
@@ -209,8 +203,6 @@ resource "ibm_security_group_rule" "int_egress_2" {
 resource "ibm_security_group_rule" "int_egress_3" {
   direction = "ingress"
   ether_type = "IPv4"
-  port_range_min = 0
-  port_range_max = 254
   protocol = "icmp"
   remote_group_id = "${ibm_security_group.int_base.id}"
   security_group_id = "${ibm_security_group.int_egress.id}"
