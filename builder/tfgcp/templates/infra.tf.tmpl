@@ -226,7 +226,7 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
       ]
 
       depends_on = [
-        {{ if ne $host.ID "root-dns" }}
+        {{ if ne $host.ID "ns01" }}
         "null_resource.dns_provisioned",
         {{ if ne $net "vdi" }}
         {{ if ne (index $.Build.Config "skip_ad") "true" }}
@@ -302,7 +302,7 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
       {{ end }}
     {{ end }}
 
-    {{ if eq $host.ID "root-dns" }}
+    {{ if eq $host.ID "ns01" }}
       {{ $last_step_num := Decr (len $host.Provisioners) }}
 
       resource "google_storage_bucket_object" "{{ $resource_name }}-root-dns" {

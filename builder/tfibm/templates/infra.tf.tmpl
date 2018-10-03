@@ -157,7 +157,7 @@ resource "ibm_security_group_rule" "ext_base_5" {
 }
 
 resource "ibm_security_group_rule" "ext_vdi_0" {
-  direction = "egress"
+  direction = "ingress"
   ether_type = "IPv4"
   port_range_min = 22
   port_range_max = 22
@@ -167,7 +167,7 @@ resource "ibm_security_group_rule" "ext_vdi_0" {
 }
 
 resource "ibm_security_group_rule" "ext_vdi_1" {
-  direction = "egress"
+  direction = "ingress"
   ether_type = "IPv4"
   port_range_min = 3389
   port_range_max = 3389
@@ -307,7 +307,7 @@ resource "ibm_security_group_rule" "int_{{ $net.ID }}_1" {
       ]
 
       depends_on = [
-        {{ if ne $host.ID "root-dns" }}
+        {{ if ne $host.ID "ns01" }}
         "null_resource.dns_provisioned",
         {{ if ne $net "vdi" }}
         {{ if ne (index $.Build.Config "skip_ad") "true" }}
@@ -383,7 +383,7 @@ resource "ibm_security_group_rule" "int_{{ $net.ID }}_1" {
       {{ end }}
     {{ end }}
 
-    {{ if eq $host.ID "root-dns" }}
+    {{ if eq $host.ID "ns01" }}
       provider "dns" {
         update {
           server = "${ibm_compute_vm_instance.{{ $resource_name }}.ipv4_address}"
