@@ -1,7 +1,9 @@
 package core
 
 import (
+	"encoding/binary"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -23,6 +25,7 @@ type Host struct {
 	ExposedUDPPorts  []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
 	OverridePassword string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
 	UserGroups       []string               `hcl:"user_groups,attr" json:"user_groups,omitempty"`
+	Dependencies     []*Dependency          `hcl:"depends_on,block" json:"included_dependencies,omitempty"`
 	IO               IO                     `hcl:"io,block" json:"io,omitempty"`
 	Vars             map[string]string      `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string      `hcl:"tags,attr" json:"tags,omitempty"`
@@ -33,7 +36,6 @@ type Host struct {
 	Commands         map[string]*Command    `json:"commands,omitempty"`
 	Files            map[string]*RemoteFile `json:"files,omitempty"`
 	DNSRecords       map[string]*DNSRecord  `json:"dns_records,omitempty"`
-	Dependencies     map[string]interface{} `json:"dependencies,omitempty"`
 }
 
 // Disk is a configurable type for setting the root volume's disk size in GB
@@ -43,9 +45,39 @@ type Disk struct {
 
 // Dependency is a configurable type for defining host or network dependencies to allow a dependency graph to be honored during deployment
 type Dependency struct {
-	Host       string     `hcl:"host,attr" json:"host,omitempty"`
-	Network    string     `hcl:"network,attr" json:"network,omitempty"`
+	HostID     string     `hcl:"host,attr" json:"host,omitempty"`
+	NetworkID  string     `hcl:"network,attr" json:"network,omitempty"`
+	Host       *Host      `json:"-"`
+	Network    *Network   `json:"-"`
+	Step       string     `hcl:"step,attr" json:"step,omitempty"`
+	StepID     int        `json:"step_id,omitempty"`
 	OnConflict OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+}
+
+// HasTag is a template helper function to return true/false if the host contains a tag of a specific key
+func (h *Host) HasTag(tag string) bool {
+	_, t := h.Tags[tag]
+	return t
+}
+
+// TagEquals is a template helper function to return true/false if the host contains a tag key of a specific value
+func (h *Host) TagEquals(tag, value string) bool {
+	v, t := h.Tags[tag]
+	if !t {
+		return false
+	}
+	if v == value {
+		return true
+	}
+	return false
+}
+
+// FinalStepID gets the final step ID for a host's offset
+func (h *Host) FinalStepID() int {
+	if len(h.Provisioners) == 0 {
+		return -1
+	}
+	return len(h.Provisioners) - 1
 }
 
 // GetCaller implements the Mergeable interface
@@ -81,6 +113,18 @@ func (h *Host) Swap(m Mergeable) error {
 	}
 	*h = *rawVal
 	return nil
+}
+
+// CalcIP is used to calculate the IP of a host within a given subnet
+func (h *Host) CalcIP(subnet string) string {
+	ip, _, err := net.ParseCIDR(subnet)
+	if err != nil {
+		return fmt.Sprintf("ERR_INVALID_SUBNET_%s_FOR_HOST_%s", subnet, h.ID)
+	}
+	offset32 := uint32(h.LastOctet)
+	ip32 := IPv42Int(ip)
+	newIP := Int2IPv4(ip32 + offset32)
+	return newIP.To4().String()
 }
 
 // IsWindows is a template helper function to determine if the underlying operating system is windows
@@ -178,4 +222,19 @@ func (h *Host) Index(base *Laforge) error {
 		}
 	}
 	return nil
+}
+
+// IPv42Int converts net.IP address objects to their uint32 representation
+func IPv42Int(ip net.IP) uint32 {
+	if len(ip) == 16 {
+		return binary.BigEndian.Uint32(ip[12:16])
+	}
+	return binary.BigEndian.Uint32(ip)
+}
+
+// Int2IPv4 converts uint32s to their net.IP object
+func Int2IPv4(nn uint32) net.IP {
+	ip := make(net.IP, 4)
+	binary.BigEndian.PutUint32(ip, nn)
+	return ip
 }

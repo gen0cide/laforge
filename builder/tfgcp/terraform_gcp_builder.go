@@ -339,6 +339,48 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 		}
 		core.Logger.Debugf("Adding user_data_script %s to host %s script pool", uds, hostid)
 		host.Scripts[uds] = udsObj
+		for _, dep := range host.Dependencies {
+			depHost, ok := t.Base.Environment.IncludedHosts[dep.HostID]
+			if !ok {
+				return buildutil.Throw(errors.Errorf("host %s depends on host %s, which is not found in environment", host.ID, dep.HostID), "The host listed a dependency to another host which is not included in any network within the current environment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID})
+			}
+			dep.Host = depHost
+
+			depNet, ok := t.Base.Environment.IncludedNetworks[dep.NetworkID]
+			if !ok {
+				return buildutil.Throw(errors.Errorf("host %s depends on network %s, which is not found in environment", host.ID, dep.NetworkID), "The host listed a dependency to another network which is not included within the current environment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID})
+			}
+			dep.Network = depNet
+
+			hostInNetwork := false
+			for _, x := range t.Base.Environment.HostByNetwork[dep.NetworkID] {
+				if x.ID == dep.Host.ID {
+					hostInNetwork = true
+					break
+				}
+			}
+			if !hostInNetwork {
+				return buildutil.Throw(errors.Errorf("host %s depends on host %s, which is not included in network %s", host.ID, dep.HostID, dep.NetworkID), "The host listed a dependency to another host, and while the network exists and is included, this host is not present within this network assignment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID})
+			}
+
+			if dep.Step != "" {
+				// the Host index function within core.Host has already guarenteed that a provisioning step exists
+				// don't need to check on that :)
+				located := false
+				for stepidx, x := range dep.Host.ProvisionSteps {
+					if dep.Step == x {
+						located = true
+						dep.StepID = stepidx
+						break
+					}
+				}
+				if !located {
+					return buildutil.Throw(errors.Errorf("host %s depends on provisioning step %s, which is not found in host %s", host.ID, dep.Step, dep.Host.ID), "The host listed a dependency to a provisioning step that is not included within the supplied host's provisioning steps.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID, "depends_on_step": dep.Step})
+				}
+			} else {
+				dep.StepID = host.FinalStepID()
+			}
+		}
 	}
 
 	return nil
