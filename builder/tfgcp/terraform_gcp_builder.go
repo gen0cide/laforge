@@ -173,6 +173,7 @@ var (
 
 	additionalTemplates = []string{
 		"provisioned_host.tf.tmpl",
+		"root_module.tf.tmpl",
 	}
 
 	primaryTemplate = "infra.tf.tmpl"
@@ -499,6 +500,26 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 	}
 
 	for _, host := range t.Base.Environment.IncludedHosts {
+		for _, prov := range host.Provisioners {
+			rfile, ok := prov.(*core.RemoteFile)
+			if !ok {
+				continue
+			}
+
+			rfileName, err := rfile.AssetName()
+			if err != nil {
+				return err
+			}
+
+			dstPath := filepath.Join(t.Base.Build.Dir, "data", rfileName)
+			if _, err := os.Stat(dstPath); os.IsNotExist(err) {
+				copyErr := rfile.CopyTo(dstPath)
+				if copyErr != nil {
+					return copyErr
+				}
+			}
+		}
+
 		for sid, script := range host.Scripts {
 			if _, ok := t.Library.Books[sid]; ok {
 				continue
@@ -606,4 +627,23 @@ func (t *TerraformGCPBuilder) Render() error {
 	case err := <-errChan:
 		return err
 	}
+
+	// rootCtx, err := templates.NewContext(t.Base.Build)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// rootModData, err := t.Library.Execute("root_module.tf.tmpl", rootCtx)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// hclPretty, err := printer.Format(rootModData)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// rootModFile := filepath.Join(t.Base.Build.Dir, "root.tf")
+	// err = ioutil.WriteFile(rootModFile, hclPretty, 0644)
+	// return err
 }

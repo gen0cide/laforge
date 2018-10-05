@@ -177,6 +177,16 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 }
 {{ end }}
 
+{{ $dns_resource_name := "" }}
+
+{{ range $net, $hosts := $.Environment.HostByNetwork }}
+  {{ range $_, $host := $hosts }}
+    {{ if eq $host.ID "ns01" }}
+      {{ $dns_resource_name = printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $net $host.ID }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
 {{ range $net, $hosts := $.Environment.HostByNetwork }}
   {{ range $hostidx, $host := $hosts }}
     {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $net $host.ID }}
@@ -299,7 +309,7 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
         {{ end }}
         {{ if eq $prov.Kind "dns_record" }}
           {{ $_ := $subcontext.Set "resource_name" $resource_name }}
-          {{ $_ := $subcontext.Set "dns_server_resource" (index $.Build.Config "root_dns_ip") }}
+          {{ $_ := $subcontext.Set "dns_server_resource" (printf "${google_compute_instance.%s.network_interface.0.access_config.0.assigned_nat_ip}" $dns_resource_name) }}
           {{ $_ := $subcontext.Set "step_number" (printf "%d" $step_number) }}
           {{ $_ := $subcontext.Attach $prov $host }}
           {{ template "dns_record" $subcontext }}

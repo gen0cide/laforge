@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gen0cide/laforge/core"
@@ -40,7 +41,8 @@ func performdump(c *cli.Context) error {
 	case "dns_record":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.DNSRecords)
+			os.Exit(0)
 		}
 		rec, found := base.DNSRecords[param]
 		if !found {
@@ -50,7 +52,8 @@ func performdump(c *cli.Context) error {
 	case "command":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Commands)
+			os.Exit(0)
 		}
 		rec, found := base.DNSRecords[param]
 		if !found {
@@ -62,7 +65,8 @@ func performdump(c *cli.Context) error {
 	case "host":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Hosts)
+			os.Exit(0)
 		}
 		rec, found := base.Hosts[param]
 		if !found {
@@ -72,7 +76,8 @@ func performdump(c *cli.Context) error {
 	case "identity":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Identities)
+			os.Exit(0)
 		}
 		rec, found := base.Identities[param]
 		if !found {
@@ -82,7 +87,8 @@ func performdump(c *cli.Context) error {
 	case "network":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Networks)
+			os.Exit(0)
 		}
 		rec, found := base.Networks[param]
 		if !found {
@@ -92,7 +98,8 @@ func performdump(c *cli.Context) error {
 	case "remote_file":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Files)
+			os.Exit(0)
 		}
 		rec, found := base.Files[param]
 		if !found {
@@ -102,7 +109,8 @@ func performdump(c *cli.Context) error {
 	case "script":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			return errors.New("second argument must be supplied with this type")
+			pp.Println(base.Scripts)
+			os.Exit(0)
 		}
 		rec, found := base.Scripts[param]
 		if !found {

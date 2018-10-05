@@ -1,13 +1,19 @@
 {{ define "remote_file" }}
-resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload" {
+  triggers {
+    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+  }
+
   depends_on = [
-    "google_compute_instance.{{ .Get "resource_name" }}"
+    "{{ .Get "depends_on" }}"
   ]
+
+  {{ $filename := .RemoteFile.AssetName }}
 
   provisioner "file" {
     {{ if .Host.IsWindows }}
       connection {
-        host     = "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.access_config.0.assigned_nat_ip}"
+        host     = "${google_compute_address.{{ .Get "resource_name" }}.address}"
         type     = "winrm"
         user     = "Administrator"
         timeout  = "60m"
@@ -15,16 +21,29 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
     {{ else }}
       connection {
-        host        = "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.access_config.0.assigned_nat_ip}"
+        agent       = "false"
+        host        = "${google_compute_address.{{ .Get "resource_name" }}.address}"
         type        = "ssh"
         user        = "root"
         timeout     = "60m"
-        private_key = "${file("{{ index $.Build.Config "rel_ssh_private_key_file" }}")}"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
       }
     {{ end }}
-
-    source      = "{{ .RemoteFile.Source }}"
+    source      = "../../data/{{ $filename }}"
     destination = "{{ .RemoteFile.Destination }}"
+
   }
 }
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  triggers {
+    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+  }
+
+  depends_on = [
+    "{{ .Get "depends_on" }}",
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload",
+  ]
+}
+
 {{ end }}

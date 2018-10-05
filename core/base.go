@@ -542,21 +542,12 @@ func (l *Laforge) LoadFromContext() error {
 		if err != nil {
 			return err
 		}
-
-		if clone.Build != nil {
-			if l.PathRegistry == nil {
-				l.PathRegistry = &PathRegistry{
-					DB: map[CallFile]*PathResolver{},
-				}
+		if clone != nil && clone.Environment != nil {
+			err = clone.IndexHostDependencies()
+			if err != nil {
+				return err
 			}
-			if l.PathRegistry.DB[l.Caller.Current()] == nil {
-				l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
-					Mapping:    map[string]*LocalFileRef{},
-					Unresolved: map[string]bool{},
-				}
-			}
-			currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
-			err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
+			err = clone.Environment.ResolveIncludedNetworks(clone)
 			if err != nil {
 				return err
 			}

@@ -1,7 +1,8 @@
 {{ define "dns_record" }}
+
 provider "dns" {
   update {
-    server = "{{ .Get "dns_server_resource" }}.ipv4_address"
+    server = "{{ .Get "dns_server_resource" }}"
   }
 }
 
@@ -9,8 +10,24 @@ resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "s
   zone = "{{ .DNSRecord.Zone }}."
   name = "{{ .DNSRecord.Name }}"
   addresses = [
+    {{ if .DNSRecord.Inherited }}
+    "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.address}",
+    {{ else }}
     "{{ .DNSRecord.Value }}",
+    {{ end }}
   ]
   ttl = 300
 }
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  triggers {
+    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+  }
+
+  depends_on = [
+    "{{ .Get "depends_on" }}",
+    "dns_a_record_set.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}",
+  ]
+}
+
 {{ end }}
