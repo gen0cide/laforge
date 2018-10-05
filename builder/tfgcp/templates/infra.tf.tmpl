@@ -169,6 +169,7 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 
   source_tags = [
     "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-vdi",
+    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $netname }}",
   ]
 
   target_tags = [
