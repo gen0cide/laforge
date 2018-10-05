@@ -226,7 +226,11 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
         windows-startup-script-ps1 = "net user administrator /active:yes"
         sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $.Team.TeamNumber (printf "%s_%s" $host.Hostname $uds.Base) }}")}"
         {{ else }}
-        sshKeys = "root:${file("{{ index $.Build.Config "rel_ssh_public_key_file" }}")}"
+        sshKeys = <<EOF
+        root:${file("{{ index $.Build.Config "rel_ssh_public_key_file" }}")} root@laforge
+        root:{{ index $.Build.Config "gcp_project_ssh_pubkey" }} root@admin.cptc.network
+EOF
+
         {{ end }}
       }
 
