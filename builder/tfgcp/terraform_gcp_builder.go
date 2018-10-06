@@ -379,7 +379,7 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 					return buildutil.Throw(errors.Errorf("host %s depends on provisioning step %s, which is not found in host %s", host.ID, dep.Step, dep.Host.ID), "The host listed a dependency to a provisioning step that is not included within the supplied host's provisioning steps.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID, "depends_on_step": dep.Step})
 				}
 			} else {
-				dep.StepID = host.FinalStepID()
+				dep.StepID = dep.Host.FinalStepID()
 			}
 		}
 	}

@@ -78,6 +78,7 @@ func main() {
 		downloadCommand,
 		exampleCommand,
 		depsCommand,
+		spannerCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

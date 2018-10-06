@@ -343,6 +343,12 @@ EOF
     {{ if eq $host.ID "ns01" }}
       {{ $last_step_num := Decr (len $host.Provisioners) }}
 
+      provider "dns" {
+        update {
+          server = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.assigned_nat_ip}"
+        }
+      }
+
       resource "google_storage_bucket_object" "{{ $resource_name }}-root-dns" {
         name   = "{{ $.Environment.Builder }}-{{ $.Environment.ID }}-t{{ $.Team.TeamNumber}}-root-dns.txt"
         content = "${google_compute_instance.{{ $resource_name }}.network_interface.0.address}"

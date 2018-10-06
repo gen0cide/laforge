@@ -1,11 +1,5 @@
 {{ define "dns_record" }}
 
-provider "dns" {
-  update {
-    server = "{{ .Get "dns_server_resource" }}"
-  }
-}
-
 resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
   zone = "{{ .DNSRecord.Zone }}."
   name = "{{ .DNSRecord.Name }}"
