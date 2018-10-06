@@ -124,6 +124,7 @@ func (w *Worker) RunLocalCommand(wc chan *Worker) {
 	return
 }
 
+// RunRemoteCommand begins the process for executing commands across the Spanner's worker.
 func (w *Worker) RunRemoteCommand(wc chan *Worker) {
 	defer func() {
 		wc <- w
@@ -140,6 +141,7 @@ func (w *Worker) RunRemoteCommand(wc chan *Worker) {
 	return
 }
 
+// RunWinRMCommand executes the remote command over the WinRM protocol on remote Windows hosts
 func (w *Worker) RunWinRMCommand(wc chan *Worker) {
 	endpoint := winrm.NewEndpoint(w.Host.RemoteAddr, w.Host.WinRMAuthConfig.Port, false, false, nil, nil, nil, 0)
 	client, err := winrm.NewClient(endpoint, w.Host.WinRMAuthConfig.User, w.Host.WinRMAuthConfig.Password)
@@ -180,22 +182,24 @@ func (w *Worker) RunWinRMCommand(wc chan *Worker) {
 	defer stderrwriter.Flush()
 
 	exitcode, err := client.Run(cmd, io.MultiWriter(&stdoutbuf, stdoutwriter), io.MultiWriter(&stderrbuf, stderrwriter))
+
+	defer func() {
+		core.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		if stderrbuf.Len() > 0 {
+			core.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		}
+	}()
+
 	if err != nil {
 		w.ExitStatus = exitcode
 		w.ExitError = err
 		return
 	}
-
-	core.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
-	if stderrbuf.Len() > 0 {
-		core.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
-	}
 	return
 }
 
+// RunSSHCommand executes the remote command over the SSH remote protocol
 func (w *Worker) RunSSHCommand(wc chan *Worker) {
-	// privateKey could be read from a file, or retrieved from another storage
-	// source, such as the Secret Service / GNOME Keyring
 	keydata, err := ioutil.ReadFile(filepath.Join(w.Parent.BuildDir, "data", "ssh.pem"))
 	if err != nil {
 		w.ExitStatus = 1
@@ -214,6 +218,7 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(key),
 		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", w.Host.SSHAuthConfig.Hostname, w.Host.SSHAuthConfig.Port), config)
@@ -222,7 +227,7 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 		w.ExitError = err
 		return
 	}
-	// Create a session. It is one session per command.
+
 	session, err := client.NewSession()
 	if err != nil {
 		w.ExitStatus = 1
@@ -232,14 +237,53 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 
 	defer session.Close()
 
-	var b bytes.Buffer  // import "bytes"
-	session.Stdout = &b // get output
-	// you can also pass what gets input to the stdin, allowing you to pipe
-	// content from client to server
-	//      session.Stdin = bytes.NewBufferString("My input")
+	cmd := strings.Join(w.Command, " ")
 
-	// Finally, run the command
-	// err = session.Run(cmd)
-	// return b.String(), err
+	stdoutFile := fmt.Sprintf("%s.stdout", w.LogFile)
+	stderrFile := fmt.Sprintf("%s.stderr", w.LogFile)
+
+	stdoutfile, err := os.Create(stdoutFile)
+	if err != nil {
+		w.ExitStatus = 1
+		w.ExitError = err
+		return
+	}
+	defer stdoutfile.Close()
+
+	stderrfile, err := os.Create(stderrFile)
+	if err != nil {
+		w.ExitStatus = 1
+		w.ExitError = err
+		return
+	}
+	defer stderrfile.Close()
+
+	var stdoutbuf bytes.Buffer
+	var stderrbuf bytes.Buffer
+
+	stdoutwriter := bufio.NewWriter(stdoutfile)
+	defer stdoutwriter.Flush()
+
+	stderrwriter := bufio.NewWriter(stderrfile)
+	defer stderrwriter.Flush()
+
+	session.Stdout = io.MultiWriter(&stdoutbuf, stdoutwriter)
+	session.Stderr = io.MultiWriter(&stderrbuf, stderrwriter)
+
+	err = session.Run(cmd)
+
+	defer func() {
+		core.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		if stderrbuf.Len() > 0 {
+			core.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		}
+	}()
+
+	if err != nil {
+		w.ExitStatus = 1
+		w.ExitError = err
+		return
+	}
+
 	return
 }
