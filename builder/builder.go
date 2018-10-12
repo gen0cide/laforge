@@ -141,12 +141,12 @@ func (b *BuildEngine) Do() error {
 	if err != nil {
 		return buildutil.Throw(err, "failed staging dependencies", nil)
 	}
-	core.Logger.Infof("Generated scripts and templates")
+	core.Logger.Infof("Staged dependencies for rendering")
 	err = b.Builder.GenerateScripts()
 	if err != nil {
 		return buildutil.Throw(err, "failed generating scripts", nil)
 	}
-	core.Logger.Infof("Staged dependencies for rendering")
+	core.Logger.Infof("Generated scripts and templates")
 	err = b.Builder.Render()
 	if err != nil {
 		return buildutil.Throw(err, "failed rendering build", nil)

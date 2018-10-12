@@ -2,6 +2,7 @@
 package tfgcp
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/gen0cide/laforge/builder/tfgcp/static"
+	"github.com/gen0cide/laforge/provisioner"
 	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/builder/buildutil/templates"
@@ -421,8 +423,8 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 								errChan <- err
 								return
 							}
-							filename := fmt.Sprintf("%s_%s", hostObj.Hostname, filepath.Base(scriptObj.Source))
-							assetDir := filepath.Join(team.RelBuildPath, "assets")
+							filename := filepath.Base(scriptObj.Source)
+							assetDir := filepath.Join(team.RelBuildPath, hostObj.Hostname, "assets")
 							assetPath := filepath.Join(assetDir, filename)
 							fileData, err := t.Library.Execute(fmt.Sprintf("script_%s", scriptID), scriptCtx)
 							if err != nil {
@@ -446,8 +448,8 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 							errChan <- err
 							return
 						}
-						filename := fmt.Sprintf("%s_%s", h.Hostname, "provisioned_host.tpl")
-						assetDir := filepath.Join(team.RelBuildPath, "assets")
+						filename := "provisioned_host.tpl"
+						assetDir := filepath.Join(team.RelBuildPath, h.Hostname, "assets")
 						assetPath := filepath.Join(assetDir, filename)
 						fileData, err := t.Library.Execute("provisioned_host.tf.tmpl", scriptCtx)
 						if err != nil {
@@ -494,12 +496,20 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 			RelBuildPath:  teamDir,
 		}
 		t.Base.Build.Teams[i] = team
-		assetDir := filepath.Join(teamDir, "assets")
-		os.MkdirAll(assetDir, 0755)
-		core.TouchGitKeep(assetDir)
+		//assetDir := filepath.Join(teamDir, "assets")
+		os.MkdirAll(teamDir, 0755)
+		core.TouchGitKeep(teamDir)
 	}
 
 	for _, host := range t.Base.Environment.IncludedHosts {
+		for i := 0; i < t.Base.Environment.TeamCount; i++ {
+			teamDir := t.Base.Build.Teams[i].RelBuildPath
+			hostDir := filepath.Join(teamDir, host.Hostname)
+			hostAssetDir := filepath.Join(hostDir, "assets")
+			os.MkdirAll(hostAssetDir, 0755)
+			core.TouchGitKeep(hostDir)
+			core.TouchGitKeep(hostAssetDir)
+		}
 		for _, prov := range host.Provisioners {
 			rfile, ok := prov.(*core.RemoteFile)
 			if !ok {
@@ -613,6 +623,73 @@ func (t *TerraformGCPBuilder) Render() error {
 			if err != nil {
 				errChan <- err
 				return
+			}
+			for netname, net := range t.Base.Environment.IncludedNetworks {
+				for _, host := range t.Base.Environment.HostByNetwork[netname] {
+					state := &provisioner.State{
+						Host:        host,
+						Network:     net,
+						Environment: t.Base.Environment,
+						Competition: t.Base.Competition,
+						Team:        team,
+						Steps:       []*provisioner.Step{},
+					}
+					for pid, prov := range host.Provisioners {
+						step := &provisioner.Step{
+							ID:       fmt.Sprintf("%d", pid),
+							StepType: prov.Kind(),
+							Metadata: map[string]interface{}{},
+						}
+						switch aProv := prov.(type) {
+						case *core.RemoteFile:
+							step.Name = aProv.ID
+							if aProv.SourceType != "local" {
+								step.Metadata["source_type"] = aProv.SourceType
+								step.Source = aProv.Source
+							} else {
+								aName, err := aProv.AssetName()
+								if err != nil {
+									errChan <- err
+									return
+								}
+								step.Source = aName
+							}
+							step.Destination = aProv.Destination
+							if aProv.Perms != "" {
+								step.Metadata["perms"] = aProv.Perms
+							}
+							step.Metadata["vars"] = aProv.Vars
+							step.Metadata["tags"] = aProv.Tags
+							step.Metadata["checksum"] = aProv.Checksum
+						case *core.Script:
+							step.Name = aProv.ID
+							step.Description = aProv.Description
+							step.Source = filepath.Join(".", "assets", aProv.Base())
+							step.Metadata["args"] = aProv.Args
+							step.Metadata["ignore_errors"] = aProv.IgnoreErrors
+							step.Metadata["cooldown"] = aProv.Cooldown
+							step.Metadata["source_type"] = aProv.SourceType
+							step.Metadata["language"] = aProv.Language
+							step.Metadata["vars"] = aProv.Vars
+							step.Metadata["tags"] = aProv.Tags
+							step.Metadata["maintainer"] = aProv.Maintainer
+						case *core.DNSRecord:
+							step.Name = aProv.ID
+						}
+						state.Steps = append(state.Steps, step)
+					}
+					jsonData, err := json.MarshalIndent(state, "", "  ")
+					if err != nil {
+						errChan <- err
+						return
+					}
+					stateFilePath := filepath.Join(teamDir, host.Hostname, "config.json")
+					err = ioutil.WriteFile(stateFilePath, jsonData, 0644)
+					if err != nil {
+						errChan <- err
+						return
+					}
+				}
 			}
 		}(i)
 	}

@@ -21,7 +21,7 @@ type Network struct {
 // IncludedNetwork is a configuration type used to parse included_hosts out of an environment config.
 type IncludedNetwork struct {
 	Name  string   `hcl:"name,label" json:"name,omitempty"`
-	Hosts []string `hcl:"included_hosts,attr" json:"included_hosts:omitempty"`
+	Hosts []string `hcl:"included_hosts,attr" json:"included_hosts,omitempty"`
 }
 
 // GetCaller implements the Mergeable interface

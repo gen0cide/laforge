@@ -39,8 +39,8 @@ func (b *Build) AssetForTeam(teamID int, assetName string) string {
 }
 
 // RelAssetForTeam is a template helper function that returns the relative location of team specific assets
-func (b *Build) RelAssetForTeam(teamID int, assetName string) string {
-	return strings.Replace(filepath.Join(".", "assets", assetName), "\\", "/", -1)
+func (b *Build) RelAssetForTeam(teamID int, hostname, assetName string) string {
+	return strings.Replace(filepath.Join(".", hostname, "assets", assetName), "\\", "/", -1)
 }
 
 // MergeFromDB loads and merges the build's DB file into the current build object

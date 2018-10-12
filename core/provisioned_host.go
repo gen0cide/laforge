@@ -8,6 +8,7 @@ type ProvisionedHost struct {
 	TeamID          string           `hcl:"team_id,attr" json:"team_id,omitempty"`
 	HostID          string           `hcl:"host_id,attr" json:"host_id,omitempty"`
 	Active          bool             `hcl:"active,attr" json:"active,omitempty"`
+	LocalAddr       string           `hcl:"local_addr,attr" json:"local_addr,omitempty"`
 	RemoteAddr      string           `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
 	SSHAuthConfig   *SSHAuthConfig   `hcl:"ssh,block" json:"ssh_config,omitempty"`
 	WinRMAuthConfig *WinRMAuthConfig `hcl:"winrm,block" json:"winrm_config,omitempty"`

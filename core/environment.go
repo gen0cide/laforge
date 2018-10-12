@@ -31,9 +31,9 @@ type Environment struct {
 	Maintainer       *User               `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	BaseDir          string              `json:"base_dir,omitempty"`
-	IncludedNetworks map[string]*Network `json:"networks"`
+	IncludedNetworks map[string]*Network `json:"-"`
 	IncludedHosts    map[string]*Host    `json:"-"`
-	HostByNetwork    map[string][]*Host  `json:"hosts_by_network"`
+	HostByNetwork    map[string][]*Host  `json:"-"`
 	Caller           Caller              `json:"-"`
 }
 

@@ -4,6 +4,7 @@ provisioned_host "{{ $.Host.ID }}" {
 
   active = "${host_active}"
   remote_addr = "${remote_addr}"
+  local_addr = "${local_addr}"
 
   {{ if $.Host.IsWindows }}
   winrm {

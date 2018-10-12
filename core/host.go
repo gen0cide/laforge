@@ -25,17 +25,17 @@ type Host struct {
 	ExposedUDPPorts  []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
 	OverridePassword string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
 	UserGroups       []string               `hcl:"user_groups,attr" json:"user_groups,omitempty"`
-	Dependencies     []*Dependency          `hcl:"depends_on,block" json:"included_dependencies,omitempty"`
+	Dependencies     []*HostDependency      `hcl:"depends_on,block" json:"dependencies,omitempty"`
 	IO               IO                     `hcl:"io,block" json:"io,omitempty"`
 	Vars             map[string]string      `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags             map[string]string      `hcl:"tags,attr" json:"tags,omitempty"`
 	Maintainer       *User                  `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	OnConflict       OnConflict             `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller           Caller                 `json:"-"`
-	Scripts          map[string]*Script     `json:"scripts,omitempty"`
-	Commands         map[string]*Command    `json:"commands,omitempty"`
-	Files            map[string]*RemoteFile `json:"files,omitempty"`
-	DNSRecords       map[string]*DNSRecord  `json:"dns_records,omitempty"`
+	Scripts          map[string]*Script     `json:"-"`
+	Commands         map[string]*Command    `json:"-"`
+	Files            map[string]*RemoteFile `json:"-"`
+	DNSRecords       map[string]*DNSRecord  `json:"-"`
 }
 
 // Disk is a configurable type for setting the root volume's disk size in GB
@@ -43,8 +43,8 @@ type Disk struct {
 	Size int `hcl:"size,attr" json:"size,omitempty"`
 }
 
-// Dependency is a configurable type for defining host or network dependencies to allow a dependency graph to be honored during deployment
-type Dependency struct {
+// HostDependency is a configurable type for defining host or network dependencies to allow a dependency graph to be honored during deployment
+type HostDependency struct {
 	HostID     string     `hcl:"host,attr" json:"host,omitempty"`
 	NetworkID  string     `hcl:"network,attr" json:"network,omitempty"`
 	Host       *Host      `json:"-"`

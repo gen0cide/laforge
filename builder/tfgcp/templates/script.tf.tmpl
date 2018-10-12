@@ -18,7 +18,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
         password = "{{ .Competition.RootPassword }}"
       }
 
-      source      = "assets/{{ .Host.Hostname }}_{{ .Script.Base }}"
+      source      = "{{ .Host.Hostname }}/assets/{{ .Script.Base }}"
       {{ if eq .Script.Language "shell" }}
         destination = "{{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}"
       {{ else }}
@@ -34,7 +34,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
         timeout     = "60m"
         private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
       }
-      source      = "assets/{{ .Host.Hostname }}_{{ .Script.Base }}"
+      source      = "{{ .Host.Hostname }}/assets/{{ .Script.Base }}"
       destination = "{{ $dstfile }}"
     {{ end }}
   }

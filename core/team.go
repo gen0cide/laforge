@@ -15,8 +15,8 @@ type Team struct {
 	ProvisionedHosts []*ProvisionedHost          `hcl:"provisioned_host,block" json:"provisioned_hosts,omitempty"`
 	ActiveHosts      map[string]*ProvisionedHost `json:"active_hosts,omitempty"`
 	Maintainer       *User                       `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	Build            *Build                      `json:"build,omitempty"`
-	Environment      *Environment                `json:"environment,omitempty"`
+	Build            *Build                      `json:"-"`
+	Environment      *Environment                `json:"-"`
 	RelBuildPath     string                      `json:"-"`
 	OnConflict       OnConflict                  `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller           Caller                      `json:"-"`
