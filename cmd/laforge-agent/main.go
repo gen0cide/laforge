@@ -191,7 +191,7 @@ func restartagent(c *cli.Context) error {
 
 func installagent(c *cli.Context) error {
 	core.Logger.Warnf("Installing Laforge Agent...")
-	err := serviceObj.Start()
+	err := serviceObj.Install()
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func installagent(c *cli.Context) error {
 
 func uninstallagent(c *cli.Context) error {
 	core.Logger.Warnf("Uninstalling Laforge Agent...")
-	err := serviceObj.Start()
+	err := serviceObj.Uninstall()
 	if err != nil {
 		return err
 	}
@@ -211,11 +211,18 @@ func uninstallagent(c *cli.Context) error {
 
 func agentstatus(c *cli.Context) error {
 	core.Logger.Warnf("Uninstalling Laforge Agent...")
-	err := serviceObj.Start()
+	stat, err := serviceObj.Status()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Service Uninstalled.")
+	switch stat {
+	case service.StatusUnknown:
+		core.Logger.Warnf("Status: UNKNOWN")
+	case service.StatusRunning:
+		core.Logger.Warnf("Status: RUNNING")
+	case service.StatusStopped:
+		core.Logger.Warnf("Status: STOPPED")
+	}
 	return nil
 }
 

@@ -249,22 +249,37 @@ EOF
         "{{ $resource_name }}",
       ]
 
-      depends_on = [
-        {{ range $_, $dep := $host.Dependencies }}
-          {{ $dep_name := printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $dep.NetworkID $dep.HostID }}
-          "google_compute_instance.{{ $dep_name }}",
-          {{ if ne $dep.StepID -1 }}
-            "null_resource.provision_{{ $dep_name }}_step{{ $dep.StepID }}",
-          {{ end }}
+      provisioner "file" {
+        {{ if $host.IsWindows }}
+          connection {
+            host     = "${google_compute_address.{{ $resource_name }}.address}"
+            type     = "winrm"
+            user     = "Administrator"
+            timeout  = "60m"
+            password = "{{ $.Competition.RootPassword }}"
+          }
+        {{ else }}
+          connection {
+            agent       = "false"
+            host        = "${google_compute_address.{{ $resource_name }}.address}"
+            type        = "ssh"
+            user        = "root"
+            timeout     = "60m"
+            private_key = "${file("{{ index $.Build.Config "rel_ssh_private_key_file" }}")}"
+          }
         {{ end }}
-        {{ if ne $host.ID "ns01" }}
-          "null_resource.dns_provisioned",
+
+        source = "./{{ $host.Hostname }}"
+        {{ if $host.IsWindows }}
+          destination = "C:\\laforge-agent"
+        {{ else }}
+          destination = "/opt/laforge-agent"
         {{ end }}
-      ]
+      }
     }
 
     output "{{ $host.Hostname }}.private_ip" {
-      value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.address}"
+      value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
     }
 
     output "{{ $host.Hostname }}.public_ip" {
@@ -273,7 +288,7 @@ EOF
 
     {{ if $host.TagEquals "vdi" "true" }}
     resource "google_dns_record_set" "{{ $resource_name }}" {
-      managed_zone = "${data.google_dns_managed_zone.{{ $dnsz}}.name}"
+      managed_zone = "${data.google_dns_managed_zone.{{ $dnsz }}.name}"
 
       name = "{{ $host.Hostname }}.{{ $net }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.ID }}.${data.google_dns_managed_zone.{{ $dnsz }}.dns_name}"
       type = "A"
@@ -304,75 +319,6 @@ EOF
       content = "${data.template_file.{{ $resource_name }}.rendered}"
       filename = "./{{ $host.Hostname }}/{{ $host.ID }}.laforge"
     }
-
-    {{ if gt (len $host.Provisioners) 0 }}
-      {{ range $step_number, $prov := $host.Provisioners }}
-        {{ $subcontext := $.Clone }}
-        {{ if eq $step_number 0 }}
-          {{ $_ := $subcontext.Set "depends_on" (printf "google_compute_instance.%s" $resource_name) }}
-        {{ else }}
-          {{ $_ := $subcontext.Set "depends_on" (printf "null_resource.provision_%s_step%d" $resource_name (Decr $step_number)) }}
-        {{ end }}
-        {{ if eq $prov.Kind "dns_record" }}
-          {{ $_ := $subcontext.Set "resource_name" $resource_name }}
-          {{ $_ := $subcontext.Set "dns_server_resource" (printf "${google_compute_instance.%s.network_interface.0.access_config.0.nat_ip}" $dns_resource_name) }}
-          {{ $_ := $subcontext.Set "step_number" (printf "%d" $step_number) }}
-          {{ $_ := $subcontext.Attach $prov $host }}
-          {{ template "dns_record" $subcontext }}
-        {{ end }}
-        {{ if eq $prov.Kind "remote_file" }}
-          {{ $_ := $subcontext.Set "resource_name" $resource_name }}
-          {{ $_ := $subcontext.Set "step_number" (printf "%d" $step_number) }}
-          {{ $_ := $subcontext.Attach $prov $host }}
-          {{ template "remote_file" $subcontext }}
-        {{ end }}
-        {{ if eq $prov.Kind "command" }}
-          {{ $_ := $subcontext.Set "resource_name" $resource_name }}
-          {{ $_ := $subcontext.Set "step_number" (printf "%d" $step_number) }}
-          {{ $_ := $subcontext.Attach $prov $host }}
-          {{ template "command" $subcontext }}
-        {{ end }}
-        {{ if eq $prov.Kind "script" }}
-          {{ $_ := $subcontext.Set "resource_name" $resource_name }}
-          {{ $_ := $subcontext.Set "step_number" (printf "%d" $step_number) }}
-          {{ $_ := $subcontext.Attach $prov $host }}
-          {{ template "script" $subcontext }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-
-    {{ if eq $host.ID "ns01" }}
-      {{ $last_step_num := Decr (len $host.Provisioners) }}
-
-      provider "dns" {
-        update {
-          server = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
-        }
-      }
-
-      resource "google_storage_bucket_object" "{{ $resource_name }}-root-dns" {
-        name   = "{{ $.Environment.Builder }}-{{ $.Environment.ID }}-t{{ $.Team.TeamNumber}}-root-dns.txt"
-        content = "${google_compute_instance.{{ $resource_name }}.network_interface.0.address}"
-        bucket = "{{ index $.Build.Config "gcp_storage_bucket" }}"
-
-        depends_on = [
-          "google_compute_instance.{{ $resource_name }}",
-          "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
-        ]
-      }
-
-      resource "null_resource" "dns_provisioned" {
-        triggers {
-          instance_id = "${google_compute_instance.{{ $resource_name }}.instance_id},${google_storage_bucket_object.{{ $resource_name }}-root-dns.md5hash}"
-        }
-
-        depends_on = [
-          "google_compute_instance.{{ $resource_name }}",
-          "google_storage_bucket_object.{{ $resource_name }}-root-dns",
-          "null_resource.provision_{{ $resource_name }}_step{{ $last_step_num }}",
-        ]
-      }
-    {{ end }}
   {{ end }}
 {{ end }}
 

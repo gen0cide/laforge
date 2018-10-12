@@ -4,22 +4,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ReqInitialize is used to initialize the configuration state
+func (e *Engine) ReqInitialize(c *gin.Context) {
+	err := e.LoadConfig()
+	if err != nil {
+		c.JSON(500, map[string]string{
+			"status": "error",
+			"path":   c.Request.RequestURI,
+			"source": c.ClientIP(),
+			"error":  err.Error(),
+		})
+		return
+	}
+	c.JSON(200, map[string]string{
+		"status":          "ok",
+		"path":            c.Request.RequestURI,
+		"source":          c.ClientIP(),
+		"config_hostname": e.Config.Host.Hostname,
+	})
+}
+
 // ReqGetStatus returns the current agent status
 func (e *Engine) ReqGetStatus(c *gin.Context) {
-	c.JSON(200, map[string]string{
-		"status": "ok",
-		"path":   c.Request.RequestURI,
-		"source": c.ClientIP(),
-	})
+	c.JSON(200, e.GetStatus())
 }
 
 // ReqGetState returns a full dump of the agent's state
 func (e *Engine) ReqGetState(c *gin.Context) {
-	c.JSON(200, map[string]string{
-		"status": "ok",
-		"path":   c.Request.RequestURI,
-		"source": c.ClientIP(),
-	})
+	c.JSON(200, e.Config)
 }
 
 // ReqGetSteps returns a full dump of the agent's steps

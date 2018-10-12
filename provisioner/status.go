@@ -2,6 +2,8 @@ package provisioner
 
 import (
 	"time"
+
+	"github.com/gen0cide/utils/uptime"
 )
 
 const (
@@ -29,10 +31,23 @@ type StatusCode string
 
 // Status is a response object to API calls
 type Status struct {
-	Code           StatusCode
-	StartedAt      time.Time
-	ElapsedTime    time.Duration
-	CurrentStep    *Step
-	TotalSteps     int
-	CompletedSteps int
+	Code           StatusCode    `json:"code,omitempty"`
+	StartedAt      time.Time     `json:"started_at,omitempty"`
+	ElapsedTime    time.Duration `json:"elapsed_time,omitempty"`
+	CompletedAt    time.Time     `json:"completed_at,omitempty"`
+	Uptime         int64         `json:"uptime,omitempty"`
+	CurrentStep    *Step         `json:"current_step,omitempty"`
+	TotalSteps     int           `json:"total_steps,omitempty"`
+	CompletedSteps int           `json:"completed_steps,omitempty"`
+}
+
+// NewEmptyStatus returns a status object empty except for uptime
+func NewEmptyStatus() *Status {
+	ut, err := uptime.Uptime()
+	if err != nil {
+		panic(err)
+	}
+	return &Status{
+		Uptime: ut,
+	}
 }
