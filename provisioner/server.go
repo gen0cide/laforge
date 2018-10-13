@@ -5,6 +5,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
+
+	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/kardianos/service"
 )
@@ -15,7 +18,6 @@ var ServerPort = 9971
 // Engine is the primary engine type within the provisioning agent
 type Engine struct {
 	Config  *State
-	Current *State
 	Server  *gin.Engine
 	Service service.Service
 }
@@ -29,12 +31,22 @@ func NewEngine() *Engine {
 // Start implements the Interface type for service functionality
 func (e *Engine) Start(s service.Service) error {
 	e.Service = s
+	if AsyncWorker == nil {
+		AsyncWorker = &Worker{}
+	}
+	err := StartLogger()
+	if err != nil {
+		return err
+	}
+	go AsyncWorker.Spawn()
 	go e.Serve()
 	return nil
 }
 
 // Stop implements the Interface type for service functionality
 func (e *Engine) Stop(s service.Service) error {
+	LogFile.Sync()
+	LogFile.Close()
 	return nil
 }
 
@@ -45,6 +57,8 @@ func (e *Engine) Serve() {
 	}
 
 	r := gin.Default()
+
+	r.Use(ginrus.Ginrus(Logger, time.RFC3339, true))
 
 	r.GET("/api/initialize", e.ReqInitialize)
 	r.GET("/api/status", e.ReqGetStatus)
@@ -68,7 +82,12 @@ func (e *Engine) Serve() {
 		return
 	}
 
-	e.LoadConfig()
+	if Initialized() {
+		err = e.LoadConfig()
+		if err != nil {
+			Logger.Errorf("could not load initialized config: %v", err)
+		}
+	}
 
 	e.Server.Run(fmt.Sprintf(":%d", ServerPort))
 	return
@@ -76,18 +95,23 @@ func (e *Engine) Serve() {
 
 // LoadConfig loads the base configuration of the host
 func (e *Engine) LoadConfig() error {
-	state, err := LoadStateFile(ConfigFile())
+	if AsyncWorker == nil {
+		return errors.New("async worker is nil")
+	}
+
+	err := AsyncWorker.Load(ConfigFile())
 	if err != nil {
 		return err
 	}
-	e.Config = state
+
+	e.Config = AsyncWorker.Config
 	return nil
 }
 
 // GetStatus returns the current status of the engine
 func (e *Engine) GetStatus() *Status {
 	status := NewEmptyStatus()
-	if e.Config == nil {
+	if !Initialized() {
 		status.Code = StatusBootingUp
 		return status
 	}
@@ -106,6 +130,19 @@ func (e *Engine) GetStatus() *Status {
 		status.Code = StatusRunningStep
 		status.ElapsedTime = time.Since(e.Config.InitializedAt)
 		status.CurrentStep = e.Config.CurrentStep
+		return status
+	case "awaiting_reboot":
+		status.Code = StatusRunningStep
+		status.ElapsedTime = time.Since(e.Config.InitializedAt)
+		status.CurrentStep = e.Config.CurrentStep
+		return status
+	case "errored":
+		status.Code = StatusIdle
+		status.ElapsedTime = time.Since(e.Config.InitializedAt)
+		status.CurrentStep = e.Config.CurrentStep
+		return status
+	case "pending":
+		status.Code = StatusRefreshing
 		return status
 	}
 	return status

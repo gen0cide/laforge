@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/gen0cide/laforge/builder/tfgcp/static"
 	"github.com/gen0cide/laforge/provisioner"
@@ -626,34 +627,33 @@ func (t *TerraformGCPBuilder) Render() error {
 			}
 			for netname, net := range t.Base.Environment.IncludedNetworks {
 				for _, host := range t.Base.Environment.HostByNetwork[netname] {
+					ts := time.Now()
 					state := &provisioner.State{
-						Host:        host,
-						Network:     net,
-						Environment: t.Base.Environment,
-						Competition: t.Base.Competition,
-						Team:        team,
-						Steps:       []*provisioner.Step{},
+						Host:         host,
+						Network:      net,
+						Environment:  t.Base.Environment,
+						Competition:  t.Base.Competition,
+						Team:         team,
+						Steps:        []*provisioner.Step{},
+						RenderedAt:   ts,
+						Revision:     ts.UTC().Unix(),
+						CurrentState: "pending",
 					}
 					for pid, prov := range host.Provisioners {
 						step := &provisioner.Step{
-							ID:       fmt.Sprintf("%d", pid),
+							ID:       pid,
 							StepType: prov.Kind(),
 							Metadata: map[string]interface{}{},
 						}
 						switch aProv := prov.(type) {
 						case *core.RemoteFile:
 							step.Name = aProv.ID
-							if aProv.SourceType != "local" {
-								step.Metadata["source_type"] = aProv.SourceType
-								step.Source = aProv.Source
-							} else {
-								aName, err := aProv.AssetName()
-								if err != nil {
-									errChan <- err
-									return
-								}
-								step.Source = aName
+							aName, err := aProv.AssetName()
+							if err != nil {
+								errChan <- err
+								return
 							}
+							step.Source = aName
 							step.Destination = aProv.Destination
 							if aProv.Perms != "" {
 								step.Metadata["perms"] = aProv.Perms

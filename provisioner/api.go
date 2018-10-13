@@ -6,21 +6,23 @@ import (
 
 // ReqInitialize is used to initialize the configuration state
 func (e *Engine) ReqInitialize(c *gin.Context) {
+	if Initialized() {
+		c.JSON(404, map[string]string{
+			"status":  "error",
+			"message": "agent already initialized",
+		})
+		return
+	}
 	err := e.LoadConfig()
 	if err != nil {
 		c.JSON(500, map[string]string{
-			"status": "error",
-			"path":   c.Request.RequestURI,
-			"source": c.ClientIP(),
-			"error":  err.Error(),
+			"status":  "error",
+			"message": err.Error(),
 		})
 		return
 	}
 	c.JSON(200, map[string]string{
-		"status":          "ok",
-		"path":            c.Request.RequestURI,
-		"source":          c.ClientIP(),
-		"config_hostname": e.Config.Host.Hostname,
+		"status": "ok",
 	})
 }
 

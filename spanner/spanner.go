@@ -94,7 +94,7 @@ func (s *Spanner) CreateWorkerPool() error {
 // Verify attempts to validate the constructs of the spanner
 func (w *Worker) Verify() error {
 	if w.ExecType == "remote-exec" {
-		provisionedHostFile := filepath.Join(w.TeamDir, "provisioned_hosts", fmt.Sprintf("%s.laforge", w.HostID))
+		provisionedHostFile := filepath.Join(w.TeamDir, w.HostID, fmt.Sprintf("%s.laforge", w.HostID))
 		if _, err := os.Stat(provisionedHostFile); os.IsNotExist(err) {
 			return fmt.Errorf("team %d does not have an active host %s", w.TeamID, w.HostID)
 		}
