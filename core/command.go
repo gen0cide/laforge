@@ -8,7 +8,7 @@ import (
 
 // Command represents an executable command that can be defined as part of a host configuration step
 type Command struct {
-	ID           string            `hcl:",label" json:"id,omitempty"`
+	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
 	Description  string            `hcl:"description,attr" json:"description,omitempty"`
 	Program      string            `hcl:"program,attr" json:"program,omitempty"`
@@ -20,8 +20,8 @@ type Command struct {
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
 	OnConflict   OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Caller       Caller            `json:"-"`
 	Maintainer   *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	Caller       Caller            `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface

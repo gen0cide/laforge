@@ -1,9 +1,11 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/hcl2/ext/include"
@@ -259,4 +261,51 @@ func (l *Loader) Bind() (*Laforge, error) {
 		currLen = newLen
 	}
 	return l.Deconflict(filenames)
+}
+
+type transientContext struct {
+	Build       *Build       `hcl:"build,block"`
+	Competition *Competition `hcl:"competition,block"`
+	Command     *Command     `hcl:"command,block"`
+	DNSRecord   *DNSRecord   `hcl:"dns_record,block"`
+	Environment *Environment `hcl:"environment,block"`
+	Host        *Host        `hcl:"host,block"`
+	Identity    *Identity    `hcl:"identity,block"`
+	Network     *Network     `hcl:"network,block"`
+	RemoteFile  *RemoteFile  `hcl:"remote_file,block"`
+	Script      *Script      `hcl:"script,block"`
+	Team        *Team        `hcl:"team,block"`
+	User        *User        `hcl:"user,block"`
+	AMI         *AMI         `hcl:"ami,block"`
+}
+
+// HCLBytesToObject renders bytes into an object of a specific type
+func HCLBytesToObject(data []byte, v interface{}) error {
+	loader := NewLoader()
+	into := reflect.ValueOf(v)
+	intoRaw := into.Elem()
+	file, diags := loader.Parser.ParseHCL(data, fmt.Sprintf("parse-%s-in-memory", intoRaw.Type().Name()))
+	if diags.HasErrors() {
+		return diags
+	}
+	if file == nil {
+		return errors.New("hcl file AST returned nil from parsing")
+	}
+	tc := &transientContext{}
+	diags = gohcl2.DecodeBody(file.Body, nil, tc)
+	if diags.HasErrors() {
+		return diags
+	}
+
+	cont := reflect.ValueOf(tc)
+	cont = cont.Elem()
+
+	newVal := cont.FieldByName(intoRaw.Type().Name())
+	if newVal.IsNil() {
+		return fmt.Errorf("a field of type %s was expected but not found in the data", intoRaw.Type().Name())
+	}
+
+	newValData := newVal.Elem()
+	intoRaw.Set(newValData)
+	return nil
 }

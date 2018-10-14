@@ -49,6 +49,7 @@ func (s *SSH) SetConfig(sc core.ShellConfig) error {
 	return nil
 }
 
+// LaunchInteractiveShell attempts to launch a full functional TTY shell through SSH
 func (s *SSH) LaunchInteractiveShell() error {
 	pubkey, err := PublicKeyFile(s.Config.IdentityFile)
 	if err != nil {
@@ -63,7 +64,7 @@ func (s *SSH) LaunchInteractiveShell() error {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	socket := fmt.Sprintf("%s:%d", s.Config.Hostname, s.Config.Port)
+	socket := fmt.Sprintf("%s:%d", s.Config.RemoteAddr, s.Config.Port)
 	conn, err := ssh.Dial("tcp", socket, config)
 	if err != nil {
 		return errors.WithMessage(err, fmt.Sprintf("failed to connect to %s", socket))

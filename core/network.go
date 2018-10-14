@@ -8,7 +8,7 @@ import (
 
 // Network defines a network within a competition environment
 type Network struct {
-	ID         string            `hcl:",label" json:"id,omitempty"`
+	ID         string            `hcl:"id,label" json:"id,omitempty"`
 	Name       string            `hcl:"name,attr" json:"name,omitempty"`
 	CIDR       string            `hcl:"cidr,attr" json:"cidr,omitempty"`
 	VDIVisible bool              `hcl:"vdi_visible,attr" json:"vdi_visible,omitempty"`

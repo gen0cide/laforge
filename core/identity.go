@@ -9,7 +9,7 @@ import (
 
 // Identity defines a generic human identity primative that can be extended into Employee, Customer, Client, etc.
 type Identity struct {
-	ID          string            `hcl:",label" json:"id,omitempty"`
+	ID          string            `hcl:"id,label" json:"id,omitempty"`
 	Firstname   string            `hcl:"firstname,attr" json:"firstname,omitempty"`
 	Lastname    string            `hcl:"lastname,attr" json:"lastname,omitempty"`
 	Email       string            `hcl:"email,attr" json:"email,omitempty"`

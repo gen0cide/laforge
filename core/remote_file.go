@@ -13,9 +13,9 @@ import (
 
 // RemoteFile is a configurable type that defines a static file that will be placed on a configured target host.
 type RemoteFile struct {
-	ID          string            `hcl:",label" json:"id,omitempty"`
-	SourceType  string            `hcl:"type,attr" json:"source_type,omitempty"`
-	Source      string            `hcl:"source,attr" json:"source_path,omitempty"`
+	ID          string            `hcl:"id,label" json:"id,omitempty"`
+	SourceType  string            `hcl:"source_type,attr" json:"source_type,omitempty"`
+	Source      string            `hcl:"source,attr" json:"source,omitempty"`
 	Destination string            `hcl:"destination,attr" json:"destination,omitempty"`
 	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
@@ -23,9 +23,9 @@ type RemoteFile struct {
 	Perms       string            `hcl:"perms,attr" json:"perms,omitempty"`
 	Disabled    bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
 	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Checksum    string            `hcl:"md5,attr" json:"md5,omitempty"`
 	Caller      Caller            `json:"-"`
 	AbsPath     string            `json:"-"`
-	Checksum    string            `json:"checksum,omitempty"`
 	Ext         string            `json:"-"`
 }
 

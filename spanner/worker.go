@@ -44,12 +44,14 @@ func (w *Worker) ResolveProvisionedHost() error {
 		return err
 	}
 
-	provisionedHost, found := tlf.Team.ActiveHosts[w.HostID]
-	if !found || (provisionedHost != nil && provisionedHost.Active == false) {
-		return fmt.Errorf("Host %s is currently not active in team %d environment", w.HostID, w.TeamID)
-	}
+	_ = tlf
 
-	w.Host = provisionedHost
+	// provisionedHost, found := tlf.Team.ActiveHosts[w.HostID]
+	// if !found || (provisionedHost != nil && provisionedHost.Active == false) {
+	// 	return fmt.Errorf("Host %s is currently not active in team %d environment", w.HostID, w.TeamID)
+	// }
+
+	// w.Host = provisionedHost
 	return nil
 }
 
@@ -221,7 +223,7 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", w.Host.SSHAuthConfig.Hostname, w.Host.SSHAuthConfig.Port), config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", w.Host.SSHAuthConfig.RemoteAddr, w.Host.SSHAuthConfig.Port), config)
 	if err != nil {
 		w.ExitStatus = 1
 		w.ExitError = err
@@ -286,4 +288,20 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 	}
 
 	return
+}
+
+// Verify attempts to validate the constructs of the spanner
+func (w *Worker) Verify() error {
+	if w.ExecType == "remote-exec" {
+		provisionedHostFile := filepath.Join(w.TeamDir, w.HostID, fmt.Sprintf("%s.laforge", w.HostID))
+		if _, err := os.Stat(provisionedHostFile); os.IsNotExist(err) {
+			return fmt.Errorf("team %d does not have an active host %s", w.TeamID, w.HostID)
+		}
+		err := w.ResolveProvisionedHost()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -10,7 +10,7 @@ import (
 
 // Script defines a configurable type for an executable script object within the laforge configuration
 type Script struct {
-	ID           string            `hcl:",label" json:"id,omitempty"`
+	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
 	Language     string            `hcl:"language,attr" json:"language,omitempty"`
 	Description  string            `hcl:"description,attr" json:"description,omitempty"`
@@ -25,6 +25,7 @@ type Script struct {
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
 	OnConflict   OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Findings     []*Finding        `hcl:"finding,block" json:"findings,omitempty"`
 	Caller       Caller            `json:"-"`
 }
 

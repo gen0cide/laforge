@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/core"
 )
 
+// WinRM is a type to connection to Windows hosts remotely over the WinRM protocol
 type WinRM struct {
 	Config *core.WinRMAuthConfig
 	Stdin  io.Reader
@@ -48,7 +49,7 @@ func (w *WinRM) SetConfig(sc core.ShellConfig) error {
 // LaunchInteractiveShell implements the Sheller interface
 func (w *WinRM) LaunchInteractiveShell() error {
 	endpoint := winrm.NewEndpoint(
-		w.Config.Hostname,
+		w.Config.RemoteAddr,
 		w.Config.Port,
 		w.Config.HTTPS,
 		w.Config.SkipVerify,

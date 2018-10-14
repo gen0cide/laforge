@@ -41,7 +41,7 @@ func defaultDNSRecord() *DNSRecord {
 		ID:         "example_dns_record_config",
 		Name:       "www",
 		Type:       "CNAME",
-		Value:      "foo01.bar.com",
+		Values:     []string{"foo01.bar.com"},
 		Disabled:   true,
 		OnConflict: defaultOnConflict(),
 	}
@@ -222,13 +222,16 @@ func defaultCompetition(name string) *Competition {
 			},
 		},
 		Remote: &Remote{
-			ID:            "default",
-			Type:          "disabled",
-			Region:        "us-west-2",
-			Key:           "AWS_API_KEY",
-			Secret:        "AWS_API_SECRET",
-			StateBucket:   "S3_BUCKET_FOR_STATE",
-			StorageBucket: "S3_BUCKET_FOR_STORAGE",
+			ID:   "default",
+			Type: "disabled",
+			Config: map[string]string{
+				"example-key": "example-val",
+			},
+			// Region:        "us-west-2",
+			// Key:           "AWS_API_KEY",
+			// Secret:        "AWS_API_SECRET",
+			// StateBucket:   "S3_BUCKET_FOR_STATE",
+			// StorageBucket: "S3_BUCKET_FOR_STORAGE",
 		},
 	}
 }

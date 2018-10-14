@@ -6,6 +6,7 @@ import (
 	"github.com/gen0cide/laforge/core"
 )
 
+// Sheller is an interface to define remote connections to hosts
 type Sheller interface {
 	// Kind denotes the type of configuration
 	Kind() string

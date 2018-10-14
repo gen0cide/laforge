@@ -24,36 +24,37 @@ var (
 
 // SSHAuthConfig defines how Laforge should connect via SSH to a provisioned host
 type SSHAuthConfig struct {
-	Hostname        string        `hcl:"hostname,attr" json:"hostname,omitempty"`
+	RemoteAddr      string        `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
 	Port            int           `hcl:"port,attr" json:"port,omitempty"`
 	User            string        `hcl:"user,attr" json:"user,omitempty"`
 	Password        string        `hcl:"password,attr" json:"password,omitempty"`
-	IdentityFile    string        `hcl:"identity_file,attr" json:"identity_file"`
+	IdentityFile    string        `hcl:"identity_file,attr" json:"identity_file,omitempty"`
 	IdentityFileRef *LocalFileRef `json:"-"`
 }
 
 // WinRMAuthConfig defines how Laforge should connect via WinRM to a provisioned host
 type WinRMAuthConfig struct {
-	Hostname      string        `hcl:"hostname,attr" json:"ip,omitempty"`
+	RemoteAddr    string        `hcl:"remote_addr,attr" json:"ip,omitempty"`
 	Port          int           `hcl:"port,attr" json:"port,omitempty"`
 	HTTPS         bool          `hcl:"https,attr" json:"https,omitempty"`
 	SkipVerify    bool          `hcl:"skip_verify,attr" json:"skip_verify,omitempty"`
 	TLSServerName string        `hcl:"tls_server_name,attr" json:"tls_server_name,omitempty"`
 	CAFile        string        `hcl:"ca_file,attr" json:"ca_file,omitempty"`
-	CAFileRef     *LocalFileRef `json:"-"`
 	CertFile      string        `hcl:"cert_file,attr" json:"cert_file,omitempty"`
-	CertFileRef   *LocalFileRef `json:"-"`
 	KeyFile       string        `hcl:"key_file,attr" json:"key_file,omitempty"`
-	KeyFileRef    *LocalFileRef `json:"-"`
 	User          string        `hcl:"user,attr" json:"user,omitempty"`
 	Password      string        `hcl:"password,attr" json:"password,omitempty"`
+	KeyFileRef    *LocalFileRef `json:"-"`
+	CertFileRef   *LocalFileRef `json:"-"`
+	CAFileRef     *LocalFileRef `json:"-"`
 }
 
 // Name is a helper function to calculate a team unique name on the fly
 func (t *Team) Name() string {
 	labels := []string{
-		t.Build.Builder,
+		t.Build.ID,
 		t.Environment.ID,
+		t.Competition.ID,
 		fmt.Sprintf("%v", t.TeamNumber),
 	}
 	return strcase.ToSnake(strings.Join(labels, "_"))

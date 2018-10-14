@@ -4,7 +4,7 @@ import "github.com/pkg/errors"
 
 // DNS represents a configurable type for the creation of competition DNS infrastructure
 type DNS struct {
-	ID         string            `hcl:",label" json:"id,omitempty"`
+	ID         string            `hcl:"id,label" json:"id,omitempty"`
 	Type       string            `hcl:"type,attr" json:"type,omitempty"`
 	RootDomain string            `hcl:"root_domain,attr" json:"root_domain,omitempty"`
 	DNSServers []string          `hcl:"dns_servers,attr" json:"dns_servers,omitempty"`
