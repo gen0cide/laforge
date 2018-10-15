@@ -33,11 +33,38 @@ func performdump(c *cli.Context) error {
 
 	switch strings.ToLower(c.Args().Get(0)) {
 	case "build":
-		pp.Println(base.Build)
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.Builds)
+			os.Exit(0)
+		}
+		rec, found := base.Builds[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "build")
+		}
+		pp.Println(rec)
 	case "competition":
-		pp.Println(base.Competition)
-	case "dns":
-		pp.Println(base.Competition.DNS)
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.Competitions)
+			os.Exit(0)
+		}
+		rec, found := base.Competitions[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "competition")
+		}
+		pp.Println(rec)
+	case "environment":
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.Environments)
+			os.Exit(0)
+		}
+		rec, found := base.Environments[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "environment")
+		}
+		pp.Println(rec)
 	case "dns_record":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
@@ -57,11 +84,9 @@ func performdump(c *cli.Context) error {
 		}
 		rec, found := base.DNSRecords[param]
 		if !found {
-			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "dns_record")
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "command")
 		}
 		pp.Println(rec)
-	case "environment":
-		pp.Println(base.Environment)
 	case "host":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
@@ -98,10 +123,10 @@ func performdump(c *cli.Context) error {
 	case "remote_file":
 		param := c.Args().Get(1)
 		if len(param) == 0 {
-			pp.Println(base.Files)
+			pp.Println(base.RemoteFiles)
 			os.Exit(0)
 		}
-		rec, found := base.Files[param]
+		rec, found := base.RemoteFiles[param]
 		if !found {
 			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "remote_file")
 		}
@@ -118,7 +143,16 @@ func performdump(c *cli.Context) error {
 		}
 		pp.Println(rec)
 	case "team":
-		pp.Println(base.Team)
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.Teams)
+			os.Exit(0)
+		}
+		rec, found := base.Teams[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "team")
+		}
+		pp.Println(rec)
 	default:
 		return errors.New("argument is not a known datatype")
 	}

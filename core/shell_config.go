@@ -34,14 +34,14 @@ type SSHAuthConfig struct {
 
 // WinRMAuthConfig defines how Laforge should connect via WinRM to a provisioned host
 type WinRMAuthConfig struct {
-	RemoteAddr    string        `hcl:"remote_addr,attr" json:"ip,omitempty"`
+	RemoteAddr    string        `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
 	Port          int           `hcl:"port,attr" json:"port,omitempty"`
 	HTTPS         bool          `hcl:"https,attr" json:"https,omitempty"`
 	SkipVerify    bool          `hcl:"skip_verify,attr" json:"skip_verify,omitempty"`
-	TLSServerName string        `hcl:"tls_server_name,attr" json:"tls_server_name,omitempty"`
-	CAFile        string        `hcl:"ca_file,attr" json:"ca_file,omitempty"`
-	CertFile      string        `hcl:"cert_file,attr" json:"cert_file,omitempty"`
-	KeyFile       string        `hcl:"key_file,attr" json:"key_file,omitempty"`
+	TLSServerName string        `hcl:"tls_server_name,optional" json:"tls_server_name,omitempty"`
+	CAFile        string        `hcl:"ca_file,optional" json:"ca_file,omitempty"`
+	CertFile      string        `hcl:"cert_file,optional" json:"cert_file,omitempty"`
+	KeyFile       string        `hcl:"key_file,optional" json:"key_file,omitempty"`
 	User          string        `hcl:"user,attr" json:"user,omitempty"`
 	Password      string        `hcl:"password,attr" json:"password,omitempty"`
 	KeyFileRef    *LocalFileRef `json:"-"`
@@ -62,7 +62,7 @@ func (t *Team) Name() string {
 
 // LoadFileDeps attempts ot load important key material in the team configuration for connecting to remote team hosts
 func (t *Team) LoadFileDeps(base *Laforge, pr *PathResolver, caller CallFile) error {
-	for _, ph := range t.ProvisionedHosts {
+	for _, ph := range t.Hosts {
 		if ph.SSHAuthConfig != nil {
 			err := ph.SSHAuthConfig.LoadIdentityFile(base, pr, caller)
 			if err != nil {

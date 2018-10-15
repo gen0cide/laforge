@@ -1,40 +1,33 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/imdario/mergo"
-
 	"github.com/pkg/errors"
 )
 
 // Build represents the output of a laforge build
 type Build struct {
-	ID            string             `hcl:"id,label" json:"id,omitempty"`
-	DBFile        string             `hcl:"db_file,attr" json:"db_file,omitempty"`
-	BuilderID     string             `hcl:"builder_id,attr" json:"builder_id,omitempty"`
-	TeamCount     int                `hcl:"team_count,attr" json:"team_count,omitempty"`
-	EnvironmentID string             `hcl:"environment_id,attr" json:"environment_id,omitempty"`
-	CompetitionID string             `hcl:"competition_id,attr" json:"competition_id,omitempty"`
-	Config        map[string]string  `hcl:"config,attr" json:"config,omitempty"`
-	Tags          map[string]string  `hcl:"tags,attr" json:"tags,omitempty"`
-	Maintainer    *User              `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	Networks      []*IncludedNetwork `hcl:"included_network,block" json:"included_networks,omitempty"`
-	IncludedTeams []*Team            `hcl:"team,block" json:"teams,omitempty"`
-	Revsision     int64              `hcl:"revision,attr" json:"revision,omitempty"`
-	OnConflict    OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Environment   *Environment       `json:"-"`
-	Competition   *Competition       `json:"-"`
-	RelEnvPath    string             `json:"-"`
-	Dir           string             `json:"-"`
-	Caller        Caller             `json:"-"`
-	LocalDBFile   *LocalFileRef      `json:"-"`
-	Teams         map[int]*Team      `json:"-"`
+	ID            string            `hcl:"id,label" json:"id,omitempty"`
+	TeamCount     int               `hcl:"team_count,attr" json:"team_count,omitempty"`
+	EnvironmentID string            `hcl:"environment_id,attr" json:"environment_id,omitempty"`
+	CompetitionID string            `hcl:"competition_id,attr" json:"competition_id,omitempty"`
+	Config        map[string]string `hcl:"config,attr" json:"config,omitempty"`
+	Tags          map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Maintainer    *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	Revision      int64             `hcl:"revision,attr" json:"revision,omitempty"`
+	OnConflict    *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Environment   *Environment      `json:"-"`
+	Competition   *Competition      `json:"-"`
+	RelEnvPath    string            `json:"-"`
+	Dir           string            `json:"-"`
+	Caller        Caller            `json:"-"`
+	LocalDBFile   *LocalFileRef     `json:"-"`
+	Teams         map[int]*Team     `json:"-"`
 }
 
 // GetCaller implements the Mergeable interface
@@ -47,9 +40,19 @@ func (b *Build) GetID() string {
 	return filepath.Join(b.CompetitionID, b.EnvironmentID, b.ID)
 }
 
+// GetParentID returns the build's parent environment ID
+func (b *Build) GetParentID() string {
+	return filepath.Join(b.CompetitionID, b.EnvironmentID)
+}
+
 // GetOnConflict implements the Mergeable interface
 func (b *Build) GetOnConflict() OnConflict {
-	return b.OnConflict
+	if b.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *b.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -59,7 +62,7 @@ func (b *Build) SetCaller(ca Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (b *Build) SetOnConflict(o OnConflict) {
-	b.OnConflict = o
+	b.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface
@@ -74,14 +77,13 @@ func (b *Build) Swap(m Mergeable) error {
 
 // SetID generates a unique build ID for this build
 func (b *Build) SetID() string {
-	b.Revsision++
+	b.Revision++
 	if b.EnvironmentID == "" && b.Environment != nil {
 		b.EnvironmentID = b.Environment.ID
 	}
 	if b.CompetitionID == "" && b.Competition != nil {
 		b.CompetitionID = b.Competition.ID
 	}
-	b.ID = b.BuilderID
 	return b.ID
 }
 
@@ -93,59 +95,6 @@ func (b *Build) AssetForTeam(teamID int, assetName string) string {
 // RelAssetForTeam is a template helper function that returns the relative location of team specific assets
 func (b *Build) RelAssetForTeam(teamID int, hostname, assetName string) string {
 	return strings.Replace(filepath.Join(".", hostname, "assets", assetName), "\\", "/", -1)
-}
-
-// MergeFromDB loads and merges the build's DB file into the current build object
-func (b *Build) MergeFromDB() error {
-	if b.LocalDBFile == nil {
-		return errors.Errorf("could not resolve db_file for build %s", b.ID)
-	}
-	data, err := ioutil.ReadFile(b.LocalDBFile.AbsPath)
-	if err != nil {
-		return errors.Wrapf(errors.WithStack(err), "error reading db_file for build %s", b.ID)
-	}
-
-	var newBuild *Build
-
-	err = json.Unmarshal(data, newBuild)
-	if err != nil {
-		return errors.Wrapf(errors.WithStack(err), "error parsing db_file JSON for build %s", b.ID)
-	}
-
-	err = mergo.Merge(b, newBuild, mergo.WithOverride)
-	if err != nil {
-		return errors.Wrapf(errors.WithStack(err), "errors merging db_file into the state for build %s", b.ID)
-	}
-	return nil
-}
-
-// LoadDBFile attempts to locate the referenced source file with a laforge base configuration
-func (b *Build) LoadDBFile(base *Laforge, pr *PathResolver, caller CallFile) error {
-	if b.DBFile == "" {
-		return errors.New("no build db_file defined")
-	}
-	cwd, _ := os.Getwd()
-	testSrc := b.DBFile
-	if !filepath.IsAbs(b.DBFile) {
-		testSrc = filepath.Join(caller.CallerDir, b.DBFile)
-	}
-	if !PathExists(testSrc) {
-		pr.Unresolved[b.DBFile] = true
-		return errors.Wrapf(ErrAbsPathDeclNotExist, "caller=%s path=%s", caller.CallerFile, b.DBFile)
-	}
-	rel, _ := filepath.Rel(cwd, testSrc)
-	rel2, _ := filepath.Rel(caller.CallerDir, testSrc)
-	lfr := &LocalFileRef{
-		Base:          filepath.Base(testSrc),
-		AbsPath:       testSrc,
-		RelPath:       rel,
-		Cwd:           cwd,
-		DeclaredPath:  b.DBFile,
-		RelToCallFile: rel2,
-	}
-	b.LocalDBFile = lfr
-	pr.Mapping[b.DBFile] = lfr
-	return b.MergeFromDB()
 }
 
 // InitializeBuildDirectory creates a build directory structure and writes the build.db as a precursor to builder's taking over.
@@ -162,15 +111,13 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	buildDir := filepath.Join(l.EnvRoot, "build")
 	buildDefPath := filepath.Join(buildDir, "build.laforge")
 	bdbDir := filepath.Join(buildDir, "data")
-	bdbDefPath := filepath.Join(bdbDir, "build.db")
 	teamsDir := filepath.Join(buildDir, "teams")
 
 	_, e0 := os.Stat(buildDir)
 	_, e1 := os.Stat(buildDefPath)
 	_, e2 := os.Stat(bdbDir)
-	_, e3 := os.Stat(bdbDefPath)
 
-	if e0 == nil || e1 == nil || e2 == nil || e3 == nil {
+	if e0 == nil || e1 == nil || e2 == nil {
 		if !overwrite && !update {
 			return fmt.Errorf("Cannot initialize build directory - path is dirty: %s (--force/-f to overwrite)", buildDir)
 		}
@@ -179,26 +126,17 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 		}
 	}
 
-	if update {
-		clone, err := LoadFiles(l.GlobalConfigFile(), l.EnvConfigFile())
-		if err != nil {
-			return err
-		}
-		// if clone != nil && clone.Environment != nil {
-		// 	err = clone.IndexHostDependencies()
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	err = clone.Environment.ResolveIncludedNetworks(clone)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
-		l, err = Mask(l, clone)
-		if err != nil {
-			return err
-		}
-	}
+	// if update {
+	// 	clone, err := InitializeEnvContext(l.GlobalConfigFile(), l.EnvConfigFile())
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	l, err = Mask(l, clone)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	dirs := []string{buildDir, bdbDir, teamsDir}
 	for _, d := range dirs {
@@ -210,11 +148,10 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	}
 
 	// builder := l.Environments.Builder
-	builder := ""
+	builder := l.CurrentEnv.Builder
 	if builder == "" {
 		builder = "default"
 	}
-	// bid := fmt.Sprintf("%s_%s", l.Environment.ID, builder)
 	bid := builder
 
 	relEnvPath, err := filepath.Rel(buildDir, filepath.Join(l.EnvRoot, "env.laforge"))
@@ -224,29 +161,18 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	}
 
 	b := &Build{
-		// ID:     bid,
-		Dir:    buildDir,
-		DBFile: "./data/build.db",
-		// Builder:          builder,
-		// TeamCount:        l.Environment.TeamCount,
-		// EnvironmentID:    l.Environment.ID,
-		// Config:           l.Environment.Config,
-		// Tags:             l.Environment.Tags,
-		Maintainer: &l.User,
-		// Networks:         l.Environment.Networks,
-		// EnvironmentCache: l.Environment,
-		RelEnvPath: relEnvPath,
-		Teams:      map[int]*Team{},
-	}
-
-	jsonData, err := json.Marshal(b)
-	if err != nil {
-		return errors.Wrapf(errors.WithStack(err), "could not generate build.db for build %s", bid)
-	}
-
-	err = ioutil.WriteFile(bdbDefPath, jsonData, 0644)
-	if err != nil {
-		return errors.Wrapf(errors.WithStack(err), "could not write build.db for build %s", bid)
+		ID:            bid,
+		Dir:           buildDir,
+		TeamCount:     l.CurrentEnv.TeamCount,
+		EnvironmentID: l.CurrentEnv.ID,
+		CompetitionID: l.CurrentEnv.CompetitionID,
+		Config:        l.CurrentEnv.Config,
+		Tags:          l.CurrentEnv.Tags,
+		Teams:         map[int]*Team{},
+		Environment:   l.CurrentEnv,
+		Competition:   l.CurrentEnv.Competition,
+		Maintainer:    &l.User,
+		RelEnvPath:    relEnvPath,
 	}
 
 	bconfData, err := RenderHCLv2Object(b)
@@ -259,7 +185,8 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 		return errors.Wrapf(errors.WithStack(err), "could not write build.laforge for build %s", bid)
 	}
 
-	// l.Build = b
+	l.CurrentBuild = b
+	l.BuildContextID = b.GetID()
 	l.ClearToBuild = true
 	return nil
 }

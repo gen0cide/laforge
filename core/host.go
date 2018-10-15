@@ -11,25 +11,25 @@ import (
 
 // Host defines a configurable type for customizing host parameters within the infrastructure.
 type Host struct {
-	ID               string                 `hcl:"id,label" json:"id,omitempty"`
-	Hostname         string                 `hcl:"hostname,attr" cty:"hostname" json:"hostname,omitempty"`
-	Description      string                 `hcl:"description,attr" json:"description,omitempty"`
-	OS               string                 `hcl:"os,attr" json:"os,omitempty"`
-	AMI              string                 `hcl:"ami,attr" json:"ami,omitempty"`
-	LastOctet        int                    `hcl:"last_octet,attr" json:"last_octet,omitempty"`
-	InstanceSize     string                 `hcl:"instance_size,attr" json:"instance_size,omitempty"`
-	Disk             Disk                   `hcl:"disk,block" json:"disk,omitempty"`
-	ProvisionSteps   []string               `hcl:"provision_steps,attr" json:"provision_steps,omitempty"`
-	ExposedTCPPorts  []string               `hcl:"exposed_tcp_ports,attr" json:"exposed_tcp_ports,omitempty"`
-	ExposedUDPPorts  []string               `hcl:"exposed_udp_ports,attr" json:"exposed_udp_ports,omitempty"`
-	OverridePassword string                 `hcl:"override_password,attr" json:"override_password,omitempty"`
-	UserGroups       []string               `hcl:"user_groups,attr" json:"user_groups,omitempty"`
-	Dependencies     []*HostDependency      `hcl:"depends_on,block" json:"depends_on,omitempty"`
-	IO               IO                     `hcl:"io,block" json:"io,omitempty"`
-	Vars             map[string]string      `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags             map[string]string      `hcl:"tags,attr" json:"tags,omitempty"`
-	Maintainer       *User                  `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	OnConflict       OnConflict             `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	ID               string                 `cty:"id" hcl:"id,label" json:"id,omitempty"`
+	Hostname         string                 `cty:"hostname" hcl:"hostname,attr" json:"hostname,omitempty"`
+	Description      string                 `cty:"description" hcl:"description,optional" json:"description,omitempty"`
+	OS               string                 `cty:"os" hcl:"os,attr" json:"os,omitempty"`
+	AMI              string                 `cty:"ami" hcl:"ami,optional" json:"ami,omitempty"`
+	LastOctet        int                    `cty:"last_octet" hcl:"last_octet,attr" json:"last_octet,omitempty"`
+	InstanceSize     string                 `cty:"instance_size" hcl:"instance_size,attr" json:"instance_size,omitempty"`
+	Disk             Disk                   `cty:"disk" hcl:"disk,block" json:"disk,omitempty"`
+	ProvisionSteps   []string               `cty:"provision_steps" hcl:"provision_steps,optional" json:"provision_steps,omitempty"`
+	ExposedTCPPorts  []string               `cty:"exposed_tcp_ports" hcl:"exposed_tcp_ports,optional" json:"exposed_tcp_ports,omitempty"`
+	ExposedUDPPorts  []string               `cty:"exposed_udp_ports" hcl:"exposed_udp_ports,optional" json:"exposed_udp_ports,omitempty"`
+	OverridePassword string                 `cty:"override_password" hcl:"override_password,optional" json:"override_password,omitempty"`
+	UserGroups       []string               `cty:"user_groups" hcl:"user_groups,optional" json:"user_groups,omitempty"`
+	Dependencies     []*HostDependency      `cty:"depends_on" hcl:"depends_on,block" json:"depends_on,omitempty"`
+	IO               *IO                    `cty:"io" hcl:"io,block" json:"io,omitempty"`
+	Vars             map[string]string      `cty:"vars" hcl:"vars,optional" json:"vars,omitempty"`
+	Tags             map[string]string      `cty:"tags" hcl:"tags,optional" json:"tags,omitempty"`
+	Maintainer       *User                  `cty:"maintainer" hcl:"maintainer,block" json:"maintainer,omitempty"`
+	OnConflict       *OnConflict            `cty:"on_conflict" hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Provisioners     []Provisioner          `json:"-"`
 	Caller           Caller                 `json:"-"`
 	Scripts          map[string]*Script     `json:"-"`
@@ -40,18 +40,18 @@ type Host struct {
 
 // Disk is a configurable type for setting the root volume's disk size in GB
 type Disk struct {
-	Size int `hcl:"size,attr" json:"size,omitempty"`
+	Size int `cty:"size" hcl:"size,attr" json:"size,omitempty"`
 }
 
 // HostDependency is a configurable type for defining host or network dependencies to allow a dependency graph to be honored during deployment
 type HostDependency struct {
-	HostID     string     `hcl:"host,attr" json:"host,omitempty"`
-	NetworkID  string     `hcl:"network,attr" json:"network,omitempty"`
-	Step       string     `hcl:"step,attr" json:"step,omitempty"`
-	StepID     int        `hcl:"step_id,attr" json:"step_id,omitempty"`
-	OnConflict OnConflict `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Host       *Host      `json:"-"`
-	Network    *Network   `json:"-"`
+	HostID     string      `cty:"host" hcl:"host,attr" json:"host,omitempty"`
+	NetworkID  string      `cty:"network" hcl:"network,attr" json:"network,omitempty"`
+	Step       string      `cty:"step" hcl:"step,optional" json:"step,omitempty"`
+	StepID     int         `cty:"step_id" hcl:"step_id,optional" json:"step_id,omitempty"`
+	OnConflict *OnConflict `cty:"on_conflict" hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Host       *Host       `json:"-"`
+	Network    *Network    `json:"-"`
 }
 
 // HasTag is a template helper function to return true/false if the host contains a tag of a specific key
@@ -92,7 +92,12 @@ func (h *Host) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (h *Host) GetOnConflict() OnConflict {
-	return h.OnConflict
+	if h.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *h.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -102,7 +107,7 @@ func (h *Host) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (h *Host) SetOnConflict(o OnConflict) {
-	h.OnConflict = o
+	h.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface

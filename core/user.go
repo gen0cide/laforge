@@ -13,7 +13,7 @@ import (
 type User struct {
 	ID    string `hcl:"id,label" cty:"id" json:"id,omitempty"`
 	Name  string `hcl:"name,attr" cty:"name" json:"name,omitempty"`
-	UUID  string `hcl:"uuid,attr" cty:"uuid" json:"uuid,omitempty"`
+	UUID  string `hcl:"uuid,optional" cty:"uuid" json:"uuid,omitempty"`
 	Email string `hcl:"email,attr" cty:"email" json:"email,omitempty"`
 }
 

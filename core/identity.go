@@ -18,7 +18,7 @@ type Identity struct {
 	AvatarFile  string            `hcl:"avatar_file,attr" json:"avatar_file,omitempty"`
 	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict  *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller      Caller            `json:"-"`
 }
 
@@ -34,7 +34,12 @@ func (i *Identity) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (i *Identity) GetOnConflict() OnConflict {
-	return i.OnConflict
+	if i.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *i.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -44,7 +49,7 @@ func (i *Identity) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (i *Identity) SetOnConflict(o OnConflict) {
-	i.OnConflict = o
+	i.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface

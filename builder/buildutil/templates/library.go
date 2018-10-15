@@ -2,11 +2,11 @@ package templates
 
 import (
 	"bytes"
-	"strconv"
 	"sync"
 	"text/template"
 
-	"github.com/bradfitz/iter"
+	"github.com/gen0cide/laforge/core"
+
 	"github.com/pkg/errors"
 )
 
@@ -39,11 +39,7 @@ func (l *Library) AddBook(name string, data []byte) (*Book, error) {
 	}
 
 	t := template.New(name)
-	t.Funcs(template.FuncMap{
-		"N":          iter.N,
-		"UnsafeAtoi": UnsafeStringAsInt,
-		"Decr":       Decr,
-	})
+	t.Funcs(core.TemplateFuncLib)
 	newT, err := t.Parse(string(data))
 	if err != nil {
 		return nil, err
@@ -106,18 +102,4 @@ func (l *Library) ExecuteGroup(baseID string, appendIDs []string, context *Conte
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, context)
 	return buf.Bytes(), err
-}
-
-// UnsafeStringAsInt is a template helper function that will return -1 if it cannot convert the string to an integer.
-func UnsafeStringAsInt(s string) int {
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		return -1
-	}
-	return i
-}
-
-// Decr is a template helper function to non-destructively decrement an integer
-func Decr(i int) int {
-	return i - 1
 }

@@ -15,11 +15,11 @@ type Command struct {
 	Args         []string          `hcl:"args,attr" json:"args,omitempty"`
 	IgnoreErrors bool              `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
 	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`
-	IO           IO                `hcl:"io,block" json:"io,omitempty"`
+	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
 	Disabled     bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	OnConflict   OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict   *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Maintainer   *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	Caller       Caller            `json:"-"`
 }
@@ -36,7 +36,12 @@ func (c *Command) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (c *Command) GetOnConflict() OnConflict {
-	return c.OnConflict
+	if c.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *c.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -46,7 +51,7 @@ func (c *Command) SetCaller(ca Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (c *Command) SetOnConflict(o OnConflict) {
-	c.OnConflict = o
+	c.OnConflict = &o
 }
 
 // Kind implements the Provisioner interface

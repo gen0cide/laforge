@@ -14,7 +14,7 @@ type Network struct {
 	VDIVisible bool              `hcl:"vdi_visible,attr" json:"vdi_visible,omitempty"`
 	Vars       map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags       map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	OnConflict OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller     Caller            `json:"-"`
 }
 
@@ -36,7 +36,12 @@ func (n *Network) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (n *Network) GetOnConflict() OnConflict {
-	return n.OnConflict
+	if n.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *n.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -46,7 +51,7 @@ func (n *Network) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (n *Network) SetOnConflict(o OnConflict) {
-	n.OnConflict = o
+	n.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface

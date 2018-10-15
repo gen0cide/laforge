@@ -97,11 +97,11 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 				core.Logger.Errorf("base state was empty")
 				return false
 			}
-			if validation.IsEmpty(base.Competition) {
+			if validation.IsEmpty(base.CurrentCompetition) {
 				core.Logger.Errorf("competition state was empty")
 				return false
 			}
-			compVal := reflect.Indirect(reflect.ValueOf(base.Competition))
+			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition))
 			if compVal.Kind() != reflect.Struct {
 				core.Logger.Errorf("Competition has failed a validation error: base.Competition was not of type struct")
 				return false
@@ -125,17 +125,17 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 				core.Logger.Errorf("base state was empty")
 				return false
 			}
-			if validation.IsEmpty(base.Competition) {
+			if validation.IsEmpty(base.CurrentCompetition) {
 				core.Logger.Errorf("competition state was empty")
 				return false
 			}
-			if validation.IsEmpty(base.Competition.DNS) {
+			if validation.IsEmpty(base.CurrentCompetition.DNS) {
 				core.Logger.Errorf("dns state was empty")
 				return false
 			}
-			compVal := reflect.Indirect(reflect.ValueOf(base.Competition.DNS))
+			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition.DNS))
 			if compVal.Kind() != reflect.Struct {
-				core.Logger.Errorf("DNS has failed a validation error: base.Competition.DNS was not of type struct")
+				core.Logger.Errorf("DNS has failed a validation error: base.CurrentCompetition.DNS was not of type struct")
 				return false
 			}
 			fieldTest := compVal.FieldByName(camName)
@@ -157,11 +157,11 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 				core.Logger.Errorf("base state was empty")
 				return false
 			}
-			if validation.IsEmpty(base.Environment) {
+			if validation.IsEmpty(base.CurrentEnv) {
 				core.Logger.Errorf("Environment state was empty")
 				return false
 			}
-			compVal := reflect.Indirect(reflect.ValueOf(base.Environment))
+			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentEnv))
 			if compVal.Kind() != reflect.Struct {
 				core.Logger.Errorf("Environment has failed a validation error: base.Environment was not of type struct")
 				return false
@@ -269,7 +269,7 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 		}
 	case core.RemoteFile:
 		return func(base *core.Laforge) bool {
-			for n, o := range base.Files {
+			for n, o := range base.RemoteFiles {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
 					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
@@ -325,8 +325,8 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 	switch v := obj.(type) {
 	case core.Competition:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Competition != nil {
-				compVal := reflect.Indirect(reflect.ValueOf(base.Competition))
+			if base != nil && base.CurrentCompetition != nil {
+				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition))
 				if compVal.Kind() != reflect.Struct {
 					core.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
 					return false
@@ -349,8 +349,8 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 		}
 	case core.DNS:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Competition != nil && base.Competition.DNS != nil {
-				compVal := reflect.Indirect(reflect.ValueOf(base.Competition.DNS))
+			if base != nil && base.CurrentCompetition != nil && base.CurrentCompetition.DNS != nil {
+				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition.DNS))
 				if compVal.Kind() != reflect.Struct {
 					core.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
 					return false
@@ -373,8 +373,8 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 		}
 	case core.Environment:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Environment != nil {
-				compVal := reflect.Indirect(reflect.ValueOf(base.Environment))
+			if base != nil && base.CurrentEnv != nil {
+				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentEnv))
 				if compVal.Kind() != reflect.Struct {
 					core.Logger.Errorf("Environment has failed a validation: base.Environment was not of type struct")
 					return false
@@ -489,7 +489,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 		}
 	case core.RemoteFile:
 		return func(base *core.Laforge) bool {
-			for n, o := range base.Files {
+			for n, o := range base.RemoteFiles {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
 					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
@@ -554,7 +554,7 @@ func HasConfigKey(obj interface{}, key string) Check {
 	switch v := obj.(type) {
 	case core.Competition:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Competition != nil && MapHasKey(key, base.Competition.Config) {
+			if base != nil && base.CurrentCompetition != nil && MapHasKey(key, base.CurrentCompetition.Config) {
 				return true
 			}
 			core.Logger.Errorf("Competition has failed a validation: config parameter %s was not defined", key)
@@ -562,7 +562,7 @@ func HasConfigKey(obj interface{}, key string) Check {
 		}
 	case core.DNS:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Competition != nil && base.Competition.DNS != nil && MapHasKey(key, base.Competition.DNS.Config) {
+			if base != nil && base.CurrentCompetition != nil && base.CurrentCompetition.DNS != nil && MapHasKey(key, base.CurrentCompetition.DNS.Config) {
 				return true
 			}
 			core.Logger.Errorf("DNS has failed a validation: config parameter %s was not defined", key)
@@ -570,7 +570,7 @@ func HasConfigKey(obj interface{}, key string) Check {
 		}
 	case core.Environment:
 		return func(base *core.Laforge) bool {
-			if base != nil && base.Environment != nil && MapHasKey(key, base.Environment.Config) {
+			if base != nil && base.CurrentEnv != nil && MapHasKey(key, base.CurrentEnv.Config) {
 				return true
 			}
 			core.Logger.Errorf("Environment has failed a validation: config parameter %s was not defined", key)
@@ -590,7 +590,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 	switch obj.(type) {
 	case core.Host:
 		return func(base *core.Laforge) bool {
-			for n, o := range base.Environment.IncludedHosts {
+			for n, o := range base.CurrentEnv.IncludedHosts {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
@@ -623,7 +623,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 		}
 	case core.RemoteFile:
 		return func(base *core.Laforge) bool {
-			for n, o := range base.Files {
+			for n, o := range base.RemoteFiles {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}

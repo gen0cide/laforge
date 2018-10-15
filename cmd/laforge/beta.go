@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/gen0cide/laforge/core"
-	"github.com/k0kubun/pp"
 	"github.com/urfave/cli"
 )
 
@@ -32,11 +32,13 @@ func performbeta(c *cli.Context) error {
 	hostObj := &core.Host{}
 
 	err = core.HCLBytesToObject(data, hostObj)
-
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	pp.Println(hostObj)
+	out, err := core.RenderHCLv2Object(hostObj)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", string(out))
 	return nil
 }

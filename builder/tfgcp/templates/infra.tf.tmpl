@@ -134,11 +134,6 @@ resource "google_compute_firewall" "allow_vdi_int" {
     protocol = "udp"
   }
 
-  deny {
-    protocol = "tcp"
-    ports = [ "9971" ]
-  }
-
   source_ranges = [
     "{{ index $.Build.Config "vpc_cidr" }}",
   ]
@@ -149,20 +144,9 @@ resource "google_compute_firewall" "allow_vdi_int" {
 }
 
 resource "google_compute_firewall" "deny_mgmt_int" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-deny_mgmt_int"
+  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-deny-mgmt-int"
   network = "${google_compute_network.vpc.self_link}"
 
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
 
   deny {
     protocol = "tcp"
@@ -197,11 +181,6 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 
   allow {
     protocol = "udp"
-  }
-
-  deny {
-    protocol = "tcp"
-    ports = [ "9971" ]
   }
 
   source_tags = [
@@ -282,6 +261,7 @@ EOF
         "{{ $host.Hostname }}",
         "t{{ $.Team.TeamNumber }}",
         "{{ $.Environment.ID }}",
+        "{{ $.Competition.ID }}",
         "{{ $host.ID }}",
         "{{ $resource_name }}",
       ]
@@ -306,7 +286,7 @@ EOF
           }
         {{ end }}
 
-        source = "./{{ $host.Hostname }}"
+        source = "./{{ $host.Hostname }}/laforge-agent"
         {{ if $host.IsWindows }}
           destination = "C:\\laforge-agent"
         {{ else }}
@@ -344,6 +324,7 @@ EOF
         remote_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
         local_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
         host_active = "true"
+        resource_name = "google_compute_instance.{{ $resource_name }}"
         {{ if $host.IsWindows }}
         password = "{{ $.Competition.RootPassword }}"
         {{ else }}

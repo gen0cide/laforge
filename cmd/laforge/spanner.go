@@ -2,7 +2,10 @@ package main
 
 import (
 	"errors"
+	"os"
+	"sync"
 
+	"github.com/gen0cide/laforge/core"
 	"github.com/gen0cide/laforge/spanner"
 	"github.com/urfave/cli"
 )
@@ -45,9 +48,50 @@ var (
 				Action:          spannerRemoteExec,
 				SkipFlagParsing: true,
 			},
+			{
+				Name:            "terraform",
+				Usage:           "Run terraform commands across the environment.",
+				Action:          spannerTerraformExec,
+				SkipFlagParsing: true,
+			},
 		},
 	}
 )
+
+func spannerTerraformExec(c *cli.Context) error {
+	base, err := core.Bootstrap()
+	if err != nil {
+		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
+		os.Exit(1)
+	}
+	args := []string{}
+	for _, a := range []string(c.Args()) {
+		args = append(args, a)
+	}
+
+	err = base.AssertMinContext(core.BuildContext)
+	if err != nil {
+		cliLogger.Errorf("Must be in a build context to use terraform spanner: %v", err)
+		os.Exit(1)
+	}
+	wg := new(sync.WaitGroup)
+	finChan := make(chan bool, 1)
+
+	for _, t := range base.CurrentBuild.Teams {
+		wg.Add(1)
+		go t.RunTerraformCommand(args, wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(finChan)
+	}()
+
+	select {
+	case <-finChan:
+		return nil
+	}
+}
 
 func spannerLocalExec(c *cli.Context) error {
 	s, err := spanner.New(nil, []string(c.Args()), "local-exec", "", false, false)

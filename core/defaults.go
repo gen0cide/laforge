@@ -75,10 +75,11 @@ func baseEnvironment(name string, maint *User) *Environment {
 
 func defaultEnvironment() *Environment {
 	return &Environment{
-		ID:          "fake_environment",
-		Name:        "fake_env_for_demo_purposes",
-		Description: "not a real environment, please configure!",
-		Builder:     "null",
+		ID:            "fake-environment",
+		CompetitionID: "fake-competition",
+		Name:          "fake-env-for-demo-purposes",
+		Description:   "not a real environment, please configure!",
+		Builder:       "null",
 		Config: map[string]string{
 			"combine_scripts": "true",
 		},
@@ -227,11 +228,6 @@ func defaultCompetition(name string) *Competition {
 			Config: map[string]string{
 				"example-key": "example-val",
 			},
-			// Region:        "us-west-2",
-			// Key:           "AWS_API_KEY",
-			// Secret:        "AWS_API_SECRET",
-			// StateBucket:   "S3_BUCKET_FOR_STATE",
-			// StorageBucket: "S3_BUCKET_FOR_STORAGE",
 		},
 	}
 }
@@ -277,18 +273,18 @@ func defaultCommand() *Command {
 	}
 }
 
-func defaultOnConflict() OnConflict {
-	return OnConflict{
+func defaultOnConflict() *OnConflict {
+	return &OnConflict{
 		Do:     "default",
 		Append: false,
 	}
 }
 
-func defaultIO() IO {
-	return IO{
+func defaultIO() *IO {
+	return &IO{
 		Stdin:  "",
-		Stdout: "/dev/null",
-		Stderr: "/tmp/example.log",
+		Stdout: "",
+		Stderr: "",
 	}
 }
 

@@ -4,17 +4,24 @@
 //
 // -- Details --
 //          id = {{ $.ID }}
-//     builder = {{ $.Builder }}
 //  team_count = {{ $.TeamCount }}
 // environment = {{ $.EnvironmentID }}
+// competition = {{ $.CompetitionID }}
 //
 
 include {
   path = "{{ js $.RelEnvPath }}"
 }
 
+include {
+  path = "./teams/*/team.laforge"
+}
+
 build "{{ $.ID }}" {
-  db_file = "{{ $.DBFile }}"
+  environment_id = "{{ $.EnvironmentID }}"
+  competition_id = "{{ $.CompetitionID }}"
+  revision = {{ $.Revision }}
+  team_count = {{ $.TeamCount }}
 
   config = {
     {{ range $key, $val := $.Config -}}

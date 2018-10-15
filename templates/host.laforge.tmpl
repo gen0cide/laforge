@@ -1,93 +1,78 @@
-// EXAMPLE LAFORGE HOST CONFIGURATION
-
-// declare a unique ID in the object initialization
 host "{{ $.ID }}" {
 
-  // hostname (not including FQDN)
   hostname = "{{ $.Hostname }}"
-
-  // field to describe this host
+  {{- if gt (len $.Hostname) 0 }}
   description = "{{ $.Description }}"
-
-  // required, generic supported operating systems (ubuntu, centos, kali, win2k16, etc.)
+  {{- end }}
   os = "{{ $.OS }}"
-
-  // optional, will override the default image determined by OS -> should be in family of os
+  {{- if gt (len $.AMI) 0 }}
   ami = "{{ $.AMI }}"
-
-  // the last octet of the host's IP address
+  {{- end }}
   last_octet = {{ $.LastOctet }}
-
-  // default size is small, other options can be medium, large, xlarge
   instance_size = "{{ $.InstanceSize }}"
 
-  // set the disk size in GB
   disk {
     size = {{ $.Disk.Size }}
   }
 
-  // override the root password if you want to
+  {{- if gt (len $.OverridePassword) 0 }}
   override_password = "{{ $.OverridePassword }}"
-
-  /*
-    the following lists are included dependencies of various types - they references the ID field of those types
-    valid types:
-      - dns_record
-      - file
-      - command
-      - script
-    the execution order will be as you have specified here
-  */
+  {{- end }}
+  {{- if gt (len $.ProvisionSteps) 0 }}
   provision_steps = [
     {{ range $_, $x := $.ProvisionSteps -}}
     "{{ $x }}",
     {{ end -}}
   ]
-
-  // you can open firewall rules to the rest of the pod's infrastructure here
+  {{- end }}
+  {{- if gt (len $.ExposedTCPPorts) 0 }}
   exposed_tcp_ports = [
     {{ range $_, $x := $.ExposedTCPPorts -}}
     "{{ $x }}",
     {{ end -}}
   ]
-
+  {{- end }}
+  {{- if gt (len $.ExposedUDPPorts) 0 }}
   exposed_udp_ports = [
     {{ range $_, $x := $.ExposedUDPPorts -}}
     "{{ $x }}",
     {{ end -}}
   ]
-
-  // just like with other types, you can specify a conflict strategy here (read the docs!)
+  {{- end }}
+  {{- if ne $.OnConflict.Do "default" }}
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
     append = {{ $.OnConflict.Append }}
   }
-
-  // the io block lets you define custom output (and input in command's case) for this execution
+  {{- end }}
+  {{- if or (ne $.IO.Stdin "") (ne $.IO.Stdout "") (ne $.IO.Stderr "")}}
   io {
-    // stdin = path to a file to cat into STDIN for the program's execution
+    {{- if ne $.IO.Stdin "" }}
     stdin = "{{ $.IO.Stdin }}"
-
-    // stdout, stderr are blank ("") by default, and will log to the build dir and stdout during provisioning
+    {{- end }}
+    {{- if ne $.IO.Stdout "" }}
     stdout = "{{ $.IO.Stdout }}"
+    {{- end }}
+    {{- if ne $.IO.Stderr "" }}
     stderr = "{{ $.IO.Stderr }}"
+    {{- end }}
   }
-
-  // vars let you define custom configuration parameters which may be needed for specific provisioning builders.
+  {{- end }}
+  {{- if gt (len $.Vars) 0 }}
   vars = {
     {{ range $key, $val := $.Vars -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
-
-  //tags express general information which will be able to be queried on in the future
+  {{- end }}
+  {{- if gt (len $.Tags) 0 }}
   tags = {
     {{ range $key, $val := $.Tags -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
+  {{- end }}
 
-  // maintainer is completely optional, but note team organization!
   maintainer "{{ $.Maintainer.ID }}" {
     name = "{{ $.Maintainer.Name }}"
     email = "{{ $.Maintainer.Email }}"

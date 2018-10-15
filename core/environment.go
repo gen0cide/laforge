@@ -26,16 +26,17 @@ type Environment struct {
 	Builder          string              `hcl:"builder,attr" json:"builder,omitempty"`
 	TeamCount        int                 `hcl:"team_count,attr" json:"team_count,omitempty"`
 	AdminCIDRs       []string            `hcl:"admin_ranges,attr" json:"admin_ranges,omitempty"`
-	Config           map[string]string   `hcl:"config,attr" json:"config,omitempty"`
-	Tags             map[string]string   `hcl:"tags,attr" json:"tags,omitempty"`
+	Config           map[string]string   `hcl:"config,optional" json:"config,omitempty"`
+	Tags             map[string]string   `hcl:"tags,optional" json:"tags,omitempty"`
 	Networks         []*IncludedNetwork  `hcl:"included_network,block" json:"included_networks,omitempty"`
 	Maintainer       *User               `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	OnConflict       OnConflict          `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	BaseDir          string              `hcl:"base_dir,attr" json:"base_dir,omitempty"`
-	Revsision        int64               `hcl:"revision,attr" json:"revision,omitempty"`
+	OnConflict       *OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	BaseDir          string              `hcl:"base_dir,optional" json:"base_dir,omitempty"`
+	Revision         int64               `hcl:"revision,optional" json:"revision,omitempty"`
 	IncludedNetworks map[string]*Network `json:"-"`
 	IncludedHosts    map[string]*Host    `json:"-"`
 	HostByNetwork    map[string][]*Host  `json:"-"`
+	Teams            map[int]*Team       `json:"-"`
 	Caller           Caller              `json:"-"`
 	Competition      *Competition        `json:"-"`
 }
@@ -50,9 +51,19 @@ func (e *Environment) GetID() string {
 	return filepath.Join(e.CompetitionID, e.ID)
 }
 
+// GetParentID returns the Team's parent build ID
+func (e *Environment) GetParentID() string {
+	return e.CompetitionID
+}
+
 // GetOnConflict implements the Mergeable interface
 func (e *Environment) GetOnConflict() OnConflict {
-	return e.OnConflict
+	if e.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *e.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -62,7 +73,7 @@ func (e *Environment) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (e *Environment) SetOnConflict(o OnConflict) {
-	e.OnConflict = o
+	e.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface

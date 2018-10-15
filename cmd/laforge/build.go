@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/core"
 	"github.com/urfave/cli"
 )
@@ -36,20 +37,20 @@ func performbuild(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	// bldr, err := builder.New(base, overwrite, updateConfig)
-	// if err != nil {
-	// 	cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
-	// 	os.Exit(1)
-	// }
+	bldr, err := builder.New(base, overwrite, updateConfig)
+	if err != nil {
+		cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
+		os.Exit(1)
+	}
 
-	// cliLogger.Infof("Build directory initialized")
+	cliLogger.Infof("Build directory initialized")
 
-	// err = bldr.Do()
+	err = bldr.Do()
 
-	// if err != nil {
-	// 	cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
-	// 	os.Exit(1)
-	// }
+	if err != nil {
+		cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
+		os.Exit(1)
+	}
 
-	// return nil
+	return nil
 }

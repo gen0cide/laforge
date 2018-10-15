@@ -264,19 +264,69 @@ func (l *Loader) Bind() (*Laforge, error) {
 }
 
 type transientContext struct {
-	Build       *Build       `hcl:"build,block"`
-	Competition *Competition `hcl:"competition,block"`
-	Command     *Command     `hcl:"command,block"`
-	DNSRecord   *DNSRecord   `hcl:"dns_record,block"`
-	Environment *Environment `hcl:"environment,block"`
-	Host        *Host        `hcl:"host,block"`
-	Identity    *Identity    `hcl:"identity,block"`
-	Network     *Network     `hcl:"network,block"`
-	RemoteFile  *RemoteFile  `hcl:"remote_file,block"`
-	Script      *Script      `hcl:"script,block"`
-	Team        *Team        `hcl:"team,block"`
-	User        *User        `hcl:"user,block"`
-	AMI         *AMI         `hcl:"ami,block"`
+	Build       *Build               `hcl:"build,block" json:"build,omitempty"`
+	Competition *Competition         `hcl:"competition,block" json:"competition,omitempty"`
+	Command     *Command             `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord   *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment *Environment         `hcl:"environment,block" json:"environment,omitempty"`
+	Host        *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity    *Identity            `hcl:"identity,block" json:"identity,omitempty"`
+	Network     *Network             `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile  *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script      *Script              `hcl:"script,block" json:"script,omitempty"`
+	Team        *Team                `hcl:"team,block" json:"team,omitempty"`
+	User        *User                `hcl:"user,block" json:"user,omitempty"`
+	AMI         *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
+	Includes    []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
+}
+
+type transientIncludes struct {
+	Path string `hcl:"path,attr" json:"path,omitempty"`
+}
+
+type transientReverseContext struct {
+	Build       []*Build       `hcl:"build,block" json:"build,omitempty"`
+	Competition []*Competition `hcl:"competition,block" json:"competition,omitempty"`
+	Command     []*Command     `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord   []*DNSRecord   `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment []*Environment `hcl:"environment,block" json:"environment,omitempty"`
+	Host        []*Host        `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity    []*Identity    `hcl:"identity,block" json:"identity,omitempty"`
+	Network     []*Network     `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile  []*RemoteFile  `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script      []*Script      `hcl:"script,block" json:"script,omitempty"`
+	Team        []*Team        `hcl:"team,block" json:"team,omitempty"`
+	User        []*User        `hcl:"user,block" json:"user,omitempty"`
+	AMI         []*AMI         `hcl:"ami,block" json:"ami,omitempty"`
+}
+
+func newTransientReverseContext() *transientReverseContext {
+	return &transientReverseContext{
+		Build:       []*Build{},
+		Competition: []*Competition{},
+		Command:     []*Command{},
+		DNSRecord:   []*DNSRecord{},
+		Environment: []*Environment{},
+		Host:        []*Host{},
+		Identity:    []*Identity{},
+		Network:     []*Network{},
+		RemoteFile:  []*RemoteFile{},
+		Script:      []*Script{},
+		Team:        []*Team{},
+		User:        []*User{},
+		AMI:         []*AMI{},
+	}
+}
+
+func (t *transientReverseContext) Add(x interface{}) error {
+	into := reflect.ValueOf(x)
+	intoRaw := into.Elem()
+	cont := reflect.ValueOf(t)
+	cont = cont.Elem()
+
+	aField := cont.FieldByName(intoRaw.Type().Name())
+	aField.Set(reflect.Append(aField, into))
+	return nil
 }
 
 // HCLBytesToObject renders bytes into an object of a specific type
@@ -307,5 +357,16 @@ func HCLBytesToObject(data []byte, v interface{}) error {
 
 	newValData := newVal.Elem()
 	intoRaw.Set(newValData)
+	return nil
+}
+
+func (t *transientContext) Add(v interface{}) error {
+	into := reflect.ValueOf(v)
+	intoRaw := into.Elem()
+	cont := reflect.ValueOf(t)
+	cont = cont.Elem()
+
+	aField := cont.FieldByName(intoRaw.Type().Name())
+	aField.Set(into)
 	return nil
 }

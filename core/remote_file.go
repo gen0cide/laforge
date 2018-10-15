@@ -22,7 +22,7 @@ type RemoteFile struct {
 	Template    bool              `hcl:"template,attr" json:"template,omitempty"`
 	Perms       string            `hcl:"perms,attr" json:"perms,omitempty"`
 	Disabled    bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
-	OnConflict  OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict  *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Checksum    string            `hcl:"md5,attr" json:"md5,omitempty"`
 	Caller      Caller            `json:"-"`
 	AbsPath     string            `json:"-"`
@@ -41,7 +41,12 @@ func (r *RemoteFile) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (r *RemoteFile) GetOnConflict() OnConflict {
-	return r.OnConflict
+	if r.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *r.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -51,7 +56,7 @@ func (r *RemoteFile) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (r *RemoteFile) SetOnConflict(o OnConflict) {
-	r.OnConflict = o
+	r.OnConflict = &o
 }
 
 // Kind implements the Provisioner interface

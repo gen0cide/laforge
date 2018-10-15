@@ -20,6 +20,7 @@ func performexplorer(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	_ = base
 	// return explorer.RenderLaforgeStatusUI(base)
 	return nil
 }

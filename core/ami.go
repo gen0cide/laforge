@@ -7,7 +7,7 @@ type AMI struct {
 	Description string            `hcl:"description,attr" json:"description,omitempty"`
 	Provider    string            `hcl:"provider,attr" json:"provider,omitempty"`
 	Username    string            `hcl:"username,attr" json:"username,omitempty"`
-	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Vars        map[string]string `hcl:"vars,optional" json:"vars,omitempty"`
+	Tags        map[string]string `hcl:"tags,optional" json:"tags,omitempty"`
 	Maintainer  *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
 }

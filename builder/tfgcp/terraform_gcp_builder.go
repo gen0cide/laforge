@@ -198,11 +198,11 @@ type TerraformGCPBuilder struct {
 func (t *TerraformGCPBuilder) Get(key string) string {
 	t.Lock()
 	defer t.Unlock()
-	res, ok := t.Base.Build.Config[key]
+	res, ok := t.Base.CurrentBuild.Config[key]
 	if ok {
 		return res
 	}
-	r0, e0 := t.Base.Environment.Config[key]
+	r0, e0 := t.Base.CurrentEnv.Config[key]
 	if e0 {
 		defer t.Set(key, r0)
 		return r0
@@ -214,7 +214,7 @@ func (t *TerraformGCPBuilder) Get(key string) string {
 func (t *TerraformGCPBuilder) Set(key string, val interface{}) {
 	t.Lock()
 	defer t.Unlock()
-	t.Base.Build.Config[key] = fmt.Sprintf("%v", val)
+	t.Base.CurrentBuild.Config[key] = fmt.Sprintf("%v", val)
 }
 
 // New creates an empty TerraformGCPBuilder
@@ -292,8 +292,8 @@ func (t *TerraformGCPBuilder) CheckRequirements() error {
 // PrepareAssets implements the Builder interface
 func (t *TerraformGCPBuilder) PrepareAssets() error {
 	var privkey, pubkey string
-	pathToPubkey := filepath.Join(t.Base.Build.Dir, "data", "ssh.pem.pub")
-	pathToPrivkey := filepath.Join(t.Base.Build.Dir, "data", "ssh.pem")
+	pathToPubkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem.pub")
+	pathToPrivkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem")
 
 	if _, err := os.Stat(pathToPubkey); os.IsNotExist(err) {
 		privkey, pubkey, err := buildutil.GenerateSSHKeyPair(2048)
@@ -328,7 +328,7 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 	t.Set("ssh_public_key", pubkey)
 	t.Set("ssh_private_key", privkey)
 
-	for hostid, host := range t.Base.Environment.IncludedHosts {
+	for hostid, host := range t.Base.CurrentEnv.IncludedHosts {
 		uds, found := host.Vars["user_data_script_id"]
 		if !found {
 			return buildutil.Throw(errors.New("user_data_script_id no longer exists"), "Validation for this passed, but here we are. Likely a bug. Please report.", &buildutil.V{"host_id": hostid})
@@ -344,20 +344,20 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 		core.Logger.Debugf("Adding user_data_script %s to host %s script pool", uds, hostid)
 		host.Scripts[uds] = udsObj
 		for _, dep := range host.Dependencies {
-			depHost, ok := t.Base.Environment.IncludedHosts[dep.HostID]
+			depHost, ok := t.Base.CurrentEnv.IncludedHosts[dep.HostID]
 			if !ok {
 				return buildutil.Throw(errors.Errorf("host %s depends on host %s, which is not found in environment", host.ID, dep.HostID), "The host listed a dependency to another host which is not included in any network within the current environment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID})
 			}
 			dep.Host = depHost
 
-			depNet, ok := t.Base.Environment.IncludedNetworks[dep.NetworkID]
+			depNet, ok := t.Base.CurrentEnv.IncludedNetworks[dep.NetworkID]
 			if !ok {
 				return buildutil.Throw(errors.Errorf("host %s depends on network %s, which is not found in environment", host.ID, dep.NetworkID), "The host listed a dependency to another network which is not included within the current environment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID})
 			}
 			dep.Network = depNet
 
 			hostInNetwork := false
-			for _, x := range t.Base.Environment.HostByNetwork[dep.NetworkID] {
+			for _, x := range t.Base.CurrentEnv.HostByNetwork[dep.NetworkID] {
 				if x.ID == dep.Host.ID {
 					hostInNetwork = true
 					break
@@ -398,21 +398,21 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 	user := t.Base.User
 	ctx, err := templates.NewContext(
 		t.Base,
-		t.Base.Build,
-		t.Base.Competition,
-		t.Base.Competition.DNS,
-		t.Base.Environment,
+		t.Base.CurrentBuild,
+		t.Base.CurrentCompetition,
+		t.Base.CurrentCompetition.DNS,
+		t.Base.CurrentEnv,
 		&user,
 	)
 	if err != nil {
 		return err
 	}
-	for tid, teamObj := range t.Base.Build.Teams {
+	for tid, teamObj := range t.Base.CurrentBuild.Teams {
 		wg.Add(1)
 		go func(teamNum int, team *core.Team) {
 			defer wg.Done()
-			for netName, hosts := range t.Base.Environment.HostByNetwork {
-				network := t.Base.Environment.IncludedNetworks[netName]
+			for netName, hosts := range t.Base.CurrentEnv.HostByNetwork {
+				network := t.Base.CurrentEnv.IncludedNetworks[netName]
 				for _, host := range hosts {
 					for sid, script := range host.Scripts {
 						wg.Add(1)
@@ -485,29 +485,34 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 
 // StageDependencies implements the Builder interface
 func (t *TerraformGCPBuilder) StageDependencies() error {
-	for i := 0; i < t.Base.Environment.TeamCount; i++ {
+	for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
 		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
 		team := &core.Team{
+			ID:            fmt.Sprintf("%d", i),
 			TeamNumber:    i,
-			BuildID:       t.Base.Build.ID,
-			Build:         t.Base.Build,
-			EnvironmentID: t.Base.Environment.ID,
-			Environment:   t.Base.Environment,
+			BuildID:       t.Base.CurrentBuild.ID,
+			Build:         t.Base.CurrentBuild,
+			EnvironmentID: t.Base.CurrentEnv.ID,
+			Environment:   t.Base.CurrentEnv,
+			Competition:   t.Base.CurrentCompetition,
+			CompetitionID: t.Base.CurrentEnv.CompetitionID,
 			Maintainer:    &t.Base.User,
 			RelBuildPath:  teamDir,
 		}
-		t.Base.Build.Teams[i] = team
+		t.Base.CurrentBuild.Teams[i] = team
 		//assetDir := filepath.Join(teamDir, "assets")
 		os.MkdirAll(teamDir, 0755)
 		core.TouchGitKeep(teamDir)
 	}
 
-	for _, host := range t.Base.Environment.IncludedHosts {
-		for i := 0; i < t.Base.Environment.TeamCount; i++ {
-			teamDir := t.Base.Build.Teams[i].RelBuildPath
+	for _, host := range t.Base.CurrentEnv.IncludedHosts {
+		for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
+			teamDir := t.Base.CurrentBuild.Teams[i].RelBuildPath
 			hostDir := filepath.Join(teamDir, host.Hostname)
 			hostAssetDir := filepath.Join(hostDir, "assets")
+			hostAgentDir := filepath.Join(hostDir, "laforge-agent")
 			os.MkdirAll(hostAssetDir, 0755)
+			os.MkdirAll(hostAgentDir, 0755)
 			core.TouchGitKeep(hostDir)
 			core.TouchGitKeep(hostAssetDir)
 		}
@@ -522,7 +527,7 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 				return err
 			}
 
-			dstPath := filepath.Join(t.Base.Build.Dir, "data", rfileName)
+			dstPath := filepath.Join(t.Base.CurrentBuild.Dir, "data", rfileName)
 			if _, err := os.Stat(dstPath); os.IsNotExist(err) {
 				copyErr := rfile.CopyTo(dstPath)
 				if copyErr != nil {
@@ -567,26 +572,25 @@ func (t *TerraformGCPBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
 	finChan := make(chan bool, 1)
-	for i := 0; i < t.Base.Environment.TeamCount; i++ {
+	for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
 		wg.Add(1)
 		go func(teamid int) {
 			defer wg.Done()
 			t.Lock()
-			team, ok := t.Base.Build.Teams[teamid]
+			team, ok := t.Base.CurrentBuild.Teams[teamid]
 			t.Unlock()
 			if !ok {
 				errChan <- fmt.Errorf("team number %d not found in team index", teamid)
 				return
 			}
 			teamDir := team.RelBuildPath
-			team.ID = team.Name()
 			user := t.Base.User
 			ctx, err := templates.NewContext(
 				t.Base,
-				t.Base.Build,
-				t.Base.Competition,
-				t.Base.Competition.DNS,
-				t.Base.Environment,
+				t.Base.CurrentBuild,
+				t.Base.CurrentCompetition,
+				t.Base.CurrentCompetition.DNS,
+				t.Base.CurrentEnv,
 				&user,
 				team,
 			)
@@ -625,15 +629,12 @@ func (t *TerraformGCPBuilder) Render() error {
 				errChan <- err
 				return
 			}
-			for netname, net := range t.Base.Environment.IncludedNetworks {
-				for _, host := range t.Base.Environment.HostByNetwork[netname] {
+			for netname, net := range t.Base.CurrentEnv.IncludedNetworks {
+				for _, host := range t.Base.CurrentEnv.HostByNetwork[netname] {
 					ts := time.Now()
 					state := &provisioner.State{
-						Host:         host,
-						Network:      net,
-						Environment:  t.Base.Environment,
-						Competition:  t.Base.Competition,
 						Team:         team,
+						Network:      net,
 						Steps:        []*provisioner.Step{},
 						RenderedAt:   ts,
 						Revision:     ts.UTC().Unix(),
@@ -645,37 +646,37 @@ func (t *TerraformGCPBuilder) Render() error {
 							StepType: prov.Kind(),
 							Metadata: map[string]interface{}{},
 						}
-						switch aProv := prov.(type) {
-						case *core.RemoteFile:
-							step.Name = aProv.ID
-							aName, err := aProv.AssetName()
-							if err != nil {
-								errChan <- err
-								return
-							}
-							step.Source = aName
-							step.Destination = aProv.Destination
-							if aProv.Perms != "" {
-								step.Metadata["perms"] = aProv.Perms
-							}
-							step.Metadata["vars"] = aProv.Vars
-							step.Metadata["tags"] = aProv.Tags
-							step.Metadata["checksum"] = aProv.Checksum
-						case *core.Script:
-							step.Name = aProv.ID
-							step.Description = aProv.Description
-							step.Source = filepath.Join(".", "assets", aProv.Base())
-							step.Metadata["args"] = aProv.Args
-							step.Metadata["ignore_errors"] = aProv.IgnoreErrors
-							step.Metadata["cooldown"] = aProv.Cooldown
-							step.Metadata["source_type"] = aProv.SourceType
-							step.Metadata["language"] = aProv.Language
-							step.Metadata["vars"] = aProv.Vars
-							step.Metadata["tags"] = aProv.Tags
-							step.Metadata["maintainer"] = aProv.Maintainer
-						case *core.DNSRecord:
-							step.Name = aProv.ID
-						}
+						// switch aProv := prov.(type) {
+						// case *core.RemoteFile:
+						// 	step.Name = aProv.ID
+						// 	aName, err := aProv.AssetName()
+						// 	if err != nil {
+						// 		errChan <- err
+						// 		return
+						// 	}
+						// 	step.Source = aName
+						// 	step.Destination = aProv.Destination
+						// 	if aProv.Perms != "" {
+						// 		step.Metadata["perms"] = aProv.Perms
+						// 	}
+						// 	step.Metadata["vars"] = aProv.Vars
+						// 	step.Metadata["tags"] = aProv.Tags
+						// 	step.Metadata["checksum"] = aProv.Checksum
+						// case *core.Script:
+						// 	step.Name = aProv.ID
+						// 	step.Description = aProv.Description
+						// 	step.Source = filepath.Join(".", "assets", aProv.Base())
+						// 	step.Metadata["args"] = aProv.Args
+						// 	step.Metadata["ignore_errors"] = aProv.IgnoreErrors
+						// 	step.Metadata["cooldown"] = aProv.Cooldown
+						// 	step.Metadata["source_type"] = aProv.SourceType
+						// 	step.Metadata["language"] = aProv.Language
+						// 	step.Metadata["vars"] = aProv.Vars
+						// 	step.Metadata["tags"] = aProv.Tags
+						// 	step.Metadata["maintainer"] = aProv.Maintainer
+						// case *core.DNSRecord:
+						// 	step.Name = aProv.ID
+						// }
 						state.Steps = append(state.Steps, step)
 					}
 					jsonData, err := json.MarshalIndent(state, "", "  ")
@@ -683,7 +684,7 @@ func (t *TerraformGCPBuilder) Render() error {
 						errChan <- err
 						return
 					}
-					stateFilePath := filepath.Join(teamDir, host.Hostname, "config.json")
+					stateFilePath := filepath.Join(teamDir, host.Hostname, "laforge-agent", "config.json")
 					err = ioutil.WriteFile(stateFilePath, jsonData, 0644)
 					if err != nil {
 						errChan <- err

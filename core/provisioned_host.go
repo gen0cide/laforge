@@ -13,18 +13,21 @@ type ProvisionedHost struct {
 	EnvironmentID   string           `hcl:"environment_id,attr" json:"environment_id,omitempty"`
 	BuildID         string           `hcl:"build_id,attr" json:"build_id,omitempty"`
 	TeamID          string           `hcl:"team_id,attr" json:"team_id,omitempty"`
+	NetworkID       string           `hcl:"network_id,attr" json:"network_id,omitempty"`
 	HostID          string           `hcl:"host_id,attr" json:"host_id,omitempty"`
 	Active          bool             `hcl:"active,attr" json:"active,omitempty"`
 	LocalAddr       string           `hcl:"local_addr,attr" json:"local_addr,omitempty"`
 	RemoteAddr      string           `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
+	ResourceName    string           `hcl:"resource_name,attr" json:"resource_name,omitempty"`
 	SSHAuthConfig   *SSHAuthConfig   `hcl:"ssh,block" json:"ssh,omitempty"`
 	WinRMAuthConfig *WinRMAuthConfig `hcl:"winrm,block" json:"winrm,omitempty"`
 	Revision        int64            `hcl:"revision,attr" json:"revision,omitempty"`
-	OnConflict      OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict      *OnConflict      `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Competition     *Competition     `json:"-"`
 	Environment     *Environment     `json:"-"`
 	Build           *Build           `json:"-"`
 	Team            *Team            `json:"-"`
+	Network         *Network         `json:"-"`
 	Host            *Host            `json:"-"`
 	Caller          Caller           `json:"-"`
 }
@@ -32,6 +35,11 @@ type ProvisionedHost struct {
 // IsSSH is a convenience method for checking if the provisioned host is setup for remote SSH
 func (p *ProvisionedHost) IsSSH() bool {
 	return p.SSHAuthConfig != nil
+}
+
+// GetParentID returns the Team's parent build ID
+func (p *ProvisionedHost) GetParentID() string {
+	return filepath.Join(p.CompetitionID, p.EnvironmentID, p.BuildID, p.TeamID)
 }
 
 // IsWinRM is a convenience method for checking if the provisioned host is setup for remote WinRM
@@ -51,7 +59,12 @@ func (p *ProvisionedHost) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (p *ProvisionedHost) GetOnConflict() OnConflict {
-	return p.OnConflict
+	if p.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *p.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -61,7 +74,7 @@ func (p *ProvisionedHost) SetCaller(ca Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (p *ProvisionedHost) SetOnConflict(o OnConflict) {
-	p.OnConflict = o
+	p.OnConflict = &o
 }
 
 // Swap implements the Mergeable interface
