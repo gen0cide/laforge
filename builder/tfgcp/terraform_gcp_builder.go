@@ -29,7 +29,7 @@ const (
 	Name        = `Terraform GCP Builder`
 	Description = `generates terraform configurations that isolate teams into VPCs on Google Compute Platform`
 	Author      = `Alex Levinson <github.com/gen0cide>`
-	Version     = `0.0.1`
+	Version     = `0.0.2`
 )
 
 var (
