@@ -14,7 +14,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/docker/docker/pkg/term"
 	"github.com/pkg/errors"
+	"github.com/shiena/ansicolor"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -174,73 +176,60 @@ func (s *SSHClient) Disconnect() error {
 	return nil
 }
 
-// SSHCommand represents a remote command being prepared or run.
-type SSHCommand struct {
-	Command    string
-	Stdin      io.Reader
-	Stdout     io.Writer
-	Stderr     io.Writer
-	exitStatus int
-	exitCh     chan struct{}
-	err        error
-	sync.Mutex
-}
+// LaunchInteractiveShell launches an interactive SSH session through the terminal
+func (s *SSHClient) LaunchInteractiveShell() error {
+	termWidth, termHeight := 80, 24
+	session, err := s.newSession()
+	if err != nil {
+		return err
+	}
 
-// Init must be called before executing the command.
-func (s *SSHCommand) Init() {
-	s.Lock()
-	defer s.Unlock()
+	defer session.Close()
 
-	s.exitCh = make(chan struct{})
-}
+	session.Stdout = ansicolor.NewAnsiColorWriter(os.Stdout)
+	session.Stderr = ansicolor.NewAnsiColorWriter(os.Stderr)
+	session.Stdin = os.Stdin
 
-// SetExitStatus stores the exit status of the remote command
-func (s *SSHCommand) SetExitStatus(status int, err error) {
-	s.Lock()
-	defer s.Unlock()
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,
+		ssh.ECHOCTL:       1,
+		ssh.TTY_OP_ISPEED: 14400,
+		ssh.TTY_OP_OSPEED: 14400,
+	}
 
-	s.exitStatus = status
-	s.err = err
+	fd := os.Stdin.Fd()
 
-	close(s.exitCh)
-}
+	if term.IsTerminal(fd) {
+		oldState, err := term.MakeRaw(fd)
+		if err != nil {
+			return err
+		}
 
-// Wait waits for the remote command to complete.
-func (s *SSHCommand) Wait() error {
-	<-s.exitCh
+		defer term.RestoreTerminal(fd, oldState)
 
-	s.Lock()
-	defer s.Unlock()
-
-	if s.err != nil || s.exitStatus != 0 {
-		return &ExitError{
-			Command:    s.Command,
-			ExitStatus: s.exitStatus,
-			Err:        s.err,
+		winsize, err := term.GetWinsize(fd)
+		if err == nil {
+			termWidth = int(winsize.Width)
+			termHeight = int(winsize.Height)
 		}
 	}
 
-	return nil
-}
+	if err := session.RequestPty("xterm", termHeight, termWidth, modes); err != nil {
 
-// ExitError is returned by Wait to indicate and error executing the remote
-// command, or a non-zero exit status.
-type ExitError struct {
-	Command    string
-	ExitStatus int
-	Err        error
-}
-
-// Error implements the error interface
-func (e *ExitError) Error() string {
-	if e.Err != nil {
-		return fmt.Sprintf("error executing %q: %v", e.Command, e.Err)
+		return err
 	}
-	return fmt.Sprintf("%q exit status: %d", e.Command, e.ExitStatus)
+
+	if err := session.Shell(); err != nil {
+		return err
+	}
+
+	go monWinCh(session, os.Stdout.Fd())
+
+	return session.Wait()
 }
 
 // Start executes a remote command on the host
-func (s *SSHClient) Start(cmd *SSHCommand) error {
+func (s *SSHClient) Start(cmd *RemoteCommand) error {
 	cmd.Init()
 
 	session, err := s.newSession()
@@ -335,7 +324,7 @@ func (s *SSHClient) UploadScript(path string, input io.Reader) error {
 	}
 
 	var stdout, stderr bytes.Buffer
-	cmd := &SSHCommand{
+	cmd := &RemoteCommand{
 		Command: fmt.Sprintf("chmod 0777 %s", path),
 		Stdout:  &stdout,
 		Stderr:  &stderr,

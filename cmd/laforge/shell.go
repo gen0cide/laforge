@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
@@ -38,30 +39,20 @@ func performshell(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	// if base.Environment == nil {
-	// 	cliLogger.Fatalf("Environment object was not found!")
-	// 	return nil
-	// }
-
-	// if base.Team == nil {
-	// 	cliLogger.Fatalf("Team object was not found!")
-	// 	return nil
-	// }
-
 	if listHosts {
 		core.SetLogLevel("info")
-		// cliLogger.Warnf("Environment: %s", color.GreenString("%s", base.Environment.ID))
-		// cliLogger.Warnf("Builder: %s", color.GreenString("%s", base.Environment.Builder))
-		// cliLogger.Warnf("Team Number: %s", color.GreenString("%d", base.Team.TeamNumber))
+		cliLogger.Warnf("Environment: %s", color.GreenString("%s", base.CurrentEnv.ID))
+		cliLogger.Warnf("Builder: %s", color.GreenString("%s", base.CurrentBuild.ID))
+		cliLogger.Warnf("Team Number: %s", color.GreenString("%d", base.CurrentTeam.TeamNumber))
 		cliLogger.Infof("Host Information Table")
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"ID", "Hostname", "Public IP"})
 
-		// for hid, ph := range base.Team.ActiveHosts {
-		// 	table.Append([]string{hid, ph.Host.Hostname, ph.RemoteAddr})
-		// }
-		table.Render() // Send output
+		for hid, ph := range base.CurrentTeam.Hosts {
+			table.Append([]string{hid, ph.Host.Hostname, ph.RemoteAddr})
+		}
+		table.Render()
 
 		return nil
 	}
@@ -72,22 +63,19 @@ func performshell(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	// host, found := base.Environment.IncludedHosts[target]
-	// if !found {
-	// 	cliLogger.Errorf("Host %s was not found in this environment!", target)
-	// 	os.Exit(1)
-	// }
+	_, found := base.CurrentEnv.IncludedHosts[target]
+	if !found {
+		cliLogger.Errorf("Host %s was not found in this environment!", target)
+		os.Exit(1)
+	}
 
-	// provisionedHost, found := base.Team.ActiveHosts[target]
-	// if !found || (provisionedHost != nil && provisionedHost.Active == false) {
-	// 	cliLogger.Errorf("Host %s is currently not active in this team's environment", target)
-	// 	os.Exit(1)
-	// }
+	provisionedHost, found := base.CurrentTeam.Hosts[target]
+	if !found || (provisionedHost != nil && provisionedHost.Active == false) {
+		cliLogger.Errorf("Host %s is currently not active in this team's environment", target)
+		os.Exit(1)
+	}
 
-	// rs, err := core.GetState(base)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	return provisionedHost.RemoteShell()
 
 	// if host.IsWindows() {
 	// 	s := shells.WinRM{}

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/packer-community/winrmcp/winrmcp"
+	"github.com/shiena/ansicolor"
 
 	"github.com/pkg/errors"
 )
@@ -114,6 +115,14 @@ func (p *ProvisionedHost) SetID() string {
 	return p.ID
 }
 
+// RemoteShell connects your local console to a remote provisioned host
+func (p *ProvisionedHost) RemoteShell() error {
+	if p.IsWinRM() {
+		return p.InteractiveWinRM()
+	}
+	return p.InteractiveSSH()
+}
+
 // Upload uploads a src file/dir to a dst file/dir on the provisioned host
 func (p *ProvisionedHost) Upload(src, dst string) error {
 	if p.IsWinRM() {
@@ -130,6 +139,46 @@ func (p *ProvisionedHost) UploadWinRM(src, dst string) error {
 		return err
 	}
 	return client.Copy(src, dst)
+}
+
+// InteractiveWinRM launches an interactive shell over WinRM
+func (p *ProvisionedHost) InteractiveWinRM() error {
+	client := &WinRMClient{}
+	err := client.SetConfig(p.WinRMAuthConfig)
+	if err != nil {
+		return err
+	}
+	client.SetIO(
+		ansicolor.NewAnsiColorWriter(os.Stdout),
+		ansicolor.NewAnsiColorWriter(os.Stderr),
+		os.Stdin,
+	)
+
+	err = client.LaunchInteractiveShell()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// InteractiveSSH launches an interactive shell over SSH
+func (p *ProvisionedHost) InteractiveSSH() error {
+	client, err := NewSSHClient(p.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	err = client.LaunchInteractiveShell()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // UploadSCP uses scp to upload src to dst on the provisioned host
