@@ -1,5 +1,6 @@
 package tf
 
+// MatchFunc is a type alias to matching functions
 type MatchFunc func(s string) bool
 
 // Scanner watches output from io.Writers for known lines
@@ -9,6 +10,7 @@ type Scanner struct {
 	Error    error
 }
 
+// NewScanner returns a new scanner object
 func NewScanner(m MatchFunc) *Scanner {
 	return &Scanner{
 		Matcher:  m,

@@ -17,6 +17,7 @@ import (
 	"github.com/gruntwork-io/terragrunt/errors"
 )
 
+// Runner is a command executor with streaming output over channels
 type Runner struct {
 	Owner      string
 	ID         int64
@@ -32,6 +33,7 @@ type Runner struct {
 	EnvVars    map[string]string
 }
 
+// NewRunner returns a new empty runner
 func NewRunner(owner, basedir string, l logger.Logger) *Runner {
 	id := time.Now().UTC().Unix()
 	logdir := filepath.Join(basedir, "logs")
@@ -62,6 +64,7 @@ func NewRunner(owner, basedir string, l logger.Logger) *Runner {
 	}
 }
 
+// ExecuteCommand executes the command in a sub process, streaming output over the Runner's output channels.
 func (r *Runner) ExecuteCommand(command string, args ...string) {
 	defer func() {
 		close(r.FinChan)

@@ -1,7 +1,10 @@
 package core
 
 import (
+	"os"
 	"path/filepath"
+
+	"github.com/packer-community/winrmcp/winrmcp"
 
 	"github.com/pkg/errors"
 )
@@ -109,4 +112,63 @@ func (p *ProvisionedHost) SetID() string {
 		p.ID = p.HostID
 	}
 	return p.ID
+}
+
+// Upload uploads a src file/dir to a dst file/dir on the provisioned host
+func (p *ProvisionedHost) Upload(src, dst string) error {
+	if p.IsWinRM() {
+		return p.UploadWinRM(src, dst)
+	}
+	return p.UploadSCP(src, dst)
+}
+
+// UploadWinRM uses WinRM to upload src to dst on the provisioned host
+func (p *ProvisionedHost) UploadWinRM(src, dst string) error {
+	addr, config := p.WinRMAuthConfig.ToUploadConfig()
+	client, err := winrmcp.New(addr, &config)
+	if err != nil {
+		return err
+	}
+	return client.Copy(src, dst)
+}
+
+// UploadSCP uses scp to upload src to dst on the provisioned host
+func (p *ProvisionedHost) UploadSCP(src, dst string) error {
+	isDir := false
+	fi, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		isDir = true
+	}
+
+	client, err := NewSSHClient(p.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	if isDir {
+		err = client.UploadDir(dst, src)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	fileInput, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	err = client.Upload(dst, fileInput)
+	if err != nil {
+		return err
+	}
+	return nil
 }

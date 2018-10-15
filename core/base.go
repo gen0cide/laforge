@@ -300,66 +300,6 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 		return l, errors.WithStack(err)
 	}
 	l.User = newUser
-	// if l.Competition == nil && diff.Competition != nil {
-	// 	l.Competition = diff.Competition
-	// } else if l.Competition != nil && diff.Competition != nil {
-	// 	res, err := SmartMerge(l.Competition, diff.Competition, false)
-	// 	if err != nil {
-	// 		return l, errors.WithStack(err)
-	// 	}
-	// 	orig, ok := res.(*Competition)
-	// 	if !ok {
-	// 		return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-	// 	}
-	// 	l.Competition = orig
-	// }
-	// if l.Environment == nil && diff.Environment != nil {
-	// 	l.Environment = diff.Environment
-	// } else if l.Environment != nil && diff.Environment != nil {
-	// 	res, err := SmartMerge(l.Environment, diff.Environment, true)
-	// 	if err != nil {
-	// 		return l, errors.WithStack(err)
-	// 	}
-	// 	orig, ok := res.(*Environment)
-	// 	if !ok {
-	// 		return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-	// 	}
-	// 	l.Environment = orig
-	// 	if l.Environment.BaseDir == "" && l.EnvRoot != "" {
-	// 		l.Environment.BaseDir = l.EnvRoot
-	// 	}
-	// }
-	// if l.Team == nil && diff.Team != nil {
-	// 	l.Team = diff.Team
-	// } else if l.Team != nil && diff.Team != nil {
-	// 	res, err := SmartMerge(l.Team, diff.Team, true)
-	// 	if err != nil {
-	// 		return l, errors.WithStack(err)
-	// 	}
-	// 	orig, ok := res.(*Team)
-	// 	if !ok {
-	// 		return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-	// 	}
-	// 	l.Team = orig
-	// }
-	// if l.Build == nil && diff.Build != nil {
-	// 	l.Build = diff.Build
-	// } else if l.Build != nil && diff.Build != nil {
-	// 	res, err := SmartMerge(l.Build, diff.Build, true)
-	// 	if err != nil {
-	// 		return l, errors.WithStack(err)
-	// 	}
-	// 	orig, ok := res.(*Build)
-	// 	if !ok {
-	// 		return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-	// 	}
-	// 	l.Build = orig
-	// }
-
-	// if diff.Build != nil {
-	// 	l.Build = diff.Build
-	// }
-
 	return l, nil
 }
 

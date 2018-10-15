@@ -106,7 +106,6 @@ func (t *Team) SetID() string {
 // CreateRunner creates a new local command runner for the team, and returns it
 func (t *Team) CreateRunner() *tf.Runner {
 	runner := tf.NewRunner(t.GetID(), t.GetCaller().Current().CallerDir, Logger)
-	t.Runner = runner
 	return runner
 }
 
@@ -138,12 +137,17 @@ func (t *Team) RunTerraformCommand(args []string, wg *sync.WaitGroup) {
 	return
 }
 
-// RunLocalCommand runs a local command in the team's local directory
-func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	runner := t.CreateRunner()
-	go runner.ExecuteCommand(command, []string{"init"}...)
+// TerraformInit runs terraform init for a team
+func (t *Team) TerraformInit() error {
+	tfexe, err := FindTerraformExecutable()
+	if err != nil {
+		return err
+	}
 
+	runner := t.CreateRunner()
+	go runner.ExecuteCommand(tfexe, []string{"init"}...)
+
+	var execerr error
 	for {
 		select {
 		case i := <-runner.Output:
@@ -151,6 +155,7 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 			continue
 		case e := <-runner.Errors:
 			Logger.Errorf("%s: %v", t.GetID(), e)
+			execerr = e
 			continue
 		default:
 		}
@@ -160,6 +165,7 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 			continue
 		case e := <-runner.Errors:
 			Logger.Errorf("%s: %v", t.GetID(), e)
+			execerr = e
 			continue
 		case <-runner.FinChan:
 			Logger.Warnf("%s command returned.", t.GetID())
@@ -167,18 +173,28 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 		break
 	}
 
+	return execerr
+}
+
+// RunLocalCommand runs a local command in the team's local directory
+func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	err := t.TerraformInit()
+	if err != nil {
+		Logger.Errorf("%s - TF Init Error: %v", t.GetID(), err)
+		return
+	}
+
 	time.Sleep(3 * time.Second)
 
-	runner = t.CreateRunner()
+	runner := t.CreateRunner()
 	go runner.ExecuteCommand(command, args...)
 
 	for {
 		select {
 		case i := <-runner.Output:
 			Logger.Debugf("%s: %s", t.GetID(), i)
-			if warningRegexp.MatchString(i) || instanceRegexp.MatchString(i) {
-				Logger.Warnf("%s: %s", t.GetID(), i)
-			}
 			continue
 		case e := <-runner.Errors:
 			Logger.Errorf("%s: %v", t.GetID(), e)
@@ -188,9 +204,6 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 		select {
 		case i := <-runner.Output:
 			Logger.Debugf("%s: %s", t.GetID(), i)
-			if warningRegexp.MatchString(i) || instanceRegexp.MatchString(i) {
-				Logger.Warnf("%s: %s", t.GetID(), i)
-			}
 			continue
 		case e := <-runner.Errors:
 			Logger.Errorf("%s: %v", t.GetID(), e)

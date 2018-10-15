@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/packer-community/winrmcp/winrmcp"
+
 	"github.com/pkg/errors"
 
 	"github.com/iancoleman/strcase"
@@ -207,4 +209,16 @@ func (w *WinRMAuthConfig) LoadKeyFile(base *Laforge, pr *PathResolver, caller Ca
 	}
 	w.KeyFileRef = lfr
 	return nil
+}
+
+// ToUploadConfig returns the socket and a winrmcp config for uploading via WinRM
+func (w *WinRMAuthConfig) ToUploadConfig() (string, winrmcp.Config) {
+	return fmt.Sprintf("%s:%d", w.RemoteAddr, w.Port), winrmcp.Config{
+		Auth: winrmcp.Auth{
+			User:     w.User,
+			Password: w.Password,
+		},
+		Https:    w.HTTPS,
+		Insecure: w.SkipVerify,
+	}
 }
