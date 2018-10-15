@@ -32,20 +32,20 @@ func performquery(c *cli.Context) error {
 
 	mappings := map[string][]string{}
 
-	for _, host := range base.Environment.IncludedHosts {
-		for _, x := range host.Provisioners {
-			if x.Kind() != "script" {
-				continue
-			}
-			script := x.(*core.Script)
-			_, ok := mappings[script.ID]
-			if !ok {
-				mappings[script.ID] = []string{}
-			}
+	// for _, host := range base.Environment.IncludedHosts {
+	// 	for _, x := range host.Provisioners {
+	// 		if x.Kind() != "script" {
+	// 			continue
+	// 		}
+	// 		script := x.(*core.Script)
+	// 		_, ok := mappings[script.ID]
+	// 		if !ok {
+	// 			mappings[script.ID] = []string{}
+	// 		}
 
-			mappings[script.ID] = append(mappings[script.ID], host.Hostname)
-		}
-	}
+	// 		mappings[script.ID] = append(mappings[script.ID], host.Hostname)
+	// 	}
+	// }
 
 	fmt.Println("script_id,hostname")
 	for scriptID, hosts := range mappings {

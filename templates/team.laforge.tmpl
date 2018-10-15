@@ -1,82 +1,34 @@
-// EXAMPLE LAFORGE TEAM CONFIGURATION
 
 include {
-  path = "../../build.laforge"
+  path = "./*/*.laforge"
 }
 
-include {
-  path = "./provisioned_hosts/*.laforge"
-}
-
-// declare a unique ID in the object initialization
-team "{{ $.ID }}" {
-
-  // team number is the lexical number of the team for this build
+team {{ $.ID | hclstring }} {
   team_number = {{ $.TeamNumber }}
+  build_id = {{ $.BuildID | hclstring }}
+  environment_id = {{ $.EnvironmentID | hclstring }}
+  competition_id = {{ $.CompetitionID | hclstring }}
+  revision = {{ $.Revision }}
 
-  // build ID references the unique build ID that this team inherits context from
-  build_id = "{{ $.BuildID }}"
-
-  // environment ID references the environment that this team inherited it's build from
-  environment_id = "{{ $.EnvironmentID }}"
-
-  // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
-    do = "{{ $.OnConflict.Do }}"
-    append = {{ $.OnConflict.Append }}
+    do = "panic"
+    append = false
   }
 
-  // config let you define custom configuration parameters which may be needed for specific provisioning builders.
   config = {
     {{ range $key, $val := $.Config -}}
-    {{ $key }} = "{{ $val }}"
+    {{ $key }} = {{ $val | hclstring }}
     {{ end -}}
   }
 
-  //tags express general information which will be able to be queried on in the future
   tags = {
     {{ range $key, $val := $.Tags -}}
-    {{ $key }} = "{{ $val }}"
+    {{ $key }} = {{ $val | hclstring }}
     {{ end -}}
   }
 
-  // maintainer is completely optional, but note team organization!
   maintainer "{{ $.Maintainer.ID }}" {
     name = "{{ $.Maintainer.Name }}"
     email = "{{ $.Maintainer.Email }}"
   }
-
-  {{ range $_, $ph := $.ProvisionedHosts -}}
-  provisioned_host "{{ $ph.ID }}" {
-    remote_addr = "{{ $ph.RemoteAddr }}"
-    {{ if $ph.IsSSH }}
-    ssh_config {
-      hostname = "{{ $ph.SSHAuthConfig.Hostname }}"
-      port = {{ $ph.SSHAuthConfig.Port }}
-      user = "{{ $ph.SSHAuthConfig.User }}"
-      {{ if ne $ph.SSHAuthConfig.Password "" }}
-      password = "{{ $ph.SSHAuthConfig.Password }}"
-      {{ else if ne $ph.SSHAuthConfig.IdentityFile "" }}
-      identity_file = "{{ $ph.SSHAuthConfig.IdentityFile }}"
-      {{ end }}
-    }
-    {{ end }}
-    {{ if $ph.IsWinRM }}
-      hostname = "{{ $ph.WinRMAuthConfig.Hostname }}"
-      port = {{ $ph.WinRMAuthConfig.Port }}
-      https = {{ $ph.WinRMAuthConfig.HTTPS }}
-      skip_verify = {{ $ph.WinRMAuthConfig.SkipVerify }}
-      tls_server_name = "{{ $ph.WinRMAuthConfig.TLSServerName }}"
-      ca_file = "{{ $ph.WinRMAuthConfig.CAFile }}"
-      cert_file = "{{ $ph.WinRMAuthConfig.CertFile }}"
-      key_file = "{{ $ph.WinRMAuthConfig.KeyFile }}"
-      user = "{{ $ph.WinRMAuthConfig.User }}"
-      password = "{{ $ph.WinRMAuthConfig.Password }}"
-    {{ end }}
-  }
-
-
-  {{ end -}}
-
-
 }

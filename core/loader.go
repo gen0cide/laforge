@@ -1,9 +1,11 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/hcl2/ext/include"
@@ -259,4 +261,112 @@ func (l *Loader) Bind() (*Laforge, error) {
 		currLen = newLen
 	}
 	return l.Deconflict(filenames)
+}
+
+type transientContext struct {
+	Build       *Build               `hcl:"build,block" json:"build,omitempty"`
+	Competition *Competition         `hcl:"competition,block" json:"competition,omitempty"`
+	Command     *Command             `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord   *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment *Environment         `hcl:"environment,block" json:"environment,omitempty"`
+	Host        *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity    *Identity            `hcl:"identity,block" json:"identity,omitempty"`
+	Network     *Network             `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile  *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script      *Script              `hcl:"script,block" json:"script,omitempty"`
+	Team        *Team                `hcl:"team,block" json:"team,omitempty"`
+	User        *User                `hcl:"user,block" json:"user,omitempty"`
+	AMI         *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
+	Includes    []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
+}
+
+type transientIncludes struct {
+	Path string `hcl:"path,attr" json:"path,omitempty"`
+}
+
+type transientReverseContext struct {
+	Build       []*Build       `hcl:"build,block" json:"build,omitempty"`
+	Competition []*Competition `hcl:"competition,block" json:"competition,omitempty"`
+	Command     []*Command     `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord   []*DNSRecord   `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment []*Environment `hcl:"environment,block" json:"environment,omitempty"`
+	Host        []*Host        `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity    []*Identity    `hcl:"identity,block" json:"identity,omitempty"`
+	Network     []*Network     `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile  []*RemoteFile  `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script      []*Script      `hcl:"script,block" json:"script,omitempty"`
+	Team        []*Team        `hcl:"team,block" json:"team,omitempty"`
+	User        []*User        `hcl:"user,block" json:"user,omitempty"`
+	AMI         []*AMI         `hcl:"ami,block" json:"ami,omitempty"`
+}
+
+func newTransientReverseContext() *transientReverseContext {
+	return &transientReverseContext{
+		Build:       []*Build{},
+		Competition: []*Competition{},
+		Command:     []*Command{},
+		DNSRecord:   []*DNSRecord{},
+		Environment: []*Environment{},
+		Host:        []*Host{},
+		Identity:    []*Identity{},
+		Network:     []*Network{},
+		RemoteFile:  []*RemoteFile{},
+		Script:      []*Script{},
+		Team:        []*Team{},
+		User:        []*User{},
+		AMI:         []*AMI{},
+	}
+}
+
+func (t *transientReverseContext) Add(x interface{}) error {
+	into := reflect.ValueOf(x)
+	intoRaw := into.Elem()
+	cont := reflect.ValueOf(t)
+	cont = cont.Elem()
+
+	aField := cont.FieldByName(intoRaw.Type().Name())
+	aField.Set(reflect.Append(aField, into))
+	return nil
+}
+
+// HCLBytesToObject renders bytes into an object of a specific type
+func HCLBytesToObject(data []byte, v interface{}) error {
+	loader := NewLoader()
+	into := reflect.ValueOf(v)
+	intoRaw := into.Elem()
+	file, diags := loader.Parser.ParseHCL(data, fmt.Sprintf("parse-%s-in-memory", intoRaw.Type().Name()))
+	if diags.HasErrors() {
+		return diags
+	}
+	if file == nil {
+		return errors.New("hcl file AST returned nil from parsing")
+	}
+	tc := &transientContext{}
+	diags = gohcl2.DecodeBody(file.Body, nil, tc)
+	if diags.HasErrors() {
+		return diags
+	}
+
+	cont := reflect.ValueOf(tc)
+	cont = cont.Elem()
+
+	newVal := cont.FieldByName(intoRaw.Type().Name())
+	if newVal.IsNil() {
+		return fmt.Errorf("a field of type %s was expected but not found in the data", intoRaw.Type().Name())
+	}
+
+	newValData := newVal.Elem()
+	intoRaw.Set(newValData)
+	return nil
+}
+
+func (t *transientContext) Add(v interface{}) error {
+	into := reflect.ValueOf(v)
+	intoRaw := into.Elem()
+	cont := reflect.ValueOf(t)
+	cont = cont.Elem()
+
+	aField := cont.FieldByName(intoRaw.Type().Name())
+	aField.Set(into)
+	return nil
 }

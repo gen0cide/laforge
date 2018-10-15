@@ -79,6 +79,7 @@ func main() {
 		exampleCommand,
 		depsCommand,
 		spannerCommand,
+		betaCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

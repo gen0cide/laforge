@@ -81,7 +81,7 @@ func (f FindingSeverity) String() string {
 
 // Finding represents a finding to be aggregated for scoring inside a laforge scenario
 type Finding struct {
-	ID          string      `hcl:",id" json:"id,omitempty"`
+	ID          string      `hcl:"id,label" json:"id,omitempty"`
 	Name        string      `hcl:"name,attr" json:"name,omitempty"`
 	Description string      `hcl:"description,attr" json:"description,omitempty"`
 	Severity    int         `hcl:"severity,attr" json:"severity,omitempty"`

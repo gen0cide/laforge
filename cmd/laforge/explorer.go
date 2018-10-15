@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gen0cide/laforge/core"
-	"github.com/gen0cide/laforge/explorer"
 	"github.com/urfave/cli"
 )
 
@@ -21,5 +20,7 @@ func performexplorer(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	return explorer.RenderLaforgeStatusUI(base)
+	_ = base
+	// return explorer.RenderLaforgeStatusUI(base)
+	return nil
 }

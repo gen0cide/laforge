@@ -10,7 +10,7 @@ import (
 
 // Script defines a configurable type for an executable script object within the laforge configuration
 type Script struct {
-	ID           string            `hcl:",label" json:"id,omitempty"`
+	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
 	Language     string            `hcl:"language,attr" json:"language,omitempty"`
 	Description  string            `hcl:"description,attr" json:"description,omitempty"`
@@ -20,11 +20,12 @@ type Script struct {
 	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`
 	IgnoreErrors bool              `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
 	Args         []string          `hcl:"args,attr" json:"args,omitempty"`
-	IO           IO                `hcl:"io,block" json:"io,omitempty"`
+	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
 	Disabled     bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	OnConflict   OnConflict        `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	OnConflict   *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Findings     []*Finding        `hcl:"finding,block" json:"findings,omitempty"`
 	Caller       Caller            `json:"-"`
 }
 
@@ -40,7 +41,12 @@ func (s *Script) GetID() string {
 
 // GetOnConflict implements the Mergeable interface
 func (s *Script) GetOnConflict() OnConflict {
-	return s.OnConflict
+	if s.OnConflict == nil {
+		return OnConflict{
+			Do: "default",
+		}
+	}
+	return *s.OnConflict
 }
 
 // SetCaller implements the Mergeable interface
@@ -50,7 +56,7 @@ func (s *Script) SetCaller(c Caller) {
 
 // SetOnConflict implements the Mergeable interface
 func (s *Script) SetOnConflict(o OnConflict) {
-	s.OnConflict = o
+	s.OnConflict = &o
 }
 
 // Kind implements the Provisioner interface

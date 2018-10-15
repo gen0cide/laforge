@@ -1,6 +1,4 @@
-// DEFAULT LAFORGE COMPETITION ENVIRONMENT CONFIGURATION
 
-// Import base modules
 include {
   path = "../../base.laforge"
 }
@@ -8,26 +6,17 @@ include {
 // declare a unique ID in the object initialization
 environment "{{ $.ID }}" {
 
-  // describe your env
-  name = "{{ $.Name }}"
-  description = "{{ $.Description }}"
-
-  // Number of teams you want run in this environment
+  competition_id = {{ $.CompetitionID | hclstring }}
+  name = {{ $.Name | hclstring }}
+  description = {{ $.Description | hclstring }}
   team_count = {{ $.TeamCount }}
+  builder = {{ $.Builder | hclstring }}
 
-  // this setting determines what type of provisioning will occur (aws, vagrant, native)
-  builder = "{{ $.Builder }}"
-
-  // based on your type, you likely will have type-specific configuration values here
   config = {
     {{ range $key, $val := $.Config -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
-
-
-  // INCLUDING NETWORKS AND HOSTS IN YOUR ENVIRONMENT
-  // simply declare these included_network blocks within your environment block.
 
   {{ range $net, $hosts := $.HostByNetwork -}}
   // included_network "{{ $net }}" {
@@ -37,26 +26,15 @@ environment "{{ $.ID }}" {
       {{ end -}}
   //   ]
   // }
-
   {{ end -}}
 
 
-
-  // you can tag your environment as well
   tags = {
     {{ range $key, $val := $.Tags -}}
     {{ $key }} = "{{ $val }}"
     {{ end -}}
   }
 
-  // just like with other types, you can specify a conflict strategy here (read the docs!)
-  on_conflict {
-    do = "{{ $.OnConflict.Do }}"
-    append = {{ $.OnConflict.Append }}
-  }
-
-
-  // maintainer is completely optional, but note team organization!
   maintainer "{{ $.Maintainer.ID }}" {
     name = "{{ $.Maintainer.Name }}"
     email = "{{ $.Maintainer.Email }}"

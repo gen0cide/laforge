@@ -67,11 +67,15 @@ func listenv(c *cli.Context) error {
 		checkEnv = true
 	}
 
+	_ = checkEnv
+
 	core.SetLogLevel("info")
 	envList := []string{}
 	for name, elf := range envs {
+		_ = name
+		_ = elf
 		label := ""
-		if checkEnv && base.Environment.ID == elf.Environment.ID {
+		if checkEnv && base.CurrentEnv.ID == elf.CurrentEnv.ID {
 			label = fmt.Sprintf(" %s %s %s - %s", color.HiGreenString("*"), color.HiWhiteString("(current)"), color.HiGreenString(name), base.EnvRoot)
 		} else {
 			pn := ""

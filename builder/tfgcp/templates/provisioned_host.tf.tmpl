@@ -1,14 +1,20 @@
-provisioned_host "{{ $.Host.ID }}" {
-  team_id = "{{ $.Team.Name }}"
-  host_id = "{{ $.Host.ID }}"
+provisioned_host {{ $.Host.ID | hclstring }} {
+  competition_id = {{ $.Competition.ID | hclstring }}
+  environment_id = {{ $.Environment.ID | hclstring }}
+  build_id       = {{ $.Build.ID | hclstring }}
+  team_id        = {{ $.Team.ID | hclstring }}
+  network_id     = {{ $.Network.ID | hclstring }}
+  host_id        = {{ $.Host.ID | hclstring }}
+  revision       = {{ $.Build.Revision }}
+  active         = "${host_active}"
+  remote_addr    = "${remote_addr}"
+  local_addr     = "${local_addr}"
+  resource_name  = "${resource_name}"
 
-  active = "${host_active}"
-  remote_addr = "${remote_addr}"
-  local_addr = "${local_addr}"
 
   {{ if $.Host.IsWindows }}
   winrm {
-    hostname = "${remote_addr}"
+    remote_addr = "${remote_addr}"
     port = 5985
     https = false
     skip_verify = false
@@ -17,7 +23,7 @@ provisioned_host "{{ $.Host.ID }}" {
   }
   {{ else }}
   ssh {
-    hostname = "${remote_addr}"
+    remote_addr = "${remote_addr}"
     port = 22
     user = "root"
     identity_file = "${identity_file}"

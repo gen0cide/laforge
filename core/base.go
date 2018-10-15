@@ -5,6 +5,7 @@ package core
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -48,33 +49,35 @@ var (
 // Laforge defines the type that holds the global namespace within the laforge configuration engine
 type Laforge struct {
 	Filename                string                      `json:"filename"`
-	Includes                []string                    `json:"include,omitempty"`
+	Includes                []string                    `json:"-"`
 	DependencyGraph         treeprint.Tree              `json:"-"`
 	BaseDir                 string                      `hcl:"base_dir,attr" json:"base_dir,omitempty"`
-	CurrDir                 string                      `json:"current_dir,omitempty"`
-	User                    User                        `hcl:"user,block" cty:"user" json:"user,omitempty"`
-	Competition             *Competition                `hcl:"competition,block" json:"competition,omitempty"`
-	Environment             *Environment                `hcl:"environment,block" json:"environment,omitempty"`
-	Build                   *Build                      `hcl:"build,block" json:"build,omitempty"`
-	Team                    *Team                       `hcl:"team,block" json:"team,omitempty"`
-	DefinedHosts            []*Host                     `hcl:"host,block" json:"defined_hosts,omitempty"`
-	DefinedNetworks         []*Network                  `hcl:"network,block" json:"defined_networks,omitempty"`
-	DefinedIdentities       []*Identity                 `hcl:"identity,block" json:"defined_identities,omitempty"`
-	DefinedScripts          []*Script                   `hcl:"script,block" json:"defined_scripts,omitempty"`
+	CurrDir                 string                      `json:"-"`
+	User                    User                        `hcl:"user,block" json:"user,omitempty"`
+	DefinedCompetitions     []*Competition              `hcl:"competition,block" json:"competitions,omitempty"`
+	DefinedEnvironments     []*Environment              `hcl:"environment,block" json:"environments,omitempty"`
+	DefinedBuilds           []*Build                    `hcl:"build,block" json:"builds,omitempty"`
+	DefinedTeams            []*Team                     `hcl:"team,block" json:"teams,omitempty"`
+	DefinedHosts            []*Host                     `hcl:"host,block" json:"hosts,omitempty"`
+	DefinedNetworks         []*Network                  `hcl:"network,block" json:"networks,omitempty"`
+	DefinedIdentities       []*Identity                 `hcl:"identity,block" json:"identities,omitempty"`
+	DefinedScripts          []*Script                   `hcl:"script,block" json:"scripts,omitempty"`
 	DefinedCommands         []*Command                  `hcl:"command,block" json:"defined_commands,omitempty"`
-	DefinedFiles            []*RemoteFile               `hcl:"remote_file,block" json:"defined_files,omitempty"`
+	DefinedRemoteFiles      []*RemoteFile               `hcl:"remote_file,block" json:"defined_files,omitempty"`
 	DefinedDNSRecords       []*DNSRecord                `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
-	DefinedProvisionedHosts []*ProvisionedHost          `hcl:"provisioned_host,block" json:"defined_provisioned_hosts"`
+	DefinedProvisionedHosts []*ProvisionedHost          `hcl:"provisioned_host,block" json:"provisioned_hosts,omitempty"`
 	Hosts                   map[string]*Host            `json:"-"`
 	Networks                map[string]*Network         `json:"-"`
 	Identities              map[string]*Identity        `json:"-"`
 	Scripts                 map[string]*Script          `json:"-"`
 	Commands                map[string]*Command         `json:"-"`
-	Files                   map[string]*RemoteFile      `json:"-"`
+	RemoteFiles             map[string]*RemoteFile      `json:"-"`
 	DNSRecords              map[string]*DNSRecord       `json:"-"`
 	Teams                   map[string]*Team            `json:"-"`
 	Builds                  map[string]*Build           `json:"-"`
 	ProvisionedHosts        map[string]*ProvisionedHost `json:"-"`
+	Environments            map[string]*Environment     `json:"-"`
+	Competitions            map[string]*Competition     `json:"-"`
 	Caller                  Caller                      `json:"-"`
 	ValidTeam               bool                        `json:"-"`
 	ValidBuild              bool                        `json:"-"`
@@ -87,6 +90,19 @@ type Laforge struct {
 	EnvRoot                 string                      `json:"-"`
 	BaseRoot                string                      `json:"-"`
 	GlobalRoot              string                      `json:"-"`
+	TeamAbsPath             string                      `json:"-"`
+	BuildAbsPath            string                      `json:"-"`
+	EnvAbsPath              string                      `json:"-"`
+	BaseAbsPath             string                      `json:"-"`
+	TeamContextID           string                      `json:"-"`
+	BuildContextID          string                      `json:"-"`
+	EnvContextID            string                      `json:"-"`
+	BaseContextID           string                      `json:"-"`
+	GlobalContextID         string                      `json:"-"`
+	CurrentEnv              *Environment                `json:"-"`
+	CurrentBuild            *Build                      `json:"-"`
+	CurrentTeam             *Team                       `json:"-"`
+	CurrentCompetition      *Competition                `json:"-"`
 	InitialContext          StateContext                `json:"-"`
 	PathRegistry            *PathRegistry               `json:"-"`
 }
@@ -117,8 +133,8 @@ type Opt struct {
 //	- "inherit" will apply a merge in reverse - merging the original "foo" into your definition, overwriting any fields.
 //	- "panic" will raise a runtime error and prevent further execution. This can be a very helpful way to avoid state on "root" definitions.
 type OnConflict struct {
-	Do     string `hcl:"do,attr" json:"do,omitempty"`
-	Append bool   `hcl:"append,attr" json:"append,omitempty"`
+	Do     string `cty:"do" hcl:"do,attr" json:"do,omitempty"`
+	Append bool   `cty:"append" hcl:"append,optional" json:"append,omitempty"`
 }
 
 // StateContext is a type alias to the level of context we are currently executing in
@@ -196,11 +212,13 @@ func (l *Laforge) CreateIndex() {
 	l.Identities = map[string]*Identity{}
 	l.Scripts = map[string]*Script{}
 	l.Commands = map[string]*Command{}
-	l.Files = map[string]*RemoteFile{}
+	l.RemoteFiles = map[string]*RemoteFile{}
 	l.DNSRecords = map[string]*DNSRecord{}
 	l.Teams = map[string]*Team{}
 	l.ProvisionedHosts = map[string]*ProvisionedHost{}
 	l.Builds = map[string]*Build{}
+	l.Competitions = map[string]*Competition{}
+	l.Environments = map[string]*Environment{}
 	for _, x := range l.DefinedHosts {
 		l.Hosts[x.ID] = x
 		x.Caller = l.Caller
@@ -229,12 +247,16 @@ func (l *Laforge) CreateIndex() {
 		l.Commands[x.ID] = x
 		x.Caller = l.Caller
 	}
-	for _, x := range l.DefinedFiles {
+	for _, x := range l.DefinedRemoteFiles {
 		err := x.ResolveSource(l, currPathResolver, l.Caller.Current())
 		if err != nil {
 			Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
 		}
-		l.Files[x.ID] = x
+		l.RemoteFiles[x.ID] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedTeams {
+		l.Teams[x.GetID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedDNSRecords {
@@ -242,7 +264,19 @@ func (l *Laforge) CreateIndex() {
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedProvisionedHosts {
-		l.ProvisionedHosts[x.ID] = x
+		l.ProvisionedHosts[x.GetID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedBuilds {
+		l.Builds[x.GetID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedEnvironments {
+		l.Environments[x.GetID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedCompetitions {
+		l.Competitions[x.GetID()] = x
 		x.Caller = l.Caller
 	}
 }
@@ -266,66 +300,6 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 		return l, errors.WithStack(err)
 	}
 	l.User = newUser
-	if l.Competition == nil && diff.Competition != nil {
-		l.Competition = diff.Competition
-	} else if l.Competition != nil && diff.Competition != nil {
-		res, err := SmartMerge(l.Competition, diff.Competition, false)
-		if err != nil {
-			return l, errors.WithStack(err)
-		}
-		orig, ok := res.(*Competition)
-		if !ok {
-			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-		}
-		l.Competition = orig
-	}
-	if l.Environment == nil && diff.Environment != nil {
-		l.Environment = diff.Environment
-	} else if l.Environment != nil && diff.Environment != nil {
-		res, err := SmartMerge(l.Environment, diff.Environment, true)
-		if err != nil {
-			return l, errors.WithStack(err)
-		}
-		orig, ok := res.(*Environment)
-		if !ok {
-			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-		}
-		l.Environment = orig
-		if l.Environment.BaseDir == "" && l.EnvRoot != "" {
-			l.Environment.BaseDir = l.EnvRoot
-		}
-	}
-	if l.Team == nil && diff.Team != nil {
-		l.Team = diff.Team
-	} else if l.Team != nil && diff.Team != nil {
-		res, err := SmartMerge(l.Team, diff.Team, true)
-		if err != nil {
-			return l, errors.WithStack(err)
-		}
-		orig, ok := res.(*Team)
-		if !ok {
-			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-		}
-		l.Team = orig
-	}
-	if l.Build == nil && diff.Build != nil {
-		l.Build = diff.Build
-	} else if l.Build != nil && diff.Build != nil {
-		res, err := SmartMerge(l.Build, diff.Build, true)
-		if err != nil {
-			return l, errors.WithStack(err)
-		}
-		orig, ok := res.(*Build)
-		if !ok {
-			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
-		}
-		l.Build = orig
-	}
-
-	if diff.Build != nil {
-		l.Build = diff.Build
-	}
-
 	return l, nil
 }
 
@@ -407,10 +381,10 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
 		}
 	}
-	for name, obj := range layer.Files {
-		orig, found := base.Files[name]
+	for name, obj := range layer.RemoteFiles {
+		orig, found := base.RemoteFiles[name]
 		if !found {
-			base.Files[name] = obj
+			base.RemoteFiles[name] = obj
 			continue
 		}
 		res, err := SmartMerge(orig, obj, false)
@@ -433,6 +407,67 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 			return nil, err
 		}
 		orig, ok := res.(*DNSRecord)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+
+	for id, obj := range layer.Competitions {
+		orig, found := base.Competitions[id]
+		if !found {
+			base.Competitions[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*Competition)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+	for id, obj := range layer.Environments {
+		orig, found := base.Environments[id]
+		if !found {
+			base.Environments[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*Environment)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+	for id, obj := range layer.Builds {
+		orig, found := base.Builds[id]
+		if !found {
+			base.Builds[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*Build)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+	for id, obj := range layer.Teams {
+		orig, found := base.Teams[id]
+		if !found {
+			base.Teams[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*Team)
 		if !ok {
 			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
 		}
@@ -466,30 +501,210 @@ func (l *Laforge) IndexHostDependencies() error {
 	return nil
 }
 
-// IndexProvisionedHostDependencies enumerates all provisioend host objects in the state and indexes them by team, reporting errors.
-func (l *Laforge) IndexProvisionedHostDependencies() error {
-	if l.Team == nil {
-		return nil
-	}
-	if len(l.Team.ActiveHosts) == 0 {
-		l.Team.ActiveHosts = map[string]*ProvisionedHost{}
-	}
-	for _, h := range l.ProvisionedHosts {
-		if h.Active == false {
-			continue
+// IndexEnvironmentDependencies enumerates all known environments and makes sure they have valid network inclusions
+func (l *Laforge) IndexEnvironmentDependencies() error {
+	for _, e := range l.Environments {
+		comp, ok := l.Competitions[e.GetParentID()]
+		if ok {
+			e.Competition = comp
 		}
-		if h.TeamID != l.Team.ID {
-			return fmt.Errorf("issue indexing provisioned hosts: host %s belongs to team %s (current context is team %s)", h.ID, h.TeamID, l.Team.ID)
+		err := e.ResolveIncludedNetworks(l)
+		if err != nil {
+			return err
 		}
-		host, found := l.Hosts[h.HostID]
-		if !found {
-			return fmt.Errorf("issue indexing provisioned hosts: provisioned_host %s references an unknown host_id %s", h.ID, host.ID)
-		}
-		h.Host = host
-		h.Team = l.Team
-		l.Team.ActiveHosts[h.ID] = h
 	}
 	return nil
+}
+
+// IndexBuildDependencies enumerates all known builds and ensures it has competition and environment associations
+func (l *Laforge) IndexBuildDependencies() error {
+	for _, b := range l.Builds {
+		env, ok := l.Environments[b.GetParentID()]
+		if ok {
+			b.Environment = env
+			if b.Environment.Competition != nil {
+				b.Competition = b.Environment.Competition
+			}
+		}
+	}
+	return nil
+}
+
+// IndexTeamDependencies enumerates all known teams and ensures they have proper associations
+func (l *Laforge) IndexTeamDependencies() error {
+	for _, t := range l.Teams {
+		build, ok := l.Builds[t.GetParentID()]
+		if ok {
+			t.Build = build
+			if t.Build.Environment != nil {
+				t.Environment = t.Build.Environment
+				if t.Environment.Competition != nil {
+					t.Competition = t.Environment.Competition
+				}
+				if t.Environment.Teams == nil {
+					t.Environment.Teams = map[int]*Team{}
+				}
+				t.Environment.Teams[t.TeamNumber] = t
+				if t.Build.Teams == nil {
+					t.Build.Teams = map[int]*Team{}
+				}
+				t.Build.Teams[t.TeamNumber] = t
+			}
+		}
+	}
+	return nil
+}
+
+// IndexProvisionedHostDependencies enumerates all known provisioned hosts and ensures they have proper associations
+func (l *Laforge) IndexProvisionedHostDependencies() error {
+	for _, p := range l.ProvisionedHosts {
+		team, ok := l.Teams[p.GetParentID()]
+		if ok {
+			p.Team = team
+			if p.Team.Build != nil {
+				p.Build = p.Team.Build
+				if p.Team.Hosts == nil {
+					p.Team.Hosts = map[string]*ProvisionedHost{}
+				}
+				p.Team.Hosts[p.ID] = p
+				if p.Build.Environment != nil {
+					p.Environment = p.Build.Environment
+					if p.Environment.Competition != nil {
+						p.Competition = p.Environment.Competition
+					}
+				}
+			}
+		}
+		host, ok := l.Hosts[p.HostID]
+		if ok {
+			p.Host = host
+		}
+		network, ok := l.Networks[p.NetworkID]
+		if ok {
+			p.Network = network
+		}
+	}
+	return nil
+}
+
+// InitializeTeamContext returns a base context preset with a team context configuration
+func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Laforge, error) {
+	clone, err := LoadFiles(globalconfig, buildconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexHostDependencies()
+	if err != nil {
+		return nil, err
+	}
+	clone.IndexEnvironmentDependencies()
+	clone.IndexBuildDependencies()
+	clone.IndexTeamDependencies()
+	clone.IndexProvisionedHostDependencies()
+	t := &Team{}
+	tData, err := ioutil.ReadFile(teamconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = HCLBytesToObject(tData, t)
+	if err != nil {
+		return nil, err
+	}
+	currTeam, ok := clone.Teams[t.GetID()]
+	if !ok {
+		return nil, fmt.Errorf("could not find team %s in the current environment", t.GetID())
+	}
+	clone.CurrentTeam = currTeam
+	clone.CurrentBuild = currTeam.Build
+	clone.CurrentEnv = currTeam.Environment
+	clone.CurrentCompetition = currTeam.Competition
+	clone.TeamContextID = clone.CurrentTeam.GetID()
+	clone.BuildContextID = clone.CurrentBuild.GetID()
+	clone.EnvContextID = clone.CurrentEnv.GetID()
+	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	return clone, nil
+}
+
+// InitializeBuildContext returns a base context preset with a build context configuration
+func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) {
+	clone, err := LoadFiles(globalconfig, buildconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexHostDependencies()
+	if err != nil {
+		return nil, err
+	}
+	clone.IndexEnvironmentDependencies()
+	clone.IndexBuildDependencies()
+	clone.IndexTeamDependencies()
+	clone.IndexProvisionedHostDependencies()
+	b := &Build{}
+	tData, err := ioutil.ReadFile(buildconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = HCLBytesToObject(tData, b)
+	if err != nil {
+		return nil, err
+	}
+	currBuild, ok := clone.Builds[b.GetID()]
+	if !ok {
+		return nil, fmt.Errorf("could not find build %s in the current environment", b.GetID())
+	}
+	clone.CurrentBuild = currBuild
+	clone.CurrentEnv = currBuild.Environment
+	clone.CurrentCompetition = currBuild.Competition
+	clone.BuildContextID = clone.CurrentBuild.GetID()
+	clone.EnvContextID = clone.CurrentEnv.GetID()
+	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	return clone, nil
+}
+
+// InitializeEnvContext returns a base context preset with a env focused configuration
+func InitializeEnvContext(globalconfig, envconfig string) (*Laforge, error) {
+	clone, err := LoadFiles(globalconfig, envconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexHostDependencies()
+	if err != nil {
+		return nil, err
+	}
+	clone.IndexEnvironmentDependencies()
+	e := &Environment{}
+	tData, err := ioutil.ReadFile(envconfig)
+	if err != nil {
+		return nil, err
+	}
+	err = HCLBytesToObject(tData, e)
+	if err != nil {
+		return nil, err
+	}
+	currEnv, ok := clone.Environments[e.GetID()]
+	if !ok {
+		return nil, fmt.Errorf("could not find build %s in the current environment", e.GetID())
+	}
+	clone.CurrentEnv = currEnv
+	clone.CurrentCompetition = currEnv.Competition
+	clone.EnvContextID = clone.CurrentEnv.GetID()
+	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	return clone, nil
+}
+
+// InitializeBaseContext returns a base context preset with a base focused configuration
+func InitializeBaseContext(globalconfig, baseconfig string) (*Laforge, error) {
+	clone, err := LoadFiles(globalconfig, baseconfig)
+	if err != nil {
+		return nil, err
+	}
+	if clone != nil {
+		err = clone.IndexHostDependencies()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return clone, nil
 }
 
 // LoadFromContext attempts to bootstrap the given state from it's assumed Context Level
@@ -498,86 +713,13 @@ func (l *Laforge) LoadFromContext() error {
 	var err error
 	switch l.GetContext() {
 	case TeamContext:
-		clone, err = LoadFiles(l.GlobalConfigFile(), l.TeamConfigFile())
-		if err != nil {
-			return err
-		}
-		if clone != nil && clone.Environment != nil {
-			err = clone.IndexHostDependencies()
-			if err != nil {
-				return err
-			}
-			err = clone.Environment.ResolveIncludedNetworks(clone)
-			if err != nil {
-				return err
-			}
-		}
-		if clone != nil && clone.Team != nil {
-			err = clone.IndexProvisionedHostDependencies()
-			if err != nil {
-				return err
-			}
-		}
-
-		// if clone.Team != nil {
-		// 	if l.PathRegistry == nil {
-		// 		l.PathRegistry = &PathRegistry{
-		// 			DB: map[CallFile]*PathResolver{},
-		// 		}
-		// 	}
-		// 	if l.PathRegistry.DB[l.Caller.Current()] == nil {
-		// 		l.PathRegistry.DB[l.Caller.Current()] = &PathResolver{
-		// 			Mapping:    map[string]*LocalFileRef{},
-		// 			Unresolved: map[string]bool{},
-		// 		}
-		// 	}
-		// 	currPathResolver := l.PathRegistry.DB[l.Caller.Current()]
-		// 	err = clone.Build.LoadDBFile(l, currPathResolver, l.Caller.Current())
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
+		clone, err = InitializeTeamContext(l.GlobalConfigFile(), l.BuildConfigFile(), l.TeamConfigFile())
 	case BuildContext:
-		clone, err = LoadFiles(l.GlobalConfigFile(), l.BuildConfigFile())
-		if err != nil {
-			return err
-		}
-		if clone != nil && clone.Environment != nil {
-			err = clone.IndexHostDependencies()
-			if err != nil {
-				return err
-			}
-			err = clone.Environment.ResolveIncludedNetworks(clone)
-			if err != nil {
-				return err
-			}
-		}
+		clone, err = InitializeBuildContext(l.GlobalConfigFile(), l.BuildConfigFile())
 	case EnvContext:
-		clone, err = LoadFiles(l.GlobalConfigFile(), l.EnvConfigFile())
-		if err != nil {
-			return err
-		}
-		if clone != nil && clone.Environment != nil {
-			err = clone.IndexHostDependencies()
-			if err != nil {
-				return err
-			}
-			err = clone.Environment.ResolveIncludedNetworks(clone)
-			if err != nil {
-				return err
-			}
-		}
+		clone, err = InitializeEnvContext(l.GlobalConfigFile(), l.EnvConfigFile())
 	case BaseContext:
-		clone, err = LoadFiles(l.GlobalConfigFile(), l.BaseConfigFile())
-		if err != nil {
-			return err
-		}
-		if clone != nil {
-			err = clone.IndexHostDependencies()
-			if err != nil {
-				return err
-			}
-		}
+		clone, err = InitializeBaseContext(l.GlobalConfigFile(), l.BaseConfigFile())
 	default:
 		return ErrContextViolation
 	}
@@ -702,12 +844,11 @@ func Bootstrap() (*Laforge, error) {
 	if err != nil {
 		return base, err
 	}
-	if base.Competition != nil && base.Competition.BaseDir == "" {
-		base.Competition.BaseDir = base.BaseRoot
-	}
+
 	if base.BaseDir == "" {
 		base.BaseDir = base.BaseRoot
 	}
+
 	base.InitialContext = base.GetContext()
 	return base, err
 }

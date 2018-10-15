@@ -8,14 +8,11 @@ import (
 
 	"github.com/gen0cide/laforge/builder/tfgcp"
 
-	"github.com/gen0cide/laforge/builder/tfibm"
-
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/builder/buildutil"
 	"github.com/gen0cide/laforge/builder/null"
-	"github.com/gen0cide/laforge/builder/tfaws"
 	"github.com/gen0cide/laforge/core"
 	"github.com/pkg/errors"
 )
@@ -24,9 +21,9 @@ var (
 	// ValidBuilders retains a map of ID to empty Builder objects.
 	ValidBuilders = map[string]Builder{
 		"tfgcp": tfgcp.New(),
-		"tfaws": tfaws.New(),
-		"tfibm": tfibm.New(),
-		"null":  null.New(),
+		// "tfaws": tfaws.New(),
+		// "tfibm": tfibm.New(),
+		"null": null.New(),
 	}
 
 	// ErrNoBuilderFound is thrown when a builder is not a known valid builder parameter
@@ -99,12 +96,12 @@ func New(base *core.Laforge, overwrite, update bool) (*BuildEngine, error) {
 		return nil, buildutil.Throw(setup, "Cannot initialize build directory", nil)
 	}
 
-	bldr, found := ValidBuilders[base.Environment.Builder]
+	bldr, found := ValidBuilders[base.CurrentEnv.Builder]
 	if !found {
-		return nil, buildutil.Throw(ErrNoBuilderFound, "Invalid builder defined", &buildutil.V{"provided": base.Environment.Builder})
+		return nil, buildutil.Throw(ErrNoBuilderFound, "Invalid builder defined", &buildutil.V{"provided": base.CurrentEnv.Builder})
 	}
 
-	core.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.Environment.Builder)))
+	core.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.CurrentEnv.Builder)))
 	return &BuildEngine{
 		Base:    base,
 		Builder: bldr,

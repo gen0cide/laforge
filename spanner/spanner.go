@@ -10,6 +10,7 @@ import (
 	"github.com/gen0cide/laforge/core"
 )
 
+// Spanner is a multiplexer for teams in a laforge environment
 type Spanner struct {
 	Job
 	Laforge  *core.Laforge
@@ -19,14 +20,6 @@ type Spanner struct {
 	BuildDir string
 	Result   chan *Worker
 	ExecTime int64
-}
-
-type Job struct {
-	Command    []string
-	SaveOutput bool
-	Silent     bool
-	ExecType   string
-	HostID     string
 }
 
 // New returns a new Spanner
@@ -69,44 +62,29 @@ func New(base *core.Laforge, command []string, exectype, hostid string, saveOutp
 
 // CreateWorkerPool creates the individual workers for the spanner
 func (s *Spanner) CreateWorkerPool() error {
-	for i := 0; i < s.Laforge.Environment.TeamCount; i++ {
-		teamDir := filepath.Join(s.BuildDir, "teams", fmt.Sprintf("%d", i))
+	// for i := 0; i < s.Laforge.Environment.TeamCount; i++ {
+	// 	teamDir := filepath.Join(s.BuildDir, "teams", fmt.Sprintf("%d", i))
 
-		if _, err := os.Stat(teamDir); os.IsNotExist(err) {
-			return fmt.Errorf("no team directory exists for team number %d", i)
-		}
-		s.Workers[i] = &Worker{
-			TeamDir: teamDir,
-			Job:     s.Job,
-			ID:      s.ExecTime,
-			TeamID:  i,
-			Parent:  s,
-			LogFile: filepath.Join(s.LogDir, fmt.Sprintf("team_%d.log", i)),
-		}
-		notValid := s.Workers[i].Verify()
-		if notValid != nil {
-			return notValid
-		}
-	}
+	// 	if _, err := os.Stat(teamDir); os.IsNotExist(err) {
+	// 		return fmt.Errorf("no team directory exists for team number %d", i)
+	// 	}
+	// 	s.Workers[i] = &Worker{
+	// 		TeamDir: teamDir,
+	// 		Job:     s.Job,
+	// 		ID:      s.ExecTime,
+	// 		TeamID:  i,
+	// 		Parent:  s,
+	// 		LogFile: filepath.Join(s.LogDir, fmt.Sprintf("team_%d.log", i)),
+	// 	}
+	// 	notValid := s.Workers[i].Verify()
+	// 	if notValid != nil {
+	// 		return notValid
+	// 	}
+	// }
 	return nil
 }
 
-// Verify attempts to validate the constructs of the spanner
-func (w *Worker) Verify() error {
-	if w.ExecType == "remote-exec" {
-		provisionedHostFile := filepath.Join(w.TeamDir, "provisioned_hosts", fmt.Sprintf("%s.laforge", w.HostID))
-		if _, err := os.Stat(provisionedHostFile); os.IsNotExist(err) {
-			return fmt.Errorf("team %d does not have an active host %s", w.TeamID, w.HostID)
-		}
-		err := w.ResolveProvisionedHost()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
+// Do does stuff
 func (s *Spanner) Do() error {
 	core.SetLogLevel("info")
 	core.Logger.Infof("Logs found at: %s", s.LogDir)
