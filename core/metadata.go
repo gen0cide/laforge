@@ -52,14 +52,14 @@ func ValidateGenericPath(p string) error {
 // Metadata stores metadata about different structs within the environment
 //easyjson:json
 type Metadata struct {
-	ID            string
-	ObjectType    string
-	Checksum      uint64
-	CreatedAt     time.Time
-	ModifiedAt    time.Time
-	ParentIDs     []string
-	DependencyIDs []string
-	Resources     []MetaResource
+	ID            string         `json:"id,omitempty"`
+	ObjectType    string         `json:"object_type,omitempty"`
+	Checksum      uint64         `json:"checksum,omitempty"`
+	CreatedAt     time.Time      `json:"created_at,omitempty"`
+	ModifiedAt    time.Time      `json:"modified_at,omitempty"`
+	ParentIDs     []string       `json:"parent_ids,omitempty"`
+	DependencyIDs []string       `json:"dependency_ids,omitempty"`
+	Resources     []MetaResource `json:"resources,omitempty"`
 }
 
 // MetaResource stores information about a local file dependency. This can be a directory.
@@ -68,13 +68,13 @@ type Metadata struct {
 // Note creation and modification date refer to meta resource validation, not the actual file.
 //easyjson:json
 type MetaResource struct {
-	ID           string
-	PathFromBase string
-	Basename     string
-	ParentIDs    []string
-	IsDir        string
-	CreatedAt    time.Time
-	ModifiedAt   time.Time
-	Checksum     uint64
-	Size         int
+	ID           string    `json:"id,omitempty"`
+	PathFromBase string    `json:"path_from_base,omitempty"`
+	Basename     string    `json:"basename,omitempty"`
+	ParentIDs    []string  `json:"parent_ids,omitempty"`
+	IsDir        bool      `json:"is_dir,omitempty"`
+	CreatedAt    time.Time `json:"created_at,omitempty"`
+	ModifiedAt   time.Time `json:"modified_at,omitempty"`
+	Checksum     uint64    `json:"checksum,omitempty"`
+	Size         int       `json:"size,omitempty"`
 }

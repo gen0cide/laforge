@@ -14,10 +14,10 @@ type PathResolver struct {
 // LocalFileRef is a basic type to hold information about a resolved file that was declared inside a state declaration
 //easyjson:json
 type LocalFileRef struct {
-	Base          string
-	AbsPath       string
-	RelPath       string
-	Cwd           string
-	DeclaredPath  string
-	RelToCallFile string
+	Base          string `json:"base,omitempty"`
+	AbsPath       string `json:"abs_path,omitempty"`
+	RelPath       string `json:"rel_path,omitempty"`
+	Cwd           string `json:"cwd,omitempty"`
+	DeclaredPath  string `json:"declared_path,omitempty"`
+	RelToCallFile string `json:"rel_to_call_file,omitempty"`
 }

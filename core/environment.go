@@ -347,29 +347,6 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 		select {
 		case res := <-resChan:
 			_ = res
-			// if res.Environment == nil {
-			// 	Logger.Errorf("Nil environment found during directory walk... (this should of errored, but didn't)")
-			// 	continue
-			// }
-			// if emap[res.Environment.ID] != nil {
-			// 	origPath := ""
-			// 	badPath := ""
-			// 	for cf := range emap[res.Environment.ID].PathRegistry.DB {
-			// 		if filepath.Base(cf.CallerFile) == "env.laforge" {
-			// 			origPath = cf.CallerDir
-			// 			break
-			// 		}
-			// 	}
-			// 	for cf := range res.PathRegistry.DB {
-			// 		if filepath.Base(cf.CallerFile) == "env.laforge" {
-			// 			badPath = cf.CallerDir
-			// 			break
-			// 		}
-			// 	}
-			// 	Logger.Errorf("Name collision between two environments! Check env.laforge environment IDs in these directories:\n  %s\n  %s", origPath, badPath)
-			// 	continue
-			// }
-			// emap[res.Environment.ID] = res
 		case resErr := <-errChan:
 			Logger.Errorf("An error was found with an environment: %v", resErr)
 		case <-finChan:

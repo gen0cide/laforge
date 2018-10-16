@@ -29,6 +29,7 @@ type IncludedNetwork struct {
 	Hosts []string `hcl:"included_hosts,attr" json:"included_hosts,omitempty"`
 }
 
+// String implments the Stringer interface
 func (i *IncludedNetwork) String() string {
 	return fmt.Sprintf("[network name=%s hosts=%s]", i.Name, strings.Join(i.Hosts, `,`))
 }

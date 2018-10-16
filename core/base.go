@@ -125,6 +125,7 @@ type Laforge struct {
 }
 
 // Include defines a named include type
+//easyjson:json
 type Include struct {
 	Path string `hcl:"path,attr" json:"path,omitempty"`
 }
@@ -133,6 +134,7 @@ type Include struct {
 //	config "keyName" {
 //		value = "valueData"
 //	}
+//easyjson:json
 type Opt struct {
 	Key   string `hcl:",label" json:"key,omitempty"`
 	Value string `hcl:"value,attr" json:"value,omitempty"`
@@ -154,6 +156,7 @@ type Opt struct {
 //	- "overwrite" will replace the entirety of original "foo" with your definition, discarding any previous state.
 //	- "inherit" will apply a merge in reverse - merging the original "foo" into your definition, overwriting any fields.
 //	- "panic" will raise a runtime error and prevent further execution. This can be a very helpful way to avoid state on "root" definitions.
+//easyjson:json
 type OnConflict struct {
 	Do     string `cty:"do" hcl:"do,attr" json:"do,omitempty"`
 	Append bool   `cty:"append" hcl:"append,optional" json:"append,omitempty"`
