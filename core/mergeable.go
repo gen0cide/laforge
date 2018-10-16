@@ -17,8 +17,8 @@ type Mergeable interface {
 	// GetCaller retrieves the object's Caller value
 	GetCaller() Caller
 
-	// GetID retrieves the object's ID value
-	GetID() string
+	// LaforgeID retrieves the object's ID value
+	LaforgeID() string
 
 	// GetOnConflict retrieves the object's OnConflict value
 	GetOnConflict() OnConflict
@@ -72,7 +72,7 @@ func SmartMerge(m, diff Mergeable, appendSlices bool) (Mergeable, error) {
 	case meth == "skip":
 		return m, nil
 	case meth == "panic":
-		return m, NewMergeConflict(m, diff, m.GetID(), diff.GetID(), m.GetCaller().Current(), diff.GetCaller().Current())
+		return m, NewMergeConflict(m, diff, m.LaforgeID(), diff.LaforgeID(), m.GetCaller().Current(), diff.GetCaller().Current())
 	default:
 		return m, fmt.Errorf("invalid conflict strategy %s in %s", diff.GetOnConflict().Do, diff.GetCaller().Current().CallerFile)
 	}

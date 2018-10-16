@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	"github.com/hashicorp/hcl2/hcl"
 
 	"github.com/urfave/cli"
 )
@@ -54,6 +56,9 @@ var (
 func listenv(c *cli.Context) error {
 	base, err := core.Bootstrap()
 	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return errors.New("aborted due to parsing error")
+		}
 		return err
 	}
 

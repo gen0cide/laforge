@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
 )
@@ -29,6 +31,9 @@ var (
 func performshell(c *cli.Context) error {
 	base, err := core.Bootstrap()
 	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return errors.New("aborted due to parsing error")
+		}
 		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
 		os.Exit(1)
 	}
@@ -76,34 +81,4 @@ func performshell(c *cli.Context) error {
 	}
 
 	return provisionedHost.RemoteShell()
-
-	// if host.IsWindows() {
-	// 	s := shells.WinRM{}
-	// 	s.SetIO(os.Stdout, os.Stderr, os.Stdin)
-	// 	err = s.SetConfig(provisionedHost.WinRMAuthConfig)
-	// 	if err != nil {
-	// 		cliLogger.Errorf("Error applying configuration: %v", err)
-	// 		os.Exit(1)
-	// 	}
-	// 	err = s.LaunchInteractiveShell()
-	// 	if err != nil {
-	// 		cliLogger.Errorf("interactive shell error: %v", err)
-	// 		os.Exit(1)
-	// 	}
-	// } else {
-	// 	s := shells.SSH{}
-	// 	s.SetIO(os.Stdout, os.Stderr, os.Stdin)
-	// 	err = s.SetConfig(provisionedHost.SSHAuthConfig)
-	// 	if err != nil {
-	// 		cliLogger.Errorf("Error applying configuration: %v", err)
-	// 		os.Exit(1)
-	// 	}
-	// 	err = s.LaunchInteractiveShell()
-	// 	if err != nil {
-	// 		cliLogger.Errorf("interactive shell error: %v", err)
-	// 		os.Exit(1)
-	// 	}
-	// }
-
-	return nil
 }

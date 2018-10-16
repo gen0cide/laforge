@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 
+	"github.com/cespare/xxhash"
 	"github.com/karrick/godirwalk"
 	"github.com/pkg/errors"
 )
@@ -18,6 +21,7 @@ var (
 )
 
 // Environment represents the basic configurable type for a Laforge environment container
+//easyjson:json
 type Environment struct {
 	ID               string              `hcl:"id,label" json:"id,omitempty"`
 	CompetitionID    string              `hcl:"competition_id,attr" json:"competition_id,omitempty"`
@@ -41,18 +45,70 @@ type Environment struct {
 	Competition      *Competition        `json:"-"`
 }
 
+// Hash implements the Hasher interface
+func (e *Environment) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"name=%v builder=%v tc=%v acidrs=%v conf=%v rev=%v deps=%v",
+			e.Name,
+			e.Builder,
+			e.TeamCount,
+			strings.Join(e.AdminCIDRs, ","),
+			e.Config,
+			e.Revision,
+			e.GetDependencyHash(),
+		),
+	)
+}
+
+// GetDependencyHash returns the host's dependency hash
+func (e *Environment) GetDependencyHash() string {
+	p := []string{}
+	for _, x := range e.Networks {
+		p = append(p, x.String())
+	}
+	for _, x := range e.IncludedHosts {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	for _, x := range e.IncludedNetworks {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	return strings.Join(p, ",")
+}
+
+// Path implements the Pather interface
+func (e *Environment) Path() string {
+	return e.ID
+}
+
+// Base implements the Pather interface
+func (e *Environment) Base() string {
+	return path.Base(e.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (e *Environment) ValidatePath() error {
+	if err := ValidateGenericPath(e.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(e.Path(), `/`); topdir[1] != "envs" {
+		return fmt.Errorf("path %s is not rooted in /%s", e.Path(), topdir[1])
+	}
+	return nil
+}
+
 // GetCaller implements the Mergeable interface
 func (e *Environment) GetCaller() Caller {
 	return e.Caller
 }
 
-// GetID implements the Mergeable interface
-func (e *Environment) GetID() string {
-	return filepath.Join(e.CompetitionID, e.ID)
+// LaforgeID implements the Mergeable interface
+func (e *Environment) LaforgeID() string {
+	return e.ID
 }
 
-// GetParentID returns the Team's parent build ID
-func (e *Environment) GetParentID() string {
+// ParentLaforgeID returns the Team's parent build ID
+func (e *Environment) ParentLaforgeID() string {
 	return e.CompetitionID
 }
 
@@ -159,6 +215,16 @@ func ValidEnvName(name string) bool {
 	return ValidEnvNameRegexp.MatchString(name)
 }
 
+// ValidID checks to determine if the string conforms to laforge ID schemas.
+func ValidID(id string) bool {
+	return ValidIDRegexp.MatchString(id)
+}
+
+// OutdatedID checks to determine if the ID is in an outdated format.
+func OutdatedID(id string) bool {
+	return ValidOldIDRegexp.MatchString(id)
+}
+
 // InitializeEnv attempts to initialize a new environment of a given name
 func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 	err := l.AssertExactContext(BaseContext)
@@ -191,7 +257,7 @@ func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 	}
 	newFile.Close()
 
-	envData, err := RenderHCLv2Object(baseEnvironment(name, &l.User))
+	envData, err := RenderHCLv2Object(baseEnvironment(name, l.User))
 	if err != nil {
 		return errors.WithStack(err)
 	}

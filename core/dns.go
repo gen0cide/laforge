@@ -1,17 +1,38 @@
 package core
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/cespare/xxhash"
+	"github.com/pkg/errors"
+)
 
 // DNS represents a configurable type for the creation of competition DNS infrastructure
+//easyjson:json
 type DNS struct {
 	ID         string            `hcl:"id,label" json:"id,omitempty"`
 	Type       string            `hcl:"type,attr" json:"type,omitempty"`
 	RootDomain string            `hcl:"root_domain,attr" json:"root_domain,omitempty"`
 	DNSServers []string          `hcl:"dns_servers,attr" json:"dns_servers,omitempty"`
-	NTPServers []string          `hcl:"ntp_servers,attr" json:"ntp_servers,omitempty"`
-	Config     map[string]string `hcl:"config,attr" json:"config,omitempty"`
+	NTPServers []string          `hcl:"ntp_servers,optional" json:"ntp_servers,omitempty"`
+	Config     map[string]string `hcl:"config,optional" json:"config,omitempty"`
 	OnConflict *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller     Caller            `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (d *DNS) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"type=%v rd=%v ns=%v ntp=%v config=%v",
+			d.Type,
+			d.RootDomain,
+			strings.Join(d.DNSServers, ","),
+			strings.Join(d.NTPServers, ","),
+			d.Config,
+		),
+	)
 }
 
 // GetCaller implements the Mergeable interface
@@ -19,8 +40,8 @@ func (d *DNS) GetCaller() Caller {
 	return d.Caller
 }
 
-// GetID implements the Mergeable interface
-func (d *DNS) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (d *DNS) LaforgeID() string {
 	return d.ID
 }
 

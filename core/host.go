@@ -4,12 +4,15 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"path"
 	"strings"
 
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
 // Host defines a configurable type for customizing host parameters within the infrastructure.
+//easyjson:json
 type Host struct {
 	ID               string                 `cty:"id" hcl:"id,label" json:"id,omitempty"`
 	Hostname         string                 `cty:"hostname" hcl:"hostname,attr" json:"hostname,omitempty"`
@@ -39,11 +42,13 @@ type Host struct {
 }
 
 // Disk is a configurable type for setting the root volume's disk size in GB
+//easyjson:json
 type Disk struct {
 	Size int `cty:"size" hcl:"size,attr" json:"size,omitempty"`
 }
 
 // HostDependency is a configurable type for defining host or network dependencies to allow a dependency graph to be honored during deployment
+//easyjson:json
 type HostDependency struct {
 	HostID     string      `cty:"host" hcl:"host,attr" json:"host,omitempty"`
 	NetworkID  string      `cty:"network" hcl:"network,attr" json:"network,omitempty"`
@@ -52,6 +57,90 @@ type HostDependency struct {
 	OnConflict *OnConflict `cty:"on_conflict" hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Host       *Host       `json:"-"`
 	Network    *Network    `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (h *HostDependency) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"hid=%v nid=%v step=%v stepid=%v hh=%v nh=%v",
+			h.HostID,
+			h.NetworkID,
+			h.Step,
+			h.StepID,
+			h.Host.Hash(),
+			h.Network.Hash(),
+		),
+	)
+}
+
+// Hash implements the Hasher interface
+func (h *Host) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"hn=%v os=%v ami=%v lo=%v isize=%v disk=%v ps=%v provs=%v opass=%v ug=%v deps=%v vars=%v",
+			h.Hostname,
+			h.OS,
+			h.AMI,
+			h.LastOctet,
+			h.InstanceSize,
+			h.Disk,
+			strings.Join(h.ProvisionSteps, `,`),
+			h.GetProvisionersHash(),
+			h.OverridePassword,
+			h.UserGroups,
+			h.GetDependencyHash(),
+			h.Vars,
+		),
+	)
+}
+
+// GetDependencyHash returns the host's dependency hash
+func (h *Host) GetDependencyHash() string {
+	p := []string{}
+	for _, x := range h.Dependencies {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	return strings.Join(p, ",")
+}
+
+// GetProvisionersHash returns a concatinated string of the host's provisioners hashes
+func (h *Host) GetProvisionersHash() string {
+	p := []string{}
+	for _, x := range h.Scripts {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	for _, x := range h.Commands {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	for _, x := range h.DNSRecords {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	for _, x := range h.RemoteFiles {
+		p = append(p, fmt.Sprintf("%d", x.Hash()))
+	}
+	return strings.Join(p, ",")
+}
+
+// Path implements the Pather interface
+func (h *Host) Path() string {
+	return h.ID
+}
+
+// Base implements the Pather interface
+func (h *Host) Base() string {
+	return path.Base(h.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (h *Host) ValidatePath() error {
+	if err := ValidateGenericPath(h.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(h.Path(), `/`); topdir[1] != "hosts" {
+		return fmt.Errorf("path %s is not rooted in /%s", h.Path(), topdir[1])
+	}
+	return nil
 }
 
 // HasTag is a template helper function to return true/false if the host contains a tag of a specific key
@@ -85,8 +174,8 @@ func (h *Host) GetCaller() Caller {
 	return h.Caller
 }
 
-// GetID implements the Mergeable interface
-func (h *Host) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (h *Host) LaforgeID() string {
 	return h.ID
 }
 

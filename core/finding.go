@@ -80,19 +80,20 @@ func (f FindingSeverity) String() string {
 }
 
 // Finding represents a finding to be aggregated for scoring inside a laforge scenario
+//easyjson:json
 type Finding struct {
-	ID          string      `hcl:"id,label" json:"id,omitempty"`
-	Name        string      `hcl:"name,attr" json:"name,omitempty"`
-	Description string      `hcl:"description,attr" json:"description,omitempty"`
-	Severity    int         `hcl:"severity,attr" json:"severity,omitempty"`
-	Difficulty  int         `hcl:"difficulty,attr" json:"difficulty,omitempty"`
-	Maintainer  *User       `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	Tags        []string    `hcl:"tags,attr" json:"tags,omitempty"`
-	Provisioner Provisioner `json:"-"`
-	Host        *Host       `json:"-"`
+	ID          string            `hcl:"id,label" json:"id,omitempty"`
+	Name        string            `hcl:"name,attr" json:"name,omitempty"`
+	Description string            `hcl:"description,optional" json:"description,omitempty"`
+	Severity    FindingSeverity   `hcl:"severity,attr" json:"severity,omitempty"`
+	Difficulty  FindingDifficulty `hcl:"difficulty,attr" json:"difficulty,omitempty"`
+	Maintainer  *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	Tags        []string          `hcl:"tags,optional" json:"tags,omitempty"`
+	Provisioner Provisioner       `json:"-"`
+	Host        *Host             `json:"-"`
 }
 
 // TotalScore returns the total score applicable to a Finding
 func (f *Finding) TotalScore() int {
-	return f.Severity * f.Difficulty
+	return int(f.Severity) * int(f.Difficulty)
 }

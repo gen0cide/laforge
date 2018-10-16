@@ -1,13 +1,13 @@
 
 include {
-  path = "./*/*.laforge"
+  path = "./**/*.laforge"
 }
 
 team {{ $.ID | hclstring }} {
   team_number = {{ $.TeamNumber }}
-  build_id = {{ $.BuildID | hclstring }}
-  environment_id = {{ $.EnvironmentID | hclstring }}
-  competition_id = {{ $.CompetitionID | hclstring }}
+  build_id = {{ $.Build.ID | hclstring }}
+  environment_id = {{ $.Environment.ID | hclstring }}
+  competition_id = {{ $.Competition.ID | hclstring }}
   revision = {{ $.Revision }}
 
   on_conflict {

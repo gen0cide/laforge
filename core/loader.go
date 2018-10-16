@@ -13,6 +13,7 @@ import (
 	gohcl2 "github.com/hashicorp/hcl2/gohcl"
 	hcl2 "github.com/hashicorp/hcl2/hcl"
 	hcl2parse "github.com/hashicorp/hcl2/hclparse"
+	zglob "github.com/mattn/go-zglob"
 	"github.com/xlab/treeprint"
 )
 
@@ -91,6 +92,12 @@ func (l *Loader) ParseConfigFile(filename string) error {
 		_, diags = l.Parser.ParseHCLFile(filename)
 	}
 	if diags.HasErrors() {
+		for _, e := range diags.Errs() {
+			ne, ok := e.(*hcl2.Diagnostic)
+			if ok {
+				Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+			}
+		}
 		return diags
 	}
 	l.AddToTree(filename, ".")
@@ -136,7 +143,7 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 	body := hcl2.EmptyBody()
 	var diags hcl2.Diagnostics
 	if strings.Contains(targetFile, `*`) {
-		matches, err := filepath.Glob(targetFile)
+		matches, err := zglob.Glob(targetFile)
 		if err != nil {
 			return body, hcl2.Diagnostics{&hcl2.Diagnostic{
 				Severity: hcl2.DiagError,
@@ -172,7 +179,23 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		}
 		r.Loader.AddToTree(targetFile, refRange.Filename)
 		r.Loader.CallerMap[targetFile] = NewCaller(targetFile)
+		if diags.HasErrors() {
+			for _, e := range diags.Errs() {
+				ne, ok := e.(*hcl2.Diagnostic)
+				if ok {
+					Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+				}
+			}
+		}
 		return nil, diags
+	}
+	if diags.HasErrors() {
+		for _, e := range diags.Errs() {
+			ne, ok := e.(*hcl2.Diagnostic)
+			if ok {
+				Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+			}
+		}
 	}
 	return body, diags
 }
@@ -195,7 +218,7 @@ func (l *Loader) Deconflict(filenames []string) (*Laforge, error) {
 			return lf, err
 		}
 		lf.Includes = append(lf.Includes, fname)
-		Logger.Infof("Config Imported From: %s", fname)
+		Logger.Debugf("Config Imported From: %s", fname)
 	}
 	lf.DependencyGraph = l.Includes
 	return lf, nil
@@ -249,7 +272,16 @@ func (l *Loader) Bind() (*Laforge, error) {
 				filenames = append([]string{name}, filenames...)
 			}
 			newLF := &Laforge{}
-			gohcl2.DecodeBody(f.Body, nil, newLF)
+			diags := gohcl2.DecodeBody(f.Body, nil, newLF)
+			if diags.HasErrors() {
+				for _, e := range diags.Errs() {
+					ne, ok := e.(*hcl2.Diagnostic)
+					if ok {
+						Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+					}
+				}
+				return nil, diags
+			}
 			newLF.Filename = name
 			newLF.Caller = l.CallerMap[name]
 			l.ConfigMap[name] = newLF
@@ -264,20 +296,21 @@ func (l *Loader) Bind() (*Laforge, error) {
 }
 
 type transientContext struct {
-	Build       *Build               `hcl:"build,block" json:"build,omitempty"`
-	Competition *Competition         `hcl:"competition,block" json:"competition,omitempty"`
-	Command     *Command             `hcl:"command,block" json:"command,omitempty"`
-	DNSRecord   *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
-	Environment *Environment         `hcl:"environment,block" json:"environment,omitempty"`
-	Host        *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
-	Identity    *Identity            `hcl:"identity,block" json:"identity,omitempty"`
-	Network     *Network             `hcl:"network,block" json:"network,omitempty"`
-	RemoteFile  *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
-	Script      *Script              `hcl:"script,block" json:"script,omitempty"`
-	Team        *Team                `hcl:"team,block" json:"team,omitempty"`
-	User        *User                `hcl:"user,block" json:"user,omitempty"`
-	AMI         *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
-	Includes    []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
+	Build           *Build               `hcl:"build,block" json:"build,omitempty"`
+	Competition     *Competition         `hcl:"competition,block" json:"competition,omitempty"`
+	Command         *Command             `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord       *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment     *Environment         `hcl:"environment,block" json:"environment,omitempty"`
+	Host            *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity        *Identity            `hcl:"identity,block" json:"identity,omitempty"`
+	Network         *Network             `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile      *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script          *Script              `hcl:"script,block" json:"script,omitempty"`
+	Team            *Team                `hcl:"team,block" json:"team,omitempty"`
+	User            *User                `hcl:"user,block" json:"user,omitempty"`
+	AMI             *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
+	ProvisionedHost *ProvisionedHost     `hcl:"provisioned_host,block" json:"provisioned_host,omitempty"`
+	Includes        []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
 }
 
 type transientIncludes struct {
@@ -285,19 +318,20 @@ type transientIncludes struct {
 }
 
 type transientReverseContext struct {
-	Build       []*Build       `hcl:"build,block" json:"build,omitempty"`
-	Competition []*Competition `hcl:"competition,block" json:"competition,omitempty"`
-	Command     []*Command     `hcl:"command,block" json:"command,omitempty"`
-	DNSRecord   []*DNSRecord   `hcl:"dns_record,block" json:"dns_record,omitempty"`
-	Environment []*Environment `hcl:"environment,block" json:"environment,omitempty"`
-	Host        []*Host        `cty:"host" hcl:"host,block" json:"host,omitempty"`
-	Identity    []*Identity    `hcl:"identity,block" json:"identity,omitempty"`
-	Network     []*Network     `hcl:"network,block" json:"network,omitempty"`
-	RemoteFile  []*RemoteFile  `hcl:"remote_file,block" json:"remote_file,omitempty"`
-	Script      []*Script      `hcl:"script,block" json:"script,omitempty"`
-	Team        []*Team        `hcl:"team,block" json:"team,omitempty"`
-	User        []*User        `hcl:"user,block" json:"user,omitempty"`
-	AMI         []*AMI         `hcl:"ami,block" json:"ami,omitempty"`
+	Build           []*Build           `hcl:"build,block" json:"build,omitempty"`
+	Competition     []*Competition     `hcl:"competition,block" json:"competition,omitempty"`
+	Command         []*Command         `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord       []*DNSRecord       `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment     []*Environment     `hcl:"environment,block" json:"environment,omitempty"`
+	Host            []*Host            `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity        []*Identity        `hcl:"identity,block" json:"identity,omitempty"`
+	Network         []*Network         `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile      []*RemoteFile      `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script          []*Script          `hcl:"script,block" json:"script,omitempty"`
+	Team            []*Team            `hcl:"team,block" json:"team,omitempty"`
+	User            []*User            `hcl:"user,block" json:"user,omitempty"`
+	ProvisionedHost []*ProvisionedHost `hcl:"provisioned_host,block" json:"provisioned_host,omitempty"`
+	AMI             []*AMI             `hcl:"ami,block" json:"ami,omitempty"`
 }
 
 func newTransientReverseContext() *transientReverseContext {
@@ -315,6 +349,40 @@ func newTransientReverseContext() *transientReverseContext {
 		Team:        []*Team{},
 		User:        []*User{},
 		AMI:         []*AMI{},
+	}
+}
+
+// GetEmptyObjByName returns a pointer to an initialized, but empty object of the specified type (camel case).
+func GetEmptyObjByName(s string) (interface{}, error) {
+	switch strings.ToLower(s) {
+	case "build":
+		return &Build{}, nil
+	case "competition":
+		return &Competition{}, nil
+	case "command":
+		return &Command{}, nil
+	case "dns_record":
+		return &DNSRecord{}, nil
+	case "environment":
+		return &Environment{}, nil
+	case "host":
+		return &Host{}, nil
+	case "identity":
+		return &Identity{}, nil
+	case "network":
+		return &Network{}, nil
+	case "remote_file":
+		return &RemoteFile{}, nil
+	case "script":
+		return &Script{}, nil
+	case "team":
+		return &Team{}, nil
+	case "user":
+		return &User{}, nil
+	case "ami":
+		return &AMI{}, nil
+	default:
+		return nil, errors.New("specified core type name was not valid")
 	}
 }
 

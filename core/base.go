@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/xlab/treeprint"
 
@@ -44,16 +45,32 @@ var (
 
 	// ErrInvalidEnvName is thrown when an environment name does not meet specified regulations around environment naming conventions
 	ErrInvalidEnvName = errors.New("environment names can only contain lowercase alphanumeric and dash characters (a valid subdomain)")
+
+	// ErrDeprecatedID is thrown when an object using a deprecated ID format is loaded
+	ErrDeprecatedID = errors.New("the object is using a deprecated ID format and should be updated")
+
+	// ErrInvalidIDFormat is thrown when an object using an invalid ID format is loaded
+	ErrInvalidIDFormat = errors.New("object ID does not meet valid ID requirements")
+
+	// ValidIDRegexp is the format for the new object ID schema.
+	ValidIDRegexp = regexp.MustCompile(`\A[a-z0-9][a-z0-9\-]{1,34}[a-z0-9]\z`)
+
+	// ValidOldIDRegexp is the old ID schema that allowed additional characters (periods and underscores)
+	// and did not validate minimum or maximum length. These formats often incurred incompatabilities with
+	// existing systems and will be deprecated.
+	ValidOldIDRegexp = regexp.MustCompile(`\A[a-zA-Z0-9][a-zA-Z0-9\-\_\.]{2,34}[a-zA-Z0-9]\z`)
 )
 
 // Laforge defines the type that holds the global namespace within the laforge configuration engine
+//easyjson:json
 type Laforge struct {
 	Filename                string                      `json:"filename"`
 	Includes                []string                    `json:"-"`
 	DependencyGraph         treeprint.Tree              `json:"-"`
-	BaseDir                 string                      `hcl:"base_dir,attr" json:"base_dir,omitempty"`
 	CurrDir                 string                      `json:"-"`
-	User                    User                        `hcl:"user,block" json:"user,omitempty"`
+	BaseDir                 string                      `hcl:"base_dir,optional" json:"base_dir,omitempty"`
+	User                    *User                       `hcl:"user,block" json:"user,omitempty"`
+	IncludePaths            []*Include                  `hcl:"include,block" json:"include_paths,omitempty"`
 	DefinedCompetitions     []*Competition              `hcl:"competition,block" json:"competitions,omitempty"`
 	DefinedEnvironments     []*Environment              `hcl:"environment,block" json:"environments,omitempty"`
 	DefinedBuilds           []*Build                    `hcl:"build,block" json:"builds,omitempty"`
@@ -105,6 +122,11 @@ type Laforge struct {
 	CurrentCompetition      *Competition                `json:"-"`
 	InitialContext          StateContext                `json:"-"`
 	PathRegistry            *PathRegistry               `json:"-"`
+}
+
+// Include defines a named include type
+type Include struct {
+	Path string `hcl:"path,attr" json:"path,omitempty"`
 }
 
 // Opt defines a basic HCLv2 option label:
@@ -256,7 +278,7 @@ func (l *Laforge) CreateIndex() {
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedTeams {
-		l.Teams[x.GetID()] = x
+		l.Teams[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedDNSRecords {
@@ -264,19 +286,19 @@ func (l *Laforge) CreateIndex() {
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedProvisionedHosts {
-		l.ProvisionedHosts[x.GetID()] = x
+		l.ProvisionedHosts[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedBuilds {
-		l.Builds[x.GetID()] = x
+		l.Builds[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedEnvironments {
-		l.Environments[x.GetID()] = x
+		l.Environments[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedCompetitions {
-		l.Competitions[x.GetID()] = x
+		l.Competitions[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 }
@@ -294,12 +316,19 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 	if l.BaseDir != diff.BaseDir && diff.BaseDir != "" {
 		l.BaseDir = diff.BaseDir
 	}
-	newUser := l.User
-	err = mergo.Merge(&newUser, diff.User, mergo.WithOverride)
+	baseUser := l.User
+	if l.User == nil {
+		l.User = &User{}
+		baseUser = l.User
+	}
+	if diff.User == nil {
+		diff.User = &User{}
+	}
+	err = mergo.Merge(baseUser, diff.User, mergo.WithOverride)
 	if err != nil {
 		return l, errors.WithStack(err)
 	}
-	l.User = newUser
+	l.User = baseUser
 	return l, nil
 }
 
@@ -504,7 +533,7 @@ func (l *Laforge) IndexHostDependencies() error {
 // IndexEnvironmentDependencies enumerates all known environments and makes sure they have valid network inclusions
 func (l *Laforge) IndexEnvironmentDependencies() error {
 	for _, e := range l.Environments {
-		comp, ok := l.Competitions[e.GetParentID()]
+		comp, ok := l.Competitions[e.ParentLaforgeID()]
 		if ok {
 			e.Competition = comp
 		}
@@ -519,7 +548,7 @@ func (l *Laforge) IndexEnvironmentDependencies() error {
 // IndexBuildDependencies enumerates all known builds and ensures it has competition and environment associations
 func (l *Laforge) IndexBuildDependencies() error {
 	for _, b := range l.Builds {
-		env, ok := l.Environments[b.GetParentID()]
+		env, ok := l.Environments[b.ParentLaforgeID()]
 		if ok {
 			b.Environment = env
 			if b.Environment.Competition != nil {
@@ -533,7 +562,7 @@ func (l *Laforge) IndexBuildDependencies() error {
 // IndexTeamDependencies enumerates all known teams and ensures they have proper associations
 func (l *Laforge) IndexTeamDependencies() error {
 	for _, t := range l.Teams {
-		build, ok := l.Builds[t.GetParentID()]
+		build, ok := l.Builds[t.ParentLaforgeID()]
 		if ok {
 			t.Build = build
 			if t.Build.Environment != nil {
@@ -558,7 +587,7 @@ func (l *Laforge) IndexTeamDependencies() error {
 // IndexProvisionedHostDependencies enumerates all known provisioned hosts and ensures they have proper associations
 func (l *Laforge) IndexProvisionedHostDependencies() error {
 	for _, p := range l.ProvisionedHosts {
-		team, ok := l.Teams[p.GetParentID()]
+		team, ok := l.Teams[p.ParentLaforgeID()]
 		if ok {
 			p.Team = team
 			if p.Team.Build != nil {
@@ -610,18 +639,18 @@ func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Lafor
 	if err != nil {
 		return nil, err
 	}
-	currTeam, ok := clone.Teams[t.GetID()]
+	currTeam, ok := clone.Teams[t.LaforgeID()]
 	if !ok {
-		return nil, fmt.Errorf("could not find team %s in the current environment", t.GetID())
+		return nil, fmt.Errorf("could not find team %s in the current environment", t.LaforgeID())
 	}
 	clone.CurrentTeam = currTeam
 	clone.CurrentBuild = currTeam.Build
 	clone.CurrentEnv = currTeam.Environment
 	clone.CurrentCompetition = currTeam.Competition
-	clone.TeamContextID = clone.CurrentTeam.GetID()
-	clone.BuildContextID = clone.CurrentBuild.GetID()
-	clone.EnvContextID = clone.CurrentEnv.GetID()
-	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	clone.TeamContextID = clone.CurrentTeam.LaforgeID()
+	clone.BuildContextID = clone.CurrentBuild.LaforgeID()
+	clone.EnvContextID = clone.CurrentEnv.LaforgeID()
+	clone.BaseContextID = clone.CurrentCompetition.LaforgeID()
 	return clone, nil
 }
 
@@ -648,16 +677,16 @@ func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) 
 	if err != nil {
 		return nil, err
 	}
-	currBuild, ok := clone.Builds[b.GetID()]
+	currBuild, ok := clone.Builds[b.LaforgeID()]
 	if !ok {
-		return nil, fmt.Errorf("could not find build %s in the current environment", b.GetID())
+		return nil, fmt.Errorf("could not find build %s in the current environment", b.LaforgeID())
 	}
 	clone.CurrentBuild = currBuild
 	clone.CurrentEnv = currBuild.Environment
 	clone.CurrentCompetition = currBuild.Competition
-	clone.BuildContextID = clone.CurrentBuild.GetID()
-	clone.EnvContextID = clone.CurrentEnv.GetID()
-	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	clone.BuildContextID = clone.CurrentBuild.LaforgeID()
+	clone.EnvContextID = clone.CurrentEnv.LaforgeID()
+	clone.BaseContextID = clone.CurrentCompetition.LaforgeID()
 	return clone, nil
 }
 
@@ -681,14 +710,14 @@ func InitializeEnvContext(globalconfig, envconfig string) (*Laforge, error) {
 	if err != nil {
 		return nil, err
 	}
-	currEnv, ok := clone.Environments[e.GetID()]
+	currEnv, ok := clone.Environments[e.LaforgeID()]
 	if !ok {
-		return nil, fmt.Errorf("could not find build %s in the current environment", e.GetID())
+		return nil, fmt.Errorf("could not find build %s in the current environment", e.LaforgeID())
 	}
 	clone.CurrentEnv = currEnv
 	clone.CurrentCompetition = currEnv.Competition
-	clone.EnvContextID = clone.CurrentEnv.GetID()
-	clone.BaseContextID = clone.CurrentCompetition.GetID()
+	clone.EnvContextID = clone.CurrentEnv.LaforgeID()
+	clone.BaseContextID = clone.CurrentCompetition.LaforgeID()
 	return clone, nil
 }
 

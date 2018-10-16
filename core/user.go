@@ -12,6 +12,7 @@ import (
 )
 
 // User defines a laforge command line user and their properties
+//easyjson:json
 type User struct {
 	ID    string `hcl:"id,label" cty:"id" json:"id,omitempty"`
 	Name  string `hcl:"name,attr" cty:"name" json:"name,omitempty"`

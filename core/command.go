@@ -1,12 +1,17 @@
 package core
 
 import (
+	"fmt"
+	"path"
 	"strings"
+
+	"github.com/cespare/xxhash"
 
 	"github.com/pkg/errors"
 )
 
 // Command represents an executable command that can be defined as part of a host configuration step
+//easyjson:json
 type Command struct {
 	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
@@ -24,13 +29,55 @@ type Command struct {
 	Caller       Caller            `json:"-"`
 }
 
+// Hash implements the Hasher interface
+func (c *Command) Hash() uint64 {
+	iostr := "n/a"
+	if c.IO != nil {
+		iostr = c.IO.Stderr + c.IO.Stdin + c.IO.Stdout
+	}
+
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"program=%v args=%v ignoreerrors=%v cooldown=%v io=%v disabled=%v vars=%v",
+			c.Program,
+			strings.Join(c.Args, ","),
+			c.IgnoreErrors,
+			c.Cooldown,
+			iostr,
+			c.Disabled,
+			c.Vars,
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (c *Command) Path() string {
+	return c.ID
+}
+
+// Base implements the Pather interface
+func (c *Command) Base() string {
+	return path.Base(c.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (c *Command) ValidatePath() error {
+	if err := ValidateGenericPath(c.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(c.Path(), `/`); topdir[1] != "commands" {
+		return fmt.Errorf("path %s is not rooted in /%s", c.Path(), topdir[1])
+	}
+	return nil
+}
+
 // GetCaller implements the Mergeable interface
 func (c *Command) GetCaller() Caller {
 	return c.Caller
 }
 
-// GetID implements the Mergeable interface
-func (c *Command) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (c *Command) LaforgeID() string {
 	return c.ID
 }
 

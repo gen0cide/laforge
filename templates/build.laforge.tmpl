@@ -5,8 +5,7 @@
 // -- Details --
 //          id = {{ $.ID }}
 //  team_count = {{ $.TeamCount }}
-// environment = {{ $.EnvironmentID }}
-// competition = {{ $.CompetitionID }}
+// competition = {{ $.Environment.CompetitionID }}
 //
 
 include {
@@ -18,8 +17,6 @@ include {
 }
 
 build "{{ $.ID }}" {
-  environment_id = "{{ $.EnvironmentID }}"
-  competition_id = "{{ $.CompetitionID }}"
   revision = {{ $.Revision }}
   team_count = {{ $.TeamCount }}
 

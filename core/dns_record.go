@@ -1,19 +1,63 @@
 package core
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+	"path"
+	"strings"
+
+	"github.com/cespare/xxhash"
+	"github.com/pkg/errors"
+)
 
 // DNSRecord is a configurable type for defining DNS entries related to this host in the core DNS infrastructure (if enabled)
+//easyjson:json
 type DNSRecord struct {
 	ID         string            `hcl:"id,label" json:"id,omitempty"`
 	Name       string            `hcl:"name,attr" json:"name,omitempty"`
-	Values     []string          `hcl:"values,attr" json:"values,omitempty"`
+	Values     []string          `hcl:"values,optional" json:"values,omitempty"`
 	Type       string            `hcl:"type,attr" json:"type,omitempty"`
 	Zone       string            `hcl:"zone,attr" json:"zone,omitempty"`
-	Vars       map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags       map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	Disabled   bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
+	Vars       map[string]string `hcl:"vars,optional" json:"vars,omitempty"`
+	Tags       map[string]string `hcl:"tags,optional" json:"tags,omitempty"`
+	Disabled   bool              `hcl:"disabled,optional" json:"disabled,omitempty"`
 	OnConflict *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller     Caller            `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (r *DNSRecord) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"name=%v values=%v type=%v zone=%v vars=%v disabled=%v",
+			r.Name,
+			r.Values,
+			r.Type,
+			r.Zone,
+			r.Vars,
+			r.Disabled,
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (r *DNSRecord) Path() string {
+	return r.ID
+}
+
+// Base implements the Pather interface
+func (r *DNSRecord) Base() string {
+	return path.Base(r.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (r *DNSRecord) ValidatePath() error {
+	if err := ValidateGenericPath(r.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(r.Path(), `/`); topdir[1] != "dns-records" {
+		return fmt.Errorf("path %s is not rooted in /%s", r.Path(), topdir[1])
+	}
+	return nil
 }
 
 // GetCaller implements the Mergeable interface
@@ -21,8 +65,8 @@ func (r *DNSRecord) GetCaller() Caller {
 	return r.Caller
 }
 
-// GetID implements the Mergeable interface
-func (r *DNSRecord) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (r *DNSRecord) LaforgeID() string {
 	return r.ID
 }
 

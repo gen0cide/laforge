@@ -1,6 +1,7 @@
 package core
 
 // AMI represents a configurable object for defining custom AMIs in cloud infrastructure
+//easyjson:json
 type AMI struct {
 	ID          string            `hcl:"id,label" json:"id,omitempty"`
 	Name        string            `hcl:"name,attr" json:"name,omitempty"`

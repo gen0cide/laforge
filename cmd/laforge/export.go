@@ -1,9 +1,6 @@
 package main
 
 import (
-	"errors"
-
-	"github.com/gen0cide/laforge/spanner"
 	"github.com/urfave/cli"
 )
 
@@ -42,42 +39,9 @@ var (
 )
 
 func exportEnvFindings(c *cli.Context) error {
-	s, err := spanner.New(nil, []string(c.Args()), "local-exec", "", false, false)
-	if err != nil {
-		return err
-	}
-
-	err = s.CreateWorkerPool()
-	if err != nil {
-		return err
-	}
-
-	err = s.Do()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return commandNotImplemented(c)
 }
 
 func exportEnvNetInfo(c *cli.Context) error {
-	if len(remoteHost) == 0 {
-		return errors.New("must provide a target host ID using the -t flag before remote-exec")
-	}
-	s, err := spanner.New(nil, []string(c.Args()), "remote-exec", remoteHost, false, false)
-	if err != nil {
-		return err
-	}
-
-	err = s.CreateWorkerPool()
-	if err != nil {
-		return err
-	}
-
-	err = s.Do()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return commandNotImplemented(c)
 }

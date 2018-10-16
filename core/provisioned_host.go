@@ -2,6 +2,7 @@ package core
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/packer-community/winrmcp/winrmcp"
@@ -11,6 +12,7 @@ import (
 )
 
 // ProvisionedHost defines a provisioned host within a team's environment (network neutral)
+//easyjson:json
 type ProvisionedHost struct {
 	ID              string           `hcl:"id,label" json:"id,omitempty"`
 	CompetitionID   string           `hcl:"competition_id,attr" json:"competition_id"`
@@ -36,14 +38,32 @@ type ProvisionedHost struct {
 	Caller          Caller           `json:"-"`
 }
 
+// Path implements the Pather interface
+func (p *ProvisionedHost) Path() string {
+	return p.ID
+}
+
+// Base implements the Pather interface
+func (p *ProvisionedHost) Base() string {
+	return path.Base(p.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (p *ProvisionedHost) ValidatePath() error {
+	if err := ValidateGenericPath(p.Path()); err != nil {
+		return err
+	}
+	return nil
+}
+
 // IsSSH is a convenience method for checking if the provisioned host is setup for remote SSH
 func (p *ProvisionedHost) IsSSH() bool {
 	return p.SSHAuthConfig != nil
 }
 
-// GetParentID returns the Team's parent build ID
-func (p *ProvisionedHost) GetParentID() string {
-	return filepath.Join(p.CompetitionID, p.EnvironmentID, p.BuildID, p.TeamID)
+// ParentLaforgeID returns the Team's parent build ID
+func (p *ProvisionedHost) ParentLaforgeID() string {
+	return path.Dir(path.Dir(path.Dir(p.LaforgeID())))
 }
 
 // IsWinRM is a convenience method for checking if the provisioned host is setup for remote WinRM
@@ -56,8 +76,8 @@ func (p *ProvisionedHost) GetCaller() Caller {
 	return p.Caller
 }
 
-// GetID implements the Mergeable interface
-func (p *ProvisionedHost) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (p *ProvisionedHost) LaforgeID() string {
 	return filepath.Join(p.CompetitionID, p.EnvironmentID, p.BuildID, p.TeamID, p.ID)
 }
 
@@ -93,6 +113,9 @@ func (p *ProvisionedHost) Swap(m Mergeable) error {
 
 // SetID increments the revision and sets the ID if needed
 func (p *ProvisionedHost) SetID() string {
+	if p.ID != "" {
+		return p.ID
+	}
 	p.Revision++
 	if p.TeamID == "" && p.Team != nil {
 		p.TeamID = p.Team.ID

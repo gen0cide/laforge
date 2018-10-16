@@ -4,29 +4,81 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
 // RemoteFile is a configurable type that defines a static file that will be placed on a configured target host.
+//easyjson:json
 type RemoteFile struct {
 	ID          string            `hcl:"id,label" json:"id,omitempty"`
 	SourceType  string            `hcl:"source_type,attr" json:"source_type,omitempty"`
 	Source      string            `hcl:"source,attr" json:"source,omitempty"`
 	Destination string            `hcl:"destination,attr" json:"destination,omitempty"`
-	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
-	Template    bool              `hcl:"template,attr" json:"template,omitempty"`
-	Perms       string            `hcl:"perms,attr" json:"perms,omitempty"`
-	Disabled    bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
+	Vars        map[string]string `hcl:"vars,optional" json:"vars,omitempty"`
+	Tags        map[string]string `hcl:"tags,optional" json:"tags,omitempty"`
+	Template    bool              `hcl:"template,optional" json:"template,omitempty"`
+	Perms       string            `hcl:"perms,optional" json:"perms,omitempty"`
+	Disabled    bool              `hcl:"disabled,optional" json:"disabled,omitempty"`
 	OnConflict  *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Checksum    string            `hcl:"md5,attr" json:"md5,omitempty"`
+	MD5         string            `hcl:"md5,optional" json:"md5,omitempty"`
 	Caller      Caller            `json:"-"`
 	AbsPath     string            `json:"-"`
 	Ext         string            `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (r *RemoteFile) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"sourcetype=%v destination=%v vars=%v template=%v perms=%v disabled=%v source=%v",
+			r.SourceType,
+			r.Destination,
+			r.Vars,
+			r.Template,
+			r.Perms,
+			r.Disabled,
+			r.ResourceHash(),
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (r *RemoteFile) Path() string {
+	return r.ID
+}
+
+// Base implements the Pather interface
+func (r *RemoteFile) Base() string {
+	return path.Base(r.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (r *RemoteFile) ValidatePath() error {
+	if err := ValidateGenericPath(r.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(r.Path(), `/`); topdir[1] != "files" {
+		return fmt.Errorf("path %s is not rooted in /%s", r.Path(), topdir[1])
+	}
+	return nil
+}
+
+// ResourceHash implements the ResourceHasher interface
+func (r *RemoteFile) ResourceHash() uint64 {
+	dep, err := ioutil.ReadFile(r.AbsPath)
+	if err != nil {
+		fmt.Printf("dependency error for %s: %s could not be read: %v", r.Path(), r.AbsPath, err)
+		return 666
+	}
+	return xxhash.Sum64(dep)
 }
 
 // GetCaller implements the Mergeable interface
@@ -34,8 +86,8 @@ func (r *RemoteFile) GetCaller() Caller {
 	return r.Caller
 }
 
-// GetID implements the Mergeable interface
-func (r *RemoteFile) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (r *RemoteFile) LaforgeID() string {
 	return r.ID
 }
 
@@ -149,19 +201,19 @@ func (r *RemoteFile) AssetName() (string, error) {
 		return "", errors.New("no absolute path determined")
 	}
 
-	if r.Checksum == "" {
+	if r.MD5 == "" {
 		cs, err := r.MD5Sum()
 		if err != nil {
 			return "", err
 		}
 
-		r.Checksum = cs
+		r.MD5 = cs
 	}
 
 	if r.Ext == "" {
 		r.Ext = filepath.Ext(r.AbsPath)
 	}
 
-	return fmt.Sprintf("%s%s", r.Checksum, r.Ext), nil
+	return fmt.Sprintf("%s%s", r.MD5, r.Ext), nil
 
 }

@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/packer-community/winrmcp/winrmcp"
 
 	"github.com/pkg/errors"
-
-	"github.com/iancoleman/strcase"
 )
 
 // ShellConfig is a generic type for shell configurations
@@ -25,16 +22,18 @@ var (
 )
 
 // SSHAuthConfig defines how Laforge should connect via SSH to a provisioned host
+//easyjson:json
 type SSHAuthConfig struct {
 	RemoteAddr      string        `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
 	Port            int           `hcl:"port,attr" json:"port,omitempty"`
 	User            string        `hcl:"user,attr" json:"user,omitempty"`
-	Password        string        `hcl:"password,attr" json:"password,omitempty"`
-	IdentityFile    string        `hcl:"identity_file,attr" json:"identity_file,omitempty"`
+	Password        string        `hcl:"password,optional" json:"password,omitempty"`
+	IdentityFile    string        `hcl:"identity_file,optional" json:"identity_file,omitempty"`
 	IdentityFileRef *LocalFileRef `json:"-"`
 }
 
 // WinRMAuthConfig defines how Laforge should connect via WinRM to a provisioned host
+//easyjson:json
 type WinRMAuthConfig struct {
 	RemoteAddr    string        `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
 	Port          int           `hcl:"port,attr" json:"port,omitempty"`
@@ -49,17 +48,6 @@ type WinRMAuthConfig struct {
 	KeyFileRef    *LocalFileRef `json:"-"`
 	CertFileRef   *LocalFileRef `json:"-"`
 	CAFileRef     *LocalFileRef `json:"-"`
-}
-
-// Name is a helper function to calculate a team unique name on the fly
-func (t *Team) Name() string {
-	labels := []string{
-		t.Build.ID,
-		t.Environment.ID,
-		t.Competition.ID,
-		fmt.Sprintf("%v", t.TeamNumber),
-	}
-	return strcase.ToSnake(strings.Join(labels, "_"))
 }
 
 // LoadFileDeps attempts ot load important key material in the team configuration for connecting to remote team hosts

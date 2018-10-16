@@ -18,10 +18,6 @@ var (
 	defaultLevel  = "warn"
 	verboseOutput = false
 	noBanner      = false
-
-	apiFuncs = map[string]func(){
-		"WRITE_PROVISIONED_HOST": writeProvisionedHostConfig,
-	}
 )
 
 func init() {
@@ -79,7 +75,8 @@ func main() {
 		exampleCommand,
 		depsCommand,
 		spannerCommand,
-		betaCommand,
+		infraCommand,
+		fmtCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

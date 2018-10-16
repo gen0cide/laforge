@@ -402,7 +402,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 		t.Base.CurrentCompetition,
 		t.Base.CurrentCompetition.DNS,
 		t.Base.CurrentEnv,
-		&user,
+		user,
 	)
 	if err != nil {
 		return err
@@ -425,9 +425,9 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 								return
 							}
 							filename := filepath.Base(scriptObj.Source)
-							assetDir := filepath.Join(team.RelBuildPath, hostObj.Hostname, "assets")
+							assetDir := filepath.Join(team.RelBuildPath, network.Base(), hostObj.Base(), "assets")
 							assetPath := filepath.Join(assetDir, filename)
-							fileData, err := t.Library.Execute(fmt.Sprintf("script_%s", scriptID), scriptCtx)
+							fileData, err := t.Library.Execute(scriptID, scriptCtx)
 							if err != nil {
 								errChan <- err
 								return
@@ -450,7 +450,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 							return
 						}
 						filename := "provisioned_host.tpl"
-						assetDir := filepath.Join(team.RelBuildPath, h.Hostname, "assets")
+						assetDir := filepath.Join(team.RelBuildPath, network.Base(), h.Base(), "assets")
 						assetPath := filepath.Join(assetDir, filename)
 						fileData, err := t.Library.Execute("provisioned_host.tf.tmpl", scriptCtx)
 						if err != nil {
@@ -486,9 +486,8 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 // StageDependencies implements the Builder interface
 func (t *TerraformGCPBuilder) StageDependencies() error {
 	for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
-		teamDir := filepath.Join(t.Base.EnvRoot, "build", "teams", fmt.Sprintf("%v", i))
+		teamDir := filepath.Join(t.Base.EnvRoot, t.Base.CurrentEnv.Builder, "teams", fmt.Sprintf("%v", i))
 		team := &core.Team{
-			ID:            fmt.Sprintf("%d", i),
 			TeamNumber:    i,
 			BuildID:       t.Base.CurrentBuild.ID,
 			Build:         t.Base.CurrentBuild,
@@ -496,71 +495,73 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 			Environment:   t.Base.CurrentEnv,
 			Competition:   t.Base.CurrentCompetition,
 			CompetitionID: t.Base.CurrentEnv.CompetitionID,
-			Maintainer:    &t.Base.User,
+			Maintainer:    t.Base.User,
 			RelBuildPath:  teamDir,
 		}
+		team.SetID()
 		t.Base.CurrentBuild.Teams[i] = team
-		//assetDir := filepath.Join(teamDir, "assets")
 		os.MkdirAll(teamDir, 0755)
 		core.TouchGitKeep(teamDir)
 	}
 
-	for _, host := range t.Base.CurrentEnv.IncludedHosts {
-		for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
-			teamDir := t.Base.CurrentBuild.Teams[i].RelBuildPath
-			hostDir := filepath.Join(teamDir, host.Hostname)
-			hostAssetDir := filepath.Join(hostDir, "assets")
-			hostAgentDir := filepath.Join(hostDir, "laforge-agent")
-			os.MkdirAll(hostAssetDir, 0755)
-			os.MkdirAll(hostAgentDir, 0755)
-			core.TouchGitKeep(hostDir)
-			core.TouchGitKeep(hostAssetDir)
-		}
-		for _, prov := range host.Provisioners {
-			rfile, ok := prov.(*core.RemoteFile)
-			if !ok {
-				continue
+	for netid, net := range t.Base.CurrentEnv.IncludedNetworks {
+		for _, host := range t.Base.CurrentEnv.HostByNetwork[netid] {
+			for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
+				teamDir := t.Base.CurrentBuild.Teams[i].RelBuildPath
+				hostDir := filepath.Join(teamDir, net.Base(), host.Base())
+				hostAssetDir := filepath.Join(hostDir, "assets")
+				hostAgentDir := filepath.Join(hostDir, "laforge-agent")
+				os.MkdirAll(hostAssetDir, 0755)
+				os.MkdirAll(hostAgentDir, 0755)
+				core.TouchGitKeep(hostDir)
+				core.TouchGitKeep(hostAssetDir)
 			}
-
-			rfileName, err := rfile.AssetName()
-			if err != nil {
-				return err
-			}
-
-			dstPath := filepath.Join(t.Base.CurrentBuild.Dir, "data", rfileName)
-			if _, err := os.Stat(dstPath); os.IsNotExist(err) {
-				copyErr := rfile.CopyTo(dstPath)
-				if copyErr != nil {
-					return copyErr
-				}
-			}
-		}
-
-		for sid, script := range host.Scripts {
-			if _, ok := t.Library.Books[sid]; ok {
-				continue
-			}
-			if script.Source == "" {
-				continue
-			}
-			for _, callfile := range script.Caller {
-				pr, ok := t.Base.PathRegistry.DB[callfile]
+			for _, prov := range host.Provisioners {
+				rfile, ok := prov.(*core.RemoteFile)
 				if !ok {
 					continue
 				}
-				lfr, ok := pr.Mapping[script.Source]
-				if !ok {
+
+				rfileName, err := rfile.AssetName()
+				if err != nil {
+					return err
+				}
+
+				dstPath := filepath.Join(t.Base.CurrentBuild.Dir, "data", rfileName)
+				if _, err := os.Stat(dstPath); os.IsNotExist(err) {
+					copyErr := rfile.CopyTo(dstPath)
+					if copyErr != nil {
+						return copyErr
+					}
+				}
+			}
+
+			for sid, script := range host.Scripts {
+				if _, ok := t.Library.Books[sid]; ok {
 					continue
 				}
-				data, err := ioutil.ReadFile(lfr.AbsPath)
-				if err != nil {
-					return err
+				if script.Source == "" {
+					continue
 				}
-				_, err = t.Library.AddBook(fmt.Sprintf("script_%s", sid), data)
-				if err != nil {
-					return err
+				for _, callfile := range script.Caller {
+					pr, ok := t.Base.PathRegistry.DB[callfile]
+					if !ok {
+						continue
+					}
+					lfr, ok := pr.Mapping[script.Source]
+					if !ok {
+						continue
+					}
+					data, err := ioutil.ReadFile(lfr.AbsPath)
+					if err != nil {
+						return err
+					}
+					_, err = t.Library.AddBook(sid, data)
+					if err != nil {
+						return err
+					}
+					break
 				}
-				break
 			}
 		}
 	}
@@ -591,7 +592,7 @@ func (t *TerraformGCPBuilder) Render() error {
 				t.Base.CurrentCompetition,
 				t.Base.CurrentCompetition.DNS,
 				t.Base.CurrentEnv,
-				&user,
+				user,
 				team,
 			)
 			if err != nil {
@@ -684,7 +685,7 @@ func (t *TerraformGCPBuilder) Render() error {
 						errChan <- err
 						return
 					}
-					stateFilePath := filepath.Join(teamDir, host.Hostname, "laforge-agent", "config.json")
+					stateFilePath := filepath.Join(teamDir, net.Base(), host.Base(), "laforge-agent", "config.json")
 					err = ioutil.WriteFile(stateFilePath, jsonData, 0644)
 					if err != nil {
 						errChan <- err
@@ -705,23 +706,4 @@ func (t *TerraformGCPBuilder) Render() error {
 	case err := <-errChan:
 		return err
 	}
-
-	// rootCtx, err := templates.NewContext(t.Base.Build)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// rootModData, err := t.Library.Execute("root_module.tf.tmpl", rootCtx)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// hclPretty, err := printer.Format(rootModData)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// rootModFile := filepath.Join(t.Base.Build.Dir, "root.tf")
-	// err = ioutil.WriteFile(rootModFile, hclPretty, 0644)
-	// return err
 }

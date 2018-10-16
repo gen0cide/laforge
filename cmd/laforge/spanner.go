@@ -7,6 +7,7 @@ import (
 
 	"github.com/gen0cide/laforge/core"
 	"github.com/gen0cide/laforge/spanner"
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/urfave/cli"
 )
 
@@ -50,7 +51,7 @@ var (
 			},
 			{
 				Name:            "terraform",
-				Usage:           "Run terraform commands across the environment.",
+				Usage:           "Run terraform commands across every team in the environment.",
 				Action:          spannerTerraformExec,
 				SkipFlagParsing: true,
 			},
@@ -61,6 +62,9 @@ var (
 func spannerTerraformExec(c *cli.Context) error {
 	base, err := core.Bootstrap()
 	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return errors.New("aborted due to parsing error")
+		}
 		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
 		os.Exit(1)
 	}

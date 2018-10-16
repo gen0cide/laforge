@@ -1,4 +1,4 @@
-provisioned_host {{ $.Host.ID | hclstring }} {
+provisioned_host "{{ $.Team.ID }}/{{ $.Network.Base }}/{{ $.Host.Base }}" {
   competition_id = {{ $.Competition.ID | hclstring }}
   environment_id = {{ $.Environment.ID | hclstring }}
   build_id       = {{ $.Build.ID | hclstring }}

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/core"
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/urfave/cli"
 )
 
@@ -33,6 +35,9 @@ var (
 func performbuild(c *cli.Context) error {
 	base, err := core.Bootstrap()
 	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return errors.New("aborted due to parsing error")
+		}
 		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
 		os.Exit(1)
 	}

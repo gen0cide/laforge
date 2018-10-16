@@ -7,7 +7,7 @@
 
 terraform {
   backend "etcdv3" {
-    prefix = "state/{{ $.Build.ID }}/{{ $.Team.TeamNumber }}/terraform.tfstate"
+    prefix = "{{ $.Team.ID }}/terraform.tfstate"
     endpoints = [
       "https://{{ index $.Build.Config "etcd_master" }}",
       "https://{{ index $.Build.Config "etcd_slave" }}",
@@ -56,12 +56,12 @@ data "google_dns_managed_zone" "{{ $dnsz }}" {
 }
 
 resource "google_compute_network" "vpc" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-vpc"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vpc"
   auto_create_subnetworks = false
 }
 
 resource "google_compute_firewall" "allow_icmp" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-allow-icmp"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-icmp"
   network = "${google_compute_network.vpc.self_link}"
 
   allow {
@@ -74,7 +74,7 @@ resource "google_compute_firewall" "allow_icmp" {
 }
 
 resource "google_compute_firewall" "allow_admin" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-allow-admin"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-admin"
   network = "${google_compute_network.vpc.self_link}"
 
   allow {
@@ -98,7 +98,7 @@ resource "google_compute_firewall" "allow_admin" {
 }
 
 resource "google_compute_firewall" "allow_vdi_ext" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-allow-vdi-ext"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-vdi-ext"
   network = "${google_compute_network.vpc.self_link}"
 
   allow {
@@ -114,12 +114,12 @@ resource "google_compute_firewall" "allow_vdi_ext" {
   ]
 
   target_tags = [
-    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-vdi",
+    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
   ]
 }
 
 resource "google_compute_firewall" "allow_vdi_int" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-allow-vdi-int"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-vdi-int"
   network = "${google_compute_network.vpc.self_link}"
 
   allow {
@@ -139,12 +139,12 @@ resource "google_compute_firewall" "allow_vdi_int" {
   ]
 
   target_tags = [
-    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-vdi",
+    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
   ]
 }
 
 resource "google_compute_firewall" "deny_mgmt_int" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-deny-mgmt-int"
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-deny-mgmt-int"
   network = "${google_compute_network.vpc.self_link}"
 
 
@@ -160,15 +160,16 @@ resource "google_compute_firewall" "deny_mgmt_int" {
 
 
 {{ range $netname, $net := $.Environment.IncludedNetworks }}
-resource "google_compute_subnetwork" "{{ $netname }}" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $net.ID }}"
+// network = {{ $netname }}
+resource "google_compute_subnetwork" "{{ $net.Base }}" {
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
   ip_cidr_range = "{{ $net.CIDR }}"
   region = "{{ index $.Build.Config "gcp_region" }}"
   network = "${google_compute_network.vpc.self_link}"
 }
 
-resource "google_compute_firewall" "allow_{{ $netname }}" {
-  name = "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $netname }}-allow-inbound"
+resource "google_compute_firewall" "allow_{{ $net.Base }}" {
+  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}-allow-inbound"
   network = "${google_compute_network.vpc.self_link}"
 
   allow {
@@ -184,12 +185,12 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
   }
 
   source_tags = [
-    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-vdi",
-    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $netname }}",
+    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
+    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}",
   ]
 
   target_tags = [
-    "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $netname }}",
+    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}",
   ]
 }
 {{ end }}
@@ -197,16 +198,18 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
 {{ $dns_resource_name := "" }}
 
 {{ range $net, $hosts := $.Environment.HostByNetwork }}
+  {{ $netobj := (index $.Environment.IncludedNetworks $net) }}
   {{ range $_, $host := $hosts }}
-    {{ if eq $host.ID "ns01" }}
-      {{ $dns_resource_name = printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $net $host.ID }}
+    {{ if eq $host.Base "ns01" }}
+      {{ $dns_resource_name = printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
     {{ end }}
   {{ end }}
 {{ end }}
 
 {{ range $net, $hosts := $.Environment.HostByNetwork }}
+  {{ $netobj := (index $.Environment.IncludedNetworks $net) }}
   {{ range $hostidx, $host := $hosts }}
-    {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.ID $.Team.TeamNumber $net $host.ID }}
+    {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
 
     resource "google_compute_address" "{{ $resource_name }}" {
       name = "{{ $resource_name }}"
@@ -226,8 +229,8 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
       }
 
       network_interface {
-        subnetwork = "${google_compute_subnetwork.{{ $net }}.self_link}"
-        address = "${cidrhost("{{ (index $.Environment.IncludedNetworks $net).CIDR }}", {{ $host.LastOctet }})}"
+        subnetwork = "${google_compute_subnetwork.{{ $netobj.Base }}.self_link}"
+        address = "${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"
 
         access_config {
           nat_ip = "${google_compute_address.{{ $resource_name }}.address}"
@@ -237,10 +240,10 @@ resource "google_compute_firewall" "allow_{{ $netname }}" {
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
 
       metadata {
-        hostname = "{{ $host.Hostname }}.{{ $net }}.{{ $.Competition.DNS.RootDomain }}"
+        hostname = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
         {{ if $host.IsWindows }}
         windows-startup-script-ps1 = "net user administrator /active:yes"
-        sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $.Team.TeamNumber $host.Hostname $uds.Base }}")}"
+        sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
         {{ else }}
         sshKeys = <<EOF
 root:${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge
@@ -252,17 +255,17 @@ EOF
 
 
       {{ if ne $host.IsWindows true }}
-      metadata_startup_script = "${file("{{ $.Build.RelAssetForTeam $.Team.TeamNumber $host.Hostname $uds.Base }}")}"
+      metadata_startup_script = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
       {{ end }}
 
       tags = [
-        "{{ $.Environment.ID }}-t{{ $.Team.TeamNumber }}-{{ $net }}",
-        "{{ $net }}",
+        "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}",
+        "{{ $netobj.Base }}",
         "{{ $host.Hostname }}",
         "t{{ $.Team.TeamNumber }}",
-        "{{ $.Environment.ID }}",
+        "{{ $.Environment.Base }}",
         "{{ $.Competition.ID }}",
-        "{{ $host.ID }}",
+        "{{ $host.Base }}",
         "{{ $resource_name }}",
       ]
 
@@ -286,7 +289,7 @@ EOF
           }
         {{ end }}
 
-        source = "./{{ $host.Hostname }}/laforge-agent"
+        source = "./{{ $netobj.Base }}/{{ $host.Base }}/laforge-agent"
         {{ if $host.IsWindows }}
           destination = "C:\\laforge-agent"
         {{ else }}
@@ -295,11 +298,11 @@ EOF
       }
     }
 
-    output "{{ $host.Hostname }}.private_ip" {
+    output "{{ $host.Base }}.private_ip" {
       value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
     }
 
-    output "{{ $host.Hostname }}.public_ip" {
+    output "{{ $host.Base }}.public_ip" {
       value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
     }
 
@@ -307,7 +310,7 @@ EOF
     resource "google_dns_record_set" "{{ $resource_name }}" {
       managed_zone = "${data.google_dns_managed_zone.{{ $dnsz }}.name}"
 
-      name = "{{ $host.Hostname }}.{{ $net }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.ID }}.${data.google_dns_managed_zone.{{ $dnsz }}.dns_name}"
+      name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${data.google_dns_managed_zone.{{ $dnsz }}.dns_name}"
       type = "A"
       ttl = "300"
 
@@ -318,7 +321,7 @@ EOF
     {{ end }}
 
     data "template_file" "{{ $resource_name }}" {
-      template = "${file("{{ $.Build.RelAssetForTeam $.Team.TeamNumber $host.Hostname "provisioned_host.tpl" }}")}"
+      template = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base "provisioned_host.tpl" }}")}"
 
       vars {
         remote_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
@@ -335,7 +338,7 @@ EOF
 
     resource "local_file" "{{ $resource_name }}_provisioning_file" {
       content = "${data.template_file.{{ $resource_name }}.rendered}"
-      filename = "./{{ $host.Hostname }}/{{ $host.ID }}.laforge"
+      filename = "./{{ $netobj.Base }}/{{ $host.Base }}/provisioned_host.laforge"
     }
   {{ end }}
 {{ end }}

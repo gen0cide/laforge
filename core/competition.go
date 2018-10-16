@@ -1,10 +1,14 @@
 package core
 
 import (
+	"fmt"
+
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
 // Competition is a configurable type that holds competition wide settings
+//easyjson:json
 type Competition struct {
 	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	BaseDir      string            `hcl:"base_dir,optional" json:"base_dir,omitempty"`
@@ -16,13 +20,50 @@ type Competition struct {
 	Caller       Caller            `json:"-"`
 }
 
+// Hash implements the Hasher interface
+func (c *Competition) Hash() uint64 {
+	dh := uint64(666)
+	rh := uint64(666)
+	if c.DNS != nil {
+		dh = c.DNS.Hash()
+	}
+	if c.Remote != nil {
+		rh = c.Remote.Hash()
+	}
+
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"rpw=%v dns=%v remote=%v config=%v",
+			c.RootPassword,
+			dh,
+			rh,
+			c.Config,
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (c *Competition) Path() string {
+	return c.ID
+}
+
+// Base implements the Pather interface
+func (c *Competition) Base() string {
+	return c.ID
+}
+
+// ValidatePath implements the Pather interface
+func (c *Competition) ValidatePath() error {
+	return nil
+}
+
 // GetCaller implements the Mergeable interface
 func (c *Competition) GetCaller() Caller {
 	return c.Caller
 }
 
-// GetID implements the Mergeable interface
-func (c *Competition) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (c *Competition) LaforgeID() string {
 	return c.ID
 }
 

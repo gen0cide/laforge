@@ -1,25 +1,66 @@
 package core
 
 import (
+	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
 // Identity defines a generic human identity primative that can be extended into Employee, Customer, Client, etc.
+//easyjson:json
 type Identity struct {
 	ID          string            `hcl:"id,label" json:"id,omitempty"`
 	Firstname   string            `hcl:"firstname,attr" json:"firstname,omitempty"`
 	Lastname    string            `hcl:"lastname,attr" json:"lastname,omitempty"`
 	Email       string            `hcl:"email,attr" json:"email,omitempty"`
 	Password    string            `hcl:"password,attr" json:"password,omitempty"`
-	Description string            `hcl:"description,attr" json:"description,omitempty"`
-	AvatarFile  string            `hcl:"avatar_file,attr" json:"avatar_file,omitempty"`
-	Vars        map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags        map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Description string            `hcl:"description,optional" json:"description,omitempty"`
+	AvatarFile  string            `hcl:"avatar_file,optional" json:"avatar_file,omitempty"`
+	Vars        map[string]string `hcl:"vars,optional" json:"vars,omitempty"`
+	Tags        map[string]string `hcl:"tags,optional" json:"tags,omitempty"`
 	OnConflict  *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Caller      Caller            `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (i *Identity) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"first=%v last=%v email=%v pass=%v avatarfile=%v vars=%v",
+			i.Firstname,
+			i.Lastname,
+			i.Email,
+			i.Password,
+			i.AvatarFile,
+			i.Vars,
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (i *Identity) Path() string {
+	return i.ID
+}
+
+// Base implements the Pather interface
+func (i *Identity) Base() string {
+	return path.Base(i.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (i *Identity) ValidatePath() error {
+	if err := ValidateGenericPath(i.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(i.Path(), `/`); topdir[1] != "identities" {
+		return fmt.Errorf("path %s is not rooted in /%s", i.Path(), topdir[1])
+	}
+	return nil
 }
 
 // GetCaller implements the Mergeable interface
@@ -27,8 +68,8 @@ func (i *Identity) GetCaller() Caller {
 	return i.Caller
 }
 
-// GetID implements the Mergeable interface
-func (i *Identity) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (i *Identity) LaforgeID() string {
 	return i.ID
 }
 

@@ -1,32 +1,92 @@
 package core
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
 // Script defines a configurable type for an executable script object within the laforge configuration
+//easyjson:json
 type Script struct {
 	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
 	Language     string            `hcl:"language,attr" json:"language,omitempty"`
-	Description  string            `hcl:"description,attr" json:"description,omitempty"`
+	Description  string            `hcl:"description,optional" json:"description,omitempty"`
 	Maintainer   *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	Source       string            `hcl:"source,attr" json:"source,omitempty"`
 	SourceType   string            `hcl:"source_type,attr" json:"source_type,omitempty"`
-	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`
-	IgnoreErrors bool              `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
-	Args         []string          `hcl:"args,attr" json:"args,omitempty"`
+	Cooldown     int               `hcl:"cooldown,optional" json:"cooldown,omitempty"`
+	IgnoreErrors bool              `hcl:"ignore_errors,optional" json:"ignore_errors,omitempty"`
+	Args         []string          `hcl:"args,optional" json:"args,omitempty"`
 	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
-	Disabled     bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
-	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
-	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	Disabled     bool              `hcl:"disabled,optional" json:"disabled,omitempty"`
+	Vars         map[string]string `hcl:"vars,optional" json:"vars,omitempty"`
+	Tags         map[string]string `hcl:"tags,optional" json:"tags,omitempty"`
 	OnConflict   *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Findings     []*Finding        `hcl:"finding,block" json:"findings,omitempty"`
+	AbsPath      string            `json:"-"`
 	Caller       Caller            `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (s *Script) Hash() uint64 {
+	iostr := "n/a"
+	if s.IO != nil {
+		iostr = s.IO.Stderr + s.IO.Stdin + s.IO.Stdout
+	}
+
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"language=%v sourcetype=%v cooldown=%v ignoreerrors=%v args=%v io=%v disabled=%v vars=%v source=%v",
+			s.Language,
+			s.SourceType,
+			s.Cooldown,
+			s.IgnoreErrors,
+			strings.Join(s.Args, `,`),
+			iostr,
+			s.Disabled,
+			s.Vars,
+			s.ResourceHash(),
+		),
+	)
+}
+
+// Path implements the Pather interface
+func (s *Script) Path() string {
+	return s.ID
+}
+
+// Base implements the Pather interface
+func (s *Script) Base() string {
+	return path.Base(s.ID)
+}
+
+// ValidatePath implements the Pather interface
+func (s *Script) ValidatePath() error {
+	if err := ValidateGenericPath(s.Path()); err != nil {
+		return err
+	}
+	if topdir := strings.Split(s.Path(), `/`); topdir[1] != "scripts" {
+		return fmt.Errorf("path %s is not rooted in /%s", s.Path(), topdir[1])
+	}
+	return nil
+}
+
+// ResourceHash implements the ResourceHasher interface
+func (s *Script) ResourceHash() uint64 {
+	dep, err := ioutil.ReadFile(s.AbsPath)
+	if err != nil {
+		fmt.Printf("dependency error for %s: %s could not be read: %v", s.Path(), s.AbsPath, err)
+		return 666
+	}
+	return xxhash.Sum64(dep)
 }
 
 // GetCaller implements the Mergeable interface
@@ -34,8 +94,8 @@ func (s *Script) GetCaller() Caller {
 	return s.Caller
 }
 
-// GetID implements the Mergeable interface
-func (s *Script) GetID() string {
+// LaforgeID implements the Mergeable interface
+func (s *Script) LaforgeID() string {
 	return s.ID
 }
 
@@ -86,8 +146,8 @@ func (s *Script) ArgString() string {
 	return strings.Join(ret, " ")
 }
 
-// Base is a template helper function to return the base filename of a source script
-func (s *Script) Base() string {
+// SourceBase is a template helper function to return the base filename of a source script
+func (s *Script) SourceBase() string {
 	return filepath.Base(s.Source)
 }
 
@@ -118,6 +178,7 @@ func (s *Script) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile)
 		DeclaredPath:  s.Source,
 		RelToCallFile: rel2,
 	}
+	s.AbsPath = testSrc
 	pr.Mapping[s.Source] = lfr
 	return nil
 }
