@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cespare/xxhash"
 	"github.com/packer-community/winrmcp/winrmcp"
 
 	"github.com/pkg/errors"
@@ -52,23 +53,26 @@ type WinRMAuthConfig struct {
 
 // LoadFileDeps attempts ot load important key material in the team configuration for connecting to remote team hosts
 func (t *Team) LoadFileDeps(base *Laforge, pr *PathResolver, caller CallFile) error {
-	for _, ph := range t.Hosts {
-		if ph.SSHAuthConfig != nil {
-			err := ph.SSHAuthConfig.LoadIdentityFile(base, pr, caller)
+	for _, ph := range t.ProvisionedHosts {
+		if ph.Conn == nil {
+			continue
+		}
+		if ph.Conn.SSHAuthConfig != nil {
+			err := ph.Conn.SSHAuthConfig.LoadIdentityFile(base, pr, caller)
 			if err != nil {
 				return errors.Wrapf(errors.WithStack(err), "could not load ssh identity_file for host %s team %s", ph.ID, t.ID)
 			}
 		}
-		if ph.WinRMAuthConfig != nil {
-			err := ph.WinRMAuthConfig.LoadCAFile(base, pr, caller)
+		if ph.Conn.WinRMAuthConfig != nil {
+			err := ph.Conn.WinRMAuthConfig.LoadCAFile(base, pr, caller)
 			if err != nil {
 				return errors.Wrapf(errors.WithStack(err), "could not load winrm ca_file for host %s team %s", ph.ID, t.ID)
 			}
-			err = ph.WinRMAuthConfig.LoadCertFile(base, pr, caller)
+			err = ph.Conn.WinRMAuthConfig.LoadCertFile(base, pr, caller)
 			if err != nil {
 				return errors.Wrapf(errors.WithStack(err), "could not load winrm cert_file for host %s team %s", ph.ID, t.ID)
 			}
-			err = ph.WinRMAuthConfig.LoadKeyFile(base, pr, caller)
+			err = ph.Conn.WinRMAuthConfig.LoadKeyFile(base, pr, caller)
 			if err != nil {
 				return errors.Wrapf(errors.WithStack(err), "could not load winrm key_file for host %s team %s", ph.ID, t.ID)
 			}
@@ -85,6 +89,39 @@ func (s *SSHAuthConfig) Protocol() string {
 // Protocol implements the ShellConfig interface
 func (w *WinRMAuthConfig) Protocol() string {
 	return "winrm"
+}
+
+// Hash implements the Hasher interface
+func (s *SSHAuthConfig) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"rma=%v port=%v user=%v pw=%v ifile=%v",
+			s.RemoteAddr,
+			s.Port,
+			s.User,
+			s.Password,
+			s.IdentityFile,
+		),
+	)
+}
+
+// Hash implements the Hasher interface
+func (w *WinRMAuthConfig) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"rma=%v port=%v https=%v sv=%v tlsn=%v caf=%v cef=%v kef=%v user=%v pw=%v",
+			w.RemoteAddr,
+			w.Port,
+			w.HTTPS,
+			w.SkipVerify,
+			w.TLSServerName,
+			w.CAFile,
+			w.CertFile,
+			w.KeyFile,
+			w.User,
+			w.Password,
+		),
+	)
 }
 
 // LoadIdentityFile attempts to locate the referenced source file with a laforge base configuration

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash"
-	"github.com/gen0cide/laforge/tf"
+	"github.com/gen0cide/laforge/runner"
 	"github.com/pkg/errors"
 )
 
@@ -24,24 +24,23 @@ var (
 // Team represents a team specific object existing within an environment
 //easyjson:json
 type Team struct {
-	ID            string                      `hcl:"id,label" json:"id,omitempty"`
-	TeamNumber    int                         `hcl:"team_number,attr" json:"team_number,omitempty"`
-	BuildID       string                      `hcl:"build_id,attr" json:"build_id,omitempty"`
-	EnvironmentID string                      `hcl:"environment_id,attr" json:"environment_id,omitempty"`
-	CompetitionID string                      `hcl:"competition_id,attr" json:"competition_id,omitempty"`
-	Config        map[string]string           `hcl:"config,attr" json:"config,omitempty"`
-	Tags          map[string]string           `hcl:"tags,attr" json:"tags,omitempty"`
-	OnConflict    *OnConflict                 `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Revision      int64                       `hcl:"revision,attr" json:"revision,omitempty"`
-	Maintainer    *User                       `hcl:"maintainer,block" json:"maintainer,omitempty"`
-	Hosts         map[string]*ProvisionedHost `json:"-"`
-	Build         *Build                      `json:"-"`
-	Environment   *Environment                `json:"-"`
-	Competition   *Competition                `json:"-"`
-	RelBuildPath  string                      `json:"-"`
-	TeamRoot      string                      `json:"-"`
-	Caller        Caller                      `json:"-"`
-	Runner        *tf.Runner                  `json:"-"`
+	ID                  string                         `hcl:"id,label" json:"id,omitempty"`
+	TeamNumber          int                            `hcl:"team_number,attr" json:"team_number,omitempty"`
+	Config              map[string]string              `hcl:"config,attr" json:"config,omitempty"`
+	Tags                map[string]string              `hcl:"tags,attr" json:"tags,omitempty"`
+	OnConflict          *OnConflict                    `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
+	Revision            int64                          `hcl:"revision,attr" json:"revision,omitempty"`
+	Maintainer          *User                          `hcl:"maintainer,block" json:"maintainer,omitempty"`
+	ProvisionedNetworks map[string]*ProvisionedNetwork `json:"provisioned_networks"`
+	ProvisionedHosts    map[string]*ProvisionedHost    `json:"provisioned_hosts"`
+	Build               *Build                         `json:"-"`
+	Environment         *Environment                   `json:"-"`
+	Competition         *Competition                   `json:"-"`
+	RelBuildPath        string                         `json:"-"`
+	TeamRoot            string                         `json:"-"`
+	Dir                 string                         `json:"-"`
+	Caller              Caller                         `json:"-"`
+	Runner              *runner.Runner                 `json:"-"`
 }
 
 // Hash implements the Hasher interface
@@ -49,8 +48,8 @@ func (t *Team) Hash() uint64 {
 	return xxhash.Sum64String(
 		fmt.Sprintf(
 			"tn=%v bid=%v config=%v",
-			t.TeamNumber,
-			t.BuildID,
+			t.Path(),
+			t.Build.Hash(),
 			t.Config,
 		),
 	)
@@ -73,17 +72,6 @@ func (t *Team) ValidatePath() error {
 	}
 	return nil
 }
-
-// Name is a helper function to calculate a team unique name on the fly
-// func (t *Team) Name() string {
-// 	labels := []string{
-// 		t.Build.ID,
-// 		t.Environment.ID,
-// 		t.Competition.ID,
-// 		fmt.Sprintf("%v", t.TeamNumber),
-// 	}
-// 	return strcase.ToSnake(strings.Join(labels, "_"))
-// }
 
 // GetCaller implements the Mergeable interface
 func (t *Team) GetCaller() Caller {
@@ -133,14 +121,17 @@ func (t *Team) Swap(m Mergeable) error {
 // SetID increments the revision and sets the team ID if needed
 func (t *Team) SetID() string {
 	if t.ID == "" {
-		t.ID = path.Join(t.Build.ID, "teams", fmt.Sprintf("%d", t.TeamNumber))
+		t.ID = path.Join(t.Build.Path(), "teams", fmt.Sprintf("%d", t.TeamNumber))
+	}
+	if t.Environment == nil {
+		t.Environment = t.Build.Environment
 	}
 	return t.ID
 }
 
 // CreateRunner creates a new local command runner for the team, and returns it
-func (t *Team) CreateRunner() *tf.Runner {
-	runner := tf.NewRunner(t.LaforgeID(), t.GetCaller().Current().CallerDir, Logger)
+func (t *Team) CreateRunner() *runner.Runner {
+	runner := runner.NewRunner(t.LaforgeID(), t.GetCaller().Current().CallerDir, Logger)
 	return runner
 }
 
@@ -250,6 +241,50 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 	}
 }
 
+// CreateProvisionedNetwork actually creates the provisioned network object and assigns parent pointers accordingly.
+func (t *Team) CreateProvisionedNetwork(net *Network) *ProvisionedNetwork {
+	p := &ProvisionedNetwork{
+		Name:             net.Name,
+		CIDR:             net.CIDR,
+		Network:          net,
+		Team:             t,
+		Build:            t.Build,
+		Environment:      t.Environment,
+		Competition:      t.Competition,
+		ProvisionedHosts: map[string]*ProvisionedHost{},
+	}
+
+	t.ProvisionedNetworks[p.SetID()] = p
+	return p
+}
+
+// CreateProvisionResources enumerates the environment's included networks and creates provisioned network objects
+func (t *Team) CreateProvisionResources() error {
+	for _, n := range t.Environment.IncludedNetworks {
+		pn := t.CreateProvisionedNetwork(n)
+		err := pn.CreateProvisionedHosts()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Gather implements the Dependency interface
+func (t *Team) Gather(g *Snapshot) error {
+	for _, net := range t.ProvisionedNetworks {
+		err := g.Relate(t, net)
+		if err != nil {
+			return err
+		}
+		err = net.Gather(g)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func removeEmptyLines(s string) string {
 	lines := strings.Split(s, "\n")
 	newLines := []string{}
@@ -261,4 +296,20 @@ func removeEmptyLines(s string) string {
 		newLines = append(newLines, newX)
 	}
 	return strings.Join(newLines, "\n")
+}
+
+// LocateProvisionedHost is used to locate the provisioned host object by specifying a global host and network ID. (useed in dependency traversal)
+func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, error) {
+	for _, x := range t.ProvisionedNetworks {
+		if x.Network.Path() != netid {
+			continue
+		}
+		for _, h := range x.ProvisionedHosts {
+			if h.Host.Path() != hostid {
+				continue
+			}
+			return h, nil
+		}
+	}
+	return nil, fmt.Errorf("host %s was not located within network %s for the given build", hostid, netid)
 }

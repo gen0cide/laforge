@@ -37,10 +37,11 @@ type Environment struct {
 	OnConflict       *OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	BaseDir          string              `hcl:"base_dir,optional" json:"base_dir,omitempty"`
 	Revision         int64               `hcl:"revision,optional" json:"revision,omitempty"`
+	Build            *Build              `json:"-"`
 	IncludedNetworks map[string]*Network `json:"-"`
 	IncludedHosts    map[string]*Host    `json:"-"`
 	HostByNetwork    map[string][]*Host  `json:"-"`
-	Teams            map[int]*Team       `json:"-"`
+	Teams            map[string]*Team    `json:"-"`
 	Caller           Caller              `json:"-"`
 	Competition      *Competition        `json:"-"`
 }
@@ -288,6 +289,27 @@ func (l *Laforge) CleanBuildDirectory(overwrite bool) error {
 	}
 
 	return os.RemoveAll(buildDir)
+}
+
+// CreateBuild creates a fresh build object that is a child of the environment e.
+func (e *Environment) CreateBuild() *Build {
+	b := &Build{
+		Dir:         filepath.Join(e.Caller.Current().CallerDir, e.Builder),
+		TeamCount:   e.TeamCount,
+		Config:      e.Config,
+		Tags:        e.Tags,
+		Teams:       map[string]*Team{},
+		Environment: e,
+		Competition: e.Competition,
+		Maintainer:  e.Maintainer,
+	}
+	b.SetID()
+	return b
+}
+
+// Gather implements the Dependency interface
+func (e *Environment) Gather(g *Snapshot) error {
+	return e.Build.Gather(g)
 }
 
 // GetAllEnvs recursively traverses the BaseRoot/envs/ folder looking for valid environments.

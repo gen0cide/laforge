@@ -29,7 +29,7 @@ type Build struct {
 	Dir          string            `json:"-"`
 	Caller       Caller            `json:"-"`
 	LocalDBFile  *LocalFileRef     `json:"-"`
-	Teams        map[int]*Team     `json:"-"`
+	Teams        map[string]*Team  `json:"-"`
 }
 
 // Hash implements the Hasher interface
@@ -182,7 +182,7 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 		TeamCount:   l.CurrentEnv.TeamCount,
 		Config:      l.CurrentEnv.Config,
 		Tags:        l.CurrentEnv.Tags,
-		Teams:       map[int]*Team{},
+		Teams:       map[string]*Team{},
 		Environment: l.CurrentEnv,
 		Competition: l.CurrentEnv.Competition,
 		Maintainer:  l.User,
@@ -205,4 +205,52 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	l.BuildContextID = b.LaforgeID()
 	l.ClearToBuild = true
 	return nil
+}
+
+// CreateTeams enumerates the build's team count and generates children team objects
+func (b *Build) CreateTeams() error {
+	if len(b.Teams) != 0 {
+		return errors.New("build already is populated with teams")
+	}
+	for i := 0; i < b.TeamCount; i++ {
+		t := b.CreateTeam(i)
+		err := t.CreateProvisionResources()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Gather implements the Dependency interface
+func (b *Build) Gather(g *Snapshot) error {
+	err := g.Relate(b.Environment, b)
+	if err != nil {
+		return err
+	}
+	for _, t := range b.Teams {
+		err = g.Relate(b, t)
+		if err != nil {
+			return err
+		}
+		err = t.Gather(g)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CreateTeam creates a new team of a given team index for the build.
+func (b *Build) CreateTeam(tid int) *Team {
+	t := &Team{
+		TeamNumber:          tid,
+		Build:               b,
+		Environment:         b.Environment,
+		Competition:         b.Competition,
+		ProvisionedNetworks: map[string]*ProvisionedNetwork{},
+	}
+
+	b.Teams[t.SetID()] = t
+	return t
 }

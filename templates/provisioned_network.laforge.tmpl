@@ -1,0 +1,9 @@
+include {
+  path = "./hosts/**/*.laforge"
+}
+
+provisioned_network {{ $.ID | hclstring }} {
+  name = {{ $.Name | hclstring }}
+  cidr = {{ $.CIDR | hclstring }}
+  network_id = {{ $.Network.Path | hclstring }}
+}

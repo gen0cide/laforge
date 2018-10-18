@@ -40,7 +40,7 @@ type RemoteState struct {
 	Base         *Laforge
 	LocalConfig  *TerraformState
 	RemoteConfig *TerraformState
-	Hosts        map[string]*HostInfo
+	Hosts        map[string]*HostTableInfo
 }
 
 // GetState retrieves a remote configuration of a laforge deployed terraform environment
@@ -96,7 +96,7 @@ func GetState(base *Laforge) (*RemoteState, error) {
 		Base:         base,
 		LocalConfig:  localconfig,
 		RemoteConfig: state,
-		Hosts:        map[string]*HostInfo{},
+		Hosts:        map[string]*HostTableInfo{},
 	}
 
 	rs.ParseHostInfo()
@@ -119,7 +119,7 @@ func (r *RemoteState) ParseHostInfo() {
 				hostname := strings.Replace(k, `.public_ip`, ``, -1)
 				hostinfo, found := r.Hosts[hostname]
 				if !found {
-					hostinfo = &HostInfo{Hostname: hostname}
+					hostinfo = &HostTableInfo{Hostname: hostname}
 					r.Hosts[hostname] = hostinfo
 				}
 				hostinfo.PublicIP = sm["value"].(string)
@@ -129,7 +129,7 @@ func (r *RemoteState) ParseHostInfo() {
 				hostname := strings.Replace(k, `.private_ip`, ``, -1)
 				hostinfo, found := r.Hosts[hostname]
 				if !found {
-					hostinfo = &HostInfo{Hostname: hostname}
+					hostinfo = &HostTableInfo{Hostname: hostname}
 					r.Hosts[hostname] = hostinfo
 				}
 				hostinfo.PrivateIP = sm["value"].(string)
@@ -139,15 +139,15 @@ func (r *RemoteState) ParseHostInfo() {
 	}
 }
 
-// HostInfo represents host information parsed out of a remote state
-type HostInfo struct {
+// HostTableInfo represents host information parsed out of a remote state
+type HostTableInfo struct {
 	PublicIP  string `json:"public_ip"`
 	PrivateIP string `json:"private_ip"`
 	Hostname  string `json:"hostname"`
 }
 
 // TableInfo is a helper function for pretty pretting host information
-func (h *HostInfo) TableInfo() []string {
+func (h *HostTableInfo) TableInfo() []string {
 	return []string{
 		h.Hostname,
 		h.PublicIP,

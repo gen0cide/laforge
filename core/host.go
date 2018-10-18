@@ -78,7 +78,7 @@ func (h *HostDependency) Hash() uint64 {
 func (h *Host) Hash() uint64 {
 	return xxhash.Sum64String(
 		fmt.Sprintf(
-			"hn=%v os=%v ami=%v lo=%v isize=%v disk=%v ps=%v provs=%v opass=%v ug=%v deps=%v vars=%v",
+			"hn=%v os=%v ami=%v lo=%v isize=%v disk=%v ps=%v opass=%v ug=%v vars=%v",
 			h.Hostname,
 			h.OS,
 			h.AMI,
@@ -86,10 +86,8 @@ func (h *Host) Hash() uint64 {
 			h.InstanceSize,
 			h.Disk,
 			strings.Join(h.ProvisionSteps, `,`),
-			h.GetProvisionersHash(),
 			h.OverridePassword,
 			h.UserGroups,
-			h.GetDependencyHash(),
 			h.Vars,
 		),
 	)
@@ -177,6 +175,16 @@ func (h *Host) GetCaller() Caller {
 // LaforgeID implements the Mergeable interface
 func (h *Host) LaforgeID() string {
 	return h.ID
+}
+
+// ParentLaforgeID implements the Dependency interface
+func (h *Host) ParentLaforgeID() string {
+	return h.Path()
+}
+
+// Gather implements the Dependency interface
+func (h *Host) Gather(g *Snapshot) error {
+	return nil
 }
 
 // GetOnConflict implements the Mergeable interface
@@ -316,6 +324,11 @@ func (h *Host) Index(base *Laforge) error {
 		}
 	}
 	return nil
+}
+
+// Fullpath implements the Pather interface
+func (h *Host) Fullpath() string {
+	return h.LaforgeID()
 }
 
 // IPv42Int converts net.IP address objects to their uint32 representation

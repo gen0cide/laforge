@@ -1,41 +1,46 @@
 package core
 
 import (
-	"os"
+	"fmt"
 	"path"
-	"path/filepath"
 
-	"github.com/packer-community/winrmcp/winrmcp"
-	"github.com/shiena/ansicolor"
-
+	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
 )
 
-// ProvisionedHost defines a provisioned host within a team's environment (network neutral)
+// ProvisionedHost is a build artifact type to denote a host inside a team's provisioend infrastructure.
 //easyjson:json
 type ProvisionedHost struct {
-	ID              string           `hcl:"id,label" json:"id,omitempty"`
-	CompetitionID   string           `hcl:"competition_id,attr" json:"competition_id"`
-	EnvironmentID   string           `hcl:"environment_id,attr" json:"environment_id,omitempty"`
-	BuildID         string           `hcl:"build_id,attr" json:"build_id,omitempty"`
-	TeamID          string           `hcl:"team_id,attr" json:"team_id,omitempty"`
-	NetworkID       string           `hcl:"network_id,attr" json:"network_id,omitempty"`
-	HostID          string           `hcl:"host_id,attr" json:"host_id,omitempty"`
-	Active          bool             `hcl:"active,attr" json:"active,omitempty"`
-	LocalAddr       string           `hcl:"local_addr,attr" json:"local_addr,omitempty"`
-	RemoteAddr      string           `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`
-	ResourceName    string           `hcl:"resource_name,attr" json:"resource_name,omitempty"`
-	SSHAuthConfig   *SSHAuthConfig   `hcl:"ssh,block" json:"ssh,omitempty"`
-	WinRMAuthConfig *WinRMAuthConfig `hcl:"winrm,block" json:"winrm,omitempty"`
-	Revision        int64            `hcl:"revision,attr" json:"revision,omitempty"`
-	OnConflict      *OnConflict      `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
-	Competition     *Competition     `json:"-"`
-	Environment     *Environment     `json:"-"`
-	Build           *Build           `json:"-"`
-	Team            *Team            `json:"-"`
-	Network         *Network         `json:"-"`
-	Host            *Host            `json:"-"`
-	Caller          Caller           `json:"-"`
+	ID                 string                       `hcl:"id,label" json:"id,omitempty"`
+	HostID             string                       `hcl:"host_id,attr" json:"host_id,omitempty"`
+	SubnetIP           string                       `hcl:"subnet_ip,attr" json:"subnet_ip,omitempty"`
+	Conn               *Connection                  `hcl:"connection,block" json:"connection"`
+	Status             Status                       `hcl:"status,optional" json:"status"`
+	ProvisioningSteps  map[string]*ProvisioningStep `json:"provisioning_steps"`
+	StepsByOffset      []*ProvisioningStep          `json:"-"`
+	ProvisionedNetwork *ProvisionedNetwork          `json:"-"`
+	Team               *Team                        `json:"-"`
+	Build              *Build                       `json:"-"`
+	Environment        *Environment                 `json:"-"`
+	Competition        *Competition                 `json:"-"`
+	Network            *Network                     `json:"-"`
+	Host               *Host                        `json:"-"`
+	OnConflict         *OnConflict                  `json:"-"`
+	Caller             Caller                       `json:"-"`
+	Dir                string                       `json:"-"`
+}
+
+// Hash implements the Hasher interface
+func (p *ProvisionedHost) Hash() uint64 {
+	return xxhash.Sum64String(
+		fmt.Sprintf(
+			"hid=%v cidr=%v host=%v status=%v",
+			p.HostID,
+			p.SubnetIP,
+			p.Host.Hash(),
+			p.Status.Hash(),
+		),
+	)
 }
 
 // Path implements the Pather interface
@@ -56,36 +61,28 @@ func (p *ProvisionedHost) ValidatePath() error {
 	return nil
 }
 
-// IsSSH is a convenience method for checking if the provisioned host is setup for remote SSH
-func (p *ProvisionedHost) IsSSH() bool {
-	return p.SSHAuthConfig != nil
-}
-
-// ParentLaforgeID returns the Team's parent build ID
-func (p *ProvisionedHost) ParentLaforgeID() string {
-	return path.Dir(path.Dir(path.Dir(p.LaforgeID())))
-}
-
-// IsWinRM is a convenience method for checking if the provisioned host is setup for remote WinRM
-func (p *ProvisionedHost) IsWinRM() bool {
-	return p.WinRMAuthConfig != nil
-}
-
 // GetCaller implements the Mergeable interface
 func (p *ProvisionedHost) GetCaller() Caller {
 	return p.Caller
 }
 
 // LaforgeID implements the Mergeable interface
+// This will be: /envs/$env_base/$build_base/teams/$team_base/networks/$network_base/$host_base
 func (p *ProvisionedHost) LaforgeID() string {
-	return filepath.Join(p.CompetitionID, p.EnvironmentID, p.BuildID, p.TeamID, p.ID)
+	return p.ID
+}
+
+// ParentLaforgeID returns the Team's parent build ID
+func (p *ProvisionedHost) ParentLaforgeID() string {
+	return path.Dir(path.Dir(p.LaforgeID()))
 }
 
 // GetOnConflict implements the Mergeable interface
 func (p *ProvisionedHost) GetOnConflict() OnConflict {
 	if p.OnConflict == nil {
 		return OnConflict{
-			Do: "default",
+			Do:     "default",
+			Append: true,
 		}
 	}
 	return *p.OnConflict
@@ -111,134 +108,98 @@ func (p *ProvisionedHost) Swap(m Mergeable) error {
 	return nil
 }
 
-// SetID increments the revision and sets the ID if needed
+// SetID increments the revision and sets the team ID if needed
 func (p *ProvisionedHost) SetID() string {
-	if p.ID != "" {
-		return p.ID
-	}
-	p.Revision++
-	if p.TeamID == "" && p.Team != nil {
-		p.TeamID = p.Team.ID
-	}
-	if p.BuildID == "" && p.Build != nil {
-		p.BuildID = p.Build.ID
-	}
-	if p.EnvironmentID == "" && p.Environment != nil {
-		p.EnvironmentID = p.Environment.ID
-	}
-	if p.CompetitionID == "" && p.Competition != nil {
-		p.CompetitionID = p.Competition.ID
-	}
-	if p.ID == "" && p.Host != nil {
-		p.ID = p.Host.ID
-	}
 	if p.ID == "" {
-		p.ID = p.HostID
+		p.ID = path.Join(p.ProvisionedNetwork.Path(), "hosts", p.Host.Base())
+	}
+	if p.HostID == "" {
+		p.HostID = p.Host.Path()
 	}
 	return p.ID
 }
 
-// RemoteShell connects your local console to a remote provisioned host
-func (p *ProvisionedHost) RemoteShell() error {
-	if p.IsWinRM() {
-		return p.InteractiveWinRM()
+// CreateProvisioningStep creates a new provisioning step object for the provisioned host, mapping parent objects.
+func (p *ProvisionedHost) CreateProvisioningStep(pr Provisioner, offset int) *ProvisioningStep {
+	ps := &ProvisioningStep{
+		Provisioner:        pr,
+		ProvisionerID:      pr.Path(),
+		ProvisionerType:    pr.Kind(),
+		StepNumber:         offset,
+		ProvisionedHost:    p,
+		ProvisionedNetwork: p.ProvisionedNetwork,
+		Network:            p.Network,
+		Host:               p.Host,
+		Team:               p.Team,
+		Build:              p.Build,
+		Environment:        p.Environment,
+		Competition:        p.Competition,
 	}
-	return p.InteractiveSSH()
+
+	p.ProvisioningSteps[ps.SetID()] = ps
+	p.StepsByOffset = append(p.StepsByOffset, ps)
+	return ps
 }
 
-// Upload uploads a src file/dir to a dst file/dir on the provisioned host
-func (p *ProvisionedHost) Upload(src, dst string) error {
-	if p.IsWinRM() {
-		return p.UploadWinRM(src, dst)
-	}
-	return p.UploadSCP(src, dst)
-}
-
-// UploadWinRM uses WinRM to upload src to dst on the provisioned host
-func (p *ProvisionedHost) UploadWinRM(src, dst string) error {
-	addr, config := p.WinRMAuthConfig.ToUploadConfig()
-	client, err := winrmcp.New(addr, &config)
-	if err != nil {
-		return err
-	}
-	return client.Copy(src, dst)
-}
-
-// InteractiveWinRM launches an interactive shell over WinRM
-func (p *ProvisionedHost) InteractiveWinRM() error {
-	client := &WinRMClient{}
-	err := client.SetConfig(p.WinRMAuthConfig)
-	if err != nil {
-		return err
-	}
-	client.SetIO(
-		ansicolor.NewAnsiColorWriter(os.Stdout),
-		ansicolor.NewAnsiColorWriter(os.Stderr),
-		os.Stdin,
-	)
-
-	err = client.LaunchInteractiveShell()
-	if err != nil {
-		return err
+// CreateProvisioningSteps enumerates all the parent Host object's provisioning steps, mapping a custom ProvisioningStep object for this provisioned host.
+func (p *ProvisionedHost) CreateProvisioningSteps() error {
+	for sid, step := range p.Host.Provisioners {
+		p.CreateProvisioningStep(step, sid)
 	}
 	return nil
 }
 
-// InteractiveSSH launches an interactive shell over SSH
-func (p *ProvisionedHost) InteractiveSSH() error {
-	client, err := NewSSHClient(p.SSHAuthConfig, "")
-	if err != nil {
-		return err
-	}
-
-	err = client.Connect()
-	if err != nil {
-		return err
-	}
-	defer client.Disconnect()
-
-	err = client.LaunchInteractiveShell()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// UploadSCP uses scp to upload src to dst on the provisioned host
-func (p *ProvisionedHost) UploadSCP(src, dst string) error {
-	isDir := false
-	fi, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-	if fi.IsDir() {
-		isDir = true
-	}
-
-	client, err := NewSSHClient(p.SSHAuthConfig, "")
-	if err != nil {
-		return err
-	}
-
-	err = client.Connect()
-	if err != nil {
-		return err
-	}
-	defer client.Disconnect()
-
-	if isDir {
-		err = client.UploadDir(dst, src)
+// Gather implements the Dependency interface
+func (p *ProvisionedHost) Gather(g *Snapshot) error {
+	var err error
+	for _, s := range p.StepsByOffset {
+		err = g.Relate(p, s)
 		if err != nil {
 			return err
 		}
-		return nil
+		if s.StepNumber != 0 {
+			previousSteps := p.StepsByOffset[0:s.StepNumber]
+			for _, x := range previousSteps {
+				err = g.Relate(x, s)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		err = s.Gather(g)
+		if err != nil {
+			return err
+		}
 	}
-
-	fileInput, err := os.Open(src)
-	if err != nil {
-		return err
+	for _, s := range p.Host.Dependencies {
+		hd, err := p.ProvisionedNetwork.Team.LocateProvisionedHost(s.NetworkID, s.HostID)
+		if err != nil {
+			return err
+		}
+		finalStepOffset := hd.Host.FinalStepID()
+		if finalStepOffset != -1 {
+			located := false
+			for _, pstep := range hd.ProvisioningSteps {
+				if pstep.StepNumber == finalStepOffset {
+					err = g.Relate(pstep, p)
+					if err != nil {
+						return err
+					}
+					located = true
+					break
+				}
+			}
+			if !located {
+				return fmt.Errorf("there is no provisioning step with offset %d for host %s", finalStepOffset, hd.Path())
+			}
+		} else {
+			err = g.Relate(hd, p)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	err = client.Upload(dst, fileInput)
+	err = g.Relate(p.Host, p)
 	if err != nil {
 		return err
 	}

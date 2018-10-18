@@ -1,0 +1,12 @@
+include {
+  path = "./*.laforge"
+}
+
+include {
+  path = "./steps/*.laforge"
+}
+
+provisioned_host {{ $.ID | hclstring }} {
+  host_id = {{ $.Host.Path | hclstring }}
+  subnet_ip = {{ $.SubnetIP | hclstring }}
+}

@@ -64,64 +64,70 @@ var (
 // Laforge defines the type that holds the global namespace within the laforge configuration engine
 //easyjson:json
 type Laforge struct {
-	Filename                string                      `json:"filename"`
-	Includes                []string                    `json:"-"`
-	DependencyGraph         treeprint.Tree              `json:"-"`
-	CurrDir                 string                      `json:"-"`
-	BaseDir                 string                      `hcl:"base_dir,optional" json:"base_dir,omitempty"`
-	User                    *User                       `hcl:"user,block" json:"user,omitempty"`
-	IncludePaths            []*Include                  `hcl:"include,block" json:"include_paths,omitempty"`
-	DefinedCompetitions     []*Competition              `hcl:"competition,block" json:"competitions,omitempty"`
-	DefinedEnvironments     []*Environment              `hcl:"environment,block" json:"environments,omitempty"`
-	DefinedBuilds           []*Build                    `hcl:"build,block" json:"builds,omitempty"`
-	DefinedTeams            []*Team                     `hcl:"team,block" json:"teams,omitempty"`
-	DefinedHosts            []*Host                     `hcl:"host,block" json:"hosts,omitempty"`
-	DefinedNetworks         []*Network                  `hcl:"network,block" json:"networks,omitempty"`
-	DefinedIdentities       []*Identity                 `hcl:"identity,block" json:"identities,omitempty"`
-	DefinedScripts          []*Script                   `hcl:"script,block" json:"scripts,omitempty"`
-	DefinedCommands         []*Command                  `hcl:"command,block" json:"defined_commands,omitempty"`
-	DefinedRemoteFiles      []*RemoteFile               `hcl:"remote_file,block" json:"defined_files,omitempty"`
-	DefinedDNSRecords       []*DNSRecord                `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
-	DefinedProvisionedHosts []*ProvisionedHost          `hcl:"provisioned_host,block" json:"provisioned_hosts,omitempty"`
-	Hosts                   map[string]*Host            `json:"-"`
-	Networks                map[string]*Network         `json:"-"`
-	Identities              map[string]*Identity        `json:"-"`
-	Scripts                 map[string]*Script          `json:"-"`
-	Commands                map[string]*Command         `json:"-"`
-	RemoteFiles             map[string]*RemoteFile      `json:"-"`
-	DNSRecords              map[string]*DNSRecord       `json:"-"`
-	Teams                   map[string]*Team            `json:"-"`
-	Builds                  map[string]*Build           `json:"-"`
-	ProvisionedHosts        map[string]*ProvisionedHost `json:"-"`
-	Environments            map[string]*Environment     `json:"-"`
-	Competitions            map[string]*Competition     `json:"-"`
-	Caller                  Caller                      `json:"-"`
-	ValidTeam               bool                        `json:"-"`
-	ValidBuild              bool                        `json:"-"`
-	ValidEnv                bool                        `json:"-"`
-	ValidBase               bool                        `json:"-"`
-	ValidGlobal             bool                        `json:"-"`
-	ClearToBuild            bool                        `json:"-"`
-	TeamRoot                string                      `json:"-"`
-	BuildRoot               string                      `json:"-"`
-	EnvRoot                 string                      `json:"-"`
-	BaseRoot                string                      `json:"-"`
-	GlobalRoot              string                      `json:"-"`
-	TeamAbsPath             string                      `json:"-"`
-	BuildAbsPath            string                      `json:"-"`
-	EnvAbsPath              string                      `json:"-"`
-	BaseAbsPath             string                      `json:"-"`
-	TeamContextID           string                      `json:"-"`
-	BuildContextID          string                      `json:"-"`
-	EnvContextID            string                      `json:"-"`
-	BaseContextID           string                      `json:"-"`
-	GlobalContextID         string                      `json:"-"`
-	CurrentEnv              *Environment                `json:"-"`
-	CurrentBuild            *Build                      `json:"-"`
-	CurrentTeam             *Team                       `json:"-"`
-	CurrentCompetition      *Competition                `json:"-"`
-	InitialContext          StateContext                `json:"-"`
-	PathRegistry            *PathRegistry               `json:"-"`
+	Filename                   string                         `json:"filename"`
+	Includes                   []string                       `json:"-"`
+	DependencyGraph            treeprint.Tree                 `json:"-"`
+	CurrDir                    string                         `json:"-"`
+	BaseDir                    string                         `hcl:"base_dir,optional" json:"base_dir,omitempty"`
+	User                       *User                          `hcl:"user,block" json:"user,omitempty"`
+	IncludePaths               []*Include                     `hcl:"include,block" json:"include_paths,omitempty"`
+	DefinedCompetitions        []*Competition                 `hcl:"competition,block" json:"competitions,omitempty"`
+	DefinedHosts               []*Host                        `hcl:"host,block" json:"hosts,omitempty"`
+	DefinedNetworks            []*Network                     `hcl:"network,block" json:"networks,omitempty"`
+	DefinedIdentities          []*Identity                    `hcl:"identity,block" json:"identities,omitempty"`
+	DefinedScripts             []*Script                      `hcl:"script,block" json:"scripts,omitempty"`
+	DefinedCommands            []*Command                     `hcl:"command,block" json:"defined_commands,omitempty"`
+	DefinedRemoteFiles         []*RemoteFile                  `hcl:"remote_file,block" json:"defined_files,omitempty"`
+	DefinedDNSRecords          []*DNSRecord                   `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
+	DefinedEnvironments        []*Environment                 `hcl:"environment,block" json:"environments,omitempty"`
+	DefinedBuilds              []*Build                       `hcl:"build,block" json:"builds,omitempty"`
+	DefinedTeams               []*Team                        `hcl:"team,block" json:"teams,omitempty"`
+	DefinedProvisionedNetworks []*ProvisionedNetwork          `hcl:"provisioned_network,block" json:"provisioned_networks,omitempty"`
+	DefinedProvisionedHosts    []*ProvisionedHost             `hcl:"provisioned_host,block" json:"provisioned_hosts,omitempty"`
+	DefinedProvisioningSteps   []*ProvisioningStep            `hcl:"provisioning_step,block" json:"provisioning_steps,omitempty"`
+	DefinedConnections         []*Connection                  `hcl:"connection,block" json:"connections,omitempty"`
+	Hosts                      map[string]*Host               `json:"-"`
+	Networks                   map[string]*Network            `json:"-"`
+	Identities                 map[string]*Identity           `json:"-"`
+	Scripts                    map[string]*Script             `json:"-"`
+	Commands                   map[string]*Command            `json:"-"`
+	RemoteFiles                map[string]*RemoteFile         `json:"-"`
+	DNSRecords                 map[string]*DNSRecord          `json:"-"`
+	Competitions               map[string]*Competition        `json:"-"`
+	Environments               map[string]*Environment        `json:"-"`
+	Builds                     map[string]*Build              `json:"-"`
+	Teams                      map[string]*Team               `json:"-"`
+	ProvisionedNetworks        map[string]*ProvisionedNetwork `json:"-"`
+	ProvisionedHosts           map[string]*ProvisionedHost    `json:"-"`
+	ProvisioningSteps          map[string]*ProvisioningStep   `json:"-"`
+	Connections                map[string]*Connection         `json:"-"`
+	Caller                     Caller                         `json:"-"`
+	ValidTeam                  bool                           `json:"-"`
+	ValidBuild                 bool                           `json:"-"`
+	ValidEnv                   bool                           `json:"-"`
+	ValidBase                  bool                           `json:"-"`
+	ValidGlobal                bool                           `json:"-"`
+	ClearToBuild               bool                           `json:"-"`
+	TeamRoot                   string                         `json:"-"`
+	BuildRoot                  string                         `json:"-"`
+	EnvRoot                    string                         `json:"-"`
+	BaseRoot                   string                         `json:"-"`
+	GlobalRoot                 string                         `json:"-"`
+	TeamAbsPath                string                         `json:"-"`
+	BuildAbsPath               string                         `json:"-"`
+	EnvAbsPath                 string                         `json:"-"`
+	BaseAbsPath                string                         `json:"-"`
+	TeamContextID              string                         `json:"-"`
+	BuildContextID             string                         `json:"-"`
+	EnvContextID               string                         `json:"-"`
+	BaseContextID              string                         `json:"-"`
+	GlobalContextID            string                         `json:"-"`
+	CurrentEnv                 *Environment                   `json:"-"`
+	CurrentBuild               *Build                         `json:"-"`
+	CurrentTeam                *Team                          `json:"-"`
+	CurrentCompetition         *Competition                   `json:"-"`
+	InitialContext             StateContext                   `json:"-"`
+	PathRegistry               *PathRegistry                  `json:"-"`
 }
 
 // Include defines a named include type
@@ -240,10 +246,13 @@ func (l *Laforge) CreateIndex() {
 	l.RemoteFiles = map[string]*RemoteFile{}
 	l.DNSRecords = map[string]*DNSRecord{}
 	l.Teams = map[string]*Team{}
-	l.ProvisionedHosts = map[string]*ProvisionedHost{}
 	l.Builds = map[string]*Build{}
 	l.Competitions = map[string]*Competition{}
 	l.Environments = map[string]*Environment{}
+	l.ProvisionedNetworks = map[string]*ProvisionedNetwork{}
+	l.ProvisionedHosts = map[string]*ProvisionedHost{}
+	l.ProvisioningSteps = map[string]*ProvisioningStep{}
+	l.Connections = map[string]*Connection{}
 	for _, x := range l.DefinedHosts {
 		l.Hosts[x.ID] = x
 		x.Caller = l.Caller
@@ -280,16 +289,28 @@ func (l *Laforge) CreateIndex() {
 		l.RemoteFiles[x.ID] = x
 		x.Caller = l.Caller
 	}
+	for _, x := range l.Connections {
+		l.Connections[x.LaforgeID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedProvisioningSteps {
+		l.ProvisioningSteps[x.LaforgeID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedProvisionedHosts {
+		l.ProvisionedHosts[x.LaforgeID()] = x
+		x.Caller = l.Caller
+	}
+	for _, x := range l.DefinedProvisionedNetworks {
+		l.ProvisionedNetworks[x.LaforgeID()] = x
+		x.Caller = l.Caller
+	}
 	for _, x := range l.DefinedTeams {
 		l.Teams[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedDNSRecords {
 		l.DNSRecords[x.ID] = x
-		x.Caller = l.Caller
-	}
-	for _, x := range l.DefinedProvisionedHosts {
-		l.ProvisionedHosts[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
 	for _, x := range l.DefinedBuilds {
@@ -504,6 +525,21 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
 		}
 	}
+	for id, obj := range layer.ProvisionedNetworks {
+		orig, found := base.ProvisionedNetworks[id]
+		if !found {
+			base.ProvisionedNetworks[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*ProvisionedNetwork)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
 	for id, obj := range layer.ProvisionedHosts {
 		orig, found := base.ProvisionedHosts[id]
 		if !found {
@@ -515,6 +551,36 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 			return nil, err
 		}
 		orig, ok := res.(*ProvisionedHost)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+	for id, obj := range layer.ProvisioningSteps {
+		orig, found := base.ProvisioningSteps[id]
+		if !found {
+			base.ProvisioningSteps[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*ProvisioningStep)
+		if !ok {
+			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
+		}
+	}
+	for id, obj := range layer.Connections {
+		orig, found := base.Connections[id]
+		if !found {
+			base.Connections[id] = obj
+			continue
+		}
+		res, err := SmartMerge(orig, obj, false)
+		if err != nil {
+			return nil, err
+		}
+		orig, ok := res.(*Connection)
 		if !ok {
 			return nil, errors.WithStack(errors.Wrapf(ErrSwapTypeMismatch, "expected %T, got %T", orig, res))
 		}
@@ -536,10 +602,11 @@ func (l *Laforge) IndexHostDependencies() error {
 // IndexEnvironmentDependencies enumerates all known environments and makes sure they have valid network inclusions
 func (l *Laforge) IndexEnvironmentDependencies() error {
 	for _, e := range l.Environments {
-		comp, ok := l.Competitions[e.ParentLaforgeID()]
-		if ok {
-			e.Competition = comp
+		comp, found := l.Competitions[e.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("competition %s for env %s could not be located", e.ParentLaforgeID(), e.Path())
 		}
+		e.Competition = comp
 		err := e.ResolveIncludedNetworks(l)
 		if err != nil {
 			return err
@@ -551,37 +618,58 @@ func (l *Laforge) IndexEnvironmentDependencies() error {
 // IndexBuildDependencies enumerates all known builds and ensures it has competition and environment associations
 func (l *Laforge) IndexBuildDependencies() error {
 	for _, b := range l.Builds {
-		env, ok := l.Environments[b.ParentLaforgeID()]
-		if ok {
-			b.Environment = env
-			if b.Environment.Competition != nil {
-				b.Competition = b.Environment.Competition
-			}
+		env, found := l.Environments[b.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("environment %s for build %s could not be located", b.ParentLaforgeID(), b.Path())
 		}
+		b.Environment = env
+		b.Competition = env.Competition
+		if b.Teams == nil {
+			b.Teams = map[string]*Team{}
+		}
+		b.Dir = b.Caller.Current().CallerDir
 	}
 	return nil
 }
 
 // IndexTeamDependencies enumerates all known teams and ensures they have proper associations
 func (l *Laforge) IndexTeamDependencies() error {
-	for _, t := range l.Teams {
-		build, ok := l.Builds[t.ParentLaforgeID()]
-		if ok {
-			t.Build = build
-			if t.Build.Environment != nil {
-				t.Environment = t.Build.Environment
-				if t.Environment.Competition != nil {
-					t.Competition = t.Environment.Competition
-				}
-				if t.Environment.Teams == nil {
-					t.Environment.Teams = map[int]*Team{}
-				}
-				t.Environment.Teams[t.TeamNumber] = t
-				if t.Build.Teams == nil {
-					t.Build.Teams = map[int]*Team{}
-				}
-				t.Build.Teams[t.TeamNumber] = t
-			}
+	for _, team := range l.Teams {
+		build, found := l.Builds[team.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("build %s for team %s could not be located", team.ParentLaforgeID(), team.Path())
+		}
+		team.Build = build
+		team.Environment = build.Environment
+		team.Competition = build.Competition
+		team.Dir = team.Caller.Current().CallerDir
+		if team.ProvisionedNetworks == nil {
+			team.ProvisionedNetworks = map[string]*ProvisionedNetwork{}
+		}
+	}
+	return nil
+}
+
+// IndexProvisionedNetworkDependencies enumerates all known provisioned networks and ensures they have proper associations
+func (l *Laforge) IndexProvisionedNetworkDependencies() error {
+	for _, net := range l.ProvisionedNetworks {
+		team, found := l.Teams[net.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("team %s for provisioned network %s could not be located", net.ParentLaforgeID(), net.Path())
+		}
+		team.ProvisionedNetworks[net.Path()] = net
+		net.Team = team
+		net.Build = team.Build
+		net.Environment = team.Environment
+		net.Competition = team.Competition
+		net.Dir = net.Caller.Current().CallerDir
+		parent, found := l.Networks[net.NetworkID]
+		if !found {
+			return fmt.Errorf("network %s for provisioned network %s could not be located", net.NetworkID, net.Path())
+		}
+		net.Network = parent
+		if net.ProvisionedHosts == nil {
+			net.ProvisionedHosts = map[string]*ProvisionedHost{}
 		}
 	}
 	return nil
@@ -589,31 +677,98 @@ func (l *Laforge) IndexTeamDependencies() error {
 
 // IndexProvisionedHostDependencies enumerates all known provisioned hosts and ensures they have proper associations
 func (l *Laforge) IndexProvisionedHostDependencies() error {
-	for _, p := range l.ProvisionedHosts {
-		team, ok := l.Teams[p.ParentLaforgeID()]
-		if ok {
-			p.Team = team
-			if p.Team.Build != nil {
-				p.Build = p.Team.Build
-				if p.Team.Hosts == nil {
-					p.Team.Hosts = map[string]*ProvisionedHost{}
-				}
-				p.Team.Hosts[p.ID] = p
-				if p.Build.Environment != nil {
-					p.Environment = p.Build.Environment
-					if p.Environment.Competition != nil {
-						p.Competition = p.Environment.Competition
-					}
-				}
+	for _, host := range l.ProvisionedHosts {
+		net, found := l.ProvisionedNetworks[host.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("provisioned network %s for provisioned host %s could not be located", host.ParentLaforgeID(), host.Path())
+		}
+		host.ProvisionedNetwork = net
+		host.Team = net.Team
+		host.Build = net.Build
+		host.Environment = net.Environment
+		host.Competition = net.Competition
+		host.Network = net.Network
+		parent, found := l.Hosts[host.HostID]
+		if !found {
+			return fmt.Errorf("host %s for provisioned host %s could not be located", host.ParentLaforgeID(), host.Path())
+		}
+		host.Host = parent
+		if host.ProvisioningSteps == nil {
+			host.ProvisioningSteps = map[string]*ProvisioningStep{}
+		}
+		host.Dir = host.Caller.Current().CallerDir
+	}
+	return nil
+}
+
+// IndexConnectionDependencies enumerates all known connections and ensures they have proper associations
+func (l *Laforge) IndexConnectionDependencies() error {
+	for _, conn := range l.Connections {
+		ph, found := l.ProvisionedHosts[conn.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("provisioned host %s for conn %s could not be located", conn.ParentLaforgeID(), conn.Path())
+		}
+		conn.ProvisionedHost = ph
+		ph.Conn = conn
+		conn.ProvisionedNetwork = ph.ProvisionedNetwork
+		conn.Host = ph.Host
+		conn.Network = ph.Network
+		conn.Team = ph.Team
+		conn.Build = ph.Build
+		conn.Environment = ph.Environment
+		conn.Competition = ph.Competition
+	}
+	return nil
+}
+
+// IndexProvisioningStepDependencies enumerates all known provisioning steps and ensures they have proper associations
+func (l *Laforge) IndexProvisioningStepDependencies() error {
+	for _, ps := range l.ProvisioningSteps {
+		ph, found := l.ProvisionedHosts[ps.ParentLaforgeID()]
+		if !found {
+			return fmt.Errorf("provisioned host %s for provisioning step %s could not be located", ps.ParentLaforgeID(), ps.Path())
+		}
+		ps.ProvisionedHost = ph
+		ps.ProvisionedNetwork = ph.ProvisionedNetwork
+		ps.Team = ph.Team
+		ps.Build = ph.Build
+		ps.Environment = ph.Environment
+		ps.Competition = ph.Competition
+		ps.Host = ph.Host
+		ps.Network = ph.Network
+		ph.ProvisioningSteps[ps.Path()] = ps
+		ps.Dir = ph.Dir
+		switch ps.ProvisionerType {
+		case "command":
+			prov, found := l.Commands[ps.ProvisionerID]
+			if !found {
+				return fmt.Errorf("command %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
 			}
-		}
-		host, ok := l.Hosts[p.HostID]
-		if ok {
-			p.Host = host
-		}
-		network, ok := l.Networks[p.NetworkID]
-		if ok {
-			p.Network = network
+			ps.Command = prov
+			ps.Provisioner = prov
+		case "dns_record":
+			prov, found := l.DNSRecords[ps.ProvisionerID]
+			if !found {
+				return fmt.Errorf("dns record %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
+			}
+			ps.DNSRecord = prov
+			ps.Provisioner = prov
+		case "remote_file":
+			prov, found := l.RemoteFiles[ps.ProvisionerID]
+			if !found {
+				return fmt.Errorf("remote file %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
+			}
+			ps.RemoteFile = prov
+			ps.Provisioner = prov
+		case "script":
+			prov, found := l.Scripts[ps.ProvisionerID]
+			if !found {
+				return fmt.Errorf("script %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
+			}
+			ps.Script = prov
+			ps.Provisioner = prov
+		default:
+			return fmt.Errorf("unknown provisioner type %s for provisioning step %s", ps.ProvisionerType, ps.Path())
 		}
 	}
 	return nil
@@ -629,10 +784,34 @@ func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Lafor
 	if err != nil {
 		return nil, err
 	}
-	clone.IndexEnvironmentDependencies()
-	clone.IndexBuildDependencies()
-	clone.IndexTeamDependencies()
-	clone.IndexProvisionedHostDependencies()
+	err = clone.IndexEnvironmentDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexBuildDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexTeamDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisionedNetworkDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisionedHostDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexConnectionDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisioningStepDependencies()
+	if err != nil {
+		return nil, err
+	}
 	t := &Team{}
 	tData, err := ioutil.ReadFile(teamconfig)
 	if err != nil {
@@ -667,10 +846,34 @@ func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) 
 	if err != nil {
 		return nil, err
 	}
-	clone.IndexEnvironmentDependencies()
-	clone.IndexBuildDependencies()
-	clone.IndexTeamDependencies()
-	clone.IndexProvisionedHostDependencies()
+	err = clone.IndexEnvironmentDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexBuildDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexTeamDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisionedNetworkDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisionedHostDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexConnectionDependencies()
+	if err != nil {
+		return nil, err
+	}
+	err = clone.IndexProvisioningStepDependencies()
+	if err != nil {
+		return nil, err
+	}
 	b := &Build{}
 	tData, err := ioutil.ReadFile(buildconfig)
 	if err != nil {

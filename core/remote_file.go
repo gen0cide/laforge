@@ -91,6 +91,21 @@ func (r *RemoteFile) LaforgeID() string {
 	return r.ID
 }
 
+// Fullpath implements the Pather interface
+func (r *RemoteFile) Fullpath() string {
+	return r.LaforgeID()
+}
+
+// ParentLaforgeID implements the Dependency interface
+func (r *RemoteFile) ParentLaforgeID() string {
+	return r.Path()
+}
+
+// Gather implements the Dependency interface
+func (r *RemoteFile) Gather(g *Snapshot) error {
+	return nil
+}
+
 // GetOnConflict implements the Mergeable interface
 func (r *RemoteFile) GetOnConflict() OnConflict {
 	if r.OnConflict == nil {

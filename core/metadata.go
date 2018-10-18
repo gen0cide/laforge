@@ -19,6 +19,14 @@ type Pather interface {
 	ValidatePath() error
 }
 
+// Dependency is an interface to define a laforge object that can be represented on the graph
+type Dependency interface {
+	Pather
+	Hasher
+	ParentLaforgeID() string
+	Gather(g *Snapshot) error
+}
+
 // ResourceHasher is an interface to define types who have file dependencies to checkum them
 type ResourceHasher interface {
 	ResourceHash() uint64
@@ -52,14 +60,20 @@ func ValidateGenericPath(p string) error {
 // Metadata stores metadata about different structs within the environment
 //easyjson:json
 type Metadata struct {
-	ID            string         `json:"id,omitempty"`
-	ObjectType    string         `json:"object_type,omitempty"`
-	Checksum      uint64         `json:"checksum,omitempty"`
-	CreatedAt     time.Time      `json:"created_at,omitempty"`
-	ModifiedAt    time.Time      `json:"modified_at,omitempty"`
-	ParentIDs     []string       `json:"parent_ids,omitempty"`
-	DependencyIDs []string       `json:"dependency_ids,omitempty"`
-	Resources     []MetaResource `json:"resources,omitempty"`
+	ID          string         `json:"id,omitempty"`
+	ObjectType  string         `json:"object_type,omitempty"`
+	Dependency  Dependency     `json:"-"`
+	Checksum    uint64         `json:"checksum,omitempty"`
+	CreatedAt   time.Time      `json:"created_at,omitempty"`
+	ModifiedAt  time.Time      `json:"modified_at,omitempty"`
+	ParentIDs   []string       `json:"parent_ids,omitempty"`
+	ChildrenIDs []string       `json:"dependency_ids,omitempty"`
+	Resources   []MetaResource `json:"resources,omitempty"`
+}
+
+// CalculateChecksum assigns the metadata object's checksum field with the dependency's hash
+func (m *Metadata) CalculateChecksum() {
+	m.Checksum = m.Dependency.Hash()
 }
 
 // MetaResource stores information about a local file dependency. This can be a directory.

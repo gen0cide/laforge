@@ -78,6 +78,16 @@ func (n *Network) LaforgeID() string {
 	return n.ID
 }
 
+// ParentLaforgeID implements the Dependency interface
+func (n *Network) ParentLaforgeID() string {
+	return n.Path()
+}
+
+// Gather implements the Dependency interface
+func (n *Network) Gather(g *Snapshot) error {
+	return nil
+}
+
 // GetOnConflict implements the Mergeable interface
 func (n *Network) GetOnConflict() OnConflict {
 	if n.OnConflict == nil {

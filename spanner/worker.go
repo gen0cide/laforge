@@ -45,13 +45,6 @@ func (w *Worker) ResolveProvisionedHost() error {
 	}
 
 	_ = tlf
-
-	// provisionedHost, found := tlf.Team.ActiveHosts[w.HostID]
-	// if !found || (provisionedHost != nil && provisionedHost.Active == false) {
-	// 	return fmt.Errorf("Host %s is currently not active in team %d environment", w.HostID, w.TeamID)
-	// }
-
-	// w.Host = provisionedHost
 	return nil
 }
 
@@ -135,7 +128,7 @@ func (w *Worker) RunRemoteCommand(wc chan *Worker) {
 	defer func() {
 		w.EndTime = time.Now()
 	}()
-	if w.Host.IsWinRM() {
+	if w.Host.Conn.IsWinRM() {
 		w.RunWinRMCommand(wc)
 	} else {
 		w.RunSSHCommand(wc)
@@ -145,8 +138,8 @@ func (w *Worker) RunRemoteCommand(wc chan *Worker) {
 
 // RunWinRMCommand executes the remote command over the WinRM protocol on remote Windows hosts
 func (w *Worker) RunWinRMCommand(wc chan *Worker) {
-	endpoint := winrm.NewEndpoint(w.Host.RemoteAddr, w.Host.WinRMAuthConfig.Port, false, false, nil, nil, nil, 0)
-	client, err := winrm.NewClient(endpoint, w.Host.WinRMAuthConfig.User, w.Host.WinRMAuthConfig.Password)
+	endpoint := winrm.NewEndpoint(w.Host.Conn.RemoteAddr, w.Host.Conn.WinRMAuthConfig.Port, false, false, nil, nil, nil, 0)
+	client, err := winrm.NewClient(endpoint, w.Host.Conn.WinRMAuthConfig.User, w.Host.Conn.WinRMAuthConfig.Password)
 	if err != nil {
 		w.ExitStatus = 1
 		w.ExitError = err
@@ -216,14 +209,14 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 	}
 
 	config := &ssh.ClientConfig{
-		User: w.Host.SSHAuthConfig.User,
+		User: w.Host.Conn.SSHAuthConfig.User,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(key),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", w.Host.SSHAuthConfig.RemoteAddr, w.Host.SSHAuthConfig.Port), config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", w.Host.Conn.SSHAuthConfig.RemoteAddr, w.Host.Conn.SSHAuthConfig.Port), config)
 	if err != nil {
 		w.ExitStatus = 1
 		w.ExitError = err

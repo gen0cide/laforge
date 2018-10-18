@@ -81,6 +81,21 @@ func (c *Command) LaforgeID() string {
 	return c.ID
 }
 
+// Fullpath implements the Pather interface
+func (c *Command) Fullpath() string {
+	return c.LaforgeID()
+}
+
+// ParentLaforgeID implements the Dependency interface
+func (c *Command) ParentLaforgeID() string {
+	return c.Path()
+}
+
+// Gather implements the Dependency interface
+func (c *Command) Gather(g *Snapshot) error {
+	return nil
+}
+
 // GetOnConflict implements the Mergeable interface
 func (c *Command) GetOnConflict() OnConflict {
 	if c.OnConflict == nil {

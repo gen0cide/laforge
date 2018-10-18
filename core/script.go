@@ -99,6 +99,21 @@ func (s *Script) LaforgeID() string {
 	return s.ID
 }
 
+// ParentLaforgeID implements the Dependency interface
+func (s *Script) ParentLaforgeID() string {
+	return s.Path()
+}
+
+// Gather implements the Dependency interface
+func (s *Script) Gather(g *Snapshot) error {
+	return nil
+}
+
+// Fullpath implements the Pather interface
+func (s *Script) Fullpath() string {
+	return s.LaforgeID()
+}
+
 // GetOnConflict implements the Mergeable interface
 func (s *Script) GetOnConflict() OnConflict {
 	if s.OnConflict == nil {

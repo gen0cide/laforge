@@ -95,6 +95,21 @@ func (r *DNSRecord) Kind() string {
 	return "dns_record"
 }
 
+// Fullpath implements the Pather interface
+func (r *DNSRecord) Fullpath() string {
+	return r.LaforgeID()
+}
+
+// ParentLaforgeID implements the Dependency interface
+func (r *DNSRecord) ParentLaforgeID() string {
+	return r.Path()
+}
+
+// Gather implements the Dependency interface
+func (r *DNSRecord) Gather(g *Snapshot) error {
+	return nil
+}
+
 // Swap implements the Mergeable interface
 func (r *DNSRecord) Swap(m Mergeable) error {
 	rawVal, ok := m.(*DNSRecord)

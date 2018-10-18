@@ -1,4 +1,4 @@
-package provisioner
+package agent
 
 import (
 	"github.com/gin-gonic/gin"

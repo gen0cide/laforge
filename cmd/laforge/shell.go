@@ -54,8 +54,8 @@ func performshell(c *cli.Context) error {
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"ID", "Hostname", "Public IP"})
 
-		for hid, ph := range base.CurrentTeam.Hosts {
-			table.Append([]string{hid, ph.Host.Hostname, ph.RemoteAddr})
+		for hid, ph := range base.CurrentTeam.ProvisionedHosts {
+			table.Append([]string{hid, ph.Host.Hostname, ph.Conn.RemoteAddr})
 		}
 		table.Render()
 
@@ -74,11 +74,11 @@ func performshell(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	provisionedHost, found := base.CurrentTeam.Hosts[target]
-	if !found || (provisionedHost != nil && provisionedHost.Active == false) {
+	provisionedHost, found := base.CurrentTeam.ProvisionedHosts[target]
+	if !found || (provisionedHost != nil && provisionedHost.Conn.Active == false) {
 		cliLogger.Errorf("Host %s is currently not active in this team's environment", target)
 		os.Exit(1)
 	}
 
-	return provisionedHost.RemoteShell()
+	return provisionedHost.Conn.RemoteShell()
 }

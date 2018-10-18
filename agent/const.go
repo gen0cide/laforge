@@ -1,6 +1,6 @@
 // +build !windows
 
-package provisioner
+package agent
 
 var (
 	// AgentHomeDir is the location where the agent will reside

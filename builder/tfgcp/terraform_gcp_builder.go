@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/gen0cide/laforge/agent"
 	"github.com/gen0cide/laforge/builder/tfgcp/static"
-	"github.com/gen0cide/laforge/provisioner"
 	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/builder/buildutil/templates"
@@ -343,6 +344,28 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 		}
 		core.Logger.Debugf("Adding user_data_script %s to host %s script pool", uds, hostid)
 		host.Scripts[uds] = udsObj
+		if _, ok := t.Library.Books[uds]; !ok {
+			for _, callfile := range udsObj.Caller {
+				pr, ok := t.Base.PathRegistry.DB[callfile]
+				if !ok {
+					continue
+				}
+				lfr, ok := pr.Mapping[udsObj.Source]
+				if !ok {
+					continue
+				}
+				data, err := ioutil.ReadFile(lfr.AbsPath)
+				if err != nil {
+					return err
+				}
+				_, err = t.Library.AddBook(udsObj.Path(), data)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+
 		for _, dep := range host.Dependencies {
 			depHost, ok := t.Base.CurrentEnv.IncludedHosts[dep.HostID]
 			if !ok {
@@ -407,9 +430,9 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 	if err != nil {
 		return err
 	}
-	for tid, teamObj := range t.Base.CurrentBuild.Teams {
+	for _, teamObj := range t.Base.CurrentBuild.Teams {
 		wg.Add(1)
-		go func(teamNum int, team *core.Team) {
+		go func(team *core.Team) {
 			defer wg.Done()
 			for netName, hosts := range t.Base.CurrentEnv.HostByNetwork {
 				network := t.Base.CurrentEnv.IncludedNetworks[netName]
@@ -425,7 +448,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 								return
 							}
 							filename := filepath.Base(scriptObj.Source)
-							assetDir := filepath.Join(team.RelBuildPath, network.Base(), hostObj.Base(), "assets")
+							assetDir := filepath.Join(team.RelBuildPath, "networks", network.Base(), "hosts", hostObj.Base(), "assets")
 							assetPath := filepath.Join(assetDir, filename)
 							fileData, err := t.Library.Execute(scriptID, scriptCtx)
 							if err != nil {
@@ -450,7 +473,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 							return
 						}
 						filename := "provisioned_host.tpl"
-						assetDir := filepath.Join(team.RelBuildPath, network.Base(), h.Base(), "assets")
+						assetDir := filepath.Join(team.RelBuildPath, "networks", network.Base(), "hosts", h.Base(), "assets")
 						assetPath := filepath.Join(assetDir, filename)
 						fileData, err := t.Library.Execute("provisioned_host.tf.tmpl", scriptCtx)
 						if err != nil {
@@ -467,7 +490,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 				}
 			}
 
-		}(tid, teamObj)
+		}(teamObj)
 	}
 
 	go func() {
@@ -485,85 +508,124 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 
 // StageDependencies implements the Builder interface
 func (t *TerraformGCPBuilder) StageDependencies() error {
-	for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
-		teamDir := filepath.Join(t.Base.EnvRoot, t.Base.CurrentEnv.Builder, "teams", fmt.Sprintf("%v", i))
-		team := &core.Team{
-			TeamNumber:    i,
-			BuildID:       t.Base.CurrentBuild.ID,
-			Build:         t.Base.CurrentBuild,
-			EnvironmentID: t.Base.CurrentEnv.ID,
-			Environment:   t.Base.CurrentEnv,
-			Competition:   t.Base.CurrentCompetition,
-			CompetitionID: t.Base.CurrentEnv.CompetitionID,
-			Maintainer:    t.Base.User,
-			RelBuildPath:  teamDir,
-		}
-		team.SetID()
-		t.Base.CurrentBuild.Teams[i] = team
-		os.MkdirAll(teamDir, 0755)
-		core.TouchGitKeep(teamDir)
+	snap, err := core.NewSnapshotFromEnv(t.Base.CurrentEnv)
+	if err != nil {
+		return err
 	}
 
-	for netid, net := range t.Base.CurrentEnv.IncludedNetworks {
-		for _, host := range t.Base.CurrentEnv.HostByNetwork[netid] {
-			for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
-				teamDir := t.Base.CurrentBuild.Teams[i].RelBuildPath
-				hostDir := filepath.Join(teamDir, net.Base(), host.Base())
-				hostAssetDir := filepath.Join(hostDir, "assets")
-				hostAgentDir := filepath.Join(hostDir, "laforge-agent")
-				os.MkdirAll(hostAssetDir, 0755)
-				os.MkdirAll(hostAgentDir, 0755)
-				core.TouchGitKeep(hostDir)
-				core.TouchGitKeep(hostAssetDir)
-			}
-			for _, prov := range host.Provisioners {
-				rfile, ok := prov.(*core.RemoteFile)
-				if !ok {
-					continue
-				}
+	build, ok := snap.Objects[path.Join(t.Base.CurrentEnv.Path(), t.Base.CurrentEnv.Builder)].(*core.Build)
+	if !ok {
+		return errors.New("builder was not able to resolve object of type Build")
+	}
+	t.Base.CurrentBuild = build
+	// for _, x := range build.Teams {
 
-				rfileName, err := rfile.AssetName()
+	// }
+	for _, team := range build.Teams {
+		// TODO: Make team directory creation part of core
+		teamDir := filepath.Join(build.Dir, "teams", fmt.Sprintf("%v", team.TeamNumber))
+		team.RelBuildPath = teamDir
+		os.MkdirAll(teamDir, 0755)
+		core.TouchGitKeep(teamDir)
+		teamCfg, err := core.RenderHCLv2Object(team)
+		if err != nil {
+			return err
+		}
+		teamCfgFile := filepath.Join(teamDir, "team.laforge")
+		err = ioutil.WriteFile(teamCfgFile, teamCfg, 0644)
+		if err != nil {
+			return err
+		}
+		for _, pn := range team.ProvisionedNetworks {
+			netdir := filepath.Join(teamDir, "networks", pn.Base())
+			os.MkdirAll(netdir, 0755)
+			core.TouchGitKeep(netdir)
+			data, err := core.RenderHCLv2Object(pn)
+			if err != nil {
+				return err
+			}
+			netfile := filepath.Join(netdir, "provisioned_network.laforge")
+			err = ioutil.WriteFile(netfile, data, 0644)
+			if err != nil {
+				return err
+			}
+			for _, ph := range pn.ProvisionedHosts {
+				hostdir := filepath.Join(netdir, "hosts", ph.Base())
+				os.Mkdir(hostdir, 0755)
+				core.TouchGitKeep(hostdir)
+				agentdir := filepath.Join(hostdir, "agent")
+				assetdir := filepath.Join(hostdir, "assets")
+				stepdir := filepath.Join(hostdir, "steps")
+				os.MkdirAll(agentdir, 0755)
+				os.MkdirAll(assetdir, 0755)
+				os.MkdirAll(stepdir, 0755)
+				core.TouchGitKeep(agentdir)
+				core.TouchGitKeep(assetdir)
+				core.TouchGitKeep(stepdir)
+				data, err = core.RenderHCLv2Object(ph)
 				if err != nil {
 					return err
 				}
-
-				dstPath := filepath.Join(t.Base.CurrentBuild.Dir, "data", rfileName)
-				if _, err := os.Stat(dstPath); os.IsNotExist(err) {
-					copyErr := rfile.CopyTo(dstPath)
-					if copyErr != nil {
-						return copyErr
-					}
+				hostfile := filepath.Join(hostdir, "provisioned_host.laforge")
+				err = ioutil.WriteFile(hostfile, data, 0644)
+				if err != nil {
+					return err
 				}
-			}
-
-			for sid, script := range host.Scripts {
-				if _, ok := t.Library.Books[sid]; ok {
-					continue
-				}
-				if script.Source == "" {
-					continue
-				}
-				for _, callfile := range script.Caller {
-					pr, ok := t.Base.PathRegistry.DB[callfile]
-					if !ok {
-						continue
-					}
-					lfr, ok := pr.Mapping[script.Source]
-					if !ok {
-						continue
-					}
-					data, err := ioutil.ReadFile(lfr.AbsPath)
+				for _, ps := range ph.ProvisioningSteps {
+					stepfile := filepath.Join(stepdir, fmt.Sprintf("%s.laforge", ps.Base()))
+					data, err = core.RenderHCLv2Object(ps)
 					if err != nil {
 						return err
 					}
-					_, err = t.Library.AddBook(sid, data)
+					err = ioutil.WriteFile(stepfile, data, 0644)
 					if err != nil {
 						return err
 					}
-					break
+					if rfile, ok := ps.Provisioner.(*core.RemoteFile); ok {
+						rfileName, err := rfile.AssetName()
+						if err != nil {
+							return err
+						}
+
+						dstPath := filepath.Join(t.Base.CurrentBuild.Dir, "data", rfileName)
+						if _, err := os.Stat(dstPath); os.IsNotExist(err) {
+							copyErr := rfile.CopyTo(dstPath)
+							if copyErr != nil {
+								return copyErr
+							}
+						}
+					}
+					if script, ok := ps.Provisioner.(*core.Script); ok {
+						if _, ok := t.Library.Books[script.Path()]; ok {
+							continue
+						}
+						if script.Source == "" {
+							continue
+						}
+						for _, callfile := range script.Caller {
+							pr, ok := t.Base.PathRegistry.DB[callfile]
+							if !ok {
+								continue
+							}
+							lfr, ok := pr.Mapping[script.Source]
+							if !ok {
+								continue
+							}
+							data, err := ioutil.ReadFile(lfr.AbsPath)
+							if err != nil {
+								return err
+							}
+							_, err = t.Library.AddBook(script.Path(), data)
+							if err != nil {
+								return err
+							}
+							break
+						}
+					}
 				}
 			}
 		}
+
 	}
 	return nil
 }
@@ -573,17 +635,11 @@ func (t *TerraformGCPBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
 	finChan := make(chan bool, 1)
-	for i := 0; i < t.Base.CurrentEnv.TeamCount; i++ {
+	for _, team := range t.Base.CurrentBuild.Teams {
 		wg.Add(1)
-		go func(teamid int) {
+		go func(team *core.Team) {
 			defer wg.Done()
-			t.Lock()
-			team, ok := t.Base.CurrentBuild.Teams[teamid]
-			t.Unlock()
-			if !ok {
-				errChan <- fmt.Errorf("team number %d not found in team index", teamid)
-				return
-			}
+
 			teamDir := team.RelBuildPath
 			user := t.Base.User
 			ctx, err := templates.NewContext(
@@ -602,7 +658,7 @@ func (t *TerraformGCPBuilder) Render() error {
 			cfgData, err := t.Library.ExecuteGroup(primaryTemplate, templatesToLoad, ctx)
 			if err != nil {
 				errChan <- buildutil.Throw(err, "template failed", &buildutil.V{
-					"team": teamid,
+					"team": team.Path(),
 					"dir":  teamDir,
 				})
 				return
@@ -619,65 +675,23 @@ func (t *TerraformGCPBuilder) Render() error {
 				errChan <- err
 				return
 			}
-			teamCfg, err := core.RenderHCLv2Object(team)
-			if err != nil {
-				errChan <- err
-				return
-			}
-			teamCfgFile := filepath.Join(teamDir, "team.laforge")
-			err = ioutil.WriteFile(teamCfgFile, teamCfg, 0644)
-			if err != nil {
-				errChan <- err
-				return
-			}
 			for netname, net := range t.Base.CurrentEnv.IncludedNetworks {
 				for _, host := range t.Base.CurrentEnv.HostByNetwork[netname] {
 					ts := time.Now()
-					state := &provisioner.State{
+					state := &agent.State{
 						Team:         team,
 						Network:      net,
-						Steps:        []*provisioner.Step{},
+						Steps:        []*agent.Step{},
 						RenderedAt:   ts,
 						Revision:     ts.UTC().Unix(),
 						CurrentState: "pending",
 					}
 					for pid, prov := range host.Provisioners {
-						step := &provisioner.Step{
+						step := &agent.Step{
 							ID:       pid,
 							StepType: prov.Kind(),
 							Metadata: map[string]interface{}{},
 						}
-						// switch aProv := prov.(type) {
-						// case *core.RemoteFile:
-						// 	step.Name = aProv.ID
-						// 	aName, err := aProv.AssetName()
-						// 	if err != nil {
-						// 		errChan <- err
-						// 		return
-						// 	}
-						// 	step.Source = aName
-						// 	step.Destination = aProv.Destination
-						// 	if aProv.Perms != "" {
-						// 		step.Metadata["perms"] = aProv.Perms
-						// 	}
-						// 	step.Metadata["vars"] = aProv.Vars
-						// 	step.Metadata["tags"] = aProv.Tags
-						// 	step.Metadata["checksum"] = aProv.Checksum
-						// case *core.Script:
-						// 	step.Name = aProv.ID
-						// 	step.Description = aProv.Description
-						// 	step.Source = filepath.Join(".", "assets", aProv.Base())
-						// 	step.Metadata["args"] = aProv.Args
-						// 	step.Metadata["ignore_errors"] = aProv.IgnoreErrors
-						// 	step.Metadata["cooldown"] = aProv.Cooldown
-						// 	step.Metadata["source_type"] = aProv.SourceType
-						// 	step.Metadata["language"] = aProv.Language
-						// 	step.Metadata["vars"] = aProv.Vars
-						// 	step.Metadata["tags"] = aProv.Tags
-						// 	step.Metadata["maintainer"] = aProv.Maintainer
-						// case *core.DNSRecord:
-						// 	step.Name = aProv.ID
-						// }
 						state.Steps = append(state.Steps, step)
 					}
 					jsonData, err := json.MarshalIndent(state, "", "  ")
@@ -685,7 +699,7 @@ func (t *TerraformGCPBuilder) Render() error {
 						errChan <- err
 						return
 					}
-					stateFilePath := filepath.Join(teamDir, net.Base(), host.Base(), "laforge-agent", "config.json")
+					stateFilePath := filepath.Join(teamDir, "networks", net.Base(), "hosts", host.Base(), "agent", "config.json")
 					err = ioutil.WriteFile(stateFilePath, jsonData, 0644)
 					if err != nil {
 						errChan <- err
@@ -693,7 +707,7 @@ func (t *TerraformGCPBuilder) Render() error {
 					}
 				}
 			}
-		}(i)
+		}(team)
 	}
 	go func() {
 		wg.Wait()

@@ -157,6 +157,50 @@ func performdump(c *cli.Context) error {
 			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "team")
 		}
 		pp.Println(rec)
+	case "provisioned_host":
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.ProvisionedHosts)
+			os.Exit(0)
+		}
+		rec, found := base.ProvisionedHosts[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "provisioned_host")
+		}
+		pp.Println(rec)
+	case "provisioned_network":
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.ProvisionedNetworks)
+			os.Exit(0)
+		}
+		rec, found := base.ProvisionedNetworks[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "provisioned_network")
+		}
+		pp.Println(rec)
+	case "connection":
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.Connections)
+			os.Exit(0)
+		}
+		rec, found := base.Connections[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "connection")
+		}
+		pp.Println(rec)
+	case "provisioning_step":
+		param := c.Args().Get(1)
+		if len(param) == 0 {
+			pp.Println(base.ProvisioningSteps)
+			os.Exit(0)
+		}
+		rec, found := base.ProvisioningSteps[param]
+		if !found {
+			return fmt.Errorf("object with id %s and type %s could not be found in tree", param, "provisioning_step")
+		}
+		pp.Println(rec)
 	default:
 		return errors.New("argument is not a known datatype")
 	}

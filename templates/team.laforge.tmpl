@@ -1,13 +1,9 @@
-
 include {
-  path = "./**/*.laforge"
+  path = "./networks/*/*.laforge"
 }
 
 team {{ $.ID | hclstring }} {
   team_number = {{ $.TeamNumber }}
-  build_id = {{ $.Build.ID | hclstring }}
-  environment_id = {{ $.Environment.ID | hclstring }}
-  competition_id = {{ $.Competition.ID | hclstring }}
   revision = {{ $.Revision }}
 
   on_conflict {
@@ -25,10 +21,5 @@ team {{ $.ID | hclstring }} {
     {{ range $key, $val := $.Tags -}}
     {{ $key }} = {{ $val | hclstring }}
     {{ end -}}
-  }
-
-  maintainer "{{ $.Maintainer.ID }}" {
-    name = "{{ $.Maintainer.Name }}"
-    email = "{{ $.Maintainer.Email }}"
   }
 }
