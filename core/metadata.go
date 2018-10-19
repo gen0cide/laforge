@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"regexp"
 	"time"
 
@@ -60,15 +61,78 @@ func ValidateGenericPath(p string) error {
 // Metadata stores metadata about different structs within the environment
 //easyjson:json
 type Metadata struct {
-	ID          string         `json:"id,omitempty"`
-	ObjectType  string         `json:"object_type,omitempty"`
-	Dependency  Dependency     `json:"-"`
-	Checksum    uint64         `json:"checksum,omitempty"`
-	CreatedAt   time.Time      `json:"created_at,omitempty"`
-	ModifiedAt  time.Time      `json:"modified_at,omitempty"`
-	ParentIDs   []string       `json:"parent_ids,omitempty"`
-	ChildrenIDs []string       `json:"dependency_ids,omitempty"`
-	Resources   []MetaResource `json:"resources,omitempty"`
+	ID         string         `json:"id,omitempty"`
+	GID        int            `json:"gid"`
+	GCost      int64          `json:"gcost"`
+	ObjectType string         `json:"object_type,omitempty"`
+	Dependency Dependency     `json:"-"`
+	Checksum   uint64         `json:"checksum,omitempty"`
+	CreatedAt  time.Time      `json:"created_at,omitempty"`
+	ModifiedAt time.Time      `json:"modified_at,omitempty"`
+	ParentIDs  []string       `json:"parent_ids,omitempty"`
+	ParentDeps []DotNode      `json:"-"`
+	ParentGIDs []int          `json:"parent_gids"`
+	ChildDeps  []DotNode      `json:"-"`
+	ChildGIDs  []int          `json:"child_gids"`
+	ChildIDs   []string       `json:"dependency_ids,omitempty"`
+	Resources  []MetaResource `json:"resources,omitempty"`
+}
+
+// GetID implements the DotNode interface
+func (m *Metadata) GetID() string {
+	return m.ID
+}
+
+// GetGID implements the DotNode interface
+func (m *Metadata) GetGID() int {
+	return m.GID
+}
+
+// GetGCost implements the DotNode interface
+func (m *Metadata) GetGCost() int64 {
+	return m.GCost
+}
+
+// GetChecksum implements the DotNode interface
+func (m *Metadata) GetChecksum() uint64 {
+	return m.Checksum
+}
+
+// Name implements the DotNode interface
+func (m *Metadata) Name() string {
+	return m.ID
+}
+
+// Label implements the DotNode interface
+func (m *Metadata) Label() string {
+	return fmt.Sprintf("%s|type = %s|primary_parent = %s|checksum = %x|num_parents = %d|num_children = %d",
+		m.ID,
+		m.ObjectType,
+		m.Dependency.ParentLaforgeID(),
+		m.Checksum,
+		len(m.ParentDeps),
+		len(m.ChildDeps),
+	)
+}
+
+// Shape implements the DotNode interface
+func (m *Metadata) Shape() string {
+	return "record"
+}
+
+// Style implements the DotNode interface
+func (m *Metadata) Style() string {
+	return "solid"
+}
+
+// Children implements the DotNode interface
+func (m *Metadata) Children() []DotNode {
+	return m.ChildDeps
+}
+
+// Parents implements the DotNode interface
+func (m *Metadata) Parents() []DotNode {
+	return m.ParentDeps
 }
 
 // CalculateChecksum assigns the metadata object's checksum field with the dependency's hash

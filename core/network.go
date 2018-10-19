@@ -42,7 +42,7 @@ func (n *Network) Hash() uint64 {
 			n.Name,
 			n.CIDR,
 			n.VDIVisible,
-			n.Vars,
+			HashConfigMap(n.Vars),
 		),
 	)
 }

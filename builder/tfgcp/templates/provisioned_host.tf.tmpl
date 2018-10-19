@@ -1,11 +1,4 @@
-provisioned_host "{{ $.Team.ID }}/{{ $.Network.Base }}/{{ $.Host.Base }}" {
-  competition_id = {{ $.Competition.ID | hclstring }}
-  environment_id = {{ $.Environment.ID | hclstring }}
-  build_id       = {{ $.Build.ID | hclstring }}
-  team_id        = {{ $.Team.ID | hclstring }}
-  network_id     = {{ $.Network.ID | hclstring }}
-  host_id        = {{ $.Host.ID | hclstring }}
-  revision       = {{ $.Build.Revision }}
+connection "{{ $.Team.ID }}/networks/{{ $.Network.Base }}/hosts/{{ $.Host.Base }}/conn" {
   active         = "${host_active}"
   remote_addr    = "${remote_addr}"
   local_addr     = "${local_addr}"
@@ -29,5 +22,4 @@ provisioned_host "{{ $.Team.ID }}/{{ $.Network.Base }}/{{ $.Host.Base }}" {
     identity_file = "${identity_file}"
   }
   {{ end }}
-
 }

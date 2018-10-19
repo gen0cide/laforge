@@ -1,0 +1,25 @@
+connection {{ $.ID | hclstring }} {
+  active         = {{ $.Active }}
+  remote_addr    = {{ $.RemoteAddr | hclstring }}
+  local_addr     = {{ $.LocalAddr | hclstring }}
+  resource_name  = {{ $.ResourceName | hclstring }}
+
+
+  {{ if $.Host.IsWindows }}
+  winrm {
+    remote_addr = {{ $.WinRMAuthConfig.RemoteAddr | hclstring }}
+    port = {{ $.WinRMAuthConfig.Port }}
+    https = {{ $.WinRMAuthConfig.HTTPS }}
+    skip_verify = {{ $.WinRMAuthConfig.SkipVerify }}
+    user = {{ $.WinRMAuthConfig.User | hclstring }}
+    password = {{ $.WinRMAuthConfig.Password | hclstring }}
+  }
+  {{ else }}
+  ssh {
+    remote_addr = {{ $.SSHAuthConfig.RemoteAddr | hclstring }}
+    port = {{ $.SSHAuthConfig.Port }}
+    user = {{ $.SSHAuthConfig.User | hclstring }}
+    identity_file = {{ $.SSHAuthConfig.IdentityFile | hclstring }}
+  }
+  {{ end }}
+}

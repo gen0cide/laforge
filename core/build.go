@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/cespare/xxhash"
@@ -32,13 +33,25 @@ type Build struct {
 	Teams        map[string]*Team  `json:"-"`
 }
 
+// HashConfigMap is used to hash the configuration map in a deterministic order
+func HashConfigMap(m map[string]string) []uint64 {
+	data := []uint64{}
+	for k, v := range m {
+		data = append(data, xxhash.Sum64String(k))
+		data = append(data, xxhash.Sum64String(v))
+	}
+	sort.Slice(data, func(i, j int) bool { return data[i] < data[j] })
+	return data
+}
+
 // Hash implements the Hasher interface
 func (b *Build) Hash() uint64 {
+	chash := HashConfigMap(b.Config)
 	return xxhash.Sum64String(
 		fmt.Sprintf(
 			"teamcount=%v config=%v",
 			b.TeamCount,
-			b.Config,
+			chash,
 		),
 	)
 }
@@ -124,7 +137,7 @@ func (b *Build) AssetForTeam(teamID int, assetName string) string {
 
 // RelAssetForTeam is a template helper function that returns the relative location of team specific assets
 func (b *Build) RelAssetForTeam(networkBase, hostBase, assetName string) string {
-	return strings.Replace(filepath.Join(".", networkBase, hostBase, "assets", assetName), "\\", "/", -1)
+	return strings.Replace(filepath.Join(".", "networks", networkBase, "hosts", hostBase, "assets", assetName), "\\", "/", -1)
 }
 
 // InitializeBuildDirectory creates a build directory structure and writes the build.db as a precursor to builder's taking over.

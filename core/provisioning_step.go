@@ -135,22 +135,54 @@ func (p *ProvisioningStep) SetID() string {
 func (p *ProvisioningStep) Gather(g *Snapshot) error {
 	switch v := p.Provisioner.(type) {
 	case *Command:
-		err := g.Relate(v, p)
+		err := g.Relate(p.Environment, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(p.Host, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(v, p)
 		if err != nil {
 			return err
 		}
 	case *DNSRecord:
-		err := g.Relate(v, p)
+		err := g.Relate(p.Environment, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(p.Host, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(v, p)
 		if err != nil {
 			return err
 		}
 	case *RemoteFile:
-		err := g.Relate(v, p)
+		err := g.Relate(p.Environment, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(p.Host, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(v, p)
 		if err != nil {
 			return err
 		}
 	case *Script:
-		err := g.Relate(v, p)
+		err := g.Relate(p.Environment, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(p.Host, v)
+		if err != nil {
+			return err
+		}
+		err = g.Relate(v, p)
 		if err != nil {
 			return err
 		}

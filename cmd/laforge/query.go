@@ -6,8 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/yourbasic/graph"
-
 	"github.com/fatih/color"
 
 	"github.com/gobwas/glob"
@@ -66,50 +64,42 @@ func performquery(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		mut := graph.Copy(graph.Transpose(snap.Graph))
 		for key, meta := range snap.Metadata {
 			if !g.Match(key) {
 				continue
 			}
 			mid := snap.ObjectToGID[meta.Dependency]
-			cliLogger.Infof("Parents Of %s (gid=%d) (%x):", key, mid, meta.Checksum)
+			cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, mid, meta.Checksum)
 			for _, x := range meta.ParentIDs {
 				pm := snap.Metadata[x]
 				pid := snap.ObjectToGID[pm.Dependency]
-				dacost := mut.Cost(mid, pid)
-				fmt.Printf("  <- (pid=%d / cost=%d) %s (checksum=%s)\n", snap.ObjectToGID[pm.Dependency], dacost, color.YellowString(x), color.CyanString("%x", pm.Checksum))
+				fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
 			}
-			cliLogger.Infof("Children Of %s (%x):", key, meta.Checksum)
-			for _, x := range meta.ChildrenIDs {
+			cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, mid, meta.Checksum)
+			for _, x := range meta.ChildIDs {
 				pm := snap.Metadata[x]
-				fmt.Printf("  -> (%d) %s (checksum=%s)\n", snap.ObjectToGID[pm.Dependency], color.YellowString(x), color.CyanString("%x", pm.Checksum))
+				pid := snap.ObjectToGID[pm.Dependency]
+				fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
 			}
 		}
 		return nil
 	}
 
 	for key, meta := range snap.Metadata {
-		cliLogger.Infof("Parents Of %s (%x):", key, meta.Checksum)
+		mid := snap.ObjectToGID[meta.Dependency]
+		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, mid, meta.Checksum)
 		for _, x := range meta.ParentIDs {
 			pm := snap.Metadata[x]
-			fmt.Printf("  <- (%d) %s (checksum=%s)\n", snap.ObjectToGID[pm.Dependency], color.YellowString(x), color.CyanString("%x", pm.Checksum))
+			pid := snap.ObjectToGID[pm.Dependency]
+			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
 		}
-		cliLogger.Infof("Children Of %s (%x):", key, meta.Checksum)
-		for _, x := range meta.ChildrenIDs {
+		cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, mid, meta.Checksum)
+		for _, x := range meta.ChildIDs {
 			pm := snap.Metadata[x]
-			fmt.Printf("  -> (%d) %s (checksum=%s)\n", snap.ObjectToGID[pm.Dependency], color.YellowString(x), color.CyanString("%x", pm.Checksum))
+			pid := snap.ObjectToGID[pm.Dependency]
+			fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
 		}
 	}
-
-	// for i := 0; i < oplen; i++ {
-	// 	for depidx, dep := range ops[i] {
-	// 		fmt.Printf("[%d] - (%d) %s\n", i, depidx, dep.Path())
-	// 	}
-	// }
-
-	// fmt.Println(snap.Graph.String())
-
-	// pp.Println(graph.Sort(snap.Graph))
 
 	return nil
 }

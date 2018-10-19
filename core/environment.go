@@ -50,31 +50,14 @@ type Environment struct {
 func (e *Environment) Hash() uint64 {
 	return xxhash.Sum64String(
 		fmt.Sprintf(
-			"name=%v builder=%v tc=%v acidrs=%v conf=%v rev=%v deps=%v",
+			"name=%v builder=%v tc=%v acidrs=%v conf=%v",
 			e.Name,
 			e.Builder,
 			e.TeamCount,
 			strings.Join(e.AdminCIDRs, ","),
-			e.Config,
-			e.Revision,
-			e.GetDependencyHash(),
+			HashConfigMap(e.Config),
 		),
 	)
-}
-
-// GetDependencyHash returns the host's dependency hash
-func (e *Environment) GetDependencyHash() string {
-	p := []string{}
-	for _, x := range e.Networks {
-		p = append(p, x.String())
-	}
-	for _, x := range e.IncludedHosts {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
-	}
-	for _, x := range e.IncludedNetworks {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
-	}
-	return strings.Join(p, ",")
 }
 
 // Path implements the Pather interface

@@ -70,13 +70,14 @@ func main() {
 		queryCommand,
 		serveCommand,
 		shellCommand,
-		uploadCommand,
+		debugCommand,
 		downloadCommand,
 		exampleCommand,
 		depsCommand,
 		spannerCommand,
 		infraCommand,
 		fmtCommand,
+		graphCommand,
 	}
 
 	app.Before = func(c *cli.Context) error {

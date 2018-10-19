@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/cespare/xxhash"
@@ -88,7 +89,7 @@ func (h *Host) Hash() uint64 {
 			strings.Join(h.ProvisionSteps, `,`),
 			h.OverridePassword,
 			h.UserGroups,
-			h.Vars,
+			HashConfigMap(h.Vars),
 		),
 	)
 }
@@ -99,6 +100,7 @@ func (h *Host) GetDependencyHash() string {
 	for _, x := range h.Dependencies {
 		p = append(p, fmt.Sprintf("%d", x.Hash()))
 	}
+	sort.Strings(p)
 	return strings.Join(p, ",")
 }
 
@@ -117,6 +119,7 @@ func (h *Host) GetProvisionersHash() string {
 	for _, x := range h.RemoteFiles {
 		p = append(p, fmt.Sprintf("%d", x.Hash()))
 	}
+	sort.Strings(p)
 	return strings.Join(p, ",")
 }
 

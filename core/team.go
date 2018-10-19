@@ -47,10 +47,9 @@ type Team struct {
 func (t *Team) Hash() uint64 {
 	return xxhash.Sum64String(
 		fmt.Sprintf(
-			"tn=%v bid=%v config=%v",
+			"tn=%v config=%v",
 			t.Path(),
-			t.Build.Hash(),
-			t.Config,
+			HashConfigMap(t.Config),
 		),
 	)
 }

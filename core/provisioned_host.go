@@ -3,9 +3,15 @@ package core
 import (
 	"fmt"
 	"path"
+	"path/filepath"
 
 	"github.com/cespare/xxhash"
 	"github.com/pkg/errors"
+)
+
+const (
+	// NullIP is represents an IP that is unknown to our systems
+	NullIP string = `0.0.0.0`
 )
 
 // ProvisionedHost is a build artifact type to denote a host inside a team's provisioend infrastructure.
@@ -119,6 +125,60 @@ func (p *ProvisionedHost) SetID() string {
 	return p.ID
 }
 
+// ActualPassword attempts to get everything just right interms of what the actual password of this machine is
+func (p *ProvisionedHost) ActualPassword() string {
+	pass := p.Competition.RootPassword
+	if p.Host.OverridePassword != "" {
+		pass = p.Host.OverridePassword
+	}
+	return pass
+}
+
+// CreateConnection creates this host's skeleton connection file to be used
+func (p *ProvisionedHost) CreateConnection() *Connection {
+	c := &Connection{
+		ID:                 path.Join(p.Path(), "conn"),
+		Competition:        p.Competition,
+		Active:             false,
+		LocalAddr:          p.SubnetIP,
+		RemoteAddr:         NullIP,
+		ResourceName:       path.Join(p.Path(), "conn"),
+		Environment:        p.Environment,
+		Build:              p.Build,
+		Team:               p.Team,
+		Network:            p.Network,
+		Host:               p.Host,
+		ProvisionedHost:    p,
+		ProvisionedNetwork: p.ProvisionedNetwork,
+	}
+	if p.Host.IsWindows() {
+		c.WinRMAuthConfig = &WinRMAuthConfig{
+			RemoteAddr: NullIP,
+			Port:       5985,
+			HTTPS:      false,
+			SkipVerify: true,
+			User:       "Administrator",
+			Password:   p.ActualPassword(),
+		}
+	} else {
+		keyfile := path.Join(p.Build.Path(), "data", "ssh.pem")
+		relp, err := filepath.Rel(p.Team.Path(), keyfile)
+		if err != nil {
+			panic("error attempting to construct relative path")
+		}
+		c.SSHAuthConfig = &SSHAuthConfig{
+			RemoteAddr:   NullIP,
+			Port:         22,
+			User:         "root",
+			IdentityFile: relp,
+			Password:     p.ActualPassword(),
+		}
+	}
+
+	p.Conn = c
+	return c
+}
+
 // CreateProvisioningStep creates a new provisioning step object for the provisioned host, mapping parent objects.
 func (p *ProvisionedHost) CreateProvisioningStep(pr Provisioner, offset int) *ProvisioningStep {
 	ps := &ProvisioningStep{
@@ -158,13 +218,19 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 			return err
 		}
 		if s.StepNumber != 0 {
-			previousSteps := p.StepsByOffset[0:s.StepNumber]
-			for _, x := range previousSteps {
-				err = g.Relate(x, s)
-				if err != nil {
-					return err
-				}
+			prevIdx := s.StepNumber - 1
+			prevStep := p.StepsByOffset[prevIdx]
+			err = g.Relate(prevStep, s)
+			if err != nil {
+				return err
 			}
+			// previousSteps := p.StepsByOffset[0:s.StepNumber]
+			// for _, x := range previousSteps {
+			// 	err = g.Relate(x, s)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
 		}
 		err = s.Gather(g)
 		if err != nil {
@@ -198,6 +264,10 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 				return err
 			}
 		}
+	}
+	err = g.Relate(p.Environment, p.Host)
+	if err != nil {
+		return err
 	}
 	err = g.Relate(p.Host, p)
 	if err != nil {

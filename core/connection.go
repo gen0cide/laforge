@@ -16,7 +16,6 @@ import (
 //easyjson:json
 type Connection struct {
 	ID                 string              `hcl:"id,label" json:"id,omitempty"`
-	CompetitionID      string              `hcl:"competition_id,attr" json:"competition_id"`
 	Active             bool                `hcl:"active,attr" json:"active,omitempty"`
 	LocalAddr          string              `hcl:"local_addr,attr" json:"local_addr,omitempty"`
 	RemoteAddr         string              `hcl:"remote_addr,attr" json:"remote_addr,omitempty"`

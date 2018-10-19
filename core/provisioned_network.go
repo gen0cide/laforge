@@ -158,6 +158,10 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 			return err
 		}
 	}
+	err = g.Relate(p.Environment, p.Network)
+	if err != nil {
+		return err
+	}
 	err = g.Relate(p.Network, p)
 	if err != nil {
 		return err
