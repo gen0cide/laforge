@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/chroma/quick"
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	survey "gopkg.in/AlecAivazis/survey.v1"
 
 	"github.com/urfave/cli"
@@ -24,7 +25,7 @@ var (
 )
 
 func performconfigure(c *cli.Context) error {
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	gcl, err := core.LocateGlobalConfig()
 	if err != nil {
 		if err != core.ErrNoGlobalConfig {

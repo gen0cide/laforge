@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
@@ -45,7 +46,7 @@ func performshell(c *cli.Context) error {
 	}
 
 	if listHosts {
-		core.SetLogLevel("info")
+		lfcli.SetLogLevel("info")
 		cliLogger.Warnf("Environment: %s", color.GreenString("%s", base.CurrentEnv.ID))
 		cliLogger.Warnf("Builder: %s", color.GreenString("%s", base.CurrentBuild.ID))
 		cliLogger.Warnf("Team Number: %s", color.GreenString("%d", base.CurrentTeam.TeamNumber))

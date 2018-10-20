@@ -1,0 +1,9 @@
+# github.com/zclconf/go-cty v0.0.0-20181017232614-01c5aba823a6
+github.com/zclconf/go-cty/cty
+github.com/zclconf/go-cty/cty/gocty
+github.com/zclconf/go-cty/cty/convert
+github.com/zclconf/go-cty/cty/json
+github.com/zclconf/go-cty/cty/function
+github.com/zclconf/go-cty/cty/function/stdlib
+github.com/zclconf/go-cty/cty/msgpack
+github.com/zclconf/go-cty/cty/set

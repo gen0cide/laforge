@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gen0cide/laforge/builder/tfgcp"
+	"github.com/gen0cide/laforge/core/cli"
 
 	"github.com/gen0cide/laforge/builder/buildutil/valdations"
 
@@ -101,7 +102,7 @@ func New(base *core.Laforge, overwrite, update bool) (*BuildEngine, error) {
 		return nil, buildutil.Throw(ErrNoBuilderFound, "Invalid builder defined", &buildutil.V{"provided": base.CurrentEnv.Builder})
 	}
 
-	core.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.CurrentEnv.Builder)))
+	cli.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.CurrentEnv.Builder)))
 	return &BuildEngine{
 		Base:    base,
 		Builder: bldr,
@@ -114,13 +115,13 @@ func (b *BuildEngine) Do() error {
 	if err != nil {
 		return buildutil.Throw(err, "failed to set laforge", nil)
 	}
-	core.Logger.Infof("Injected context into builder")
+	cli.Logger.Infof("Injected context into builder")
 	vals := b.Builder.Validations()
 	for _, x := range vals {
-		core.Logger.Debugf("Checking validation: %s", x.Name)
+		cli.Logger.Debugf("Checking validation: %s", x.Name)
 		if !x.Check(b.Base) {
-			core.Logger.Errorf("Build Requirement Failed: %s", x.Name)
-			core.Logger.Errorf("  Resolution > %s", x.Resolution)
+			cli.Logger.Errorf("Build Requirement Failed: %s", x.Name)
+			cli.Logger.Errorf("  Resolution > %s", x.Resolution)
 			os.Exit(1)
 		}
 	}
@@ -128,26 +129,26 @@ func (b *BuildEngine) Do() error {
 	if err != nil {
 		return buildutil.Throw(err, "failed checking requirements", nil)
 	}
-	core.Logger.Infof("Requirements checks passed")
+	cli.Logger.Infof("Requirements checks passed")
 	err = b.Builder.PrepareAssets()
 	if err != nil {
 		return buildutil.Throw(err, "failed preparing assets", nil)
 	}
-	core.Logger.Infof("Resolved and cached required assets")
+	cli.Logger.Infof("Resolved and cached required assets")
 	err = b.Builder.StageDependencies()
 	if err != nil {
 		return buildutil.Throw(err, "failed staging dependencies", nil)
 	}
-	core.Logger.Infof("Staged dependencies for rendering")
+	cli.Logger.Infof("Staged dependencies for rendering")
 	err = b.Builder.GenerateScripts()
 	if err != nil {
 		return buildutil.Throw(err, "failed generating scripts", nil)
 	}
-	core.Logger.Infof("Generated scripts and templates")
+	cli.Logger.Infof("Generated scripts and templates")
 	err = b.Builder.Render()
 	if err != nil {
 		return buildutil.Throw(err, "failed rendering build", nil)
 	}
-	core.Logger.Infof("Successfully rendered build")
+	cli.Logger.Infof("Successfully rendered build")
 	return nil
 }

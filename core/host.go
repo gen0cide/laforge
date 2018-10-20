@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/pkg/errors"
 )
 
@@ -92,6 +93,21 @@ func (h *Host) Hash() uint64 {
 			HashConfigMap(h.Vars),
 		),
 	)
+}
+
+func (h *Host) DependencyCount(e *Environment) int {
+	ret := 0
+	if h.Dependencies == nil || len(h.Dependencies) == 0 {
+		return ret
+	}
+	for _, x := range h.Dependencies {
+		found, ok := e.IncludedHosts[x.HostID]
+		if !ok {
+			continue
+		}
+		ret += found.DependencyCount(e)
+	}
+	return ret
 }
 
 // GetDependencyHash returns the host's dependency hash
@@ -260,7 +276,7 @@ func (h *Host) Index(base *Laforge) error {
 	h.Provisioners = []Provisioner{}
 
 	for _, s := range h.ProvisionSteps {
-		Logger.Debugf("indexing provision step %s for host %s", s, h.ID)
+		cli.Logger.Debugf("indexing provision step %s for host %s", s, h.ID)
 		iprov[s] = "included"
 	}
 	for name, script := range base.Scripts {
@@ -271,7 +287,7 @@ func (h *Host) Index(base *Laforge) error {
 		if status == "included" {
 			h.Scripts[name] = script
 			iprov[name] = "script"
-			Logger.Debugf("Resolved %T dependency %s for %s", script, script.ID, h.ID)
+			cli.Logger.Debugf("Resolved %T dependency %s for %s", script, script.ID, h.ID)
 		}
 	}
 	for name, command := range base.Commands {
@@ -282,7 +298,7 @@ func (h *Host) Index(base *Laforge) error {
 		if status == "included" {
 			h.Commands[name] = command
 			iprov[name] = "command"
-			Logger.Debugf("Resolved %T dependency %s for %s", command, command.ID, h.ID)
+			cli.Logger.Debugf("Resolved %T dependency %s for %s", command, command.ID, h.ID)
 		}
 	}
 	for name, file := range base.RemoteFiles {
@@ -293,7 +309,7 @@ func (h *Host) Index(base *Laforge) error {
 		if status == "included" {
 			h.RemoteFiles[name] = file
 			iprov[name] = "remote_file"
-			Logger.Debugf("Resolved %T dependency %s for %s", file, file.ID, h.ID)
+			cli.Logger.Debugf("Resolved %T dependency %s for %s", file, file.ID, h.ID)
 		}
 	}
 	for name, record := range base.DNSRecords {
@@ -304,7 +320,7 @@ func (h *Host) Index(base *Laforge) error {
 		if status == "included" {
 			h.DNSRecords[name] = record
 			iprov[name] = "dns_record"
-			Logger.Debugf("Resolved %T dependency %s for %s", record, record.ID, h.ID)
+			cli.Logger.Debugf("Resolved %T dependency %s for %s", record, record.ID, h.ID)
 		}
 	}
 	for x, status := range iprov {

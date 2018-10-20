@@ -11,6 +11,7 @@ import (
 	"github.com/gobwas/glob"
 
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/urfave/cli"
 )
@@ -45,10 +46,19 @@ func performquery(c *cli.Context) error {
 		return err
 	}
 
-	build, ok := snap.Objects[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)].(*core.Build)
+	buildnode, ok := snap.Objects[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
 	if !ok {
-		return errors.New("builder was not able to resolve object of type Build")
+		return errors.New("builder was not able to be resolved on the graph")
 	}
+	buildmeta, ok := buildnode.(*core.Metadata)
+	if !ok {
+		return errors.New("buildnode was not of type *core.Metadata")
+	}
+	build, ok := buildmeta.Dependency.(*core.Build)
+	if !ok {
+		return errors.New("build object was not of type *core.Build")
+	}
+
 	base.CurrentBuild = build
 
 	err = snap.Sort()
@@ -56,7 +66,7 @@ func performquery(c *cli.Context) error {
 		panic(err)
 	}
 
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 
 	pat := c.Args().First()
 	if pat != "" {
@@ -64,40 +74,30 @@ func performquery(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		for key, meta := range snap.Metadata {
+		for key, meta := range snap.Objects {
 			if !g.Match(key) {
 				continue
 			}
-			mid := snap.ObjectToGID[meta.Dependency]
-			cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, mid, meta.Checksum)
-			for _, x := range meta.ParentIDs {
-				pm := snap.Metadata[x]
-				pid := snap.ObjectToGID[pm.Dependency]
-				fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
+			cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+			for _, x := range meta.Parents() {
+				fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
 			}
-			cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, mid, meta.Checksum)
-			for _, x := range meta.ChildIDs {
-				pm := snap.Metadata[x]
-				pid := snap.ObjectToGID[pm.Dependency]
-				fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
+			cliLogger.Infof("Children Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+			for _, x := range meta.Children() {
+				fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
 			}
 		}
 		return nil
 	}
 
-	for key, meta := range snap.Metadata {
-		mid := snap.ObjectToGID[meta.Dependency]
-		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, mid, meta.Checksum)
-		for _, x := range meta.ParentIDs {
-			pm := snap.Metadata[x]
-			pid := snap.ObjectToGID[pm.Dependency]
-			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
+	for key, meta := range snap.Objects {
+		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+		for _, x := range meta.Parents() {
+			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
 		}
-		cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, mid, meta.Checksum)
-		for _, x := range meta.ChildIDs {
-			pm := snap.Metadata[x]
-			pid := snap.ObjectToGID[pm.Dependency]
-			fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", pid, color.YellowString(x), color.CyanString("%x", pm.Checksum))
+		cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, meta.GetGID(), meta.Hash())
+		for _, x := range meta.Children() {
+			fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
 		}
 	}
 

@@ -40,19 +40,45 @@ func performgraph(c *cli.Context) error {
 		return err
 	}
 
-	build, ok := snap.Objects[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)].(*core.Build)
+	buildnode, ok := snap.Metastore[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
 	if !ok {
-		return errors.New("builder was not able to resolve object of type Build")
+		return errors.New("builder was not able to be resolved on the graph")
 	}
+	// buildmeta, ok := buildnode.(*core.Metadata)
+	// if !ok {
+	// 	return errors.New("buildnode was not of type *core.Metadata")
+	// }
+	build, ok := buildnode.Dependency.(*core.Build)
+	if !ok {
+		return errors.New("build object was not of type *core.Build")
+	}
+
 	base.CurrentBuild = build
 
-	err = snap.Sort()
-	if err != nil {
-		panic(err)
-	}
+	// err = snap.Sort()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	arg := c.Args().First()
-	snap.Plot(os.Stdout, arg)
+	// arg := c.Args().First()
+
+	// target, ok := snap.Objects[arg]
+	// if !ok {
+	// 	return errors.New("object was not located on the current graph")
+	// }
+
+	// err = graph.WalkRelationship(target, graph.InfiniteDepth, 1, graph.TraverseChildren, func(rel graph.Relationship, distance int) error {
+	// 	buf := new(bytes.Buffer)
+	// 	for i := 0; i < distance; i++ {
+	// 		buf.WriteString("  ")
+	// 	}
+	// 	buf.WriteString("- ")
+	// 	buf.WriteString(rel.GetID())
+	// 	fmt.Printf("%s\n", buf.String())
+	// 	return nil
+	// })
+
+	// snap.Plot(os.Stdout, arg)
 
 	return nil
 }

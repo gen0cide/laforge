@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/urfave/cli"
 )
 
@@ -34,7 +35,7 @@ func performinit(c *cli.Context) error {
 	if newErr != nil {
 		return newErr
 	}
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	cliLogger.Infof("Successfully initialized base competition repository.")
 	return nil
 }

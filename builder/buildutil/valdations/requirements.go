@@ -10,6 +10,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/core/cli"
 )
 
 // Validations is suppose to be a sequence of validations that must pass for a builder
@@ -94,27 +95,27 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 	case core.Competition:
 		return func(base *core.Laforge) bool {
 			if validation.IsEmpty(base) {
-				core.Logger.Errorf("base state was empty")
+				cli.Logger.Errorf("base state was empty")
 				return false
 			}
 			if validation.IsEmpty(base.CurrentCompetition) {
-				core.Logger.Errorf("competition state was empty")
+				cli.Logger.Errorf("competition state was empty")
 				return false
 			}
 			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition))
 			if compVal.Kind() != reflect.Struct {
-				core.Logger.Errorf("Competition has failed a validation error: base.Competition was not of type struct")
+				cli.Logger.Errorf("Competition has failed a validation error: base.Competition was not of type struct")
 				return false
 			}
 			fieldTest := compVal.FieldByName(camName)
 			if !fieldTest.IsValid() {
-				core.Logger.Errorf("%s does not have a field named %s!", "competition", camName)
+				cli.Logger.Errorf("%s does not have a field named %s!", "competition", camName)
 				os.Exit(1)
 				return false
 			}
 			testField := fieldTest.Interface()
 			if validation.IsEmpty(testField) {
-				core.Logger.Errorf("Competition has field a validation error: field %s was empty", camName)
+				cli.Logger.Errorf("Competition has field a validation error: field %s was empty", camName)
 				return false
 			}
 			return true
@@ -122,31 +123,31 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 	case core.DNS:
 		return func(base *core.Laforge) bool {
 			if validation.IsEmpty(base) {
-				core.Logger.Errorf("base state was empty")
+				cli.Logger.Errorf("base state was empty")
 				return false
 			}
 			if validation.IsEmpty(base.CurrentCompetition) {
-				core.Logger.Errorf("competition state was empty")
+				cli.Logger.Errorf("competition state was empty")
 				return false
 			}
 			if validation.IsEmpty(base.CurrentCompetition.DNS) {
-				core.Logger.Errorf("dns state was empty")
+				cli.Logger.Errorf("dns state was empty")
 				return false
 			}
 			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition.DNS))
 			if compVal.Kind() != reflect.Struct {
-				core.Logger.Errorf("DNS has failed a validation error: base.CurrentCompetition.DNS was not of type struct")
+				cli.Logger.Errorf("DNS has failed a validation error: base.CurrentCompetition.DNS was not of type struct")
 				return false
 			}
 			fieldTest := compVal.FieldByName(camName)
 			if !fieldTest.IsValid() {
-				core.Logger.Errorf("%s does not have a field named %s!", "dns", camName)
+				cli.Logger.Errorf("%s does not have a field named %s!", "dns", camName)
 				os.Exit(1)
 				return false
 			}
 			testField := fieldTest.Interface()
 			if validation.IsEmpty(testField) {
-				core.Logger.Errorf("DNS has field a validation error: field %s was empty", camName)
+				cli.Logger.Errorf("DNS has field a validation error: field %s was empty", camName)
 				return false
 			}
 			return true
@@ -154,27 +155,27 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 	case core.Environment:
 		return func(base *core.Laforge) bool {
 			if validation.IsEmpty(base) {
-				core.Logger.Errorf("base state was empty")
+				cli.Logger.Errorf("base state was empty")
 				return false
 			}
 			if validation.IsEmpty(base.CurrentEnv) {
-				core.Logger.Errorf("Environment state was empty")
+				cli.Logger.Errorf("Environment state was empty")
 				return false
 			}
 			compVal := reflect.Indirect(reflect.ValueOf(base.CurrentEnv))
 			if compVal.Kind() != reflect.Struct {
-				core.Logger.Errorf("Environment has failed a validation error: base.Environment was not of type struct")
+				cli.Logger.Errorf("Environment has failed a validation error: base.Environment was not of type struct")
 				return false
 			}
 			fieldTest := compVal.FieldByName(camName)
 			if !fieldTest.IsValid() {
-				core.Logger.Errorf("%s does not have a field named %s!", "environment", camName)
+				cli.Logger.Errorf("%s does not have a field named %s!", "environment", camName)
 				os.Exit(1)
 				return false
 			}
 			testField := fieldTest.Interface()
 			if validation.IsEmpty(testField) {
-				core.Logger.Errorf("Environment has field a validation error: field %s was empty", camName)
+				cli.Logger.Errorf("Environment has field a validation error: field %s was empty", camName)
 				return false
 			}
 			return true
@@ -184,18 +185,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.Hosts {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "host", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "host", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "host", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "host", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "host", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "host", n, camName)
 					return false
 				}
 			}
@@ -206,18 +207,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.Commands {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "command", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "command", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "command", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "command", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "command", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "command", n, camName)
 					return false
 				}
 			}
@@ -228,18 +229,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.Identities {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "identity", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "identity", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "identity", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "identity", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "identity", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "identity", n, camName)
 					return false
 				}
 			}
@@ -250,18 +251,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.Networks {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "network", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "network", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "network", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "network", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "network", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "network", n, camName)
 					return false
 				}
 			}
@@ -272,18 +273,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.RemoteFiles {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "remote_file", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "remote_file", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "remote_file", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "remote_file", n, camName)
 					return false
 				}
 			}
@@ -294,18 +295,18 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 			for n, o := range base.Scripts {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "script", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "script", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "script", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "script", camName)
 					os.Exit(1)
 					return false
 				}
 				testField := fieldTest.Interface()
 				if validation.IsEmpty(testField) {
-					core.Logger.Errorf("%s %s has field a validation error: field %s was empty", "script", n, camName)
+					cli.Logger.Errorf("%s %s has field a validation error: field %s was empty", "script", n, camName)
 					return false
 				}
 			}
@@ -313,7 +314,7 @@ func FieldNotEmpty(obj interface{}, fieldname string) Check {
 		}
 	default:
 		return func(base *core.Laforge) bool {
-			core.Logger.Errorf("Invalid type %T passed for validation", v)
+			cli.Logger.Errorf("Invalid type %T passed for validation", v)
 			return false
 		}
 	}
@@ -328,12 +329,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			if base != nil && base.CurrentCompetition != nil {
 				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
+					cli.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "competition", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "competition", camName)
 					os.Exit(1)
 					return false
 				}
@@ -341,10 +342,10 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("competition field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
+				cli.Logger.Errorf("competition field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
 				return false
 			}
-			core.Logger.Errorf("Competition has failed a validation: base or base.Competition was nil")
+			cli.Logger.Errorf("Competition has failed a validation: base or base.Competition was nil")
 			return false
 		}
 	case core.DNS:
@@ -352,12 +353,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			if base != nil && base.CurrentCompetition != nil && base.CurrentCompetition.DNS != nil {
 				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentCompetition.DNS))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
+					cli.Logger.Errorf("Competition has failed a validation: base.Competition was not of type struct")
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "dns", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "dns", camName)
 					os.Exit(1)
 					return false
 				}
@@ -365,10 +366,10 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("DNS field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
+				cli.Logger.Errorf("DNS field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
 				return false
 			}
-			core.Logger.Errorf("Competition has failed a validation: base or base.Competition or base.Competition.DNS was nil")
+			cli.Logger.Errorf("Competition has failed a validation: base or base.Competition or base.Competition.DNS was nil")
 			return false
 		}
 	case core.Environment:
@@ -376,12 +377,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			if base != nil && base.CurrentEnv != nil {
 				compVal := reflect.Indirect(reflect.ValueOf(base.CurrentEnv))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("Environment has failed a validation: base.Environment was not of type struct")
+					cli.Logger.Errorf("Environment has failed a validation: base.Environment was not of type struct")
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "environment", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "environment", camName)
 					os.Exit(1)
 					return false
 				}
@@ -389,10 +390,10 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("environment field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
+				cli.Logger.Errorf("environment field %s (%T) was not equal to %v (%T)", camName, testField, equals, equals)
 				return false
 			}
-			core.Logger.Errorf("Environment has failed a validation: base or base.Environment was nil")
+			cli.Logger.Errorf("Environment has failed a validation: base or base.Environment was nil")
 			return false
 		}
 	case core.Host:
@@ -400,12 +401,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.Hosts {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "host", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "host", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "host", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "host", camName)
 					os.Exit(1)
 					return false
 				}
@@ -413,7 +414,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "host", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "host", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
@@ -423,12 +424,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.Commands {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "command", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "command", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "command", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "command", camName)
 					os.Exit(1)
 					return false
 				}
@@ -436,7 +437,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "command", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "command", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
@@ -446,12 +447,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.Identities {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "identity", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "identity", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "identity", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "identity", camName)
 					os.Exit(1)
 					return false
 				}
@@ -459,7 +460,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "identity", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "identity", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
@@ -469,12 +470,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.Networks {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "networks", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "networks", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "network", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "network", camName)
 					os.Exit(1)
 					return false
 				}
@@ -482,7 +483,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "networks", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "networks", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
@@ -492,12 +493,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.RemoteFiles {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "remote_file", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "remote_file", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "remote_file", camName)
 					os.Exit(1)
 					return false
 				}
@@ -505,7 +506,7 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "remote_file", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "remote_file", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
@@ -515,12 +516,12 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 			for n, o := range base.Scripts {
 				compVal := reflect.Indirect(reflect.ValueOf(o))
 				if compVal.Kind() != reflect.Struct {
-					core.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "script", n, compVal.Kind().String())
+					cli.Logger.Errorf("%s %s has failed a validation: was not of type struct (found %s)", "script", n, compVal.Kind().String())
 					return false
 				}
 				fieldTest := compVal.FieldByName(camName)
 				if !fieldTest.IsValid() {
-					core.Logger.Errorf("%s does not have a field named %s!", "scripts", camName)
+					cli.Logger.Errorf("%s does not have a field named %s!", "scripts", camName)
 					os.Exit(1)
 					return false
 				}
@@ -528,14 +529,14 @@ func FieldEquals(obj interface{}, fieldname string, equals interface{}) Check {
 				if reflect.DeepEqual(testField, equals) {
 					return true
 				}
-				core.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "script", n, camName, testField, testField, equals, equals)
+				cli.Logger.Errorf("%s %s has field mismatch: field %s (type=%T,val=%v) was not equal to %v (%T)", "script", n, camName, testField, testField, equals, equals)
 				return false
 			}
 			return true
 		}
 	default:
 		return func(base *core.Laforge) bool {
-			core.Logger.Errorf("Invalid type %T passed for validation", v)
+			cli.Logger.Errorf("Invalid type %T passed for validation", v)
 			return false
 		}
 	}
@@ -557,7 +558,7 @@ func HasConfigKey(obj interface{}, key string) Check {
 			if base != nil && base.CurrentCompetition != nil && MapHasKey(key, base.CurrentCompetition.Config) {
 				return true
 			}
-			core.Logger.Errorf("Competition has failed a validation: config parameter %s was not defined", key)
+			cli.Logger.Errorf("Competition has failed a validation: config parameter %s was not defined", key)
 			return false
 		}
 	case core.DNS:
@@ -565,7 +566,7 @@ func HasConfigKey(obj interface{}, key string) Check {
 			if base != nil && base.CurrentCompetition != nil && base.CurrentCompetition.DNS != nil && MapHasKey(key, base.CurrentCompetition.DNS.Config) {
 				return true
 			}
-			core.Logger.Errorf("DNS has failed a validation: config parameter %s was not defined", key)
+			cli.Logger.Errorf("DNS has failed a validation: config parameter %s was not defined", key)
 			return false
 		}
 	case core.Environment:
@@ -573,12 +574,12 @@ func HasConfigKey(obj interface{}, key string) Check {
 			if base != nil && base.CurrentEnv != nil && MapHasKey(key, base.CurrentEnv.Config) {
 				return true
 			}
-			core.Logger.Errorf("Environment has failed a validation: config parameter %s was not defined", key)
+			cli.Logger.Errorf("Environment has failed a validation: config parameter %s was not defined", key)
 			return false
 		}
 	default:
 		return func(base *core.Laforge) bool {
-			core.Logger.Errorf("Invalid type %T passed for validation", v)
+			cli.Logger.Errorf("Invalid type %T passed for validation", v)
 			return false
 		}
 	}
@@ -594,7 +595,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Host %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Host %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true
@@ -605,7 +606,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Identity object %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Identity object %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true
@@ -616,7 +617,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Network object %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Network object %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true
@@ -627,7 +628,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Remote File object %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Remote File object %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true
@@ -638,7 +639,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Script object %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Script object %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true
@@ -649,7 +650,7 @@ func HasVarDefined(obj interface{}, varname string) Check {
 				if MapHasKey(varname, o.Vars) {
 					continue
 				}
-				core.Logger.Errorf("Command object %s has failed a validation: var %s was not defined", n, varname)
+				cli.Logger.Errorf("Command object %s has failed a validation: var %s was not defined", n, varname)
 				return false
 			}
 			return true

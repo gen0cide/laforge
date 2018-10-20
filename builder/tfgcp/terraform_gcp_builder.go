@@ -13,6 +13,7 @@ import (
 
 	"github.com/gen0cide/laforge/agent"
 	"github.com/gen0cide/laforge/builder/tfgcp/static"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/builder/buildutil/templates"
@@ -339,10 +340,10 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 			return buildutil.Throw(errors.Errorf("user_data_script_id %s not found", uds), "Host declares a user_data_script_id which was not found in the script map. Is this declared somewhere?", &buildutil.V{"host": hostid})
 		}
 		if _, ok := host.Scripts[uds]; ok {
-			core.Logger.Infof("UDS %s is already defined for host %s (strange?)", uds, hostid)
+			cli.Logger.Infof("UDS %s is already defined for host %s (strange?)", uds, hostid)
 			continue
 		}
-		core.Logger.Debugf("Adding user_data_script %s to host %s script pool", uds, hostid)
+		cli.Logger.Debugf("Adding user_data_script %s to host %s script pool", uds, hostid)
 		host.Scripts[uds] = udsObj
 		if _, ok := t.Library.Books[uds]; !ok {
 			for _, callfile := range udsObj.Caller {
@@ -513,10 +514,15 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 		return err
 	}
 
-	build, ok := snap.Objects[path.Join(t.Base.CurrentEnv.Path(), t.Base.CurrentEnv.Builder)].(*core.Build)
+	buildnode, ok := snap.Metastore[path.Join(t.Base.CurrentEnv.Path(), t.Base.CurrentEnv.Builder)]
 	if !ok {
-		return errors.New("builder was not able to resolve object of type Build")
+		return errors.New("builder was not able to be resolved on the graph")
 	}
+	build, ok := buildnode.Dependency.(*core.Build)
+	if !ok {
+		return errors.New("build object was not of type *core.Build")
+	}
+
 	t.Base.CurrentBuild = build
 	// for _, x := range build.Teams {
 

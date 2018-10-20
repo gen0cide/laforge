@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/masterzen/winrm"
 	"golang.org/x/crypto/ssh"
 )
@@ -179,9 +180,9 @@ func (w *Worker) RunWinRMCommand(wc chan *Worker) {
 	exitcode, err := client.Run(cmd, io.MultiWriter(&stdoutbuf, stdoutwriter), io.MultiWriter(&stderrbuf, stderrwriter))
 
 	defer func() {
-		core.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		cli.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
 		if stderrbuf.Len() > 0 {
-			core.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+			cli.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
 		}
 	}()
 
@@ -268,9 +269,9 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 	err = session.Run(cmd)
 
 	defer func() {
-		core.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+		cli.Logger.Infof("TEAM-%d/%s (output) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
 		if stderrbuf.Len() > 0 {
-			core.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
+			cli.Logger.Errorf("TEAM-%d/%s (error) >>>\n%s", w.TeamID, w.HostID, stdoutbuf.String())
 		}
 	}()
 

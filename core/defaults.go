@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/pkg/errors"
 
 	"github.com/sethvargo/go-password/password"
@@ -204,7 +205,7 @@ func defaultNetwork() *Network {
 func defaultCompetition(name string) *Competition {
 	res, err := password.Generate(32, 10, 0, false, true)
 	if err != nil {
-		Logger.Errorf("Error generating random password: %v", err)
+		cli.Logger.Errorf("Error generating random password: %v", err)
 	}
 	return &Competition{
 		ID:           name,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/urfave/cli"
 )
@@ -26,7 +27,7 @@ func performdeps(c *cli.Context) error {
 		}
 		return err
 	}
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	cliLogger.Infof("== Dependency Graph ==")
 	fmt.Println(base.DependencyGraph.String())
 	return nil

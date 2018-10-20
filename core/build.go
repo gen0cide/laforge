@@ -254,6 +254,16 @@ func (b *Build) Gather(g *Snapshot) error {
 	return nil
 }
 
+func (b *Build) Associate(g *Snapshot) error {
+	for _, t := range b.Teams {
+		err := t.Associate(g)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // CreateTeam creates a new team of a given team index for the build.
 func (b *Build) CreateTeam(tid int) *Team {
 	t := &Team{

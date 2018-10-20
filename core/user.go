@@ -6,6 +6,7 @@ import (
 	"os/user"
 	"reflect"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/google/uuid"
 
 	"gopkg.in/AlecAivazis/survey.v1"
@@ -73,6 +74,6 @@ func UserWizard() error {
 	if err != nil {
 		return err
 	}
-	Logger.Warnf("Global configuration written to ~/.laforge/global.laforge")
+	cli.Logger.Warnf("Global configuration written to ~/.laforge/global.laforge")
 	return nil
 }

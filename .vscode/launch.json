@@ -10,9 +10,11 @@
     "mode": "auto",
     "program": "/Users/flint/Code/go/src/github.com/gen0cide/laforge/cmd/laforge/main.go",
     "env": {},
+    "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
     "args": [
-      "build",
-      "-u",
+      "debug",
+      "saved.json",
+      "/hosts/windows/ad-00",
     ]
   }]
 }

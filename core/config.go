@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/pkg/errors"
 )
 
@@ -45,7 +46,7 @@ func CreateGlobalConfig(u User) error {
 func PathExists(loc string) bool {
 	absp, err := filepath.Abs(loc)
 	if err != nil {
-		Logger.Debugf("Error determining absolute path of %s: %v", loc, err)
+		cli.Logger.Debugf("Error determining absolute path of %s: %v", loc, err)
 		return false
 	}
 	if _, err := os.Stat(absp); err == nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/urfave/cli"
 )
 
@@ -45,7 +46,7 @@ func performstatus(c *cli.Context) error {
 		}
 		return nil
 	}
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	cliLogger.Infof("Current Context Level\n%s", core.StatusMap(base.GetContext()))
 	return nil
 }

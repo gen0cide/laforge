@@ -133,59 +133,63 @@ func (p *ProvisioningStep) SetID() string {
 
 // Gather implements the Dependency interface
 func (p *ProvisioningStep) Gather(g *Snapshot) error {
-	switch v := p.Provisioner.(type) {
+	switch p.Provisioner.(type) {
 	case *Command:
-		err := g.Relate(p.Environment, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(p.Host, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(v, p)
-		if err != nil {
-			return err
-		}
+		// err := g.Relate(p.Environment, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// g.AddNode(v)
+		// err := g.Relate(p.Host, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// err = g.Relate(v, p)
+		// if err != nil {
+		// 	return err
+		// }
 	case *DNSRecord:
-		err := g.Relate(p.Environment, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(p.Host, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(v, p)
-		if err != nil {
-			return err
-		}
+		// err := g.Relate(p.Environment, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// g.AddNode(v)
+		// err := g.Relate(p.Host, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// err = g.Relate(v, p)
+		// if err != nil {
+		// 	return err
+		// }
 	case *RemoteFile:
-		err := g.Relate(p.Environment, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(p.Host, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(v, p)
-		if err != nil {
-			return err
-		}
+		// err := g.Relate(p.Environment, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// g.AddNode(v)
+		// err := g.Relate(p.Host, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// err = g.Relate(v, p)
+		// if err != nil {
+		// 	return err
+		// }
 	case *Script:
-		err := g.Relate(p.Environment, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(p.Host, v)
-		if err != nil {
-			return err
-		}
-		err = g.Relate(v, p)
-		if err != nil {
-			return err
-		}
+		// err := g.Relate(p.Environment, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// g.AddNode(v)
+		// err := g.Relate(p.Host, v)
+		// if err != nil {
+		// 	return err
+		// }
+		// err = g.Relate(v, p)
+		// if err != nil {
+		// 	return err
+		// }
 	default:
 		return fmt.Errorf("invalid provisioner type for %s: %T", p.Path(), p.Provisioner)
 	}

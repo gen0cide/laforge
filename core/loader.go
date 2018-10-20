@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl2/ext/include"
 	"github.com/hashicorp/hcl2/ext/transform"
 	gohcl2 "github.com/hashicorp/hcl2/gohcl"
@@ -48,17 +49,17 @@ func (l *Loader) AddToTree(filename, parentname string) treeprint.Tree {
 	if !found {
 		switch filepath.Base(parentname) {
 		case "team.laforge":
-			parent = l.Includes.AddMetaNode(boldc("TEAM"), boldw(parentname))
+			parent = l.Includes.AddMetaNode(cli.Boldc("TEAM"), cli.Boldw(parentname))
 		case "build.laforge":
-			parent = l.Includes.AddMetaNode(boldg("BUILD"), boldw(parentname))
+			parent = l.Includes.AddMetaNode(cli.Boldg("BUILD"), cli.Boldw(parentname))
 		case "env.laforge":
-			parent = l.Includes.AddMetaNode(boldy("ENV"), boldw(parentname))
+			parent = l.Includes.AddMetaNode(cli.Boldy("ENV"), cli.Boldw(parentname))
 		case "base.laforge":
-			parent = l.Includes.AddMetaNode(boldr("BASE"), boldw(parentname))
+			parent = l.Includes.AddMetaNode(cli.Boldr("BASE"), cli.Boldw(parentname))
 		case "global.laforge":
-			parent = l.Includes.AddMetaNode(boldb("GLOBAL"), boldw(parentname))
+			parent = l.Includes.AddMetaNode(cli.Boldb("GLOBAL"), cli.Boldw(parentname))
 		case ".":
-			l.Includes.SetValue(boldw("."))
+			l.Includes.SetValue(cli.Boldw("."))
 			parent = l.Includes
 		default:
 			parent = l.Includes.AddNode(filename)
@@ -67,15 +68,15 @@ func (l *Loader) AddToTree(filename, parentname string) treeprint.Tree {
 	}
 	switch filepath.Base(filename) {
 	case "team.laforge":
-		child = parent.AddMetaBranch(boldc("TEAM"), boldw(filename))
+		child = parent.AddMetaBranch(cli.Boldc("TEAM"), cli.Boldw(filename))
 	case "build.laforge":
-		child = parent.AddMetaBranch(boldg("BUILD"), boldw(filename))
+		child = parent.AddMetaBranch(cli.Boldg("BUILD"), cli.Boldw(filename))
 	case "env.laforge":
-		child = parent.AddMetaBranch(boldy("ENV"), boldw(filename))
+		child = parent.AddMetaBranch(cli.Boldy("ENV"), cli.Boldw(filename))
 	case "base.laforge":
-		child = parent.AddMetaBranch(boldr("BASE"), boldw(filename))
+		child = parent.AddMetaBranch(cli.Boldr("BASE"), cli.Boldw(filename))
 	case "global.laforge":
-		child = parent.AddMetaBranch(boldb("GLOBAL"), boldw(filename))
+		child = parent.AddMetaBranch(cli.Boldb("GLOBAL"), cli.Boldw(filename))
 	default:
 		child = parent.AddNode(filename)
 	}
@@ -95,7 +96,7 @@ func (l *Loader) ParseConfigFile(filename string) error {
 		for _, e := range diags.Errs() {
 			ne, ok := e.(*hcl2.Diagnostic)
 			if ok {
-				Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+				cli.Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
 			}
 		}
 		return diags
@@ -183,7 +184,7 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 			for _, e := range diags.Errs() {
 				ne, ok := e.(*hcl2.Diagnostic)
 				if ok {
-					Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+					cli.Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
 				}
 			}
 		}
@@ -193,7 +194,7 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 		for _, e := range diags.Errs() {
 			ne, ok := e.(*hcl2.Diagnostic)
 			if ok {
-				Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+				cli.Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
 			}
 		}
 	}
@@ -218,7 +219,7 @@ func (l *Loader) Deconflict(filenames []string) (*Laforge, error) {
 			return lf, err
 		}
 		lf.Includes = append(lf.Includes, fname)
-		Logger.Debugf("Config Imported From: %s", fname)
+		cli.Logger.Debugf("Config Imported From: %s", fname)
 	}
 	lf.DependencyGraph = l.Includes
 	return lf, nil
@@ -277,7 +278,7 @@ func (l *Loader) Bind() (*Laforge, error) {
 				for _, e := range diags.Errs() {
 					ne, ok := e.(*hcl2.Diagnostic)
 					if ok {
-						Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
+						cli.Logger.Errorf("Laforge failed to parse a config file:\n Location: %v\n    Issue: %v\n   Detail: %v", ne.Subject, ne.Summary, ne.Detail)
 					}
 				}
 				return nil, diags

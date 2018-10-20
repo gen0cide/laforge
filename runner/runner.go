@@ -12,8 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gen0cide/gscript/logger"
-
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gruntwork-io/terragrunt/errors"
 )
 
@@ -21,7 +20,6 @@ import (
 type Runner struct {
 	Owner      string
 	ID         int64
-	Logger     logger.Logger
 	BaseDir    string
 	StdoutFile string
 	StderrFile string
@@ -34,7 +32,7 @@ type Runner struct {
 }
 
 // NewRunner returns a new empty runner
-func NewRunner(owner, basedir string, l logger.Logger) *Runner {
+func NewRunner(owner, basedir string) *Runner {
 	id := time.Now().UTC().Unix()
 	logdir := filepath.Join(basedir, "logs")
 	os.MkdirAll(logdir, 0755)
@@ -53,7 +51,6 @@ func NewRunner(owner, basedir string, l logger.Logger) *Runner {
 	return &Runner{
 		Owner:      owner,
 		ID:         id,
-		Logger:     l,
 		BaseDir:    basedir,
 		StdoutFile: stdoutfile,
 		StderrFile: stderrfile,
@@ -132,7 +129,7 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 	}()
 
 	cmdChannel := make(chan error)
-	signalChannel := NewSignalsForwarder(forwardSignals, cmd, r.Logger, cmdChannel)
+	signalChannel := NewSignalsForwarder(forwardSignals, cmd, cmdChannel)
 	defer signalChannel.Close()
 
 	err = cmd.Wait()
@@ -178,7 +175,7 @@ func GetExitCode(err error) (int, error) {
 type SignalsForwarder chan os.Signal
 
 // NewSignalsForwarder creates a new signals forwarder for the runner
-func NewSignalsForwarder(signals []os.Signal, c *exec.Cmd, logger logger.Logger, cmdChannel chan error) SignalsForwarder {
+func NewSignalsForwarder(signals []os.Signal, c *exec.Cmd, cmdChannel chan error) SignalsForwarder {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, signals...)
 
@@ -186,10 +183,10 @@ func NewSignalsForwarder(signals []os.Signal, c *exec.Cmd, logger logger.Logger,
 		for {
 			select {
 			case s := <-signalChannel:
-				logger.Infof("Forward signal %v to terraform.", s)
+				cli.Logger.Infof("Forward signal %v to terraform.", s)
 				err := c.Process.Signal(s)
 				if err != nil {
-					logger.Errorf("Error forwarding signal: %v", err)
+					cli.Logger.Errorf("Error forwarding signal: %v", err)
 				}
 			case <-cmdChannel:
 				return

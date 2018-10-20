@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/karrick/godirwalk"
 	"github.com/pkg/errors"
 )
@@ -144,25 +145,25 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 	for name, net := range base.Networks {
 		status, found := inet[name]
 		if !found {
-			Logger.Debugf("Skipping network %s", name)
+			cli.Logger.Debugf("Skipping network %s", name)
 			continue
 		}
 		if status == "included" {
 			e.IncludedNetworks[name] = net
 			inet[name] = "resolved"
-			Logger.Infof("Resolved network %s", name)
+			cli.Logger.Infof("Resolved network %s", name)
 		}
 	}
 	for name, host := range base.Hosts {
 		status, found := ihost[name]
 		if !found {
-			Logger.Debugf("Skipping host %s", name)
+			cli.Logger.Debugf("Skipping host %s", name)
 			continue
 		}
 		if status == "included" {
 			e.IncludedHosts[name] = host
 			ihost[name] = "resolved"
-			Logger.Infof("Resolved host %s", name)
+			cli.Logger.Infof("Resolved host %s", name)
 		}
 	}
 	for _, n := range e.Networks {
@@ -315,7 +316,7 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 			return nil
 		},
 		ErrorCallback: func(osPathname string, err error) godirwalk.ErrorAction {
-			Logger.Debugf("Envwalker encountered a filesystem issue at %s: %v", osPathname, err)
+			cli.Logger.Debugf("Envwalker encountered a filesystem issue at %s: %v", osPathname, err)
 			return godirwalk.SkipNode
 		},
 	})
@@ -353,7 +354,7 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 		case res := <-resChan:
 			_ = res
 		case resErr := <-errChan:
-			Logger.Errorf("An error was found with an environment: %v", resErr)
+			cli.Logger.Errorf("An error was found with an environment: %v", resErr)
 		case <-finChan:
 			return emap, nil
 		}

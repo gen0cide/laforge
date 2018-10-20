@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/xlab/treeprint"
 
 	"github.com/imdario/mergo"
@@ -264,7 +265,7 @@ func (l *Laforge) CreateIndex() {
 	for _, x := range l.DefinedIdentities {
 		err := x.ResolveSource(l, currPathResolver, l.Caller.Current())
 		if err != nil {
-			Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
+			cli.Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
 		}
 		l.Identities[x.ID] = x
 		x.Caller = l.Caller
@@ -272,7 +273,7 @@ func (l *Laforge) CreateIndex() {
 	for _, x := range l.DefinedScripts {
 		err := x.ResolveSource(l, currPathResolver, l.Caller.Current())
 		if err != nil {
-			Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
+			cli.Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
 		}
 		l.Scripts[x.ID] = x
 		x.Caller = l.Caller
@@ -284,7 +285,7 @@ func (l *Laforge) CreateIndex() {
 	for _, x := range l.DefinedRemoteFiles {
 		err := x.ResolveSource(l, currPathResolver, l.Caller.Current())
 		if err != nil {
-			Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
+			cli.Logger.Errorf("%T %s had a source location that was not found: %v", x, x.ID, err)
 		}
 		l.RemoteFiles[x.ID] = x
 		x.Caller = l.Caller
@@ -1002,7 +1003,7 @@ func (l *Laforge) InitializeContext() error {
 		if err != ErrNoGlobalConfig {
 			return err
 		}
-		Logger.Errorf("No config found! Run `laforge configure` before continuing!")
+		cli.Logger.Errorf("No config found! Run `laforge configure` before continuing!")
 		return errors.New("no global configuration found")
 	}
 	l.ValidGlobal = true
@@ -1072,7 +1073,7 @@ func Bootstrap() (*Laforge, error) {
 	}
 	err = base.AssertMinContext(BaseContext)
 	if err != nil {
-		Logger.Infof("No base.laforge or env.laforge found in your current directory tree!")
+		cli.Logger.Infof("No base.laforge or env.laforge found in your current directory tree!")
 		return base, errors.Wrapf(ErrContextViolation, "no base.laforge or env.laforge found")
 	}
 	err = base.LoadFromContext()
@@ -1135,7 +1136,7 @@ func (l *Laforge) InitializeBaseDirectory(overwrite bool) error {
 		return errors.WithStack(err)
 	}
 
-	Logger.Debugf("currabs = %s", currabs)
+	cli.Logger.Debugf("currabs = %s", currabs)
 	defcomp, err := RenderHCLv2Object(defaultCompetition(filepath.Base(currabs)))
 	if err != nil {
 		return errors.WithStack(err)

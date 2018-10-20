@@ -7,14 +7,14 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge"
-	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/urfave/cli"
 )
 
 var (
 	displayBefore = true
 	debugOutput   = false
-	cliLogger     = core.Logger
+	cliLogger     = lfcli.Logger
 	defaultLevel  = "warn"
 	verboseOutput = false
 	noBanner      = false
@@ -82,17 +82,17 @@ func main() {
 
 	app.Before = func(c *cli.Context) error {
 		if verboseOutput {
-			core.SetLogLevel("info")
+			lfcli.SetLogLevel("info")
 		}
 		if debugOutput {
-			core.SetLogLevel("debug")
+			lfcli.SetLogLevel("debug")
 		}
 		return nil
 	}
 
 	err := app.Run(os.Args)
 	if err != nil {
-		core.Logger.Fatalf("Terminated due to error: %v", err)
+		lfcli.Logger.Fatalf("Terminated due to error: %v", err)
 	}
 }
 

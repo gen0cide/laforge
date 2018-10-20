@@ -9,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl2/hcl"
 
 	"github.com/urfave/cli"
@@ -74,7 +75,7 @@ func listenv(c *cli.Context) error {
 
 	_ = checkEnv
 
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	envList := []string{}
 	for name, elf := range envs {
 		_ = name
@@ -128,7 +129,7 @@ func cleanenv(c *cli.Context) error {
 		cliLogger.Errorf("there was an error attempting to clean the build directory: %v", err)
 		os.Exit(1)
 	}
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	cliLogger.Infof("Build directory for env %s was successfully cleaned.", color.HiGreenString(name))
 	return nil
 }
@@ -151,7 +152,7 @@ func createenv(c *cli.Context) error {
 
 	newPath := filepath.Join(base.BaseRoot, "envs", name)
 
-	core.SetLogLevel("info")
+	lfcli.SetLogLevel("info")
 	cliLogger.Infof("Successfully created new environment %s in directory %s", name, newPath)
 
 	return nil

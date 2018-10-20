@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/core/cli"
 )
 
 // Spanner is a multiplexer for teams in a laforge environment
@@ -86,8 +87,8 @@ func (s *Spanner) CreateWorkerPool() error {
 
 // Do does stuff
 func (s *Spanner) Do() error {
-	core.SetLogLevel("info")
-	core.Logger.Infof("Logs found at: %s", s.LogDir)
+	cli.SetLogLevel("info")
+	cli.Logger.Infof("Logs found at: %s", s.LogDir)
 
 	switch s.ExecType {
 	case "local-exec":
@@ -105,9 +106,9 @@ func (s *Spanner) Do() error {
 	for i := 0; i < len(s.Workers); i++ {
 		worker := <-s.Result
 		if worker.ExitError != nil {
-			core.Logger.Errorf("Worker for team %d errored: %v", worker.TeamID, worker.ExitError)
+			cli.Logger.Errorf("Worker for team %d errored: %v", worker.TeamID, worker.ExitError)
 		} else {
-			core.Logger.Infof("Worker for team %d has completed successfully.", worker.TeamID)
+			cli.Logger.Infof("Worker for team %d has completed successfully.", worker.TeamID)
 		}
 	}
 

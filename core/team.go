@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/runner"
 	"github.com/pkg/errors"
 )
@@ -130,7 +131,7 @@ func (t *Team) SetID() string {
 
 // CreateRunner creates a new local command runner for the team, and returns it
 func (t *Team) CreateRunner() *runner.Runner {
-	runner := runner.NewRunner(t.LaforgeID(), t.GetCaller().Current().CallerDir, Logger)
+	runner := runner.NewRunner(t.LaforgeID(), t.GetCaller().Current().CallerDir)
 	return runner
 }
 
@@ -153,7 +154,7 @@ func (t *Team) RunTerraformCommand(args []string, wg *sync.WaitGroup) {
 
 	tfexe, err := FindTerraformExecutable()
 	if err != nil {
-		Logger.Errorf("failed %s: no terraform binary located in path", t.LaforgeID())
+		cli.Logger.Errorf("failed %s: no terraform binary located in path", t.LaforgeID())
 		return
 	}
 
@@ -176,24 +177,24 @@ func (t *Team) TerraformInit() error {
 	for {
 		select {
 		case i := <-runner.Output:
-			Logger.Debugf("%s: %s", t.LaforgeID(), i)
+			cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
 			continue
 		case e := <-runner.Errors:
-			Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 			execerr = e
 			continue
 		default:
 		}
 		select {
 		case i := <-runner.Output:
-			Logger.Debugf("%s: %s", t.LaforgeID(), i)
+			cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
 			continue
 		case e := <-runner.Errors:
-			Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 			execerr = e
 			continue
 		case <-runner.FinChan:
-			Logger.Warnf("%s command returned.", t.LaforgeID())
+			cli.Logger.Warnf("%s command returned.", t.LaforgeID())
 		}
 		break
 	}
@@ -207,7 +208,7 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 
 	err := t.TerraformInit()
 	if err != nil {
-		Logger.Errorf("%s - TF Init Error: %v", t.LaforgeID(), err)
+		cli.Logger.Errorf("%s - TF Init Error: %v", t.LaforgeID(), err)
 		return
 	}
 
@@ -219,22 +220,22 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 	for {
 		select {
 		case i := <-runner.Output:
-			Logger.Debugf("%s: %s", t.LaforgeID(), i)
+			cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
 			continue
 		case e := <-runner.Errors:
-			Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 			continue
 		default:
 		}
 		select {
 		case i := <-runner.Output:
-			Logger.Debugf("%s: %s", t.LaforgeID(), i)
+			cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
 			continue
 		case e := <-runner.Errors:
-			Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 			continue
 		case <-runner.FinChan:
-			Logger.Warnf("%s command returned.", t.LaforgeID())
+			cli.Logger.Warnf("%s command returned.", t.LaforgeID())
 		}
 		break
 	}
@@ -272,15 +273,176 @@ func (t *Team) CreateProvisionResources() error {
 // Gather implements the Dependency interface
 func (t *Team) Gather(g *Snapshot) error {
 	for _, net := range t.ProvisionedNetworks {
-		err := g.Relate(t, net)
-		if err != nil {
-			return err
-		}
-		err = net.Gather(g)
+		g.AddNode(net)
+		err := net.Gather(g)
 		if err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+// Associate attempts to actually draw the relationships on the graph between dependencies
+func (t *Team) Associate(g *Snapshot) error {
+	depwalker := map[string]*ProvisionedHost{}
+	for nid, net := range t.ProvisionedNetworks {
+		nmeta := g.Metastore[nid]
+		for hid, host := range net.ProvisionedHosts {
+			hmeta := g.Metastore[hid]
+			if len(host.Host.Dependencies) > 0 {
+				depwalker[hid] = host
+			} else {
+				for idx, s := range host.StepsByOffset {
+					smeta := g.Metastore[s.Path()]
+					if s.StepNumber != 0 {
+						prevIdx := idx - 1
+						prevStep := host.StepsByOffset[prevIdx]
+						prevmeta := g.Metastore[prevStep.Path()]
+						g.Connect(prevmeta, smeta)
+						err := g.Graph.Validate()
+						if err != nil {
+							cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
+							fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+							panic(err)
+						}
+					} else {
+						g.Connect(hmeta, smeta)
+						err := g.Graph.Validate()
+						if err != nil {
+							cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hmeta.ID, smeta.ID)
+							fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+							panic(err)
+						}
+					}
+				}
+				g.Connect(nmeta, hmeta)
+				err := g.Graph.Validate()
+				if err != nil {
+					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", nmeta.ID, hmeta.ID)
+					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+					panic(err)
+				}
+			}
+		}
+	}
+
+	for {
+		if len(depwalker) == 0 {
+			break
+		}
+		maxVal := 0
+		maxHost := ""
+		for hid, host := range depwalker {
+			if host.Host.DependencyCount(t.Environment) >= maxVal {
+				maxHost = hid
+				maxVal = host.Host.DependencyCount(t.Environment)
+			}
+		}
+		hmeta := g.Metastore[maxHost]
+
+		if maxVal == 1 {
+			dep := depwalker[maxHost].Host.Dependencies[0]
+			dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
+			if err != nil {
+				panic(err)
+			}
+			fsid := dh.Host.FinalStepID()
+			if fsid != -1 {
+				smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
+				g.Connect(smeta, hmeta)
+				err := g.Graph.Validate()
+				if err != nil {
+					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
+					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+					panic(err)
+				}
+				delete(depwalker, maxHost)
+				continue
+			} else {
+				dhmeta := g.Metastore[dh.Path()]
+				g.Connect(dhmeta, hmeta)
+				err := g.Graph.Validate()
+				if err != nil {
+					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhmeta.ID, hmeta.ID)
+					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+					panic(err)
+				}
+				delete(depwalker, maxHost)
+				continue
+			}
+		} else {
+			maxDepVal := 0
+			maxDepOffset := 0
+			for do, dep := range depwalker[maxHost].Host.Dependencies {
+				depHost, ok := t.Environment.IncludedHosts[dep.HostID]
+				if !ok {
+					continue
+				}
+				if depHost.DependencyCount(t.Environment) >= maxDepVal {
+					maxDepOffset = do
+					maxDepVal = depHost.DependencyCount(t.Environment)
+				}
+			}
+			dep := depwalker[maxHost].Host.Dependencies[maxDepOffset]
+			dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
+			if err != nil {
+				panic(err)
+			}
+			fsid := dh.Host.FinalStepID()
+			if fsid != -1 {
+				smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
+				g.Connect(smeta, hmeta)
+				err := g.Graph.Validate()
+				if err != nil {
+					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
+					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+					panic(err)
+				}
+				delete(depwalker, maxHost)
+				continue
+			} else {
+				dhmeta := g.Metastore[dh.Path()]
+				g.Connect(dhmeta, hmeta)
+				err := g.Graph.Validate()
+				if err != nil {
+					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhmeta.ID, hmeta.ID)
+					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+					panic(err)
+				}
+				delete(depwalker, maxHost)
+				continue
+			}
+		}
+	}
+	for _, net := range t.ProvisionedNetworks {
+		for hid, host := range net.ProvisionedHosts {
+			hmeta := g.Metastore[hid]
+			for _, s := range host.StepsByOffset {
+				smeta := g.Metastore[s.Path()]
+				if s.StepNumber != 0 {
+					prevIdx := s.StepNumber - 1
+					prevStep := host.StepsByOffset[prevIdx]
+					prevmeta := g.Metastore[prevStep.Path()]
+					g.Connect(prevmeta, smeta)
+					err := g.Graph.Validate()
+					if err != nil {
+						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
+						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+						panic(err)
+					}
+				} else {
+					g.Connect(hmeta, smeta)
+					err := g.Graph.Validate()
+					if err != nil {
+						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hmeta.ID, smeta.ID)
+						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+						panic(err)
+					}
+				}
+			}
+		}
+	}
+	// fmt.Printf("%s\n\n\n", g.Graph.StringWithNodeTypes())
 	return nil
 }
 

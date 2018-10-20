@@ -14,6 +14,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/static"
 )
 
@@ -26,7 +27,7 @@ func RenderHCLv2Object(i interface{}) ([]byte, error) {
 	}
 	tname := strings.ToLower(strcase.ToSnake(t.Name()))
 	tmplname := fmt.Sprintf("%s.laforge.tmpl", tname)
-	Logger.Debugf("Searching for template %s", tmplname)
+	cli.Logger.Debugf("Searching for template %s", tmplname)
 	tmpldata, err := static.ReadFile(tmplname)
 	if err != nil {
 		return []byte{}, err
