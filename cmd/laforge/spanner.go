@@ -80,10 +80,11 @@ func spannerTerraformExec(c *cli.Context) error {
 	}
 	wg := new(sync.WaitGroup)
 	finChan := make(chan bool, 1)
+	errChan := make(chan error, 1)
 
 	for _, t := range base.CurrentBuild.Teams {
 		wg.Add(1)
-		go t.RunTerraformCommand(args, wg)
+		go t.RunTerraformCommand(args, wg, errChan)
 	}
 
 	go func() {
@@ -91,9 +92,14 @@ func spannerTerraformExec(c *cli.Context) error {
 		close(finChan)
 	}()
 
-	select {
-	case <-finChan:
-		return nil
+	for {
+		select {
+		case err := <-errChan:
+			cliLogger.Errorf("Error encounted: %v", err)
+			continue
+		case <-finChan:
+			return nil
+		}
 	}
 }
 

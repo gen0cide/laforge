@@ -95,6 +95,7 @@ func (h *Host) Hash() uint64 {
 	)
 }
 
+// DependencyCount is a helper function used to aggregate the number of dependencies a host has recursively
 func (h *Host) DependencyCount(e *Environment) int {
 	ret := 0
 	if h.Dependencies == nil || len(h.Dependencies) == 0 {

@@ -149,18 +149,76 @@ func FindTerraformExecutable() (string, error) {
 }
 
 // RunTerraformCommand runs terraform subcommands inside a team's local directory
-func (t *Team) RunTerraformCommand(args []string, wg *sync.WaitGroup) {
+func (t *Team) RunTerraformCommand(args []string, wg *sync.WaitGroup, errChan chan error) {
 	defer wg.Done()
 
 	tfexe, err := FindTerraformExecutable()
 	if err != nil {
 		cli.Logger.Errorf("failed %s: no terraform binary located in path", t.LaforgeID())
+		errChan <- errors.New("terraform binary was not located in the path")
 		return
 	}
 
 	wg.Add(1)
-	t.RunLocalCommand(tfexe, args, wg)
+	t.RunLocalCommand(tfexe, args, wg, errChan)
 	return
+}
+
+// RunTerraformSequence attempts to run a series of commands on a team
+func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan chan error) {
+	defer wg.Done()
+
+	tfexe, err := FindTerraformExecutable()
+	if err != nil {
+		errChan <- err
+		return
+	}
+
+	err = t.TerraformInit()
+	if err != nil {
+		cli.Logger.Errorf("%s - TF Init Error: %v", t.LaforgeID(), err)
+		errChan <- err
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	for _, tfcmd := range cmds {
+		var runner *runner.Runner
+		if t.Runner == nil {
+			runner = t.CreateRunner()
+		} else {
+			runner = t.Runner
+		}
+
+		go runner.ExecuteCommand(tfexe, tfcmd)
+
+		for {
+			select {
+			case i := <-runner.Output:
+				cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
+				continue
+			case e := <-runner.Errors:
+				cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
+				errChan <- e
+				continue
+			default:
+			}
+
+			select {
+			case i := <-runner.Output:
+				cli.Logger.Debugf("%s: %s", t.LaforgeID(), i)
+				continue
+			case e := <-runner.Errors:
+				cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
+				errChan <- e
+				continue
+			case <-runner.FinChan:
+				cli.Logger.Warnf("%s command returned. Logs located at %s", t.LaforgeID(), runner.StdoutFile)
+			}
+			break
+		}
+	}
 }
 
 // TerraformInit runs terraform init for a team
@@ -170,7 +228,12 @@ func (t *Team) TerraformInit() error {
 		return err
 	}
 
-	runner := t.CreateRunner()
+	var runner *runner.Runner
+	if t.Runner == nil {
+		runner = t.CreateRunner()
+	} else {
+		runner = t.Runner
+	}
 	go runner.ExecuteCommand(tfexe, []string{"init"}...)
 
 	var execerr error
@@ -194,7 +257,7 @@ func (t *Team) TerraformInit() error {
 			execerr = e
 			continue
 		case <-runner.FinChan:
-			cli.Logger.Warnf("%s command returned.", t.LaforgeID())
+			cli.Logger.Warnf("%s command returned. Logs located at %s", t.LaforgeID(), runner.StdoutFile)
 		}
 		break
 	}
@@ -203,7 +266,7 @@ func (t *Team) TerraformInit() error {
 }
 
 // RunLocalCommand runs a local command in the team's local directory
-func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup) {
+func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup, errChan chan error) {
 	defer wg.Done()
 
 	err := t.TerraformInit()
@@ -214,7 +277,13 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 
 	time.Sleep(3 * time.Second)
 
-	runner := t.CreateRunner()
+	var runner *runner.Runner
+	if t.Runner == nil {
+		runner = t.CreateRunner()
+	} else {
+		runner = t.Runner
+	}
+
 	go runner.ExecuteCommand(command, args...)
 
 	for {
@@ -224,6 +293,7 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 			continue
 		case e := <-runner.Errors:
 			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			errChan <- e
 			continue
 		default:
 		}
@@ -233,6 +303,7 @@ func (t *Team) RunLocalCommand(command string, args []string, wg *sync.WaitGroup
 			continue
 		case e := <-runner.Errors:
 			cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
+			errChan <- e
 			continue
 		case <-runner.FinChan:
 			cli.Logger.Warnf("%s command returned.", t.LaforgeID())

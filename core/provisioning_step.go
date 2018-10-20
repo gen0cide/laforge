@@ -133,13 +133,13 @@ func (p *ProvisioningStep) SetID() string {
 
 // Gather implements the Dependency interface
 func (p *ProvisioningStep) Gather(g *Snapshot) error {
-	switch p.Provisioner.(type) {
+	switch v := p.Provisioner.(type) {
 	case *Command:
 		// err := g.Relate(p.Environment, v)
 		// if err != nil {
 		// 	return err
 		// }
-		// g.AddNode(v)
+		g.AddNode(v)
 		// err := g.Relate(p.Host, v)
 		// if err != nil {
 		// 	return err
@@ -153,7 +153,7 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 		// if err != nil {
 		// 	return err
 		// }
-		// g.AddNode(v)
+		g.AddNode(v)
 		// err := g.Relate(p.Host, v)
 		// if err != nil {
 		// 	return err
@@ -167,7 +167,7 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 		// if err != nil {
 		// 	return err
 		// }
-		// g.AddNode(v)
+		g.AddNode(v)
 		// err := g.Relate(p.Host, v)
 		// if err != nil {
 		// 	return err
@@ -181,7 +181,7 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 		// if err != nil {
 		// 	return err
 		// }
-		// g.AddNode(v)
+		g.AddNode(v)
 		// err := g.Relate(p.Host, v)
 		// if err != nil {
 		// 	return err

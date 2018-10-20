@@ -254,6 +254,7 @@ func (b *Build) Gather(g *Snapshot) error {
 	return nil
 }
 
+// Associate walks the build and creates edges in the graph
 func (b *Build) Associate(g *Snapshot) error {
 	for _, t := range b.Teams {
 		err := t.Associate(g)

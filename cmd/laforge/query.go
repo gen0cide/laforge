@@ -46,25 +46,16 @@ func performquery(c *cli.Context) error {
 		return err
 	}
 
-	buildnode, ok := snap.Objects[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
+	buildnode, ok := snap.Metastore[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
 	if !ok {
 		return errors.New("builder was not able to be resolved on the graph")
 	}
-	buildmeta, ok := buildnode.(*core.Metadata)
-	if !ok {
-		return errors.New("buildnode was not of type *core.Metadata")
-	}
-	build, ok := buildmeta.Dependency.(*core.Build)
+	build, ok := buildnode.Dependency.(*core.Build)
 	if !ok {
 		return errors.New("build object was not of type *core.Build")
 	}
 
 	base.CurrentBuild = build
-
-	err = snap.Sort()
-	if err != nil {
-		panic(err)
-	}
 
 	lfcli.SetLogLevel("info")
 
@@ -74,7 +65,7 @@ func performquery(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		for key, meta := range snap.Objects {
+		for key, meta := range snap.Metastore {
 			if !g.Match(key) {
 				continue
 			}
@@ -90,7 +81,7 @@ func performquery(c *cli.Context) error {
 		return nil
 	}
 
-	for key, meta := range snap.Objects {
+	for key, meta := range snap.Metastore {
 		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
 		for _, x := range meta.Parents() {
 			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))

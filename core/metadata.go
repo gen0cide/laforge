@@ -131,14 +131,17 @@ const (
 	LFTypeUnknown LFType = "unknown"
 )
 
+// TypeByPath is a helper function specifically for metadata to call TypeByPath easily
 func (m *Metadata) TypeByPath() LFType {
 	return TypeByPath(m.ID)
 }
 
+// IsGlobalType is a helper function specifically for metadata to call IsGlobalType easily
 func (m *Metadata) IsGlobalType() bool {
 	return IsGlobalType(m.ID)
 }
 
+// IsGlobalType is a helper function that attempts to determine if the specified path is of a global type
 func IsGlobalType(p string) bool {
 	switch TypeByPath(p) {
 	case LFTypeCompetition:
@@ -156,22 +159,23 @@ func IsGlobalType(p string) bool {
 	case LFTypeScript:
 		return true
 	case LFTypeEnvironment:
-		return true
+		return false
 	case LFTypeTeam:
-		return true
+		return false
 	case LFTypeProvisionedNetwork:
-		return true
+		return false
 	case LFTypeProvisionedHost:
-		return true
+		return false
 	case LFTypeProvisioningStep:
-		return true
+		return false
 	case LFTypeUnknown:
-		return true
+		return false
 	default:
 		return false
 	}
 }
 
+// TypeByPath attempts to resolve what type the object is based on it's ID schema
 func TypeByPath(p string) LFType {
 	if !path.IsAbs(p) {
 		return LFTypeCompetition
@@ -193,35 +197,55 @@ func TypeByPath(p string) LFType {
 		return LFTypeRemoteFile
 	}
 
-	if path.Dir(p) == "envs" {
+	if path.Base(path.Dir(p)) == "envs" {
 		return LFTypeEnvironment
 	}
 
-	if path.Dir(path.Dir(p)) == "envs" {
+	if path.Base(path.Dir(path.Dir(p))) == "envs" {
 		return LFTypeBuild
 	}
 
-	if path.Dir(p) == "teams" {
+	if path.Base(path.Dir(p)) == "teams" {
 		return LFTypeTeam
 	}
 
-	if path.Dir(p) == "networks" && pelms[1] == "envs" {
+	if path.Base(path.Dir(p)) == "networks" && pelms[1] == "envs" {
 		return LFTypeProvisionedNetwork
 	}
 
-	if path.Dir(p) == "hosts" && pelms[1] == "envs" {
-		return LFTypeProvisionedNetwork
+	if path.Base(path.Dir(p)) == "hosts" && pelms[1] == "envs" {
+		return LFTypeProvisionedHost
 	}
 
-	if path.Base(p) == "conn" && path.Dir(path.Dir(p)) == "hosts" {
+	if path.Base(p) == "conn" && path.Base(path.Dir(path.Dir(p))) == "hosts" {
 		return LFTypeConnection
 	}
 
-	if path.Dir(p) == "steps" && pelms[1] == "envs" {
+	dir := path.Dir(p)
+	_ = dir
+	if path.Base(path.Dir(p)) == "steps" && pelms[1] == "envs" {
 		return LFTypeProvisioningStep
 	}
 
 	return LFTypeUnknown
+}
+
+// GetTeamIDFromPath attempts to resolve the team's unique ID from the provided ID
+func GetTeamIDFromPath(p string) (string, error) {
+	if !path.IsAbs(p) {
+		return "", errors.New("not a valid absolute path ID schema")
+	}
+
+	pelms := strings.Split(p, `/`)
+	if len(pelms) < 6 {
+		return "", errors.New("path does not meet minimum expected structure for team identification")
+	}
+
+	if pelms[1] != "envs" {
+		return "", errors.New("path is not rooted inside an environment")
+	}
+
+	return strings.Join(pelms[0:6], `/`), nil
 }
 
 // GetID implements the DotNode interface
@@ -244,6 +268,7 @@ func (m *Metadata) GetChecksum() uint64 {
 	return m.Checksum
 }
 
+// DotNode implements the DotNodder interface
 func (m *Metadata) DotNode(s string, d *dag.DotOpts) *dag.DotNode {
 	return &dag.DotNode{
 		Name: s,

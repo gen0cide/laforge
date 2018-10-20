@@ -214,128 +214,19 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 	var err error
 	for _, s := range p.StepsByOffset {
 		g.AddNode(s)
-		// err = g.Relate(s, p)
-		// if err != nil {
-		// 	return err
-		// }
-		if s.StepNumber != 0 {
-			// prevIdx := s.StepNumber - 1
-			// prevStep := p.StepsByOffset[prevIdx]
-			// err = g.Relate(prevStep, s)
-			// if err != nil {
-			// 	return err
-			// }
-			// previousSteps := p.StepsByOffset[0:s.StepNumber]
-			// for _, x := range previousSteps {
-			// 	err = g.Relate(x, s)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
-		} else {
-			// err = g.Relate(p, s)
-			// if err != nil {
-			// 	return err
-			// }
-		}
 		err = s.Gather(g)
 		if err != nil {
 			return err
 		}
 	}
-	// for _, s := range p.Host.Dependencies {
-	// 	hd, err := p.ProvisionedNetwork.Team.LocateProvisionedHost(s.NetworkID, s.HostID)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if hd.ProvisionedNetwork != p.ProvisionedNetwork {
-	// 		pnet := g.Metastore[p.ProvisionedNetwork.Path()]
-	// 	}
-	// 	parent := g.Metastore[p.Path()]
-	// 	parentnet := g.Metastore[p.ProvisionedNetwork.Path()]
-	// 	g.Graph.RemoveEdge(dag.BasicEdge(parentnet, parent))
-	// 	finalStepOffset := hd.Host.FinalStepID()
-	// 	if finalStepOffset == -1 {
-	// 		located := false
-	// 		for _, pstep := range hd.ProvisioningSteps {
-	// 			if pstep.StepNumber == finalStepOffset {
-	// 				err = g.Relate(pstep, p)
-	// 				if err != nil {
-	// 					return err
-	// 				}
-	// 				located = true
-	// 				break
-	// 			}
-	// 		}
-	// 		if !located {
-	// 			return fmt.Errorf("there is no provisioning step with offset %d for host %s", finalStepOffset, hd.Path())
-	// 		}
-	// 	} else {
-	// 		err = g.Relate(hd, p)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	// err = g.Relate(p.Environment, p.Host)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = g.Relate(p.Host, p)
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
 
-func (p *ProvisionedHost) RemapDependencies(g *Snapshot) error {
-	// var newParentNetwork *ProvisionedNetwork
-	// for _, s := range p.Host.Dependencies {
-	// 	hd, err := p.ProvisionedNetwork.Team.LocateProvisionedHost(s.NetworkID, s.HostID)
+	// for _, s := range p.StepsByOffset {
+	// 	g.AddNode(s)
+	// 	err = s.Gather(g)
 	// 	if err != nil {
 	// 		return err
 	// 	}
-	// 	if hd.ProvisionedNetwork != p.ProvisionedNetwork {
-	// 		pnet := g.Metastore[p.ProvisionedNetwork.Path()]
-	// 		panic(fmt.Errorf("could not find the parent network for %s", pnet.ID))
-	// 	}
-	// 	parent := g.Metastore[p.Path()]
-	// 	parentnet := g.Metastore[p.ProvisionedNetwork.Path()]
-	// 	parentRel := dag.BasicEdge(parentnet, parent)
-	// 	if g.Graph.HasEdge(parentRel) {
-	// 		g.Graph.RemoveEdge(parentRel)
-	// 	}
-	// 	g.Graph.RemoveEdge(dag.BasicEdge(parentnet, parent))
-	// 	finalStepOffset := hd.Host.FinalStepID()
-	// 	if finalStepOffset != -1 {
-	// 		located := false
-	// 		for _, pstep := range hd.ProvisioningSteps {
-	// 			if pstep.StepNumber == finalStepOffset {
-	// 				err = g.Relate(pstep, p)
-	// 				if err != nil {
-	// 					return err
-	// 				}
-	// 				located = true
-	// 				break
-	// 			}
-	// 		}
-	// 		if !located {
-	// 			return fmt.Errorf("there is no provisioning step with offset %d for host %s", finalStepOffset, hd.Path())
-	// 		}
-	// 	} else {
-	// 		err = g.Relate(hd, p)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
 	// }
-	// err := g.Relate(p.Environment, p.Host)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = g.Relate(p.Host, p)
-	// if err != nil {
-	// 	return err
-	// }
+
 	return nil
 }

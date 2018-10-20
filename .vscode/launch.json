@@ -13,7 +13,7 @@
     "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
     "args": [
       "debug",
-      "saved.json",
+      "state.json",
       "/hosts/windows/ad-00",
     ]
   }]
