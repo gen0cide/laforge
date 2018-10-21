@@ -173,7 +173,6 @@ func performplan(c *cli.Context) error {
 }
 
 func performapply(c *cli.Context) error {
-	lfcli.SetLogLevel("info")
 	base, err := core.Bootstrap()
 	if err != nil {
 		if _, ok := err.(hcl.Diagnostics); ok {
