@@ -289,7 +289,7 @@ EOF
           }
         {{ end }}
 
-        source = "./{{ $netobj.Base }}/{{ $host.Base }}/laforge-agent"
+        source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/agent"
         {{ if $host.IsWindows }}
           destination = "C:\\laforge-agent"
         {{ else }}
@@ -298,11 +298,11 @@ EOF
       }
     }
 
-    output "{{ $host.Base }}.private_ip" {
+    output "{{ $host.Base }}-private_ip" {
       value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
     }
 
-    output "{{ $host.Base }}.public_ip" {
+    output "{{ $host.Base }}-public_ip" {
       value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
     }
 
@@ -338,7 +338,7 @@ EOF
 
     resource "local_file" "{{ $resource_name }}_provisioning_file" {
       content = "${data.template_file.{{ $resource_name }}.rendered}"
-      filename = "./{{ $netobj.Base }}/{{ $host.Base }}/provisioned_host.laforge"
+      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/conn.laforge"
     }
   {{ end }}
 {{ end }}

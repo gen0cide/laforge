@@ -35,6 +35,12 @@ var (
 				},
 			},
 			{
+				Name:   "tf",
+				Usage:  "Test terraform embedding",
+				Action: performtf,
+				Flags:  []cli.Flag{},
+			},
+			{
 				Name:            "status",
 				Usage:           "Show the current build's infrastructure status.",
 				Action:          performinfra,
@@ -43,7 +49,7 @@ var (
 			{
 				Name:            "apply",
 				Usage:           "Provision the infrastructure to bring state in line with build blueprint.",
-				Action:          performinfra,
+				Action:          performapply,
 				SkipFlagParsing: true,
 			},
 			{
@@ -173,6 +179,133 @@ func performplan(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+func performapply(c *cli.Context) error {
+	base, err := core.Bootstrap()
+	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return errors.New("aborted due to parsing error")
+		}
+		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
+		os.Exit(1)
+	}
+
+	err = base.AssertMinContext(core.BuildContext)
+	if err != nil {
+		cliLogger.Errorf("Must be in a team context to use this command: %v", err)
+		os.Exit(1)
+	}
+
+	// lfcli.SetLogLevel("info")
+
+	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
+	if err != nil {
+		return err
+	}
+
+	buildnode, ok := snap.Metastore[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
+	if !ok {
+		return errors.New("builder was not able to be resolved on the graph")
+	}
+	build, ok := buildnode.Dependency.(*core.Build)
+	if !ok {
+		return errors.New("build object was not of type *core.Build")
+	}
+
+	base.CurrentBuild = build
+
+	err = build.Associate(snap)
+	if err != nil {
+		return err
+	}
+
+	state := core.NewState()
+
+	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
+
+	_, err = os.Stat(dbfile)
+
+	if err != nil {
+		return err
+	}
+
+	state.SetCurrent(snap)
+
+	err = state.Open(dbfile)
+	if err != nil {
+		return err
+	}
+
+	defer state.DB.Close()
+
+	_, err = state.LoadSnapshotFromDB()
+	if err != nil {
+		return err
+	}
+
+	plan, err := core.CalculateDelta(state.Persisted, state.Current)
+	if err != nil {
+		return err
+	}
+
+	state.Plan = plan
+
+	lfcli.SetLogLevel("info")
+
+	err = plan.Preflight()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// type LFUI struct{}
+
+// func (l *LFUI) Ask(s string) (string, error) {
+// 	return "", nil
+// }
+
+// func (l *LFUI) AskSecret(s string) (string, error) {
+// 	return "", nil
+// }
+
+// func (l *LFUI) Output(s string) {
+// 	fmt.Println(s)
+// }
+
+// func (l *LFUI) Info(s string) {
+// 	cliLogger.Info(s)
+// }
+
+// func (l *LFUI) Error(s string) {
+// 	cliLogger.Error(s)
+// }
+
+// func (l *LFUI) Warn(s string) {
+// 	cliLogger.Warn(s)
+// }
+
+// func performtf(c *cli.Context) error {
+// 	lfcli.SetLogLevel("debug")
+// 	lfui := LFUI{}
+// 	tfcmd := &command.PlanCommand{
+// 		Ui: lfui,
+// 	}
+
+// 	conf, err := tfcmd.Config(c.Args().Get(0))
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	ret := tfcmd.Run([]string{})
+// 	cliLogger.Infof("output was %d", ret)
+// 	return nil
+// }
+
+func performtf(c *cli.Context) error {
+	return commandNotImplemented(c)
 }
 
 func performinfra(c *cli.Context) error {

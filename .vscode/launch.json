@@ -12,9 +12,9 @@
     "env": {},
     "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
     "args": [
-      "debug",
-      "state.json",
-      "/hosts/windows/ad-00",
+      "infra",
+      "apply",
+      // "/hosts/windows/ad-00",
     ]
   }]
 }

@@ -66,8 +66,13 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 	defer func() {
 		close(r.FinChan)
 	}()
+
 	r.Program = command
 	r.Args = args
+
+	// cmd := exec.Command(command, args...)
+	// command = "/bin/sh"
+	// args = []string{"-c", "pwd && env && ls -lah"}
 
 	cmd := exec.Command(command, args...)
 
@@ -97,7 +102,11 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 	}
 	defer stderrFile.Close()
 
-	cmd.Env = os.Environ()
+	// cmd.Env = os.Environ()
+
+	stdoutdone := make(chan struct{})
+	stderrdone := make(chan struct{})
+
 	cmd.Dir = r.BaseDir
 
 	if err := cmd.Start(); err != nil {
@@ -116,7 +125,10 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 			text := stdoutScanner.Text()
 			r.Output <- text
 			fmt.Fprintln(stdoutFile, text)
+			cli.Logger.Infof("%s", text)
 		}
+
+		stdoutdone <- struct{}{}
 	}()
 
 	go func() {
@@ -125,12 +137,17 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 			text := stderrScanner.Text()
 			r.Output <- text
 			fmt.Fprintln(stderrFile, text)
+			cli.Logger.Infof("%s", text)
 		}
+		stderrdone <- struct{}{}
 	}()
 
 	cmdChannel := make(chan error)
 	signalChannel := NewSignalsForwarder(forwardSignals, cmd, cmdChannel)
 	defer signalChannel.Close()
+
+	<-stdoutdone
+	<-stderrdone
 
 	err = cmd.Wait()
 	cmdChannel <- err

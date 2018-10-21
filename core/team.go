@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -131,7 +132,14 @@ func (t *Team) SetID() string {
 
 // CreateRunner creates a new local command runner for the team, and returns it
 func (t *Team) CreateRunner() *runner.Runner {
-	runner := runner.NewRunner(t.LaforgeID(), t.GetCaller().Current().CallerDir)
+	if t.Dir == "" {
+		cfg, err := LocateBaseConfig()
+		if err != nil {
+			panic(err)
+		}
+		t.Dir = filepath.Join(filepath.Dir(cfg), t.ID)
+	}
+	runner := runner.NewRunner(t.LaforgeID(), t.Dir)
 	return runner
 }
 
@@ -181,15 +189,11 @@ func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan c
 		return
 	}
 
-	time.Sleep(3 * time.Second)
-
 	for _, tfcmd := range cmds {
-		var runner *runner.Runner
-		if t.Runner == nil {
-			runner = t.CreateRunner()
-		} else {
-			runner = t.Runner
-		}
+		time.Sleep(3 * time.Second)
+
+		errors := []error{}
+		runner := t.CreateRunner()
 
 		go runner.ExecuteCommand(tfexe, tfcmd)
 
@@ -201,7 +205,7 @@ func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan c
 			case e := <-runner.Errors:
 				cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 				errChan <- e
-				continue
+				errors = append(errors, e)
 			default:
 			}
 
@@ -212,9 +216,16 @@ func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan c
 			case e := <-runner.Errors:
 				cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 				errChan <- e
-				continue
+				errors = append(errors, e)
 			case <-runner.FinChan:
-				cli.Logger.Warnf("%s command returned. Logs located at %s", t.LaforgeID(), runner.StdoutFile)
+				if len(errors) > 0 {
+					cli.Logger.Errorf("Runner for %s has failed performing %s %s:", t.LaforgeID(), tfexe, tfcmd)
+					for idx, x := range errors {
+						cli.Logger.Errorf("Error #%d: %v", idx, x)
+					}
+					return
+				}
+				cli.Logger.Warnf("Team %s executed \"terraform %s\" successfully. Logs located at %s", t.LaforgeID(), tfcmd, runner.StdoutFile)
 			}
 			break
 		}
@@ -228,12 +239,7 @@ func (t *Team) TerraformInit() error {
 		return err
 	}
 
-	var runner *runner.Runner
-	if t.Runner == nil {
-		runner = t.CreateRunner()
-	} else {
-		runner = t.Runner
-	}
+	runner := t.CreateRunner()
 	go runner.ExecuteCommand(tfexe, []string{"init"}...)
 
 	var execerr error

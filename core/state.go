@@ -85,7 +85,7 @@ func (p *Plan) Preflight() error {
 		select {
 		case err := <-errChan:
 			exiterror = err
-			errored = true
+			return err
 		case <-finChan:
 			if errored {
 				return exiterror
@@ -160,6 +160,9 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 	// need to account for partially deployed hosts (should be rolled back and redeployed)
 	if len(tainted) > 0 {
 		for _, t := range tainted {
+			if t == nil {
+				continue
+			}
 			objid := t.(string)
 			objtype := TypeByPath(objid)
 			_ = objtype
