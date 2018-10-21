@@ -195,7 +195,7 @@ func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan c
 		errors := []error{}
 		runner := t.CreateRunner()
 
-		go runner.ExecuteCommand(tfexe, tfcmd)
+		go runner.ExecuteCommand(tfexe, strings.Split(tfcmd, " ")...)
 
 		for {
 			select {
@@ -240,7 +240,7 @@ func (t *Team) TerraformInit() error {
 	}
 
 	runner := t.CreateRunner()
-	go runner.ExecuteCommand(tfexe, []string{"init"}...)
+	go runner.ExecuteCommand(tfexe, []string{"init", "-force-copy", "-no-color"}...)
 
 	var execerr error
 	for {
@@ -366,6 +366,8 @@ func (t *Team) Associate(g *Snapshot) error {
 		nmeta := g.Metastore[nid]
 		for hid, host := range net.ProvisionedHosts {
 			hmeta := g.Metastore[hid]
+			connmeta := g.Metastore[host.Conn.Path()]
+			g.Connect(hmeta, connmeta)
 			if len(host.Host.Dependencies) > 0 {
 				depwalker[hid] = host
 			} else {

@@ -70,10 +70,6 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 	r.Program = command
 	r.Args = args
 
-	// cmd := exec.Command(command, args...)
-	// command = "/bin/sh"
-	// args = []string{"-c", "pwd && env && ls -lah"}
-
 	cmd := exec.Command(command, args...)
 
 	stdoutIn, err := cmd.StdoutPipe()
@@ -125,7 +121,6 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 			text := stdoutScanner.Text()
 			r.Output <- text
 			fmt.Fprintln(stdoutFile, text)
-			cli.Logger.Infof("%s", text)
 		}
 
 		stdoutdone <- struct{}{}
@@ -137,7 +132,6 @@ func (r *Runner) ExecuteCommand(command string, args ...string) {
 			text := stderrScanner.Text()
 			r.Output <- text
 			fmt.Fprintln(stderrFile, text)
-			cli.Logger.Infof("%s", text)
 		}
 		stderrdone <- struct{}{}
 	}()

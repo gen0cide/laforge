@@ -70,10 +70,22 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 		return errors.WithMessage(err, "could not create winrm client")
 	}
 
-	_, err = client.RunWithInput("powershell -NoProfile -ExecutionPolicy Bypass", w.Stdout, w.Stderr, w.Stdin)
+	shell, err := client.CreateShell()
 	if err != nil {
-		return errors.WithMessage(err, "connection issue")
+		panic(err)
 	}
+	var cmd *winrm.Command
+	cmd, err = shell.Execute("powershell -NoProfile -ExecutionPolicy Bypass")
+	if err != nil {
+		panic(err)
+	}
+
+	go io.Copy(cmd.Stdin, os.Stdin)
+	go io.Copy(os.Stdout, cmd.Stdout)
+	go io.Copy(os.Stderr, cmd.Stderr)
+
+	cmd.Wait()
+	shell.Close()
 
 	return nil
 }

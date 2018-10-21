@@ -163,7 +163,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 		if status == "included" {
 			e.IncludedHosts[name] = host
 			ihost[name] = "resolved"
-			cli.Logger.Infof("Resolved host %s", name)
+			cli.Logger.Debugf("Resolved host %s", name)
 		}
 	}
 	for _, n := range e.Networks {

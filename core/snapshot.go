@@ -1,8 +1,6 @@
 package core
 
 import (
-	"fmt"
-	"io"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
@@ -10,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform/dag"
 
 	"github.com/gen0cide/laforge/core/cli"
-	"github.com/gen0cide/laforge/core/graph"
 )
 
 // Snapshot is a graph traversal structure used to create a unique fingerprint for all elements in an environment.
@@ -29,20 +26,6 @@ type DependencyList []int
 
 // RelateFunc is a type alias to a function that relates objects together in a promise style format
 type RelateFunc func() error
-
-// Plot writes a DOT representation of the Snapshot to the output writer, with an optional path to denote the root object.
-func (s *Snapshot) Plot(output io.Writer, rootID string) error {
-	if rootID != "" {
-		_, ok := s.Metastore[rootID]
-		if !ok {
-			return fmt.Errorf("the node %s could not be found in the graph", rootID)
-		}
-	}
-	dw := graph.NewDotWriter(output, len(s.Metastore), false)
-	rootMeta := s.Metastore[rootID]
-	dw.PlotGraph(rootMeta)
-	return nil
-}
 
 // Hash implements the hasher interface
 func (s *Snapshot) Hash() uint64 {

@@ -150,5 +150,12 @@ func (b *BuildEngine) Do() error {
 		return buildutil.Throw(err, "failed rendering build", nil)
 	}
 	cli.Logger.Infof("Successfully rendered build")
+
+	err = b.Base.StateManager.PersistSnapshot(b.Base.StateManager.Current)
+	if err != nil {
+		return err
+	}
+
+	b.Base.StateManager.DB.Close()
 	return nil
 }

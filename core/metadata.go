@@ -61,24 +61,19 @@ func ValidateGenericPath(p string) error {
 // Metadata stores metadata about different structs within the environment
 //easyjson:json
 type Metadata struct {
-	Name         string               `json:"name"`
-	ID           string               `json:"id,omitempty"`
-	GID          int                  `json:"gid"`
-	GCost        int64                `json:"gcost"`
-	ObjectType   string               `json:"object_type,omitempty"`
-	Dependency   Dependency           `json:"-"`
-	Tainted      bool                 `json:"tainted,omitempty"`
-	Addition     bool                 `json:"addition,omitempty"`
-	Checksum     uint64               `json:"checksum,omitempty"`
-	CreatedAt    time.Time            `json:"created_at,omitempty"`
-	ModifiedAt   time.Time            `json:"modified_at,omitempty"`
-	ParentDepIDs []string             `json:"parent_ids,omitempty"`
-	ParentDeps   []graph.Relationship `json:"-"`
-	ParentGIDs   []int                `json:"parent_gids"`
-	ChildDeps    []graph.Relationship `json:"-"`
-	ChildGIDs    []int                `json:"child_gids"`
-	ChildDepIDs  []string             `json:"dependency_ids,omitempty"`
-	Resources    []MetaResource       `json:"resources,omitempty"`
+	Dependency Dependency     `json:"-"`
+	Name       string         `json:"name"`
+	ID         string         `json:"id"`
+	GID        int            `json:"gid"`
+	GCost      int64          `json:"gcost"`
+	ObjectType string         `json:"object_type"`
+	Created    bool           `json:"provisioned"`
+	Tainted    bool           `json:"tainted,omitempty"`
+	Addition   bool           `json:"addition,omitempty"`
+	Checksum   uint64         `json:"checksum,omitempty"`
+	CreatedAt  time.Time      `json:"created_at,omitempty"`
+	ModifiedAt time.Time      `json:"modified_at,omitempty"`
+	Resources  []MetaResource `json:"resources,omitempty"`
 }
 
 // LFType describes a string representation of elements in Laforge
@@ -285,13 +280,11 @@ func (m *Metadata) DotNode(s string, d *dag.DotOpts) *dag.DotNode {
 
 // Label implements the DotNode interface
 func (m *Metadata) Label() string {
-	return fmt.Sprintf("%s|type = %s|primary_parent = %s|checksum = %x|num_parents = %d|num_children = %d",
+	return fmt.Sprintf("%s|type = %s|primary_parent = %s|checksum = %x",
 		m.ID,
 		m.ObjectType,
 		m.Dependency.ParentLaforgeID(),
 		m.Checksum,
-		len(m.ParentDeps),
-		len(m.ChildDeps),
 	)
 }
 
@@ -303,50 +296,6 @@ func (m *Metadata) Shape() string {
 // Style implements the DotNode interface
 func (m *Metadata) Style() string {
 	return "solid"
-}
-
-// Children implements the Relationship interface
-func (m *Metadata) Children() []graph.Relationship {
-	return m.ChildDeps
-}
-
-// Parents implements the Relationship interface
-func (m *Metadata) Parents() []graph.Relationship {
-	return m.ParentDeps
-}
-
-// ParentIDs implements the relationship interface
-func (m *Metadata) ParentIDs() []string {
-	return m.ParentDepIDs
-}
-
-// ChildrenIDs implements the relationship interface
-func (m *Metadata) ChildrenIDs() []string {
-	return m.ChildDepIDs
-}
-
-// AddChild implements the relationship interface
-func (m *Metadata) AddChild(r ...graph.Relationship) {
-	for _, x := range r {
-		if !graph.HasChild(m, x) {
-			m.ChildDepIDs = append(m.ChildDepIDs, x.GetID())
-			m.ChildDeps = append(m.ChildDeps, x)
-			m.ChildGIDs = append(m.ChildGIDs, x.GetGID())
-		}
-	}
-	return
-}
-
-// AddParent implements the relationship interface
-func (m *Metadata) AddParent(r ...graph.Relationship) {
-	for _, x := range r {
-		if !graph.HasParent(m, x) {
-			m.ParentDepIDs = append(m.ParentDepIDs, x.GetID())
-			m.ParentDeps = append(m.ParentDeps, x)
-			m.ParentGIDs = append(m.ParentGIDs, x.GetGID())
-		}
-	}
-	return
 }
 
 // Hash implements the hasher interface
@@ -370,6 +319,17 @@ func (m *Metadata) String() string {
 // CalculateChecksum assigns the metadata object's checksum field with the dependency's hash
 func (m *Metadata) CalculateChecksum() {
 	m.Checksum = m.Dependency.Hash()
+}
+
+// ToRevision generates a revision object for m
+func (m *Metadata) ToRevision() *Revision {
+	return &Revision{
+		ID:        m.ID,
+		Type:      TypeByPath(m.ID),
+		Status:    RevStatusPlanned,
+		Checksum:  m.Checksum,
+		Timestamp: time.Now(),
+	}
 }
 
 // MetaResource stores information about a local file dependency. This can be a directory.

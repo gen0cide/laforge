@@ -60,6 +60,18 @@ resource "google_compute_network" "vpc" {
   auto_create_subnetworks = false
 }
 
+{{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
+{{ $teamrev = $teamrev.Touch }}
+
+resource "local_file" "team_lf_revision" {
+  content = {{ $teamrev.ToJSONString | hclstring }}
+  filename = "./.team.lfrevision"
+
+  depends_on = [
+    "google_compute_network.vpc",
+  ]
+}
+
 resource "google_compute_firewall" "allow_icmp" {
   name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-icmp"
   network = "${google_compute_network.vpc.self_link}"
@@ -159,13 +171,27 @@ resource "google_compute_firewall" "deny_mgmt_int" {
 }
 
 
-{{ range $netname, $net := $.Environment.IncludedNetworks }}
+{{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
+{{ $net := $pnet.Network }}
+{{ $netname := $net.Path }}
 // network = {{ $netname }}
 resource "google_compute_subnetwork" "{{ $net.Base }}" {
   name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
   ip_cidr_range = "{{ $net.CIDR }}"
   region = "{{ index $.Build.Config "gcp_region" }}"
   network = "${google_compute_network.vpc.self_link}"
+}
+
+{{ $pnetrev := (index $.Laforge.StateManager.NewRevs $pnetid) }}
+{{ $pnetrev = $pnetrev.Touch }}
+
+resource "local_file" "lfrev-{{ $pnet.Base }}" {
+  content = {{ $pnetrev.ToJSONString | hclstring }}
+  filename = "./networks/{{ $pnet.Base }}/.provisioned_network.lfrevision"
+
+  depends_on = [
+    "google_compute_subnetwork.{{ $net.Base }}",
+  ]
 }
 
 resource "google_compute_firewall" "allow_{{ $net.Base }}" {
@@ -197,18 +223,20 @@ resource "google_compute_firewall" "allow_{{ $net.Base }}" {
 
 {{ $dns_resource_name := "" }}
 
-{{ range $net, $hosts := $.Environment.HostByNetwork }}
-  {{ $netobj := (index $.Environment.IncludedNetworks $net) }}
-  {{ range $_, $host := $hosts }}
+{{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
+  {{ $netobj := $pnet.Network }}
+  {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
+    {{ $host := $phost.Host }}
     {{ if eq $host.Base "ns01" }}
       {{ $dns_resource_name = printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
     {{ end }}
   {{ end }}
 {{ end }}
 
-{{ range $net, $hosts := $.Environment.HostByNetwork }}
-  {{ $netobj := (index $.Environment.IncludedNetworks $net) }}
-  {{ range $hostidx, $host := $hosts }}
+{{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
+  {{ $netobj := $pnet.Network }}
+  {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
+    {{ $host := $phost.Host }}
     {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
 
     resource "google_compute_address" "{{ $resource_name }}" {
@@ -230,7 +258,7 @@ resource "google_compute_firewall" "allow_{{ $net.Base }}" {
 
       network_interface {
         subnetwork = "${google_compute_subnetwork.{{ $netobj.Base }}.self_link}"
-        address = "${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"
+        network_ip = "${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"
 
         access_config {
           nat_ip = "${google_compute_address.{{ $resource_name }}.address}"
@@ -298,6 +326,18 @@ EOF
       }
     }
 
+    {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
+    {{ $phostrev = $phostrev.TouchWithID $resource_name }}
+
+    resource "local_file" "lfrev-{{ $resource_name }}-host" {
+      content = {{ $phostrev.ToJSONString | hclstring }}
+      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.provisioned_host.lfrevision"
+
+      depends_on = [
+        "google_compute_instance.{{ $resource_name }}",
+      ]
+    }
+
     output "{{ $host.Base }}-private_ip" {
       value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
     }
@@ -339,6 +379,18 @@ EOF
     resource "local_file" "{{ $resource_name }}_provisioning_file" {
       content = "${data.template_file.{{ $resource_name }}.rendered}"
       filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/conn.laforge"
+    }
+
+    {{ $phostconnrev := (index $.Laforge.StateManager.NewRevs $phost.Conn.Path) }}
+    {{ $phostconnrev = $phostconnrev.TouchWithID $resource_name }}
+
+    resource "local_file" "lfrev-{{ $resource_name }}-conn" {
+      content = {{ $phostconnrev.ToJSONString | hclstring }}
+      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.connection.lfrevision"
+
+      depends_on = [
+        "google_compute_instance.{{ $resource_name }}",
+      ]
     }
   {{ end }}
 {{ end }}

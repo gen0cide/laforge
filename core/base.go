@@ -127,6 +127,7 @@ type Laforge struct {
 	CurrentBuild               *Build                         `json:"-"`
 	CurrentTeam                *Team                          `json:"-"`
 	CurrentCompetition         *Competition                   `json:"-"`
+	StateManager               *State                         `json:"-"`
 	InitialContext             StateContext                   `json:"-"`
 	PathRegistry               *PathRegistry                  `json:"-"`
 }
@@ -167,6 +168,15 @@ type Opt struct {
 type OnConflict struct {
 	Do     string `cty:"do" hcl:"do,attr" json:"do,omitempty"`
 	Append bool   `cty:"append" hcl:"append,optional" json:"append,omitempty"`
+}
+
+// CurrentStateManager attempts to return the current state manager, throwing an error if it doesn't exist
+func (l *Laforge) CurrentStateManager() (*State, error) {
+	if l.StateManager == nil {
+		return nil, errors.New("cannot access a nil state manager")
+	}
+
+	return l.StateManager, nil
 }
 
 // StateContext is a type alias to the level of context we are currently executing in
@@ -290,7 +300,7 @@ func (l *Laforge) CreateIndex() {
 		l.RemoteFiles[x.ID] = x
 		x.Caller = l.Caller
 	}
-	for _, x := range l.Connections {
+	for _, x := range l.DefinedConnections {
 		l.Connections[x.LaforgeID()] = x
 		x.Caller = l.Caller
 	}
@@ -683,6 +693,7 @@ func (l *Laforge) IndexProvisionedHostDependencies() error {
 		if !found {
 			return fmt.Errorf("provisioned network %s for provisioned host %s could not be located", host.ParentLaforgeID(), host.Path())
 		}
+		net.ProvisionedHosts[host.Path()] = host
 		host.ProvisionedNetwork = net
 		host.Team = net.Team
 		host.Build = net.Build

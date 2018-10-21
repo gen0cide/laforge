@@ -2,16 +2,17 @@ package core
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"sort"
 	"sync"
-	"time"
 
-	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/terraform/dag"
 	"github.com/hashicorp/terraform/tfdiags"
+	"github.com/karrick/godirwalk"
+
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/pkg/errors"
 	"github.com/tidwall/buntdb"
 )
@@ -28,49 +29,53 @@ var (
 
 // State is the primary object used to interface with the build's on disk state table
 type State struct {
+	Base      *Laforge
 	DB        *buntdb.DB
 	Current   *Snapshot
 	Persisted *Snapshot
 	Plan      *Plan
+	NewRevs   map[string]*Revision
+	KnownRevs map[string]*Revision
+	RevDelta  map[string]RevMod
 }
 
-// Plan is a type that describes how to get from one state to the next
-//easyjson:json
-type Plan struct {
-	Checksum          uint64            `json:"checksum"`
-	StartedAt         time.Time         `json:"started_at"`
-	EndedAt           time.Time         `json:"ended_at"`
-	Graph             *Snapshot         `json:"target,omitempty"`
-	TaskTypes         map[string]string `json:"task_types"`
-	Tasks             map[string]Doer   `json:"-"`
-	TasksByPriority   map[int][]string  `json:"tasks_by_priority"`
-	GlobalOrder       []string          `json:"global_order"`
-	OrderedPriorities []int             `json:"ordered_priorities"`
-	Tainted           map[string]bool   `json:"tainted"`
-}
-
-// Preflight determines what teams need terraform run on them, executing them before the plan
-func (p *Plan) Preflight() error {
-	tfruns, err := CalculateTerraformNeeds(p)
-	if err != nil {
+// LocateRevisions attempts to load the known revision files off disk
+func (s *State) LocateRevisions() error {
+	if s.KnownRevs == nil {
+		s.KnownRevs = map[string]*Revision{}
+	}
+	if err := s.Base.AssertMinContext(EnvContext); err != nil {
 		return err
 	}
 
-	errChan := make(chan error, 1)
-	finChan := make(chan bool, 1)
 	wg := new(sync.WaitGroup)
+	errChan := make(chan error, 1)
+	revChan := make(chan *Revision, 2000)
+	finChan := make(chan bool, 1)
 
-	for tid, cmds := range tfruns {
-		tmeta, ok := p.Graph.Metastore[tid]
-		if !ok {
-			return fmt.Errorf("team %s is not in the graph", tid)
-		}
-		tobj, ok := tmeta.Dependency.(*Team)
-		if !ok {
-			return fmt.Errorf("team %s did not have a *Team dependency type", tid)
-		}
-		wg.Add(1)
-		go tobj.RunTerraformSequence(cmds, wg, errChan)
+	dirname := s.Base.EnvRoot
+	err := godirwalk.Walk(dirname, &godirwalk.Options{
+		Callback: func(osPathname string, de *godirwalk.Dirent) error {
+			if filepath.Ext(de.Name()) == `.lfrevision` {
+				wg.Add(1)
+				go func(fp string) {
+					defer wg.Done()
+					rev, err := ParseRevisionFile(fp)
+					if err != nil {
+						errChan <- errors.Wrapf(err, "revfile=%s", fp)
+						return
+					}
+					revChan <- rev
+					return
+				}(osPathname)
+			}
+			return nil
+		},
+		Unsorted: true, // (optional) set true for faster yet non-deterministic enumeration (see godoc)
+	})
+
+	if err != nil {
+		return err
 	}
 
 	go func() {
@@ -79,27 +84,136 @@ func (p *Plan) Preflight() error {
 	}()
 
 	errored := false
-	var exiterror error
 
 	for {
 		select {
+		case rev := <-revChan:
+			s.KnownRevs[rev.ID] = rev
+			continue
 		case err := <-errChan:
-			exiterror = err
-			return err
+			cli.Logger.Errorf("Error reading revision file: %v", err)
+			errored = true
+			continue
+		default:
+		}
+
+		select {
+		case rev := <-revChan:
+			s.KnownRevs[rev.ID] = rev
+			continue
+		case err := <-errChan:
+			cli.Logger.Errorf("Error reading revision file: %v", err)
+			errored = true
+			continue
 		case <-finChan:
 			if errored {
-				return exiterror
+				return errors.New("revision file loading has failed")
 			}
 			return nil
 		}
 	}
 }
 
+// GenerateCurrentRevs enumerates the current snapshot and generates a listing of revisions for comparison
+func (s *State) GenerateCurrentRevs() error {
+	if s.NewRevs == nil {
+		s.NewRevs = map[string]*Revision{}
+	}
+	for _, x := range s.Current.Metastore {
+		rev := x.ToRevision()
+		s.NewRevs[rev.ID] = rev
+	}
+	return nil
+}
+
+// GenerateRevisionDelta compares the known verses the new revisiosn and comes up with a strategy which
+// is used in the plan calculations.
+func (s *State) GenerateRevisionDelta() error {
+	if s.RevDelta == nil {
+		s.RevDelta = map[string]RevMod{}
+	}
+	nrkeys := make([]string, len(s.NewRevs))
+	for nrid, nrev := range s.NewRevs {
+		nrkeys = append(nrkeys, nrid)
+		krev, ok := s.KnownRevs[nrid]
+		if !ok {
+			s.RevDelta[nrid] = RevModCreate
+			continue
+		}
+		if nrev.Checksum != krev.Checksum {
+			cli.Logger.Warnf("Marking %s for a failed revision checksum comparison", nrid)
+			s.RevDelta[nrid] = RevModTouch
+			continue
+		}
+	}
+	for knid := range s.KnownRevs {
+		if _, ok := s.NewRevs[knid]; !ok {
+			s.RevDelta[knid] = RevModDelete
+		}
+	}
+	return nil
+}
+
+// NewRevHashes returns a hash of the new revision objects
+func (s *State) NewRevHashes() uint64 {
+	hashes := ChecksumList{}
+	for _, x := range s.NewRevs {
+		hashes = append(hashes, x.Checksum)
+	}
+	return hashes.Hash()
+}
+
+// KnownRevHashes returns a hash of the located revision objects
+func (s *State) KnownRevHashes() uint64 {
+	hashes := ChecksumList{}
+	for _, x := range s.KnownRevs {
+		hashes = append(hashes, x.Checksum)
+	}
+	return hashes.Hash()
+}
+
+// SnapshotsEqual are used to test the equality of the two environments and their dependencies
+func (s *State) SnapshotsEqual() bool {
+	if s.Persisted.Hash() != s.Current.Hash() {
+		return false
+	}
+	if s.KnownRevHashes() != s.NewRevHashes() {
+		return false
+	}
+	return true
+}
+
 // CalculateDelta attempts to determine what needs to be done to bring a base in line with target
-func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
-	if base.Hash() == target.Hash() {
+func (s *State) CalculateDelta() (*Plan, error) {
+	if s.Persisted == nil {
+		return nil, errors.New("the persisted state is nil and delta analysis cannot be performed")
+	}
+	if s.Current == nil {
+		return nil, errors.New("the current state is nil and delta analysis cannot be performed")
+	}
+
+	err := s.LocateRevisions()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.GenerateCurrentRevs()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.GenerateRevisionDelta()
+	if err != nil {
+		return nil, err
+	}
+
+	if s.SnapshotsEqual() {
 		return nil, ErrSnapshotsMatch
 	}
+
+	base := s.Persisted
+	target := s.Current
+
 	base.Graph.SetDebugWriter(ioutil.Discard)
 	target.Graph.SetDebugWriter(ioutil.Discard)
 	log.SetOutput(ioutil.Discard)
@@ -130,14 +244,15 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 			tainted = append(tainted, v)
 			return nil
 		}
-		// if basemeta == nil {
-		// 	tainted = append(tainted, v)
-		// 	return nil
-		// }
+		if _, ok := s.RevDelta[v.(string)]; ok {
+			tainted = append(tainted, v)
+			changeslice = append(changeslice, targetmeta.ID)
+			return nil
+		}
 		if targetmeta.Checksum != basemeta.Checksum {
 			tainted = append(tainted, v)
-			// changemap[targetmeta.ID] = true
 			changeslice = append(changeslice, targetmeta.ID)
+			return nil
 		}
 		return nil
 	})
@@ -148,7 +263,12 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 		if !exists {
 			tainted = append(tainted, v)
 			changeslice = append(changeslice, targetmeta.ID)
-			// changemap[targetmeta.ID] = true
+			return nil
+		}
+		if _, ok := s.RevDelta[v.(string)]; ok {
+			tainted = append(tainted, v)
+			changeslice = append(changeslice, targetmeta.ID)
+			return nil
 		}
 		return nil
 	})
@@ -185,16 +305,8 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 		if err != nil {
 			return nil, err
 		}
-		pruned := children.Filter(func(i interface{}) bool {
-			chobj := base.Metastore[i.(string)]
-			_ = chobj
-			// if chobj.IsGlobalType() && !changemap[chobj.ID] {
-			// 	return false
-			// }
-			return true
-		})
 
-		for _, x := range dag.AsVertexList(pruned) {
+		for _, x := range dag.AsVertexList(children) {
 			newtaints = append(newtaints, x)
 		}
 	}
@@ -204,16 +316,8 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 		if err != nil {
 			return nil, err
 		}
-		pruned := children.Filter(func(i interface{}) bool {
-			chobj := target.Metastore[i.(string)]
-			_ = chobj
-			// if chobj.IsGlobalType() && !changemap[chobj.ID] {
-			// 	return false
-			// }
-			return true
-		})
 
-		for _, x := range dag.AsVertexList(pruned) {
+		for _, x := range dag.AsVertexList(children) {
 			if IsGlobalType(x.(string)) {
 				newtaints = append(newtaints, x)
 			}
@@ -223,7 +327,7 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 	// now we walk the base and literally tell it to gtfo out
 	edgeRemovals := []dag.Edge{}
 	vertRemovals := []dag.Vertex{}
-	base.Graph.DepthFirstWalk(newtaints, func(v dag.Vertex, depth int) error {
+	base.Graph.DepthFirstWalk(tainted, func(v dag.Vertex, depth int) error {
 		for _, e := range base.Graph.EdgesFrom(v) {
 			edgeRemovals = append(edgeRemovals, e)
 		}
@@ -251,16 +355,31 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 		}
 		bo, be := base.Metastore[v.(string)]
 		to, te := target.Metastore[v.(string)]
-		_ = bo
-		_ = to
 		if !be {
 			if IsGlobalType(v.(string)) {
 				return nil
 			}
+			if action, found := s.RevDelta[bo.ID]; found {
+				tasktypes[bo.ID] = string(action)
+			} else {
+				tasktypes[to.ID] = "CREATE"
+			}
+			tasks[depth] = append(tasks[depth], v.(string))
+			return nil
 		}
 		if !te {
-			tasktypes[v.(string)] = "DESTROY"
+			if action, found := s.RevDelta[to.ID]; found {
+				tasktypes[to.ID] = string(action)
+			} else {
+				tasktypes[to.ID] = "DELETE"
+			}
 			tasks[depth] = append(tasks[depth], v.(string))
+			return nil
+		}
+
+		brev, brevok := s.KnownRevs[bo.ID]
+		trev, trevok := s.NewRevs[to.ID]
+		if brevok && trevok && brev.Checksum == trev.Checksum {
 			return nil
 		}
 
@@ -269,12 +388,22 @@ func CalculateDelta(base *Snapshot, target *Snapshot) (*Plan, error) {
 		}
 
 		if IsGlobalType(v.(string)) {
-			tasktypes[v.(string)] = "REFRESH"
+			if to.Checksum != bo.Checksum {
+				tasktypes[v.(string)] = "TOUCH"
+				tasks[depth] = append(tasks[depth], v.(string))
+			}
+			return nil
+		}
+
+		if action, found := s.RevDelta[to.ID]; found {
+			tasktypes[v.(string)] = string(action)
 			tasks[depth] = append(tasks[depth], v.(string))
 			return nil
 		}
-		tasktypes[v.(string)] = "MODIFY"
+
+		tasktypes[v.(string)] = "UNKNOWN"
 		tasks[depth] = append(tasks[depth], v.(string))
+
 		return nil
 	})
 

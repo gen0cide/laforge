@@ -18,24 +18,30 @@ var (
 // inside of a build template. This uinfied struct helps keep a single convention
 // on how to get to and access data inside of build templates.
 type Context struct {
-	Local       *core.Local
-	Build       *core.Build
-	Competition *core.Competition
-	Command     *core.Command
-	DNS         *core.DNS
-	DNSRecord   *core.DNSRecord
-	Environment *core.Environment
-	Host        *core.Host
-	Identity    *core.Identity
-	Network     *core.Network
-	RemoteFile  *core.RemoteFile
-	Script      *core.Script
-	Team        *core.Team
-	User        *core.User
-	Remote      *core.Remote
-	AMI         *core.AMI
-	Laforge     *core.Laforge
-	Dict        Dict
+	Local              *core.Local
+	Build              *core.Build
+	Competition        *core.Competition
+	Command            *core.Command
+	DNS                *core.DNS
+	DNSRecord          *core.DNSRecord
+	Environment        *core.Environment
+	Host               *core.Host
+	Identity           *core.Identity
+	Network            *core.Network
+	RemoteFile         *core.RemoteFile
+	Script             *core.Script
+	Team               *core.Team
+	User               *core.User
+	Remote             *core.Remote
+	AMI                *core.AMI
+	Laforge            *core.Laforge
+	Metadata           *core.Metadata
+	ProvisionedNetwork *core.ProvisionedNetwork
+	ProvisionedHost    *core.ProvisionedHost
+	ProvisioningStep   *core.ProvisioningStep
+	Revision           *core.Revision
+	Connection         *core.Connection
+	Dict               Dict
 }
 
 // Dict is a temporary dictionary to be used for context
@@ -69,6 +75,12 @@ func (c *Context) Clone() *Context {
 	newC.AMI = c.AMI
 	newC.Laforge = c.Laforge
 	newC.Local = c.Local
+	newC.Metadata = c.Metadata
+	newC.ProvisionedNetwork = c.ProvisionedNetwork
+	newC.ProvisionedHost = c.ProvisionedHost
+	newC.ProvisioningStep = c.ProvisioningStep
+	newC.Revision = c.Revision
+	newC.Connection = c.Connection
 	return newC
 }
 
@@ -132,6 +144,18 @@ func (c *Context) Attach(i ...interface{}) error {
 			c.AMI = v
 		case *core.Laforge:
 			c.Laforge = v
+		case *core.Metadata:
+			c.Metadata = v
+		case *core.ProvisionedNetwork:
+			c.ProvisionedNetwork = v
+		case *core.ProvisionedHost:
+			c.ProvisionedHost = v
+		case *core.ProvisioningStep:
+			c.ProvisioningStep = v
+		case *core.Revision:
+			c.Revision = v
+		case *core.Connection:
+			c.Connection = v
 		default:
 			return buildutil.Throw(ErrUnsupportedContextType, "Cannot associate an object of this type to a template context.", &buildutil.V{
 				"type": fmt.Sprintf("%T", v),

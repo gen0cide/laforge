@@ -53,10 +53,18 @@ func performshell(c *cli.Context) error {
 		cliLogger.Infof("Host Information Table")
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "Hostname", "Public IP"})
+		table.SetHeader([]string{"ID", "Network", "Hostname", "Internal IP", "Public IP"})
 
-		for hid, ph := range base.CurrentTeam.ProvisionedHosts {
-			table.Append([]string{hid, ph.Host.Hostname, ph.Conn.RemoteAddr})
+		for _, net := range base.CurrentTeam.ProvisionedNetworks {
+			for hid, host := range net.ProvisionedHosts {
+				if host.Conn == nil {
+					continue
+				}
+				if host.Conn.RemoteAddr == core.NullIP {
+					continue
+				}
+				table.Append([]string{hid, net.Base(), host.Host.Hostname, host.Conn.LocalAddr, host.Conn.RemoteAddr})
+			}
 		}
 		table.Render()
 
@@ -69,14 +77,8 @@ func performshell(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	_, found := base.CurrentEnv.IncludedHosts[target]
-	if !found {
-		cliLogger.Errorf("Host %s was not found in this environment!", target)
-		os.Exit(1)
-	}
-
-	provisionedHost, found := base.CurrentTeam.ProvisionedHosts[target]
-	if !found || (provisionedHost != nil && provisionedHost.Conn.Active == false) {
+	provisionedHost, found := base.ProvisionedHosts[target]
+	if !found || (provisionedHost != nil && provisionedHost.Conn != nil && provisionedHost.Conn.Active == false) {
 		cliLogger.Errorf("Host %s is currently not active in this team's environment", target)
 		os.Exit(1)
 	}

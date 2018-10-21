@@ -2,13 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path"
-
-	"github.com/fatih/color"
-
-	"github.com/gobwas/glob"
 
 	"github.com/gen0cide/laforge/core"
 	lfcli "github.com/gen0cide/laforge/core/cli"
@@ -59,38 +54,38 @@ func performquery(c *cli.Context) error {
 
 	lfcli.SetLogLevel("info")
 
-	pat := c.Args().First()
-	if pat != "" {
-		g, err := glob.Compile(pat, '/')
-		if err != nil {
-			return err
-		}
-		for key, meta := range snap.Metastore {
-			if !g.Match(key) {
-				continue
-			}
-			cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
-			for _, x := range meta.Parents() {
-				fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
-			}
-			cliLogger.Infof("Children Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
-			for _, x := range meta.Children() {
-				fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
-			}
-		}
-		return nil
-	}
+	// pat := c.Args().First()
+	// if pat != "" {
+	// 	g, err := glob.Compile(pat, '/')
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	for key, meta := range snap.Metastore {
+	// 		if !g.Match(key) {
+	// 			continue
+	// 		}
+	// 		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+	// 		for _, x := range meta.Parents() {
+	// 			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
+	// 		}
+	// 		cliLogger.Infof("Children Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+	// 		for _, x := range meta.Children() {
+	// 			fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
+	// 		}
+	// 	}
+	// 	return nil
+	// }
 
-	for key, meta := range snap.Metastore {
-		cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
-		for _, x := range meta.Parents() {
-			fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
-		}
-		cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, meta.GetGID(), meta.Hash())
-		for _, x := range meta.Children() {
-			fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
-		}
-	}
+	// for key, meta := range snap.Metastore {
+	// 	cliLogger.Infof("Parents Of %s (gid=%d) (checksum=%x):", key, meta.GetGID(), meta.Hash())
+	// 	for _, x := range meta.Parents() {
+	// 		fmt.Printf("  <- (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
+	// 	}
+	// 	cliLogger.Infof("Children Of %s (gid=%d) (%x):", key, meta.GetGID(), meta.Hash())
+	// 	for _, x := range meta.Children() {
+	// 		fmt.Printf("  -> (gid=%d) %s (checksum=%s)\n", x.GetGID(), color.YellowString(x.GetID()), color.CyanString("%x", x.Hash()))
+	// 	}
+	// }
 
 	return nil
 }

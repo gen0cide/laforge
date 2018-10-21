@@ -80,7 +80,7 @@ func (h *HostDependency) Hash() uint64 {
 func (h *Host) Hash() uint64 {
 	return xxhash.Sum64String(
 		fmt.Sprintf(
-			"hn=%v os=%v ami=%v lo=%v isize=%v disk=%v ps=%v opass=%v ug=%v vars=%v",
+			"hn=%v os=%v ami=%v lo=%v isize=%v disk=%v ps=%v opass=%v ug=%v ph=%v vars=%v",
 			h.Hostname,
 			h.OS,
 			h.AMI,
@@ -90,6 +90,7 @@ func (h *Host) Hash() uint64 {
 			strings.Join(h.ProvisionSteps, `,`),
 			h.OverridePassword,
 			h.UserGroups,
+			h.GetProvisionersHash(),
 			HashConfigMap(h.Vars),
 		),
 	)
@@ -122,22 +123,21 @@ func (h *Host) GetDependencyHash() string {
 }
 
 // GetProvisionersHash returns a concatinated string of the host's provisioners hashes
-func (h *Host) GetProvisionersHash() string {
-	p := []string{}
+func (h *Host) GetProvisionersHash() uint64 {
+	p := ChecksumList{}
 	for _, x := range h.Scripts {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
+		p = append(p, x.Hash())
 	}
 	for _, x := range h.Commands {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
+		p = append(p, x.Hash())
 	}
 	for _, x := range h.DNSRecords {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
+		p = append(p, x.Hash())
 	}
 	for _, x := range h.RemoteFiles {
-		p = append(p, fmt.Sprintf("%d", x.Hash()))
+		p = append(p, x.Hash())
 	}
-	sort.Strings(p)
-	return strings.Join(p, ",")
+	return p.Hash()
 }
 
 // Path implements the Pather interface

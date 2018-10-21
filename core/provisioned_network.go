@@ -130,6 +130,8 @@ func (p *ProvisionedNetwork) CreateProvisionedHost(host *Host) *ProvisionedHost 
 		Competition:        p.Competition,
 	}
 	p.ProvisionedHosts[ph.SetID()] = ph
+	ph.Conn = ph.CreateConnection()
+	ph.Conn.SetID()
 	return ph
 }
 

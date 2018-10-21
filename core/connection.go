@@ -22,7 +22,7 @@ type Connection struct {
 	ResourceName       string              `hcl:"resource_name,attr" json:"resource_name,omitempty"`
 	SSHAuthConfig      *SSHAuthConfig      `hcl:"ssh,block" json:"ssh,omitempty"`
 	WinRMAuthConfig    *WinRMAuthConfig    `hcl:"winrm,block" json:"winrm,omitempty"`
-	Revision           int64               `hcl:"revision,attr" json:"revision,omitempty"`
+	Revision           int64               `hcl:"revision,optional" json:"revision,omitempty"`
 	OnConflict         *OnConflict         `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Competition        *Competition        `json:"-"`
 	Environment        *Environment        `json:"-"`
@@ -163,6 +163,11 @@ func (c *Connection) UploadWinRM(src, dst string) error {
 		return err
 	}
 	return client.Copy(src, dst)
+}
+
+// Gather implements the dependency interface
+func (c *Connection) Gather(s *Snapshot) error {
+	return nil
 }
 
 // InteractiveWinRM launches an interactive shell over WinRM

@@ -443,7 +443,20 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 						go func(scriptID string, scriptObj *core.Script, hostObj *core.Host) {
 							defer wg.Done()
 							scriptCtx := ctx.Clone()
-							err := scriptCtx.Attach(team, network, hostObj, scriptObj)
+							tid := team.ID
+							pnid := filepath.Join(tid, "networks", network.Base())
+							pnobj := t.Base.StateManager.Current.Metastore[pnid].Dependency.(*core.ProvisionedNetwork)
+							phid := filepath.Join(pnid, "hosts", hostObj.Base())
+							phobj := t.Base.StateManager.Current.Metastore[phid].Dependency.(*core.ProvisionedHost)
+							var pstep *core.ProvisioningStep
+							for _, x := range phobj.ProvisioningSteps {
+								if x.ProvisionerID == scriptID {
+									pstep = x
+									break
+								}
+							}
+							conn := phobj.Conn
+							err := scriptCtx.Attach(team, network, hostObj, scriptObj, pnobj, phobj, pstep, conn)
 							if err != nil {
 								errChan <- err
 								return

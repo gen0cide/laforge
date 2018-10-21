@@ -1,11 +1,10 @@
 package core
 
 import (
-	"encoding/json"
+	"encoding/binary"
 	"sort"
 
 	"github.com/cespare/xxhash"
-	"github.com/gen0cide/laforge/core/cli"
 )
 
 // ChecksumList is a type alias for a set of computed hashes
@@ -24,10 +23,9 @@ func (c ChecksumList) Less(i, j int) bool { return c[i] < c[j] }
 // Hash implements the hasher interface
 func (c ChecksumList) Hash() uint64 {
 	sort.Sort(c)
-	d, err := json.Marshal(c)
-	if err != nil {
-		cli.Logger.Errorf("unable to generate hash for a checksum list")
-		return uint64(666)
+	buf := make([]byte, binary.Size(c)*64)
+	for _, x := range c {
+		binary.PutUvarint(buf, x)
 	}
-	return xxhash.Sum64(d)
+	return xxhash.Sum64(buf)
 }

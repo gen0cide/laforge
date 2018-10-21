@@ -75,6 +75,7 @@ var (
 )
 
 func performplan(c *cli.Context) error {
+	lfcli.SetLogLevel("info")
 	base, err := core.Bootstrap()
 	if err != nil {
 		if _, ok := err.(hcl.Diagnostics); ok {
@@ -89,8 +90,6 @@ func performplan(c *cli.Context) error {
 		cliLogger.Errorf("Must be in a team context to use this command: %v", err)
 		os.Exit(1)
 	}
-
-	lfcli.SetLogLevel("info")
 
 	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
 	if err != nil {
@@ -108,22 +107,15 @@ func performplan(c *cli.Context) error {
 
 	base.CurrentBuild = build
 
+	state := core.NewState()
+	state.Base = base
+
 	err = build.Associate(snap)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	state := core.NewState()
 
 	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
-
-	_, err = os.Stat(dbfile)
-
-	if err != nil {
-		return err
-	}
-
-	state.SetCurrent(snap)
 
 	err = state.Open(dbfile)
 	if err != nil {
@@ -132,12 +124,14 @@ func performplan(c *cli.Context) error {
 
 	defer state.DB.Close()
 
+	state.SetCurrent(snap)
+
 	_, err = state.LoadSnapshotFromDB()
 	if err != nil {
 		return err
 	}
 
-	plan, err := core.CalculateDelta(state.Persisted, state.Current)
+	plan, err := state.CalculateDelta()
 	if err != nil {
 		return err
 	}
@@ -146,9 +140,6 @@ func performplan(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	// pp.Println(tfcmds)
-	// pp.Println(plan)
 
 	for tid, cmds := range tfcmds {
 		cliLogger.Infof("Terraform Commands For Team: %s", tid)
@@ -163,13 +154,13 @@ func performplan(c *cli.Context) error {
 			tcol := ""
 			tt := plan.TaskTypes[item]
 			switch tt {
-			case "UPDATE":
-				tcol = color.HiYellowString("[%s]", tt)
-			case "DESTROY":
-				tcol = color.HiRedString("[%s]", tt)
-			case "REFRESH":
-				tcol = color.HiCyanString("[%s]", tt)
 			case "MODIFY":
+				tcol = color.HiYellowString("[%s]", tt)
+			case "DELETE":
+				tcol = color.HiRedString("[%s]", tt)
+			case "TOUCH":
+				tcol = color.HiCyanString("[%s]", tt)
+			case "CREATE":
 				tcol = color.HiGreenString("[%s]", tt)
 			default:
 				tcol = "[UNKNOWN]"
@@ -182,6 +173,7 @@ func performplan(c *cli.Context) error {
 }
 
 func performapply(c *cli.Context) error {
+	lfcli.SetLogLevel("info")
 	base, err := core.Bootstrap()
 	if err != nil {
 		if _, ok := err.(hcl.Diagnostics); ok {
@@ -196,8 +188,6 @@ func performapply(c *cli.Context) error {
 		cliLogger.Errorf("Must be in a team context to use this command: %v", err)
 		os.Exit(1)
 	}
-
-	// lfcli.SetLogLevel("info")
 
 	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
 	if err != nil {
@@ -215,22 +205,15 @@ func performapply(c *cli.Context) error {
 
 	base.CurrentBuild = build
 
+	state := core.NewState()
+	state.Base = base
+
 	err = build.Associate(snap)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	state := core.NewState()
 
 	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
-
-	_, err = os.Stat(dbfile)
-
-	if err != nil {
-		return err
-	}
-
-	state.SetCurrent(snap)
 
 	err = state.Open(dbfile)
 	if err != nil {
@@ -239,19 +222,17 @@ func performapply(c *cli.Context) error {
 
 	defer state.DB.Close()
 
+	state.SetCurrent(snap)
+
 	_, err = state.LoadSnapshotFromDB()
 	if err != nil {
 		return err
 	}
 
-	plan, err := core.CalculateDelta(state.Persisted, state.Current)
+	plan, err := state.CalculateDelta()
 	if err != nil {
 		return err
 	}
-
-	state.Plan = plan
-
-	lfcli.SetLogLevel("info")
 
 	err = plan.Preflight()
 	if err != nil {
@@ -260,49 +241,6 @@ func performapply(c *cli.Context) error {
 
 	return nil
 }
-
-// type LFUI struct{}
-
-// func (l *LFUI) Ask(s string) (string, error) {
-// 	return "", nil
-// }
-
-// func (l *LFUI) AskSecret(s string) (string, error) {
-// 	return "", nil
-// }
-
-// func (l *LFUI) Output(s string) {
-// 	fmt.Println(s)
-// }
-
-// func (l *LFUI) Info(s string) {
-// 	cliLogger.Info(s)
-// }
-
-// func (l *LFUI) Error(s string) {
-// 	cliLogger.Error(s)
-// }
-
-// func (l *LFUI) Warn(s string) {
-// 	cliLogger.Warn(s)
-// }
-
-// func performtf(c *cli.Context) error {
-// 	lfcli.SetLogLevel("debug")
-// 	lfui := LFUI{}
-// 	tfcmd := &command.PlanCommand{
-// 		Ui: lfui,
-// 	}
-
-// 	conf, err := tfcmd.Config(c.Args().Get(0))
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	ret := tfcmd.Run([]string{})
-// 	cliLogger.Infof("output was %d", ret)
-// 	return nil
-// }
 
 func performtf(c *cli.Context) error {
 	return commandNotImplemented(c)

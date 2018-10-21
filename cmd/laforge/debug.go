@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/gen0cide/laforge/core"
 	lfcli "github.com/gen0cide/laforge/core/cli"
@@ -39,7 +38,6 @@ func performdebug(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	args := c.Args().Get(0)
 	lfcli.SetLogLevel("info")
 
 	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
@@ -58,50 +56,43 @@ func performdebug(c *cli.Context) error {
 
 	base.CurrentBuild = build
 
+	state := core.NewState()
+	state.Base = base
+
+	lfcli.SetLogLevel("info")
+
 	err = build.Associate(snap)
 	if err != nil {
 		panic(err)
 	}
 
-	if args == "" {
-		data, err := json.MarshalIndent(snap, "", "  ")
-		if err != nil {
-			return err
-		}
+	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
 
-		fmt.Printf("%s\n", string(data))
-
-		return nil
+	err = state.Open(dbfile)
+	if err != nil {
+		return err
 	}
 
-	if args != "" {
-		statedata, err := ioutil.ReadFile(args)
-		if err != nil {
-			return err
-		}
+	defer state.DB.Close()
 
-		var savedSnap core.Snapshot
-		err = json.Unmarshal(statedata, &savedSnap)
-		if err != nil {
-			return err
-		}
+	state.SetCurrent(snap)
 
-		err = savedSnap.RebuildGraph()
-		if err != nil {
-			return err
-		}
+	_, err = state.LoadSnapshotFromDB()
+	if err != nil {
+		return err
+	}
 
-		plan, err := core.CalculateDelta(&savedSnap, snap)
-		if err != nil {
-			return err
-		}
+	plan, err := state.CalculateDelta()
+	if err != nil {
+		return err
+	}
 
-		for _, k := range plan.OrderedPriorities {
-			cliLogger.Infof("Step #%d:", k)
-			for idx, item := range plan.TasksByPriority[k] {
-				fmt.Printf("  %d) %s\n", idx, item)
-			}
+	for _, k := range plan.OrderedPriorities {
+		cliLogger.Infof("Step #%d:", k)
+		for idx, item := range plan.TasksByPriority[k] {
+			fmt.Printf("  %d) %s\n", idx, item)
 		}
 	}
+
 	return nil
 }
