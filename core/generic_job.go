@@ -1,7 +1,10 @@
 package core
 
 import (
+	"encoding/json"
 	"time"
+
+	"github.com/cespare/xxhash"
 
 	"github.com/gen0cide/laforge/core/graph"
 )
@@ -40,6 +43,7 @@ type Doer interface {
 }
 
 // GenericJob is an embeddable type for standardizing laforge jobs
+// easyjson:json
 type GenericJob struct {
 	JobID      string    `json:"job_id"`
 	Offset     int       `json:"offset"`
@@ -52,22 +56,31 @@ type GenericJob struct {
 	EndedAt    time.Time `json:"ended_at,omitempty"`
 }
 
+// Hash implements the Hasher interface
+func (j *GenericJob) Hash() uint64 {
+	d, err := json.Marshal(j)
+	if err != nil {
+		return uint64(666)
+	}
+	return xxhash.Sum64(d)
+}
+
 // GetID implements the Relationship interface
-func (j GenericJob) GetID() string {
+func (j *GenericJob) GetID() string {
 	return j.JobID
 }
 
 // CurrentStatus implements the Doer interface
-func (j GenericJob) CurrentStatus() JobStatus {
+func (j *GenericJob) CurrentStatus() JobStatus {
 	return j.Status
 }
 
 // SetStatus implements the Doer interface
-func (j GenericJob) SetStatus(s JobStatus) {
+func (j *GenericJob) SetStatus(s JobStatus) {
 	j.Status = s
 }
 
 // GetTargetID implements the Doer interface
-func (j GenericJob) GetTargetID() string {
+func (j *GenericJob) GetTargetID() string {
 	return j.MetadataID
 }

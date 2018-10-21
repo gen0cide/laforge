@@ -151,7 +151,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 		if status == "included" {
 			e.IncludedNetworks[name] = net
 			inet[name] = "resolved"
-			cli.Logger.Infof("Resolved network %s", name)
+			cli.Logger.Debugf("Resolved network %s", name)
 		}
 	}
 	for name, host := range base.Hosts {

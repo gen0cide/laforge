@@ -423,7 +423,7 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 	}
 
-	return &Plan{
+	plan := &Plan{
 		Graph:             target,
 		GlobalOrder:       globalorder,
 		Tainted:           taintedmap,
@@ -431,7 +431,10 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		TasksByPriority:   tasks,
 		TaskTypes:         tasktypes,
 		Tasks:             map[string]Doer{},
-	}, nil
+	}
+
+	s.Plan = plan
+	return plan, nil
 }
 
 // Open attempts to create a DB connector for the state given a local file path

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/gen0cide/laforge/core/cli"
 )
 
 var (
@@ -76,6 +78,30 @@ type Plan struct {
 	GlobalOrder       []string          `json:"global_order"`
 	OrderedPriorities []int             `json:"ordered_priorities"`
 	Tainted           map[string]bool   `json:"tainted"`
+}
+
+// SetupTasks attempts to cull the Tasks map with Doer types to actually be performed
+func (p *Plan) SetupTasks() error {
+	if p.Tasks == nil {
+		p.Tasks = map[string]Doer{}
+	}
+	for id, x := range p.GlobalOrder {
+		cli.Logger.Warnf("STEP: %s", x)
+		metaobj := p.Graph.Metastore[x]
+		cli.Logger.Warnf("Meta: %s", metaobj.ObjectType)
+		if metaobj.ObjectType == "provisioning_step" {
+			pstep, ok := metaobj.Dependency.(*ProvisioningStep)
+			if !ok {
+				return fmt.Errorf("metadata object %s is of type %T, expected *ProvisioningStep", x, metaobj.Dependency)
+			}
+			sj, err := CreateScriptJob(x, id, metaobj, pstep)
+			if err != nil {
+				return err
+			}
+			p.Tasks[x] = sj
+		}
+	}
+	return nil
 }
 
 // Preflight determines what teams need terraform run on them, executing them before the plan
