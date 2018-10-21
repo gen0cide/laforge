@@ -480,8 +480,13 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 					wg.Add(1)
 					go func(h *core.Host) {
 						defer wg.Done()
+						tid := team.ID
+						pnid := filepath.Join(tid, "networks", network.Base())
+						pnobj := t.Base.StateManager.Current.Metastore[pnid].Dependency.(*core.ProvisionedNetwork)
+						phid := filepath.Join(pnid, "hosts", h.Base())
+						phobj := t.Base.StateManager.Current.Metastore[phid].Dependency.(*core.ProvisionedHost)
 						scriptCtx := ctx.Clone()
-						err := scriptCtx.Attach(team, network, h)
+						err := scriptCtx.Attach(team, network, h, pnobj, phobj)
 						if err != nil {
 							errChan <- err
 							return
