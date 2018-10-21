@@ -234,6 +234,11 @@ func performapply(c *cli.Context) error {
 		return err
 	}
 
+	err = plan.Preflight()
+	if err != nil {
+		return err
+	}
+
 	err = plan.SetupTasks()
 	if err != nil {
 		return err
