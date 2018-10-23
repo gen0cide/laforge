@@ -145,6 +145,9 @@ func performinfragraph(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	plan.Base = state.Base
+
 	tfcmds, err := core.CalculateTerraformNeeds(plan)
 	if err != nil {
 		return err
@@ -217,8 +220,6 @@ func performapply(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	plan.Base = state.Base
 
 	err = plan.Preflight()
 	if err != nil {
