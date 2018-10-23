@@ -148,6 +148,8 @@ func (p *Plan) SetupTasks() error {
 					return err
 				}
 				job = j
+			default:
+				continue
 			}
 			job.SetTimeout(p.TaskGroundDelay)
 			job.SetPlan(p)
