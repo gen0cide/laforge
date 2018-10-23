@@ -38,7 +38,10 @@ type Doer interface {
 	Do() error
 	CleanUp() error
 	Finish() error
+	SetTimeout(t int)
 	SetStatus(s JobStatus)
+	SetPlan(p *Plan)
+	SetBase(l *Laforge)
 	CurrentStatus() JobStatus
 }
 
@@ -46,7 +49,10 @@ type Doer interface {
 // easyjson:json
 type GenericJob struct {
 	JobID      string    `json:"job_id"`
+	Plan       *Plan     `json:"-"`
+	Base       *Laforge  `json:"-"`
 	Offset     int       `json:"offset"`
+	Timeout    int       `json:"timeout"`
 	JobType    string    `json:"job_type"`
 	Metadata   *Metadata `json:"-"`
 	MetadataID string    `json:"metadata_id"`
@@ -83,4 +89,19 @@ func (j *GenericJob) SetStatus(s JobStatus) {
 // GetTargetID implements the Doer interface
 func (j *GenericJob) GetTargetID() string {
 	return j.MetadataID
+}
+
+// SetTimeout implements the Doer interface
+func (j *GenericJob) SetTimeout(t int) {
+	j.Timeout = t
+}
+
+// SetPlan implements the Doer interface
+func (j *GenericJob) SetPlan(p *Plan) {
+	j.Plan = p
+}
+
+// SetBase implements the Doer interface
+func (j *GenericJob) SetBase(l *Laforge) {
+	j.Base = l
 }

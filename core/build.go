@@ -221,40 +221,36 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	l.ClearToBuild = true
 	dbfile := filepath.Join(buildDir, "build.db")
 
-	if l.StateManager != nil {
-		snap, err := NewSnapshotFromEnv(l.CurrentEnv)
-		if err != nil {
-			return err
-		}
+	state := NewState()
+	state.Base = l
+	l.StateManager = state
 
-		err = b.Associate(snap)
-		if err != nil {
-			return err
-		}
+	snap, err := NewSnapshotFromEnv(l.CurrentEnv, false)
+	if err != nil {
+		return err
+	}
 
-		l.StateManager.SetCurrent(snap)
+	state.SetCurrent(snap)
 
-		l.StateManager.LocateRevisions()
-		l.StateManager.GenerateCurrentRevs()
+	state.LocateRevisions()
+	state.GenerateCurrentRevs()
 
-		envRev := l.StateManager.NewRevs[l.CurrentEnv.Path()]
-		buildRev := l.StateManager.NewRevs[l.CurrentBuild.Path()]
+	envRev := state.NewRevs[l.CurrentEnv.Path()]
+	buildRev := state.NewRevs[l.CurrentBuild.Path()]
 
-		err = ioutil.WriteFile(filepath.Join(buildDir, ".env.lfrevision"), []byte(envRev.ToJSONString()), 0644)
-		if err != nil {
-			return err
-		}
+	err = ioutil.WriteFile(filepath.Join(buildDir, ".env.lfrevision"), []byte(envRev.ToJSONString()), 0644)
+	if err != nil {
+		return err
+	}
 
-		err = ioutil.WriteFile(filepath.Join(buildDir, ".build.lfrevision"), []byte(buildRev.ToJSONString()), 0644)
-		if err != nil {
-			return err
-		}
+	err = ioutil.WriteFile(filepath.Join(buildDir, ".build.lfrevision"), []byte(buildRev.ToJSONString()), 0644)
+	if err != nil {
+		return err
+	}
 
-		err = l.StateManager.Open(dbfile)
-		if err != nil {
-			return err
-		}
-
+	err = state.Open(dbfile)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -149,19 +149,19 @@ func (p *ProvisionedNetwork) CreateProvisionedHosts() error {
 
 // Gather implements the Dependency interface
 func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
-	var err error
-	for _, h := range p.ProvisionedHosts {
+	// var err error
+	// for _, h := range p.ProvisionedHosts {
 
-		// err = g.Relate(p, h)
-		// if err != nil {
-		// 	return err
-		// }
-		g.AddNode(h)
-		err = h.Gather(g)
-		if err != nil {
-			return err
-		}
-	}
+	// 	// err = g.Relate(p, h)
+	// 	// if err != nil {
+	// 	// 	return err
+	// 	// }
+	// 	g.AddNode(h)
+	// 	err = h.Gather(g)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	// err = g.Relate(p, p.Network)
 	// if err != nil {
 	// 	return err

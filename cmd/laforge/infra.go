@@ -3,15 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path"
-	"path/filepath"
+	"strings"
 
+	"github.com/emicklei/dot"
 	"github.com/fatih/color"
 
 	"github.com/gen0cide/laforge/core"
 	lfcli "github.com/gen0cide/laforge/core/cli"
-	"github.com/hashicorp/hcl2/hcl"
 	"github.com/urfave/cli"
 )
 
@@ -70,65 +68,23 @@ var (
 				Action:          performinfra,
 				SkipFlagParsing: true,
 			},
+			{
+				Name:            "graph",
+				Usage:           "Generate a proposed DOT diagram of the target state.",
+				Action:          performinfragraph,
+				SkipFlagParsing: true,
+			},
 		},
 	}
 )
 
 func performplan(c *cli.Context) error {
-	lfcli.SetLogLevel("info")
-	base, err := core.Bootstrap()
-	if err != nil {
-		if _, ok := err.(hcl.Diagnostics); ok {
-			return errors.New("aborted due to parsing error")
-		}
-		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
-		os.Exit(1)
-	}
-
-	err = base.AssertMinContext(core.BuildContext)
-	if err != nil {
-		cliLogger.Errorf("Must be in a team context to use this command: %v", err)
-		os.Exit(1)
-	}
-
-	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
+	state, err := core.BootstrapWithState(true)
 	if err != nil {
 		return err
 	}
-
-	buildnode, ok := snap.Metastore[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
-	if !ok {
-		return errors.New("builder was not able to be resolved on the graph")
-	}
-	build, ok := buildnode.Dependency.(*core.Build)
-	if !ok {
-		return errors.New("build object was not of type *core.Build")
-	}
-
-	base.CurrentBuild = build
-
-	state := core.NewState()
-	state.Base = base
-
-	err = build.Associate(snap)
-	if err != nil {
-		panic(err)
-	}
-
-	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
-
-	err = state.Open(dbfile)
-	if err != nil {
-		return err
-	}
-
-	defer state.DB.Close()
-
-	state.SetCurrent(snap)
-
-	_, err = state.LoadSnapshotFromDB()
-	if err != nil {
-		return err
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
 	}
 
 	plan, err := state.CalculateDelta()
@@ -140,6 +96,8 @@ func performplan(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	lfcli.SetLogLevel("info")
 
 	for tid, cmds := range tfcmds {
 		cliLogger.Infof("Terraform Commands For Team: %s", tid)
@@ -172,60 +130,85 @@ func performplan(c *cli.Context) error {
 	return nil
 }
 
-func performapply(c *cli.Context) error {
-	base, err := core.Bootstrap()
+func performinfragraph(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
 	if err != nil {
-		if _, ok := err.(hcl.Diagnostics); ok {
-			return errors.New("aborted due to parsing error")
-		}
-		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
-		os.Exit(1)
+		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
 	}
 
-	err = base.AssertMinContext(core.BuildContext)
+	plan, err := state.CalculateDelta()
 	if err != nil {
-		cliLogger.Errorf("Must be in a team context to use this command: %v", err)
-		os.Exit(1)
+		return err
 	}
-
-	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
+	tfcmds, err := core.CalculateTerraformNeeds(plan)
 	if err != nil {
 		return err
 	}
 
-	buildnode, ok := snap.Metastore[path.Join(base.CurrentEnv.Path(), base.CurrentEnv.Builder)]
-	if !ok {
-		return errors.New("builder was not able to be resolved on the graph")
-	}
-	build, ok := buildnode.Dependency.(*core.Build)
-	if !ok {
-		return errors.New("build object was not of type *core.Build")
-	}
+	_ = tfcmds
 
-	base.CurrentBuild = build
-
-	state := core.NewState()
-	state.Base = base
-
-	err = build.Associate(snap)
-	if err != nil {
-		panic(err)
-	}
-
-	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
-
-	err = state.Open(dbfile)
-	if err != nil {
-		return err
-	}
-
+	snap := state.Current
 	defer state.DB.Close()
 
-	state.SetCurrent(snap)
+	snap.AltGraph.Remove("root")
+	snap.AltGraph.TransitiveReduction()
+	nodemap := map[string]dot.Node{}
+	g := snap.AltGraph
 
-	_, err = state.LoadSnapshotFromDB()
+	di := dot.NewGraph(dot.Directed)
+	di.Attr("nodesep", "0.2")
+	di.Attr("compound", "true")
+	di.Attr("rank", "min")
+	di.Attr("rankdir", "LR")
+	di.Attr("dpi", "144")
+	di.Attr("smoothType", "graph_dist")
+	di.Attr("mode", "hier")
+	di.Attr("splines", "spline")
+	di.Attr("decoreate", "true")
+	di.Attr("overlap", "false")
+	di.Attr("model", "subset")
+	di.Attr("K", "0.6")
+	di.Attr("fontname", "Helvetica")
+
+	for _, x := range g.Vertices() {
+		id := x.(string)
+		nodemap[id] = di.Node(id)
+		meta, ok := snap.Metastore[id]
+		if !ok {
+			panic(fmt.Errorf("could not find dependency for %s", id))
+		}
+		nodemap[id].Attr("style", meta.Style())
+		nodemap[id].Attr("shape", meta.Shape())
+		nodemap[id].Attr("height", "0.1")
+		nodemap[id].Attr("label", []byte(meta.Label()))
+		nodemap[id].Attr("fillcolor", meta.FillColor())
+		nodemap[id].Attr("fontname", "Helvetica")
+	}
+
+	for _, x := range g.Edges() {
+		src := x.Source().(string)
+		tar := x.Target().(string)
+		nodemap[src].Edge(nodemap[tar])
+	}
+
+	graphstring := di.String()
+	wat := strings.Replace(graphstring, `"<`, `<<`, -1)
+	wat = strings.Replace(wat, `\"`, `"`, -1)
+	wat = strings.Replace(wat, `>"`, `>>`, -1)
+	fmt.Println(wat)
+	return nil
+}
+
+func performapply(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
 	if err != nil {
 		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
 	}
 
 	plan, err := state.CalculateDelta()
@@ -233,14 +216,21 @@ func performapply(c *cli.Context) error {
 		return err
 	}
 
-	err = plan.Preflight()
-	if err != nil {
-		return err
-	}
+	// err = plan.Preflight()
+	// if err != nil {
+	// 	return err
+	// }
+
+	plan.Base = state.Base
 
 	err = plan.SetupTasks()
 	if err != nil {
 		return err
+	}
+
+	diags := plan.Execute()
+	if diags.HasErrors() {
+		return diags.Err()
 	}
 
 	return nil

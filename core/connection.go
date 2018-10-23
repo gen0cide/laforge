@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
+
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/juju/utils/filepath"
+	"golang.org/x/crypto/ssh"
 
 	"github.com/cespare/xxhash"
 	"github.com/packer-community/winrmcp/winrmcp"
@@ -152,7 +157,188 @@ func (c *Connection) Upload(src, dst string) error {
 	if c.IsWinRM() {
 		return c.UploadWinRM(src, dst)
 	}
-	return c.UploadSCP(src, dst)
+	return c.UploadSFTP(src, dst)
+}
+
+// ExecuteCommand is the generic interface for a connection to execute a command on the remote system
+func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
+	if c.IsWinRM() {
+		return c.ExecuteCommandWinRM(cmd)
+	}
+	return c.ExecuteCommandSSH(cmd)
+}
+
+// UploadExecuteAndDelete is a helper function to chain together a common pattern of execution
+func (c *Connection) UploadExecuteAndDelete(scriptsrc string, tmpname string, logdir string) error {
+	if _, err := os.Stat(scriptsrc); err != nil {
+		return fmt.Errorf("problem locating file %s: %v", scriptsrc, err)
+	}
+	if _, err := os.Stat(logdir); err != nil {
+		return fmt.Errorf("problem locating logdir %s: %v", logdir, err)
+	}
+
+	winfp, err := filepath.NewRenderer("windows")
+	if err != nil {
+		return err
+	}
+	nixfp, err := filepath.NewRenderer("linux")
+	if err != nil {
+		return err
+	}
+	currfp, err := filepath.NewRenderer("")
+	if err != nil {
+		return err
+	}
+
+	filename := currfp.Base(scriptsrc)
+	if tmpname != "" {
+		filename = tmpname
+	}
+
+	logfilename := strings.Replace(filename, currfp.Ext(filename), ``, -1)
+	logprefix := currfp.Join(logdir, logfilename)
+	if c.IsWinRM() {
+		finalpath := winfp.Join(`C:`, filename)
+		err = c.UploadWinRM(scriptsrc, finalpath)
+		if err != nil {
+			return err
+		}
+		rc := NewRemoteCommand()
+		stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
+		stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+		stderrfh, err := os.Create(stderrfile)
+		if err != nil {
+			return err
+		}
+		defer stderrfh.Close()
+		cli.Logger.Infof("Logging script %s standard output to %s", scriptsrc, stderrfile)
+		stdoutfh, err := os.Create(stdoutfile)
+		if err != nil {
+			return err
+		}
+		defer stdoutfh.Close()
+		cli.Logger.Infof("Logging script %s standard error to %s", scriptsrc, stdoutfile)
+		rc.Stdout = stdoutfh
+		rc.Stderr = stderrfh
+		rc.Command = finalpath
+		err = c.ExecuteCommandWinRM(rc)
+		if err != nil {
+			return err
+		}
+		delrc := NewRemoteCommand()
+		stdoutfile = fmt.Sprintf("%s-delete.stdout.log", logprefix)
+		stderrfile = fmt.Sprintf("%s-delete.stderr.log", logprefix)
+		stderrfh2, err := os.Create(stderrfile)
+		if err != nil {
+			return err
+		}
+		defer stderrfh2.Close()
+		cli.Logger.Infof("Logging script delete standard output to %s", scriptsrc, stderrfile)
+		stdoutfh2, err := os.Create(stdoutfile)
+		if err != nil {
+			return err
+		}
+		defer stdoutfh2.Close()
+		cli.Logger.Infof("Logging script delete standard error to %s", scriptsrc, stdoutfile)
+		delrc.Stdout = stdoutfh2
+		delrc.Stderr = stderrfh2
+		delrc.Command = fmt.Sprintf("del %s", finalpath)
+		err = c.ExecuteCommandWinRM(delrc)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	finalpath := nixfp.Join(`/root`, filename)
+	err = c.UploadScriptSFTP(scriptsrc, finalpath)
+	if err != nil {
+		wmerr, ok := err.(*ssh.ExitError)
+		if !ok {
+			return err
+		}
+		if wmerr.Waitmsg.Signal() != "" || wmerr.Waitmsg.Msg() != "" || wmerr.Waitmsg.ExitStatus() != 1 {
+			return err
+		}
+	}
+	rc := NewRemoteCommand()
+	stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
+	stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+	stderrfh, err := os.Create(stderrfile)
+	if err != nil {
+		return err
+	}
+	defer stderrfh.Close()
+	cli.Logger.Infof("Logging script %s STDERR to %s", scriptsrc, stderrfile)
+	stdoutfh, err := os.Create(stdoutfile)
+	if err != nil {
+		return err
+	}
+	defer stdoutfh.Close()
+	cli.Logger.Infof("Logging script %s STDOUT to %s", scriptsrc, stdoutfile)
+	rc.Stdout = stdoutfh
+	rc.Stderr = stderrfh
+	rc.Command = finalpath
+	err = c.ExecuteCommandSSH(rc)
+	if err != nil {
+		return err
+	}
+	err = c.DeleteScriptSFTP(finalpath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ExecuteCommandWinRM executes a remote command over WinRM
+func (c *Connection) ExecuteCommandWinRM(cmd *RemoteCommand) error {
+	client := &WinRMClient{}
+	err := client.SetConfig(c.WinRMAuthConfig)
+	if err != nil {
+		return err
+	}
+	client.SetIO(
+		cmd.Stdout,
+		cmd.Stderr,
+		cmd.Stdin,
+	)
+
+	err = client.ExecuteNonInteractive(cmd)
+	if err != nil {
+		return err
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ExecuteCommandSSH executes a remote command over SSH
+func (c *Connection) ExecuteCommandSSH(cmd *RemoteCommand) error {
+	client, err := NewSSHClient(c.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	err = client.Start(cmd)
+	if err != nil {
+		return err
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // UploadWinRM uses WinRM to upload src to dst on the provisioned host
@@ -204,6 +390,82 @@ func (c *Connection) InteractiveSSH() error {
 	defer client.Disconnect()
 
 	err = client.LaunchInteractiveShell()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UploadScriptSFTP uses the really nice golang SFTP client to upload remote files
+func (c *Connection) UploadScriptSFTP(src, dst string) error {
+	fi, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		return errors.New("script source cannot be a directory")
+	}
+
+	client, err := NewSSHClient(c.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	err = client.UploadScriptV2(src, dst)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UploadSFTP uses the really nice golang SFTP client to upload remote files
+func (c *Connection) UploadSFTP(src, dst string) error {
+	fi, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		return errors.New("source file cannot be a directory")
+	}
+
+	client, err := NewSSHClient(c.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	err = client.UploadFileV2(src, dst)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteScriptSFTP uses the really nice golang SFTP client to zero and delete remote files
+func (c *Connection) DeleteScriptSFTP(remotefile string) error {
+	client, err := NewSSHClient(c.SSHAuthConfig, "")
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	err = client.DeleteScriptV2(remotefile)
 	if err != nil {
 		return err
 	}

@@ -40,7 +40,7 @@ func performdebug(c *cli.Context) error {
 
 	lfcli.SetLogLevel("info")
 
-	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv)
+	snap, err := core.NewSnapshotFromEnv(base.CurrentEnv, false)
 	if err != nil {
 		return err
 	}

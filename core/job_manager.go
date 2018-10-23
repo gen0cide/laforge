@@ -45,3 +45,36 @@ func (m *Manager) Run(wg *sync.WaitGroup) {
 		}
 	}
 }
+
+// sleepcalc := map[string]int{}
+
+// for pri, tasks := range plan.TasksByPriority {
+// 	for _, x := range tasks {
+// 		sleepcalc[x] = pri
+// 	}
+// }
+
+// _ = tfcmds
+
+// root, err := plan.Graph.AltGraph.Root()
+// if err != nil {
+// 	return err
+// }
+
+// _ = root
+
+// walker := &dag.Walker{
+// 	Callback: func(v dag.Vertex) tfdiags.Diagnostics {
+// 		id := v.(string)
+// 		sleeptimer, found := sleepcalc[id]
+// 		if !found {
+// 			return nil
+// 		}
+// 		cliLogger.Infof("Performing Task: %s", id)
+// 		time.Sleep(time.Duration(sleeptimer) * time.Second)
+// 		return nil
+// 	},
+// }
+
+// walker.Update(plan.Graph.AltGraph)
+// walker.Wait()

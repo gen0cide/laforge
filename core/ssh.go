@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/sftp"
+
 	"github.com/docker/docker/pkg/term"
 	"github.com/pkg/errors"
 	"github.com/shiena/ansicolor"
@@ -230,8 +232,6 @@ func (s *SSHClient) LaunchInteractiveShell() error {
 
 // Start executes a remote command on the host
 func (s *SSHClient) Start(cmd *RemoteCommand) error {
-	cmd.Init()
-
 	session, err := s.newSession()
 	if err != nil {
 		return err
@@ -272,6 +272,111 @@ func (s *SSHClient) Start(cmd *RemoteCommand) error {
 
 		cmd.SetExitStatus(exitStatus, err)
 	}()
+
+	return nil
+}
+
+// UploadScriptV2 uses the 3rd party pkg/sftp Go package to upload instead of native x/ssh with scp modes.
+func (s *SSHClient) UploadScriptV2(src, dst string) error {
+	sftp, err := sftp.NewClient(s.client)
+	if err != nil {
+		return err
+	}
+	defer sftp.Close()
+
+	f, err := sftp.Create(dst)
+	if err != nil {
+		return err
+	}
+
+	fileInput, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, fileInput)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	err = sftp.Chmod(dst, 0777)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UploadFileV2 uses the 3rd party pkg/sftp Go package to upload instead of native x/ssh with scp modes.
+func (s *SSHClient) UploadFileV2(src, dst string) error {
+	sftp, err := sftp.NewClient(s.client)
+	if err != nil {
+		return err
+	}
+	defer sftp.Close()
+
+	f, err := sftp.Create(dst)
+	if err != nil {
+		return err
+	}
+
+	fileInput, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, fileInput)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteScriptV2 uses the 3rd party pkg/sftp Go package to securely erase a file
+func (s *SSHClient) DeleteScriptV2(remotefile string) error {
+	sftp, err := sftp.NewClient(s.client)
+	if err != nil {
+		return err
+	}
+	defer sftp.Close()
+
+	fi, err := sftp.Lstat(remotefile)
+	if err != nil {
+		return err
+	}
+
+	file, err := sftp.OpenFile(remotefile, os.O_RDWR)
+	if err != nil {
+		return err
+	}
+
+	size := fi.Size()
+	zerobytes := make([]byte, size)
+
+	copy(zerobytes[:], "0")
+
+	_, err = file.Write([]byte(zerobytes))
+	if err != nil {
+		return err
+	}
+
+	file.Close()
+
+	err = sftp.Remove(remotefile)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -500,7 +605,7 @@ func scpUploadFile(dst string, src io.Reader, w io.Writer, r *bufio.Reader, size
 		return err
 	}
 
-	if _, err := io.Copy(w, src); err != nil {
+	if _, err := io.CopyN(w, src, size); err != nil {
 		return err
 	}
 

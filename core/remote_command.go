@@ -18,6 +18,13 @@ type RemoteCommand struct {
 	sync.Mutex
 }
 
+// NewRemoteCommand creates a new empty remote command object
+func NewRemoteCommand() *RemoteCommand {
+	r := &RemoteCommand{}
+	r.Init()
+	return r
+}
+
 // Init must be called before executing the command.
 func (r *RemoteCommand) Init() {
 	r.Lock()

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -527,22 +526,28 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 
 // StageDependencies implements the Builder interface
 func (t *TerraformGCPBuilder) StageDependencies() error {
-	snap, err := core.NewSnapshotFromEnv(t.Base.CurrentEnv)
-	if err != nil {
-		return err
+	if t.Base.StateManager == nil {
+		return errors.New("builder cannot stage dependencies with nil state manager")
 	}
+	snap := t.Base.StateManager.Current
+	_ = snap
+	build := t.Base.CurrentBuild
+	// snap, err := core.NewSnapshotFromEnv(t.Base.CurrentEnv)
+	// if err != nil {
+	// 	return err
+	// }
 
-	buildnode, ok := snap.Metastore[path.Join(t.Base.CurrentEnv.Path(), t.Base.CurrentEnv.Builder)]
-	if !ok {
-		return errors.New("builder was not able to be resolved on the graph")
-	}
-	build, ok := buildnode.Dependency.(*core.Build)
-	if !ok {
-		return errors.New("build object was not of type *core.Build")
-	}
+	// buildnode, ok := snap.Metastore[path.Join(t.Base.CurrentEnv.Path(), t.Base.CurrentEnv.Builder)]
+	// if !ok {
+	// 	return errors.New("builder was not able to be resolved on the graph")
+	// }
+	// build, ok := buildnode.Dependency.(*core.Build)
+	// if !ok {
+	// 	return errors.New("build object was not of type *core.Build")
+	// }
 
-	t.Base.CurrentBuild = build
-	// for _, x := range build.Teams {
+	// t.Base.CurrentBuild = build
+	// // for _, x := range build.Teams {
 
 	// }
 	for _, team := range build.Teams {

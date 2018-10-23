@@ -293,7 +293,28 @@ func (e *Environment) CreateBuild() *Build {
 
 // Gather implements the Dependency interface
 func (e *Environment) Gather(g *Snapshot) error {
-	return e.Build.Gather(g)
+	// g.AddNode(e)
+	// for nid, net := range e.IncludedNetworks {
+	// 	g.AddNode(net)
+	// 	for _, host := range e.HostByNetwork[nid] {
+	// 		g.AddNode(host)
+	// 		for _, x := range host.Scripts {
+	// 			g.AddNode(x)
+	// 		}
+	// 		for _, x := range host.DNSRecords {
+	// 			g.AddNode(x)
+	// 		}
+	// 		for _, x := range host.Commands {
+	// 			g.AddNode(x)
+	// 		}
+	// 		for _, x := range host.RemoteFiles {
+	// 			g.AddNode(x)
+	// 		}
+	// 	}
+
+	// }
+	// return e.Build.Gather(g)
+	return nil
 }
 
 // GetAllEnvs recursively traverses the BaseRoot/envs/ folder looking for valid environments.

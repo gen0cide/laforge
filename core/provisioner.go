@@ -7,6 +7,9 @@ type Provisioner interface {
 	graph.Hasher
 	Pather
 
+	Gather(s *Snapshot) error
+	ParentLaforgeID() string
+
 	// Kind denotes the type of Provisioner this is
 	Kind() string
 }

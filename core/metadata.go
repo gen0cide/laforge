@@ -62,12 +62,9 @@ func ValidateGenericPath(p string) error {
 //easyjson:json
 type Metadata struct {
 	Dependency Dependency     `json:"-"`
-	Name       string         `json:"name"`
 	ID         string         `json:"id"`
-	GID        int            `json:"gid"`
-	GCost      int64          `json:"gcost"`
-	ObjectType string         `json:"object_type"`
-	Created    bool           `json:"provisioned"`
+	ObjectType LFType         `json:"object_type"`
+	Created    bool           `json:"provisioned,omitempty"`
 	Tainted    bool           `json:"tainted,omitempty"`
 	Addition   bool           `json:"addition,omitempty"`
 	Checksum   uint64         `json:"checksum,omitempty"`
@@ -248,15 +245,15 @@ func (m *Metadata) GetID() string {
 	return m.ID
 }
 
-// GetGID implements the DotNode interface
-func (m *Metadata) GetGID() int {
-	return m.GID
-}
+// // GetGID implements the DotNode interface
+// func (m *Metadata) GetGID() int {
+// 	return m.GID
+// }
 
-// GetGCost implements the DotNode interface
-func (m *Metadata) GetGCost() int64 {
-	return m.GCost
-}
+// // GetGCost implements the DotNode interface
+// func (m *Metadata) GetGCost() int64 {
+// 	return m.GCost
+// }
 
 // GetChecksum implements the DotNode interface
 func (m *Metadata) GetChecksum() uint64 {
@@ -280,22 +277,112 @@ func (m *Metadata) DotNode(s string, d *dag.DotOpts) *dag.DotNode {
 
 // Label implements the DotNode interface
 func (m *Metadata) Label() string {
-	return fmt.Sprintf("%s|type = %s|primary_parent = %s|checksum = %x",
+	if m.Dependency == nil {
+		panic(fmt.Errorf("could not find dependency for %s", m.ID))
+	}
+	return fmt.Sprintf("<table border=\"0\" cellborder=\"0\" cellspacing=\"1\">"+
+		"<tr><td align=\"center\"><b>%s</b></td></tr>"+
+		"<tr><td align=\"left\"><font face=\"Courier\" point-size=\"11\">type     = %s</font></td></tr>"+
+		"<tr><td align=\"left\"><font face=\"Courier\" point-size=\"11\">checksum = %x</font></td></tr></table>",
 		m.ID,
 		m.ObjectType,
-		m.Dependency.ParentLaforgeID(),
 		m.Checksum,
 	)
+	// return fmt.Sprintf("%s"+`++++`+"|type = %s"+`++++`+"checksum = %x"+`++++`+"parent = %s"+`++++`,
+	// 	m.ID,
+	// 	m.ObjectType,
+	// 	m.Checksum,
+	// 	m.Dependency.ParentLaforgeID(),
+	// )
 }
 
 // Shape implements the DotNode interface
 func (m *Metadata) Shape() string {
+	if m.IsGlobalType() {
+		return "Mrecord"
+	}
 	return "record"
+	// switch m.TypeByPath() {
+	// case LFTypeEnvironment:
+	// 	return "tripleoctagon"
+	// case LFTypeBuild:
+	// 	return "doubleoctagon"
+	// case LFTypeTeam:
+	// 	return "star"
+	// case LFTypeProvisionedNetwork:
+	// 	return "component"
+	// case LFTypeProvisionedHost:
+	// 	return "box3d"
+	// case LFTypeProvisioningStep:
+	// 	return "note"
+	// case LFTypeConnection:
+	// 	return "rarrow"
+	// default:
+	// 	return "ellipse"
+	// }
 }
 
 // Style implements the DotNode interface
 func (m *Metadata) Style() string {
-	return "solid"
+	if m.IsGlobalType() {
+		return "filled,rounded,dotted"
+	}
+	switch m.TypeByPath() {
+	case LFTypeEnvironment:
+		return "filled"
+	case LFTypeBuild:
+		return "filled"
+	case LFTypeTeam:
+		return "filled,bold"
+	case LFTypeProvisionedNetwork:
+		return "filled,bold"
+	case LFTypeProvisionedHost:
+		return "filled,bold"
+	case LFTypeProvisioningStep:
+		return "filled,bold"
+	case LFTypeConnection:
+		return "filled,bold"
+	default:
+		return "filled"
+	}
+}
+
+// FillColor implements the DotNode interface
+func (m *Metadata) FillColor() string {
+	switch m.TypeByPath() {
+	case LFTypeCompetition:
+		return "gold"
+	case LFTypeCommand:
+		return "aquamarine"
+	case LFTypeNetwork:
+		return "lightblue1"
+	case LFTypeHost:
+		return "palegreen1"
+	case LFTypeDNSRecord:
+		return "mistyrose2"
+	case LFTypeRemoteFile:
+		return "navajowhite"
+	case LFTypeScript:
+		return "lightgoldenrod1"
+	case LFTypeEnvironment:
+		return "chartreuse"
+	case LFTypeBuild:
+		return "coral"
+	case LFTypeTeam:
+		return "green"
+	case LFTypeProvisionedNetwork:
+		return "steelblue1"
+	case LFTypeProvisionedHost:
+		return "springgreen1"
+	case LFTypeProvisioningStep:
+		return "yellow2"
+	case LFTypeConnection:
+		return "snow3"
+	case LFTypeUnknown:
+		return "khaki"
+	default:
+		return "cornsilk"
+	}
 }
 
 // Hash implements the hasher interface

@@ -2,12 +2,14 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"sort"
 	"sync"
 
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/terraform/dag"
 	"github.com/hashicorp/terraform/tfdiags"
 	"github.com/karrick/godirwalk"
@@ -37,6 +39,57 @@ type State struct {
 	NewRevs   map[string]*Revision
 	KnownRevs map[string]*Revision
 	RevDelta  map[string]RevMod
+}
+
+// NewState returns an empty state
+func NewState() *State {
+	return &State{
+		NewRevs:   map[string]*Revision{},
+		KnownRevs: map[string]*Revision{},
+		RevDelta:  map[string]RevMod{},
+	}
+}
+
+// BootstrapWithState wraps much of the bootstrap process with a state tree calculation as well
+func BootstrapWithState(overwriteBuild bool) (*State, error) {
+	base, err := Bootstrap()
+	if err != nil {
+		if _, ok := err.(hcl.Diagnostics); ok {
+			return nil, errors.New("aborted due to parsing error")
+		}
+		cli.Logger.Errorf("Error encountered during bootstrap: %v", err)
+		return nil, err
+	}
+
+	err = base.AssertMinContext(BuildContext)
+	if err != nil {
+		cli.Logger.Errorf("Must be in a team context to use this command: %v", err)
+		return nil, errors.New("cannot proceed")
+	}
+
+	snap, err := NewSnapshotFromEnv(base.CurrentEnv, overwriteBuild)
+	if err != nil {
+		return nil, err
+	}
+
+	base.CurrentBuild = base.CurrentEnv.Build
+
+	state := NewState()
+	state.Base = base
+
+	dbfile := filepath.Join(base.CurrentBuild.Dir, "build.db")
+	err = state.Open(dbfile)
+	if err != nil {
+		return nil, err
+	}
+
+	state.SetCurrent(snap)
+	_, err = state.LoadSnapshotFromDB()
+	if err != nil {
+		return nil, err
+	}
+
+	return state, nil
 }
 
 // LocateRevisions attempts to load the known revision files off disk
@@ -141,7 +194,7 @@ func (s *State) GenerateRevisionDelta() error {
 			continue
 		}
 		if nrev.Checksum != krev.Checksum {
-			cli.Logger.Warnf("Marking %s for a failed revision checksum comparison", nrid)
+			cli.Logger.Debugf("Marking %s for a failed revision checksum comparison", nrid)
 			s.RevDelta[nrid] = RevModTouch
 			continue
 		}
@@ -211,16 +264,20 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		return nil, ErrSnapshotsMatch
 	}
 
+	// cli.Logger.Infof("Starting to do graph differential analysis")
+
 	base := s.Persisted
 	target := s.Current
 
-	base.Graph.SetDebugWriter(ioutil.Discard)
-	target.Graph.SetDebugWriter(ioutil.Discard)
+	base.AltGraph.SetDebugWriter(ioutil.Discard)
+	target.AltGraph.SetDebugWriter(ioutil.Discard)
 	log.SetOutput(ioutil.Discard)
 
-	tainted := []dag.Vertex{}
-	changemap := map[string]bool{}
-	changeslice := []string{}
+	changes := []dag.Vertex{}
+	deletions := []dag.Vertex{}
+	additions := []dag.Vertex{}
+	taintedHosts := []dag.Vertex{}
+	taintmap := map[string]bool{}
 
 	for k, m := range target.Metastore {
 		if TypeByPath(k) != LFTypeProvisionedHost {
@@ -231,55 +288,63 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			cli.Logger.Errorf("Provisioned Host %s was not of proper type", k)
 		}
 		if ph.Conn == nil || ph.Conn.RemoteAddr == NullIP {
-			changemap[k] = true
-			tainted = append(tainted, k)
+			taintedHosts = append(taintedHosts, k)
 		}
 	}
 
 	// Find deletions or updates by walking the base and comparing against target
-	base.Graph.Walk(func(v dag.Vertex) tfdiags.Diagnostics {
-		basemeta := base.Metastore[v.(string)]
-		targetmeta, exists := target.Metastore[v.(string)]
+	base.AltGraph.Walk(func(v dag.Vertex) tfdiags.Diagnostics {
+		id := v.(string)
+		basemeta := base.Metastore[id]
+		targetmeta, exists := target.Metastore[id]
 		if !exists {
-			tainted = append(tainted, v)
-			return nil
-		}
-		if _, ok := s.RevDelta[v.(string)]; ok {
-			tainted = append(tainted, v)
-			changeslice = append(changeslice, targetmeta.ID)
+			deletions = append(deletions, v)
 			return nil
 		}
 		if targetmeta.Checksum != basemeta.Checksum {
-			tainted = append(tainted, v)
-			changeslice = append(changeslice, targetmeta.ID)
+			changes = append(changes, v)
 			return nil
 		}
 		return nil
 	})
 
-	target.Graph.Walk(func(v dag.Vertex) tfdiags.Diagnostics {
-		targetmeta := target.Metastore[v.(string)]
-		_, exists := base.Metastore[v.(string)]
+	// Now lets look through for any hosts that need to be queued for reprovisioning
+	target.AltGraph.Walk(func(v dag.Vertex) tfdiags.Diagnostics {
+		id := v.(string)
+		if id == "root" {
+			return nil
+		}
+		_, ok := target.Metastore[id]
+		if !ok {
+			panic(fmt.Errorf("could not find %s in target metastore", id))
+		}
+		_, exists := base.Metastore[id]
 		if !exists {
-			tainted = append(tainted, v)
-			changeslice = append(changeslice, targetmeta.ID)
+			if TypeByPath(id) == LFTypeProvisionedHost {
+				taintedHosts = append(taintedHosts, v)
+				return nil
+			}
+			additions = append(additions, v)
 			return nil
 		}
-		if _, ok := s.RevDelta[v.(string)]; ok {
-			tainted = append(tainted, v)
-			changeslice = append(changeslice, targetmeta.ID)
+		if _, ok := s.RevDelta[id]; ok {
+			if TypeByPath(id) == LFTypeProvisionedHost {
+				taintedHosts = append(taintedHosts, v)
+				return nil
+			}
+			changes = append(changes, v)
 			return nil
 		}
 		return nil
 	})
 
-	for _, x := range changeslice {
-		changemap[x] = true
+	for _, x := range taintedHosts {
+		taintmap[x.(string)] = true
 	}
 
 	// need to account for partially deployed hosts (should be rolled back and redeployed)
-	if len(tainted) > 0 {
-		for _, t := range tainted {
+	if len(changes) > 0 {
+		for _, t := range changes {
 			if t == nil {
 				continue
 			}
@@ -292,16 +357,26 @@ func (s *State) CalculateDelta() (*Plan, error) {
 					continue
 				}
 				badHost := obj.Dependency.ParentLaforgeID()
-				changemap[badHost] = true
-				tainted = append([]dag.Vertex{badHost}, tainted...)
+				taintmap[badHost] = true
 			}
 		}
 	}
 
-	// now we find all the decendents to also taint, ensuring we dont traverse the whole damn thing
+	temptaintmap := map[dag.Vertex]bool{}
+	for k := range taintmap {
+		temptaintmap[k] = true
+	}
+	for _, x := range changes {
+		temptaintmap[x] = true
+	}
+	for _, k := range additions {
+		temptaintmap[k] = true
+	}
+
+	// now we find all the decendents to also taint, ensuring we dont traverse the whole damn thing (more than we have to)
 	newtaints := []dag.Vertex{}
-	for _, t := range tainted {
-		children, err := base.Graph.Descendents(t)
+	for t := range temptaintmap {
+		children, err := base.AltGraph.Descendents(t)
 		if err != nil {
 			return nil, err
 		}
@@ -311,8 +386,8 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 	}
 
-	for _, t := range tainted {
-		children, err := target.Graph.Descendents(t)
+	for t := range temptaintmap {
+		children, err := target.AltGraph.Descendents(t)
 		if err != nil {
 			return nil, err
 		}
@@ -324,56 +399,59 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 	}
 
-	// now we walk the base and literally tell it to gtfo out
-	edgeRemovals := []dag.Edge{}
-	vertRemovals := []dag.Vertex{}
-	base.Graph.DepthFirstWalk(tainted, func(v dag.Vertex, depth int) error {
-		for _, e := range base.Graph.EdgesFrom(v) {
-			edgeRemovals = append(edgeRemovals, e)
-		}
-		vertRemovals = append(vertRemovals, v)
-		return nil
-	})
-
-	for _, e := range edgeRemovals {
-		base.Graph.RemoveEdge(e)
+	for _, k := range newtaints {
+		temptaintmap[k] = true
 	}
-	for _, v := range vertRemovals {
-		base.Graph.Remove(v)
+
+	taintfinal := []dag.Vertex{}
+	for k := range temptaintmap {
+		taintfinal = append(taintfinal, k)
 	}
 
 	// Now we can finally make this freakin list
 	tasks := map[int][]string{}
 	tasktypes := map[string]string{}
 
-	target.Graph.TransitiveReduction()
+	root, err := target.AltGraph.Root()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := target.AltGraph.Validate(); err != nil {
+		return nil, err
+	}
 
 	// Now it's up to us to walk the new taint list in the *target* graph to generate the work order
-	target.Graph.DepthFirstWalk(newtaints, func(v dag.Vertex, depth int) error {
+	target.AltGraph.DepthFirstWalk([]dag.Vertex{root}, func(v dag.Vertex, depth int) error {
 		if tasks[depth] == nil {
 			tasks[depth] = []string{}
 		}
-		bo, be := base.Metastore[v.(string)]
-		to, te := target.Metastore[v.(string)]
+		id := v.(string)
+		bo, be := base.Metastore[id]
+		to, te := target.Metastore[id]
 		if !be {
-			if IsGlobalType(v.(string)) {
+			if IsGlobalType(id) {
 				return nil
 			}
-			if action, found := s.RevDelta[bo.ID]; found {
-				tasktypes[bo.ID] = string(action)
-			} else {
-				tasktypes[to.ID] = "CREATE"
+			if te {
+				if action, found := s.RevDelta[to.ID]; found {
+					tasktypes[to.ID] = string(action)
+				} else {
+					tasktypes[to.ID] = "CREATE"
+				}
+				tasks[depth] = append(tasks[depth], id)
 			}
-			tasks[depth] = append(tasks[depth], v.(string))
 			return nil
 		}
 		if !te {
-			if action, found := s.RevDelta[to.ID]; found {
-				tasktypes[to.ID] = string(action)
-			} else {
-				tasktypes[to.ID] = "DELETE"
+			if be {
+				if action, found := s.RevDelta[to.ID]; found {
+					tasktypes[to.ID] = string(action)
+				} else {
+					tasktypes[to.ID] = "DELETE"
+				}
+				tasks[depth] = append(tasks[depth], id)
 			}
-			tasks[depth] = append(tasks[depth], v.(string))
 			return nil
 		}
 
@@ -383,26 +461,26 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			return nil
 		}
 
-		if TypeByPath(v.(string)) == LFTypeBuild {
+		if TypeByPath(id) == LFTypeBuild {
 			return nil
 		}
 
-		if IsGlobalType(v.(string)) {
+		if IsGlobalType(id) {
 			if to.Checksum != bo.Checksum {
-				tasktypes[v.(string)] = "TOUCH"
-				tasks[depth] = append(tasks[depth], v.(string))
+				tasktypes[id] = "TOUCH"
+				tasks[depth] = append(tasks[depth], id)
 			}
 			return nil
 		}
 
 		if action, found := s.RevDelta[to.ID]; found {
-			tasktypes[v.(string)] = string(action)
-			tasks[depth] = append(tasks[depth], v.(string))
+			tasktypes[id] = string(action)
+			tasks[depth] = append(tasks[depth], id)
 			return nil
 		}
 
-		tasktypes[v.(string)] = "UNKNOWN"
-		tasks[depth] = append(tasks[depth], v.(string))
+		tasktypes[id] = "UNKNOWN"
+		tasks[depth] = append(tasks[depth], id)
 
 		return nil
 	})
@@ -423,15 +501,14 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 	}
 
-	plan := &Plan{
-		Graph:             target,
-		GlobalOrder:       globalorder,
-		Tainted:           taintedmap,
-		OrderedPriorities: taskkeys,
-		TasksByPriority:   tasks,
-		TaskTypes:         tasktypes,
-		Tasks:             map[string]Doer{},
-	}
+	plan := NewEmptyPlan()
+	plan.Graph = target
+	plan.GlobalOrder = globalorder
+	plan.Tainted = taintedmap
+	plan.OrderedPriorities = taskkeys
+	plan.TasksByPriority = tasks
+	plan.TaskTypes = tasktypes
+	plan.TaintedHosts = taintmap
 
 	s.Plan = plan
 	return plan, nil
@@ -445,11 +522,6 @@ func (s *State) Open(dbfile string) error {
 	}
 	s.DB = db
 	return nil
-}
-
-// NewState returns an empty state
-func NewState() *State {
-	return &State{}
 }
 
 // SetCurrent sets the current snapshot

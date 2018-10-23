@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/hashicorp/terraform/dag"
+	"github.com/hashicorp/terraform/tfdiags"
 )
 
 var (
@@ -21,6 +23,46 @@ var (
 		LFTypeProvisionedHost: true,
 	}
 )
+
+// Plan is a type that describes how to get from one state to the next
+//easyjson:json
+type Plan struct {
+	TaskGroundDelay   int               `json:"ground_delay"`
+	Base              *Laforge          `json:"-"`
+	Checksum          uint64            `json:"checksum"`
+	StartedAt         time.Time         `json:"started_at"`
+	EndedAt           time.Time         `json:"ended_at"`
+	Graph             *Snapshot         `json:"target,omitempty"`
+	TaskTypes         map[string]string `json:"task_types"`
+	Tasks             map[string]Doer   `json:"-"`
+	TasksByPriority   map[int][]string  `json:"tasks_by_priority"`
+	GlobalOrder       []string          `json:"global_order"`
+	OrderedPriorities []int             `json:"ordered_priorities"`
+	Tainted           map[string]bool   `json:"tainted"`
+	TaintedHosts      map[string]bool   `json:"tainted_hosts"`
+	Walker            *dag.Walker       `json:"-"`
+	Errored           bool              `json:"-"`
+	FailedNodes       *dag.Set          `json:"-"`
+}
+
+// NewEmptyPlan returns an initialized, but empty plan object.
+func NewEmptyPlan() *Plan {
+	p := &Plan{
+		TaskTypes:         map[string]string{},
+		Tasks:             map[string]Doer{},
+		TasksByPriority:   map[int][]string{},
+		GlobalOrder:       []string{},
+		OrderedPriorities: []int{},
+		Tainted:           map[string]bool{},
+		TaintedHosts:      map[string]bool{},
+		FailedNodes:       &dag.Set{},
+		TaskGroundDelay:   30,
+	}
+	p.Walker = &dag.Walker{
+		Callback: p.Orchestrator,
+	}
+	return p
+}
 
 // CalculateTerraformNeeds attempts to determine what terraform steps must happen first
 // for a given plan.
@@ -65,30 +107,15 @@ func CalculateTerraformNeeds(plan *Plan) (map[string][]string, error) {
 	return ret, nil
 }
 
-// Plan is a type that describes how to get from one state to the next
-//easyjson:json
-type Plan struct {
-	Checksum          uint64            `json:"checksum"`
-	StartedAt         time.Time         `json:"started_at"`
-	EndedAt           time.Time         `json:"ended_at"`
-	Graph             *Snapshot         `json:"target,omitempty"`
-	TaskTypes         map[string]string `json:"task_types"`
-	Tasks             map[string]Doer   `json:"-"`
-	TasksByPriority   map[int][]string  `json:"tasks_by_priority"`
-	GlobalOrder       []string          `json:"global_order"`
-	OrderedPriorities []int             `json:"ordered_priorities"`
-	Tainted           map[string]bool   `json:"tainted"`
-}
-
 // SetupTasks attempts to cull the Tasks map with Doer types to actually be performed
 func (p *Plan) SetupTasks() error {
 	if p.Tasks == nil {
 		p.Tasks = map[string]Doer{}
 	}
 	for id, x := range p.GlobalOrder {
-		cli.Logger.Warnf("STEP: %s", x)
+		cli.Logger.Debugf("STEP: %s", x)
 		metaobj := p.Graph.Metastore[x]
-		cli.Logger.Warnf("Meta: %s", metaobj.ObjectType)
+		cli.Logger.Debugf("Meta: %s", metaobj.ObjectType)
 		if metaobj.ObjectType == "provisioning_step" {
 			pstep, ok := metaobj.Dependency.(*ProvisioningStep)
 			if !ok {
@@ -98,9 +125,83 @@ func (p *Plan) SetupTasks() error {
 			if err != nil {
 				return err
 			}
+			sj.SetTimeout(p.TaskGroundDelay)
+			sj.SetPlan(p)
+			sj.SetBase(p.Base)
 			p.Tasks[x] = sj
 		}
 	}
+	return nil
+}
+
+// Execute walks the plan's functions against the computed dependency graph
+func (p *Plan) Execute() tfdiags.Diagnostics {
+	p.Walker.Update(p.Graph.AltGraph)
+	err := p.Walker.Wait()
+	if err.HasErrors() {
+		return err
+	}
+	return nil
+}
+
+// Orchestrator is the walk function that is executed for each path in the dependency graph
+func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
+	if p.Errored {
+		return d
+	}
+	id := v.(string)
+	if _, ok := p.Tainted[id]; !ok {
+		cli.Logger.Debugf("Node %s is unchanged. Continuing traversal.")
+		return nil
+	}
+	descendents, err := p.Graph.AltGraph.Descendents(v)
+	if err != nil {
+		cli.Logger.Errorf("Ancestor Search Error: %v", err)
+		p.Errored = true
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "descendent acquisition failed", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
+	}
+	if p.FailedNodes.Intersection(descendents).Len() > 0 {
+		cli.Logger.Errorf("Node %s has failed lineage. Skipping execution.", id)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "node has tainted lineage, skipping", id))
+		return d
+	}
+	task, found := p.Tasks[id]
+	if !found {
+		cli.Logger.Errorf("Node %s did not have an associated Laforge Job!", id)
+		// p.FailedNodes.Add(v)
+		// d.Append(tfdiags.Sourceless(tfdiags.Error, "missing laforge job object for node", id))
+		return d
+	}
+	err = task.CanProceed()
+	if err != nil {
+		cli.Logger.Errorf("Task %s could not proceed: %v", id, err)
+		p.FailedNodes.Add(v)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task preparation failure", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
+	}
+	err = task.EnsureDependencies(p.Base)
+	if err != nil {
+		cli.Logger.Errorf("Task %s failed to ensure dependencies: %v", id, err)
+		p.FailedNodes.Add(v)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task dependency failure", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
+	}
+	err = task.Do()
+	if err != nil {
+		cli.Logger.Errorf("Task %s failed: %v", id, err)
+		p.FailedNodes.Add(v)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task execution failure", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
+	}
+	err = task.Finish()
+	if err != nil {
+		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
+		p.FailedNodes.Add(v)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
+	}
+	// here is where we should do some work
 	return nil
 }
 

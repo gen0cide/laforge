@@ -349,179 +349,181 @@ func (t *Team) CreateProvisionResources() error {
 
 // Gather implements the Dependency interface
 func (t *Team) Gather(g *Snapshot) error {
-	for _, net := range t.ProvisionedNetworks {
-		g.AddNode(net)
-		err := net.Gather(g)
-		if err != nil {
-			return err
-		}
-	}
+	// for _, net := range t.ProvisionedNetworks {
+	// 	g.AddNode(net)
+	// 	err := net.Gather(g)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	return nil
 }
 
 // Associate attempts to actually draw the relationships on the graph between dependencies
 func (t *Team) Associate(g *Snapshot) error {
-	depwalker := map[string]*ProvisionedHost{}
-	for nid, net := range t.ProvisionedNetworks {
-		nmeta := g.Metastore[nid]
-		for hid, host := range net.ProvisionedHosts {
-			hmeta := g.Metastore[hid]
-			connmeta := g.Metastore[host.Conn.Path()]
-			g.Connect(hmeta, connmeta)
-			if len(host.Host.Dependencies) > 0 {
-				depwalker[hid] = host
-			} else {
-				for idx, s := range host.StepsByOffset {
-					smeta := g.Metastore[s.Path()]
-					if s.StepNumber != 0 {
-						prevIdx := idx - 1
-						prevStep := host.StepsByOffset[prevIdx]
-						prevmeta := g.Metastore[prevStep.Path()]
-						g.Connect(prevmeta, smeta)
-						err := g.Graph.Validate()
-						if err != nil {
-							cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
-							fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-							panic(err)
-						}
-					} else {
-						g.Connect(hmeta, smeta)
-						err := g.Graph.Validate()
-						if err != nil {
-							cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hmeta.ID, smeta.ID)
-							fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-							panic(err)
-						}
-					}
-				}
-				g.Connect(nmeta, hmeta)
-				err := g.Graph.Validate()
-				if err != nil {
-					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", nmeta.ID, hmeta.ID)
-					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-					panic(err)
-				}
-			}
-		}
-	}
+	// depwalker := map[string]*ProvisionedHost{}
+	// for nid, net := range t.ProvisionedNetworks {
+	// 	nmeta := g.Metastore[nid]
+	// 	for hid, host := range net.ProvisionedHosts {
+	// 		hmeta := g.Metastore[hid]
+	// 		connmeta := g.Metastore[host.Conn.Path()]
+	// 		g.Connect(hmeta, connmeta)
+	// 		if len(host.Host.Dependencies) > 0 {
+	// 			depwalker[hid] = host
+	// 		} else {
+	// 			for idx, s := range host.StepsByOffset {
+	// 				smeta := g.Metastore[s.Path()]
+	// 				if s.StepNumber != 0 {
+	// 					prevIdx := idx - 1
+	// 					prevStep := host.StepsByOffset[prevIdx]
+	// 					prevmeta := g.Metastore[prevStep.Path()]
+	// 					g.Connect(prevmeta, smeta)
+	// 					err := g.Graph.Validate()
+	// 					if err != nil {
+	// 						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
+	// 						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 						panic(err)
+	// 					}
+	// 				} else {
+	// 					g.Connect(connmeta, smeta)
+	// 					err := g.Graph.Validate()
+	// 					if err != nil {
+	// 						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hmeta.ID, smeta.ID)
+	// 						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 						panic(err)
+	// 					}
+	// 				}
+	// 			}
+	// 			g.Connect(nmeta, hmeta)
+	// 			err := g.Graph.Validate()
+	// 			if err != nil {
+	// 				cli.Logger.Errorf("Graph trust has failed connecting %s to %s", nmeta.ID, hmeta.ID)
+	// 				fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 				panic(err)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	for {
-		if len(depwalker) == 0 {
-			break
-		}
-		maxVal := 0
-		maxHost := ""
-		for hid, host := range depwalker {
-			if host.Host.DependencyCount(t.Environment) >= maxVal {
-				maxHost = hid
-				maxVal = host.Host.DependencyCount(t.Environment)
-			}
-		}
-		hmeta := g.Metastore[maxHost]
+	// for {
+	// 	if len(depwalker) == 0 {
+	// 		break
+	// 	}
+	// 	maxVal := 0
+	// 	maxHost := ""
+	// 	for hid, host := range depwalker {
+	// 		if host.Host.DependencyCount(t.Environment) >= maxVal {
+	// 			maxHost = hid
+	// 			maxVal = host.Host.DependencyCount(t.Environment)
+	// 		}
+	// 	}
+	// 	hmeta := g.Metastore[maxHost]
 
-		if maxVal == 1 {
-			dep := depwalker[maxHost].Host.Dependencies[0]
-			dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
-			if err != nil {
-				panic(err)
-			}
-			fsid := dh.Host.FinalStepID()
-			if fsid != -1 {
-				smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
-				g.Connect(smeta, hmeta)
-				err := g.Graph.Validate()
-				if err != nil {
-					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
-					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-					panic(err)
-				}
-				delete(depwalker, maxHost)
-				continue
-			} else {
-				dhmeta := g.Metastore[dh.Path()]
-				g.Connect(dhmeta, hmeta)
-				err := g.Graph.Validate()
-				if err != nil {
-					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhmeta.ID, hmeta.ID)
-					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-					panic(err)
-				}
-				delete(depwalker, maxHost)
-				continue
-			}
-		} else {
-			maxDepVal := 0
-			maxDepOffset := 0
-			for do, dep := range depwalker[maxHost].Host.Dependencies {
-				depHost, ok := t.Environment.IncludedHosts[dep.HostID]
-				if !ok {
-					continue
-				}
-				if depHost.DependencyCount(t.Environment) >= maxDepVal {
-					maxDepOffset = do
-					maxDepVal = depHost.DependencyCount(t.Environment)
-				}
-			}
-			dep := depwalker[maxHost].Host.Dependencies[maxDepOffset]
-			dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
-			if err != nil {
-				panic(err)
-			}
-			fsid := dh.Host.FinalStepID()
-			if fsid != -1 {
-				smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
-				g.Connect(smeta, hmeta)
-				err := g.Graph.Validate()
-				if err != nil {
-					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
-					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-					panic(err)
-				}
-				delete(depwalker, maxHost)
-				continue
-			} else {
-				dhmeta := g.Metastore[dh.Path()]
-				g.Connect(dhmeta, hmeta)
-				err := g.Graph.Validate()
-				if err != nil {
-					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhmeta.ID, hmeta.ID)
-					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-					panic(err)
-				}
-				delete(depwalker, maxHost)
-				continue
-			}
-		}
-	}
-	for _, net := range t.ProvisionedNetworks {
-		for hid, host := range net.ProvisionedHosts {
-			hmeta := g.Metastore[hid]
-			for _, s := range host.StepsByOffset {
-				smeta := g.Metastore[s.Path()]
-				if s.StepNumber != 0 {
-					prevIdx := s.StepNumber - 1
-					prevStep := host.StepsByOffset[prevIdx]
-					prevmeta := g.Metastore[prevStep.Path()]
-					g.Connect(prevmeta, smeta)
-					err := g.Graph.Validate()
-					if err != nil {
-						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
-						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-						panic(err)
-					}
-				} else {
-					g.Connect(hmeta, smeta)
-					err := g.Graph.Validate()
-					if err != nil {
-						cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hmeta.ID, smeta.ID)
-						fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
-						panic(err)
-					}
-				}
-			}
-		}
-	}
-	// fmt.Printf("%s\n\n\n", g.Graph.StringWithNodeTypes())
+	// 	if maxVal == 1 {
+	// 		dep := depwalker[maxHost].Host.Dependencies[0]
+	// 		dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		fsid := dh.Host.FinalStepID()
+	// 		if fsid != -1 {
+	// 			smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
+	// 			g.Connect(smeta, hmeta)
+	// 			err := g.Graph.Validate()
+	// 			if err != nil {
+	// 				cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
+	// 				fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 				panic(err)
+	// 			}
+	// 			delete(depwalker, maxHost)
+	// 			continue
+	// 		} else {
+	// 			// dhmeta := g.Metastore[dh.Path()]
+	// 			dhconnmeta := g.Metastore[dh.Conn.Path()]
+	// 			g.Connect(dhconnmeta, hmeta)
+	// 			err := g.Graph.Validate()
+	// 			if err != nil {
+	// 				cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhconnmeta.ID, hmeta.ID)
+	// 				fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 				panic(err)
+	// 			}
+	// 			delete(depwalker, maxHost)
+	// 			continue
+	// 		}
+	// 	} else {
+	// 		maxDepVal := 0
+	// 		maxDepOffset := 0
+	// 		for do, dep := range depwalker[maxHost].Host.Dependencies {
+	// 			depHost, ok := t.Environment.IncludedHosts[dep.HostID]
+	// 			if !ok {
+	// 				continue
+	// 			}
+	// 			if depHost.DependencyCount(t.Environment) >= maxDepVal {
+	// 				maxDepOffset = do
+	// 				maxDepVal = depHost.DependencyCount(t.Environment)
+	// 			}
+	// 		}
+	// 		dep := depwalker[maxHost].Host.Dependencies[maxDepOffset]
+	// 		dh, err := t.LocateProvisionedHost(dep.NetworkID, dep.HostID)
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		fsid := dh.Host.FinalStepID()
+	// 		if fsid != -1 {
+	// 			smeta := g.Metastore[dh.StepsByOffset[fsid].Path()]
+	// 			g.Connect(smeta, hmeta)
+	// 			err := g.Graph.Validate()
+	// 			if err != nil {
+	// 				cli.Logger.Errorf("Graph trust has failed connecting %s to %s", smeta.ID, hmeta.ID)
+	// 				fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 				panic(err)
+	// 			}
+	// 			delete(depwalker, maxHost)
+	// 			continue
+	// 		} else {
+	// 			// dhmeta := g.Metastore[dh.Path()]
+	// 			dhconnmeta := g.Metastore[dh.Conn.Path()]
+	// 			g.Connect(dhconnmeta, hmeta)
+	// 			err := g.Graph.Validate()
+	// 			if err != nil {
+	// 				cli.Logger.Errorf("Graph trust has failed connecting %s to %s", dhconnmeta.ID, hmeta.ID)
+	// 				fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 				panic(err)
+	// 			}
+	// 			delete(depwalker, maxHost)
+	// 			continue
+	// 		}
+	// 	}
+	// }
+	// for _, net := range t.ProvisionedNetworks {
+	// 	for _, host := range net.ProvisionedHosts {
+	// 		for _, s := range host.StepsByOffset {
+	// 			smeta := g.Metastore[s.Path()]
+	// 			if s.StepNumber != 0 {
+	// 				prevIdx := s.StepNumber - 1
+	// 				prevStep := host.StepsByOffset[prevIdx]
+	// 				prevmeta := g.Metastore[prevStep.Path()]
+	// 				g.Connect(prevmeta, smeta)
+	// 				err := g.Graph.Validate()
+	// 				if err != nil {
+	// 					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", prevmeta.ID, smeta.ID)
+	// 					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 					panic(err)
+	// 				}
+	// 			} else {
+	// 				hconnmeta := g.Metastore[host.Conn.Path()]
+	// 				g.Connect(hconnmeta, smeta)
+	// 				err := g.Graph.Validate()
+	// 				if err != nil {
+	// 					cli.Logger.Errorf("Graph trust has failed connecting %s to %s", hconnmeta.ID, smeta.ID)
+	// 					fmt.Printf("%s\n", g.Graph.StringWithNodeTypes())
+	// 					panic(err)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// // fmt.Printf("%s\n\n\n", g.Graph.StringWithNodeTypes())
 	return nil
 }
 

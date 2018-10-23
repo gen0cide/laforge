@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -297,21 +298,24 @@ func (l *Loader) Bind() (*Laforge, error) {
 }
 
 type transientContext struct {
-	Build           *Build               `hcl:"build,block" json:"build,omitempty"`
-	Competition     *Competition         `hcl:"competition,block" json:"competition,omitempty"`
-	Command         *Command             `hcl:"command,block" json:"command,omitempty"`
-	DNSRecord       *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
-	Environment     *Environment         `hcl:"environment,block" json:"environment,omitempty"`
-	Host            *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
-	Identity        *Identity            `hcl:"identity,block" json:"identity,omitempty"`
-	Network         *Network             `hcl:"network,block" json:"network,omitempty"`
-	RemoteFile      *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
-	Script          *Script              `hcl:"script,block" json:"script,omitempty"`
-	Team            *Team                `hcl:"team,block" json:"team,omitempty"`
-	User            *User                `hcl:"user,block" json:"user,omitempty"`
-	AMI             *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
-	ProvisionedHost *ProvisionedHost     `hcl:"provisioned_host,block" json:"provisioned_host,omitempty"`
-	Includes        []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
+	Build              *Build               `hcl:"build,block" json:"build,omitempty"`
+	Competition        *Competition         `hcl:"competition,block" json:"competition,omitempty"`
+	Command            *Command             `hcl:"command,block" json:"command,omitempty"`
+	DNSRecord          *DNSRecord           `hcl:"dns_record,block" json:"dns_record,omitempty"`
+	Environment        *Environment         `hcl:"environment,block" json:"environment,omitempty"`
+	Host               *Host                `cty:"host" hcl:"host,block" json:"host,omitempty"`
+	Identity           *Identity            `hcl:"identity,block" json:"identity,omitempty"`
+	Network            *Network             `hcl:"network,block" json:"network,omitempty"`
+	RemoteFile         *RemoteFile          `hcl:"remote_file,block" json:"remote_file,omitempty"`
+	Script             *Script              `hcl:"script,block" json:"script,omitempty"`
+	Team               *Team                `hcl:"team,block" json:"team,omitempty"`
+	User               *User                `hcl:"user,block" json:"user,omitempty"`
+	AMI                *AMI                 `hcl:"ami,block" json:"ami,omitempty"`
+	ProvisionedHost    *ProvisionedHost     `hcl:"provisioned_host,block" json:"provisioned_host,omitempty"`
+	ProvisionedNetwork *ProvisionedNetwork  `hcl:"provisioned_network,block" json:"provisioned_network,omitempty"`
+	ProvisioningStep   *ProvisioningStep    `hcl:"provisioning_step,block" json:"provisioning_step,omitempty"`
+	Connection         *Connection          `hcl:"connection,block" json:"connection,omitempty"`
+	Includes           []*transientIncludes `hcl:"include,block" json:"includes,omitempty"`
 }
 
 type transientIncludes struct {
@@ -382,6 +386,14 @@ func GetEmptyObjByName(s string) (interface{}, error) {
 		return &User{}, nil
 	case "ami":
 		return &AMI{}, nil
+	case "provisioned_host":
+		return &ProvisionedHost{}, nil
+	case "provisioned_network":
+		return &ProvisionedNetwork{}, nil
+	case "provisioning_step":
+		return &ProvisioningStep{}, nil
+	case "connection":
+		return &Connection{}, nil
 	default:
 		return nil, errors.New("specified core type name was not valid")
 	}
@@ -395,6 +407,24 @@ func (t *transientReverseContext) Add(x interface{}) error {
 
 	aField := cont.FieldByName(intoRaw.Type().Name())
 	aField.Set(reflect.Append(aField, into))
+	return nil
+}
+
+// LoadHCLFromFile attempts to load and parse an HCL file with a filepath location
+func LoadHCLFromFile(fileloc string, v interface{}) error {
+	if _, err := os.Stat(fileloc); err != nil {
+		return err
+	}
+
+	data, err := ioutil.ReadFile(fileloc)
+	if err != nil {
+		return err
+	}
+
+	err = HCLBytesToObject(data, v)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

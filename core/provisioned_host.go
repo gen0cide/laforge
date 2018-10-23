@@ -211,15 +211,15 @@ func (p *ProvisionedHost) CreateProvisioningSteps() error {
 
 // Gather implements the Dependency interface
 func (p *ProvisionedHost) Gather(g *Snapshot) error {
-	var err error
-	g.AddNode(p.Conn)
-	for _, s := range p.StepsByOffset {
-		g.AddNode(s)
-		err = s.Gather(g)
-		if err != nil {
-			return err
-		}
-	}
+	// var err error
+	// g.AddNode(p.Conn)
+	// for _, s := range p.StepsByOffset {
+	// 	g.AddNode(s)
+	// 	err = s.Gather(g)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	// for _, s := range p.StepsByOffset {
 	// 	g.AddNode(s)
