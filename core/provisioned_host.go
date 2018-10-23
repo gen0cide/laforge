@@ -136,6 +136,9 @@ func (p *ProvisionedHost) ActualPassword() string {
 
 // CreateConnection creates this host's skeleton connection file to be used
 func (p *ProvisionedHost) CreateConnection() *Connection {
+	if p.Conn != nil {
+		return p.Conn
+	}
 	c := &Connection{
 		ID:                 path.Join(p.Path(), "conn"),
 		Competition:        p.Competition,

@@ -2,8 +2,15 @@ package core
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"sync"
 	"time"
+
+	"github.com/karrick/godirwalk"
+
+	"path/filepath"
 
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/terraform/dag"
@@ -56,7 +63,7 @@ func NewEmptyPlan() *Plan {
 		Tainted:           map[string]bool{},
 		TaintedHosts:      map[string]bool{},
 		FailedNodes:       &dag.Set{},
-		TaskGroundDelay:   30,
+		TaskGroundDelay:   420,
 	}
 	p.Walker = &dag.Walker{
 		Callback: p.Orchestrator,
@@ -87,6 +94,12 @@ func CalculateTerraformNeeds(plan *Plan) (map[string][]string, error) {
 			phost, ok := host.(*ProvisionedHost)
 			if !ok {
 				continue
+			}
+			alterego, found := plan.Base.Connections[path.Join(phost.Path(), "conn")]
+			if found {
+				if alterego.ResourceName != path.Join(phost.Path(), "conn") {
+					ret[teamID] = append(ret[teamID], fmt.Sprintf("taint -allow-missing -no-color %s", alterego.ResourceName))
+				}
 			}
 			if phost.Conn == nil {
 				teamsRequiringTFApply[teamID] = true
@@ -121,15 +134,40 @@ func (p *Plan) SetupTasks() error {
 			if !ok {
 				return fmt.Errorf("metadata object %s is of type %T, expected *ProvisioningStep", x, metaobj.Dependency)
 			}
-			sj, err := CreateScriptJob(x, id, metaobj, pstep)
-			if err != nil {
-				return err
+			var job Doer
+			switch pstep.ProvisionerType {
+			case "script":
+				j, err := CreateScriptJob(x, id, metaobj, pstep)
+				if err != nil {
+					return err
+				}
+				job = j
+			case "remote_file":
+				j, err := CreateRemoteFileJob(x, id, metaobj, pstep)
+				if err != nil {
+					return err
+				}
+				job = j
 			}
-			sj.SetTimeout(p.TaskGroundDelay)
-			sj.SetPlan(p)
-			sj.SetBase(p.Base)
-			p.Tasks[x] = sj
+			job.SetTimeout(p.TaskGroundDelay)
+			job.SetPlan(p)
+			job.SetBase(p.Base)
+			p.Tasks[x] = job
 		}
+	}
+	return nil
+}
+
+// WriteRevisionFile writes a deng revision file
+func (p *Plan) WriteRevisionFile(d Doer, status RevStatus) error {
+	filename := fmt.Sprintf(".%s.pstep.lfrevision", filepath.Base(d.GetTargetID()))
+	pathToRevFile := filepath.Join(p.Base.BaseDir, filepath.Dir(d.GetTargetID()), filename)
+	rev := d.GetMetadata().ToRevision()
+	rev.Touch()
+	rev.Status = status
+	err := ioutil.WriteFile(pathToRevFile, []byte(rev.ToJSONString()), 0644)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -168,7 +206,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 	}
 	task, found := p.Tasks[id]
 	if !found {
-		cli.Logger.Errorf("Node %s did not have an associated Laforge Job!", id)
+		cli.Logger.Errorf("Node %s did not have an associated Laforge Job! (might not be implemented yet)", id)
 		// p.FailedNodes.Add(v)
 		// d.Append(tfdiags.Sourceless(tfdiags.Error, "missing laforge job object for node", id))
 		return d
@@ -178,6 +216,10 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		cli.Logger.Errorf("Task %s could not proceed: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task preparation failure", tfdiags.FormatErrorPrefixed(err, id)))
+		err = p.WriteRevisionFile(task, RevStatusFailed)
+		if err != nil {
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		}
 		return d
 	}
 	err = task.EnsureDependencies(p.Base)
@@ -185,6 +227,10 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		cli.Logger.Errorf("Task %s failed to ensure dependencies: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task dependency failure", tfdiags.FormatErrorPrefixed(err, id)))
+		err = p.WriteRevisionFile(task, RevStatusFailed)
+		if err != nil {
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		}
 		return d
 	}
 	err = task.Do()
@@ -192,6 +238,10 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		cli.Logger.Errorf("Task %s failed: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task execution failure", tfdiags.FormatErrorPrefixed(err, id)))
+		err = p.WriteRevisionFile(task, RevStatusFailed)
+		if err != nil {
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		}
 		return d
 	}
 	err = task.Finish()
@@ -199,7 +249,16 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		err = p.WriteRevisionFile(task, RevStatusFailed)
+		if err != nil {
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		}
 		return d
+	}
+
+	err = p.WriteRevisionFile(task, RevStatusActive)
+	if err != nil {
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
 	}
 	// here is where we should do some work
 	return nil
@@ -249,4 +308,62 @@ func (p *Plan) Preflight() error {
 			return nil
 		}
 	}
+}
+
+// BurnIt is the stub for destroying all terraform environments and their dependencies
+func (p *Plan) BurnIt() error {
+	errChan := make(chan error, 1)
+	finChan := make(chan bool, 1)
+	wg := new(sync.WaitGroup)
+
+	sequence := []string{
+		"destroy -no-color -auto-approve -parallelism=50",
+	}
+	for _, team := range p.Base.CurrentBuild.Teams {
+		wg.Add(1)
+		cli.Logger.Infof("Destroying team %s terraform environment...", team.Path())
+		go team.RunTerraformSequence(sequence, wg, errChan)
+	}
+
+	go func() {
+		wg.Wait()
+		close(finChan)
+	}()
+
+	errored := false
+	var exiterror error
+
+	for {
+		select {
+		case err := <-errChan:
+			exiterror = err
+			return err
+		case <-finChan:
+			if errored {
+				return exiterror
+			}
+			return p.RemoveRevisionFilesFromTeams()
+		}
+	}
+}
+
+// RemoveRevisionFilesFromTeams walks the team directory in the current build and removes them
+func (p *Plan) RemoveRevisionFilesFromTeams() error {
+	teamdirs := filepath.Join(p.Base.BaseDir, p.Base.CurrentBuild.Path(), "teams")
+	err := godirwalk.Walk(teamdirs, &godirwalk.Options{
+		Callback: func(ospath string, de *godirwalk.Dirent) error {
+			if filepath.Ext(de.Name()) == `.lfrevision` {
+				err := os.Remove(ospath)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

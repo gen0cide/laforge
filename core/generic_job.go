@@ -39,6 +39,7 @@ type Doer interface {
 	CleanUp() error
 	Finish() error
 	SetTimeout(t int)
+	GetMetadata() *Metadata
 	SetStatus(s JobStatus)
 	SetPlan(p *Plan)
 	SetBase(l *Laforge)
@@ -104,4 +105,9 @@ func (j *GenericJob) SetPlan(p *Plan) {
 // SetBase implements the Doer interface
 func (j *GenericJob) SetBase(l *Laforge) {
 	j.Base = l
+}
+
+// GetMetadata implements the Doer interface
+func (j *GenericJob) GetMetadata() *Metadata {
+	return j.Metadata
 }

@@ -135,14 +135,16 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		return err
 	}
 	if winfp.Ext(cmd.Command) == `.ps1` && !strings.Contains(cmd.Command, " ") {
-		cmd.Command = fmt.Sprintf("powershell -NonInteractive -NoProfile -ExecutionPolicy Bypass -File %s", cmd.Command)
+		cmd.Command = fmt.Sprintf("powershell -NoProfile -ExecutionPolicy Bypass -File %s", cmd.Command)
 	}
 	wcmd, err = shell.Execute(cmd.Command)
 	if err != nil {
 		panic(err)
 	}
 
-	go io.Copy(wcmd.Stdin, cmd.Stdin)
+	if cmd.Stdin != nil {
+		go io.Copy(wcmd.Stdin, cmd.Stdin)
+	}
 	go io.Copy(cmd.Stdout, wcmd.Stdout)
 	go io.Copy(cmd.Stderr, wcmd.Stderr)
 

@@ -59,7 +59,7 @@ var (
 			{
 				Name:            "destroy",
 				Usage:           "Destroy the builds infrastructure and clean the state.",
-				Action:          performinfra,
+				Action:          performdestroy,
 				SkipFlagParsing: true,
 			},
 			{
@@ -91,6 +91,8 @@ func performplan(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	plan.Base = state.Base
 
 	tfcmds, err := core.CalculateTerraformNeeds(plan)
 	if err != nil {
@@ -216,12 +218,12 @@ func performapply(c *cli.Context) error {
 		return err
 	}
 
-	// err = plan.Preflight()
-	// if err != nil {
-	// 	return err
-	// }
-
 	plan.Base = state.Base
+
+	err = plan.Preflight()
+	if err != nil {
+		return err
+	}
 
 	err = plan.SetupTasks()
 	if err != nil {
@@ -233,6 +235,13 @@ func performapply(c *cli.Context) error {
 		return diags.Err()
 	}
 
+	defer state.DB.Close()
+
+	err = state.PersistSnapshot(state.Current)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -242,4 +251,35 @@ func performtf(c *cli.Context) error {
 
 func performinfra(c *cli.Context) error {
 	return commandNotImplemented(c)
+}
+
+func performdestroy(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
+	if err != nil {
+		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
+	}
+
+	plan, err := state.CalculateDelta()
+	if err != nil {
+		return err
+	}
+
+	plan.Base = state.Base
+
+	err = plan.BurnIt()
+	if err != nil {
+		return err
+	}
+
+	defer state.DB.Close()
+
+	err = state.PersistSnapshot(state.Current)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

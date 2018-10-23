@@ -2164,6 +2164,8 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore10(in *jlexer.Lexer, out 
 			continue
 		}
 		switch key {
+		case "asset_path":
+			out.AssetPath = string(in.String())
 		case "job_id":
 			out.JobID = string(in.String())
 		case "offset":
@@ -2202,6 +2204,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore10(out *jwriter.Writer, i
 	out.RawByte('{')
 	first := true
 	_ = first
+	if in.AssetPath != "" {
+		const prefix string = ",\"asset_path\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.AssetPath))
+	}
 	{
 		const prefix string = ",\"job_id\":"
 		if first {

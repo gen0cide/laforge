@@ -13,7 +13,7 @@
     "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
     "args": [
       "infra",
-      "apply",
+      "plan",
       // "/hosts/windows/ad-00",
     ]
   }]
