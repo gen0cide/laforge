@@ -5,11 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gen0cide/laforge/provisioner"
-
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge"
-	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/agent"
+	lfcli "github.com/gen0cide/laforge/core/cli"
 	"github.com/kardianos/service"
 	"github.com/urfave/cli"
 )
@@ -17,7 +16,7 @@ import (
 var (
 	displayBefore = true
 	debugOutput   = false
-	cliLogger     = core.Logger
+	cliLogger     = lfcli.Logger
 	defaultLevel  = "warn"
 	verboseOutput = false
 	noBanner      = false
@@ -58,16 +57,16 @@ func main() {
 		cli.StringFlag{
 			Name:        "work-dir, w",
 			Usage:       "Overrides the home directory for the agent.",
-			Value:       provisioner.AgentHomeDir,
+			Value:       agent.AgentHomeDir,
 			EnvVar:      "LAFORGE_AGENT_HOME_DIR",
-			Destination: &provisioner.AgentHomeDir,
+			Destination: &agent.AgentHomeDir,
 		},
 		cli.StringFlag{
 			Name:        "exe-path, e",
 			Usage:       "Overrides the location of the agent binary.",
-			Value:       provisioner.ExePath,
+			Value:       agent.ExePath,
 			EnvVar:      "LAFORGE_AGENT_EXE_PATH",
-			Destination: &provisioner.ExePath,
+			Destination: &agent.ExePath,
 		},
 	}
 	app.Version = laforge.Version
@@ -130,9 +129,9 @@ func main() {
 				cli.IntFlag{
 					Name:        "port, p",
 					Usage:       "Overrides the default API port.",
-					Value:       provisioner.ServerPort,
+					Value:       agent.ServerPort,
 					EnvVar:      "LAFORGE_AGENT_PORT",
-					Destination: &provisioner.ServerPort,
+					Destination: &agent.ServerPort,
 				},
 			},
 		},
@@ -140,12 +139,12 @@ func main() {
 
 	app.Before = func(c *cli.Context) error {
 		if verboseOutput {
-			core.SetLogLevel("info")
+			lfcli.SetLogLevel("info")
 		}
 		if debugOutput {
-			core.SetLogLevel("debug")
+			lfcli.SetLogLevel("debug")
 		}
-		svc, err := provisioner.GetService()
+		svc, err := agent.GetService()
 		if err != nil {
 			return err
 		}
@@ -155,79 +154,79 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		core.Logger.Fatalf("Terminated due to error: %v", err)
+		lfcli.Logger.Fatalf("Terminated due to error: %v", err)
 	}
 }
 
 func startagent(c *cli.Context) error {
-	core.Logger.Warnf("Starting Laforge Agent...")
+	lfcli.Logger.Warnf("Starting Laforge Agent...")
 	err := serviceObj.Start()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Started.")
+	lfcli.Logger.Warnf("Laforge Agent Started.")
 	return nil
 }
 
 func stopagent(c *cli.Context) error {
-	core.Logger.Warnf("Stopping Laforge Agent...")
+	lfcli.Logger.Warnf("Stopping Laforge Agent...")
 	err := serviceObj.Stop()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Stopped.")
+	lfcli.Logger.Warnf("Laforge Agent Stopped.")
 	return nil
 }
 
 func restartagent(c *cli.Context) error {
-	core.Logger.Warnf("Restarting Laforge Agent...")
+	lfcli.Logger.Warnf("Restarting Laforge Agent...")
 	err := serviceObj.Restart()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Restarted.")
+	lfcli.Logger.Warnf("Laforge Agent Restarted.")
 	return nil
 }
 
 func installagent(c *cli.Context) error {
-	core.Logger.Warnf("Installing Laforge Agent...")
+	lfcli.Logger.Warnf("Installing Laforge Agent...")
 	err := serviceObj.Install()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Service Installed.")
+	lfcli.Logger.Warnf("Laforge Agent Service Installed.")
 	return nil
 }
 
 func uninstallagent(c *cli.Context) error {
-	core.Logger.Warnf("Uninstalling Laforge Agent...")
+	lfcli.Logger.Warnf("Uninstalling Laforge Agent...")
 	err := serviceObj.Uninstall()
 	if err != nil {
 		return err
 	}
-	core.Logger.Warnf("Laforge Agent Service Uninstalled.")
+	lfcli.Logger.Warnf("Laforge Agent Service Uninstalled.")
 	return nil
 }
 
 func agentstatus(c *cli.Context) error {
-	core.Logger.Warnf("Uninstalling Laforge Agent...")
+	lfcli.Logger.Warnf("Uninstalling Laforge Agent...")
 	stat, err := serviceObj.Status()
 	if err != nil {
 		return err
 	}
 	switch stat {
 	case service.StatusUnknown:
-		core.Logger.Warnf("Status: UNKNOWN")
+		lfcli.Logger.Warnf("Status: UNKNOWN")
 	case service.StatusRunning:
-		core.Logger.Warnf("Status: RUNNING")
+		lfcli.Logger.Warnf("Status: RUNNING")
 	case service.StatusStopped:
-		core.Logger.Warnf("Status: STOPPED")
+		lfcli.Logger.Warnf("Status: STOPPED")
 	}
 	return nil
 }
 
 func runagent(c *cli.Context) error {
-	core.Logger.Warnf("Running Laforge Agent (Service)...")
+	lfcli.Logger.Warnf("Running Laforge Agent (Service)...")
 	err := serviceObj.Run()
 	if err != nil {
 		return err
@@ -236,7 +235,7 @@ func runagent(c *cli.Context) error {
 }
 
 func serveagent(c *cli.Context) error {
-	core.Logger.Warnf("Serving In Foreground Laforge Agent...")
-	provisioner.Agent.Serve()
+	lfcli.Logger.Warnf("Serving In Foreground Laforge Agent...")
+	agent.Agent.Serve()
 	return nil
 }
