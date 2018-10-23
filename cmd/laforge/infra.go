@@ -221,6 +221,8 @@ func performapply(c *cli.Context) error {
 		return err
 	}
 
+	plan.Base = state.Base
+
 	err = plan.Preflight()
 	if err != nil {
 		return err
