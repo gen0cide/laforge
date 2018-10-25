@@ -2,8 +2,12 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"path"
 	"time"
+
+	"path/filepath"
 )
 
 const (
@@ -30,6 +34,9 @@ const (
 
 	// RevModCreate describes a revision that needs to be created on disk
 	RevModCreate RevMod = `CREATE`
+
+	// RevModRebuild describes a revision that needs to be rebuilt due to human declaration
+	RevModRebuild RevMod = `REBUILD`
 )
 
 // RevStatus is a type used to describe the current state of the revision
@@ -62,6 +69,33 @@ func (r *Revision) TouchWithID(s string) *Revision {
 	r.Touch()
 	r.ExternalID = s
 	return r
+}
+
+// Taint changes the revision to one that is a stale state
+func (r *Revision) Taint() *Revision {
+	r.Status = RevStatusStale
+	r.Timestamp = time.Now()
+	r.Checksum = 666
+	return r
+}
+
+// AbsPath returns a joined file path for build types and below
+func (r *Revision) AbsPath(basedir string) string {
+	if r.Type == LFTypeEnvironment {
+		return fmt.Sprintf(".env.lfrevision")
+	}
+	if r.Type == LFTypeConnection {
+		return filepath.Join(basedir, filepath.Dir(r.ID), r.Filename())
+	}
+	return filepath.Join(basedir, r.ID, r.Filename())
+}
+
+// Filename returns the base filename of the revision file
+func (r *Revision) Filename() string {
+	if r.Type == LFTypeProvisioningStep {
+		return fmt.Sprintf(".%s.pstep.lfrevision", path.Base(r.ID))
+	}
+	return fmt.Sprintf(".%s.lfrevision", string(r.Type))
 }
 
 // ParseRevisionFile attempts to parse a revision file at the given location

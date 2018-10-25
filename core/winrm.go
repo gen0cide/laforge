@@ -126,8 +126,9 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 
 	shell, err := client.CreateShell()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	defer shell.Close()
 	var wcmd *winrm.Command
 
 	winfp, err := filepath.NewRenderer("windows")
@@ -145,16 +146,21 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 	if cmd.Stdin != nil {
 		go io.Copy(wcmd.Stdin, cmd.Stdin)
 	}
+
 	go io.Copy(cmd.Stdout, wcmd.Stdout)
 	go io.Copy(cmd.Stderr, wcmd.Stderr)
 
-	go func() {
-		wcmd.Wait()
-		exitStatus := wcmd.ExitCode()
-		err = shell.Close()
-		cmd.SetExitStatus(exitStatus, err)
-		return
-	}()
+	wcmd.Wait()
+	cmderr := wcmd.Close()
+	exitStatus := wcmd.ExitCode()
+	cmd.SetExitStatus(exitStatus, cmderr)
+	if cmderr != nil {
+		return cmderr
+	}
+
+	if exitStatus != 0 {
+		return fmt.Errorf("WinRM command exited with a non 0 exit status: %d", exitStatus)
+	}
 
 	return nil
 }

@@ -243,7 +243,8 @@ func (w *WinRMAuthConfig) ToUploadConfig() (string, winrmcp.Config) {
 			User:     w.User,
 			Password: w.Password,
 		},
-		Https:    w.HTTPS,
-		Insecure: w.SkipVerify,
+		Https:                 w.HTTPS,
+		Insecure:              w.SkipVerify,
+		MaxOperationsPerShell: 15,
 	}
 }

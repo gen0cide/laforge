@@ -42,9 +42,8 @@ func (j *ScriptJob) CanProceed() error {
 	}
 	if j.Target.ProvisionedHost.Conn.Active {
 		return nil
+		// return NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
 	}
-	timeout := time.After(time.Duration(j.Timeout) * time.Second)
-	tick := time.Tick(500 * time.Millisecond)
 
 	pathToConnFile := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "conn.laforge")
 
@@ -58,37 +57,35 @@ func (j *ScriptJob) CanProceed() error {
 		}
 	}
 
-	fixed := false
-	for {
-		if fixed {
-			break
+	if _, err := os.Stat(pathToConnFile); err != nil {
+		if os.IsNotExist(err) {
+			return NewTimeoutExtension(errors.New("cannot proceed with a host that has no connection definition"))
 		}
-		select {
-		case <-timeout:
-			return fmt.Errorf("node was incapable of reaching remote host")
-		case <-tick:
-			conn := &Connection{}
-			err := LoadHCLFromFile(pathToConnFile, conn)
-			if err != nil {
-				cli.Logger.Errorf("Error loading job %s resource: %v", j.JobID, err)
-				continue
-			}
-			if conn.Active == true {
-				err = j.Target.ProvisionedHost.Conn.Swap(conn)
-				if err != nil {
-					return fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
-				}
-				fixed = true
-				continue
-			}
-		}
+		return err
 	}
+
+	conn := &Connection{}
+	err := LoadHCLFromFile(pathToConnFile, conn)
+	if err != nil {
+		cli.Logger.Errorf("Error loading job %s resource: %v", j.JobID, err)
+		return err
+	}
+
+	if conn.Active != true {
+		return NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
+	}
+
+	err = j.Target.ProvisionedHost.Conn.Swap(conn)
+	if err != nil {
+		return fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+	}
+
 	return nil
 }
 
 // EnsureDependencies implements the Doer interface
-func (j *ScriptJob) EnsureDependencies(l *Laforge) error {
-	targetAsset := filepath.Join(l.BaseDir, j.Target.ParentLaforgeID(), "assets", j.Script.SourceBase())
+func (j *ScriptJob) EnsureDependencies() error {
+	targetAsset := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "assets", j.Script.SourceBase())
 	if _, err := os.Stat(targetAsset); err != nil {
 		return err
 	}
@@ -102,7 +99,7 @@ func (j *ScriptJob) EnsureDependencies(l *Laforge) error {
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
 		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == `../../data/ssh.pem` {
 			cli.Logger.Debugf("Fixing identity file for %s", j.Target.Path())
-			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = filepath.Join(l.BaseDir, l.CurrentBuild.Path(), "data", "ssh.pem")
+			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = filepath.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", "ssh.pem")
 		}
 	}
 
@@ -114,7 +111,7 @@ func (j *ScriptJob) Do() error {
 	cli.Logger.Warnf("Uploading and executing %s on %s", j.AssetPath, j.Target.ProvisionedHost.Conn.RemoteAddr)
 	actualfilename := fmt.Sprintf("%d-%s", j.Target.StepNumber, filepath.Base(j.AssetPath))
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
-	err := j.Target.ProvisionedHost.Conn.UploadExecuteAndDelete(j.AssetPath, actualfilename, logdir)
+	err := j.Target.ProvisionedHost.Conn.UploadExecuteAndDelete(j, j.AssetPath, actualfilename, logdir)
 	if err != nil {
 		cli.Logger.Errorf("Error executing %s: %v", j.JobID, err)
 		return err

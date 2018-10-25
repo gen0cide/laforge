@@ -153,7 +153,7 @@ func (s *Snapshot) RelateObjects(end chan struct{}, fin chan struct{}) {
 			s.RelateV2(e)
 			continue
 		case <-end:
-			cli.Logger.Infof("Relate objects worker termination triggered")
+			cli.Logger.Debugf("Relate objects worker termination triggered")
 			ttg = true
 			continue
 		default:
@@ -169,7 +169,7 @@ func (s *Snapshot) RelateObjects(end chan struct{}, fin chan struct{}) {
 			if len(s.Edgebus) > 0 {
 				continue
 			}
-			cli.Logger.Infof("Edgebus drained")
+			cli.Logger.Debugf("Edgebus drained")
 			fin <- struct{}{}
 			return
 		}
@@ -188,7 +188,7 @@ func (s *Snapshot) StoreMetadata(end chan struct{}, fin chan struct{}) {
 			s.Nodebus <- m
 			continue
 		case <-end:
-			cli.Logger.Infof("store metadata worker termination triggered")
+			cli.Logger.Debugf("store metadata worker termination triggered")
 			ttg = true
 			continue
 		default:
@@ -207,7 +207,7 @@ func (s *Snapshot) StoreMetadata(end chan struct{}, fin chan struct{}) {
 			if len(s.Metabus) > 0 {
 				continue
 			}
-			cli.Logger.Infof("Metabus drained")
+			cli.Logger.Debugf("Metabus drained")
 			fin <- struct{}{}
 			return
 		}
@@ -223,7 +223,7 @@ func (s *Snapshot) PopulateGraph(end chan struct{}, fin chan struct{}) {
 			s.AddNodeV2(n.ID)
 			continue
 		case <-end:
-			cli.Logger.Infof("populate graph worker termination triggered")
+			cli.Logger.Debugf("populate graph worker termination triggered")
 			ttg = true
 			continue
 		default:
@@ -239,7 +239,7 @@ func (s *Snapshot) PopulateGraph(end chan struct{}, fin chan struct{}) {
 			if len(s.Nodebus) > 0 {
 				continue
 			}
-			cli.Logger.Infof("Nodebus drained")
+			cli.Logger.Debugf("Nodebus drained")
 			fin <- struct{}{}
 			return
 		}

@@ -191,7 +191,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 	}
 	id := v.(string)
 	if _, ok := p.Tainted[id]; !ok {
-		cli.Logger.Debugf("Node %s is unchanged. Continuing traversal.")
+		cli.Logger.Debugf("Node %s is unchanged. Continuing traversal.", id)
 		return nil
 	}
 	descendents, err := p.Graph.AltGraph.Descendents(v)
@@ -213,7 +213,8 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		// d.Append(tfdiags.Sourceless(tfdiags.Error, "missing laforge job object for node", id))
 		return d
 	}
-	err = task.CanProceed()
+	task.SetBase(p.Base)
+	err = PerformInTimeout(task.GetTimeout(), task.CanProceed)
 	if err != nil {
 		cli.Logger.Errorf("Task %s could not proceed: %v", id, err)
 		p.FailedNodes.Add(v)
@@ -224,29 +225,29 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		}
 		return d
 	}
-	err = task.EnsureDependencies(p.Base)
+	err = PerformInTimeout(task.GetTimeout(), task.EnsureDependencies)
 	if err != nil {
 		cli.Logger.Errorf("Task %s failed to ensure dependencies: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task dependency failure", tfdiags.FormatErrorPrefixed(err, id)))
 		err = p.WriteRevisionFile(task, RevStatusFailed)
 		if err != nil {
-			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task dependency failure", tfdiags.FormatErrorPrefixed(err, id)))
 		}
 		return d
 	}
-	err = task.Do()
+	err = PerformInTimeout(task.GetTimeout(), task.Do)
 	if err != nil {
 		cli.Logger.Errorf("Task %s failed: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task execution failure", tfdiags.FormatErrorPrefixed(err, id)))
 		err = p.WriteRevisionFile(task, RevStatusFailed)
 		if err != nil {
-			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task execution failure", tfdiags.FormatErrorPrefixed(err, id)))
 		}
 		return d
 	}
-	err = task.Finish()
+	err = PerformInTimeout(task.GetTimeout(), task.Finish)
 	if err != nil {
 		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
 		p.FailedNodes.Add(v)
@@ -260,7 +261,8 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 
 	err = p.WriteRevisionFile(task, RevStatusActive)
 	if err != nil {
-		d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task revision file writer failure", tfdiags.FormatErrorPrefixed(err, id)))
+		return d
 	}
 	// here is where we should do some work
 	return nil

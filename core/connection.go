@@ -1,10 +1,13 @@
 package core
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/juju/utils/filepath"
@@ -169,7 +172,7 @@ func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 }
 
 // UploadExecuteAndDelete is a helper function to chain together a common pattern of execution
-func (c *Connection) UploadExecuteAndDelete(scriptsrc string, tmpname string, logdir string) error {
+func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname string, logdir string) error {
 	if _, err := os.Stat(scriptsrc); err != nil {
 		return fmt.Errorf("problem locating file %s: %v", scriptsrc, err)
 	}
@@ -197,9 +200,60 @@ func (c *Connection) UploadExecuteAndDelete(scriptsrc string, tmpname string, lo
 
 	logfilename := strings.Replace(filename, currfp.Ext(filename), ``, -1)
 	logprefix := currfp.Join(logdir, logfilename)
+
+	stdoutdone := make(chan struct{})
+	stderrdone := make(chan struct{})
+
+	debugstdoutpr, debugstdoutpw := io.Pipe()
+	debugstderrpr, debugstderrpw := io.Pipe()
+
+	wg := new(sync.WaitGroup)
+	stdoutScanner := bufio.NewScanner(debugstdoutpr)
+	stderrScanner := bufio.NewScanner(debugstderrpr)
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		for stdoutScanner.Scan() {
+			text := stdoutScanner.Text()
+			j.StandardOutput(text)
+		}
+		stdoutdone <- struct{}{}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for stderrScanner.Scan() {
+			text := stderrScanner.Text()
+			j.StandardError(text)
+		}
+		stderrdone <- struct{}{}
+	}()
+
+	defer func() {
+		<-stdoutdone
+		<-stderrdone
+		wg.Wait()
+		err := stdoutScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDOUT Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+		err = stderrScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDERR Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+	}()
+
 	if c.IsWinRM() {
 		finalpath := winfp.Join(`C:`, filename)
-		err = c.UploadWinRM(scriptsrc, finalpath)
+		err = PerformInTimeout(60, func() error {
+			err = c.UploadWinRM(scriptsrc, finalpath)
+			if err != nil {
+				cli.Logger.Debugf("%s Upload Connection Issue: %v", c.Path(), err)
+				return NewTimeoutExtension(err)
+			}
+			return nil
+		})
 		if err != nil {
 			return err
 		}
@@ -211,46 +265,69 @@ func (c *Connection) UploadExecuteAndDelete(scriptsrc string, tmpname string, lo
 			return err
 		}
 		defer stderrfh.Close()
-		cli.Logger.Infof("Logging script %s standard output to %s", scriptsrc, stderrfile)
+		cli.Logger.Infof("Logging script %s STDERR to %s", scriptsrc, stderrfile)
 		stdoutfh, err := os.Create(stdoutfile)
 		if err != nil {
 			return err
 		}
 		defer stdoutfh.Close()
-		cli.Logger.Infof("Logging script %s standard error to %s", scriptsrc, stdoutfile)
-		rc.Stdout = stdoutfh
-		rc.Stderr = stderrfh
+		cli.Logger.Infof("Logging script %s STDOUT to %s", scriptsrc, stdoutfile)
+		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
+		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		defer debugstdoutpw.Close()
+		defer debugstderrpw.Close()
 		rc.Command = finalpath
-		err = c.ExecuteCommandWinRM(rc)
+		err = PerformInTimeout(60, func() error {
+			err = c.ExecuteCommandWinRM(rc)
+			if err != nil {
+				cli.Logger.Debugf("%s Execute Connection Issue: %v", c.Path(), err)
+				return NewTimeoutExtension(err)
+			}
+			return nil
+		})
 		if err != nil {
 			return err
 		}
 		delrc := NewRemoteCommand()
-		stdoutfile = fmt.Sprintf("%s-delete.stdout.log", logprefix)
-		stderrfile = fmt.Sprintf("%s-delete.stderr.log", logprefix)
+		stdoutfile = fmt.Sprintf("%s.delete.stdout.log", logprefix)
+		stderrfile = fmt.Sprintf("%s.delete.stderr.log", logprefix)
 		stderrfh2, err := os.Create(stderrfile)
 		if err != nil {
 			return err
 		}
 		defer stderrfh2.Close()
-		cli.Logger.Infof("Logging script delete standard output to %s", scriptsrc, stderrfile)
+		// cli.Logger.Infof("Logging script delete standard output to %s", scriptsrc, stderrfile)
 		stdoutfh2, err := os.Create(stdoutfile)
 		if err != nil {
 			return err
 		}
 		defer stdoutfh2.Close()
-		cli.Logger.Infof("Logging script delete standard error to %s", scriptsrc, stdoutfile)
-		delrc.Stdout = stdoutfh2
-		delrc.Stderr = stderrfh2
+		// cli.Logger.Infof("Logging script delete standard error to %s", scriptsrc, stdoutfile)
+		delrc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh2)
+		delrc.Stderr = io.MultiWriter(debugstderrpw, stderrfh2)
 		delrc.Command = fmt.Sprintf("del %s", finalpath)
-		err = c.ExecuteCommandWinRM(delrc)
+		err = PerformInTimeout(60, func() error {
+			err = c.ExecuteCommandWinRM(delrc)
+			if err != nil {
+				cli.Logger.Debugf("%s Delete Script Connection Issue: %v", c.Path(), err)
+				return NewTimeoutExtension(err)
+			}
+			return nil
+		})
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 	finalpath := nixfp.Join(`/root`, filename)
-	err = c.UploadScriptSFTP(scriptsrc, finalpath)
+	err = PerformInTimeout(60, func() error {
+		err = c.UploadScriptSFTP(scriptsrc, finalpath)
+		if err != nil {
+			cli.Logger.Debugf("%s Upload Script Connection Issue: %v", c.Path(), err)
+			return NewTimeoutExtension(err)
+		}
+		return nil
+	})
 	if err != nil {
 		wmerr, ok := err.(*ssh.ExitError)
 		if !ok {
@@ -275,14 +352,30 @@ func (c *Connection) UploadExecuteAndDelete(scriptsrc string, tmpname string, lo
 	}
 	defer stdoutfh.Close()
 	cli.Logger.Infof("Logging script %s STDOUT to %s", scriptsrc, stdoutfile)
-	rc.Stdout = stdoutfh
-	rc.Stderr = stderrfh
+	rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
+	rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+	defer debugstdoutpw.Close()
+	defer debugstderrpw.Close()
 	rc.Command = finalpath
-	err = c.ExecuteCommandSSH(rc)
+	err = PerformInTimeout(60, func() error {
+		err = c.ExecuteCommandSSH(rc)
+		if err != nil {
+			cli.Logger.Debugf("%s Execute Script Connection Issue: %v", c.Path(), err)
+			return NewTimeoutExtension(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-	err = c.DeleteScriptSFTP(finalpath)
+	err = PerformInTimeout(60, func() error {
+		err = c.DeleteScriptSFTP(finalpath)
+		if err != nil {
+			cli.Logger.Debugf("%s Delete Script Connection Issue: %v", c.Path(), err)
+			return NewTimeoutExtension(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}

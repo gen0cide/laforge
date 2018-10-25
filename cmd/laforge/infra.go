@@ -3,6 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/emicklei/dot"
@@ -33,12 +36,6 @@ var (
 				},
 			},
 			{
-				Name:   "tf",
-				Usage:  "Test terraform embedding",
-				Action: performtf,
-				Flags:  []cli.Flag{},
-			},
-			{
 				Name:            "status",
 				Usage:           "Show the current build's infrastructure status.",
 				Action:          performinfra,
@@ -53,7 +50,7 @@ var (
 			{
 				Name:            "taint",
 				Usage:           "Mark a host for re-provisioning in the laforge infrastructure state.",
-				Action:          performinfra,
+				Action:          performtaint,
 				SkipFlagParsing: true,
 			},
 			{
@@ -77,6 +74,100 @@ var (
 		},
 	}
 )
+
+func performtaint(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
+	if err != nil {
+		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
+	}
+
+	for _, x := range c.Args() {
+		obj, exists := state.Current.Metastore[x]
+		if !exists {
+			cliLogger.Warnf("Node %s did not exist in the persisted snapshot.")
+			continue
+		}
+
+		obj.Checksum = 666
+	}
+
+	plan, err := state.CalculateDelta()
+	if err != nil {
+		return err
+	}
+
+	plan.Base = state.Base
+
+	tfcmds, err := core.CalculateTerraformNeeds(plan)
+	if err != nil {
+		return err
+	}
+
+	lfcli.SetLogLevel("info")
+
+	_ = tfcmds
+
+	for _, x := range plan.GlobalOrder {
+		if core.IsGlobalType(x) {
+			cliLogger.Debugf("%s is a global type. Not tainting...")
+			continue
+		}
+		metaobj, found := plan.Graph.Metastore[x]
+		if !found {
+			cliLogger.Errorf("Node %s was not found on the graph...", x)
+			continue
+		}
+		rev := metaobj.ToRevision().Taint()
+		taintfile := rev.AbsPath(state.Base.BaseDir)
+		if core.TypeByPath(x) == core.LFTypeEnvironment {
+			taintfile = filepath.Join(state.Base.CurrentBuild.Dir, taintfile)
+		}
+		if _, err := os.Stat(taintfile); err == nil {
+			cliLogger.Infof("Tainting exiting node: %s", x)
+			err = ioutil.WriteFile(taintfile, []byte(rev.ToJSONString()), 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// for tid, cmds := range tfcmds {
+	// 	cliLogger.Infof("Terraform Commands For Team: %s", tid)
+	// 	for _, c := range cmds {
+	// 		fmt.Printf("  $ terraform %s\n", c)
+	// 	}
+	// }
+
+	// depthoffset := 0
+	// for _, k := range plan.OrderedPriorities {
+	// 	if len(plan.TasksByPriority[k]) < 1 {
+	// 		continue
+	// 	}
+	// 	cliLogger.Infof("Step #%d:", depthoffset)
+	// 	for idx, item := range plan.TasksByPriority[k] {
+	// 		tcol := ""
+	// 		tt := plan.TaskTypes[item]
+	// 		switch tt {
+	// 		case "MODIFY":
+	// 			tcol = color.HiYellowString("[%s]", tt)
+	// 		case "DELETE":
+	// 			tcol = color.HiRedString("[%s]", tt)
+	// 		case "TOUCH":
+	// 			tcol = color.HiCyanString("[%s]", tt)
+	// 		case "CREATE":
+	// 			tcol = color.HiGreenString("[%s]", tt)
+	// 		default:
+	// 			tcol = "[UNKNOWN]"
+	// 		}
+	// 		fmt.Printf("%s  %d) %s\n", tcol, idx, item)
+	// 	}
+	// 	depthoffset++
+	// }
+
+	return nil
+}
 
 func performplan(c *cli.Context) error {
 	state, err := core.BootstrapWithState(true)
@@ -108,12 +199,18 @@ func performplan(c *cli.Context) error {
 		}
 	}
 
+	depthoffset := 0
 	for _, k := range plan.OrderedPriorities {
-		cliLogger.Infof("Step #%d:", k)
+		// if len(plan.TasksByPriority[k]) < 1 {
+		// 	continue
+		// }
+		cliLogger.Infof("Step #%d:", depthoffset)
 		for idx, item := range plan.TasksByPriority[k] {
 			tcol := ""
 			tt := plan.TaskTypes[item]
 			switch tt {
+			case "REBUILD":
+				tcol = color.HiMagentaString("[%s]", tt)
 			case "MODIFY":
 				tcol = color.HiYellowString("[%s]", tt)
 			case "DELETE":
@@ -127,6 +224,7 @@ func performplan(c *cli.Context) error {
 			}
 			fmt.Printf("%s  %d) %s\n", tcol, idx, item)
 		}
+		depthoffset++
 	}
 
 	return nil

@@ -25,7 +25,7 @@ func (m *Manager) Run(wg *sync.WaitGroup) {
 				m.Errors <- err
 				continue
 			}
-			err = job.EnsureDependencies(m.Laforge)
+			err = job.EnsureDependencies()
 			if err != nil {
 				m.Errors <- err
 				continue

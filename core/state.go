@@ -195,9 +195,19 @@ func (s *State) GenerateRevisionDelta() error {
 		}
 		if nrev.Checksum != krev.Checksum {
 			cli.Logger.Debugf("Marking %s for a failed revision checksum comparison", nrid)
-			s.RevDelta[nrid] = RevModTouch
+			s.RevDelta[nrid] = RevModRebuild
 			continue
 		}
+		if nrev.Status == RevStatusStale || krev.Status == RevStatusStale {
+			cli.Logger.Debugf("Marking %s for stale state", nrid)
+			s.RevDelta[nrid] = RevModRebuild
+			continue
+		}
+		// if s.Persisted.Metastore[nrid].Checksum != s.Current.Metastore[nrid].Checksum {
+		// 	cli.Logger.Debugf("Marking %s for an induced checksum change", nrid)
+		// 	s.RevDelta[nrid] = RevModTouch
+		// 	continue
+		// }
 	}
 	for knid := range s.KnownRevs {
 		if _, ok := s.NewRevs[knid]; !ok {
@@ -301,10 +311,18 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			deletions = append(deletions, v)
 			return nil
 		}
+		if x, ok := s.RevDelta[v.(string)]; ok {
+			if x == RevModRebuild {
+				changes = append(changes, v)
+				return nil
+			}
+		}
 		if targetmeta.Checksum != basemeta.Checksum {
 			changes = append(changes, v)
+			s.RevDelta[v.(string)] = RevModTouch
 			return nil
 		}
+
 		return nil
 	})
 
@@ -327,14 +345,16 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			additions = append(additions, v)
 			return nil
 		}
+
 		if _, ok := s.RevDelta[id]; ok {
 			if TypeByPath(id) == LFTypeProvisionedHost {
 				taintedHosts = append(taintedHosts, v)
 				return nil
 			}
-			changes = append(changes, v)
+			// changes = append(changes, v)
 			return nil
 		}
+
 		return nil
 	})
 
@@ -362,6 +382,19 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 	}
 
+	lineageset := &dag.Set{}
+
+	for _, x := range changes {
+		lineageset.Add(x)
+		children, err := target.AltGraph.Ancestors(x)
+		if err != nil {
+			return nil, err
+		}
+		for _, y := range dag.AsVertexList(children) {
+			lineageset.Add(y)
+		}
+	}
+
 	temptaintmap := map[dag.Vertex]bool{}
 	for k := range taintmap {
 		temptaintmap[k] = true
@@ -382,6 +415,7 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 
 		for _, x := range dag.AsVertexList(children) {
+			s.RevDelta[x.(string)] = RevModTouch
 			newtaints = append(newtaints, x)
 		}
 	}
@@ -393,7 +427,7 @@ func (s *State) CalculateDelta() (*Plan, error) {
 		}
 
 		for _, x := range dag.AsVertexList(children) {
-			if IsGlobalType(x.(string)) {
+			if !IsGlobalType(x.(string)) {
 				newtaints = append(newtaints, x)
 			}
 		}
@@ -457,7 +491,21 @@ func (s *State) CalculateDelta() (*Plan, error) {
 
 		brev, brevok := s.KnownRevs[bo.ID]
 		trev, trevok := s.NewRevs[to.ID]
-		if brevok && trevok && brev.Checksum == trev.Checksum {
+		// _, intaintmap := temptaintmap[v]
+
+		// ancestors, err := target.AltGraph.Ancestors(v)
+		// if err != nil {
+		// 	panic(fmt.Errorf("couldnt find ancestors for node %s", id))
+		// }
+
+		if lineageset.Include(v) {
+			if !IsGlobalType(id) {
+				tasktypes[id] = string(RevModRebuild)
+				tasks[depth] = append(tasks[depth], id)
+				return nil
+			}
+		}
+		if brevok && trevok && brev.Checksum == trev.Checksum && bo.Checksum == brev.Checksum && to.Checksum == trev.Checksum {
 			return nil
 		}
 
@@ -478,9 +526,6 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			tasks[depth] = append(tasks[depth], id)
 			return nil
 		}
-
-		tasktypes[id] = "UNKNOWN"
-		tasks[depth] = append(tasks[depth], id)
 
 		return nil
 	})

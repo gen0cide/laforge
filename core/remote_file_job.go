@@ -83,7 +83,7 @@ func (j *RemoteFileJob) CanProceed() error {
 }
 
 // EnsureDependencies implements the Doer interface
-func (j *RemoteFileJob) EnsureDependencies(l *Laforge) error {
+func (j *RemoteFileJob) EnsureDependencies() error {
 	currfp, err := filepath.NewRenderer("")
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (j *RemoteFileJob) EnsureDependencies(l *Laforge) error {
 		return err
 	}
 
-	targetAsset := currfp.Join(l.BaseDir, l.CurrentBuild.Path(), "data", assetfilename)
+	targetAsset := currfp.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", assetfilename)
 	if _, err := os.Stat(targetAsset); err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (j *RemoteFileJob) EnsureDependencies(l *Laforge) error {
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
 		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == `../../data/ssh.pem` {
 			cli.Logger.Debugf("Fixing identity file for %s", j.Target.Path())
-			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = currfp.Join(l.BaseDir, l.CurrentBuild.Path(), "data", "ssh.pem")
+			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = currfp.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", "ssh.pem")
 		}
 	}
 
