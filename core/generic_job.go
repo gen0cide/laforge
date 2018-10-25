@@ -179,10 +179,10 @@ func (j *GenericJob) GetMetadata() *Metadata {
 
 // StandardOutput shows the standard output of a job's execution
 func (j *GenericJob) StandardOutput(line string) {
-	cli.Logger.Infof("%s (STDOUT): %s", j.JobID, line)
+	cli.Logger.Debugf("%s (STDOUT): %s", j.JobID, line)
 }
 
 // StandardError prints the standard error of a jobs execution
 func (j *GenericJob) StandardError(line string) {
-	cli.Logger.Infof("%s (STDERR): %s", j.JobID, line)
+	cli.Logger.Debugf("%s (STDERR): %s", j.JobID, line)
 }
