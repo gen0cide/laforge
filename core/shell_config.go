@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/cespare/xxhash"
-	"github.com/packer-community/winrmcp/winrmcp"
+	"github.com/gen0cide/winrmcp/winrmcp"
 
 	"github.com/pkg/errors"
 )

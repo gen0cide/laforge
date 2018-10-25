@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/cespare/xxhash"
-	"github.com/packer-community/winrmcp/winrmcp"
+	"github.com/gen0cide/winrmcp/winrmcp"
 	"github.com/shiena/ansicolor"
 
 	"github.com/pkg/errors"
