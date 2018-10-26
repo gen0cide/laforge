@@ -43,11 +43,11 @@ const (
 type Doer interface {
 	graph.Hasher
 	GetTargetID() string
-	CanProceed() error
-	EnsureDependencies() error
-	Do() error
-	CleanUp() error
-	Finish() error
+	CanProceed(e chan error)
+	EnsureDependencies(e chan error)
+	Do(e chan error)
+	CleanUp(e chan error)
+	Finish(e chan error)
 	SetTimeout(t int)
 	GetTimeout() int
 	GetMetadata() *Metadata
@@ -99,26 +99,31 @@ type GenericJob struct {
 }
 
 // TimeoutFunc is a function that is retried ever half second until the interval period is hit
-type TimeoutFunc func() error
+type TimeoutFunc func(errchan chan error)
 
 // PerformInTimeout will perform the TimeoutFunc f every 500ms until it either returns NOT an ErrTimeoutExtensionRequested or nil
 func PerformInTimeout(seconds int, f TimeoutFunc) error {
 	timeout := time.After(time.Duration(seconds) * time.Second)
 	tick := time.Tick(1 * time.Second)
+	errchan := make(chan error, 1)
+	go f(errchan)
 	for {
 		select {
 		case <-timeout:
 			return ErrTimeoutExceeded
-		case <-tick:
-			err := f()
+		case err := <-errchan:
+			if err == nil {
+				return nil
+			}
 			if err != nil {
 				if te, ok := err.(*ErrTimeoutExtension); ok {
-					cli.Logger.Debugf("%s Timeout Extension: %v", te.Cause())
+					cli.Logger.Debugf("timeout extension requested: %v", te.Cause())
+					<-tick
+					go f(errchan)
 					continue
 				}
 				return err
 			}
-			return nil
 		}
 	}
 }

@@ -31,6 +31,7 @@ var (
 
 // State is the primary object used to interface with the build's on disk state table
 type State struct {
+	sync.RWMutex
 	Base      *Laforge
 	DB        *buntdb.DB
 	Current   *Snapshot
@@ -198,6 +199,11 @@ func (s *State) GenerateRevisionDelta() error {
 			s.RevDelta[nrid] = RevModRebuild
 			continue
 		}
+		if krev.Status == RevStatusFailed {
+			cli.Logger.Debugf("Marking %s for failed state", nrid)
+			s.RevDelta[nrid] = RevModRebuild
+			continue
+		}
 		if nrev.Status == RevStatusStale || krev.Status == RevStatusStale {
 			cli.Logger.Debugf("Marking %s for stale state", nrid)
 			s.RevDelta[nrid] = RevModRebuild
@@ -311,6 +317,8 @@ func (s *State) CalculateDelta() (*Plan, error) {
 			deletions = append(deletions, v)
 			return nil
 		}
+		s.Lock()
+		defer s.Unlock()
 		if x, ok := s.RevDelta[v.(string)]; ok {
 			if x == RevModRebuild {
 				changes = append(changes, v)

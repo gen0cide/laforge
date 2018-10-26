@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
+
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/pkg/errors"
 )
@@ -36,12 +38,14 @@ func CreateScriptJob(id string, offset int, m *Metadata, pstep *ProvisioningStep
 }
 
 // CanProceed implements the Doer interface
-func (j *ScriptJob) CanProceed() error {
+func (j *ScriptJob) CanProceed(e chan error) {
 	if j.Script == nil || j.Target == nil {
-		return errors.New("cannot proceed with script job with nil targets")
+		e <- errors.New("cannot proceed with script job with nil targets")
+		return
 	}
 	if j.Target.ProvisionedHost.Conn.Active {
-		return nil
+		e <- nil
+		return
 		// return NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
 	}
 
@@ -53,47 +57,62 @@ func (j *ScriptJob) CanProceed() error {
 			os.MkdirAll(logdir, 0755)
 		} else {
 			cli.Logger.Errorf("Error creating log directory %s: %v", logdir, err)
-			return err
+			e <- err
+			return
 		}
 	}
 
 	if _, err := os.Stat(pathToConnFile); err != nil {
 		if os.IsNotExist(err) {
-			return NewTimeoutExtension(errors.New("cannot proceed with a host that has no connection definition"))
+			e <- NewTimeoutExtension(errors.New("cannot proceed with a host that has no connection definition"))
+			return
 		}
-		return err
+		e <- nil
+		return
 	}
 
 	conn := &Connection{}
 	err := LoadHCLFromFile(pathToConnFile, conn)
 	if err != nil {
 		cli.Logger.Errorf("Error loading job %s resource: %v", j.JobID, err)
-		return err
+		e <- err
+		return
 	}
 
 	if conn.Active != true {
-		return NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
+		e <- NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
+		return
 	}
 
-	err = j.Target.ProvisionedHost.Conn.Swap(conn)
+	newConn, err := SmartMerge(j.Target.ProvisionedHost.Conn, conn, false)
 	if err != nil {
-		return fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+		e <- fmt.Errorf("Error merging connections for %s", j.Target.ParentLaforgeID())
+		return
+	}
+	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
+
+	if err != nil {
+		e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+		return
 	}
 
-	return nil
+	e <- nil
+	return
 }
 
 // EnsureDependencies implements the Doer interface
-func (j *ScriptJob) EnsureDependencies() error {
+func (j *ScriptJob) EnsureDependencies(e chan error) {
 	targetAsset := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "assets", j.Script.SourceBase())
 	if _, err := os.Stat(targetAsset); err != nil {
-		return err
+		e <- err
+		return
 	}
 
 	j.AssetPath = strings.TrimSpace(targetAsset)
 
 	if j.Target.ProvisionedHost.Conn == nil {
-		return fmt.Errorf("script %s has a nil connection for the parent host", j.JobID)
+		e <- fmt.Errorf("script %s has a nil connection for the parent host", j.JobID)
+		return
 	}
 
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
@@ -103,29 +122,34 @@ func (j *ScriptJob) EnsureDependencies() error {
 		}
 	}
 
-	return nil
+	e <- nil
+	return
 }
 
 // Do implements the Doer interface
-func (j *ScriptJob) Do() error {
-	cli.Logger.Warnf("Uploading and executing %s on %s", j.AssetPath, j.Target.ProvisionedHost.Conn.RemoteAddr)
+func (j *ScriptJob) Do(e chan error) {
+	cli.Logger.Warnf("Performing Script Job:\n  %s %s: %s\n  %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString("SCRIPT"), color.HiGreenString("%s", j.AssetPath), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
 	actualfilename := fmt.Sprintf("%d-%s", j.Target.StepNumber, filepath.Base(j.AssetPath))
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
 	err := j.Target.ProvisionedHost.Conn.UploadExecuteAndDelete(j, j.AssetPath, actualfilename, logdir)
 	if err != nil {
 		cli.Logger.Errorf("Error executing %s: %v", j.JobID, err)
-		return err
+		e <- err
+		return
 	}
-	return nil
+	e <- nil
+	return
 }
 
 // CleanUp implements the Doer interface
-func (j *ScriptJob) CleanUp() error {
-	return nil
+func (j *ScriptJob) CleanUp(e chan error) {
+	e <- nil
+	return
 }
 
 // Finish implements the Doer interface
-func (j *ScriptJob) Finish() error {
+func (j *ScriptJob) Finish(e chan error) {
 	cli.Logger.Infof("Finished %s", j.JobID)
-	return nil
+	e <- nil
+	return
 }

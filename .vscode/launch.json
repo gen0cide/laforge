@@ -12,8 +12,10 @@
     "env": {},
     "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
     "args": [
+      "-d",
       "infra",
-      "plan",
+      "run",
+      "/envs/lfdev/tfgcp/teams/0/networks/vdi/hosts/ns01/steps/0-configure-root-dns"
       // "/hosts/windows/ad-00",
     ]
   }]

@@ -37,19 +37,22 @@ func CreateRemoteFileJob(id string, offset int, m *Metadata, pstep *Provisioning
 }
 
 // CanProceed implements the Doer interface
-func (j *RemoteFileJob) CanProceed() error {
+func (j *RemoteFileJob) CanProceed(e chan error) {
 	if j.RemoteFile == nil || j.Target == nil {
-		return errors.New("cannot proceed with remote file job with nil target or remote file objects")
+		e <- errors.New("cannot proceed with remote file job with nil target or remote file objects")
+		return
 	}
 	if j.Target.ProvisionedHost.Conn.Active {
-		return nil
+		e <- nil
+		return
 	}
 	timeout := time.After(time.Duration(j.Timeout) * time.Second)
 	tick := time.Tick(500 * time.Millisecond)
 
 	currfp, err := filepath.NewRenderer("")
 	if err != nil {
-		return err
+		e <- err
+		return
 	}
 
 	pathToConnFile := currfp.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "conn.laforge")
@@ -61,7 +64,8 @@ func (j *RemoteFileJob) CanProceed() error {
 		}
 		select {
 		case <-timeout:
-			return fmt.Errorf("laforge was incapable of reaching remote host %s because its conn.laforge file was not available", j.Target.ParentLaforgeID())
+			e <- fmt.Errorf("laforge was incapable of reaching remote host %s because its conn.laforge file was not available", j.Target.ParentLaforgeID())
+			return
 		case <-tick:
 			conn := &Connection{}
 			err := LoadHCLFromFile(pathToConnFile, conn)
@@ -72,36 +76,42 @@ func (j *RemoteFileJob) CanProceed() error {
 			if conn.Active == true {
 				err = j.Target.ProvisionedHost.Conn.Swap(conn)
 				if err != nil {
-					return fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+					e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+					return
 				}
 				fixed = true
 				continue
 			}
 		}
 	}
-	return nil
+	e <- nil
+	return
 }
 
 // EnsureDependencies implements the Doer interface
-func (j *RemoteFileJob) EnsureDependencies() error {
+func (j *RemoteFileJob) EnsureDependencies(e chan error) {
 	currfp, err := filepath.NewRenderer("")
 	if err != nil {
-		return err
+		e <- err
+		return
 	}
 	assetfilename, err := j.RemoteFile.AssetName()
 	if err != nil {
-		return err
+		e <- err
+		return
 	}
 
 	targetAsset := currfp.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", assetfilename)
 	if _, err := os.Stat(targetAsset); err != nil {
-		return err
+		e <- err
+		return
 	}
 
 	j.AssetPath = strings.TrimSpace(targetAsset)
 
 	if j.Target.ProvisionedHost.Conn == nil {
-		return fmt.Errorf("script %s has a nil connection for the parent host", j.JobID)
+		e <- fmt.Errorf("script %s has a nil connection for the parent host", j.JobID)
+		return
 	}
 
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
@@ -111,27 +121,32 @@ func (j *RemoteFileJob) EnsureDependencies() error {
 		}
 	}
 
-	return nil
+	e <- nil
+	return
 }
 
 // Do implements the Doer interface
-func (j *RemoteFileJob) Do() error {
+func (j *RemoteFileJob) Do(e chan error) {
 	cli.Logger.Warnf("Uploading remote file %s on %s to %s", j.AssetPath, j.Target.ProvisionedHost.Path(), j.RemoteFile.Destination)
 	err := j.Target.ProvisionedHost.Conn.Upload(j.AssetPath, j.RemoteFile.Destination)
 	if err != nil {
 		cli.Logger.Errorf("Error uploading %s: %v", j.JobID, err)
-		return err
+		e <- err
+		return
 	}
-	return nil
+	e <- nil
+	return
 }
 
 // CleanUp implements the Doer interface
-func (j *RemoteFileJob) CleanUp() error {
-	return nil
+func (j *RemoteFileJob) CleanUp(e chan error) {
+	e <- nil
+	return
 }
 
 // Finish implements the Doer interface
-func (j *RemoteFileJob) Finish() error {
+func (j *RemoteFileJob) Finish(e chan error) {
 	cli.Logger.Infof("Finished %s", j.JobID)
-	return nil
+	e <- nil
+	return
 }

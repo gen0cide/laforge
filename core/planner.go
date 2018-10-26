@@ -63,7 +63,7 @@ func NewEmptyPlan() *Plan {
 		Tainted:           map[string]bool{},
 		TaintedHosts:      map[string]bool{},
 		FailedNodes:       &dag.Set{},
-		TaskGroundDelay:   420,
+		TaskGroundDelay:   720,
 	}
 	p.Walker = &dag.Walker{
 		Callback: p.Orchestrator,
@@ -190,8 +190,12 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		return d
 	}
 	id := v.(string)
+	if IsGlobalType(id) {
+		cli.Logger.Infof("Node %s is a global type, no work to be done.", id)
+		return nil
+	}
 	if _, ok := p.Tainted[id]; !ok {
-		cli.Logger.Debugf("Node %s is unchanged. Continuing traversal.", id)
+		cli.Logger.Infof("Node %s is unchanged. Continuing traversal.", id)
 		return nil
 	}
 	descendents, err := p.Graph.AltGraph.Descendents(v)
@@ -208,12 +212,13 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 	}
 	task, found := p.Tasks[id]
 	if !found {
-		cli.Logger.Errorf("Node %s did not have an associated Laforge Job! (might not be implemented yet)", id)
+		cli.Logger.Warnf("Node %s did not have an associated Laforge Job! (might not be implemented yet)", id)
 		// p.FailedNodes.Add(v)
 		// d.Append(tfdiags.Sourceless(tfdiags.Error, "missing laforge job object for node", id))
 		return d
 	}
 	task.SetBase(p.Base)
+	cli.Logger.Infof("Checking State: %s", id)
 	err = PerformInTimeout(task.GetTimeout(), task.CanProceed)
 	if err != nil {
 		cli.Logger.Errorf("Task %s could not proceed: %v", id, err)
@@ -225,6 +230,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		}
 		return d
 	}
+	cli.Logger.Infof("Ensuring Dependencies: %s", id)
 	err = PerformInTimeout(task.GetTimeout(), task.EnsureDependencies)
 	if err != nil {
 		cli.Logger.Errorf("Task %s failed to ensure dependencies: %v", id, err)
@@ -236,6 +242,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		}
 		return d
 	}
+	cli.Logger.Infof("Performing Task: %s", id)
 	err = PerformInTimeout(task.GetTimeout(), task.Do)
 	if err != nil {
 		cli.Logger.Errorf("Task %s failed: %v", id, err)
@@ -247,6 +254,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		}
 		return d
 	}
+	cli.Logger.Infof("Cleaning Up: %s", id)
 	err = PerformInTimeout(task.GetTimeout(), task.Finish)
 	if err != nil {
 		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
@@ -258,7 +266,7 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		}
 		return d
 	}
-
+	cli.Logger.Infof("Marking ACTIVE In State: %s", id)
 	err = p.WriteRevisionFile(task, RevStatusActive)
 	if err != nil {
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task revision file writer failure", tfdiags.FormatErrorPrefixed(err, id)))
