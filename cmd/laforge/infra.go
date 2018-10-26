@@ -62,7 +62,7 @@ var (
 			{
 				Name:            "run",
 				Usage:           "Run a host provisioner on a specific host within the infrastructure (usually for debugging).",
-				Action:          performinfra,
+				Action:          performinfrarun,
 				SkipFlagParsing: true,
 			},
 			{
@@ -133,38 +133,6 @@ func performtaint(c *cli.Context) error {
 			}
 		}
 	}
-	// for tid, cmds := range tfcmds {
-	// 	cliLogger.Infof("Terraform Commands For Team: %s", tid)
-	// 	for _, c := range cmds {
-	// 		fmt.Printf("  $ terraform %s\n", c)
-	// 	}
-	// }
-
-	// depthoffset := 0
-	// for _, k := range plan.OrderedPriorities {
-	// 	if len(plan.TasksByPriority[k]) < 1 {
-	// 		continue
-	// 	}
-	// 	cliLogger.Infof("Step #%d:", depthoffset)
-	// 	for idx, item := range plan.TasksByPriority[k] {
-	// 		tcol := ""
-	// 		tt := plan.TaskTypes[item]
-	// 		switch tt {
-	// 		case "MODIFY":
-	// 			tcol = color.HiYellowString("[%s]", tt)
-	// 		case "DELETE":
-	// 			tcol = color.HiRedString("[%s]", tt)
-	// 		case "TOUCH":
-	// 			tcol = color.HiCyanString("[%s]", tt)
-	// 		case "CREATE":
-	// 			tcol = color.HiGreenString("[%s]", tt)
-	// 		default:
-	// 			tcol = "[UNKNOWN]"
-	// 		}
-	// 		fmt.Printf("%s  %d) %s\n", tcol, idx, item)
-	// 	}
-	// 	depthoffset++
-	// }
 
 	return nil
 }
@@ -201,9 +169,9 @@ func performplan(c *cli.Context) error {
 
 	depthoffset := 0
 	for _, k := range plan.OrderedPriorities {
-		// if len(plan.TasksByPriority[k]) < 1 {
-		// 	continue
-		// }
+		if len(plan.TasksByPriority[k]) < 1 {
+			continue
+		}
 		cliLogger.Infof("Step #%d:", depthoffset)
 		for idx, item := range plan.TasksByPriority[k] {
 			tcol := ""
@@ -348,6 +316,48 @@ func performapply(c *cli.Context) error {
 
 func performtf(c *cli.Context) error {
 	return commandNotImplemented(c)
+}
+
+func performinfrarun(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
+	if err != nil {
+		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
+	}
+
+	plan := core.NewEmptyPlan()
+	plan.Graph = state.Current
+	plan.Base = state.Base
+
+	// steps := []string{}
+	for _, x := range c.Args() {
+		if _, found := plan.Graph.Metastore[x]; !found {
+			cliLogger.Errorf("%s not found in current graph.", x)
+			continue
+		}
+		if core.TypeByPath(x) != core.LFTypeProvisioningStep {
+			cliLogger.Errorf("%s is not of type provisioning_step.", x)
+			continue
+		}
+		plan.Tainted[x] = true
+		plan.GlobalOrder = append(plan.GlobalOrder, x)
+	}
+
+	err = plan.SetupTasks()
+	if err != nil {
+		return err
+	}
+
+	for k := range plan.Tainted {
+		diags := plan.Orchestrator(k)
+		if diags.HasErrors() {
+			cliLogger.Errorf("Error in executing step %s: %v", k, diags)
+		}
+	}
+
+	return nil
 }
 
 func performinfra(c *cli.Context) error {

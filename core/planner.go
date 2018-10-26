@@ -321,6 +321,8 @@ func (p *Plan) BurnIt() error {
 	wg := new(sync.WaitGroup)
 
 	sequence := []string{
+		"init -no-color",
+		"refresh -no-color",
 		"destroy -no-color -auto-approve -parallelism=50",
 	}
 	for _, team := range p.Base.CurrentBuild.Teams {
