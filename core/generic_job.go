@@ -103,6 +103,7 @@ type TimeoutFunc func(errchan chan error)
 
 // PerformInTimeout will perform the TimeoutFunc f every 500ms until it either returns NOT an ErrTimeoutExtensionRequested or nil
 func PerformInTimeout(seconds int, f TimeoutFunc) error {
+	cli.Logger.Debugf("Execution timeout set for %d seconds", seconds)
 	timeout := time.After(time.Duration(seconds) * time.Second)
 	tick := time.Tick(1 * time.Second)
 	errchan := make(chan error, 1)

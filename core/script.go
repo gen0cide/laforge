@@ -23,6 +23,7 @@ type Script struct {
 	Source       string            `hcl:"source,attr" json:"source,omitempty"`
 	SourceType   string            `hcl:"source_type,attr" json:"source_type,omitempty"`
 	Cooldown     int               `hcl:"cooldown,optional" json:"cooldown,omitempty"`
+	Timeout      int               `hcl:"timeout,optional" json:"timeout,omitempty"`
 	IgnoreErrors bool              `hcl:"ignore_errors,optional" json:"ignore_errors,omitempty"`
 	Args         []string          `hcl:"args,optional" json:"args,omitempty"`
 	IO           *IO               `hcl:"io,block" json:"io,omitempty"`

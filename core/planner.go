@@ -151,7 +151,9 @@ func (p *Plan) SetupTasks() error {
 			default:
 				continue
 			}
-			job.SetTimeout(p.TaskGroundDelay)
+			if job.GetTimeout() == 0 {
+				job.SetTimeout(p.TaskGroundDelay)
+			}
 			job.SetPlan(p)
 			job.SetBase(p.Base)
 			p.Tasks[x] = job

@@ -25,6 +25,7 @@ export LAFORGE_CURL_ARGS="--insecure"
 export LAFORGE_FETCH_ARGS="--no-verify-peer"
 export LAFORGE_GPG_ARGS="--keyserver-options no-check-cert"
 export LAFORGE_WGET_ARGS="--no-check-certificate"
+export LAFORGE_DEBUG=1
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
 #          NAME:  __detect_color_support
@@ -111,14 +112,14 @@ laforge_fetch_url() {
 #----------------------------------------------------------------------------------------------------------------------
 laforge_gather_hardware_info() {
 	if [ -f /proc/cpuinfo ]; then
-		export CPU_VENDOR_ID=$(awk '/vendor_id|Processor/ {sub(/-.*$/,"",$3); print $3; exit}' /proc/cpuinfo)
+		export LAFORGE_CPU_VENDOR_ID=$(awk '/vendor_id|Processor/ {sub(/-.*$/,"",$3); print $3; exit}' /proc/cpuinfo)
 	elif [ -f /usr/bin/kstat ]; then
 		# SmartOS.
 		# Solaris!?
 		# This has only been tested for a GenuineIntel CPU
-		export CPU_VENDOR_ID=$(/usr/bin/kstat -p cpu_info:0:cpu_info0:vendor_id | awk '{print $2}')
+		export LAFORGE_CPU_VENDOR_ID=$(/usr/bin/kstat -p cpu_info:0:cpu_info0:vendor_id | awk '{print $2}')
 	else
-		export CPU_VENDOR_ID=$(sysctl -n hw.model)
+		export LAFORGE_CPU_VENDOR_ID=$(sysctl -n hw.model)
 	fi
 	export LAFORGE_CPU_VENDOR_ID_L=$(echo "$LAFORGE_CPU_VENDOR_ID" | tr '[:upper:]' '[:lower:]')
 	export LAFORGE_CPU_ARCH=$(uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
@@ -272,7 +273,7 @@ laforge_ubuntu_prep() {
 
 	laforge_enable_universe_repository || return 1
 
-	__wait_for_apt
+	laforge_wait_for_apt
 	apt-get update || return 1
 }
 

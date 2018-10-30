@@ -248,7 +248,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 
 	if c.IsWinRM() {
 		finalpath := winfp.Join(`C:`, filename)
-		err = PerformInTimeout(60, func(e chan error) {
+		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			err = c.UploadWinRM(scriptsrc, finalpath)
 			if err != nil {
 				cli.Logger.Errorf("%s Upload Connection Issue: %v", c.Path(), err)
@@ -282,7 +282,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		defer debugstdoutpw.Close()
 		defer debugstderrpw.Close()
 		rc.Command = finalpath
-		err = PerformInTimeout(600, func(e chan error) {
+		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			err = c.ExecuteCommandWinRM(rc)
 			if err != nil {
 				cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
@@ -312,7 +312,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		delrc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh2)
 		delrc.Stderr = io.MultiWriter(debugstderrpw, stderrfh2)
 		delrc.Command = fmt.Sprintf("del %s", finalpath)
-		err = PerformInTimeout(60, func(e chan error) {
+		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			err = c.ExecuteCommandWinRM(delrc)
 			if err != nil {
 				cli.Logger.Errorf("%s Delete Script Connection Issue: %v", c.Path(), err)
@@ -328,7 +328,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		return nil
 	}
 	finalpath := nixfp.Join(`/root`, filename)
-	err = PerformInTimeout(60, func(e chan error) {
+	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 		err = c.UploadScriptSFTP(scriptsrc, finalpath)
 		if err != nil {
 			cli.Logger.Errorf("%s Upload Script Connection Issue: %v", c.Path(), err)
@@ -374,7 +374,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 	defer debugstdoutpw.Close()
 	defer debugstderrpw.Close()
 	rc.Command = finalpath
-	err = PerformInTimeout(600, func(e chan error) {
+	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 		err = c.ExecuteCommandSSH(rc)
 		if err != nil {
 			cli.Logger.Errorf("%s Execute Script Connection Issue: %v", c.Path(), err)
@@ -388,7 +388,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		return err
 	}
 	cli.Logger.Infof("SSH Execution Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
-	err = PerformInTimeout(60, func(e chan error) {
+	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 		err = c.DeleteScriptSFTP(finalpath)
 		if err != nil {
 			cli.Logger.Errorf("%s Delete Script Connection Issue: %v", c.Path(), err)

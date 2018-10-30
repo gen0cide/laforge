@@ -1479,6 +1479,8 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore7(in *jlexer.Lexer, out *
 			out.SourceType = string(in.String())
 		case "cooldown":
 			out.Cooldown = int(in.Int())
+		case "timeout":
+			out.Timeout = int(in.Int())
 		case "ignore_errors":
 			out.IgnoreErrors = bool(in.Bool())
 		case "args":
@@ -1690,6 +1692,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore7(out *jwriter.Writer, in
 			out.RawString(prefix)
 		}
 		out.Int(int(in.Cooldown))
+	}
+	if in.Timeout != 0 {
+		const prefix string = ",\"timeout\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.Timeout))
 	}
 	if in.IgnoreErrors {
 		const prefix string = ",\"ignore_errors\":"
