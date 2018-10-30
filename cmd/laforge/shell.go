@@ -90,5 +90,5 @@ func performshell(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	return Conn.RemoteShell()
+	return conn.RemoteShell()
 }

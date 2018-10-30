@@ -7457,7 +7457,7 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore33(in *jlexer.Lexer, out 
 		switch key {
 		case "source":
 			out.Source = string(in.String())
-		case "omitempty":
+		case "target":
 			out.Target = string(in.String())
 		default:
 			in.SkipRecursive()
@@ -7483,8 +7483,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore33(out *jwriter.Writer, i
 		}
 		out.String(string(in.Source))
 	}
-	{
-		const prefix string = ",\"omitempty\":"
+	if in.Target != "" {
+		const prefix string = ",\"target\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
