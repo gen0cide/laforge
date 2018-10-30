@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"os"
+	"path"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/core"
@@ -78,10 +79,16 @@ func performshell(c *cli.Context) error {
 	}
 
 	provisionedHost, found := base.ProvisionedHosts[target]
-	if !found || (provisionedHost != nil && provisionedHost.Conn != nil && provisionedHost.Conn.Active == false) {
+	if !found {
 		cliLogger.Errorf("Host %s is currently not active in this team's environment", target)
 		os.Exit(1)
 	}
 
-	return provisionedHost.Conn.RemoteShell()
+	conn, found := base.Connections[path.Join(provisionedHost.Path(), "conn")]
+	if !found {
+		cliLogger.Errorf("Host %s does not currently have an active connection", target)
+		os.Exit(1)
+	}
+
+	return Conn.RemoteShell()
 }

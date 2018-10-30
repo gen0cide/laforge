@@ -27,7 +27,7 @@ type Snapshot struct {
 // easyjson:json
 type Edge struct {
 	Source string `json:"source,omitempty"`
-	Target string `json:"omitempty"`
+	Target string `json:"target,omitempty"`
 }
 
 // GetEdges returns a type asserted set of edges
