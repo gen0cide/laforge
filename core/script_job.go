@@ -32,6 +32,9 @@ func CreateScriptJob(id string, offset int, m *Metadata, pstep *ProvisioningStep
 	sj.Offset = offset
 	sj.JobID = id
 	sj.Script = sj.Target.Script
+	if sj.Target.Script.Timeout != 0 {
+		sj.Timeout = sj.Target.Script.Timeout
+	}
 	sj.JobType = "script_job"
 	sj.CreatedAt = time.Now()
 	return sj, nil
