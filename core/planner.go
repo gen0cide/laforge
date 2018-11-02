@@ -115,7 +115,7 @@ func CalculateTerraformNeeds(plan *Plan) (map[string][]string, error) {
 	// now to clean up
 	for tid := range teamsRequiringTFApply {
 		_ = tid
-		ret[tid] = append(ret[tid], "apply -no-color -auto-approve -parallelism=10")
+		ret[tid] = append(ret[tid], "apply -no-color -auto-approve -parallelism=50")
 	}
 	return ret, nil
 }

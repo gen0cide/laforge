@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/juju/utils/filepath"
 
@@ -54,7 +53,7 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 		[]byte{},
 		[]byte{},
 		[]byte{},
-		20*time.Second,
+		0,
 	)
 
 	if w.Stderr == nil {
@@ -104,7 +103,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		[]byte{},
 		[]byte{},
 		[]byte{},
-		20*time.Second,
+		0,
 	)
 
 	if w.Stderr == nil {

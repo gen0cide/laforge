@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/hashicorp/hcl/hcl/printer"
+	"github.com/alecthomas/chroma/quick"
+	"github.com/hashicorp/hcl2/hclwrite"
 
 	"github.com/urfave/cli"
 )
@@ -38,7 +40,10 @@ func performfmt(c *cli.Context) error {
 			continue
 		}
 
-		fmtData, err := printer.Format(data)
+		fmtData := hclwrite.Format(data)
+		_ = fmtData
+		buf := new(bytes.Buffer)
+		err = quick.Highlight(buf, string(data), "terraform", "tokens", "api")
 		if err != nil {
 			cliLogger.Errorf("Could not format file %s: %v", f, err)
 			errored = true

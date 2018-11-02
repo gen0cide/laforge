@@ -151,7 +151,7 @@ resource "google_compute_firewall" "allow_vdi_int" {
   ]
 
   target_tags = [
-    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
+    "{{ index $.Build.Config "vpc_cidr" }}",
   ]
 }
 
@@ -191,32 +191,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
   depends_on = [
     "google_compute_subnetwork.{{ $net.Base }}",
-  ]
-}
-
-resource "google_compute_firewall" "allow_{{ $net.Base }}" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}-allow-inbound"
-  network = "${google_compute_network.vpc.self_link}"
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
-
-  source_tags = [
-    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
-    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}",
-  ]
-
-  target_tags = [
-    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}",
   ]
 }
 {{ end }}

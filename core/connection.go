@@ -200,6 +200,8 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 
 	logfilename := strings.Replace(filename, currfp.Ext(filename), ``, -1)
 	logprefix := currfp.Join(logdir, logfilename)
+	stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
+	stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
 
 	stdoutdone := make(chan struct{})
 	stderrdone := make(chan struct{})
@@ -265,16 +267,14 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		cli.Logger.Infof("WinRM Upload Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			rc := NewRemoteCommand()
-			stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
-			stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
-			stderrfh, err := os.Create(stderrfile)
+			stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
 			defer stderrfh.Close()
 			cli.Logger.Infof("Logging STDERR to %s", stderrfile)
-			stdoutfh, err := os.Create(stdoutfile)
+			stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
@@ -302,15 +302,13 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		cli.Logger.Infof("WinRM Execution Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			delrc := NewRemoteCommand()
-			stdoutfile := fmt.Sprintf("%s.delete.stdout.log", logprefix)
-			stderrfile := fmt.Sprintf("%s.delete.stderr.log", logprefix)
-			stderrfh2, err := os.Create(stderrfile)
+			stderrfh2, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
 			defer stderrfh2.Close()
-			stdoutfh2, err := os.Create(stdoutfile)
+			stdoutfh2, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
@@ -366,14 +364,14 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		rc := NewRemoteCommand()
 		stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
 		stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
-		stderrfh, err := os.Create(stderrfile)
+		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
 		defer stderrfh.Close()
 		cli.Logger.Infof("Logging script STDERR to %s", stderrfile)
-		stdoutfh, err := os.Create(stdoutfile)
+		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
