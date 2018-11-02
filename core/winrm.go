@@ -118,7 +118,13 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		w.Stdout = os.Stdout
 	}
 
-	client, err := winrm.NewClient(endpoint, w.Config.User, w.Config.Password)
+	client, err := winrm.NewClientWithParameters(
+		endpoint, 
+		w.Config.User, 
+		w.Config.Password, 
+		winrm.NewParameters("PT60M", "en-US", 153600),
+	)
+	
 	if err != nil {
 		return errors.WithMessage(err, "could not create winrm client")
 	}
@@ -128,7 +134,6 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		return err
 	}
 	defer shell.Close()
-	var wcmd *winrm.Command
 
 	winfp, err := filepath.NewRenderer("windows")
 	if err != nil {
@@ -137,29 +142,10 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 	if winfp.Ext(cmd.Command) == `.ps1` && !strings.Contains(cmd.Command, " ") {
 		cmd.Command = fmt.Sprintf("powershell -NoProfile -ExecutionPolicy Bypass -File %s", cmd.Command)
 	}
-	wcmd, err = shell.Execute(cmd.Command)
-	if err != nil {
-		panic(err)
-	}
-
-	if cmd.Stdin != nil {
-		go io.Copy(wcmd.Stdin, cmd.Stdin)
-	}
-
-	go io.Copy(cmd.Stdout, wcmd.Stdout)
-	go io.Copy(cmd.Stderr, wcmd.Stderr)
-
-	wcmd.Wait()
-	cmderr := wcmd.Close()
-	exitStatus := wcmd.ExitCode()
+	
+	exitStatus, cmderr := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
+	
 	cmd.SetExitStatus(exitStatus, cmderr)
-	if cmderr != nil {
-		return cmderr
-	}
-
-	if exitStatus != 0 {
-		return fmt.Errorf("WinRM command exited with a non 0 exit status: %d", exitStatus)
-	}
 
 	return nil
 }
