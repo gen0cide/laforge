@@ -63,25 +63,28 @@ func New(base *core.Laforge, command []string, exectype, hostid string, saveOutp
 
 // CreateWorkerPool creates the individual workers for the spanner
 func (s *Spanner) CreateWorkerPool() error {
-	// for i := 0; i < s.Laforge.Environment.TeamCount; i++ {
-	// 	teamDir := filepath.Join(s.BuildDir, "teams", fmt.Sprintf("%d", i))
+	tn := 0
+	for tid, team := range s.Laforge.CurrentBuild.Teams {
+		teamDir := filepath.Join(s.BuildDir, "teams", fmt.Sprintf("%d", tn))
 
-	// 	if _, err := os.Stat(teamDir); os.IsNotExist(err) {
-	// 		return fmt.Errorf("no team directory exists for team number %d", i)
-	// 	}
-	// 	s.Workers[i] = &Worker{
-	// 		TeamDir: teamDir,
-	// 		Job:     s.Job,
-	// 		ID:      s.ExecTime,
-	// 		TeamID:  i,
-	// 		Parent:  s,
-	// 		LogFile: filepath.Join(s.LogDir, fmt.Sprintf("team_%d.log", i)),
-	// 	}
-	// 	notValid := s.Workers[i].Verify()
-	// 	if notValid != nil {
-	// 		return notValid
-	// 	}
-	// }
+		if _, err := os.Stat(teamDir); os.IsNotExist(err) {
+			return fmt.Errorf("no team directory exists for team number %d", tn)
+		}
+		s.Workers[tn] = &Worker{
+			TeamDir:    teamDir,
+			Job:        s.Job,
+			ID:         s.ExecTime,
+			TeamID:     tid,
+			TeamNumber: tn,
+			Team:       team,
+			Parent:     s,
+			LogFile:    filepath.Join(s.LogDir, fmt.Sprintf("team_%d.log", tn)),
+		}
+		notValid := s.Workers[tn].Verify()
+		if notValid != nil {
+			return notValid
+		}
+	}
 	return nil
 }
 

@@ -46,10 +46,28 @@ func RenderHCLv2Object(i interface{}) ([]byte, error) {
 
 // TemplateFuncLib is a standard template library of functions
 var TemplateFuncLib = template.FuncMap{
-	"hclstring":  QuotedHCLString,
-	"N":          iter.N,
-	"UnsafeAtoi": UnsafeStringAsInt,
-	"Decr":       Decr,
+	"hclstring":            QuotedHCLString,
+	"N":                    iter.N,
+	"UnsafeAtoi":           UnsafeStringAsInt,
+	"Decr":                 Decr,
+	"ToUpper":              strings.ToUpper,
+	"Contains":             strings.Contains,
+	"HasPrefix":            strings.HasPrefix,
+	"HasSuffix":            strings.HasSuffix,
+	"Join":                 strings.Join,
+	"Replace":              strings.Replace,
+	"Repeat":               strings.Repeat,
+	"Split":                strings.Split,
+	"Title":                strings.Title,
+	"ToLower":              strings.ToLower,
+	"ToSnake":              strcase.ToSnake,
+	"ToScreamingSnake":     strcase.ToScreamingSnake,
+	"ToKebab":              strcase.ToKebab,
+	"ToScreamingKebab":     strcase.ToScreamingKebab,
+	"ToDelimited":          strcase.ToDelimited,
+	"ToScreamingDelimited": strcase.ToScreamingDelimited,
+	"ToCamel":              strcase.ToCamel,
+	"ToLowerCamel":         strcase.ToLowerCamel,
 }
 
 // UnsafeStringAsInt is a template helper function that will return -1 if it cannot convert the string to an integer.

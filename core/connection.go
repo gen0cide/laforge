@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/juju/utils/filepath"
@@ -300,6 +301,7 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return err
 		}
 		cli.Logger.Infof("WinRM Execution Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
+		time.Sleep(4 * time.Second)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			delrc := NewRemoteCommand()
 			stderrfh2, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

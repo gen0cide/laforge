@@ -80,6 +80,14 @@ resource "google_compute_firewall" "allow_icmp" {
     protocol = "icmp"
   }
 
+  allow {
+    protocol = "tcp"
+  }
+
+  allow {
+    protocol = "udp"
+  }
+
   source_ranges = [
     "{{ index $.Build.Config "vpc_cidr" }}",
   ]
@@ -147,10 +155,6 @@ resource "google_compute_firewall" "allow_vdi_int" {
   }
 
   source_ranges = [
-    "{{ index $.Build.Config "vpc_cidr" }}",
-  ]
-
-  target_tags = [
     "{{ index $.Build.Config "vpc_cidr" }}",
   ]
 }

@@ -15,7 +15,7 @@
         "-d",
         "infra",
         "run",
-        "/envs/lfdev/tfgcp/teams/0/networks/vdi/hosts/ns01/steps/0-configure-root-dns"
+        "/envs/lfdev/tfgcp/teams/0/networks/vdi/hosts/win06/steps/0-set-local-dns"
         // "/hosts/windows/ad-00",
       ]
     },

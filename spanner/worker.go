@@ -3,6 +3,7 @@ package spanner
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -22,7 +23,11 @@ import (
 type Worker struct {
 	Job
 	ID         int64
-	TeamID     int
+	TeamNumber int
+	TeamID     string
+	Team       *core.Team
+	State      *core.State
+	Laforge    *core.Laforge
 	Parent     *Spanner
 	Host       *core.ProvisionedHost
 	BeginTime  time.Time
@@ -40,12 +45,14 @@ func (w *Worker) ResolveProvisionedHost() error {
 		return err
 	}
 
-	tlf, err := core.Bootstrap()
+	state, err := core.BootstrapWithState(true)
 	if err != nil {
 		return err
 	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
+	}
 
-	_ = tlf
 	return nil
 }
 
@@ -287,9 +294,9 @@ func (w *Worker) RunSSHCommand(wc chan *Worker) {
 // Verify attempts to validate the constructs of the spanner
 func (w *Worker) Verify() error {
 	if w.ExecType == "remote-exec" {
-		provisionedHostFile := filepath.Join(w.TeamDir, w.HostID, fmt.Sprintf("%s.laforge", w.HostID))
+		provisionedHostFile := filepath.Join(w.TeamDir, w.HostID, fmt.Sprintf("%s.laforge", "conn"))
 		if _, err := os.Stat(provisionedHostFile); os.IsNotExist(err) {
-			return fmt.Errorf("team %d does not have an active host %s", w.TeamID, w.HostID)
+			return fmt.Errorf("team %s does not have an active host %s", w.TeamID, w.HostID)
 		}
 		err := w.ResolveProvisionedHost()
 		if err != nil {

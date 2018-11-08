@@ -67,7 +67,7 @@ func (j *ScriptJob) CanProceed(e chan error) {
 
 	if _, err := os.Stat(pathToConnFile); err != nil {
 		if os.IsNotExist(err) {
-			e <- NewTimeoutExtension(errors.New("cannot proceed with a host that has no connection definition"))
+			e <- NewTimeoutExtension(fmt.Errorf("cannot proceed with a host that has no connection definition: %s", pathToConnFile))
 			return
 		}
 		e <- nil

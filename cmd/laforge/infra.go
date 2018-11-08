@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+	"sync"
+
+	"github.com/gen0cide/laforge/builder/buildutil/templates"
+	"github.com/masterzen/winrm"
 
 	"github.com/emicklei/dot"
 	"github.com/fatih/color"
@@ -63,6 +68,12 @@ var (
 				Name:            "run",
 				Usage:           "Run a host provisioner on a specific host within the infrastructure (usually for debugging).",
 				Action:          performinfrarun,
+				SkipFlagParsing: true,
+			},
+			{
+				Name:            "exec",
+				Usage:           "Run commands on a wildcard matched subset of hosts (usually for debugging).",
+				Action:          performinfraexec,
 				SkipFlagParsing: true,
 			},
 			{
@@ -234,7 +245,7 @@ func performinfragraph(c *cli.Context) error {
 	di.Attr("compound", "true")
 	di.Attr("rank", "min")
 	di.Attr("rankdir", "LR")
-	di.Attr("dpi", "144")
+	di.Attr("dpi", "72")
 	di.Attr("smoothType", "graph_dist")
 	di.Attr("mode", "hier")
 	di.Attr("splines", "spline")
@@ -356,6 +367,166 @@ func performinfrarun(c *cli.Context) error {
 			cliLogger.Errorf("Error in executing step %s: %v", k, diags)
 		}
 	}
+
+	return nil
+}
+
+func performinfraexec(c *cli.Context) error {
+	state, err := core.BootstrapWithState(true)
+	if err != nil {
+		return err
+	}
+	if state == nil {
+		return errors.New("cannot proceed with a nil state")
+	}
+
+	match := c.Args().Get(0)
+	if match == "" {
+		return errors.New("cannot proceed without a path matcher")
+	}
+
+	plan := core.NewEmptyPlan()
+	plan.Graph = state.Current
+	plan.Base = state.Base
+
+	conns := []*core.Connection{}
+
+	// steps := []string{}
+	// for _, x := range c.Args() {
+	// 	if _, found := plan.Graph.Metastore[x]; !found {
+	// 		cliLogger.Errorf("%s not found in current graph.", x)
+	// 		continue
+	// 	}
+	// 	if core.TypeByPath(x) != core.LFTypeConnection {
+	// 		cliLogger.Errorf("%s is not of type connection.", x)
+	// 		continue
+	// 	}
+	// 	plan.Tainted[x] = true
+	// 	plan.GlobalOrder = append(plan.GlobalOrder, x)
+	// }
+
+	lfcli.SetLogLevel("info")
+
+	for _, obj := range plan.Graph.Metastore {
+		if obj.ObjectType != core.LFTypeConnection {
+			continue
+		}
+
+		connObj, ok := obj.Dependency.(*core.Connection)
+		if !ok {
+			continue
+		}
+
+		parentID := connObj.ParentLaforgeID()
+
+		if matched, err := path.Match(match, parentID); err == nil && matched {
+			conns = append(conns, connObj)
+		}
+	}
+
+	cnt, err := templates.NewContext(
+		state.Base,
+		state.Base.CurrentEnv,
+		state.Base.CurrentBuild,
+	)
+	if err != nil {
+		return err
+	}
+
+	newlib := templates.NewLibrary()
+	if c.Args().Get(1) == "" {
+		return errors.New("you must specify a command to run")
+	}
+
+	_, err = newlib.AddBook("command", []byte(c.Args().Get(1)))
+	if err != nil {
+		return err
+	}
+
+	wg := new(sync.WaitGroup)
+	for _, y := range conns {
+		wg.Add(1)
+		go func(x *core.Connection) {
+			defer wg.Done()
+			dup := cnt.Clone()
+			dup.Attach(
+				x,
+				x.Network,
+				x.ProvisionedHost,
+				x.ProvisionedNetwork,
+				x.ProvisionedNetwork.Network,
+				x.Team,
+				x.Host,
+			)
+			cliLogger.Infof("Execution Target: %s", x.Path())
+			renderedCommand, err := newlib.Execute("command", dup)
+			if err != nil {
+				cliLogger.Errorf("Error rendering template: %v", err)
+				return
+			}
+
+			cmd := core.NewRemoteCommand()
+			cmd.Init()
+			cmd.Command = string(renderedCommand)
+			cmd.Stdout = os.Stdout
+			cmd.Stdin = os.Stdin
+			cmd.Stderr = os.Stderr
+
+			baseConfig, err := core.LocateBaseConfig()
+			if err != nil {
+				return
+			}
+
+			baseDir := filepath.Dir(baseConfig)
+
+			conn := &core.Connection{}
+			err = core.LoadHCLFromFile(fmt.Sprintf("%s.laforge", filepath.Join(baseDir, x.Path())), conn)
+			if err != nil {
+				cliLogger.Errorf("Error loading job %s resource: %v", x.Path(), err)
+				return
+			}
+
+			if conn.Active != true {
+				cliLogger.Errorf("Host %s is not active :(", x.ParentLaforgeID())
+				return
+			}
+
+			newConn, err := core.SmartMerge(x, conn, false)
+			if err != nil {
+				cliLogger.Errorf("Error merging connections for %s", x.ParentLaforgeID())
+				return
+			}
+
+			connObj := newConn.(*core.Connection)
+
+			if connObj.IsSSH() {
+				connObj.SSHAuthConfig.IdentityFile = filepath.Join(baseDir, "envs", state.Base.CurrentEnv.Base(), state.Base.CurrentBuild.Base(), "data", "ssh.pem")
+			}
+			if connObj.IsWinRM() {
+				cmd.Command = winrm.Powershell(cmd.Command)
+			}
+			cliLogger.Infof("Connecting Host: %s", connObj.RemoteAddr)
+			err = connObj.ExecuteCommand(cmd)
+			if err != nil {
+				cliLogger.Errorf("Error Executing Command: %v", err)
+				return
+			}
+
+		}(y)
+	}
+
+	wg.Wait()
+	// err = plan.SetupTasks()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// for k := range plan.Tainted {
+	// 	diags := plan.Orchestrator(k)
+	// 	if diags.HasErrors() {
+	// 		cliLogger.Errorf("Error in executing step %s: %v", k, diags)
+	// 	}
+	// }
 
 	return nil
 }
