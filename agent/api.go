@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO import net/http for cleaner status
+
 // ReqInitialize is used to initialize the configuration state
 func (e *Engine) ReqInitialize(c *gin.Context) {
 	if Initialized() {
