@@ -7,7 +7,7 @@ resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "s
     {{ if .DNSRecord.Inherited }}
     "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.network_ip}",
     {{ else }}
-    "{{ .DNSRecord.Value }}",
+    "{{ .DNSRecord.Values }}",
     {{ end }}
   ]
   ttl = 300
