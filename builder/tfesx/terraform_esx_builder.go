@@ -261,6 +261,9 @@ func (t *TerraformESXBuilder) Validations() validations.Validations {
 }
 
 // SetLaforge implements the Builder interface
+// Makes sure the current context is clear to build 
+// (aka Are the necessary config files there?)
+// Loads the necessary tf templates into Library object
 func (t *TerraformESXBuilder) SetLaforge(base *core.Laforge) error {
 	t.Base = base
 	if !base.ClearToBuild {
@@ -290,12 +293,17 @@ func (t *TerraformESXBuilder) SetLaforge(base *core.Laforge) error {
 }
 
 // CheckRequirements implements the Builder interface
+// The purpose of this function is add logical checks that can't
+// be implemented as validations.
 func (t *TerraformESXBuilder) CheckRequirements() error {
 	return nil
 }
 
 // PrepareAssets implements the Builder interface
+// Generates SSH keys, verify that all dependencies exist, and 
+// verify user_data_script exists.
 func (t *TerraformESXBuilder) PrepareAssets() error {
+	// Generates SSH keys to use with hosts
 	var privkey, pubkey string
 	pathToPubkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem.pub")
 	pathToPrivkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem")
@@ -326,6 +334,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 		pubkey = string(pubkeyData)
 	}
 
+	// Store for later use in the builder
 	t.Set("ssh_public_key_file", pathToPubkey)
 	t.Set("ssh_private_key_file", pathToPrivkey)
 	t.Set("rel_ssh_public_key_file", "../../data/ssh.pem.pub")
@@ -333,6 +342,10 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 	t.Set("ssh_public_key", pubkey)
 	t.Set("ssh_private_key", privkey)
 
+	// For host in included hosts in current environment:
+	// 	Load user_data_script to Library object as well as
+	// 	adding it to host script pool (aka *Host.Scripts[]?)
+	// 	Also make sure all dependencies/provisioning_steps for each host exists
 	for hostid, host := range t.Base.CurrentEnv.IncludedHosts {
 		uds, found := host.Vars["user_data_script_id"]
 		if !found {
@@ -370,6 +383,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 			}
 		}
 
+		// Confirm that each dependency exists in the current config
 		for _, dep := range host.Dependencies {
 			depHost, ok := t.Base.CurrentEnv.IncludedHosts[dep.HostID]
 			if !ok {
@@ -394,6 +408,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 				return buildutil.Throw(errors.Errorf("host %s depends on host %s, which is not included in network %s", host.ID, dep.HostID, dep.NetworkID), "The host listed a dependency to another host, and while the network exists and is included, this host is not present within this network assignment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID})
 			}
 
+			// Make sure every provisioning_step exists.
 			if dep.Step != "" {
 				// the Host index function within core.Host has already guarenteed that a provisioning step exists
 				// don't need to check on that :)
@@ -418,6 +433,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 }
 
 // GenerateScripts implements the Builder interface
+// Generates laforge scripts and directory structure for current build.
 func (t *TerraformESXBuilder) GenerateScripts() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
@@ -529,6 +545,7 @@ func (t *TerraformESXBuilder) GenerateScripts() error {
 }
 
 // StageDependencies implements the Builder interface
+// Generate more laforge scripts
 func (t *TerraformESXBuilder) StageDependencies() error {
 	if t.Base.StateManager == nil {
 		return errors.New("builder cannot stage dependencies with nil state manager")
@@ -664,6 +681,7 @@ func (t *TerraformESXBuilder) StageDependencies() error {
 }
 
 // Render implements the Builder interface
+// Renders infra.tf
 func (t *TerraformESXBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
