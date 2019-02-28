@@ -1,0 +1,25 @@
+connection "{{ $.Team.ID }}/networks/{{ $.Network.Base }}/hosts/{{ $.Host.Base }}/conn" {
+  active         = "${host_active}"
+  remote_addr    = "${remote_addr}"
+  local_addr     = "${local_addr}"
+  resource_name  = "${resource_name}"
+
+
+  {{ if $.Host.IsWindows }}
+  winrm {
+    remote_addr = "${remote_addr}"
+    port = 5985
+    https = false
+    skip_verify = false
+    user = "Administrator"
+    password = "${password}"
+  }
+  {{ else }}
+  ssh {
+    remote_addr = "${remote_addr}"
+    port = 22
+    user = "root"
+    identity_file = "${identity_file}"
+  }
+  {{ end }}
+}
