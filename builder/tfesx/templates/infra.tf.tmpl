@@ -100,7 +100,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}}"
 	  network_interface {
-		network_id = "${vsphere_distributed_port_group.pg-team-{{ $.Team.TeamNumber }}-{{ $host.Base }}.id}"
+		network_id = "${vsphere_distributed_port_group.pg-team-{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
 	    adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
