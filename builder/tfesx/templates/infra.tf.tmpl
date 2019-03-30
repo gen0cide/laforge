@@ -78,7 +78,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}" {
 resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
  	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
 	type = "vm"
-	datacenter_id = "${data.vsphere_datacenter_dc.id}"
+	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 {{ end }}
 
@@ -100,7 +100,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
 	  network_interface {
-		network_id = "${vsphere_distributed_port_group.pg-team-{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
+		network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
 	    adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
