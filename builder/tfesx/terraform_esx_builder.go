@@ -83,7 +83,6 @@ var (
 			Resolution: "define a etcd_slave (host:port) attribute in the environment configuration block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "etcd_slave"),
 		},
-		
 		validations.Requirement{
 			Name:       "vpc CIDR not defined",
 			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
