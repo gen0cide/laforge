@@ -40,6 +40,7 @@ var (
 			Resolution: "add a maintainer block to your environment configuration",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "Maintainer"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "DNS not defined",
 			Resolution: "add a DNS block to your competition configuration",
@@ -55,11 +56,13 @@ var (
 			Resolution: "set the root_domain parameter in your DNS config block",
 			Check:      validations.FieldNotEmpty(core.DNS{}, "RootDomain"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "terraform executable not located in path",
 			Resolution: "download and ensure that terraform CLI is installed to a valid location in your PATH",
 			Check:      validations.ExistsInPath("terraform"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "etcd server password not defined",
 			Resolution: "define a etcd_password attribute in the environment configuration block.",
@@ -80,6 +83,7 @@ var (
 			Resolution: "define a etcd_slave (host:port) attribute in the environment configuration block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "etcd_slave"),
 		},
+		
 		validations.Requirement{
 			Name:       "vpc CIDR not defined",
 			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
@@ -90,6 +94,7 @@ var (
 			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
 		},
+		
 		// TODO
 		validations.Requirement{
 			Name:       "GCP Project not defined",
@@ -101,6 +106,7 @@ var (
 			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
 			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "no teams specified",
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
@@ -111,6 +117,7 @@ var (
 			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
 		}, 
+		/*
 		// TODO
 		validations.Requirement{
 			Name:       "GCP Region not defined",
@@ -129,6 +136,7 @@ var (
 			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "No networks have been included",
 			Resolution: "Use the included_network \"$network_id\" { ... } block inside of your environment config to include networks.",
@@ -139,6 +147,7 @@ var (
 			Resolution: "Check your included_network blocks. The field included_hosts = [ ... ] should be populated with host IDs.",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "IncludedHosts"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "No CIDR defined for network",
 			Resolution: "Check that network declarations have a cidr = ... defined in them.",
@@ -169,6 +178,7 @@ var (
 			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
 			Check:      validations.HasVarDefined(core.Host{}, "user_data_script_id"),
 		},
+		*/
 	}
 
 	templatesToLoad = []string{
