@@ -94,16 +94,6 @@ resource "vsphere_folder" "team_{{ $.Team.TeamNumber }}_{{ $net.Base }}" {
   {{ $netobj := $pnet.Network }}
   {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
     {{ $host := $phost.Host }}
-    {{ if eq $host.Base "ns01" }}
-      {{ $dns_resource_name = printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-
-{{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
-  {{ $netobj := $pnet.Network }}
-  {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
-    {{ $host := $phost.Host }}
     {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
 
 # hard coded vm specifications, use map
