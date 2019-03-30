@@ -95,7 +95,8 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
 	  datastore_id = "${data.vsphere_datastore.datastore.id}"
 	  num_cpus = 2
-	  memory = 16384
+	  memory = 8196
+	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id"
 	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
