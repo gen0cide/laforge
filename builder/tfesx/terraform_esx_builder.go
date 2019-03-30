@@ -40,6 +40,7 @@ var (
 			Resolution: "add a maintainer block to your environment configuration",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "Maintainer"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "DNS not defined",
 			Resolution: "add a DNS block to your competition configuration",
@@ -55,11 +56,13 @@ var (
 			Resolution: "set the root_domain parameter in your DNS config block",
 			Check:      validations.FieldNotEmpty(core.DNS{}, "RootDomain"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "terraform executable not located in path",
 			Resolution: "download and ensure that terraform CLI is installed to a valid location in your PATH",
 			Check:      validations.ExistsInPath("terraform"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "etcd server password not defined",
 			Resolution: "define a etcd_password attribute in the environment configuration block.",
@@ -80,26 +83,29 @@ var (
 			Resolution: "define a etcd_slave (host:port) attribute in the environment configuration block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "etcd_slave"),
 		},
-		//		validations.Requirement{
-		//			Name:       "vpc CIDR not defined",
-		//			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
-		//		},
-		//		validations.Requirement{
-		//			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
-		//			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
-		//		},
-		//		validations.Requirement{
-		//			Name:       "GCP Project not defined",
-		//			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
-		//		},
-		//		validations.Requirement{
-		//			Name:       "Root DNS Server not defined",
-		//			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
-		//			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
-		//		},
+		validations.Requirement{
+			Name:       "vpc CIDR not defined",
+			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
+		},
+		validations.Requirement{
+			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
+			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
+		},
+		
+		// TODO
+		validations.Requirement{
+			Name:       "GCP Project not defined",
+			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
+		},
+		validations.Requirement{
+			Name:       "Root DNS Server not defined",
+			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
+			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
+		},
+		*/
 		validations.Requirement{
 			Name:       "no teams specified",
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
@@ -110,21 +116,26 @@ var (
 			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
 		}, 
-		//		validations.Requirement{
-		//			Name:       "GCP Region not defined",
-		//			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
-		//		},
-		//		validations.Requirement{
-		//			Name:       "GCP Storage Bucket not defined",
-		//			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
-		//		},
-		//		validations.Requirement{
-		//			Name:       "GCP Zone not defined",
-		//			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
-		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
-		//		},
+		/*
+		// TODO
+		validations.Requirement{
+			Name:       "GCP Region not defined",
+			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
+		},
+		// TODO
+		validations.Requirement{
+			Name:       "GCP Storage Bucket not defined",
+			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
+		},
+		// TODO
+		validations.Requirement{
+			Name:       "GCP Zone not defined",
+			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
+		},
+		*/
 		validations.Requirement{
 			Name:       "No networks have been included",
 			Resolution: "Use the included_network \"$network_id\" { ... } block inside of your environment config to include networks.",
@@ -135,6 +146,7 @@ var (
 			Resolution: "Check your included_network blocks. The field included_hosts = [ ... ] should be populated with host IDs.",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "IncludedHosts"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "No CIDR defined for network",
 			Resolution: "Check that network declarations have a cidr = ... defined in them.",
@@ -165,6 +177,7 @@ var (
 			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
 			Check:      validations.HasVarDefined(core.Host{}, "user_data_script_id"),
 		},
+		*/
 	}
 
 	templatesToLoad = []string{
@@ -257,6 +270,9 @@ func (t *TerraformESXBuilder) Validations() validations.Validations {
 }
 
 // SetLaforge implements the Builder interface
+// Makes sure the current context is clear to build 
+// (aka Are the necessary config files there?)
+// Loads the necessary tf templates into Library object
 func (t *TerraformESXBuilder) SetLaforge(base *core.Laforge) error {
 	t.Base = base
 	if !base.ClearToBuild {
@@ -286,12 +302,17 @@ func (t *TerraformESXBuilder) SetLaforge(base *core.Laforge) error {
 }
 
 // CheckRequirements implements the Builder interface
+// The purpose of this function is add logical checks that can't
+// be implemented as validations.
 func (t *TerraformESXBuilder) CheckRequirements() error {
 	return nil
 }
 
 // PrepareAssets implements the Builder interface
+// Generates SSH keys, verify that all dependencies exist, and 
+// verify user_data_script exists.
 func (t *TerraformESXBuilder) PrepareAssets() error {
+	// Generates SSH keys to use with hosts
 	var privkey, pubkey string
 	pathToPubkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem.pub")
 	pathToPrivkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem")
@@ -322,6 +343,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 		pubkey = string(pubkeyData)
 	}
 
+	// Store for later use in the builder
 	t.Set("ssh_public_key_file", pathToPubkey)
 	t.Set("ssh_private_key_file", pathToPrivkey)
 	t.Set("rel_ssh_public_key_file", "../../data/ssh.pem.pub")
@@ -329,6 +351,10 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 	t.Set("ssh_public_key", pubkey)
 	t.Set("ssh_private_key", privkey)
 
+	// For host in included hosts in current environment:
+	// 	Load user_data_script to Library object as well as
+	// 	adding it to host script pool (aka *Host.Scripts[]?)
+	// 	Also make sure all dependencies/provisioning_steps for each host exists
 	for hostid, host := range t.Base.CurrentEnv.IncludedHosts {
 		uds, found := host.Vars["user_data_script_id"]
 		if !found {
@@ -366,6 +392,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 			}
 		}
 
+		// Confirm that each dependency exists in the current config
 		for _, dep := range host.Dependencies {
 			depHost, ok := t.Base.CurrentEnv.IncludedHosts[dep.HostID]
 			if !ok {
@@ -390,6 +417,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 				return buildutil.Throw(errors.Errorf("host %s depends on host %s, which is not included in network %s", host.ID, dep.HostID, dep.NetworkID), "The host listed a dependency to another host, and while the network exists and is included, this host is not present within this network assignment.", &buildutil.V{"source_host": hostid, "depends_on_host": dep.HostID, "depends_on_network": dep.NetworkID})
 			}
 
+			// Make sure every provisioning_step exists.
 			if dep.Step != "" {
 				// the Host index function within core.Host has already guarenteed that a provisioning step exists
 				// don't need to check on that :)
@@ -414,6 +442,7 @@ func (t *TerraformESXBuilder) PrepareAssets() error {
 }
 
 // GenerateScripts implements the Builder interface
+// Generates laforge scripts and directory structure for current build.
 func (t *TerraformESXBuilder) GenerateScripts() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
@@ -525,6 +554,7 @@ func (t *TerraformESXBuilder) GenerateScripts() error {
 }
 
 // StageDependencies implements the Builder interface
+// Generate more laforge scripts
 func (t *TerraformESXBuilder) StageDependencies() error {
 	if t.Base.StateManager == nil {
 		return errors.New("builder cannot stage dependencies with nil state manager")
@@ -660,6 +690,7 @@ func (t *TerraformESXBuilder) StageDependencies() error {
 }
 
 // Render implements the Builder interface
+// Renders infra.tf
 func (t *TerraformESXBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
