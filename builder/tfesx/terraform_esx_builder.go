@@ -80,27 +80,26 @@ var (
 			Resolution: "define a etcd_slave (host:port) attribute in the environment configuration block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "etcd_slave"),
 		},
-		validations.Requirement{
-			Name:       "vpc CIDR not defined",
-			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
-		},
-		validations.Requirement{
-			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
-			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
-		},
-		// TODO
-		validations.Requirement{
-			Name:       "GCP Project not defined",
-			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
-		},
-		validations.Requirement{
-			Name:       "Root DNS Server not defined",
-			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
-			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
-		},
+		//		validations.Requirement{
+		//			Name:       "vpc CIDR not defined",
+		//			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
+		//		},
+		//		validations.Requirement{
+		//			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
+		//			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
+		//		},
+		//		validations.Requirement{
+		//			Name:       "GCP Project not defined",
+		//			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
+		//		},
+		//		validations.Requirement{
+		//			Name:       "Root DNS Server not defined",
+		//			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
+		//			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
+		//		},
 		validations.Requirement{
 			Name:       "no teams specified",
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
@@ -111,24 +110,21 @@ var (
 			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
 		}, 
-		// TODO
-		validations.Requirement{
-			Name:       "GCP Region not defined",
-			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
-		},
-		// TODO
-		validations.Requirement{
-			Name:       "GCP Storage Bucket not defined",
-			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
-		},
-		// TODO
-		validations.Requirement{
-			Name:       "GCP Zone not defined",
-			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
-		},
+		//		validations.Requirement{
+		//			Name:       "GCP Region not defined",
+		//			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
+		//		},
+		//		validations.Requirement{
+		//			Name:       "GCP Storage Bucket not defined",
+		//			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
+		//		},
+		//		validations.Requirement{
+		//			Name:       "GCP Zone not defined",
+		//			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
+		//			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
+		//		},
 		validations.Requirement{
 			Name:       "No networks have been included",
 			Resolution: "Use the included_network \"$network_id\" { ... } block inside of your environment config to include networks.",
