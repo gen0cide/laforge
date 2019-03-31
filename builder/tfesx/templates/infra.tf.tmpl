@@ -77,12 +77,10 @@ data "vsphere_virtual_machine" "w2k16" {
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
-{{ $vlanid := $.Team.TeamNumber * 100 }}
-{{ $vlanid += 10 }}
 resource "vsphere_distributed_port_group" "pg-t{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
  	name = "t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
  	distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.dvs.id}"
- 	vlan_id = {{ $vlanid }}
+ 	vlan_id = 100
 }
 {{ end }}
 
