@@ -114,8 +114,8 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
       name = "{{ $resource_name }}"
 	  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
 	  datastore_id = "${data.vsphere_datastore.datastore.id}"
-	  num_cpus = ${var.vmcpu["{{ $host.InstanceSize }}"]}
-	  memory = ${var.vmmem["{{ $host.InstanceSize }}"]}
+	  num_cpus = 2
+	  memory = 8000
 	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id}"
 	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
@@ -126,7 +126,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  }
 	  disk {
 		size = "${data.vsphere_virtual_machine.{{ $host.OS }}.disks.0.size}"
-		label = "team-{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.vmdk"
+		label = "t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}-{{ $host.OS }}.vmdk"
       }
 	  clone {
 		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
