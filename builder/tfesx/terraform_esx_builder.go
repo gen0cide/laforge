@@ -30,7 +30,7 @@ const (
 	Name        = `Terraform ESXi Builder`
 	Description = `generates terraform configurations that isolate teams into TODO`
 	Author      = `TODO <github.com/TODO>`
-	Version     = `0.0.2`
+	Version     = `0.0.3`
 )
 
 var (
@@ -62,17 +62,17 @@ var (
 			Resolution: "download and ensure that terraform CLI is installed to a valid location in your PATH",
 			Check:      validations.ExistsInPath("terraform"),
 		},
+		validations.Requirement{
+			Name:       "vsphere server password not defined",
+			Resolution: "define a vsphere_password attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "vsphere_password"),
+		},
+		validations.Requirement{
+			Name:       "vsphere username not defined",
+			Resolution: "define an vsphere_username attribute in the environment configuration block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "vsphere_user"),
+		},
 		/*
-		validations.Requirement{
-			Name:       "etcd server password not defined",
-			Resolution: "define a etcd_password attribute in the environment configuration block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "etcd_password"),
-		},
-		validations.Requirement{
-			Name:       "etcd username not defined",
-			Resolution: "define an etcd_username attribute in the environment configuration block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "etcd_username"),
-		},
 		validations.Requirement{
 			Name:       "etcd master server not defined",
 			Resolution: "define a etcd_master (host:port) attribute in the environment configuration block.",
@@ -88,18 +88,13 @@ var (
 			Resolution: "define a vpc_cidr value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
 		},
-		validations.Requirement{
-			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
-			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
-		},
 		
-		// TODO
 		validations.Requirement{
 			Name:       "GCP Project not defined",
 			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
 		},
+		
 		validations.Requirement{
 			Name:       "Root DNS Server not defined",
 			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
@@ -111,12 +106,14 @@ var (
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "admin IP not defined",
 			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
-		}, 
-		/*
+		},
+		
+		
 		// TODO
 		validations.Requirement{
 			Name:       "GCP Region not defined",
@@ -157,6 +154,7 @@ var (
 			Resolution: "Check that all host declarations have an os = ... attribute defined.",
 			Check:      validations.FieldNotEmpty(core.Host{}, "OS"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "No hostname defined for a host",
 			Resolution: "Check that all host declarations have a hostname = ... attribute defined.",
@@ -167,17 +165,23 @@ var (
 			Resolution: "Check that all host declarations have an associated instance_size = ... attribute defined.",
 			Check:      validations.FieldNotEmpty(core.Host{}, "InstanceSize"),
 		},
+		/*
 		validations.Requirement{
 			Name:       "No disk defined for a host",
 			Resolution: "Ensure that every host declaration has an accompanied disk { size = ... } block defined.",
 			Check:      validations.FieldNotEmpty(core.Host{}, "Disk"),
 		},
+		*/
 		validations.Requirement{
 			Name:       "No user_data_script_id defined for a host",
 			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
 			Check:      validations.HasVarDefined(core.Host{}, "user_data_script_id"),
-		},
-		*/
+		}
+		validations.Requirement{
+			Name:       "No Vlan_id defined for a host",
+			Resolution: "Ensure that every host declaration has a var defined for key user_data_script_id.",
+			Check:      validations.HasVarDefined(core.Network{}, "vlan_id"),
+		}
 	}
 
 	templatesToLoad = []string{
