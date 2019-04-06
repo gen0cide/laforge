@@ -261,7 +261,7 @@ func (b *Build) CreateTeams() error {
 	if len(b.Teams) != 0 {
 		return errors.New("build already is populated with teams")
 	}
-	for i := 0; i < b.TeamCount; i++ {
+	for i := 1; i < b.TeamCount; i++ {
 		t := b.CreateTeam(i)
 		err := t.CreateProvisionResources()
 		if err != nil {
