@@ -12,10 +12,23 @@ provider "vsphere" {
 	allow_unverified_ssl = true
 }
 
-variable "vmos" {
+variable "vmcpu" {
 	type = "map"
 	default = {
-		"ad" = "w
+		"small" = 1
+		"medium" = 2
+		"large" = 4
+		"xlarge" = 32
+	}
+}
+
+variable "vmmem" {
+	type = "map"
+	default = {
+		"small" = 4000
+		"medium" = 8000
+		"large" = 16000
+		"xlarge" = 120000
 	}
 }
 
@@ -72,7 +85,7 @@ resource "vsphere_distributed_port_group" "pg-t{{ $.Team.TeamNumber }}-{{ $net.B
 {{ end }}
 
 # make parent folder
-resource "vsphere_folder" "team_{{ $.Team.TeamNumber }}" {
+resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}" {
 	path = "Team {{ $.Team.TeamNumber }}"
 	type = "vm"
 	datacenter_id = "${data.vsphere_datacenter.dc.id}"
@@ -82,10 +95,10 @@ resource "vsphere_folder" "team_{{ $.Team.TeamNumber }}" {
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
-resource "vsphere_folder" "team_{{ $.Team.TeamNumber }}_{{ $net.Base }}" {
- 	path = "${vsphere_folder.team_{{ $.Team.TeamNumber }}_{{ $net.Base }}" 
+resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
+ 	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
 	type = "vm"
-	datacenter_id = "${data.vsphere_datacenter_dc.id}"
+	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 {{ end }}
 
@@ -102,22 +115,24 @@ resource "vsphere_folder" "team_{{ $.Team.TeamNumber }}_{{ $net.Base }}" {
 	  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
 	  datastore_id = "${data.vsphere_datastore.datastore.id}"
 	  num_cpus = 2
-	  memory = 16384
-	  scsi_type = "${data.vsphere_virtual_machine.${var.vmos["{{ $host.OS }}"]}.scsi_type}"
-	  firmware = "${data.vsphere_virtual_machine.${var.vmos["{{ $host.OS }}"]}.firmware}"
-	  folder = "${vsphere_folder.team_{{ $.Team.TeamNumber }}}"
+	  memory = 8000
+	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id}"
+	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
+	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
+	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
 	  network_interface {
-		network_id = "${vsphere_distributed_port_group.pg_team_{{ $.Team.TeamNumber }}_{{ $host.Base }}.id}}"
-	    adapter_type = "${data.vsphere_virtual_machine.${var.vmos["{{ $host.OS }}"]}.network_interface_types[0]}"
+		network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
+	    adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
-		size = "${data.vsphere_virtual_machine.${var.vmos["{{ $host.OS }}"]}.disks.0.size}"
-		label = "team_{{ $.Team.TeamNumber }}_{{ $netobj.Base }}.vmdk"
+		size = "${data.vsphere_virtual_machine.{{ $host.OS }}.disks.0.size}"
+		label = "t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}-{{ $host.OS }}.vmdk"
       }
 	  clone {
-		template_uuid = "${data.vsphere_virtual_machine.${var.vmos["{{ $host.OS }}"]}.id}"
+		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
 		timeout = 60
 	  }
+    }
   {{ end }}
 {{ end }}
 
