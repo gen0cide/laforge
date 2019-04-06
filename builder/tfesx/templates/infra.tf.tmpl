@@ -12,26 +12,6 @@ provider "vsphere" {
 	allow_unverified_ssl = true
 }
 
-variable "vmcpu" {
-	type = "map"
-	default = {
-		"small" = 1
-		"medium" = 2
-		"large" = 4
-		"xlarge" = 32
-	}
-}
-
-variable "vmmem" {
-	type = "map"
-	default = {
-		"small" = 4000
-		"medium" = 8000
-		"large" = 16000
-		"xlarge" = 120000
-	}
-}
-
 # hard corded dc
 data "vsphere_datacenter" "dc" {
 	name = "ESXI"
@@ -114,8 +94,8 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
       name = "{{ $resource_name }}"
 	  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
 	  datastore_id = "${data.vsphere_datastore.datastore.id}"
-	  num_cpus = 2
-	  memory = 8000
+	  num_cpus = {{ index $host.Vars "vmcpu" }}
+	  memory = {{ index $host.Vars "vmmem" }}
 	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id}"
 	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
