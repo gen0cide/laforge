@@ -58,9 +58,9 @@ data "vsphere_virtual_machine" "w2k16" {
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
 resource "vsphere_distributed_port_group" "pg-t{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
- 	name = "t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
- 	distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.dvs.id}"
- 	vlan_id = {{ $.Team.TeamNumber }}{{ index $net.Vars "vlan_id" }}
+	name = "t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
+	distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.dvs.id}"
+	vlan_id = {{ $.Team.TeamNumber }}{{ index $net.Vars "vlan_id" }}
 }
 {{ end }}
 
@@ -76,7 +76,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}" {
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
 resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
- 	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
+	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
 	type = "vm"
 	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
@@ -102,7 +102,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
 	  network_interface {
 		network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
-	    adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
+		adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
 		size = "${data.vsphere_virtual_machine.{{ $host.OS }}.disks.0.size}"
@@ -112,9 +112,36 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
 		timeout = 60
 	  }
+	  provisioner "file" {
+      	{{ if $host.IsWindows }}
+		connection {
+			host     = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+			type     = "winrm"
+			user     = "Administrator"
+			timeout  = "60m"
+			password = "{{ $phost.ActualPassword }}"
+	  	}
+	  	{{ else }}
+		connection {
+			agent       = "false"
+			host        = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+			type        = "ssh"
+			user        = "root"
+			timeout     = "60m"
+			private_key = "${file("{{ index $.Build.Config "rel_ssh_private_key_file" }}")}"
+		}
+	  	{{ end }}
+		{{ if $host.IsWindows }}
+		source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/assets/powershell_userdata_script_raw.ps1"
+		destination = "C:\\powershell_userdata_script_raw.ps1"
+		{{ else }}
+		source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/assets/ubuntu_userdata_script.sh"
+		destination = "/opt/ubuntu_userdata_script.sh"
+		{{ end }}
+      }
     }
 
-    {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
+	{{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
     {{ $phostrev = $phostrev.TouchWithID $resource_name }}
 
     resource "local_file" "lfrev-{{ $resource_name }}-host" {
