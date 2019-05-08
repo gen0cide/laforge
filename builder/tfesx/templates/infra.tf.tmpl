@@ -125,10 +125,16 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
 		timeout = 60
 		customize {
+			{{ if $host.IsWindows }}
+			windows_options {
+				computer_name "{{ $host.Hostname }}.{{ $netobj.Name }}"
+			}
+			{{ else }}
 			linux_options {
-				host_name = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
+				host_name = "{{ $host.Hostname }}.{{ $netobj.Name }}"
 				domain = "{{ $.Competition.DNS.RootDomain }}"
 			}
+			{{ end }}
 			network_interface {
 				ipv4_address = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
 				ipv4_netmask = 24
