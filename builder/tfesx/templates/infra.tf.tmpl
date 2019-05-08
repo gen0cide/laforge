@@ -53,6 +53,17 @@ data "vsphere_virtual_machine" "w2k16" {
 	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
+# hard coded default network
+data "vsphere_network" "network" {
+	name = "VM Network"
+	datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
+
+# hard code salt-master address
+variable "salt-master" {
+	type = string
+	default = "10.0.0.2"
+}
 # loop to create port groups
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
@@ -99,9 +110,11 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id}"
 	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
+	  wait_for_guest_net_timeout = 60
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
 	  network_interface {
-		network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
+		#network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
+		network_id = "${data.vsphere_network.network.id}"
 		adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
@@ -111,12 +124,24 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  clone {
 		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
 		timeout = 60
+		customize {
+			linux_options {
+				host_name = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
+				domain = "{{ $.Competition.DNS.RootDomain }}"
+			}
+			network_interface {
+				ipv4_address = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+				ipv4_netmask = 24
+			}
+		}
 	  }
-	  provisioner "file" {
+	  provisioner "remote-exec" {
       	{{ if $host.IsWindows }}
 		connection {
 			host     = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
 			type     = "winrm"
+			agent 	 = false
+			insecure = true
 			user     = "Administrator"
 			timeout  = "60m"
 			password = "{{ $phost.ActualPassword }}"
@@ -128,15 +153,21 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 			type        = "ssh"
 			user        = "root"
 			timeout     = "60m"
-			private_key = "${file("{{ index $.Build.Config "rel_ssh_private_key_file" }}")}"
+			password  	= "{{ $phost.ActualPassword }}"
 		}
 	  	{{ end }}
 		{{ if $host.IsWindows }}
-		source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/assets/powershell_userdata_script_raw.ps1"
-		destination = "C:\\powershell_userdata_script_raw.ps1"
+		inline = [
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command \"Add-Content -Path C:/Windows/System32/drivers/etc/hosts -Value '${var.salt-master} salt '\"",
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command 'Invoke-WebRequest -OutFile bootstrap-salt.ps1 https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1'",
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command -File bootstrap-salt.ps1 -master salt"
+		]
 		{{ else }}
-		source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/assets/ubuntu_userdata_script.sh"
-		destination = "/opt/ubuntu_userdata_script.sh"
+		inline = [
+			"sudo echo '${var.salt-master} salt' >> /etc/hosts".
+			"sudo curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com",
+			"sudo sh bootstrap-salt.sh git develop"
+		]
 		{{ end }}
       }
     }
@@ -147,34 +178,6 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
     resource "local_file" "lfrev-{{ $resource_name }}-host" {
       content = {{ $phostrev.ToJSONString | hclstring }}
       filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.provisioned_host.lfrevision"
-
-      depends_on = [
-        "vsphere_virtual_machine.{{ $resource_name }}",
-      ]
-    }
-
-    output "{{ $host.Base }}-private_ip" {
-      value = "${vsphere_virtual_machine.{{ $resource_name }}.network_interface.0.network_ip}"
-    }
-
-    output "{{ $host.Base }}-public_ip" {
-      value = "${vsphere_virtual_machine.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
-    }
-
-    data "template_file" "{{ $resource_name }}" {
-      template = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base "provisioned_host.tpl" }}")}"
-
-      vars {
-        remote_addr = "${vsphere_virtual_machine.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
-        local_addr = "${vsphere_virtual_machine.{{ $resource_name }}.network_interface.0.network_ip}"
-        host_active = "true"
-        resource_name = "vsphere_virtual_machine.{{ $resource_name }}"
-        {{ if $host.IsWindows }}
-        password = "{{ $phost.ActualPassword }}"
-        {{ else }}
-        identity_file = "{{ index $.Build.Config "rel_ssh_private_key_file" }}"
-        {{ end }}
-      }
 
       depends_on = [
         "vsphere_virtual_machine.{{ $resource_name }}",
