@@ -177,39 +177,6 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 		{{ end }}
       }
     }
-
-	{{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
-    {{ $phostrev = $phostrev.TouchWithID $resource_name }}
-
-    resource "local_file" "lfrev-{{ $resource_name }}-host" {
-      content = {{ $phostrev.ToJSONString | hclstring }}
-      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.provisioned_host.lfrevision"
-
-      depends_on = [
-        "vsphere_virtual_machine.{{ $resource_name }}",
-      ]
-    }
-
-    resource "local_file" "{{ $resource_name }}_provisioning_file" {
-      content = "${data.template_file.{{ $resource_name }}.rendered}"
-      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/conn.laforge"
-
-      depends_on = [
-        "vsphere_virtual_machine.{{ $resource_name }}",
-      ]
-    }
-
-    {{ $phostconnrev := (index $.Laforge.StateManager.NewRevs $phost.Conn.Path) }}
-    {{ $phostconnrev = $phostconnrev.TouchWithID $resource_name }}
-
-    resource "local_file" "lfrev-{{ $resource_name }}-conn" {
-      content = {{ $phostconnrev.ToJSONString | hclstring }}
-      filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.connection.lfrevision"
-
-      depends_on = [
-        "vsphere_virtual_machine.{{ $resource_name }}",
-      ]
-    }
   {{ end }}
 {{ end }}
 
