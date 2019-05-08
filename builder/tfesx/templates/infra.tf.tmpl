@@ -164,7 +164,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 		]
 		{{ else }}
 		inline = [
-			"sudo echo '${var.salt-master} salt' >> /etc/hosts".
+			"sudo echo '${var.salt-master} salt' >> /etc/hosts",
 			"sudo curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com",
 			"sudo sh bootstrap-salt.sh git develop"
 		]
