@@ -127,7 +127,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 		customize {
 			{{ if $host.IsWindows }}
 			windows_options {
-				computer_name "{{ $host.Hostname }}.{{ $netobj.Name }}"
+				computer_name = "{{ $host.Hostname }}.{{ $netobj.Name }}"
 			}
 			{{ else }}
 			linux_options {
