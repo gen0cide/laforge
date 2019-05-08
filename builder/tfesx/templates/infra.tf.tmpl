@@ -61,7 +61,7 @@ data "vsphere_network" "network" {
 
 # hard code salt-master address
 variable "salt-master" {
-	type = string
+	type = "string"
 	default = "10.0.0.2"
 }
 # loop to create port groups
