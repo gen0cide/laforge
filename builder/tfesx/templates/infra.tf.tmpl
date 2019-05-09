@@ -53,14 +53,25 @@ data "vsphere_virtual_machine" "w2k16" {
 	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
+# hard coded default network
+data "vsphere_network" "network" {
+	name = "VM Network"
+	datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
+
+# hard code salt-master address
+variable "salt-master" {
+	type = "string"
+	default = "10.0.0.2"
+}
 # loop to create port groups
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
 resource "vsphere_distributed_port_group" "pg-t{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
- 	name = "t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
- 	distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.dvs.id}"
- 	vlan_id = {{ $.Team.TeamNumber }}{{ index $net.Vars "vlan_id" }}
+	name = "t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
+	distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.dvs.id}"
+	vlan_id = {{ $.Team.TeamNumber }}{{ index $net.Vars "vlan_id" }}
 }
 {{ end }}
 
@@ -76,7 +87,7 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}" {
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
 resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
- 	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
+	path = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $net.Base }}" 
 	type = "vm"
 	datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
@@ -99,10 +110,12 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  guest_id = "${data.vsphere_virtual_machine.{{ $host.OS }}.guest_id}"
 	  scsi_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.scsi_type}"
 	  firmware = "${data.vsphere_virtual_machine.{{ $host.OS }}.firmware}"
+	  wait_for_guest_net_timeout = 60
 	  folder = "${vsphere_folder.team-{{ $.Team.TeamNumber }}.path}/{{ $netobj.Base }}"
 	  network_interface {
-		network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
-	    adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
+		#network_id = "${vsphere_distributed_port_group.pg-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}.id}"
+		network_id = "${data.vsphere_network.network.id}"
+		adapter_type = "${data.vsphere_virtual_machine.{{ $host.OS }}.network_interface_types[0]}"
 	  }
 	  disk {
 		size = "${data.vsphere_virtual_machine.{{ $host.OS }}.disks.0.size}"
@@ -111,7 +124,58 @@ resource "vsphere_folder" "team-{{ $.Team.TeamNumber }}-{{ $net.Base }}" {
 	  clone {
 		template_uuid = "${data.vsphere_virtual_machine.{{ $host.OS }}.id}"
 		timeout = 60
+		customize {
+			{{ if $host.IsWindows }}
+			windows_options {
+				computer_name = "{{ $host.Hostname }}.{{ $netobj.Name }}"
+			}
+			{{ else }}
+			linux_options {
+				host_name = "{{ $host.Hostname }}.{{ $netobj.Name }}"
+				domain = "{{ $.Competition.DNS.RootDomain }}"
+			}
+			{{ end }}
+			network_interface {
+				ipv4_address = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+				ipv4_netmask = 24
+			}
+		}
 	  }
+	  provisioner "remote-exec" {
+      	{{ if $host.IsWindows }}
+		connection {
+			host     = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+			type     = "winrm"
+			agent 	 = false
+			insecure = true
+			user     = "Administrator"
+			timeout  = "60m"
+			password = "{{ $phost.ActualPassword }}"
+	  	}
+	  	{{ else }}
+		connection {
+			agent       = "false"
+			host        = "${vsphere_virtual_machine.{{ $resource_name }}.address}"
+			type        = "ssh"
+			user        = "root"
+			timeout     = "60m"
+			password  	= "{{ $phost.ActualPassword }}"
+		}
+	  	{{ end }}
+		{{ if $host.IsWindows }}
+		inline = [
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command \"Add-Content -Path C:/Windows/System32/drivers/etc/hosts -Value '${var.salt-master} salt '\"",
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command 'Invoke-WebRequest -OutFile bootstrap-salt.ps1 https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1'",
+			"powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command -File bootstrap-salt.ps1 -master salt"
+		]
+		{{ else }}
+		inline = [
+			"sudo echo '${var.salt-master} salt' >> /etc/hosts",
+			"sudo curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com",
+			"sudo sh bootstrap-salt.sh git develop"
+		]
+		{{ end }}
+      }
     }
   {{ end }}
 {{ end }}
