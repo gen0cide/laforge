@@ -297,6 +297,8 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 						return
 					}
 					cli.Logger.Errorf("%s Execution Failure due to Exit Error: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
+					e <- NewTimeoutExtensionWithDelay(err, 90)
+					return
 				}
 				cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
 				e <- NewTimeoutExtension(err)
