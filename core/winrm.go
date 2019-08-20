@@ -2,10 +2,12 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -115,6 +117,10 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		30,
 	)
 
+	transporter := &AdvancedTransporter{
+		auth: w.Config,
+	}
+
 	fmt.Printf("WinRM ExecuteNonInteractive: cmd: \n%+v\n", cmd)
 	fmt.Printf("WinRM ExecuteNonInteractive: this: \n%+v\n", *w)
 
@@ -122,6 +128,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 
 	params := winrm.DefaultParameters
 	params.Timeout = "PT12M"
+	params.TransportDecorator = func() winrm.Transporter { return transporter }
 	client, err := winrm.NewClientWithParameters(endpoint, w.Config.User, w.Config.Password, params)
 	if err != nil {
 		panic(err)
@@ -335,7 +342,10 @@ if (Test-Path $log) {
 exit $result`))
 
 type AdvancedTransporter struct {
+	auth      *WinRMAuthConfig
 	transport http.RoundTripper
+	endpoint  *winrm.Endpoint
+	client    *http.Client
 }
 
 func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
@@ -354,9 +364,59 @@ func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	}
 
 	a.transport = t
+	a.endpoint = endpoint
+
+	client := &http.Client{
+		Transport: a.transport,
+	}
+
+	a.client = client
 	return nil
 }
 
+func (a *AdvancedTransporter) URL() string {
+	var scheme string
+	if a.endpoint.HTTPS {
+		scheme = "https"
+	} else {
+		scheme = "http"
+	}
+
+	return fmt.Sprintf("%s://%s:%d/wsman", scheme, a.endpoint.Host, a.endpoint.Port)
+}
+
 func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessage) (string, error) {
-	return "", nil
+	req, err := http.NewRequest("POST", a.URL(), strings.NewReader(request.String()))
+	if err != nil {
+		return "", errors.Wrap(err, "impossible to create http request")
+	}
+
+	req.Header.Set("Content-Type", "application/soap+xml;charset=UTF-8")
+	req.SetBasicAuth(a.auth.User, a.auth.Password)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	req = req.WithContext(ctx)
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return "", errors.Wrap(err, "http request did not finish successfully")
+	}
+
+	defer resp.Body.Close()
+
+	if !strings.Contains(resp.Header.Get("Content-Type"), "application/soap+xml") {
+		return "", errors.Errorf("invalid content type returned: %s (expected application/soap+xml)", resp.Header.Get("Content-Type"))
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.Wrap(err, "error reading http response body")
+	}
+
+	if resp.StatusCode != 200 {
+		return string(data), errors.Errorf("non-200 response from the WinRM server: %s (%d)", resp.Status, resp.StatusCode)
+	}
+
+	return string(data), nil
 }
