@@ -189,7 +189,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 	}
 
 	fmt.Printf("WinRM client.Run: start\n")
-	fmt.Printf("WinRM client.Run: Command: %s\n", cmd.Command)
+	// fmt.Printf("WinRM client.Run: Command: %s\n", cmd.Command)
 	status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
 	fmt.Printf("WinRM client.Run: complete. Status: %d\n", status)
 	if err != nil {
@@ -352,15 +352,15 @@ func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	t := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
+			Timeout:   65 * time.Second,
+			KeepAlive: 65 * time.Second,
 			DualStack: false,
 		}).DialContext,
 		MaxIdleConns:          1,
-		IdleConnTimeout:       45 * time.Second,
+		IdleConnTimeout:       75 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
-		ResponseHeaderTimeout: 60 * time.Second,
+		ResponseHeaderTimeout: 70 * time.Second,
 	}
 
 	a.transport = t
@@ -393,7 +393,7 @@ func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessa
 
 	req.Header.Set("Content-Type", "application/soap+xml;charset=UTF-8")
 	req.SetBasicAuth(a.auth.User, a.auth.Password)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	req = req.WithContext(ctx)
