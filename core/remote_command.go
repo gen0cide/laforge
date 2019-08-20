@@ -12,6 +12,7 @@ type RemoteCommand struct {
 	Stdin      io.Reader
 	Stdout     io.Writer
 	Stderr     io.Writer
+	Timeout    int
 	exitStatus int
 	exitCh     chan struct{}
 	err        error

@@ -268,6 +268,8 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		cli.Logger.Infof("WinRM Upload Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			rc := NewRemoteCommand()
+			rc.Timeout = j.GetTimeout() / 3
+
 			stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
@@ -305,7 +307,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 				return
 			}
 			e <- nil
-			return
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Execute Issue: %v", c.Path(), err)

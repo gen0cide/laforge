@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -16,11 +15,14 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/juju/utils/filepath"
 	"github.com/masterzen/winrm"
 	"github.com/masterzen/winrm/soap"
 	"github.com/pkg/errors"
 )
+
+var DefaultWinRMTimeout = 60
 
 // WinRMClient is a type to connection to Windows hosts remotely over the WinRM protocol
 type WinRMClient struct {
@@ -106,6 +108,10 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 
 // ExecuteNonInteractive allows you to execute commands in a non-interactive session (note: standard command shell, not powershell)
 func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
+	timeout := DefaultWinRMTimeout
+	if cmd.Timeout > 0 {
+		timeout = cmd.Timeout
+	}
 	endpoint := winrm.NewEndpoint(
 		w.Config.RemoteAddr,
 		w.Config.Port,
@@ -114,38 +120,31 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		nil,
 		nil,
 		nil,
-		60,
+		(time.Duration(timeout) * time.Second),
 	)
 
 	transporter := &AdvancedTransporter{
-		auth: w.Config,
+		auth:    w.Config,
+		Timeout: timeout,
 	}
 
-	fmt.Printf("WinRM ExecuteNonInteractive: cmd: \n%+v\n", cmd)
-	fmt.Printf("WinRM ExecuteNonInteractive: this: \n%+v\n", *w)
-
-	fmt.Printf("Set up WinRM client: start.\n")
-
 	params := winrm.DefaultParameters
-	params.Timeout = "PT12M"
+	params.Timeout = fmt.Sprintf("PT%dM", (timeout / 60))
 	params.TransportDecorator = func() winrm.Transporter { return transporter }
 	client, err := winrm.NewClientWithParameters(endpoint, w.Config.User, w.Config.Password, params)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Set up WinRM client: complete.\n")
 
-	fmt.Printf("WinRM CreateShell: start\n")
 	shell, err := client.CreateShell()
 	if err != nil {
-		log.Printf("[ERROR] error creating shell: %s", err)
+		cli.Logger.Errorf("Failed to create a WinRM shell successfully: %v", err)
 		return err
 	}
-	fmt.Printf("WinRM CreateShell: complete\n")
 
 	err = shell.Close()
 	if err != nil {
-		log.Printf("[ERROR] error closing shell: %s", err)
+		cli.Logger.Errorf("Failed to close the WinRM shell successfully: %v", err)
 		return err
 	}
 
@@ -188,54 +187,11 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		cmd.Command = fmt.Sprintf("powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand %s", encoded)
 	}
 
-	fmt.Printf("WinRM client.Run: start\n")
-	// fmt.Printf("WinRM client.Run: Command: %s\n", cmd.Command)
+	cli.Logger.Debug("Executing WinRM command...")
 	status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
-	fmt.Printf("WinRM client.Run: complete. Status: %d\n", status)
-	if err != nil {
-		fmt.Printf("WinRM client.Run: complete. Error: %s\n", err.Error())
-	}
-
+	cli.Logger.Debug("Completed WinRM execution with exit code %d (errored=%v)", status, (err != nil))
 	cmd.SetExitStatus(status, err)
 
-	// return nil
-
-	// go io.Copy(wcmd.Stdin, stdin)
-	// go io.Copy(cmd.Stdout, wcmd.Stdout)
-	// go io.Copy(cmd.Stderr, wcmd.Stderr)
-
-	// err = cmd.Wait()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = shell.Close()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
-
-	// wcmd, err = shell.Execute(cmd.Command)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if cmd.Stdin != nil {
-	// 	go io.Copy(wcmd.Stdin, cmd.Stdin)
-	// }
-
-	// go io.Copy(cmd.Stdout, wcmd.Stdout)
-	// go io.Copy(cmd.Stderr, wcmd.Stderr)
-
-	// wcmd.Wait()
-	// cmderr := wcmd.Close()
-	// exitStatus := wcmd.ExitCode()
-
-	// cmd.SetExitStatus(status, err)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	return nil
 }
 
@@ -346,21 +302,26 @@ type AdvancedTransporter struct {
 	transport http.RoundTripper
 	endpoint  *winrm.Endpoint
 	client    *http.Client
+	Timeout   int
 }
 
 func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
+	timeout := a.Timeout
+	if a.Timeout == 0 {
+		timeout = 60
+	}
 	t := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   65 * time.Second,
-			KeepAlive: 65 * time.Second,
+			Timeout:   time.Duration(timeout+5) * time.Second,
+			KeepAlive: time.Duration(timeout+5) * time.Second,
 			DualStack: false,
 		}).DialContext,
 		MaxIdleConns:          1,
-		IdleConnTimeout:       75 * time.Second,
+		IdleConnTimeout:       time.Duration(timeout+15) * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
-		ResponseHeaderTimeout: 70 * time.Second,
+		ResponseHeaderTimeout: time.Duration(timeout+10) * time.Second,
 	}
 
 	a.transport = t
@@ -393,7 +354,11 @@ func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessa
 
 	req.Header.Set("Content-Type", "application/soap+xml;charset=UTF-8")
 	req.SetBasicAuth(a.auth.User, a.auth.Password)
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	timeout := a.Timeout
+	if timeout == 0 {
+		timeout = 60
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 
 	req = req.WithContext(ctx)
