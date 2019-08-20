@@ -7,15 +7,17 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/juju/utils/filepath"
-
-	"github.com/pkg/errors"
-
 	"github.com/masterzen/winrm"
+	"github.com/masterzen/winrm/soap"
+	"github.com/pkg/errors"
 )
 
 // WinRMClient is a type to connection to Windows hosts remotely over the WinRM protocol
@@ -110,11 +112,11 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		nil,
 		nil,
 		nil,
-		0,
+		30,
 	)
 
 	fmt.Printf("WinRM ExecuteNonInteractive: cmd: \n%+v\n", cmd)
-   fmt.Printf("WinRM ExecuteNonInteractive: this: \n%+v\n", *w)
+	fmt.Printf("WinRM ExecuteNonInteractive: this: \n%+v\n", *w)
 
 	fmt.Printf("Set up WinRM client: start.\n")
 
@@ -186,7 +188,6 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 	if err != nil {
 		fmt.Printf("WinRM client.Run: complete. Error: %s\n", err.Error())
 	}
-
 
 	cmd.SetExitStatus(status, err)
 
@@ -332,3 +333,30 @@ if (Test-Path $log) {
 }
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($s) | Out-Null
 exit $result`))
+
+type AdvancedTransporter struct {
+	transport http.RoundTripper
+}
+
+func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
+	t := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: false,
+		}).DialContext,
+		MaxIdleConns:          1,
+		IdleConnTimeout:       45 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		ResponseHeaderTimeout: 60 * time.Second,
+	}
+
+	a.transport = t
+	return nil
+}
+
+func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessage) (string, error) {
+	return "", nil
+}

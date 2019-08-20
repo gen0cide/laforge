@@ -73,12 +73,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore(out *jwriter.Writer, in 
 	_ = first
 	if in.RemoteAddr != "" {
 		const prefix string = ",\"remote_addr\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.RemoteAddr))
 	}
 	if in.Port != 0 {
@@ -240,12 +236,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore1(out *jwriter.Writer, in
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -407,12 +399,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore2(out *jwriter.Writer, in
 	_ = first
 	{
 		const prefix string = ",\"commands\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		if in.Commands == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
@@ -439,92 +426,47 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore2(out *jwriter.Writer, in
 	}
 	{
 		const prefix string = ",\"job_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobID))
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -710,12 +652,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore3(out *jwriter.Writer, in
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.TeamNumber != 0 {
@@ -838,12 +776,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore3(out *jwriter.Writer, in
 	}
 	{
 		const prefix string = ",\"provisioned_hosts\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.ProvisionedHosts == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -943,62 +876,32 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore4(out *jwriter.Writer, in
 	_ = first
 	{
 		const prefix string = ",\"state\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.String(string(in.State))
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	{
 		const prefix string = ",\"failed\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.Failed))
 	}
 	{
 		const prefix string = ",\"completed\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.Completed))
 	}
 	if in.Error != "" {
 		const prefix string = ",\"error\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Error))
 	}
 	out.RawByte('}')
@@ -1056,7 +959,7 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore5(in *jlexer.Lexer, out *
 				if out.AltGraph == nil {
 					out.AltGraph = new(dag.AcyclicGraph)
 				}
-				easyjsonA5722a85DecodeGithubComHashicorpTerraformDag(in, &*out.AltGraph)
+				easyjsonA5722a85DecodeGithubComHashicorpTerraformDag(in, out.AltGraph)
 			}
 		case "metadata":
 			if in.IsNull() {
@@ -1112,22 +1015,12 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore5(out *jwriter.Writer, in
 	_ = first
 	{
 		const prefix string = ",\"checksum\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.Uint64(uint64(in.Checksum))
 	}
 	{
 		const prefix string = ",\"altgraph\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.AltGraph == nil {
 			out.RawString("null")
 		} else {
@@ -1136,12 +1029,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore5(out *jwriter.Writer, in
 	}
 	{
 		const prefix string = ",\"metadata\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.Metastore == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -1166,22 +1054,12 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore5(out *jwriter.Writer, in
 	}
 	{
 		const prefix string = ",\"root_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.RootID))
 	}
 	{
 		const prefix string = ",\"edges\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if m, ok := in.Edges.(easyjson.Marshaler); ok {
 			m.MarshalEasyJSON(out)
 		} else if m, ok := in.Edges.(json.Marshaler); ok {
@@ -1332,82 +1210,42 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore6(out *jwriter.Writer, in
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -1615,12 +1453,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore7(out *jwriter.Writer, in
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -1904,12 +1738,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore8(out *jwriter.Writer, in
 	_ = first
 	if in.RemoteAddr != "" {
 		const prefix string = ",\"remote_addr\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.RemoteAddr))
 	}
 	if in.Port != 0 {
@@ -2047,72 +1877,37 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore9(out *jwriter.Writer, in
 	_ = first
 	{
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	{
 		const prefix string = ",\"type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Type))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Status))
 	}
 	{
 		const prefix string = ",\"checksum\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Uint64(uint64(in.Checksum))
 	}
 	{
 		const prefix string = ",\"timestamp\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.Timestamp).MarshalJSON())
 	}
 	{
 		const prefix string = ",\"external_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.ExternalID))
 	}
 	{
 		const prefix string = ",\"vars\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.Vars == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -2238,82 +2033,42 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore10(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -2443,12 +2198,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore11(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.SourceType != "" {
@@ -2664,12 +2415,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore12(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Type != "" {
@@ -2777,12 +2524,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore13(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.ProvisionerID != "" {
@@ -2924,12 +2667,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore14(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -2994,12 +2733,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore14(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(in.Status).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
@@ -3109,12 +2843,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore15(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.HostID != "" {
@@ -3153,22 +2883,12 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore15(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(in.Status).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"provisioning_steps\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.ProvisioningSteps == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -3421,62 +3141,32 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	_ = first
 	{
 		const prefix string = ",\"ground_delay\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.Int(int(in.TaskGroundDelay))
 	}
 	{
 		const prefix string = ",\"checksum\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Uint64(uint64(in.Checksum))
 	}
 	{
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	{
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	if in.Graph != nil {
 		const prefix string = ",\"target\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(*in.Graph).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"task_types\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.TaskTypes == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -3497,12 +3187,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"tasks_by_priority\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.TasksByPriority == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -3534,12 +3219,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"global_order\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.GlobalOrder == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
@@ -3555,12 +3235,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"ordered_priorities\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.OrderedPriorities == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
@@ -3576,12 +3251,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"tainted\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.Tainted == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -3602,12 +3272,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore16(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"tainted_hosts\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		if in.TaintedHosts == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 			out.RawString(`null`)
 		} else {
@@ -3691,12 +3356,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore17(out *jwriter.Writer, i
 	_ = first
 	if in.Key != "" {
 		const prefix string = ",\"key\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Key))
 	}
 	if in.Value != "" {
@@ -3774,12 +3435,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore18(out *jwriter.Writer, i
 	_ = first
 	if in.Do != "" {
 		const prefix string = ",\"do\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Do))
 	}
 	if in.Append {
@@ -3911,12 +3568,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore19(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -4121,82 +3774,42 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore20(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"object_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.ObjectType))
 	}
 	if in.Created {
 		const prefix string = ",\"provisioned\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.Created))
 	}
 	if in.Tainted {
 		const prefix string = ",\"tainted\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.Tainted))
 	}
 	if in.Addition {
 		const prefix string = ",\"addition\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.Addition))
 	}
 	if in.Checksum != 0 {
 		const prefix string = ",\"checksum\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Uint64(uint64(in.Checksum))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"modified_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.ModifiedAt).MarshalJSON())
 	}
 	if len(in.Resources) != 0 {
 		const prefix string = ",\"resources\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v61, v62 := range in.Resources {
@@ -4312,12 +3925,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore21(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.PathFromBase != "" {
@@ -4482,12 +4091,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore22(out *jwriter.Writer, i
 	_ = first
 	if in.Base != "" {
 		const prefix string = ",\"base\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Base))
 	}
 	if in.AbsPath != "" {
@@ -5111,42 +4716,22 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	_ = first
 	{
 		const prefix string = ",\"filename\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.String(string(in.Filename))
 	}
 	if in.BaseDir != "" {
 		const prefix string = ",\"base_dir\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.BaseDir))
 	}
 	if in.User != nil {
 		const prefix string = ",\"user\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(*in.User).MarshalEasyJSON(out)
 	}
 	if len(in.IncludePaths) != 0 {
 		const prefix string = ",\"include_paths\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v82, v83 := range in.IncludePaths {
@@ -5164,12 +4749,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedCompetitions) != 0 {
 		const prefix string = ",\"competitions\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v84, v85 := range in.DefinedCompetitions {
@@ -5187,12 +4767,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedHosts) != 0 {
 		const prefix string = ",\"hosts\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v86, v87 := range in.DefinedHosts {
@@ -5210,12 +4785,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedNetworks) != 0 {
 		const prefix string = ",\"networks\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v88, v89 := range in.DefinedNetworks {
@@ -5233,12 +4803,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedIdentities) != 0 {
 		const prefix string = ",\"identities\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v90, v91 := range in.DefinedIdentities {
@@ -5256,12 +4821,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedScripts) != 0 {
 		const prefix string = ",\"scripts\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v92, v93 := range in.DefinedScripts {
@@ -5279,12 +4839,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedCommands) != 0 {
 		const prefix string = ",\"defined_commands\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v94, v95 := range in.DefinedCommands {
@@ -5302,12 +4857,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedRemoteFiles) != 0 {
 		const prefix string = ",\"defined_files\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v96, v97 := range in.DefinedRemoteFiles {
@@ -5325,12 +4875,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedDNSRecords) != 0 {
 		const prefix string = ",\"defined_dns_records\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v98, v99 := range in.DefinedDNSRecords {
@@ -5348,12 +4893,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedEnvironments) != 0 {
 		const prefix string = ",\"environments\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v100, v101 := range in.DefinedEnvironments {
@@ -5371,12 +4911,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedBuilds) != 0 {
 		const prefix string = ",\"builds\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v102, v103 := range in.DefinedBuilds {
@@ -5394,12 +4929,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedTeams) != 0 {
 		const prefix string = ",\"teams\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v104, v105 := range in.DefinedTeams {
@@ -5417,12 +4947,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedProvisionedNetworks) != 0 {
 		const prefix string = ",\"provisioned_networks\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v106, v107 := range in.DefinedProvisionedNetworks {
@@ -5440,12 +4965,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedProvisionedHosts) != 0 {
 		const prefix string = ",\"provisioned_hosts\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v108, v109 := range in.DefinedProvisionedHosts {
@@ -5463,12 +4983,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedProvisioningSteps) != 0 {
 		const prefix string = ",\"provisioning_steps\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v110, v111 := range in.DefinedProvisioningSteps {
@@ -5486,12 +5001,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore23(out *jwriter.Writer, i
 	}
 	if len(in.DefinedConnections) != 0 {
 		const prefix string = ",\"connections\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v112, v113 := range in.DefinedConnections {
@@ -5593,12 +5103,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore24(out *jwriter.Writer, i
 	_ = first
 	if in.Name != "" {
 		const prefix string = ",\"name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
 	if len(in.Hosts) != 0 {
@@ -5683,12 +5189,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore25(out *jwriter.Writer, i
 	_ = first
 	if in.Path != "" {
 		const prefix string = ",\"path\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Path))
 	}
 	out.RawByte('}')
@@ -5816,12 +5318,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore26(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Firstname != "" {
@@ -6009,12 +5507,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore27(out *jwriter.Writer, i
 	_ = first
 	if in.Stdin != "" {
 		const prefix string = ",\"stdin\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Stdin))
 	}
 	if in.Stdout != "" {
@@ -6116,12 +5610,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore28(out *jwriter.Writer, i
 	_ = first
 	if in.HostID != "" {
 		const prefix string = ",\"host\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.HostID))
 	}
 	if in.NetworkID != "" {
@@ -6436,12 +5926,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore29(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Hostname != "" {
@@ -6786,92 +6272,47 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore30(out *jwriter.Writer, i
 	_ = first
 	{
 		const prefix string = ",\"job_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		out.String(string(in.JobID))
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -6976,12 +6417,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore31(out *jwriter.Writer, i
 	_ = first
 	if in.Name != "" {
 		const prefix string = ",\"name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
 	if in.Description != "" {
@@ -7234,12 +6671,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore32(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.CompetitionID != "" {
@@ -7487,12 +6920,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore33(out *jwriter.Writer, i
 	_ = first
 	if in.Source != "" {
 		const prefix string = ",\"source\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Source))
 	}
 	if in.Target != "" {
@@ -7568,12 +6997,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore34(out *jwriter.Writer, i
 	_ = first
 	if in.Size != 0 {
 		const prefix string = ",\"size\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.Int(int(in.Size))
 	}
 	out.RawByte('}')
@@ -7671,82 +7096,42 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore35(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -7893,12 +7278,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore36(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -8161,12 +7542,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore37(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Type != "" {
@@ -8364,12 +7741,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore38(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Active {
@@ -8569,12 +7942,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore39(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.BaseDir != "" {
@@ -8761,12 +8130,7 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore40(out *jwriter.Writer, i
 	_ = first
 	{
 		const prefix string = ",\"command\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix[1:])
 		if in.Command == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
@@ -8782,102 +8146,52 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore40(out *jwriter.Writer, i
 	}
 	{
 		const prefix string = ",\"good_output_regexp\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.GoodOutputRegexp))
 	}
 	{
 		const prefix string = ",\"job_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobID))
 	}
 	{
 		const prefix string = ",\"offset\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Offset))
 	}
 	{
 		const prefix string = ",\"timeout\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Timeout))
 	}
 	{
 		const prefix string = ",\"job_type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.JobType))
 	}
 	{
 		const prefix string = ",\"metadata_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.MetadataID))
 	}
 	{
 		const prefix string = ",\"status\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Status))
 	}
 	if true {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"started_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.StartedAt).MarshalJSON())
 	}
 	if true {
 		const prefix string = ",\"ended_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.EndedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -9048,12 +8362,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {
@@ -9408,12 +8718,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore43(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.TeamCount != 0 {
@@ -9635,12 +8941,8 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore44(out *jwriter.Writer, i
 	_ = first
 	if in.ID != "" {
 		const prefix string = ",\"id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.ID))
 	}
 	if in.Name != "" {

@@ -289,6 +289,14 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			rc.Command = finalpath
 			err = c.ExecuteCommandWinRM(rc)
 			if err != nil {
+				if exitErr, ok := err.(*ExitError); ok {
+					if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
+						cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+						cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
+						e <- NewTimeoutExtensionWithDelay(err, 120)
+						return
+					}
+				}
 				cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
 				e <- NewTimeoutExtension(err)
 				return

@@ -37,6 +37,10 @@ const (
 
 	// JobStatusSuccessful is assigned when the job completed successfully
 	JobStatusSuccessful
+
+	// DefaultTimeoutExtensionDuration is the time laforge will wait in between job failures
+	// who's failures are requesting an extension.
+	DefaultTimeoutExtensionDuration = 1
 )
 
 // Doer is an interface to describe types that may be executed in the flow
@@ -62,13 +66,24 @@ type Doer interface {
 // NewTimeoutExtension creates a wrapped error for the scheduler to retry at a later time
 func NewTimeoutExtension(err error) *ErrTimeoutExtension {
 	return &ErrTimeoutExtension{
-		orig: err,
+		orig:  err,
+		delay: DefaultTimeoutExtensionDuration,
+	}
+}
+
+// NewTimeoutExtensionWithDelay creates a wrapped error for the scheduler to retry at a later time with
+// a manually specified delay in seconds.
+func NewTimeoutExtensionWithDelay(err error, delay int) *ErrTimeoutExtension {
+	return &ErrTimeoutExtension{
+		orig:  err,
+		delay: delay,
 	}
 }
 
 // ErrTimeoutExtension is a type used to request a timeout extension for the executor
 type ErrTimeoutExtension struct {
-	orig error
+	delay int
+	orig  error
 }
 
 // Error implements the error interface
@@ -119,7 +134,10 @@ func PerformInTimeout(seconds int, f TimeoutFunc) error {
 			if err != nil {
 				if te, ok := err.(*ErrTimeoutExtension); ok {
 					cli.Logger.Debugf("timeout extension requested: %v", te.Cause())
-					<-tick
+					// sleep for the delay requested by the error
+					for i := 0; i < te.delay; i++ {
+						<-tick
+					}
 					go f(errchan)
 					continue
 				}

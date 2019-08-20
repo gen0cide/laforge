@@ -6,7 +6,7 @@ import (
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/terraform/dag"
 
-	"github.com/deckarep/golang-set"
+	mapset "github.com/deckarep/golang-set"
 )
 
 // Snapshot is a graph traversal structure used to create a unique fingerprint for all elements in an environment.
