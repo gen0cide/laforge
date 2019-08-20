@@ -34,6 +34,17 @@
         "9119"
         // "/hosts/windows/ad-00",
       ]
+    },
+    {
+      "name": "Launch Remote Debugging",
+      "type": "go",
+      "request": "launch",
+      "mode": "remote",
+      "remotePath": "/home/alex/bin/laforge_debug_linux.bin",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "program": "/Users/alexl/Downloads/laforge_debug_linux.bin",
+      "env": {}
     }
   ]
 }

@@ -114,7 +114,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		nil,
 		nil,
 		nil,
-		30,
+		60,
 	)
 
 	transporter := &AdvancedTransporter{
