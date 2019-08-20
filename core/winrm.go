@@ -113,18 +113,26 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		0,
 	)
 
+	fmt.Printf("WinRM ExecuteNonInteractive: cmd: \n%+v\n", cmd)
+   fmt.Printf("WinRM ExecuteNonInteractive: this: \n%+v\n", *w)
+
+	fmt.Printf("Set up WinRM client: start.\n")
+
 	params := winrm.DefaultParameters
 	params.Timeout = "PT12M"
 	client, err := winrm.NewClientWithParameters(endpoint, w.Config.User, w.Config.Password, params)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("Set up WinRM client: complete.\n")
 
+	fmt.Printf("WinRM CreateShell: start\n")
 	shell, err := client.CreateShell()
 	if err != nil {
 		log.Printf("[ERROR] error creating shell: %s", err)
 		return err
 	}
+	fmt.Printf("WinRM CreateShell: complete\n")
 
 	err = shell.Close()
 	if err != nil {
@@ -171,7 +179,15 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 		cmd.Command = fmt.Sprintf("powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand %s", encoded)
 	}
 
+	fmt.Printf("WinRM client.Run: start\n")
+	fmt.Printf("WinRM client.Run: Command: %s\n", cmd.Command)
 	status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
+	fmt.Printf("WinRM client.Run: complete. Status: %d\n", status)
+	if err != nil {
+		fmt.Printf("WinRM client.Run: complete. Error: %s\n", err.Error())
+	}
+
+
 	cmd.SetExitStatus(status, err)
 
 	// return nil
