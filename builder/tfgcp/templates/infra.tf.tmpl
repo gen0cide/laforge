@@ -110,7 +110,9 @@ resource "google_compute_firewall" "allow_admin" {
   }
 
   source_ranges = [
+    {{ if ne (index $.Build.Config "admin_ip") "" }}
     "{{ index $.Build.Config "admin_ip" }}/32",
+    {{ end }}
     {{ range $_, $cidr := $.Environment.AdminCIDRs }}
     "{{ $cidr }}",
     {{ end }}
@@ -245,7 +247,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
 
-      metadata {
+      metadata = {
         hostname = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
         {{ if $host.IsWindows }}
         windows-startup-script-ps1 = "net user administrator /active:yes"
@@ -341,7 +343,7 @@ EOF
     data "template_file" "{{ $resource_name }}" {
       template = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base "provisioned_host.tpl" }}")}"
 
-      vars {
+      vars = {
         remote_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
         local_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
         host_active = "true"
