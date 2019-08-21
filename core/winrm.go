@@ -310,6 +310,7 @@ func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	if a.Timeout == 0 {
 		timeout = 60
 	}
+
 	t := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
