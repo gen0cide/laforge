@@ -172,6 +172,114 @@ func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 	return c.ExecuteCommandSSH(cmd)
 }
 
+// Execute runs a command (in a string) with all of the relevant logs
+func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) error {
+	// Let's make sure our log file directory exists
+	if _, err := os.Stat(logdir); err != nil {
+		return fmt.Errorf("problem locating logdir %s: %v", logdir, err)
+	}
+
+	// And a way to render file paths on our current system for log file names
+	currfp, err := filepath.NewRenderer("")
+	if err != nil {
+		return err
+	}
+
+	// Let's get the name of our files
+	logprefix := currfp.Join(logdir, logname)
+	stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
+	stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+
+	// Channels to tell our buffer goroutines when to finish
+	stdoutdone := make(chan struct{})
+	stderrdone := make(chan struct{})
+
+	// Pipes to hold input and output logs
+	debugstdoutpr, debugstdoutpw := io.Pipe()
+	debugstderrpr, debugstderrpw := io.Pipe()
+
+	// A wait group for STDOUT and STDERR goroutines for us to track when everything is written
+	wg := new(sync.WaitGroup)
+	stdoutScanner := bufio.NewScanner(debugstdoutpr)
+	stderrScanner := bufio.NewScanner(debugstderrpr)
+	wg.Add(2)
+
+	// Goroutines to process STDOUT and STDERR, letting us send output to files and the screen
+	go func() {
+		defer wg.Done()
+		for stdoutScanner.Scan() {
+			text := stdoutScanner.Text()
+			j.StandardOutput(text)
+		}
+		stdoutdone <- struct{}{}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for stderrScanner.Scan() {
+			text := stderrScanner.Text()
+			j.StandardError(text)
+		}
+		stderrdone <- struct{}{}
+	}()
+
+	// Finally a function that runs when we're done, closing everything else out.
+	defer func() {
+		<-stdoutdone
+		<-stderrdone
+		wg.Wait()
+		err := stdoutScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDOUT Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+		err = stderrScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDERR Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+	}()
+
+	// We need to track timeouts when running our command
+	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
+		// Let's build a remote command struct to pass to the runner
+		rc := NewRemoteCommand()
+
+		// Let's open our logs
+		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			e <- err
+			return
+		}
+		defer stderrfh.Close()
+		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			e <- err
+			return
+		}
+		defer stdoutfh.Close()
+
+		// And then use the multi-writers so that it can go to debug output and our files
+		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
+		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		rc.Command = command
+		err = c.ExecuteCommand(rc)
+
+		// If there's an issue, we print it out and then extend our timeout
+		if err != nil {
+			cli.Logger.Errorf("%s Command execution connection issue: %v", c.Path(), err)
+			e <- NewTimeoutExtension(err)
+			return
+		}
+		e <- nil
+		return
+	})
+	if err != nil {
+		cli.Logger.Errorf("%s Command execution issue: %v", c.Path(), err)
+		return err
+	}
+	cli.Logger.Infof("Command Executed: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, command)
+	return nil
+}
+
 // UploadExecuteAndDelete is a helper function to chain together a common pattern of execution
 func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname string, logdir string) error {
 	if _, err := os.Stat(scriptsrc); err != nil {
