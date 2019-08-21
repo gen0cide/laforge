@@ -26,6 +26,9 @@ command "{{ $.ID }}" {
   // disabled simply allows this command to be passed over easily in a command chain, effectively making it a NOOP
   disabled = {{ $.Disabled }}
 
+  // timeout let's you define how long the command may run until it is forcibly stopped
+  timeout = {{ $.Timeout }}
+
   // just like with other types, you can specify a conflict strategy here (read the docs!)
   on_conflict {
     do = "{{ $.OnConflict.Do }}"
@@ -40,6 +43,20 @@ command "{{ $.ID }}" {
     // stdout, stderr are blank ("") by default, and will log to the build dir and stdout during provisioning
     stdout = "{{ $.IO.Stdout }}"
     stderr = "{{ $.IO.Stderr }}"
+  }
+
+  // tags express general information which will be able to be queried on in the future
+  tags = {
+    {{ range $key, $val := $.Tags -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
+  }
+
+  // vars let you define custom configuration parameters which may be needed for specific provisioning builders.
+  vars = {
+    {{ range $key, $val := $.Vars -}}
+    {{ $key }} = "{{ $val }}"
+    {{ end -}}
   }
 
   // maintainer is completely optional, but note team organization!

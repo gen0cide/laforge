@@ -20,6 +20,7 @@ type Command struct {
 	Args         []string          `hcl:"args,attr" json:"args,omitempty"`
 	IgnoreErrors bool              `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
 	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`
+	Timeout      int               `hcl:"timeout,attr" json:"timeout,omitempty"`
 	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
 	Disabled     bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`

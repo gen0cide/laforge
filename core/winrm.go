@@ -189,7 +189,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 
 	cli.Logger.Debug("Executing WinRM command...")
 	status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
-	cli.Logger.Debug("Completed WinRM execution with exit code %d (errored=%v)", status, (err != nil))
+	cli.Logger.Debugf("Completed WinRM execution with exit code %d (errored=%v)", status, (err != nil))
 	cmd.SetExitStatus(status, err)
 
 	return nil
