@@ -250,12 +250,14 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 			return
 		}
 		defer stderrfh.Close()
+		cli.Logger.Infof("Logging STDERR to %s", stdoutfile)
 		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
 		defer stdoutfh.Close()
+		cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 
 		// And then use the multi-writers so that it can go to debug output and our files
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
@@ -265,12 +267,22 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 
 		// If there's an issue, we print it out and then extend our timeout
 		if err != nil {
-			cli.Logger.Errorf("%s Command execution connection issue: %v", c.Path(), err)
+			if exitErr, ok := err.(*ExitError); ok {
+				if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
+					cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+					cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
+					e <- NewTimeoutExtensionWithDelay(err, 120)
+					return
+				}
+				cli.Logger.Errorf("%s Execution Failure due to Exit Error: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
+				e <- NewTimeoutExtensionWithDelay(err, 90)
+				return
+			}
+			cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
 			e <- NewTimeoutExtension(err)
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		cli.Logger.Errorf("%s Command execution issue: %v", c.Path(), err)
