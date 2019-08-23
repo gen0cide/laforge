@@ -238,11 +238,15 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 		}
 	}()
 
+	cli.Logger.Debugf("PerformInTimeout")
 	// We need to track timeouts when running our command
 	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
+		cli.Logger.Debugf("NewRemoteCommand: %+v", j.GetTimeout())
 		// Let's build a remote command struct to pass to the runner
 		rc := NewRemoteCommand()
+		rc.Timeout = j.GetTimeout() / 3
 
+		cli.Logger.Debugf("Open Logs")
 		// Let's open our logs
 		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -260,16 +264,21 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 		cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 
 		// And then use the multi-writers so that it can go to debug output and our files
+		cli.Logger.Debugf("MultiWriters")
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		cli.Logger.Debugf("Command: %s", command)
 		rc.Command = command
+		cli.Logger.Debugf("ExecuteCommand %+v", rc)
 		err = c.ExecuteCommand(rc)
+		cli.Logger.Debugf("ExecuteCommand complete")
 
 		// If there's an issue, we print it out and then extend our timeout
 		if err != nil {
+			cli.Logger.Debugf("Error: %v", err)
 			if exitErr, ok := err.(*ExitError); ok {
 				if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
-					cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+					cli.Logger.Errorf("%s Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
 					cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
 					e <- NewTimeoutExtensionWithDelay(err, 120)
 					return
@@ -282,6 +291,7 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 			e <- NewTimeoutExtension(err)
 			return
 		}
+		cli.Logger.Debugf("e <- nil")
 		e <- nil
 	})
 	if err != nil {
