@@ -38,9 +38,9 @@
     {
       "name": "Launch Remote Debugging",
       "type": "go",
-      "request": "attach",
+      "request": "launch",
       "mode": "remote",
-      "remotePath": "/home/lucas/go/src/github.com/gen0cide/laforge/cmd/laforge/main.go",
+      "remotePath": "/home/alex/go/src/github.com/gen0cide/laforge/cmd/laforge/main.go",
       "port": 2345,
       "host": "127.0.0.1",
       "cwd": "/cptc/infra/envs/lucas/tfgcp/teams/0",

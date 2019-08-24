@@ -1,9 +1,9 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"errors"
 	"path/filepath"
 	"time"
 
@@ -16,8 +16,8 @@ import (
 // easyjson:json
 type CommandJob struct {
 	GenericJob
-	Command          *Command          `json:"-"`
-	Target           *ProvisioningStep `json:"-"`
+	Command *Command          `json:"-"`
+	Target  *ProvisioningStep `json:"-"`
 }
 
 func CreateCommandJob(id string, offset int, m *Metadata, pstep *ProvisioningStep) (*CommandJob, error) {
@@ -132,7 +132,6 @@ func (j *CommandJob) EnsureDependencies(e chan error) {
 	return
 }
 
-
 // Here is where we actually run the command
 func (j *CommandJob) Do(e chan error) {
 	// Let the user know what we're doing
@@ -158,7 +157,7 @@ func (j *CommandJob) Do(e chan error) {
 func (j *CommandJob) CleanUp(e chan error) {
 	cli.Logger.Debugf("Starting cleanup, cooldown running.")
 	// Now we'll wait for the tooldown as defined in our command
-	if(j.Command.Cooldown > 0) {
+	if j.Command.Cooldown > 0 {
 		cli.Logger.Infof("Letting command job %s cooldown for %d seconds.", j.Command.ID, j.Command.Timeout)
 		time.Sleep(time.Duration(j.Command.Cooldown) * time.Second)
 	}

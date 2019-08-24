@@ -267,6 +267,8 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 		cli.Logger.Debugf("MultiWriters")
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		defer debugstdoutpw.Close()
+		defer debugstderrpw.Close()
 		cli.Logger.Debugf("Command: %s", command)
 		rc.Command = command
 		cli.Logger.Debugf("ExecuteCommand %+v", rc)

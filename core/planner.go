@@ -136,7 +136,7 @@ func (p *Plan) SetupTasks() error {
 			}
 			var job Doer
 			switch pstep.ProvisionerType {
-			case "command": 
+			case "command":
 				j, err := CreateCommandJob(x, id, metaobj, pstep)
 				if err != nil {
 					return err
