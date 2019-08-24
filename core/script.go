@@ -14,6 +14,7 @@ import (
 
 // Script defines a configurable type for an executable script object within the laforge configuration
 //easyjson:json
+//nolint:maligned
 type Script struct {
 	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
@@ -137,7 +138,7 @@ func (s *Script) SetOnConflict(o OnConflict) {
 
 // Kind implements the Provisioner interface
 func (s *Script) Kind() string {
-	return "script"
+	return ObjectTypeScript.String()
 }
 
 // Swap implements the Mergeable interface
@@ -156,9 +157,7 @@ func (s *Script) ArgString() string {
 		return ""
 	}
 	ret := []string{" "}
-	for _, x := range s.Args {
-		ret = append(ret, x)
-	}
+	ret = append(ret, s.Args...)
 	return strings.Join(ret, " ")
 }
 
@@ -168,6 +167,7 @@ func (s *Script) SourceBase() string {
 }
 
 // ResolveSource attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (s *Script) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if s.Source == "" {
 		return nil

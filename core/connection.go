@@ -164,38 +164,39 @@ func (c *Connection) Upload(src, dst string) error {
 	return c.UploadSFTP(src, dst)
 }
 
-// Test() will test our connection across the network to make sure it's working
+// Test will test our connection across the network to make sure it's working
 func (c *Connection) Test() bool {
 	// If it's a windows system, let's test WinRM
 	if c.IsWinRM() {
 		// Create the WinRM client and set our config (including username and pass)
-	   client := &WinRMClient{}
-	   err := client.SetConfig(c.WinRMAuthConfig)
-	   if err != nil {
-	      return false
-	   }
+		client := &WinRMClient{}
+		err := client.SetConfig(c.WinRMAuthConfig)
+		if err != nil {
+			return false
+		}
 
 		// Now we attempt to connect and return the result
-	   return client.TestConnection()
+		return client.TestConnection()
 	}
 
 	//If it's UNIX, let's use SSH instead
 	if c.IsSSH() {
 		// Create the SSH connection object
-   	client, err := NewSSHClient(c.SSHAuthConfig, "")
-   	if err != nil {
-	      return false
+		client, err := NewSSHClient(c.SSHAuthConfig, "")
+		if err != nil {
+			return false
 		}
 
 		// Let's actually connect here and see if it works!
 		err = client.Connect()
 		if err != nil {
-  	   	return false
-  	 	}
+			return false
+		}
 
 		// Finally disconnect and say it was good
-  	 	client.Disconnect()
-	   return true
+		//nolint:gosec,errcheck
+		client.Disconnect()
+		return true
 	}
 
 	// If we got here, it wasn't one of the connections we know about, return false
@@ -210,7 +211,7 @@ func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 	return c.ExecuteCommandSSH(cmd)
 }
 
-// Execute runs a command (in a string) with all of the relevant logs
+// ExecuteString runs a command (in a string) with all of the relevant logs
 func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) error {
 	// Let's make sure our log file directory exists
 	if _, err := os.Stat(logdir); err != nil {
@@ -277,31 +278,38 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 	}()
 
 	// We need to track timeouts when running our command
+	//nolint:dupl
 	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 		// Let's build a remote command struct to pass to the runner
 		rc := NewRemoteCommand()
 		rc.Timeout = j.GetTimeout() / 3
 
 		// Let's open our logs
+		//nolint:gosec
 		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stderrfh.Close()
 		cli.Logger.Infof("Logging STDERR to %s", stdoutfile)
+		//nolint:gosec
 		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stdoutfh.Close()
 		cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 
 		// And then use the multi-writers so that it can go to debug output and our files
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		//nolint:errcheck
 		defer debugstdoutpw.Close()
+		//nolint:errcheck
 		defer debugstderrpw.Close()
 		rc.Command = command
 		err = c.ExecuteCommand(rc)
@@ -334,6 +342,7 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 }
 
 // UploadExecuteAndDelete is a helper function to chain together a common pattern of execution
+//nolint:gocyclo
 func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname string, logdir string) error {
 	if _, err := os.Stat(scriptsrc); err != nil {
 		return fmt.Errorf("problem locating file %s: %v", scriptsrc, err)
@@ -420,34 +429,39 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 				return
 			}
 			e <- nil
-			return
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Upload Issue: %v", c.Path(), err)
 			return err
 		}
 		cli.Logger.Infof("WinRM Upload Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
+		//nolint:dupl
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			rc := NewRemoteCommand()
 			rc.Timeout = j.GetTimeout() / 3
-
+			//nolint:gosec
 			stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stderrfh.Close()
 			cli.Logger.Infof("Logging STDERR to %s", stderrfile)
+			//nolint:gosec
 			stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stdoutfh.Close()
 			cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 			rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 			rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+			//nolint:errcheck
 			defer debugstdoutpw.Close()
+			//nolint:errcheck
 			defer debugstderrpw.Close()
 			rc.Command = finalpath
 			err = c.ExecuteCommandWinRM(rc)
@@ -477,17 +491,21 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		time.Sleep(4 * time.Second)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			delrc := NewRemoteCommand()
+			//nolint:gosec
 			stderrfh2, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stderrfh2.Close()
+			//nolint:gosec
 			stdoutfh2, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stdoutfh2.Close()
 			delrc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh2)
 			delrc.Stderr = io.MultiWriter(debugstderrpw, stderrfh2)
@@ -499,7 +517,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 				return
 			}
 			e <- nil
-			return
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Delete Issue: %v", c.Path(), err)
@@ -517,7 +534,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		wmerr, ok := err.(*ssh.ExitError)
@@ -539,23 +555,29 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		rc := NewRemoteCommand()
 		stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
 		stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+		//nolint:gosec
 		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stderrfh.Close()
 		cli.Logger.Infof("Logging script STDERR to %s", stderrfile)
+		//nolint:gosec
 		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stdoutfh.Close()
 		cli.Logger.Infof("Logging script STDOUT to %s", stdoutfile)
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		//nolint:errcheck
 		defer debugstdoutpw.Close()
+		//nolint:errcheck
 		defer debugstderrpw.Close()
 		rc.Command = finalpath
 		err = c.ExecuteCommandSSH(rc)
@@ -565,7 +587,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		cli.Logger.Errorf("%s Final Execute Issue: %v", c.Path(), err)
@@ -580,7 +601,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		cli.Logger.Errorf("%s Final Delete Issue: %v", c.Path(), err)
@@ -597,11 +617,15 @@ func (c *Connection) ExecuteCommandWinRM(cmd *RemoteCommand) error {
 	if err != nil {
 		return err
 	}
-	client.SetIO(
+
+	err = client.SetIO(
 		cmd.Stdout,
 		cmd.Stderr,
 		cmd.Stdin,
 	)
+	if err != nil {
+		return err
+	}
 
 	err = client.ExecuteNonInteractive(cmd)
 	if err != nil {
@@ -627,6 +651,8 @@ func (c *Connection) ExecuteCommandSSH(cmd *RemoteCommand) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.Start(cmd)
@@ -664,11 +690,16 @@ func (c *Connection) InteractiveWinRM() error {
 	if err != nil {
 		return err
 	}
-	client.SetIO(
+
+	//nolint:errcheck
+	err = client.SetIO(
 		ansicolor.NewAnsiColorWriter(os.Stdout),
 		ansicolor.NewAnsiColorWriter(os.Stderr),
 		os.Stdin,
 	)
+	if err != nil {
+		return err
+	}
 
 	err = client.LaunchInteractiveShell()
 	if err != nil {
@@ -688,6 +719,8 @@ func (c *Connection) InteractiveSSH() error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.LaunchInteractiveShell()
@@ -716,6 +749,8 @@ func (c *Connection) UploadScriptSFTP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.UploadScriptV2(src, dst)
@@ -744,6 +779,8 @@ func (c *Connection) UploadSFTP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.UploadFileV2(src, dst)
@@ -764,6 +801,8 @@ func (c *Connection) DeleteScriptSFTP(remotefile string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.DeleteScriptV2(remotefile)
@@ -793,6 +832,8 @@ func (c *Connection) UploadSCP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	if isDir {
@@ -803,6 +844,7 @@ func (c *Connection) UploadSCP(src, dst string) error {
 		return nil
 	}
 
+	//nolint:gosec
 	fileInput, err := os.Open(src)
 	if err != nil {
 		return err

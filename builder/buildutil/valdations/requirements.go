@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"reflect"
 
-	"github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/iancoleman/strcase"
 

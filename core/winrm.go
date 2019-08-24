@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DefaultWinRMTimeout is the default connection duration in seconds for a Laforge WinRM socket.
 var DefaultWinRMTimeout = 60
 
 // WinRMClient is a type to connection to Windows hosts remotely over the WinRM protocol
@@ -77,6 +78,7 @@ func (w *WinRMClient) TestConnection() bool {
 		return false
 	}
 
+	//nolint:gosec,errcheck
 	shell.Close()
 	return true
 }
@@ -123,11 +125,15 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 		return errors.WithMessage(err, "could not execute PowerShell for interactive session")
 	}
 
+	//nolint:gosec,errcheck
 	go io.Copy(cmd.Stdin, os.Stdin)
+	//nolint:gosec,errcheck
 	go io.Copy(os.Stdout, cmd.Stdout)
+	//nolint:gosec,errcheck
 	go io.Copy(os.Stderr, cmd.Stderr)
 
 	cmd.Wait()
+	//nolint:gosec,errcheck
 	shell.Close()
 
 	return nil
@@ -245,7 +251,7 @@ func Powershell(psCmd string) string {
 	encodedCmd := base64.StdEncoding.EncodeToString(input)
 
 	// Create the powershell.exe command line to execute the script
-	return fmt.Sprintf("%s", encodedCmd)
+	return encodedCmd
 }
 
 var elevatedCommandTemplate = template.Must(template.New("ElevatedCommandRunner").Parse(`powershell -noprofile -executionpolicy bypass "& { if (Test-Path variable:global:ProgressPreference){set-variable -name variable:global:ProgressPreference -value 'SilentlyContinue'}; &'{{.Path}}'; exit $LastExitCode }"`))
@@ -324,6 +330,7 @@ if (Test-Path $log) {
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($s) | Out-Null
 exit $result`))
 
+// AdvancedTransporter is a custom Transport type implementation for the winrm client library.
 type AdvancedTransporter struct {
 	auth      *WinRMAuthConfig
 	transport http.RoundTripper
@@ -332,6 +339,7 @@ type AdvancedTransporter struct {
 	Timeout   int
 }
 
+// Transport implements the winrm.Transport interface.
 func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	timeout := a.Timeout
 	if a.Timeout == 0 {
@@ -363,6 +371,7 @@ func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	return nil
 }
 
+// URL constructs the WinRM URL for the given transporter's endpoint.
 func (a *AdvancedTransporter) URL() string {
 	var scheme string
 	if a.endpoint.HTTPS {
@@ -374,6 +383,7 @@ func (a *AdvancedTransporter) URL() string {
 	return fmt.Sprintf("%s://%s:%d/wsman", scheme, a.endpoint.Host, a.endpoint.Port)
 }
 
+// Post implements the winrm.Transport interface.
 func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessage) (string, error) {
 	req, err := http.NewRequest("POST", a.URL(), strings.NewReader(request.String()))
 	if err != nil {
@@ -396,6 +406,7 @@ func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessa
 		return "", errors.Wrap(err, "http request did not finish successfully")
 	}
 
+	//nolint:gosec,errcheck
 	defer resp.Body.Close()
 
 	if !strings.Contains(resp.Header.Get("Content-Type"), "application/soap+xml") {

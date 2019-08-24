@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/hcl/hcl/printer"
 
 	"github.com/gen0cide/laforge/builder/buildutil/templates"
-	"github.com/gen0cide/laforge/builder/buildutil/valdations"
+	validations "github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/pkg/errors"
 

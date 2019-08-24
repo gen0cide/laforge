@@ -141,7 +141,6 @@ func (s *Snapshot) RelateV2(e Edge) {
 	altnewedge := dag.BasicEdge(e.Source, e.Target)
 	s.AltGraph.Connect(altnewedge)
 	s.GetEdges().Add(e)
-	return
 }
 
 // RelateObjects monitors the edgebus channel for objects that need edges defined in the graph
@@ -406,13 +405,13 @@ func (s *Snapshot) RebuildGraph() error {
 func DependencyType(d Dependency) string {
 	switch d.(type) {
 	case *Script:
-		return "script"
+		return ObjectTypeScript.String()
 	case *RemoteFile:
-		return "remote_file"
+		return ObjectTypeRemoteFile.String()
 	case *Command:
-		return "command"
+		return ObjectTypeCommand.String()
 	case *DNSRecord:
-		return "dns_record"
+		return ObjectTypeDNSRecord.String()
 	case *Host:
 		return "host"
 	case *Network:

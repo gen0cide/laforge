@@ -16,6 +16,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	envFile = `env.laforge`
+)
+
 var (
 	// ValidEnvNameRegexp is a regular expression that can be used to validate environment names
 	ValidEnvNameRegexp = regexp.MustCompile(`\A[a-z0-9][a-z0-9\-]*?[a-z0-9]\z`)
@@ -76,7 +80,7 @@ func (e *Environment) ValidatePath() error {
 	if err := ValidateGenericPath(e.Path()); err != nil {
 		return err
 	}
-	if topdir := strings.Split(e.Path(), `/`); topdir[1] != "envs" {
+	if topdir := strings.Split(e.Path(), `/`); topdir[1] != envsDir {
 		return fmt.Errorf("path %s is not rooted in /%s", e.Path(), topdir[1])
 	}
 	return nil
@@ -136,10 +140,10 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 	inet := map[string]string{}
 	ihost := map[string]string{}
 	for _, n := range e.Networks {
-		inet[n.Name] = "included"
+		inet[n.Name] = ObjectTypeIncluded.String()
 		e.HostByNetwork[n.Name] = []*Host{}
 		for _, h := range n.Hosts {
-			ihost[h] = "included"
+			ihost[h] = ObjectTypeIncluded.String()
 		}
 	}
 	for name, net := range base.Networks {
@@ -148,7 +152,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 			cli.Logger.Debugf("Skipping network %s", name)
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			e.IncludedNetworks[name] = net
 			inet[name] = "resolved"
 			cli.Logger.Debugf("Resolved network %s", name)
@@ -160,7 +164,7 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 			cli.Logger.Debugf("Skipping host %s", name)
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			e.IncludedHosts[name] = host
 			ihost[name] = "resolved"
 			cli.Logger.Debugf("Resolved host %s", name)
@@ -180,12 +184,12 @@ func (e *Environment) ResolveIncludedNetworks(base *Laforge) error {
 		}
 	}
 	for net, status := range inet {
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			return fmt.Errorf("no configuration for network %s", net)
 		}
 	}
 	for host, status := range ihost {
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			return fmt.Errorf("no configuration for host %s", host)
 		}
 	}
@@ -221,8 +225,8 @@ func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 		return errors.WithStack(ErrInvalidEnvName)
 	}
 
-	envDir := filepath.Join(l.BaseRoot, "envs", name)
-	envDefPath := filepath.Join(envDir, "env.laforge")
+	envDir := filepath.Join(l.BaseRoot, envsDir, name)
+	envDefPath := filepath.Join(envDir, envFile)
 
 	_, dirErr := os.Stat(envDir)
 	_, defErr := os.Stat(envDefPath)
@@ -231,15 +235,19 @@ func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 		if !overwrite {
 			return fmt.Errorf("Cannot initialize env directory - path is dirty: %s (--force/-f to overwrite)", envDir)
 		}
+		//nolint:errcheck,gosec
 		os.RemoveAll(envDir)
 	}
 
+	//nolint:errcheck,gosec
 	os.MkdirAll(envDir, 0755)
 	keeper := filepath.Join(envDir, ".gitkeep")
 	newFile, err := os.Create(keeper)
 	if err != nil {
 		return errors.WithMessage(err, fmt.Sprintf("cannot touch .gitkeep inside env directory subfolder %s", envDir))
 	}
+
+	//nolint:errcheck,gosec
 	newFile.Close()
 
 	envData, err := RenderHCLv2Object(baseEnvironment(name, l.User))
@@ -254,7 +262,7 @@ func (l *Laforge) InitializeEnv(name string, overwrite bool) error {
 func (l *Laforge) CleanBuildDirectory(overwrite bool) error {
 	pn := ""
 	for cf := range l.PathRegistry.DB {
-		if filepath.Base(cf.CallerFile) == "env.laforge" {
+		if filepath.Base(cf.CallerFile) == envFile {
 			pn = cf.CallerDir
 			break
 		}
@@ -325,13 +333,13 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 		return emap, errors.WithStack(err)
 	}
 
-	basePath := filepath.Join(l.BaseRoot, "envs")
+	basePath := filepath.Join(l.BaseRoot, envsDir)
 
 	envConfigs := []string{}
 
 	err = godirwalk.Walk(basePath, &godirwalk.Options{
 		Callback: func(osPathname string, de *godirwalk.Dirent) error {
-			if de.Name() == "env.laforge" {
+			if de.Name() == envFile {
 				envConfigs = append(envConfigs, osPathname)
 			}
 			return nil
@@ -361,7 +369,6 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 				return
 			}
 			resChan <- lf
-			return
 		}(p)
 	}
 

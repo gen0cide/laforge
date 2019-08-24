@@ -73,7 +73,7 @@ func (j *RemoteFileJob) CanProceed(e chan error) {
 				cli.Logger.Errorf("Error loading job %s resource: %v", j.JobID, err)
 				continue
 			}
-			if conn.Active == true {
+			if conn.Active {
 				err = j.Target.ProvisionedHost.Conn.Swap(conn)
 				if err != nil {
 					e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
@@ -85,7 +85,6 @@ func (j *RemoteFileJob) CanProceed(e chan error) {
 		}
 	}
 	e <- nil
-	return
 }
 
 // EnsureDependencies implements the Doer interface
@@ -115,14 +114,13 @@ func (j *RemoteFileJob) EnsureDependencies(e chan error) {
 	}
 
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
-		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == `../../data/ssh.pem` {
+		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == sshKeyPath {
 			cli.Logger.Debugf("Fixing identity file for %s", j.Target.Path())
 			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = currfp.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", "ssh.pem")
 		}
 	}
 
 	e <- nil
-	return
 }
 
 // Do implements the Doer interface
@@ -135,18 +133,15 @@ func (j *RemoteFileJob) Do(e chan error) {
 		return
 	}
 	e <- nil
-	return
 }
 
 // CleanUp implements the Doer interface
 func (j *RemoteFileJob) CleanUp(e chan error) {
 	e <- nil
-	return
 }
 
 // Finish implements the Doer interface
 func (j *RemoteFileJob) Finish(e chan error) {
 	cli.Logger.Infof("Finished %s", j.JobID)
 	e <- nil
-	return
 }

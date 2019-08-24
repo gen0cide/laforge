@@ -20,6 +20,7 @@ type CommandJob struct {
 	Target  *ProvisioningStep `json:"-"`
 }
 
+// CreateCommandJob is a constructor that is used by the planner to create a CommandJob for a given provisioning step.
 func CreateCommandJob(id string, offset int, m *Metadata, pstep *ProvisioningStep) (*CommandJob, error) {
 	j := &CommandJob{
 		Target: pstep,
@@ -37,7 +38,7 @@ func CreateCommandJob(id string, offset int, m *Metadata, pstep *ProvisioningSte
 	return j, nil
 }
 
-// This makes sure we can proceed and all of our dependencies are met
+// CanProceed makes sure we can proceed and all of our dependencies are met
 func (j *CommandJob) CanProceed(e chan error) {
 	//Let's make sure we have a command to run
 	if j.Command == nil {
@@ -62,7 +63,12 @@ func (j *CommandJob) CanProceed(e chan error) {
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
 	if _, err := os.Stat(logdir); err != nil {
 		if os.IsNotExist(err) {
-			os.MkdirAll(logdir, 0755)
+			//nolint:gosec
+			mkdirErr := os.MkdirAll(logdir, 0755)
+			if mkdirErr != nil {
+				e <- mkdirErr
+				return
+			}
 		} else {
 			cli.Logger.Errorf("Error creating log directory %s: %v", logdir, err)
 			e <- err
@@ -90,7 +96,7 @@ func (j *CommandJob) CanProceed(e chan error) {
 	}
 
 	// We check to make sure it's an active connection
-	if conn.Active != true {
+	if !conn.Active {
 		e <- NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
 		return
 	}
@@ -98,16 +104,12 @@ func (j *CommandJob) CanProceed(e chan error) {
 	// Let's make sure our connection information is merged
 	newConn, err := SmartMerge(j.Target.ProvisionedHost.Conn, conn, false)
 	if err != nil {
-		e <- fmt.Errorf("Error merging connections for %s", j.Target.ParentLaforgeID())
+		e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
 		return
 	}
 
 	// And that all of our connection data is good
 	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
-	if err != nil {
-		e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
-		return
-	}
 
 	// Finally, let's actually test our connection over WinRM/SSH on the network to the system
 	if !j.Target.ProvisionedHost.Conn.Test() {
@@ -116,10 +118,9 @@ func (j *CommandJob) CanProceed(e chan error) {
 	}
 
 	e <- nil
-	return
 }
 
-// Makes sure all of our dependencies (such as asset files, connection, etc. are working
+// EnsureDependencies makes sure all of our dependencies (such as asset files, connection, etc. are working
 func (j *CommandJob) EnsureDependencies(e chan error) {
 	// Make sure we have a valid connection again
 	if j.Target.ProvisionedHost.Conn == nil {
@@ -129,20 +130,19 @@ func (j *CommandJob) EnsureDependencies(e chan error) {
 
 	// If our connection is over SSH, we need to validate our key exists.  For Windows, we'll use credentials instead
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
-		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == `../../data/ssh.pem` {
+		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == sshKeyPath {
 			cli.Logger.Debugf("Fixing identity file for %s", j.Target.Path())
 			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = filepath.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", "ssh.pem")
 		}
 	}
 
 	e <- nil
-	return
 }
 
-// Here is where we actually run the command
+// Do is where we actually run the command
 func (j *CommandJob) Do(e chan error) {
 	// Let the user know what we're doing
-	cli.Logger.Warnf("Performing Command Job:\n  %s %s: %s\n   %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString("COMMAND"), color.HiGreenString("%s", j.Command.CommandString()), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
+	cli.Logger.Warnf("Performing Command Job:\n  %s %s: %s\n   %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeCommand.String()), color.HiGreenString("%s", j.Command.CommandString()), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
 
 	// Let's get the path to our logs
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
@@ -157,10 +157,9 @@ func (j *CommandJob) Do(e chan error) {
 	}
 
 	e <- nil
-	return
 }
 
-// If there's any cleanup we need to do afterward we can do it here, but we don't have any
+// CleanUp performs any cleanup we need to do afterward we can do it here, but we don't have any
 func (j *CommandJob) CleanUp(e chan error) {
 	cli.Logger.Debugf("Starting cleanup, cooldown running.")
 	// Now we'll wait for the tooldown as defined in our command
@@ -171,12 +170,10 @@ func (j *CommandJob) CleanUp(e chan error) {
 	cli.Logger.Debugf("Finishing cleanup, cooldown done.")
 
 	e <- nil
-	return
 }
 
-// We can let the log know we're done!
+// Finish is called finally to let the log know we're done!
 func (j *CommandJob) Finish(e chan error) {
 	cli.Logger.Infof("Finished command %s", j.JobID)
 	e <- nil
-	return
 }

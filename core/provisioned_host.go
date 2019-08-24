@@ -117,7 +117,7 @@ func (p *ProvisionedHost) Swap(m Mergeable) error {
 // SetID increments the revision and sets the team ID if needed
 func (p *ProvisionedHost) SetID() string {
 	if p.ID == "" {
-		p.ID = path.Join(p.ProvisionedNetwork.Path(), "hosts", p.Host.Base())
+		p.ID = path.Join(p.ProvisionedNetwork.Path(), hostsDir, p.Host.Base())
 	}
 	if p.HostID == "" {
 		p.HostID = p.Host.Path()

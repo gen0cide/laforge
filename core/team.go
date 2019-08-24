@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -15,12 +14,6 @@ import (
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/runner"
 	"github.com/pkg/errors"
-)
-
-var (
-	whitespaceRegexp = regexp.MustCompile(`^[[:space:]]*$`)
-	warningRegexp    = regexp.MustCompile(`Warning`)
-	instanceRegexp   = regexp.MustCompile(`google_compute_instance`)
 )
 
 // Team represents a team specific object existing within an environment
@@ -169,7 +162,6 @@ func (t *Team) RunTerraformCommand(args []string, wg *sync.WaitGroup, errChan ch
 
 	wg.Add(1)
 	t.RunLocalCommand(tfexe, args, wg, errChan)
-	return
 }
 
 // RunTerraformSequence attempts to run a series of commands on a team
@@ -216,6 +208,7 @@ func (t *Team) RunTerraformSequence(cmds []string, wg *sync.WaitGroup, errChan c
 			case e := <-runner.Errors:
 				cli.Logger.Errorf("%s: %v", t.LaforgeID(), e)
 				errChan <- e
+				//nolint:ineffassign
 				errors = append(errors, e)
 			case <-runner.FinChan:
 				if len(errors) > 0 {
@@ -525,19 +518,6 @@ func (t *Team) Associate(g *Snapshot) error {
 	// }
 	// // fmt.Printf("%s\n\n\n", g.Graph.StringWithNodeTypes())
 	return nil
-}
-
-func removeEmptyLines(s string) string {
-	lines := strings.Split(s, "\n")
-	newLines := []string{}
-	for _, x := range lines {
-		newX := strings.TrimSpace(x)
-		if len(newX) == 0 || whitespaceRegexp.MatchString(newX) {
-			continue
-		}
-		newLines = append(newLines, newX)
-	}
-	return strings.Join(newLines, "\n")
 }
 
 // LocateProvisionedHost is used to locate the provisioned host object by specifying a global host and network ID. (useed in dependency traversal)

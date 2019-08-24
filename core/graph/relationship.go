@@ -21,13 +21,11 @@ type Relationship interface {
 // AssociateChildren is a generic function to associate child dependencies with an object
 func AssociateChildren(subject Relationship, children ...Relationship) {
 	subject.AddChild(children...)
-	return
 }
 
 // AssociateParents is a generic function to associate parent dependencies with an object
 func AssociateParents(subject Relationship, parents ...Relationship) {
 	subject.AddParent(parents...)
-	return
 }
 
 // RelationshipWalkFunc allows for recursive relation traversal

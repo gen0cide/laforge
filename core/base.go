@@ -368,6 +368,7 @@ func (l *Laforge) Update(diff *Laforge) (*Laforge, error) {
 }
 
 // Mask attempts to apply a differential update betweeen base and layer, returning a modified base and any errors it encountered.
+//nolint:gocyclo
 func Mask(base, layer *Laforge) (*Laforge, error) {
 	layer.CreateIndex()
 	for name, obj := range layer.Hosts {
@@ -751,28 +752,28 @@ func (l *Laforge) IndexProvisioningStepDependencies() error {
 		ph.ProvisioningSteps[ps.Path()] = ps
 		ps.Dir = ph.Dir
 		switch ps.ProvisionerType {
-		case "command":
+		case ObjectTypeCommand.String():
 			prov, found := l.Commands[ps.ProvisionerID]
 			if !found {
 				return fmt.Errorf("command %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
 			}
 			ps.Command = prov
 			ps.Provisioner = prov
-		case "dns_record":
+		case ObjectTypeDNSRecord.String():
 			prov, found := l.DNSRecords[ps.ProvisionerID]
 			if !found {
 				return fmt.Errorf("dns record %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
 			}
 			ps.DNSRecord = prov
 			ps.Provisioner = prov
-		case "remote_file":
+		case ObjectTypeRemoteFile.String():
 			prov, found := l.RemoteFiles[ps.ProvisionerID]
 			if !found {
 				return fmt.Errorf("remote file %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
 			}
 			ps.RemoteFile = prov
 			ps.Provisioner = prov
-		case "script":
+		case ObjectTypeScript.String():
 			prov, found := l.Scripts[ps.ProvisionerID]
 			if !found {
 				return fmt.Errorf("script %s for provisioning step %s could not be located", ps.ProvisionerID, ps.Path())
@@ -825,6 +826,7 @@ func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Lafor
 		return nil, err
 	}
 	t := &Team{}
+	//nolint:gosec
 	tData, err := ioutil.ReadFile(teamconfig)
 	if err != nil {
 		return nil, err
@@ -887,6 +889,7 @@ func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) 
 		return nil, err
 	}
 	b := &Build{}
+	//nolint:gosec
 	tData, err := ioutil.ReadFile(buildconfig)
 	if err != nil {
 		return nil, err
@@ -918,8 +921,12 @@ func InitializeEnvContext(globalconfig, envconfig string) (*Laforge, error) {
 	if err != nil {
 		return nil, err
 	}
-	clone.IndexEnvironmentDependencies()
+	err = clone.IndexEnvironmentDependencies()
+	if err != nil {
+		return nil, err
+	}
 	e := &Environment{}
+	//nolint:gosec
 	tData, err := ioutil.ReadFile(envconfig)
 	if err != nil {
 		return nil, err
@@ -989,7 +996,7 @@ func (l *Laforge) GlobalConfigFile() string {
 
 // EnvConfigFile is a helper method for creating an absolute path to the environment configuration file
 func (l *Laforge) EnvConfigFile() string {
-	return filepath.Join(l.EnvRoot, "env.laforge")
+	return filepath.Join(l.EnvRoot, envFile)
 }
 
 // BaseConfigFile is a helper method for creating an absolute path to the base configuration file
@@ -1058,7 +1065,6 @@ func (l *Laforge) InitializeContext() error {
 		l.ValidEnv = true
 		l.EnvRoot = filepath.Dir(eclabs)
 	}
-	err = nil
 	bcl, err := LocateBaseConfig()
 	if err != nil {
 		if err != ErrNoConfigRootReached {
@@ -1104,12 +1110,12 @@ var (
 	baseSubDirs = []string{
 		"config",
 		"scripts",
-		"commands",
-		"hosts",
+		commandsDir,
+		hostsDir,
 		"networks",
 		"identities",
 		"files",
-		"envs",
+		envsDir,
 	}
 )
 
@@ -1126,15 +1132,25 @@ func (l *Laforge) InitializeBaseDirectory(overwrite bool) error {
 			if !overwrite {
 				return fmt.Errorf("Cannot initialize base directory - %s folder already exists! (--force/-f to overwrite)", d)
 			}
-			os.RemoveAll(dpath)
+			err := os.RemoveAll(dpath)
+			if err != nil {
+				return err
+			}
 		}
-		os.MkdirAll(dpath, 0755)
+		//nolint:gosec
+		err = os.MkdirAll(dpath, 0755)
+		if err != nil {
+			return err
+		}
 		keeper := filepath.Join(dpath, ".gitkeep")
 		newFile, err := os.Create(keeper)
 		if err != nil {
 			return errors.WithMessage(err, fmt.Sprintf("cannot touch .gitkeep inside base directory subfolder %s", d))
 		}
-		newFile.Close()
+		err = newFile.Close()
+		if err != nil {
+			return err
+		}
 	}
 
 	basefile := filepath.Join(l.CurrDir, "base.laforge")
@@ -1156,6 +1172,9 @@ func (l *Laforge) InitializeBaseDirectory(overwrite bool) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	newFile.Close()
+	err = newFile.Close()
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	return nil
 }

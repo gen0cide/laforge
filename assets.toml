@@ -6,12 +6,10 @@ tags = ""
 [updater]
   enabled = false
 
-
 [compression]
   compress = true
   method = "BestCompression"
   keep = false
-
 
 clean = true
 output = "assets.go"

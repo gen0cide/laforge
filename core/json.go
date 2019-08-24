@@ -8235,16 +8235,6 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 			out.Cooldown = int(in.Int())
 		case "timeout":
 			out.Timeout = int(in.Int())
-		case "io":
-			if in.IsNull() {
-				in.Skip()
-				out.IO = nil
-			} else {
-				if out.IO == nil {
-					out.IO = new(IO)
-				}
-				(*out.IO).UnmarshalEasyJSON(in)
-			}
 		case "disabled":
 			out.Disabled = bool(in.Bool())
 		case "vars":
@@ -8286,6 +8276,16 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 					in.WantComma()
 				}
 				in.Delim('}')
+			}
+		case "io":
+			if in.IsNull() {
+				in.Skip()
+				out.IO = nil
+			} else {
+				if out.IO == nil {
+					out.IO = new(IO)
+				}
+				(*out.IO).UnmarshalEasyJSON(in)
 			}
 		case "on_conflict":
 			if in.IsNull() {
@@ -8406,16 +8406,6 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 		}
 		out.Int(int(in.Timeout))
 	}
-	if in.IO != nil {
-		const prefix string = ",\"io\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		(*in.IO).MarshalEasyJSON(out)
-	}
 	if in.Disabled {
 		const prefix string = ",\"disabled\":"
 		if first {
@@ -8473,6 +8463,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 			}
 			out.RawByte('}')
 		}
+	}
+	if in.IO != nil {
+		const prefix string = ",\"io\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(*in.IO).MarshalEasyJSON(out)
 	}
 	if in.OnConflict != nil {
 		const prefix string = ",\"on_conflict\":"

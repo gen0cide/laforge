@@ -109,7 +109,7 @@ func LocateEnvConfig() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return TraverseUpForFile("env.laforge", cwd)
+	return TraverseUpForFile(envFile, cwd)
 }
 
 // LocateBaseConfig attempts to locate a valid base.laforge in the current directory or one of it's parents
@@ -171,6 +171,9 @@ func TouchGitKeep(p string) error {
 	if err != nil {
 		return errors.WithMessage(err, fmt.Sprintf("cannot touch .gitkeep inside directory %s", p))
 	}
-	newFile.Close()
+	err = newFile.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -22,6 +22,7 @@ func monWinCh(session *ssh.Session, fd uintptr) {
 
 	// resize the tty if any signals received
 	for range sigs {
+		//nolint:gosec,errcheck
 		session.SendRequest("window-change", false, termSize(fd))
 	}
 }

@@ -12,15 +12,15 @@ import (
 var (
 	// ExampleObjects holds a map of example objects
 	ExampleObjects = map[string]interface{}{
-		"ami":         defaultAMI(),
-		"command":     defaultCommand(),
-		"dns_record":  defaultDNSRecord(),
-		"identity":    defaultIdentity(),
-		"network":     defaultNetwork(),
-		"remote_file": defaultRemoteFile(),
-		"script":      defaultScript(),
-		"host":        defaultHost(),
-		"environment": defaultEnvironment(),
+		"ami":                         defaultAMI(),
+		ObjectTypeCommand.String():    defaultCommand(),
+		ObjectTypeDNSRecord.String():  defaultDNSRecord(),
+		"identity":                    defaultIdentity(),
+		"network":                     defaultNetwork(),
+		ObjectTypeRemoteFile.String(): defaultRemoteFile(),
+		ObjectTypeScript.String():     defaultScript(),
+		"host":                        defaultHost(),
+		"environment":                 defaultEnvironment(),
 	}
 )
 

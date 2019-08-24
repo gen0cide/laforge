@@ -13,6 +13,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	envsDir     = `envs`
+	commandsDir = `commands`
+)
+
 // Build represents the output of a laforge build
 //easyjson:json
 type Build struct {
@@ -71,7 +76,7 @@ func (b *Build) ValidatePath() error {
 	if err := ValidateGenericPath(b.Path()); err != nil {
 		return err
 	}
-	if topdir := strings.Split(b.Path(), `/`); topdir[1] != "envs" {
+	if topdir := strings.Split(b.Path(), `/`); topdir[1] != envsDir {
 		return fmt.Errorf("path %s is not rooted in /%s", b.Path(), topdir)
 	}
 	return nil
@@ -137,7 +142,7 @@ func (b *Build) AssetForTeam(teamID int, assetName string) string {
 
 // RelAssetForTeam is a template helper function that returns the relative location of team specific assets
 func (b *Build) RelAssetForTeam(networkBase, hostBase, assetName string) string {
-	return strings.Replace(filepath.Join(".", "networks", networkBase, "hosts", hostBase, "assets", assetName), "\\", "/", -1)
+	return strings.Replace(filepath.Join(".", "networks", networkBase, hostsDir, hostBase, "assets", assetName), "\\", "/", -1)
 }
 
 // InitializeBuildDirectory creates a build directory structure and writes the build.db as a precursor to builder's taking over.
@@ -165,13 +170,20 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 			return fmt.Errorf("Cannot initialize build directory - path is dirty: %s (--force/-f to overwrite)", buildDir)
 		}
 		if !update {
-			os.RemoveAll(buildDir)
+			err = os.RemoveAll(buildDir)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	dirs := []string{buildDir, bdbDir, teamsDir}
 	for _, d := range dirs {
-		os.MkdirAll(d, 0755)
+		//nolint:gosec
+		err := os.MkdirAll(d, 0755)
+		if err != nil {
+			return err
+		}
 		err = TouchGitKeep(d)
 		if err != nil {
 			return err
@@ -184,7 +196,7 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 	}
 	bid := builder
 
-	relEnvPath, err := filepath.Rel(buildDir, filepath.Join(l.EnvRoot, "env.laforge"))
+	relEnvPath, err := filepath.Rel(buildDir, filepath.Join(l.EnvRoot, envFile))
 
 	if err != nil {
 		return errors.Wrapf(errors.WithStack(err), "could not get relative path of build directory %s to env root %s", buildDir, l.EnvRoot)
@@ -232,8 +244,14 @@ func InitializeBuildDirectory(l *Laforge, overwrite, update bool) error {
 
 	state.SetCurrent(snap)
 
-	state.LocateRevisions()
-	state.GenerateCurrentRevs()
+	err = state.LocateRevisions()
+	if err != nil {
+		return err
+	}
+	err = state.GenerateCurrentRevs()
+	if err != nil {
+		return err
+	}
 
 	envRev := state.NewRevs[l.CurrentEnv.Path()]
 	buildRev := state.NewRevs[l.CurrentBuild.Path()]

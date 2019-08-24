@@ -2,7 +2,7 @@ package laforge
 
 const (
 	// Version defines the version of Laforge
-	Version = `0.3.01`
+	Version = `0.3.2`
 
 	// AuthorHandle references my handle
 	AuthorHandle = `gen0cide`

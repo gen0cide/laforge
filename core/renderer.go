@@ -87,7 +87,10 @@ func Decr(i int) int {
 // QuotedHCLString is a template function to render safe HCLv2 strings
 func QuotedHCLString(s string) string {
 	e := new(bytes.Buffer)
+
+	//nolint:gosec,errcheck
 	e.WriteByte('"')
+
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
@@ -96,20 +99,42 @@ func QuotedHCLString(s string) string {
 				continue
 			}
 			if start < i {
+
+				//nolint:gosec,errcheck
 				e.WriteString(s[start:i])
+
 			}
 			switch b {
 			case '\\', '"':
+
+				//nolint:gosec,errcheck
 				e.WriteByte('\\')
+
+				//nolint:gosec,errcheck
 				e.WriteByte(b)
+
 			case '\n':
+
+				//nolint:gosec,errcheck
 				e.WriteByte('\\')
+
+				//nolint:gosec,errcheck
 				e.WriteByte('n')
+
 			case '\r':
+
+				//nolint:gosec,errcheck
 				e.WriteByte('\\')
+
+				//nolint:gosec,errcheck
 				e.WriteByte('r')
+
 			case '\t':
+
+				//nolint:gosec,errcheck
 				e.WriteByte('\\')
+
+				//nolint:gosec,errcheck
 				e.WriteByte('t')
 			default:
 				// This encodes bytes < 0x20 except for \t, \n and \r.
@@ -117,8 +142,13 @@ func QuotedHCLString(s string) string {
 				// because they can lead to security holes when
 				// user-controlled strings are rendered into JSON
 				// and served to some browsers.
+				//nolint:gosec,errcheck
 				e.WriteString(`\u00`)
+
+				//nolint:gosec,errcheck
 				e.WriteByte(hex[b>>4])
+
+				//nolint:gosec,errcheck
 				e.WriteByte(hex[b&0xF])
 			}
 			i++
@@ -128,8 +158,10 @@ func QuotedHCLString(s string) string {
 		c, size := utf8.DecodeRuneInString(s[i:])
 		if c == utf8.RuneError && size == 1 {
 			if start < i {
+				//nolint:gosec,errcheck
 				e.WriteString(s[start:i])
 			}
+			//nolint:gosec,errcheck
 			e.WriteString(`\ufffd`)
 			i += size
 			start = i
@@ -138,9 +170,12 @@ func QuotedHCLString(s string) string {
 
 		if c == '\u2028' || c == '\u2029' {
 			if start < i {
+				//nolint:gosec,errcheck
 				e.WriteString(s[start:i])
 			}
+			//nolint:gosec,errcheck
 			e.WriteString(`\u202`)
+			//nolint:gosec,errcheck
 			e.WriteByte(hex[c&0xF])
 			i += size
 			start = i
@@ -149,8 +184,10 @@ func QuotedHCLString(s string) string {
 		i += size
 	}
 	if start < len(s) {
+		//nolint:gosec,errcheck
 		e.WriteString(s[start:])
 	}
+	//nolint:gosec,errcheck
 	e.WriteByte('"')
 	return e.String()
 }
@@ -189,104 +226,6 @@ var htmlSafeSet = [utf8.RuneSelf]bool{
 	'<':  false,
 	'=':  true,
 	'>':  false,
-	'?':  true,
-	'@':  true,
-	'A':  true,
-	'B':  true,
-	'C':  true,
-	'D':  true,
-	'E':  true,
-	'F':  true,
-	'G':  true,
-	'H':  true,
-	'I':  true,
-	'J':  true,
-	'K':  true,
-	'L':  true,
-	'M':  true,
-	'N':  true,
-	'O':  true,
-	'P':  true,
-	'Q':  true,
-	'R':  true,
-	'S':  true,
-	'T':  true,
-	'U':  true,
-	'V':  true,
-	'W':  true,
-	'X':  true,
-	'Y':  true,
-	'Z':  true,
-	'[':  true,
-	'\\': false,
-	']':  true,
-	'^':  true,
-	'_':  true,
-	'`':  true,
-	'a':  true,
-	'b':  true,
-	'c':  true,
-	'd':  true,
-	'e':  true,
-	'f':  true,
-	'g':  true,
-	'h':  true,
-	'i':  true,
-	'j':  true,
-	'k':  true,
-	'l':  true,
-	'm':  true,
-	'n':  true,
-	'o':  true,
-	'p':  true,
-	'q':  true,
-	'r':  true,
-	's':  true,
-	't':  true,
-	'u':  true,
-	'v':  true,
-	'w':  true,
-	'x':  true,
-	'y':  true,
-	'z':  true,
-	'{':  true,
-	'|':  true,
-	'}':  true,
-	'~':  true,
-}
-
-var safeSet = [utf8.RuneSelf]bool{
-	' ':  true,
-	'!':  true,
-	'"':  false,
-	'#':  true,
-	'$':  true,
-	'%':  true,
-	'&':  true,
-	'\'': true,
-	'(':  true,
-	')':  true,
-	'*':  true,
-	'+':  true,
-	',':  true,
-	'-':  true,
-	'.':  true,
-	'/':  true,
-	'0':  true,
-	'1':  true,
-	'2':  true,
-	'3':  true,
-	'4':  true,
-	'5':  true,
-	'6':  true,
-	'7':  true,
-	'8':  true,
-	'9':  true,
-	':':  true,
-	';':  true,
-	'<':  true,
-	'=':  true,
-	'>':  true,
 	'?':  true,
 	'@':  true,
 	'A':  true,

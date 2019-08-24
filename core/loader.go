@@ -53,7 +53,7 @@ func (l *Loader) AddToTree(filename, parentname string) treeprint.Tree {
 			parent = l.Includes.AddMetaNode(cli.Boldc("TEAM"), cli.Boldw(parentname))
 		case "build.laforge":
 			parent = l.Includes.AddMetaNode(cli.Boldg("BUILD"), cli.Boldw(parentname))
-		case "env.laforge":
+		case envFile:
 			parent = l.Includes.AddMetaNode(cli.Boldy("ENV"), cli.Boldw(parentname))
 		case "base.laforge":
 			parent = l.Includes.AddMetaNode(cli.Boldr("BASE"), cli.Boldw(parentname))
@@ -72,7 +72,7 @@ func (l *Loader) AddToTree(filename, parentname string) treeprint.Tree {
 		child = parent.AddMetaBranch(cli.Boldc("TEAM"), cli.Boldw(filename))
 	case "build.laforge":
 		child = parent.AddMetaBranch(cli.Boldg("BUILD"), cli.Boldw(filename))
-	case "env.laforge":
+	case envFile:
 		child = parent.AddMetaBranch(cli.Boldy("ENV"), cli.Boldw(filename))
 	case "base.laforge":
 		child = parent.AddMetaBranch(cli.Boldr("BASE"), cli.Boldw(filename))
@@ -154,17 +154,18 @@ func (r fileGlobResolver) ResolveBodyPath(path string, refRange hcl2.Range) (hcl
 			}}
 		}
 		for _, m := range matches {
-			if strings.HasSuffix(m, ".json") {
+			switch {
+			case strings.HasSuffix(m, ".json"):
 				r.Loader.AddToTree(m, refRange.Filename)
 				r.Loader.CallerMap[m] = NewCaller(m)
 				_, newDiags := r.Parser.ParseJSONFile(m)
 				diags = diags.Extend(newDiags)
-			} else if strings.HasSuffix(m, ".laforge") {
+			case strings.HasSuffix(m, ".laforge"):
 				r.Loader.AddToTree(m, refRange.Filename)
 				r.Loader.CallerMap[m] = NewCaller(m)
 				_, newDiags := r.Parser.ParseHCLFile(m)
 				diags = diags.Extend(newDiags)
-			} else {
+			default:
 				newDiag := &hcl2.Diagnostic{
 					Severity: hcl2.DiagWarning,
 					Summary:  "invalid file in glob",
@@ -339,60 +340,42 @@ type transientReverseContext struct {
 	AMI             []*AMI             `hcl:"ami,block" json:"ami,omitempty"`
 }
 
-func newTransientReverseContext() *transientReverseContext {
-	return &transientReverseContext{
-		Build:       []*Build{},
-		Competition: []*Competition{},
-		Command:     []*Command{},
-		DNSRecord:   []*DNSRecord{},
-		Environment: []*Environment{},
-		Host:        []*Host{},
-		Identity:    []*Identity{},
-		Network:     []*Network{},
-		RemoteFile:  []*RemoteFile{},
-		Script:      []*Script{},
-		Team:        []*Team{},
-		User:        []*User{},
-		AMI:         []*AMI{},
-	}
-}
-
 // GetEmptyObjByName returns a pointer to an initialized, but empty object of the specified type (camel case).
 func GetEmptyObjByName(s string) (interface{}, error) {
 	switch strings.ToLower(s) {
-	case "build":
+	case ObjectTypeBuild.String():
 		return &Build{}, nil
-	case "competition":
+	case ObjectTypeCompetition.String():
 		return &Competition{}, nil
-	case "command":
+	case ObjectTypeCommand.String():
 		return &Command{}, nil
-	case "dns_record":
+	case ObjectTypeDNSRecord.String():
 		return &DNSRecord{}, nil
-	case "environment":
+	case ObjectTypeEnvironment.String():
 		return &Environment{}, nil
-	case "host":
+	case ObjectTypeHost.String():
 		return &Host{}, nil
-	case "identity":
+	case ObjectTypeIdentity.String():
 		return &Identity{}, nil
-	case "network":
+	case ObjectTypeNetwork.String():
 		return &Network{}, nil
-	case "remote_file":
+	case ObjectTypeRemoteFile.String():
 		return &RemoteFile{}, nil
-	case "script":
+	case ObjectTypeScript.String():
 		return &Script{}, nil
-	case "team":
+	case ObjectTypeTeam.String():
 		return &Team{}, nil
-	case "user":
+	case ObjectTypeUser.String():
 		return &User{}, nil
-	case "ami":
+	case ObjectTypeAMI.String():
 		return &AMI{}, nil
-	case "provisioned_host":
+	case ObjectTypeProvisionedHost.String():
 		return &ProvisionedHost{}, nil
-	case "provisioned_network":
+	case ObjectTypeProvisionedNetwork.String():
 		return &ProvisionedNetwork{}, nil
-	case "provisioning_step":
+	case ObjectTypeProvisioningStep.String():
 		return &ProvisioningStep{}, nil
-	case "connection":
+	case ObjectTypeConnection.String():
 		return &Connection{}, nil
 	default:
 		return nil, errors.New("specified core type name was not valid")
@@ -416,6 +399,7 @@ func LoadHCLFromFile(fileloc string, v interface{}) error {
 		return err
 	}
 
+	//nolint:gosec
 	data, err := ioutil.ReadFile(fileloc)
 	if err != nil {
 		return err

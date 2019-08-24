@@ -100,6 +100,7 @@ func (r *Revision) Filename() string {
 
 // ParseRevisionFile attempts to parse a revision file at the given location
 func ParseRevisionFile(fpath string) (*Revision, error) {
+	//nolint:gosec
 	data, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		return nil, err

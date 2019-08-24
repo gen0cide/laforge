@@ -1,6 +1,7 @@
 package core
 
 import (
+	//nolint:gosec
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 
 // RemoteFile is a configurable type that defines a static file that will be placed on a configured target host.
 //easyjson:json
+//nolint:maligned
 type RemoteFile struct {
 	ID          string            `hcl:"id,label" json:"id,omitempty"`
 	SourceType  string            `hcl:"source_type,attr" json:"source_type,omitempty"`
@@ -128,7 +130,7 @@ func (r *RemoteFile) SetOnConflict(o OnConflict) {
 
 // Kind implements the Provisioner interface
 func (r *RemoteFile) Kind() string {
-	return "remote_file"
+	return ObjectTypeRemoteFile.String()
 }
 
 // Swap implements the Mergeable interface
@@ -142,6 +144,7 @@ func (r *RemoteFile) Swap(m Mergeable) error {
 }
 
 // ResolveSource attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (r *RemoteFile) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if r.Source == "" {
 		return nil
@@ -179,8 +182,10 @@ func (r *RemoteFile) MD5Sum() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	//nolint:errcheck,gosec
 	defer f.Close()
 
+	//nolint:gosec
 	h := md5.New()
 	if _, err := io.Copy(h, f); err != nil {
 		log.Fatal(err)
@@ -195,12 +200,16 @@ func (r *RemoteFile) CopyTo(dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:gosec,errcheck
 	defer in.Close()
 
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
+
+	//nolint:gosec,errcheck
 	defer out.Close()
 
 	_, err = io.Copy(out, in)

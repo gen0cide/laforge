@@ -12,6 +12,7 @@ import (
 
 // Command represents an executable command that can be defined as part of a host configuration step
 //easyjson:json
+//nolint:maligned
 type Command struct {
 	ID           string            `hcl:"id,label" json:"id,omitempty"`
 	Name         string            `hcl:"name,attr" json:"name,omitempty"`
@@ -21,10 +22,10 @@ type Command struct {
 	IgnoreErrors bool              `hcl:"ignore_errors,attr" json:"ignore_errors,omitempty"`
 	Cooldown     int               `hcl:"cooldown,attr" json:"cooldown,omitempty"`
 	Timeout      int               `hcl:"timeout,attr" json:"timeout,omitempty"`
-	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
 	Disabled     bool              `hcl:"disabled,attr" json:"disabled,omitempty"`
 	Vars         map[string]string `hcl:"vars,attr" json:"vars,omitempty"`
 	Tags         map[string]string `hcl:"tags,attr" json:"tags,omitempty"`
+	IO           *IO               `hcl:"io,block" json:"io,omitempty"`
 	OnConflict   *OnConflict       `hcl:"on_conflict,block" json:"on_conflict,omitempty"`
 	Maintainer   *User             `hcl:"maintainer,block" json:"maintainer,omitempty"`
 	Caller       Caller            `json:"-"`
@@ -66,7 +67,7 @@ func (c *Command) ValidatePath() error {
 	if err := ValidateGenericPath(c.Path()); err != nil {
 		return err
 	}
-	if topdir := strings.Split(c.Path(), `/`); topdir[1] != "commands" {
+	if topdir := strings.Split(c.Path(), `/`); topdir[1] != commandsDir {
 		return fmt.Errorf("path %s is not rooted in /%s", c.Path(), topdir[1])
 	}
 	return nil
@@ -119,15 +120,13 @@ func (c *Command) SetOnConflict(o OnConflict) {
 
 // Kind implements the Provisioner interface
 func (c *Command) Kind() string {
-	return "command"
+	return ObjectTypeCommand.String()
 }
 
 // CommandString is a template helper function to embed commands into the output
 func (c *Command) CommandString() string {
 	cmd := []string{c.Program}
-	for _, x := range c.Args {
-		cmd = append(cmd, x)
-	}
+	cmd = append(cmd, c.Args...)
 	return strings.Join(cmd, " ")
 }
 
