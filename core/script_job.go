@@ -99,6 +99,12 @@ func (j *ScriptJob) CanProceed(e chan error) {
 		return
 	}
 
+   // Finally, let's actually test our connection over WinRM/SSH on the network to the system
+   if !j.Target.ProvisionedHost.Conn.Test() {
+      e <- NewTimeoutExtensionWithDelay(errors.New("Unable to successfuly make a test connection to host, retrying after a delay"), 20)
+      return
+   }
+
 	e <- nil
 	return
 }

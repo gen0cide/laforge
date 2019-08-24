@@ -54,6 +54,33 @@ func (w *WinRMClient) SetConfig(c *WinRMAuthConfig) error {
 	return nil
 }
 
+// TestConnection makes a basic connection to the WinRM server to validate it is working
+func (w *WinRMClient) TestConnection() bool {
+	endpoint := winrm.NewEndpoint(
+		w.Config.RemoteAddr,
+		w.Config.Port,
+		w.Config.HTTPS,
+		w.Config.SkipVerify,
+		[]byte{},
+		[]byte{},
+		[]byte{},
+		0,
+	)
+
+	client, err := winrm.NewClient(endpoint, w.Config.User, w.Config.Password)
+	if err != nil {
+		return false
+	}
+
+	shell, err := client.CreateShell()
+	if err != nil {
+		return false
+	}
+
+	shell.Close()
+	return true
+}
+
 // LaunchInteractiveShell implements the Sheller interface
 func (w *WinRMClient) LaunchInteractiveShell() error {
 	endpoint := winrm.NewEndpoint(
@@ -88,12 +115,12 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 
 	shell, err := client.CreateShell()
 	if err != nil {
-		panic(err)
+		return errors.WithMessage(err, "could not create WinRM shell connection")
 	}
 	var cmd *winrm.Command
 	cmd, err = shell.Execute("powershell -NoProfile -ExecutionPolicy Bypass")
 	if err != nil {
-		panic(err)
+		return errors.WithMessage(err, "could not execute PowerShell for interactive session")
 	}
 
 	go io.Copy(cmd.Stdin, os.Stdin)

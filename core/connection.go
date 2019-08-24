@@ -164,6 +164,44 @@ func (c *Connection) Upload(src, dst string) error {
 	return c.UploadSFTP(src, dst)
 }
 
+// Test() will test our connection across the network to make sure it's working
+func (c *Connection) Test() bool {
+	// If it's a windows system, let's test WinRM
+	if c.IsWinRM() {
+		// Create the WinRM client and set our config (including username and pass)
+	   client := &WinRMClient{}
+	   err := client.SetConfig(c.WinRMAuthConfig)
+	   if err != nil {
+	      return false
+	   }
+
+		// Now we attempt to connect and return the result
+	   return client.TestConnection()
+	}
+
+	//If it's UNIX, let's use SSH instead
+	if c.IsSSH() {
+		// Create the SSH connection object
+   	client, err := NewSSHClient(c.SSHAuthConfig, "")
+   	if err != nil {
+	      return false
+		}
+
+		// Let's actually connect here and see if it works!
+		err = client.Connect()
+		if err != nil {
+  	   	return false
+  	 	}
+
+		// Finally disconnect and say it was good
+  	 	client.Disconnect()
+	   return true
+	}
+
+	// If we got here, it wasn't one of the connections we know about, return false
+	return false
+}
+
 // ExecuteCommand is the generic interface for a connection to execute a command on the remote system
 func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 	if c.IsWinRM() {
@@ -238,15 +276,12 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 		}
 	}()
 
-	cli.Logger.Debugf("PerformInTimeout")
 	// We need to track timeouts when running our command
 	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
-		cli.Logger.Debugf("NewRemoteCommand: %+v", j.GetTimeout())
 		// Let's build a remote command struct to pass to the runner
 		rc := NewRemoteCommand()
 		rc.Timeout = j.GetTimeout() / 3
 
-		cli.Logger.Debugf("Open Logs")
 		// Let's open our logs
 		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -264,20 +299,15 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 		cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 
 		// And then use the multi-writers so that it can go to debug output and our files
-		cli.Logger.Debugf("MultiWriters")
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
 		defer debugstdoutpw.Close()
 		defer debugstderrpw.Close()
-		cli.Logger.Debugf("Command: %s", command)
 		rc.Command = command
-		cli.Logger.Debugf("ExecuteCommand %+v", rc)
 		err = c.ExecuteCommand(rc)
-		cli.Logger.Debugf("ExecuteCommand complete")
 
 		// If there's an issue, we print it out and then extend our timeout
 		if err != nil {
-			cli.Logger.Debugf("Error: %v", err)
 			if exitErr, ok := err.(*ExitError); ok {
 				if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
 					cli.Logger.Errorf("%s Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
@@ -293,7 +323,6 @@ func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) erro
 			e <- NewTimeoutExtension(err)
 			return
 		}
-		cli.Logger.Debugf("e <- nil")
 		e <- nil
 	})
 	if err != nil {

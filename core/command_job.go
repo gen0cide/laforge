@@ -95,16 +95,23 @@ func (j *CommandJob) CanProceed(e chan error) {
 		return
 	}
 
-	// TODO: Determine what this one does
+	// Let's make sure our connection information is merged
 	newConn, err := SmartMerge(j.Target.ProvisionedHost.Conn, conn, false)
 	if err != nil {
 		e <- fmt.Errorf("Error merging connections for %s", j.Target.ParentLaforgeID())
 		return
 	}
-	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
 
+	// And that all of our connection data is good
+	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
 	if err != nil {
 		e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
+		return
+	}
+
+	// Finally, let's actually test our connection over WinRM/SSH on the network to the system
+	if !j.Target.ProvisionedHost.Conn.Test() {
+		e <- NewTimeoutExtensionWithDelay(errors.New("Unable to successfuly make a test connection to host, retrying after a delay"), 20)
 		return
 	}
 
