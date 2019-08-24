@@ -164,7 +164,7 @@ func (j *CommandJob) CleanUp(e chan error) {
 	cli.Logger.Debugf("Starting cleanup, cooldown running.")
 	// Now we'll wait for the tooldown as defined in our command
 	if j.Command.Cooldown > 0 {
-		cli.Logger.Infof("Letting command job %s cooldown for %d seconds.", j.Command.ID, j.Command.Timeout)
+		cli.Logger.Infof("Letting command job %s cooldown for %d seconds.", j.Command.ID, j.Command.Cooldown)
 		time.Sleep(time.Duration(j.Command.Cooldown) * time.Second)
 	}
 	cli.Logger.Debugf("Finishing cleanup, cooldown done.")
