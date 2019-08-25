@@ -120,7 +120,6 @@ func (s *State) LocateRevisions() error {
 						return
 					}
 					revChan <- rev
-					return
 				}(osPathname)
 			}
 			return nil
@@ -253,6 +252,7 @@ func (s *State) SnapshotsEqual() bool {
 }
 
 // CalculateDelta attempts to determine what needs to be done to bring a base in line with target
+//nolint:gocyclo
 func (s *State) CalculateDelta() (*Plan, error) {
 	if s.Persisted == nil {
 		return nil, errors.New("the persisted state is nil and delta analysis cannot be performed")
@@ -464,6 +464,7 @@ func (s *State) CalculateDelta() (*Plan, error) {
 	}
 
 	// Now it's up to us to walk the new taint list in the *target* graph to generate the work order
+	//nolint:gosec,errcheck
 	target.AltGraph.DepthFirstWalk([]dag.Vertex{root}, func(v dag.Vertex, depth int) error {
 		if tasks[depth] == nil {
 			tasks[depth] = []string{}

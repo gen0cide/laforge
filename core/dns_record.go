@@ -92,7 +92,7 @@ func (r *DNSRecord) SetOnConflict(o OnConflict) {
 
 // Kind implements the Provisioner interface
 func (r *DNSRecord) Kind() string {
-	return "dns_record"
+	return ObjectTypeDNSRecord.String()
 }
 
 // Fullpath implements the Pather interface

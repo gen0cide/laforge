@@ -25,10 +25,6 @@ var (
 		LFTypeProvisionedNetwork: true,
 		LFTypeTeam:               true,
 	}
-
-	requiresTFTaint = map[LFType]bool{
-		LFTypeProvisionedHost: true,
-	}
 )
 
 // Plan is a type that describes how to get from one state to the next
@@ -136,13 +132,19 @@ func (p *Plan) SetupTasks() error {
 			}
 			var job Doer
 			switch pstep.ProvisionerType {
-			case "script":
+			case ObjectTypeCommand.String():
+				j, err := CreateCommandJob(x, id, metaobj, pstep)
+				if err != nil {
+					return err
+				}
+				job = j
+			case ObjectTypeScript.String():
 				j, err := CreateScriptJob(x, id, metaobj, pstep)
 				if err != nil {
 					return err
 				}
 				job = j
-			case "remote_file":
+			case ObjectTypeRemoteFile.String():
 				j, err := CreateRemoteFileJob(x, id, metaobj, pstep)
 				if err != nil {
 					return err
@@ -257,14 +259,26 @@ func (p *Plan) Orchestrator(v dag.Vertex) (d tfdiags.Diagnostics) {
 		return d
 	}
 	cli.Logger.Infof("Cleaning Up: %s", id)
-	err = PerformInTimeout(task.GetTimeout(), task.Finish)
+	err = PerformInTimeout(task.GetTimeout(), task.CleanUp)
 	if err != nil {
-		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
+		cli.Logger.Errorf("Task %s could not cleanup: %v", id, err)
 		p.FailedNodes.Add(v)
 		d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
 		err = p.WriteRevisionFile(task, RevStatusFailed)
 		if err != nil {
 			d.Append(tfdiags.Sourceless(tfdiags.Error, "task cleanup failure", tfdiags.FormatErrorPrefixed(err, id)))
+		}
+		return d
+	}
+	cli.Logger.Infof("Finishing: %s", id)
+	err = PerformInTimeout(task.GetTimeout(), task.Finish)
+	if err != nil {
+		cli.Logger.Errorf("Task %s could not finish: %v", id, err)
+		p.FailedNodes.Add(v)
+		d.Append(tfdiags.Sourceless(tfdiags.Error, "task finishing failure", tfdiags.FormatErrorPrefixed(err, id)))
+		err = p.WriteRevisionFile(task, RevStatusFailed)
+		if err != nil {
+			d.Append(tfdiags.Sourceless(tfdiags.Error, "task finishing failure", tfdiags.FormatErrorPrefixed(err, id)))
 		}
 		return d
 	}
@@ -313,7 +327,6 @@ func (p *Plan) Preflight() error {
 	for {
 		select {
 		case err := <-errChan:
-			exiterror = err
 			return err
 		case <-finChan:
 			if errored {
@@ -352,7 +365,6 @@ func (p *Plan) BurnIt() error {
 	for {
 		select {
 		case err := <-errChan:
-			exiterror = err
 			return err
 		case <-finChan:
 			if errored {

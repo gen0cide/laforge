@@ -179,9 +179,9 @@ func TypeByPath(p string) LFType {
 		return LFTypeScript
 	case "networks":
 		return LFTypeNetwork
-	case "hosts":
+	case hostsDir:
 		return LFTypeHost
-	case "commands":
+	case commandsDir:
 		return LFTypeCommand
 	case "dns-records":
 		return LFTypeDNSRecord
@@ -189,11 +189,11 @@ func TypeByPath(p string) LFType {
 		return LFTypeRemoteFile
 	}
 
-	if path.Base(path.Dir(p)) == "envs" {
+	if path.Base(path.Dir(p)) == envsDir {
 		return LFTypeEnvironment
 	}
 
-	if path.Base(path.Dir(path.Dir(p))) == "envs" {
+	if path.Base(path.Dir(path.Dir(p))) == envsDir {
 		return LFTypeBuild
 	}
 
@@ -201,21 +201,21 @@ func TypeByPath(p string) LFType {
 		return LFTypeTeam
 	}
 
-	if path.Base(path.Dir(p)) == "networks" && pelms[1] == "envs" {
+	if path.Base(path.Dir(p)) == "networks" && pelms[1] == envsDir {
 		return LFTypeProvisionedNetwork
 	}
 
-	if path.Base(path.Dir(p)) == "hosts" && pelms[1] == "envs" {
+	if path.Base(path.Dir(p)) == hostsDir && pelms[1] == envsDir {
 		return LFTypeProvisionedHost
 	}
 
-	if path.Base(p) == "conn" && path.Base(path.Dir(path.Dir(p))) == "hosts" {
+	if path.Base(p) == "conn" && path.Base(path.Dir(path.Dir(p))) == hostsDir {
 		return LFTypeConnection
 	}
 
 	dir := path.Dir(p)
 	_ = dir
-	if path.Base(path.Dir(p)) == "steps" && pelms[1] == "envs" {
+	if path.Base(path.Dir(p)) == "steps" && pelms[1] == envsDir {
 		return LFTypeProvisioningStep
 	}
 
@@ -233,7 +233,7 @@ func GetTeamIDFromPath(p string) (string, error) {
 		return "", errors.New("path does not meet minimum expected structure for team identification")
 	}
 
-	if pelms[1] != "envs" {
+	if pelms[1] != envsDir {
 		return "", errors.New("path is not rooted inside an environment")
 	}
 
@@ -322,6 +322,11 @@ func (m *Metadata) Shape() string {
 	// }
 }
 
+const (
+	dotFilled     = `filled`
+	dotFilledBold = `filled,bold`
+)
+
 // Style implements the DotNode interface
 func (m *Metadata) Style() string {
 	if m.IsGlobalType() {
@@ -329,21 +334,21 @@ func (m *Metadata) Style() string {
 	}
 	switch m.TypeByPath() {
 	case LFTypeEnvironment:
-		return "filled"
+		return dotFilled
 	case LFTypeBuild:
-		return "filled"
+		return dotFilled
 	case LFTypeTeam:
-		return "filled,bold"
+		return dotFilledBold
 	case LFTypeProvisionedNetwork:
-		return "filled,bold"
+		return dotFilledBold
 	case LFTypeProvisionedHost:
-		return "filled,bold"
+		return dotFilledBold
 	case LFTypeProvisioningStep:
-		return "filled,bold"
+		return dotFilledBold
 	case LFTypeConnection:
-		return "filled,bold"
+		return dotFilledBold
 	default:
-		return "filled"
+		return dotFilled
 	}
 }
 

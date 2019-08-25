@@ -131,18 +131,16 @@ func PerformInTimeout(seconds int, f TimeoutFunc) error {
 			if err == nil {
 				return nil
 			}
-			if err != nil {
-				if te, ok := err.(*ErrTimeoutExtension); ok {
-					cli.Logger.Debugf("timeout extension requested: %v", te.Cause())
-					// sleep for the delay requested by the error
-					for i := 0; i < te.delay; i++ {
-						<-tick
-					}
-					go f(errchan)
-					continue
+			if te, ok := err.(*ErrTimeoutExtension); ok {
+				cli.Logger.Debugf("timeout extension requested: %v", te.Cause())
+				// sleep for the delay requested by the error
+				for i := 0; i < te.delay; i++ {
+					<-tick
 				}
-				return err
+				go f(errchan)
+				continue
 			}
+			return err
 		}
 	}
 }

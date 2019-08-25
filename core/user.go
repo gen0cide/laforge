@@ -69,6 +69,9 @@ func UserWizard() error {
 	if !confirmed {
 		return errors.New("write authorization not granted")
 	}
+	if err != nil {
+		return err
+	}
 
 	err = CreateGlobalConfig(user)
 	if err != nil {

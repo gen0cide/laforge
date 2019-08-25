@@ -57,6 +57,7 @@ func (j *ScriptJob) CanProceed(e chan error) {
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
 	if _, err := os.Stat(logdir); err != nil {
 		if os.IsNotExist(err) {
+			//nolint:gosec,errcheck
 			os.MkdirAll(logdir, 0755)
 		} else {
 			cli.Logger.Errorf("Error creating log directory %s: %v", logdir, err)
@@ -82,25 +83,26 @@ func (j *ScriptJob) CanProceed(e chan error) {
 		return
 	}
 
-	if conn.Active != true {
+	if !conn.Active {
 		e <- NewTimeoutExtension(errors.New("cannot proceed with a host with an inactive connection"))
 		return
 	}
 
 	newConn, err := SmartMerge(j.Target.ProvisionedHost.Conn, conn, false)
 	if err != nil {
-		e <- fmt.Errorf("Error merging connections for %s", j.Target.ParentLaforgeID())
-		return
-	}
-	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
-
-	if err != nil {
 		e <- fmt.Errorf("fatal error attempting to patch connection into state tree for %s: %v", j.JobID, err)
 		return
 	}
 
+	j.Target.ProvisionedHost.Conn = newConn.(*Connection)
+
+	// Finally, let's actually test our connection over WinRM/SSH on the network to the system
+	if !j.Target.ProvisionedHost.Conn.Test() {
+		e <- NewTimeoutExtensionWithDelay(errors.New("Unable to successfuly make a test connection to host, retrying after a delay"), 20)
+		return
+	}
+
 	e <- nil
-	return
 }
 
 // EnsureDependencies implements the Doer interface
@@ -119,19 +121,18 @@ func (j *ScriptJob) EnsureDependencies(e chan error) {
 	}
 
 	if j.Target.ProvisionedHost.Conn.IsSSH() {
-		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == `../../data/ssh.pem` {
+		if j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile == sshKeyPath {
 			cli.Logger.Debugf("Fixing identity file for %s", j.Target.Path())
 			j.Target.ProvisionedHost.Conn.SSHAuthConfig.IdentityFile = filepath.Join(j.Base.BaseDir, j.Base.CurrentBuild.Path(), "data", "ssh.pem")
 		}
 	}
 
 	e <- nil
-	return
 }
 
 // Do implements the Doer interface
 func (j *ScriptJob) Do(e chan error) {
-	cli.Logger.Warnf("Performing Script Job:\n  %s %s: %s\n  %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString("SCRIPT"), color.HiGreenString("%s", j.AssetPath), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
+	cli.Logger.Warnf("Performing Script Job:\n  %s %s: %s\n  %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeScript.String()), color.HiGreenString("%s", j.AssetPath), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
 	actualfilename := fmt.Sprintf("%d-%s", j.Target.StepNumber, filepath.Base(j.AssetPath))
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
 	err := j.Target.ProvisionedHost.Conn.UploadExecuteAndDelete(j, j.AssetPath, actualfilename, logdir)
@@ -141,18 +142,15 @@ func (j *ScriptJob) Do(e chan error) {
 		return
 	}
 	e <- nil
-	return
 }
 
 // CleanUp implements the Doer interface
 func (j *ScriptJob) CleanUp(e chan error) {
 	e <- nil
-	return
 }
 
 // Finish implements the Doer interface
 func (j *ScriptJob) Finish(e chan error) {
 	cli.Logger.Infof("Finished %s", j.JobID)
 	e <- nil
-	return
 }

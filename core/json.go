@@ -8065,31 +8065,6 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore40(in *jlexer.Lexer, out 
 			continue
 		}
 		switch key {
-		case "command":
-			if in.IsNull() {
-				in.Skip()
-				out.Command = nil
-			} else {
-				in.Delim('[')
-				if out.Command == nil {
-					if !in.IsDelim(']') {
-						out.Command = make([]string, 0, 4)
-					} else {
-						out.Command = []string{}
-					}
-				} else {
-					out.Command = (out.Command)[:0]
-				}
-				for !in.IsDelim(']') {
-					var v170 string
-					v170 = string(in.String())
-					out.Command = append(out.Command, v170)
-					in.WantComma()
-				}
-				in.Delim(']')
-			}
-		case "good_output_regexp":
-			out.GoodOutputRegexp = string(in.String())
 		case "job_id":
 			out.JobID = string(in.String())
 		case "offset":
@@ -8129,29 +8104,13 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore40(out *jwriter.Writer, i
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"command\":"
-		out.RawString(prefix[1:])
-		if in.Command == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v171, v172 := range in.Command {
-				if v171 > 0 {
-					out.RawByte(',')
-				}
-				out.String(string(v172))
-			}
-			out.RawByte(']')
-		}
-	}
-	{
-		const prefix string = ",\"good_output_regexp\":"
-		out.RawString(prefix)
-		out.String(string(in.GoodOutputRegexp))
-	}
-	{
 		const prefix string = ",\"job_id\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.JobID))
 	}
 	{
@@ -8263,9 +8222,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 					out.Args = (out.Args)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v173 string
-					v173 = string(in.String())
-					out.Args = append(out.Args, v173)
+					var v170 string
+					v170 = string(in.String())
+					out.Args = append(out.Args, v170)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -8274,16 +8233,8 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 			out.IgnoreErrors = bool(in.Bool())
 		case "cooldown":
 			out.Cooldown = int(in.Int())
-		case "io":
-			if in.IsNull() {
-				in.Skip()
-				out.IO = nil
-			} else {
-				if out.IO == nil {
-					out.IO = new(IO)
-				}
-				(*out.IO).UnmarshalEasyJSON(in)
-			}
+		case "timeout":
+			out.Timeout = int(in.Int())
 		case "disabled":
 			out.Disabled = bool(in.Bool())
 		case "vars":
@@ -8299,9 +8250,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v174 string
-					v174 = string(in.String())
-					(out.Vars)[key] = v174
+					var v171 string
+					v171 = string(in.String())
+					(out.Vars)[key] = v171
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8319,12 +8270,22 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore41(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v175 string
-					v175 = string(in.String())
-					(out.Tags)[key] = v175
+					var v172 string
+					v172 = string(in.String())
+					(out.Tags)[key] = v172
 					in.WantComma()
 				}
 				in.Delim('}')
+			}
+		case "io":
+			if in.IsNull() {
+				in.Skip()
+				out.IO = nil
+			} else {
+				if out.IO == nil {
+					out.IO = new(IO)
+				}
+				(*out.IO).UnmarshalEasyJSON(in)
 			}
 		case "on_conflict":
 			if in.IsNull() {
@@ -8406,11 +8367,11 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('[')
-			for v176, v177 := range in.Args {
-				if v176 > 0 {
+			for v173, v174 := range in.Args {
+				if v173 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v177))
+				out.String(string(v174))
 			}
 			out.RawByte(']')
 		}
@@ -8435,15 +8396,15 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 		}
 		out.Int(int(in.Cooldown))
 	}
-	if in.IO != nil {
-		const prefix string = ",\"io\":"
+	if in.Timeout != 0 {
+		const prefix string = ",\"timeout\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		(*in.IO).MarshalEasyJSON(out)
+		out.Int(int(in.Timeout))
 	}
 	if in.Disabled {
 		const prefix string = ",\"disabled\":"
@@ -8465,16 +8426,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v178First := true
-			for v178Name, v178Value := range in.Vars {
-				if v178First {
-					v178First = false
+			v175First := true
+			for v175Name, v175Value := range in.Vars {
+				if v175First {
+					v175First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v178Name))
+				out.String(string(v175Name))
 				out.RawByte(':')
-				out.String(string(v178Value))
+				out.String(string(v175Value))
 			}
 			out.RawByte('}')
 		}
@@ -8489,19 +8450,29 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore41(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v179First := true
-			for v179Name, v179Value := range in.Tags {
-				if v179First {
-					v179First = false
+			v176First := true
+			for v176Name, v176Value := range in.Tags {
+				if v176First {
+					v176First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v179Name))
+				out.String(string(v176Name))
 				out.RawByte(':')
-				out.String(string(v179Value))
+				out.String(string(v176Value))
 			}
 			out.RawByte('}')
 		}
+	}
+	if in.IO != nil {
+		const prefix string = ",\"io\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(*in.IO).MarshalEasyJSON(out)
 	}
 	if in.OnConflict != nil {
 		const prefix string = ",\"on_conflict\":"
@@ -8566,9 +8537,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore42(in *jlexer.Lexer, out 
 			*out = (*out)[:0]
 		}
 		for !in.IsDelim(']') {
-			var v180 uint64
-			v180 = uint64(in.Uint64())
-			*out = append(*out, v180)
+			var v177 uint64
+			v177 = uint64(in.Uint64())
+			*out = append(*out, v177)
 			in.WantComma()
 		}
 		in.Delim(']')
@@ -8582,11 +8553,11 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore42(out *jwriter.Writer, i
 		out.RawString("null")
 	} else {
 		out.RawByte('[')
-		for v181, v182 := range in {
-			if v181 > 0 {
+		for v178, v179 := range in {
+			if v178 > 0 {
 				out.RawByte(',')
 			}
-			out.Uint64(uint64(v182))
+			out.Uint64(uint64(v179))
 		}
 		out.RawByte(']')
 	}
@@ -8651,9 +8622,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore43(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v183 string
-					v183 = string(in.String())
-					(out.Config)[key] = v183
+					var v180 string
+					v180 = string(in.String())
+					(out.Config)[key] = v180
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8671,9 +8642,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore43(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v184 string
-					v184 = string(in.String())
-					(out.Tags)[key] = v184
+					var v181 string
+					v181 = string(in.String())
+					(out.Tags)[key] = v181
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8742,16 +8713,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore43(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v185First := true
-			for v185Name, v185Value := range in.Config {
-				if v185First {
-					v185First = false
+			v182First := true
+			for v182Name, v182Value := range in.Config {
+				if v182First {
+					v182First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v185Name))
+				out.String(string(v182Name))
 				out.RawByte(':')
-				out.String(string(v185Value))
+				out.String(string(v182Value))
 			}
 			out.RawByte('}')
 		}
@@ -8766,16 +8737,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore43(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v186First := true
-			for v186Name, v186Value := range in.Tags {
-				if v186First {
-					v186First = false
+			v183First := true
+			for v183Name, v183Value := range in.Tags {
+				if v183First {
+					v183First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v186Name))
+				out.String(string(v183Name))
 				out.RawByte(':')
-				out.String(string(v186Value))
+				out.String(string(v183Value))
 			}
 			out.RawByte('}')
 		}
@@ -8888,9 +8859,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore44(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v187 string
-					v187 = string(in.String())
-					(out.Vars)[key] = v187
+					var v184 string
+					v184 = string(in.String())
+					(out.Vars)[key] = v184
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8908,9 +8879,9 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore44(in *jlexer.Lexer, out 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v188 string
-					v188 = string(in.String())
-					(out.Tags)[key] = v188
+					var v185 string
+					v185 = string(in.String())
+					(out.Tags)[key] = v185
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8995,16 +8966,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore44(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v189First := true
-			for v189Name, v189Value := range in.Vars {
-				if v189First {
-					v189First = false
+			v186First := true
+			for v186Name, v186Value := range in.Vars {
+				if v186First {
+					v186First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v189Name))
+				out.String(string(v186Name))
 				out.RawByte(':')
-				out.String(string(v189Value))
+				out.String(string(v186Value))
 			}
 			out.RawByte('}')
 		}
@@ -9019,16 +8990,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore44(out *jwriter.Writer, i
 		}
 		{
 			out.RawByte('{')
-			v190First := true
-			for v190Name, v190Value := range in.Tags {
-				if v190First {
-					v190First = false
+			v187First := true
+			for v187Name, v187Value := range in.Tags {
+				if v187First {
+					v187First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v190Name))
+				out.String(string(v187Name))
 				out.RawByte(':')
-				out.String(string(v190Value))
+				out.String(string(v187Value))
 			}
 			out.RawByte('}')
 		}

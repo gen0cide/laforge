@@ -125,6 +125,7 @@ func (w *WinRMAuthConfig) Hash() uint64 {
 }
 
 // LoadIdentityFile attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (s *SSHAuthConfig) LoadIdentityFile(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if s.IdentityFile == "" {
 		return nil
@@ -153,6 +154,7 @@ func (s *SSHAuthConfig) LoadIdentityFile(base *Laforge, pr *PathResolver, caller
 }
 
 // LoadCAFile attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (w *WinRMAuthConfig) LoadCAFile(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if w.CAFile == "" {
 		return nil
@@ -181,6 +183,7 @@ func (w *WinRMAuthConfig) LoadCAFile(base *Laforge, pr *PathResolver, caller Cal
 }
 
 // LoadCertFile attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (w *WinRMAuthConfig) LoadCertFile(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if w.CertFile == "" {
 		return nil
@@ -209,6 +212,7 @@ func (w *WinRMAuthConfig) LoadCertFile(base *Laforge, pr *PathResolver, caller C
 }
 
 // LoadKeyFile attempts to locate the referenced source file with a laforge base configuration
+//nolint:dupl
 func (w *WinRMAuthConfig) LoadKeyFile(base *Laforge, pr *PathResolver, caller CallFile) error {
 	if w.KeyFile == "" {
 		return nil

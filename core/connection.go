@@ -164,6 +164,45 @@ func (c *Connection) Upload(src, dst string) error {
 	return c.UploadSFTP(src, dst)
 }
 
+// Test will test our connection across the network to make sure it's working
+func (c *Connection) Test() bool {
+	// If it's a windows system, let's test WinRM
+	if c.IsWinRM() {
+		// Create the WinRM client and set our config (including username and pass)
+		client := &WinRMClient{}
+		err := client.SetConfig(c.WinRMAuthConfig)
+		if err != nil {
+			return false
+		}
+
+		// Now we attempt to connect and return the result
+		return client.TestConnection()
+	}
+
+	//If it's UNIX, let's use SSH instead
+	if c.IsSSH() {
+		// Create the SSH connection object
+		client, err := NewSSHClient(c.SSHAuthConfig, "")
+		if err != nil {
+			return false
+		}
+
+		// Let's actually connect here and see if it works!
+		err = client.Connect()
+		if err != nil {
+			return false
+		}
+
+		// Finally disconnect and say it was good
+		//nolint:gosec,errcheck
+		client.Disconnect()
+		return true
+	}
+
+	// If we got here, it wasn't one of the connections we know about, return false
+	return false
+}
+
 // ExecuteCommand is the generic interface for a connection to execute a command on the remote system
 func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 	if c.IsWinRM() {
@@ -172,7 +211,138 @@ func (c *Connection) ExecuteCommand(cmd *RemoteCommand) error {
 	return c.ExecuteCommandSSH(cmd)
 }
 
+// ExecuteString runs a command (in a string) with all of the relevant logs
+func (c *Connection) ExecuteString(j Doer, command, logdir, logname string) error {
+	// Let's make sure our log file directory exists
+	if _, err := os.Stat(logdir); err != nil {
+		return fmt.Errorf("problem locating logdir %s: %v", logdir, err)
+	}
+
+	// And a way to render file paths on our current system for log file names
+	currfp, err := filepath.NewRenderer("")
+	if err != nil {
+		return err
+	}
+
+	// Let's get the name of our files
+	logprefix := currfp.Join(logdir, logname)
+	stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
+	stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+
+	// Channels to tell our buffer goroutines when to finish
+	stdoutdone := make(chan struct{})
+	stderrdone := make(chan struct{})
+
+	// Pipes to hold input and output logs
+	debugstdoutpr, debugstdoutpw := io.Pipe()
+	debugstderrpr, debugstderrpw := io.Pipe()
+
+	// A wait group for STDOUT and STDERR goroutines for us to track when everything is written
+	wg := new(sync.WaitGroup)
+	stdoutScanner := bufio.NewScanner(debugstdoutpr)
+	stderrScanner := bufio.NewScanner(debugstderrpr)
+	wg.Add(2)
+
+	// Goroutines to process STDOUT and STDERR, letting us send output to files and the screen
+	go func() {
+		defer wg.Done()
+		for stdoutScanner.Scan() {
+			text := stdoutScanner.Text()
+			j.StandardOutput(text)
+		}
+		stdoutdone <- struct{}{}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for stderrScanner.Scan() {
+			text := stderrScanner.Text()
+			j.StandardError(text)
+		}
+		stderrdone <- struct{}{}
+	}()
+
+	// Finally a function that runs when we're done, closing everything else out.
+	defer func() {
+		<-stdoutdone
+		<-stderrdone
+		wg.Wait()
+		err := stdoutScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDOUT Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+		err = stderrScanner.Err()
+		if err != nil {
+			cli.Logger.Errorf("Debug STDERR Scanner Error for %s: %v", j.GetTargetID(), err)
+		}
+	}()
+
+	// We need to track timeouts when running our command
+	//nolint:dupl
+	err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
+		// Let's build a remote command struct to pass to the runner
+		rc := NewRemoteCommand()
+		rc.Timeout = j.GetTimeout() / 3
+
+		// Let's open our logs
+		//nolint:gosec
+		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			e <- err
+			return
+		}
+		//nolint:errcheck
+		defer stderrfh.Close()
+		cli.Logger.Infof("Logging STDERR to %s", stdoutfile)
+		//nolint:gosec
+		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			e <- err
+			return
+		}
+		//nolint:errcheck
+		defer stdoutfh.Close()
+		cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
+
+		// And then use the multi-writers so that it can go to debug output and our files
+		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
+		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		//nolint:errcheck
+		defer debugstdoutpw.Close()
+		//nolint:errcheck
+		defer debugstderrpw.Close()
+		rc.Command = command
+		err = c.ExecuteCommand(rc)
+
+		// If there's an issue, we print it out and then extend our timeout
+		if err != nil {
+			if exitErr, ok := err.(*ExitError); ok {
+				if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
+					cli.Logger.Errorf("%s Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+					cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
+					e <- NewTimeoutExtensionWithDelay(err, 120)
+					return
+				}
+				cli.Logger.Errorf("%s Execution Failure due to Exit Error: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
+				e <- NewTimeoutExtensionWithDelay(err, 90)
+				return
+			}
+			cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
+			e <- NewTimeoutExtension(err)
+			return
+		}
+		e <- nil
+	})
+	if err != nil {
+		cli.Logger.Errorf("%s Command execution issue: %v", c.Path(), err)
+		return err
+	}
+	cli.Logger.Infof("Command Executed: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, command)
+	return nil
+}
+
 // UploadExecuteAndDelete is a helper function to chain together a common pattern of execution
+//nolint:gocyclo
 func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname string, logdir string) error {
 	if _, err := os.Stat(scriptsrc); err != nil {
 		return fmt.Errorf("problem locating file %s: %v", scriptsrc, err)
@@ -259,74 +429,102 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 				return
 			}
 			e <- nil
-			return
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Upload Issue: %v", c.Path(), err)
 			return err
 		}
 		cli.Logger.Infof("WinRM Upload Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
+		//nolint:dupl
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			rc := NewRemoteCommand()
 			rc.Timeout = j.GetTimeout() / 3
-
+			//nolint:gosec
 			stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stderrfh.Close()
 			cli.Logger.Infof("Logging STDERR to %s", stderrfile)
+			//nolint:gosec
 			stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stdoutfh.Close()
 			cli.Logger.Infof("Logging STDOUT to %s", stdoutfile)
 			rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 			rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+			//nolint:errcheck
 			defer debugstdoutpw.Close()
+			//nolint:errcheck
 			defer debugstderrpw.Close()
 			rc.Command = finalpath
 			err = c.ExecuteCommandWinRM(rc)
+
+			// First let's see if we got an error
 			if err != nil {
+				// Then we need to make sure it's the right error type we implement for command runners
 				if exitErr, ok := err.(*ExitError); ok {
-					if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
-						cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
-						cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
-						e <- NewTimeoutExtensionWithDelay(err, 120)
+					// And then if we got an error there we'll check for specific things, but sometimes we just get an exit code.  We'll handle that separately.
+					if exitErr.Err != nil {
+						// Here we check to see if we got a timeout on WinRM, if so we'll delay two minutes and then try again
+						if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
+							cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+							cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
+							e <- NewTimeoutExtensionWithDelay(err, 120)
+							return
+						}
+
+						// Here we deal with non-timeout issues on WinRM, we still delay 90 seconds and try again
+						cli.Logger.Errorf("%s Execution Failure occured: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
+						e <- NewTimeoutExtensionWithDelay(err, 90)
 						return
 					}
-					cli.Logger.Errorf("%s Execution Failure due to Exit Error: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
-					e <- NewTimeoutExtensionWithDelay(err, 90)
+
+					// Here we check to see if we got an error code with no error message from WinRM, if so we just error, no retry
+					cli.Logger.Errorf("%s WinRM Non-Zero Exit Code Returned: %d", c.Path(), exitErr.ExitStatus)
+					e <- exitErr
 					return
 				}
+
+				// Finally, we may have also gotten a generic error, if so let's handle that with a generic retry
 				cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
 				e <- NewTimeoutExtension(err)
 				return
 			}
+
+			// If we got here, then we ran with no errors! 
 			e <- nil
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Execute Issue: %v", c.Path(), err)
 			return err
 		}
+
 		cli.Logger.Infof("WinRM Execution Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
 		time.Sleep(4 * time.Second)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
 			delrc := NewRemoteCommand()
+			//nolint:gosec
 			stderrfh2, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stderrfh2.Close()
+			//nolint:gosec
 			stdoutfh2, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				e <- err
 				return
 			}
+			//nolint:errcheck
 			defer stdoutfh2.Close()
 			delrc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh2)
 			delrc.Stderr = io.MultiWriter(debugstderrpw, stderrfh2)
@@ -338,7 +536,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 				return
 			}
 			e <- nil
-			return
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Delete Issue: %v", c.Path(), err)
@@ -356,7 +553,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		wmerr, ok := err.(*ssh.ExitError)
@@ -378,23 +574,29 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 		rc := NewRemoteCommand()
 		stdoutfile := fmt.Sprintf("%s.stdout.log", logprefix)
 		stderrfile := fmt.Sprintf("%s.stderr.log", logprefix)
+		//nolint:gosec
 		stderrfh, err := os.OpenFile(stderrfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stderrfh.Close()
 		cli.Logger.Infof("Logging script STDERR to %s", stderrfile)
+		//nolint:gosec
 		stdoutfh, err := os.OpenFile(stdoutfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			e <- err
 			return
 		}
+		//nolint:errcheck
 		defer stdoutfh.Close()
 		cli.Logger.Infof("Logging script STDOUT to %s", stdoutfile)
 		rc.Stdout = io.MultiWriter(debugstdoutpw, stdoutfh)
 		rc.Stderr = io.MultiWriter(debugstderrpw, stderrfh)
+		//nolint:errcheck
 		defer debugstdoutpw.Close()
+		//nolint:errcheck
 		defer debugstderrpw.Close()
 		rc.Command = finalpath
 		err = c.ExecuteCommandSSH(rc)
@@ -404,7 +606,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		cli.Logger.Errorf("%s Final Execute Issue: %v", c.Path(), err)
@@ -419,7 +620,6 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			return
 		}
 		e <- nil
-		return
 	})
 	if err != nil {
 		cli.Logger.Errorf("%s Final Delete Issue: %v", c.Path(), err)
@@ -436,11 +636,15 @@ func (c *Connection) ExecuteCommandWinRM(cmd *RemoteCommand) error {
 	if err != nil {
 		return err
 	}
-	client.SetIO(
+
+	err = client.SetIO(
 		cmd.Stdout,
 		cmd.Stderr,
 		cmd.Stdin,
 	)
+	if err != nil {
+		return err
+	}
 
 	err = client.ExecuteNonInteractive(cmd)
 	if err != nil {
@@ -466,6 +670,8 @@ func (c *Connection) ExecuteCommandSSH(cmd *RemoteCommand) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.Start(cmd)
@@ -503,11 +709,16 @@ func (c *Connection) InteractiveWinRM() error {
 	if err != nil {
 		return err
 	}
-	client.SetIO(
+
+	//nolint:errcheck
+	err = client.SetIO(
 		ansicolor.NewAnsiColorWriter(os.Stdout),
 		ansicolor.NewAnsiColorWriter(os.Stderr),
 		os.Stdin,
 	)
+	if err != nil {
+		return err
+	}
 
 	err = client.LaunchInteractiveShell()
 	if err != nil {
@@ -527,6 +738,8 @@ func (c *Connection) InteractiveSSH() error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.LaunchInteractiveShell()
@@ -555,6 +768,8 @@ func (c *Connection) UploadScriptSFTP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.UploadScriptV2(src, dst)
@@ -583,6 +798,8 @@ func (c *Connection) UploadSFTP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.UploadFileV2(src, dst)
@@ -603,6 +820,8 @@ func (c *Connection) DeleteScriptSFTP(remotefile string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	err = client.DeleteScriptV2(remotefile)
@@ -632,6 +851,8 @@ func (c *Connection) UploadSCP(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:errcheck
 	defer client.Disconnect()
 
 	if isDir {
@@ -642,6 +863,7 @@ func (c *Connection) UploadSCP(src, dst string) error {
 		return nil
 	}
 
+	//nolint:gosec
 	fileInput, err := os.Open(src)
 	if err != nil {
 		return err

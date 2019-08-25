@@ -9,7 +9,7 @@ import (
 	"github.com/gen0cide/laforge/builder/tfgcp"
 	"github.com/gen0cide/laforge/core/cli"
 
-	"github.com/gen0cide/laforge/builder/buildutil/valdations"
+	validations "github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/fatih/color"
 	"github.com/gen0cide/laforge/builder/buildutil"

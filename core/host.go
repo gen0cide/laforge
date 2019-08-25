@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	hostsDir = `hosts`
+)
+
 // Host defines a configurable type for customizing host parameters within the infrastructure.
 //easyjson:json
 type Host struct {
@@ -155,7 +159,7 @@ func (h *Host) ValidatePath() error {
 	if err := ValidateGenericPath(h.Path()); err != nil {
 		return err
 	}
-	if topdir := strings.Split(h.Path(), `/`); topdir[1] != "hosts" {
+	if topdir := strings.Split(h.Path(), `/`); topdir[1] != hostsDir {
 		return fmt.Errorf("path %s is not rooted in /%s", h.Path(), topdir[1])
 	}
 	return nil
@@ -260,6 +264,7 @@ func (h *Host) IsWindows() bool {
 		return true
 	case "w2k16":
 		return true
+	//nolint:goconst
 	case "windows":
 		return true
 	default:
@@ -278,16 +283,16 @@ func (h *Host) Index(base *Laforge) error {
 
 	for _, s := range h.ProvisionSteps {
 		cli.Logger.Debugf("indexing provision step %s for host %s", s, h.ID)
-		iprov[s] = "included"
+		iprov[s] = ObjectTypeIncluded.String()
 	}
 	for name, script := range base.Scripts {
 		status, found := iprov[name]
 		if !found {
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			h.Scripts[name] = script
-			iprov[name] = "script"
+			iprov[name] = ObjectTypeScript.String()
 			cli.Logger.Debugf("Resolved %T dependency %s for %s", script, script.ID, h.ID)
 		}
 	}
@@ -296,9 +301,9 @@ func (h *Host) Index(base *Laforge) error {
 		if !found {
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			h.Commands[name] = command
-			iprov[name] = "command"
+			iprov[name] = ObjectTypeCommand.String()
 			cli.Logger.Debugf("Resolved %T dependency %s for %s", command, command.ID, h.ID)
 		}
 	}
@@ -307,9 +312,9 @@ func (h *Host) Index(base *Laforge) error {
 		if !found {
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			h.RemoteFiles[name] = file
-			iprov[name] = "remote_file"
+			iprov[name] = ObjectTypeRemoteFile.String()
 			cli.Logger.Debugf("Resolved %T dependency %s for %s", file, file.ID, h.ID)
 		}
 	}
@@ -318,26 +323,26 @@ func (h *Host) Index(base *Laforge) error {
 		if !found {
 			continue
 		}
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			h.DNSRecords[name] = record
-			iprov[name] = "dns_record"
+			iprov[name] = ObjectTypeDNSRecord.String()
 			cli.Logger.Debugf("Resolved %T dependency %s for %s", record, record.ID, h.ID)
 		}
 	}
 	for x, status := range iprov {
-		if status == "included" {
+		if status == ObjectTypeIncluded.String() {
 			return fmt.Errorf("unmet provision_step dependency %s for host %s\n%s", x, h.ID, h.Caller.Error())
 		}
 	}
 	for _, s := range h.ProvisionSteps {
 		switch iprov[s] {
-		case "script":
+		case ObjectTypeScript.String():
 			h.Provisioners = append(h.Provisioners, h.Scripts[s])
-		case "command":
+		case ObjectTypeCommand.String():
 			h.Provisioners = append(h.Provisioners, h.Commands[s])
-		case "remote_file":
+		case ObjectTypeRemoteFile.String():
 			h.Provisioners = append(h.Provisioners, h.RemoteFiles[s])
-		case "dns_record":
+		case ObjectTypeDNSRecord.String():
 			h.Provisioners = append(h.Provisioners, h.DNSRecords[s])
 		default:
 			return fmt.Errorf("unmet provision_step dependency %s for host %s\n%s", s, h.ID, h.Caller.Error())

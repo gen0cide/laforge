@@ -25,6 +25,8 @@ import (
 const (
 	// DefaultShebang is added at the top of a SSH script file
 	DefaultShebang = "#!/bin/bash\n"
+
+	sshKeyPath = `../../data/ssh.pem`
 )
 
 var randLock sync.Mutex
@@ -36,7 +38,6 @@ type SSHClient struct {
 	client   *ssh.Client
 	config   *sshConfig
 	conn     net.Conn
-	address  string
 
 	lock sync.Mutex
 }
@@ -105,6 +106,7 @@ func SSHClientConfig(sshconf *SSHAuthConfig, overrideKey string) (*ssh.ClientCon
 		Auth: []ssh.AuthMethod{
 			pubkeys,
 		},
+		//nolint:gosec
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 	return config, nil
@@ -142,7 +144,10 @@ func (s *SSHClient) Connect() (err error) {
 	defer s.lock.Unlock()
 
 	if s.conn != nil {
-		s.conn.Close()
+		err := s.conn.Close()
+		if err != nil {
+			return err
+		}
 	}
 
 	s.conn = nil
@@ -186,6 +191,7 @@ func (s *SSHClient) LaunchInteractiveShell() error {
 		return err
 	}
 
+	//nolint:gosec,errcheck
 	defer session.Close()
 
 	session.Stdout = ansicolor.NewAnsiColorWriter(os.Stdout)
@@ -207,6 +213,7 @@ func (s *SSHClient) LaunchInteractiveShell() error {
 			return err
 		}
 
+		//nolint:gosec,errcheck
 		defer term.RestoreTerminal(fd, oldState)
 
 		winsize, err := term.GetWinsize(fd)
@@ -259,6 +266,7 @@ func (s *SSHClient) Start(cmd *RemoteCommand) error {
 	}
 
 	go func() {
+		//nolint:gosec,errcheck
 		defer session.Close()
 
 		err := session.Wait()
@@ -282,6 +290,8 @@ func (s *SSHClient) UploadScriptV2(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:gosec,errcheck
 	defer sftp.Close()
 
 	f, err := sftp.Create(dst)
@@ -289,6 +299,7 @@ func (s *SSHClient) UploadScriptV2(src, dst string) error {
 		return err
 	}
 
+	//nolint:gosec
 	fileInput, err := os.Open(src)
 	if err != nil {
 		return err
@@ -318,6 +329,8 @@ func (s *SSHClient) UploadFileV2(src, dst string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:gosec,errcheck
 	defer sftp.Close()
 
 	f, err := sftp.Create(dst)
@@ -325,6 +338,7 @@ func (s *SSHClient) UploadFileV2(src, dst string) error {
 		return err
 	}
 
+	//nolint:gosec
 	fileInput, err := os.Open(src)
 	if err != nil {
 		return err
@@ -349,6 +363,8 @@ func (s *SSHClient) DeleteScriptV2(remotefile string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:gosec,errcheck
 	defer sftp.Close()
 
 	fi, err := sftp.Lstat(remotefile)
@@ -364,14 +380,17 @@ func (s *SSHClient) DeleteScriptV2(remotefile string) error {
 	size := fi.Size()
 	zerobytes := make([]byte, size)
 
-	copy(zerobytes[:], "0")
+	copy(zerobytes, "0")
 
-	_, err = file.Write([]byte(zerobytes))
+	_, err = file.Write(zerobytes)
 	if err != nil {
 		return err
 	}
 
-	file.Close()
+	err = file.Close()
+	if err != nil {
+		return err
+	}
 
 	err = sftp.Remove(remotefile)
 	if err != nil {
@@ -420,9 +439,11 @@ func (s *SSHClient) UploadScript(path string, input io.Reader) error {
 
 	var script bytes.Buffer
 	if string(prefix) != "#!" {
+		//nolint:gosec,errcheck
 		script.WriteString(DefaultShebang)
 	}
 
+	//nolint:gosec,errcheck
 	script.ReadFrom(reader)
 	if err := s.Upload(path, &script); err != nil {
 		return err
@@ -453,10 +474,13 @@ func (s *SSHClient) UploadScript(path string, input io.Reader) error {
 func (s *SSHClient) UploadDir(dst string, src string) error {
 	scpFunc := func(w io.Writer, r *bufio.Reader) error {
 		uploadEntries := func() error {
+			//nolint:gosec
 			f, err := os.Open(src)
 			if err != nil {
 				return err
 			}
+
+			//nolint:gosec,errcheck
 			defer f.Close()
 
 			entries, err := f.Readdir(-1)
@@ -499,6 +523,7 @@ func (s *SSHClient) scpSession(scpCommand string, f func(io.Writer, *bufio.Reade
 	if err != nil {
 		return err
 	}
+	//nolint:gosec,errcheck
 	defer session.Close()
 
 	stdinW, err := session.StdinPipe()
@@ -508,6 +533,7 @@ func (s *SSHClient) scpSession(scpCommand string, f func(io.Writer, *bufio.Reade
 
 	defer func() {
 		if stdinW != nil {
+			//nolint:gosec,errcheck
 			stdinW.Close()
 		}
 	}()
@@ -529,6 +555,7 @@ func (s *SSHClient) scpSession(scpCommand string, f func(io.Writer, *bufio.Reade
 		return err
 	}
 
+	//nolint:gosec,errcheck
 	stdinW.Close()
 	stdinW = nil
 	err = session.Wait()
@@ -537,7 +564,8 @@ func (s *SSHClient) scpSession(scpCommand string, f func(io.Writer, *bufio.Reade
 			if exitErr.ExitStatus() == 127 {
 				return errors.New(
 					"SCP failed to start. This usually means that SCP is not\n" +
-						"properly installed on the remote system.")
+						"properly installed on the remote system.",
+				)
 			}
 		}
 
@@ -576,7 +604,9 @@ func scpUploadFile(dst string, src io.Reader, w io.Writer, r *bufio.Reader, size
 		if err != nil {
 			return fmt.Errorf("Error creating temporary file for upload: %s", err)
 		}
+		//nolint:gosec,errcheck
 		defer os.Remove(tf.Name())
+		//nolint:gosec,errcheck
 		defer tf.Close()
 
 		if _, err := io.Copy(tf, src); err != nil {
@@ -628,7 +658,7 @@ func scpUploadDirProtocol(name string, w io.Writer, r *bufio.Reader, f func() er
 		return err
 	}
 
-	fmt.Fprintln(w, "E")
+	_, err = fmt.Fprintln(w, "E")
 	if err != nil {
 		return err
 	}
@@ -655,12 +685,14 @@ func scpUploadDir(root string, fs []os.FileInfo, w io.Writer, r *bufio.Reader) e
 		}
 
 		if !fi.IsDir() && !isSymlinkToDir {
+			//nolint:gosec
 			f, err := os.Open(realPath)
 			if err != nil {
 				return err
 			}
 
 			err = func() error {
+				//nolint:gosec,errcheck
 				defer f.Close()
 				return scpUploadFile(fi.Name(), f, w, r, fi.Size())
 			}()
@@ -673,10 +705,13 @@ func scpUploadDir(root string, fs []os.FileInfo, w io.Writer, r *bufio.Reader) e
 		}
 
 		err := scpUploadDirProtocol(fi.Name(), w, r, func() error {
+			//nolint:gosec
 			f, err := os.Open(realPath)
 			if err != nil {
 				return err
 			}
+
+			//nolint:gosec,errcheck
 			defer f.Close()
 
 			entries, err := f.Readdir(-1)
@@ -704,7 +739,10 @@ func ConnectFunc(network, addr string) func() (net.Conn, error) {
 		}
 
 		if tcpConn, ok := c.(*net.TCPConn); ok {
-			tcpConn.SetKeepAlive(true)
+			err := tcpConn.SetKeepAlive(true)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return c, nil

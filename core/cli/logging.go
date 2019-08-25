@@ -78,8 +78,6 @@ var (
 type internalLogger struct {
 	internal *logrus.Logger
 	writer   *logWriter
-	prog     string
-	context  string
 }
 
 type logWriter struct {

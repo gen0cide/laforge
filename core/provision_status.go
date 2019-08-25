@@ -43,10 +43,7 @@ func (s *Status) Current() ProvisionStatus {
 
 // CanProceed is used to ensure the state allows further traversal
 func (s *Status) CanProceed() bool {
-	if s.State == ProvStatusComplete {
-		return true
-	}
-	return false
+	return s.State == ProvStatusComplete
 }
 
 // Hash implements the Hasher interface

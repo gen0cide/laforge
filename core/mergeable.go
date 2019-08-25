@@ -1,3 +1,6 @@
+//go:generate renum -c object_types.yml generate -o .
+//go:generate easyjson -pkg -output_filename json.go
+
 package core
 
 import (

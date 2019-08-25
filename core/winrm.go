@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DefaultWinRMTimeout is the default connection duration in seconds for a Laforge WinRM socket.
 var DefaultWinRMTimeout = 60
 
 // WinRMClient is a type to connection to Windows hosts remotely over the WinRM protocol
@@ -52,6 +53,34 @@ func (w *WinRMClient) SetConfig(c *WinRMAuthConfig) error {
 	}
 	w.Config = c
 	return nil
+}
+
+// TestConnection makes a basic connection to the WinRM server to validate it is working
+func (w *WinRMClient) TestConnection() bool {
+	endpoint := winrm.NewEndpoint(
+		w.Config.RemoteAddr,
+		w.Config.Port,
+		w.Config.HTTPS,
+		w.Config.SkipVerify,
+		[]byte{},
+		[]byte{},
+		[]byte{},
+		0,
+	)
+
+	client, err := winrm.NewClient(endpoint, w.Config.User, w.Config.Password)
+	if err != nil {
+		return false
+	}
+
+	shell, err := client.CreateShell()
+	if err != nil {
+		return false
+	}
+
+	//nolint:gosec,errcheck
+	shell.Close()
+	return true
 }
 
 // LaunchInteractiveShell implements the Sheller interface
@@ -88,19 +117,23 @@ func (w *WinRMClient) LaunchInteractiveShell() error {
 
 	shell, err := client.CreateShell()
 	if err != nil {
-		panic(err)
+		return errors.WithMessage(err, "could not create WinRM shell connection")
 	}
 	var cmd *winrm.Command
 	cmd, err = shell.Execute("powershell -NoProfile -ExecutionPolicy Bypass")
 	if err != nil {
-		panic(err)
+		return errors.WithMessage(err, "could not execute PowerShell for interactive session")
 	}
 
+	//nolint:gosec,errcheck
 	go io.Copy(cmd.Stdin, os.Stdin)
+	//nolint:gosec,errcheck
 	go io.Copy(os.Stdout, cmd.Stdout)
+	//nolint:gosec,errcheck
 	go io.Copy(os.Stderr, cmd.Stderr)
 
 	cmd.Wait()
+	//nolint:gosec,errcheck
 	shell.Close()
 
 	return nil
@@ -189,7 +222,7 @@ func (w *WinRMClient) ExecuteNonInteractive(cmd *RemoteCommand) error {
 
 	cli.Logger.Debug("Executing WinRM command...")
 	status, err := client.Run(cmd.Command, cmd.Stdout, cmd.Stderr)
-	cli.Logger.Debug("Completed WinRM execution with exit code %d (errored=%v)", status, (err != nil))
+	cli.Logger.Debugf("Completed WinRM execution with exit code %d (errored=%v)", status, (err != nil))
 	cmd.SetExitStatus(status, err)
 
 	return nil
@@ -218,7 +251,7 @@ func Powershell(psCmd string) string {
 	encodedCmd := base64.StdEncoding.EncodeToString(input)
 
 	// Create the powershell.exe command line to execute the script
-	return fmt.Sprintf("%s", encodedCmd)
+	return encodedCmd
 }
 
 var elevatedCommandTemplate = template.Must(template.New("ElevatedCommandRunner").Parse(`powershell -noprofile -executionpolicy bypass "& { if (Test-Path variable:global:ProgressPreference){set-variable -name variable:global:ProgressPreference -value 'SilentlyContinue'}; &'{{.Path}}'; exit $LastExitCode }"`))
@@ -297,6 +330,7 @@ if (Test-Path $log) {
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($s) | Out-Null
 exit $result`))
 
+// AdvancedTransporter is a custom Transport type implementation for the winrm client library.
 type AdvancedTransporter struct {
 	auth      *WinRMAuthConfig
 	transport http.RoundTripper
@@ -305,6 +339,7 @@ type AdvancedTransporter struct {
 	Timeout   int
 }
 
+// Transport implements the winrm.Transport interface.
 func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	timeout := a.Timeout
 	if a.Timeout == 0 {
@@ -336,6 +371,7 @@ func (a *AdvancedTransporter) Transport(endpoint *winrm.Endpoint) error {
 	return nil
 }
 
+// URL constructs the WinRM URL for the given transporter's endpoint.
 func (a *AdvancedTransporter) URL() string {
 	var scheme string
 	if a.endpoint.HTTPS {
@@ -347,6 +383,7 @@ func (a *AdvancedTransporter) URL() string {
 	return fmt.Sprintf("%s://%s:%d/wsman", scheme, a.endpoint.Host, a.endpoint.Port)
 }
 
+// Post implements the winrm.Transport interface.
 func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessage) (string, error) {
 	req, err := http.NewRequest("POST", a.URL(), strings.NewReader(request.String()))
 	if err != nil {
@@ -369,6 +406,7 @@ func (a *AdvancedTransporter) Post(client *winrm.Client, request *soap.SoapMessa
 		return "", errors.Wrap(err, "http request did not finish successfully")
 	}
 
+	//nolint:gosec,errcheck
 	defer resp.Body.Close()
 
 	if !strings.Contains(resp.Header.Get("Content-Type"), "application/soap+xml") {
