@@ -465,28 +465,47 @@ func (c *Connection) UploadExecuteAndDelete(j Doer, scriptsrc string, tmpname st
 			defer debugstderrpw.Close()
 			rc.Command = finalpath
 			err = c.ExecuteCommandWinRM(rc)
+
+			// First let's see if we got an error
 			if err != nil {
+				// Then we need to make sure it's the right error type we implement for command runners
 				if exitErr, ok := err.(*ExitError); ok {
-					if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
-						cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
-						cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
-						e <- NewTimeoutExtensionWithDelay(err, 120)
+					// And then if we got an error there we'll check for specific things, but sometimes we just get an exit code.  We'll handle that separately.
+					if exitErr.Err != nil {
+						// Here we check to see if we got a timeout on WinRM, if so we'll delay two minutes and then try again
+						if exitErr.ExitStatus == 0 && strings.Contains(exitErr.Err.Error(), "timeout awaiting response headers") {
+							cli.Logger.Errorf("%s WinRM Header Response Timeout (%d): %s", c.Path(), exitErr.ExitStatus, exitErr.Err.Error())
+							cli.Logger.Errorf("%s Waiting 120 seconds for connection keep alives to timeout...", c.Path())
+							e <- NewTimeoutExtensionWithDelay(err, 120)
+							return
+						}
+
+						// Here we deal with non-timeout issues on WinRM, we still delay 90 seconds and try again
+						cli.Logger.Errorf("%s Execution Failure occured: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
+						e <- NewTimeoutExtensionWithDelay(err, 90)
 						return
 					}
-					cli.Logger.Errorf("%s Execution Failure due to Exit Error: %s (exitcode=%d)", c.Path(), exitErr.Err.Error(), exitErr.ExitStatus)
-					e <- NewTimeoutExtensionWithDelay(err, 90)
+
+					// Here we check to see if we got an error code with no error message from WinRM, if so we just error, no retry
+					cli.Logger.Errorf("%s WinRM Non-Zero Exit Code Returned: %d", c.Path(), exitErr.ExitStatus)
+					e <- exitErr
 					return
 				}
+
+				// Finally, we may have also gotten a generic error, if so let's handle that with a generic retry
 				cli.Logger.Errorf("%s Execute Connection Issue: %v", c.Path(), err)
 				e <- NewTimeoutExtension(err)
 				return
 			}
+
+			// If we got here, then we ran with no errors! 
 			e <- nil
 		})
 		if err != nil {
 			cli.Logger.Errorf("%s Final Execute Issue: %v", c.Path(), err)
 			return err
 		}
+
 		cli.Logger.Infof("WinRM Execution Complete: %s (%s) -> %s", c.ProvisionedHost.Host.Base(), c.RemoteAddr, finalpath)
 		time.Sleep(4 * time.Second)
 		err = PerformInTimeout(j.GetTimeout(), func(e chan error) {
