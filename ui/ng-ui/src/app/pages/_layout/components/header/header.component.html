@@ -1,0 +1,39 @@
+<!--begin::Container-->
+<div
+  [ngClass]="headerContainerCSSClasses"
+  class="d-flex align-items-stretch justify-content-between"
+>
+  <ng-container *ngIf="loader$ | async as _loader">
+    <ngb-progressbar
+      class="loading-bar"
+      height="3px"
+      [value]="_loader"
+    ></ngb-progressbar>
+  </ng-container>
+
+  <ng-container *ngIf="headerMenuSelfDisplay">
+    <!--begin::Header Menu Wrapper-->
+    <div
+      class="header-menu-wrapper header-menu-wrapper-left"
+      id="kt_header_menu_wrapper"
+    >
+      <ng-container *ngIf="!asideSelfDisplay">
+        <!--begin::Header Logo-->
+        <div class="header-logo">
+          <a routerLink="/">
+            <img alt="Logo" [attr.src]="headerLogo" />
+          </a>
+        </div>
+        <!--end::Header Logo-->
+      </ng-container>
+    </div>
+    <!--end::Header Menu Wrapper-->
+  </ng-container>
+
+  <ng-container *ngIf="!headerMenuSelfDisplay">
+    <div></div>
+  </ng-container>
+
+  <app-topbar class="topbar"></app-topbar>
+</div>
+<!--end::Container-->
