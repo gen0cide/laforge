@@ -210,7 +210,7 @@ export const DefaultLayoutConfig = {
       }
     },
     "toolbar": {
-      "display": true
+      "display": false
     },
     "scrolltop": {
       "display": true
