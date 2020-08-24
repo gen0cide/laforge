@@ -20,9 +20,6 @@ import json from 'highlight.js/lib/languages/json';
 import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
 import { SplashScreenModule } from './_metronic/partials/layout/splash-screen/splash-screen.module';
-import { PlanComponent } from './plan/plan.component';
-import { BuildComponent } from './build/build.component';
-import { ManageComponent } from './manage/manage.component';
 
 function appInitializer(authService: AuthService) {
   return () => {
@@ -46,7 +43,7 @@ export function getHighlightLanguages() {
 }
 
 @NgModule({
-  declarations: [AppComponent, PlanComponent, BuildComponent, ManageComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -57,9 +54,9 @@ export function getHighlightLanguages() {
     ClipboardModule,
     environment.isMockEnabled
       ? HttpClientInMemoryWebApiModule.forRoot(FakeAPIService, {
-          passThruUnknownUrl: true,
-          dataEncapsulation: false,
-        })
+        passThruUnknownUrl: true,
+        dataEncapsulation: false,
+      })
       : [],
     AppRoutingModule,
     InlineSVGModule.forRoot(),
@@ -81,4 +78,4 @@ export function getHighlightLanguages() {
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
