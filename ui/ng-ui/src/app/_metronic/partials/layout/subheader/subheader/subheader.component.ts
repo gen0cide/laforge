@@ -5,10 +5,10 @@ import { LayoutService } from '../../../../core';
 import { SubheaderService } from '../_services/subheader.service';
 
 @Component({
-  selector: 'app-subheader3',
-  templateUrl: './subheader3.component.html',
+  selector: 'app-subheader',
+  templateUrl: './subheader.component.html',
 })
-export class Subheader3Component implements OnInit {
+export class SubheaderComponent implements OnInit {
   subheaderCSSClasses = '';
   subheaderContainerCSSClasses = '';
   subheaderMobileToggle = false;
@@ -39,3 +39,4 @@ export class Subheader3Component implements OnInit {
     );
   }
 }
+
