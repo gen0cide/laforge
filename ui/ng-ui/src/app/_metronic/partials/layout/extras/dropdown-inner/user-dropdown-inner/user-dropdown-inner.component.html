@@ -44,9 +44,6 @@
         </div>
         <!--end::Text-->
       </div>
-      <span class="label label-success label-lg font-weight-bold label-inline"
-        >3 messages</span
-      >
     </div>
     <!--end::Header-->
   </ng-container>
@@ -57,17 +54,14 @@
     <a class="navi-item px-8 cursor-pointer">
       <div class="navi-link">
         <div class="navi-icon mr-2">
-          <i class="flaticon2-calendar-3 text-success"></i>
+          <i class="fas fa-user-visor text-primary"></i>
         </div>
         <div class="navi-text">
           <div class="font-weight-bold">
-            My Profile
+            My Account
           </div>
           <div class="text-muted">
-            Account settings and more
-            <span class="label label-light-danger label-inline font-weight-bold"
-              >update</span
-            >
+            Github, email, and more
           </div>
         </div>
       </div>
@@ -78,50 +72,14 @@
     <a class="navi-item px-8 cursor-pointer">
       <div class="navi-link">
         <div class="navi-icon mr-2">
-          <i class="flaticon2-mail text-warning"></i>
+          <i class="fas fa-code-branch text-success"></i>
         </div>
         <div class="navi-text">
           <div class="font-weight-bold">
-            My Messages
+            My Environments
           </div>
           <div class="text-muted">
-            Inbox and tasks
-          </div>
-        </div>
-      </div>
-    </a>
-    <!--end::Item-->
-
-    <!--begin::Item-->
-    <a class="navi-item px-8 cursor-pointer">
-      <div class="navi-link">
-        <div class="navi-icon mr-2">
-          <i class="flaticon2-rocket-1 text-danger"></i>
-        </div>
-        <div class="navi-text">
-          <div class="font-weight-bold">
-            My Activities
-          </div>
-          <div class="text-muted">
-            Logs and notifications
-          </div>
-        </div>
-      </div>
-    </a>
-    <!--end::Item-->
-
-    <!--begin::Item-->
-    <a class="navi-item px-8 cursor-pointer">
-      <div class="navi-link">
-        <div class="navi-icon mr-2">
-          <i class="flaticon2-hourglass text-primary"></i>
-        </div>
-        <div class="navi-text">
-          <div class="font-weight-bold">
-            My Tasks
-          </div>
-          <div class="text-muted">
-            latest tasks and projects
+            latest branches and projects
           </div>
         </div>
       </div>
@@ -130,13 +88,12 @@
 
     <!--begin::Footer-->
     <div class="navi-separator mt-3"></div>
-    <div class="navi-footer px-8 py-5">
+    <div class="navi-footer px-8 py-5 float-right">
       <a
         class="btn btn-light-primary font-weight-bold cursor-pointer"
         (click)="logout()"
         >Sign Out</a
       >
-      <a class="btn btn-clean font-weight-bold cursor-pointer">Upgrade Plan</a>
     </div>
     <!--end::Footer-->
   </div>

@@ -1,20 +1,22 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Routes, RouterModule } from '@angular/router';
 import { DashboardComponent } from './dashboard.component';
-import { DashboardsModule } from 'src/app/_metronic/partials/content/dashboards/dashboards.module';
+import { MatSliderModule } from '@angular/material/slider';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: DashboardComponent
+  },
+];
 
 @NgModule({
   declarations: [DashboardComponent],
   imports: [
+    MatSliderModule,
     CommonModule,
-    RouterModule.forChild([
-      {
-        path: '',
-        component: DashboardComponent,
-      },
-    ]),
-    DashboardsModule,
+    RouterModule.forChild(routes),
   ],
 })
-export class DashboardModule {}
+export class DashboardModule { }

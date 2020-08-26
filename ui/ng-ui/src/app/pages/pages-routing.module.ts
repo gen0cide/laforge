@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { LayoutComponent } from './_layout/layout.component';
 import { BuildComponent } from './build/build.component';
-import { ManageComponent } from './manage/manage.component';
 import { PlanComponent } from './plan/plan.component';
 
 const routes: Routes = [
@@ -21,7 +20,8 @@ const routes: Routes = [
       },
       {
         path: 'manage',
-        component: ManageComponent,
+        loadChildren: () =>
+          import('./manage/manage.module').then((m) => m.ManageModule),
       },
       {
         path: 'plan',

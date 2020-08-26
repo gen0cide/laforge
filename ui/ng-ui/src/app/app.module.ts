@@ -62,6 +62,8 @@ export function getHighlightLanguages() {
     InlineSVGModule.forRoot(),
     NgbModule,
   ],
+  exports: [
+  ],
   providers: [
     {
       provide: APP_INITIALIZER,
