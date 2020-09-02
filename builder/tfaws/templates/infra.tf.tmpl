@@ -27,15 +27,122 @@ variable "vmsize" {
   }
 }
 
+data "aws_ami" "ubuntu16" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "ubuntu18" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "centos7" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["CentOS 7.*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["125523088429"] # CentOS AWS ID
+}
+
+data "aws_ami" "debian8" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["debian-jessie-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["379101102735"] # Debian AWS ID
+}
+
+data "aws_ami" "debian9" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["debian-stretch-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["379101102735"] # Debian AWS ID
+}
+
+# For Windows and CentOS 6 will need to create custom AMIs
+
 variable "vmos" {
   type = "map"
   default = {
-    "ubuntu16" = "ubuntu-os-cloud/ubuntu-1604-lts"
-    "ubuntu18" = "ubuntu-os-cloud/ubuntu-1804-lts"
-    "centos7" = "centos-cloud/centos-7"
+    "ubuntu16" = data.aws_ami.ubuntu16.id
+    "ubuntu18" = data.aws_ami.ubuntu18.id
+    "centos7" = data.aws_ami.centos7.id
     "centos6" = "centos-cloud/centos-6"
-    "debian8" = "ubuntu-os-cloud/ubuntu-minimal-1804-lts"
-    "debian9" = "debian-cloud/debian-9"
+    "debian8" = data.aws_ami.debian8.id
+    "debian9" = data.aws_ami.debian9.id
     "w2k3" = "windows-cloud/windows-2016-core"
     "w2k8" = "windows-cloud/windows-2008-r2"
     "w2k12" = "windows-cloud/windows-2012-r2"
@@ -43,12 +150,13 @@ variable "vmos" {
   }
 }
 
-provider "google" {
-  credentials = "${file("{{ index $.Build.Config "gcp_cred_file" }}")}"
-  project = "{{ index $.Build.Config "gcp_project" }}"
-  region = "{{ index $.Build.Config "gcp_region" }}"
+provider "aws" {
+  region = "{{ index $.Build.Config "aws_region" }}"
+  shared_credentials_file = "{{ index $.Build.Config "aws_cred_file" }}"
+  profile                 = "{{ index $.Build.Config "aws_cred_profile" }}"
 }
 
+# Need to see generated GCP Config to understand how the DNS Zone is Defined
 {{ $dnsz := index $.Build.Config "gcp_dns_zone_id" }}
 
 data "google_dns_managed_zone" "{{ $dnsz }}" {
@@ -63,6 +171,8 @@ resource "google_compute_network" "vpc" {
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
 {{ $teamrev = $teamrev.Touch }}
 
+###
+
 resource "local_file" "team_lf_revision" {
   content = {{ $teamrev.ToJSONString | hclstring }}
   filename = "./.team.lfrevision"
@@ -72,6 +182,7 @@ resource "local_file" "team_lf_revision" {
   ]
 }
 
+### aws_network_acl
 resource "google_compute_firewall" "allow_icmp" {
   name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-icmp"
   network = "${google_compute_network.vpc.self_link}"
