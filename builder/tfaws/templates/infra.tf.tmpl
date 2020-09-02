@@ -132,7 +132,7 @@ data "aws_ami" "debian9" {
   owners = ["379101102735"] # Debian AWS ID
 }
 
-# For Windows and CentOS 6 will need to create custom AMIs
+// For Windows and CentOS 6 will need to create custom AMIs
 
 variable "vmos" {
   type = "map"
@@ -156,16 +156,15 @@ provider "aws" {
   profile                 = "{{ index $.Build.Config "aws_cred_profile" }}"
 }
 
-# Need to see generated GCP Config to understand how the DNS Zone is Defined
-# Currently Ignore DNS as I believe Route53 Woudl Have to be used for AWS 
+// Currently Ignore DNS as I believe Route53 Would Have to be used for AWS 
 {{ $dnsz := index $.Build.Config "aws_dns_zone_id" }}
 
 data "google_dns_managed_zone" "{{ $dnsz }}" {
   name = "{{ $dnsz }}"
 }
 
-###
-{{ $team_vpc_name := "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vpc" }}
+//
+{{ $team_vpc_name := printf "%s-t%d-vpc" $.Environment.Base $.Team.TeamNumber }}
 
 resource "aws_vpc" "vpc" {
   cidr_block       = "{{ index $.Build.Config "vpc_cidr" }}"
@@ -175,6 +174,16 @@ resource "aws_vpc" "vpc" {
   tags = {
     Name = "{{ $team_vpc_name }}"
   }
+}
+
+resource "aws_internet_gateway" "vpc_default" {
+  vpc_id = aws_vpc.vpc.id
+}
+
+resource "aws_route" "vpc_internet_access" {
+  route_table_id         = aws_vpc.vpc.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.vpc_default.id
 }
 
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
@@ -190,7 +199,7 @@ resource "local_file" "team_lf_revision" {
   ]
 }
 
-### aws_network_acl
+// aws_network_acl
 resource "aws_network_acl" "vpc_acl" {
   vpc_id = aws_vpc.vpc.id
 }
@@ -219,7 +228,7 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
 }
 {{ end }}
 
-# If there are over 9 cidrs then the rule number would be messed up
+// If there are over 9 cidrs then the rule number would be messed up
 {{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
   network_acl_id = aws_network_acl.vpc_acl.id
@@ -265,18 +274,23 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
   from_port      = 9971
   to_port        = 9971
 }
-###
+//
 
 
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
 {{ $netname := $net.Path }}
 // network = {{ $netname }}
-resource "google_compute_subnetwork" "{{ $net.Base }}" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $net.Base }}"
-  ip_cidr_range = "{{ $net.CIDR }}"
-  region = "{{ index $.Build.Config "gcp_region" }}"
-  network = "${google_compute_network.vpc.self_link}"
+
+{{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $net.Base }}
+
+resource "aws_subnet" "{{ $network_subnet_name }}" {
+  vpc_id     = aws_vpc.vpc.id
+  cidr_block = "{{ $net.CIDR }}"
+
+  tags = {
+    Name = "{{ $netname }}"
+  }
 }
 
 {{ $pnetrev := (index $.Laforge.StateManager.NewRevs $pnetid) }}
@@ -287,7 +301,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
   filename = "./networks/{{ $pnet.Base }}/.provisioned_network.lfrevision"
 
   depends_on = [
-    "google_compute_subnetwork.{{ $net.Base }}",
+    "aws_subnet.{{ $network_subnet_name }}",
   ]
 }
 {{ end }}
@@ -304,6 +318,16 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
   {{ end }}
 {{ end }}
 
+resource "aws_key_pair" "laforge" {
+  key_name   = "laforge-key"
+  public_key = "${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge"
+}
+
+resource "aws_key_pair" "cptc" {
+  key_name   = "cptc-key"
+  public_key = "{{ index $.Build.Config "aws_project_ssh_pubkey" }} root@admin.cptc.network"
+}
+
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
   {{ $netobj := $pnet.Network }}
   {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
@@ -314,64 +338,52 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       name = "{{ $resource_name }}"
     }
 
-    resource "google_compute_instance" "{{ $resource_name }}" {
-      name = "{{ $resource_name }}"
-      machine_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
-      zone = "{{ index $.Build.Config "gcp_zone" }}"
+    {{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base }}
 
-      boot_disk {
-        initialize_params {
-          size = "{{ $host.Disk.Size }}"
-          type = "pd-ssd"
-          image = "${var.vmos["{{ $host.OS }}"]}"
-        }
+    resource "aws_network_interface" "{{ $resource_name }}-pmi" {
+      subnet_id   = aws_subnet.{{ $network_subnet_name }}.id
+      private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
+      private_dns_name = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
+
+      tags = {
+        Name = "{{ $resource_name }}-primary-network-interface"
       }
+    }
+
+    resource "aws_instance" "{{ $resource_name }}" {
+      ami           = ${var.vmos["{{ $host.OS }}"]}
+      instance_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
+      associate_public_ip_address = true
 
       network_interface {
-        subnetwork = "${google_compute_subnetwork.{{ $netobj.Base }}.self_link}"
-        network_ip = "${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"
-
-        access_config {
-          nat_ip = "${google_compute_address.{{ $resource_name }}.address}"
-        }
+        network_interface_id = aws_network_interface.{{ $resource_name }}-pmi.id
+        device_index         = 0
       }
 
-      {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
-
-      metadata = {
-        hostname = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
-        {{ if $host.IsWindows }}
-        windows-startup-script-ps1 = "net user administrator /active:yes"
-        sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
-        {{ else }}
-        sshKeys = <<EOF
-root:${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge
-root:{{ index $.Build.Config "gcp_project_ssh_pubkey" }} root@admin.cptc.network
-EOF
-
-        {{ end }}
+      root_block_device {
+        volume_type = "gp2"
+        volume_size = {{ $host.Disk.Size }}
       }
 
-
+      user_data = file("userdata.sh")
       {{ if ne $host.IsWindows true }}
-      metadata_startup_script = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
+      user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
       {{ end }}
 
-      tags = [
-        "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}",
-        "{{ $netobj.Base }}",
-        "{{ $host.Hostname }}",
-        "t{{ $.Team.TeamNumber }}",
-        "{{ $.Environment.Base }}",
-        "{{ $.Competition.ID }}",
-        "{{ $host.Base }}",
-        "{{ $resource_name }}",
-      ]
+      tags = {
+        EnvironmentNetwork = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}",
+        NetworkBase = "{{ $netobj.Base }}",
+        Hostname = "{{ $host.Hostname }}",
+        Team = "t{{ $.Team.TeamNumber }}",
+        Environment = "{{ $.Environment.Base }}",
+        Competition = "{{ $.Competition.ID }}",
+        ResourceName = "{{ $resource_name }}",
+      }
 
       provisioner "file" {
         {{ if $host.IsWindows }}
           connection {
-            host     = "${google_compute_address.{{ $resource_name }}.address}"
+            host     = "${aws_instance.{{ $resource_name }}.public_ip}"
             type     = "winrm"
             user     = "Administrator"
             timeout  = "60m"
@@ -380,7 +392,7 @@ EOF
         {{ else }}
           connection {
             agent       = "false"
-            host        = "${google_compute_address.{{ $resource_name }}.address}"
+            host        = "${aws_instance.{{ $resource_name }}.public_ip}"
             type        = "ssh"
             user        = "root"
             timeout     = "60m"
@@ -397,6 +409,35 @@ EOF
       }
     }
 
+    resource "google_compute_instance" "{{ $resource_name }}" {
+      name = "{{ $resource_name }}"
+      zone = "{{ index $.Build.Config "gcp_zone" }}"
+
+
+     
+      {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
+
+      metadata = {
+        hostname = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
+        {{ if $host.IsWindows }}
+        windows-startup-script-ps1 = "net user administrator /active:yes"
+        sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
+        {{ else }}
+        sshKeys = <<EOF
+        root:${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge
+        root:{{ index $.Build.Config "gcp_project_ssh_pubkey" }} root@admin.cptc.network
+        EOF
+
+        {{ end }}
+      }
+
+
+      
+
+      
+    }
+
+####
     {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
     {{ $phostrev = $phostrev.TouchWithID $resource_name }}
 
