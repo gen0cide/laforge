@@ -334,10 +334,6 @@ resource "aws_key_pair" "cptc" {
     {{ $host := $phost.Host }}
     {{ $resource_name := printf "%s-t%d-%s-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base $host.Base }}
 
-    resource "google_compute_address" "{{ $resource_name }}" {
-      name = "{{ $resource_name }}"
-    }
-
     {{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base }}
 
     resource "aws_network_interface" "{{ $resource_name }}-pmi" {
@@ -354,6 +350,7 @@ resource "aws_key_pair" "cptc" {
       ami           = ${var.vmos["{{ $host.OS }}"]}
       instance_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
       associate_public_ip_address = true
+      key_name = aws_key_pair.laforge.key_name
 
       network_interface {
         network_interface_id = aws_network_interface.{{ $resource_name }}-pmi.id
@@ -365,7 +362,6 @@ resource "aws_key_pair" "cptc" {
         volume_size = {{ $host.Disk.Size }}
       }
 
-      user_data = file("userdata.sh")
       {{ if ne $host.IsWindows true }}
       user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
       {{ end }}
@@ -380,7 +376,9 @@ resource "aws_key_pair" "cptc" {
         ResourceName = "{{ $resource_name }}",
       }
 
-      provisioner "file" {
+    }
+    
+    provisioner "file" {
         {{ if $host.IsWindows }}
           connection {
             host     = "${aws_instance.{{ $resource_name }}.public_ip}"
@@ -407,7 +405,6 @@ resource "aws_key_pair" "cptc" {
           destination = "/opt/laforge-agent"
         {{ end }}
       }
-    }
 
     resource "google_compute_instance" "{{ $resource_name }}" {
       name = "{{ $resource_name }}"
