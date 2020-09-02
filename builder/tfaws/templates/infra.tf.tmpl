@@ -157,135 +157,115 @@ provider "aws" {
 }
 
 # Need to see generated GCP Config to understand how the DNS Zone is Defined
-{{ $dnsz := index $.Build.Config "gcp_dns_zone_id" }}
+# Currently Ignore DNS as I believe Route53 Woudl Have to be used for AWS 
+{{ $dnsz := index $.Build.Config "aws_dns_zone_id" }}
 
 data "google_dns_managed_zone" "{{ $dnsz }}" {
   name = "{{ $dnsz }}"
 }
 
-resource "google_compute_network" "vpc" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vpc"
-  auto_create_subnetworks = false
+###
+{{ $team_vpc_name := "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vpc" }}
+
+resource "aws_vpc" "vpc" {
+  cidr_block       = "{{ index $.Build.Config "vpc_cidr" }}"
+  enable_dns_hostnames = true
+  enable_dns_support = true
+
+  tags = {
+    Name = "{{ $team_vpc_name }}"
+  }
 }
 
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
 {{ $teamrev = $teamrev.Touch }}
 
-###
 
 resource "local_file" "team_lf_revision" {
   content = {{ $teamrev.ToJSONString | hclstring }}
   filename = "./.team.lfrevision"
 
   depends_on = [
-    "google_compute_network.vpc",
+    "aws_vpc.vpc",
   ]
 }
 
 ### aws_network_acl
-resource "google_compute_firewall" "allow_icmp" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-icmp"
-  network = "${google_compute_network.vpc.self_link}"
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
-
-  source_ranges = [
-    "{{ index $.Build.Config "vpc_cidr" }}",
-  ]
+resource "aws_network_acl" "vpc_acl" {
+  vpc_id = aws_vpc.vpc.id
 }
 
-resource "google_compute_firewall" "allow_admin" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-admin"
-  network = "${google_compute_network.vpc.self_link}"
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
-
-  source_ranges = [
-    {{ if ne (index $.Build.Config "admin_ip") "" }}
-    "{{ index $.Build.Config "admin_ip" }}/32",
-    {{ end }}
-    {{ range $_, $cidr := $.Environment.AdminCIDRs }}
-    "{{ $cidr }}",
-    {{ end }}
-  ]
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-int" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 100
+  egress         = false
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
+  icmp_type      = -1
+  icmp_code      = -1
 }
 
-resource "google_compute_firewall" "allow_vdi_ext" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-vdi-ext"
-  network = "${google_compute_network.vpc.self_link}"
+{{ if ne (index $.Build.Config "admin_ip") "" }}
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 101
+  egress         = true
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "admin_ip" }}/32"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+{{ end }}
 
-  allow {
-    protocol = "tcp"
-    ports = [
-      "22",
-      "3389",
-    ]
-  }
+# If there are over 9 cidrs then the rule number would be messed up
+{{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 20{{ $cidr_pos }}
+  egress         = true
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ $cidr }}"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+{{ end }}
 
-  source_ranges = [
-    "{{ index $.Build.Config "vdi_whitelist" }}",
-  ]
-
-  target_tags = [
-    "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-vdi",
-  ]
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-22" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 300
+  egress         = true
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
+  from_port      = 22
+  to_port        = 22
 }
 
-resource "google_compute_firewall" "allow_vdi_int" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-allow-vdi-int"
-  network = "${google_compute_network.vpc.self_link}"
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
-
-  source_ranges = [
-    "{{ index $.Build.Config "vpc_cidr" }}",
-  ]
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-3389" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 301
+  egress         = true
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
+  from_port      = 3389
+  to_port        = 3389
 }
 
-resource "google_compute_firewall" "deny_mgmt_int" {
-  name = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-deny-mgmt-int"
-  network = "${google_compute_network.vpc.self_link}"
-
-
-  deny {
-    protocol = "tcp"
-    ports = [ "9971" ]
-  }
-
-  source_ranges = [
-    "{{ index $.Build.Config "vpc_cidr" }}",
-  ]
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
+  network_acl_id = aws_network_acl.vpc_acl.id
+  rule_number    = 99
+  egress         = true
+  protocol       = "tcp"
+  rule_action    = "deny"
+  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
+  from_port      = 9971
+  to_port        = 9971
 }
+###
 
 
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
