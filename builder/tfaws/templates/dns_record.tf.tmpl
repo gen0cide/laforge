@@ -1,0 +1,27 @@
+{{ define "dns_record" }}
+
+resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  zone = "{{ .DNSRecord.Zone }}."
+  name = "{{ .DNSRecord.Name }}"
+  addresses = [
+    {{ if .DNSRecord.Inherited }}
+    "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.network_ip}",
+    {{ else }}
+    "{{ .DNSRecord.Value }}",
+    {{ end }}
+  ]
+  ttl = 300
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  triggers {
+    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+  }
+
+  depends_on = [
+    "{{ .Get "depends_on" }}",
+    "dns_a_record_set.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}",
+  ]
+}
+
+{{ end }}
