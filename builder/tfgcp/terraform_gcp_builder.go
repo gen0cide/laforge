@@ -1,4 +1,5 @@
 // Package tfgcp implements a Laforge Builder module for generating terraform configurations that target Google Compute Platform.
+//go:generate fileb0x assets.toml
 package tfgcp
 
 import (
@@ -104,11 +105,6 @@ var (
 			Name:       "no teams specified",
 			Resolution: "make sure to set your team_count inside your environment config block to at least 1.",
 			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
-		},
-		validations.Requirement{
-			Name:       "admin IP not defined",
-			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
 		},
 		validations.Requirement{
 			Name:       "GCP Region not defined",

@@ -110,9 +110,6 @@ resource "google_compute_firewall" "allow_admin" {
   }
 
   source_ranges = [
-    {{ if ne (index $.Build.Config "admin_ip") "" }}
-    "{{ index $.Build.Config "admin_ip" }}/32",
-    {{ end }}
     {{ range $_, $cidr := $.Environment.AdminCIDRs }}
     "{{ $cidr }}",
     {{ end }}
@@ -126,8 +123,9 @@ resource "google_compute_firewall" "allow_vdi_ext" {
   allow {
     protocol = "tcp"
     ports = [
-      "22",
-      "3389",
+      {{ range $_, $port := $.Environment.ExposedVDIPorts }}
+      "{{ $port }}",
+      {{ end }}
     ]
   }
 
