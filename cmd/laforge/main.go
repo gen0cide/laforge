@@ -58,8 +58,12 @@ func main() {
 			Name:  laforge.AuthorName,
 			Email: laforge.AuthorEmail,
 		},
+		cli.Author{
+			Name:  laforge.AuthorName2,
+			Email: laforge.AuthorEmail2,
+		},
 	}
-	app.Copyright = `(c) 2018 Alex Levinson`
+	app.Copyright = `(c) 2020 Alex Levinson`
 	app.Commands = []cli.Command{
 		configureCommand,
 		initCommand,

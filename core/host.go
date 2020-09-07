@@ -256,13 +256,17 @@ func (h *Host) CalcIP(subnet string) string {
 // IsWindows is a template helper function to determine if the underlying operating system is windows
 func (h *Host) IsWindows() bool {
 	switch strings.ToLower(h.OS) {
-	case "w2k3":
-		return true
-	case "w2k8":
-		return true
 	case "w2k12":
 		return true
 	case "w2k16":
+		return true
+	case "w2k19":
+		return true
+	case "w2k12-sql":
+		return true
+	case "w2k16-sql":
+		return true
+	case "w2k19-sql":
 		return true
 	//nolint:goconst
 	case "windows":
