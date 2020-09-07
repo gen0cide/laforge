@@ -231,6 +231,10 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       machine_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
       zone = "{{ index $.Build.Config "gcp_zone" }}"
 
+      {{ if $host.AllowMACChanges }}
+      can_ip_forward = true
+      {{ end }}
+
       boot_disk {
         initialize_params {
           size = "{{ $host.Disk.Size }}"

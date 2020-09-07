@@ -5673,6 +5673,8 @@ func easyjsonA5722a85DecodeGithubComGen0cideLaforgeCore29(in *jlexer.Lexer, out 
 			out.LastOctet = int(in.Int())
 		case "instance_size":
 			out.InstanceSize = string(in.String())
+		case "allow_mac_changes":
+			out.AllowMACChanges = bool(in.Bool())
 		case "disk":
 			(out.Disk).UnmarshalEasyJSON(in)
 		case "provision_steps":
@@ -5949,6 +5951,16 @@ func easyjsonA5722a85EncodeGithubComGen0cideLaforgeCore29(out *jwriter.Writer, i
 			out.RawString(prefix)
 		}
 		out.String(string(in.InstanceSize))
+	}
+	if in.AllowMACChanges {
+		const prefix string = ",\"allow_mac_changes\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.AllowMACChanges))
 	}
 	if true {
 		const prefix string = ",\"disk\":"

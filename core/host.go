@@ -27,6 +27,7 @@ type Host struct {
 	AMI              string                 `cty:"ami" hcl:"ami,optional" json:"ami,omitempty"`
 	LastOctet        int                    `cty:"last_octet" hcl:"last_octet,attr" json:"last_octet,omitempty"`
 	InstanceSize     string                 `cty:"instance_size" hcl:"instance_size,attr" json:"instance_size,omitempty"`
+	AllowMACChanges  bool                   `cty:"allow_mac_changes" hcl:"allow_mac_changes,optional" json:"allow_mac_changes,omitempty"`
 	Disk             Disk                   `cty:"disk" hcl:"disk,block" json:"disk,omitempty"`
 	ProvisionSteps   []string               `cty:"provision_steps" hcl:"provision_steps,optional" json:"provision_steps,omitempty"`
 	ExposedTCPPorts  []string               `cty:"exposed_tcp_ports" hcl:"exposed_tcp_ports,optional" json:"exposed_tcp_ports,omitempty"`
