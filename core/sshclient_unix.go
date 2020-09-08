@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/docker/docker/pkg/term"
+	"github.com/docker/engine/pkg/term"
 	"golang.org/x/crypto/ssh"
 )
 
