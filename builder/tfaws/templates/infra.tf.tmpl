@@ -20,6 +20,8 @@ terraform {
 variable "vmsize" {
   type = "map"
   default = {
+    "nano" = "t3.nano"
+    "micro" = "t3.micro"
     "small" = "t3.small"
     "medium" = "t3.medium"
     "large" = "t3.large"
@@ -45,6 +47,11 @@ data "aws_ami" "ubuntu16" {
     values = ["ebs"]
   }
 
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
   owners = ["099720109477"] # Canonical AWS ID
 }
 
@@ -64,6 +71,37 @@ data "aws_ami" "ubuntu18" {
   filter {
     name   = "root-device-type"
     values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "ubuntu20" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-servers-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 
   owners = ["099720109477"] # Canonical AWS ID
@@ -87,6 +125,37 @@ data "aws_ami" "centos7" {
     values = ["ebs"]
   }
 
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  owners = ["125523088429"] # CentOS AWS ID
+}
+
+data "aws_ami" "centos8" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["CentOS 8.*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
   owners = ["125523088429"] # CentOS AWS ID
 }
 
@@ -108,6 +177,11 @@ data "aws_ami" "debian8" {
     values = ["ebs"]
   }
 
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
   owners = ["379101102735"] # Debian AWS ID
 }
 
@@ -116,7 +190,7 @@ data "aws_ami" "debian9" {
 
   filter {
     name   = "name"
-    values = ["debian-stretch-*"]
+    values = ["debian-stretch-hvm-x86_64-*"]
   }
 
   filter {
@@ -129,6 +203,37 @@ data "aws_ami" "debian9" {
     values = ["ebs"]
   }
 
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  owners = ["379101102735"] # Debian AWS ID
+}
+
+data "aws_ami" "debian10" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["debian-10-amd64-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
   owners = ["379101102735"] # Debian AWS ID
 }
 
@@ -139,14 +244,18 @@ variable "vmos" {
   default = {
     "ubuntu16" = data.aws_ami.ubuntu16.id
     "ubuntu18" = data.aws_ami.ubuntu18.id
+    "ubuntu20" = data.aws_ami.ubuntu20.id
     "centos7" = data.aws_ami.centos7.id
-    "centos6" = "centos-cloud/centos-6"
+    "centos8" = data.aws_ami.centos8.id
     "debian8" = data.aws_ami.debian8.id
     "debian9" = data.aws_ami.debian9.id
-    "w2k3" = "windows-cloud/windows-2016-core"
-    "w2k8" = "windows-cloud/windows-2008-r2"
+    "debian10" = data.aws_ami.debian10.id
     "w2k12" = "windows-cloud/windows-2012-r2"
     "w2k16" = "windows-cloud/windows-2016"
+    "w2k19" = "windows-cloud/windows-2019"
+    "w2k12-sql" = "windows-sql-cloud/sql-ent-2012-win-2012-r2"
+    "w2k16-sql" = "windows-sql-cloud/sql-ent-2014-win-2016"
+    "w2k19-sql" = "windows-sql-cloud/sql-ent-2016-win-2019"
   }
 }
 
@@ -228,11 +337,13 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
 }
 {{ end }}
 
-// If there are over 9 cidrs then the rule number would be messed up
+{{ $current_rule_number := 200 }}
+
 {{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
+{{ $current_rule_number = Incr $current_rule_number }}
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
   network_acl_id = aws_network_acl.vpc_acl.id
-  rule_number    = 20{{ $cidr_pos }}
+  rule_number    = {{ $current_rule_number }}
   egress         = true
   protocol       = "all"
   rule_action    = "allow"
@@ -242,27 +353,19 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }
 }
 {{ end }}
 
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-22" {
+{{ range $_, $port := $.Environment.ExposedVDIPorts }}
+{{ $current_rule_number = Incr $current_rule_number }}
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-{{ {{ $port }} }}" {
   network_acl_id = aws_network_acl.vpc_acl.id
-  rule_number    = 300
+  rule_number    = {{ $current_rule_number }}
   egress         = true
   protocol       = "tcp"
   rule_action    = "allow"
   cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
-  from_port      = 22
-  to_port        = 22
+  from_port      = {{ $port }}
+  to_port        = {{ $port }}
 }
-
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-3389" {
-  network_acl_id = aws_network_acl.vpc_acl.id
-  rule_number    = 301
-  egress         = true
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
-  from_port      = 3389
-  to_port        = 3389
-}
+{{ end }}
 
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
   network_acl_id = aws_network_acl.vpc_acl.id
@@ -274,7 +377,6 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
   from_port      = 9971
   to_port        = 9971
 }
-//
 
 
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
