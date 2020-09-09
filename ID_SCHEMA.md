@@ -1,4 +1,4 @@
-# Laforge ID & Schemas
+# Laforge ID & Schemas.
 
 The ID can be 4-32 lowercase alpha-numeric characters and can include `-` (hypens) as long as it is not the first or last character.
 IDs must not match any string in the ID blacklist.
