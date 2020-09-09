@@ -10,18 +10,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/frybin/laforge/agent"
-	"github.com/frybin/laforge/builder/tfaws/static"
-	"github.com/frybin/laforge/core/cli"
+	"github.com/gen0cide/laforge/agent"
+	"github.com/gen0cide/laforge/builder/tfaws/static"
+	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl/hcl/printer"
 
-	"github.com/frybin/laforge/builder/buildutil/templates"
-	validations "github.com/frybin/laforge/builder/buildutil/valdations"
+	"github.com/gen0cide/laforge/builder/buildutil/templates"
+	validations "github.com/gen0cide/laforge/builder/buildutil/valdations"
 
 	"github.com/pkg/errors"
 
-	"github.com/frybin/laforge/builder/buildutil"
-	"github.com/frybin/laforge/core"
+	"github.com/gen0cide/laforge/builder/buildutil"
+	"github.com/gen0cide/laforge/core"
 )
 
 // Definition of builder meta-data.

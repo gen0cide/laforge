@@ -5,7 +5,7 @@ resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "s
   name = "{{ .DNSRecord.Name }}"
   addresses = [
     {{ if .DNSRecord.Inherited }}
-    "${google_compute_instance.{{ .Get "resource_name" }}.network_interface.0.network_ip}",
+    "${aws_instance.{{ .Get "resource_name" }}.public_ip}",
     {{ else }}
     "{{ .DNSRecord.Value }}",
     {{ end }}
@@ -15,7 +15,7 @@ resource "dns_a_record_set" "provision_{{ .Get "resource_name" }}_step{{ .Get "s
 
 resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
   triggers {
-    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+    instance_id = "${aws_instance.{{ .Get "resource_name" }}.id}"
   }
 
   depends_on = [

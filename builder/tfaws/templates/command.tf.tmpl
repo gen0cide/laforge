@@ -1,13 +1,13 @@
 {{ define "command" }}
 resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
   depends_on = [
-    "ibm_compute_vm_instance.{{ .Get "resource_name" }}"
+    "aws_instance.{{ .Get "resource_name" }}"
   ]
 
   provisioner "remote-exec" {
     {{ if .Host.IsWindows }}
       connection {
-        host     = "${ibm_compute_vm_instance.{{ .Get "resource_name" }}.ipv4_address}"
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
         type     = "winrm"
         user     = "Administrator"
         timeout  = "60m"
@@ -15,7 +15,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
       }
     {{ else }}
       connection {
-        host        = "${ibm_compute_vm_instance.{{ .Get "resource_name" }}.ipv4_address}"
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
         type        = "ssh"
         user        = "root"
         timeout     = "60m"

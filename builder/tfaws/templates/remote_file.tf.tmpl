@@ -1,7 +1,7 @@
 {{ define "remote_file" }}
 resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload" {
   triggers {
-    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+    instance_id = "${aws_instance.{{ .Get "resource_name" }}.id}"
   }
 
   depends_on = [
@@ -13,7 +13,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
   provisioner "file" {
     {{ if .Host.IsWindows }}
       connection {
-        host     = "${google_compute_address.{{ .Get "resource_name" }}.address}"
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
         type     = "winrm"
         user     = "Administrator"
         timeout  = "60m"
@@ -22,7 +22,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
     {{ else }}
       connection {
         agent       = "false"
-        host        = "${google_compute_address.{{ .Get "resource_name" }}.address}"
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
         type        = "ssh"
         user        = "root"
         timeout     = "60m"
@@ -37,7 +37,7 @@ resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step
 
 resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
   triggers {
-    instance_id = "${google_compute_instance.{{ .Get "resource_name" }}.instance_id}"
+    instance_id = "${aws_instance.{{ .Get "resource_name" }}.id}"
   }
 
   depends_on = [

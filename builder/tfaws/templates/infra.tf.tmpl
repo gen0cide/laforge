@@ -237,8 +237,6 @@ data "aws_ami" "debian10" {
   owners = ["379101102735"] # Debian AWS ID
 }
 
-// For Windows and CentOS 6 will need to create custom AMIs
-
 variable "vmos" {
   type = "map"
   default = {
@@ -265,14 +263,12 @@ provider "aws" {
   profile                 = "{{ index $.Build.Config "aws_cred_profile" }}"
 }
 
-// Currently Ignore DNS as I believe Route53 Would Have to be used for AWS 
 {{ $dnsz := index $.Build.Config "aws_dns_zone_id" }}
 
-data "google_dns_managed_zone" "{{ $dnsz }}" {
+resource "aws_route53_zone" "{{ $dnsz }}" {
   name = "{{ $dnsz }}"
 }
 
-//
 {{ $team_vpc_name := printf "%s-t%d-vpc" $.Environment.Base $.Team.TeamNumber }}
 
 resource "aws_vpc" "vpc" {
@@ -464,8 +460,11 @@ resource "aws_key_pair" "cptc" {
         volume_size = {{ $host.Disk.Size }}
       }
 
-      {{ if ne $host.IsWindows true }}
+      {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
       user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
+
+      {{ if $host.AllowMACChanges }}
+      source_dest_check = false
       {{ end }}
 
       tags = {
@@ -507,35 +506,7 @@ resource "aws_key_pair" "cptc" {
           destination = "/opt/laforge-agent"
         {{ end }}
       }
-
-    resource "google_compute_instance" "{{ $resource_name }}" {
-      name = "{{ $resource_name }}"
-      zone = "{{ index $.Build.Config "gcp_zone" }}"
-
-
-     
-      {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
-
-      metadata = {
-        hostname = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
-        {{ if $host.IsWindows }}
-        windows-startup-script-ps1 = "net user administrator /active:yes"
-        sysprep-specialize-script-ps1 = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
-        {{ else }}
-        sshKeys = <<EOF
-        root:${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge
-        root:{{ index $.Build.Config "gcp_project_ssh_pubkey" }} root@admin.cptc.network
-        EOF
-
-        {{ end }}
-      }
-
-
       
-
-      
-    }
-
 ####
     {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
     {{ $phostrev = $phostrev.TouchWithID $resource_name }}
@@ -545,29 +516,26 @@ resource "aws_key_pair" "cptc" {
       filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.provisioned_host.lfrevision"
 
       depends_on = [
-        "google_compute_instance.{{ $resource_name }}",
+        "aws_instance.{{ $resource_name }}",
       ]
     }
 
     output "{{ $host.Base }}-private_ip" {
-      value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
+      value = "${aws_instance.{{ $resource_name }}.private_ip}"
     }
 
     output "{{ $host.Base }}-public_ip" {
-      value = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
+      value = "${aws_instance.{{ $resource_name }}.public_ip}"
     }
 
     {{ if $host.TagEquals "vdi" "true" }}
-    resource "google_dns_record_set" "{{ $resource_name }}" {
-      managed_zone = "${data.google_dns_managed_zone.{{ $dnsz }}.name}"
+    resource "aws_route53_record" "{{ $resource_name }}" {
+      managed_zone = aws_route53_zone.{{ $dnsz }}.zone_id
 
       name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${data.google_dns_managed_zone.{{ $dnsz }}.dns_name}"
       type = "A"
       ttl = "300"
-
-      rrdatas = [
-        "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}",
-      ]
+      records = [aws_instance.{{ $resource_name }}.public_ip]
     }
     {{ end }}
 
@@ -575,10 +543,10 @@ resource "aws_key_pair" "cptc" {
       template = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base "provisioned_host.tpl" }}")}"
 
       vars = {
-        remote_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.access_config.0.nat_ip}"
-        local_addr = "${google_compute_instance.{{ $resource_name }}.network_interface.0.network_ip}"
+        remote_addr = "${aws_instance.{{ $resource_name }}.public_ip}"
+        local_addr = "${aws_instance.{{ $resource_name }}.private_ip}"
         host_active = "true"
-        resource_name = "google_compute_instance.{{ $resource_name }}"
+        resource_name = "aws_instance.{{ $resource_name }}"
         {{ if $host.IsWindows }}
         password = "{{ $phost.ActualPassword }}"
         {{ else }}
@@ -587,7 +555,7 @@ resource "aws_key_pair" "cptc" {
       }
 
       depends_on = [
-        "google_compute_instance.{{ $resource_name }}",
+        "aws_instance.{{ $resource_name }}",
       ]
     }
 
@@ -596,7 +564,7 @@ resource "aws_key_pair" "cptc" {
       filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/conn.laforge"
 
       depends_on = [
-        "google_compute_instance.{{ $resource_name }}",
+        "aws_instance.{{ $resource_name }}",
       ]
     }
 
@@ -608,7 +576,7 @@ resource "aws_key_pair" "cptc" {
       filename = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/.connection.lfrevision"
 
       depends_on = [
-        "google_compute_instance.{{ $resource_name }}",
+        "aws_instance.{{ $resource_name }}",
       ]
     }
   {{ end }}
