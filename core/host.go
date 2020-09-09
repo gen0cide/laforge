@@ -27,6 +27,7 @@ type Host struct {
 	AMI              string                 `cty:"ami" hcl:"ami,optional" json:"ami,omitempty"`
 	LastOctet        int                    `cty:"last_octet" hcl:"last_octet,attr" json:"last_octet,omitempty"`
 	InstanceSize     string                 `cty:"instance_size" hcl:"instance_size,attr" json:"instance_size,omitempty"`
+	AllowMACChanges  bool                   `cty:"allow_mac_changes" hcl:"allow_mac_changes,optional" json:"allow_mac_changes,omitempty"`
 	Disk             Disk                   `cty:"disk" hcl:"disk,block" json:"disk,omitempty"`
 	ProvisionSteps   []string               `cty:"provision_steps" hcl:"provision_steps,optional" json:"provision_steps,omitempty"`
 	ExposedTCPPorts  []string               `cty:"exposed_tcp_ports" hcl:"exposed_tcp_ports,optional" json:"exposed_tcp_ports,omitempty"`
@@ -256,13 +257,17 @@ func (h *Host) CalcIP(subnet string) string {
 // IsWindows is a template helper function to determine if the underlying operating system is windows
 func (h *Host) IsWindows() bool {
 	switch strings.ToLower(h.OS) {
-	case "w2k3":
-		return true
-	case "w2k8":
-		return true
 	case "w2k12":
 		return true
 	case "w2k16":
+		return true
+	case "w2k19":
+		return true
+	case "w2k12-sql":
+		return true
+	case "w2k16-sql":
+		return true
+	case "w2k19-sql":
 		return true
 	//nolint:goconst
 	case "windows":
