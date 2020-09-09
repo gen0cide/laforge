@@ -1,4 +1,5 @@
 // Package tfaws implements a Laforge Builder module for generating terraform configurations that target Google Compute Platform.
+//go:generate fileb0x assets.toml
 package tfaws
 
 import (
