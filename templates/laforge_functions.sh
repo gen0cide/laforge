@@ -197,7 +197,7 @@ function laforge_apt_get_upgrade() {
 laforge_apt_update() {
 	laforge_wait_for_apt
 
-	laforge_info("Updating apt repositories.")
+	laforge_info "Updating apt repositories."
 	apt-get -qq update || return 1
 }
 
