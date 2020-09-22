@@ -92,11 +92,6 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "aws_cred_file"),
 		},
 		validations.Requirement{
-			Name:       "AWS Project not defined",
-			Resolution: "define a aws_project value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_project"),
-		},
-		validations.Requirement{
 			Name:       "Root DNS Server not defined",
 			Resolution: "define root dns_servers[] in the dns { ... } block within the competition configuration.",
 			Check:      validations.FieldNotEmpty(core.DNS{}, "DNSServers"),
@@ -107,24 +102,9 @@ var (
 			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
 		},
 		validations.Requirement{
-			Name:       "admin IP not defined",
-			Resolution: "define an admin_ip value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "admin_ip"),
-		},
-		validations.Requirement{
 			Name:       "AWS Region not defined",
 			Resolution: "define a aws_region value inside your environment config = { ... } block.",
 			Check:      validations.HasConfigKey(core.Environment{}, "aws_region"),
-		},
-		validations.Requirement{
-			Name:       "AWS Storage Bucket not defined",
-			Resolution: "define a aws_storage_bucket value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_storage_bucket"),
-		},
-		validations.Requirement{
-			Name:       "AWS Zone not defined",
-			Resolution: "define a aws_zone value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "aws_zone"),
 		},
 		validations.Requirement{
 			Name:       "No networks have been included",

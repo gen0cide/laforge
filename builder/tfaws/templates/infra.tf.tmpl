@@ -29,231 +29,22 @@ variable "vmsize" {
   }
 }
 
-data "aws_ami" "ubuntu16" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["099720109477"] # Canonical AWS ID
-}
-
-data "aws_ami" "ubuntu18" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["099720109477"] # Canonical AWS ID
-}
-
-data "aws_ami" "ubuntu20" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-servers-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["099720109477"] # Canonical AWS ID
-}
-
-data "aws_ami" "centos7" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["CentOS 7.*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["125523088429"] # CentOS AWS ID
-}
-
-data "aws_ami" "centos8" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["CentOS 8.*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["125523088429"] # CentOS AWS ID
-}
-
-data "aws_ami" "debian8" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["debian-jessie-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["379101102735"] # Debian AWS ID
-}
-
-data "aws_ami" "debian9" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["debian-stretch-hvm-x86_64-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["379101102735"] # Debian AWS ID
-}
-
-data "aws_ami" "debian10" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["debian-10-amd64-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  owners = ["379101102735"] # Debian AWS ID
-}
-
 variable "vmos" {
   type = "map"
   default = {
-    "ubuntu16" = data.aws_ami.ubuntu16.id
-    "ubuntu18" = data.aws_ami.ubuntu18.id
-    "ubuntu20" = data.aws_ami.ubuntu20.id
-    "centos7" = data.aws_ami.centos7.id
-    "centos8" = data.aws_ami.centos8.id
-    "debian8" = data.aws_ami.debian8.id
-    "debian9" = data.aws_ami.debian9.id
-    "debian10" = data.aws_ami.debian10.id
-    "w2k12" = "windows-cloud/windows-2012-r2"
-    "w2k16" = "windows-cloud/windows-2016"
-    "w2k19" = "windows-cloud/windows-2019"
-    "w2k12-sql" = "windows-sql-cloud/sql-ent-2012-win-2012-r2"
-    "w2k16-sql" = "windows-sql-cloud/sql-ent-2014-win-2016"
-    "w2k19-sql" = "windows-sql-cloud/sql-ent-2016-win-2019"
+    "ubuntu16" = "ami-05692172625678b4e"
+    "ubuntu18" = "ami-0f400b8037c2bef6c"
+    "ubuntu20" = "ami-0ea76fa632cdbbeee"
+    "centos7" = "ami-0a75b786d9a7f8144"
+    "centos8" = "ami-000e7ce4dd68e7a11"
+    "debian8" = "ami-b2795cd7"
+    "debian9" = "ami-01d0a26bb43892d21"
+    "debian10" = "ami-03c3603751b46f895 "
+    "w2k12" = "ami-01e35fd528ce4705f"
+    "w2k16" = "ami-0423918727383d809"
+    "w2k19" = "ami-0ab3fb9e0f33f3c83"
+    "w2k16-sql" = "ami-012e6a970da23f510"
+    "w2k19-sql" = "ami-015cb876cc317d900"
   }
 }
 
@@ -282,13 +73,13 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_internet_gateway" "vpc_default" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = "${aws_vpc.vpc.id}"
 }
 
 resource "aws_route" "vpc_internet_access" {
-  route_table_id         = aws_vpc.vpc.main_route_table_id
+  route_table_id         = "${aws_vpc.vpc.main_route_table_id}"
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.vpc_default.id
+  gateway_id             = "${aws_internet_gateway.vpc_default.id}"
 }
 
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
@@ -306,11 +97,11 @@ resource "local_file" "team_lf_revision" {
 
 // aws_network_acl
 resource "aws_network_acl" "vpc_acl" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = "${aws_vpc.vpc.id}"
 }
 
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-int" {
-  network_acl_id = aws_network_acl.vpc_acl.id
+  network_acl_id = "${aws_network_acl.vpc_acl.id}"
   rule_number    = 100
   egress         = false
   protocol       = "all"
@@ -322,7 +113,7 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-int" {
 
 {{ if ne (index $.Build.Config "admin_ip") "" }}
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
-  network_acl_id = aws_network_acl.vpc_acl.id
+  network_acl_id = "${aws_network_acl.vpc_acl.id}"
   rule_number    = 101
   egress         = true
   protocol       = "all"
@@ -338,7 +129,7 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
 {{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
 {{ $current_rule_number = Incr $current_rule_number }}
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
-  network_acl_id = aws_network_acl.vpc_acl.id
+  network_acl_id = "${aws_network_acl.vpc_acl.id}"
   rule_number    = {{ $current_rule_number }}
   egress         = true
   protocol       = "all"
@@ -351,8 +142,8 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }
 
 {{ range $_, $port := $.Environment.ExposedVDIPorts }}
 {{ $current_rule_number = Incr $current_rule_number }}
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-{{ {{ $port }} }}" {
-  network_acl_id = aws_network_acl.vpc_acl.id
+resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-{{ $port }}" {
+  network_acl_id = "${aws_network_acl.vpc_acl.id}"
   rule_number    = {{ $current_rule_number }}
   egress         = true
   protocol       = "tcp"
@@ -364,7 +155,7 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-{{ {{ $port 
 {{ end }}
 
 resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
-  network_acl_id = aws_network_acl.vpc_acl.id
+  network_acl_id = "${aws_network_acl.vpc_acl.id}"
   rule_number    = 99
   egress         = true
   protocol       = "tcp"
@@ -383,8 +174,9 @@ resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
 {{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $net.Base }}
 
 resource "aws_subnet" "{{ $network_subnet_name }}" {
-  vpc_id     = aws_vpc.vpc.id
+  vpc_id     = "${aws_vpc.vpc.id}"
   cidr_block = "{{ $net.CIDR }}"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "{{ $netname }}"
@@ -435,23 +227,21 @@ resource "aws_key_pair" "cptc" {
     {{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base }}
 
     resource "aws_network_interface" "{{ $resource_name }}-pmi" {
-      subnet_id   = aws_subnet.{{ $network_subnet_name }}.id
+      subnet_id   = "${aws_subnet.{{ $network_subnet_name }}.id}"
       private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
-      private_dns_name = "{{ $host.Hostname }}.{{ $netobj.Name }}.{{ $.Competition.DNS.RootDomain }}"
 
       tags = {
         Name = "{{ $resource_name }}-primary-network-interface"
       }
     }
-
+    
     resource "aws_instance" "{{ $resource_name }}" {
-      ami           = ${var.vmos["{{ $host.OS }}"]}
+      ami           = "${var.vmos["{{ $host.OS }}"]}"
       instance_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
-      associate_public_ip_address = true
-      key_name = aws_key_pair.laforge.key_name
+      key_name = "${aws_key_pair.laforge.key_name}"
 
       network_interface {
-        network_interface_id = aws_network_interface.{{ $resource_name }}-pmi.id
+        network_interface_id = "${aws_network_interface.{{ $resource_name }}-pmi.id}"
         device_index         = 0
       }
 
@@ -461,7 +251,7 @@ resource "aws_key_pair" "cptc" {
       }
 
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
-      user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
+      #user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
 
       {{ if $host.AllowMACChanges }}
       source_dest_check = false
@@ -475,11 +265,10 @@ resource "aws_key_pair" "cptc" {
         Environment = "{{ $.Environment.Base }}",
         Competition = "{{ $.Competition.ID }}",
         ResourceName = "{{ $resource_name }}",
+        Name = "{{ $resource_name }}",
       }
 
-    }
-    
-    provisioner "file" {
+      provisioner "file" {
         {{ if $host.IsWindows }}
           connection {
             host     = "${aws_instance.{{ $resource_name }}.public_ip}"
@@ -506,8 +295,9 @@ resource "aws_key_pair" "cptc" {
           destination = "/opt/laforge-agent"
         {{ end }}
       }
-      
-####
+
+    }
+    
     {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
     {{ $phostrev = $phostrev.TouchWithID $resource_name }}
 
@@ -530,12 +320,12 @@ resource "aws_key_pair" "cptc" {
 
     {{ if $host.TagEquals "vdi" "true" }}
     resource "aws_route53_record" "{{ $resource_name }}" {
-      managed_zone = aws_route53_zone.{{ $dnsz }}.zone_id
+      zone_id = "${aws_route53_zone.{{ $dnsz }}.zone_id}"
 
-      name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${data.google_dns_managed_zone.{{ $dnsz }}.dns_name}"
+      name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${aws_route53_zone.{{ $dnsz }}.name}"
       type = "A"
       ttl = "300"
-      records = [aws_instance.{{ $resource_name }}.public_ip]
+      records = ["${aws_instance.{{ $resource_name }}.public_ip}"]
     }
     {{ end }}
 

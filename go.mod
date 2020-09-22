@@ -6,8 +6,10 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d // indirect
+	github.com/UnnoTed/fileb0x v1.1.4 // indirect
 	github.com/alecthomas/chroma v0.8.0
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/bmatcuk/doublestar v1.3.2 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8
 	github.com/briandowns/formatifier v0.0.0-20150226010542-6d068a6ce63a
 	github.com/cespare/xxhash v1.1.0
@@ -44,10 +46,14 @@ require (
 	github.com/kardianos/service v1.1.0
 	github.com/karrick/godirwalk v1.16.1
 	github.com/kr/pty v1.1.5 // indirect
+	github.com/labstack/echo v3.3.10+incompatible // indirect
+	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/mailru/easyjson v0.7.6
 	github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786 // indirect
 	github.com/masterzen/winrm v0.0.0-20200615185753-c42b5136ff88
+	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-zglob v0.0.3
+	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.12.0
@@ -57,10 +63,13 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/tidwall/buntdb v1.1.2
 	github.com/urfave/cli v1.22.4
+	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/xlab/treeprint v1.0.0
 	github.com/zclconf/go-cty v1.5.1 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73
+	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
