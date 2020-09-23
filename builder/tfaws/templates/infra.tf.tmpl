@@ -57,7 +57,7 @@ provider "aws" {
 {{ $dnsz := index $.Build.Config "aws_dns_zone_id" }}
 
 resource "aws_route53_zone" "{{ $dnsz }}" {
-  name = "{{ $dnsz }}"
+  name = "{{ $dnsz }}.cptc.network"
 }
 
 {{ $team_vpc_name := printf "%s-t%d-vpc" $.Environment.Base $.Team.TeamNumber }}
@@ -82,6 +82,30 @@ resource "aws_route" "vpc_internet_access" {
   gateway_id             = "${aws_internet_gateway.vpc_default.id}"
 }
 
+resource "aws_security_group" "allow_all" {
+  name        = "allow_all"
+  description = "Allow all traffic to ec2, filtering handled by vpc acl rules"
+  vpc_id      = "${aws_vpc.vpc.id}"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_all"
+  }
+}
+
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
 {{ $teamrev = $teamrev.Touch }}
 
@@ -95,76 +119,10 @@ resource "local_file" "team_lf_revision" {
   ]
 }
 
-// aws_network_acl
-resource "aws_network_acl" "vpc_acl" {
-  vpc_id = "${aws_vpc.vpc.id}"
+resource "aws_key_pair" "laforge" {
+  key_name   = "laforge-key"
+  public_key = "${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge"
 }
-
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-int" {
-  network_acl_id = "${aws_network_acl.vpc_acl.id}"
-  rule_number    = 100
-  egress         = false
-  protocol       = "all"
-  rule_action    = "allow"
-  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
-  icmp_type      = -1
-  icmp_code      = -1
-}
-
-{{ if ne (index $.Build.Config "admin_ip") "" }}
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin" {
-  network_acl_id = "${aws_network_acl.vpc_acl.id}"
-  rule_number    = 101
-  egress         = true
-  protocol       = "all"
-  rule_action    = "allow"
-  cidr_block     = "{{ index $.Build.Config "admin_ip" }}/32"
-  icmp_type      = -1
-  icmp_code      = -1
-}
-{{ end }}
-
-{{ $current_rule_number := 200 }}
-
-{{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
-{{ $current_rule_number = Incr $current_rule_number }}
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
-  network_acl_id = "${aws_network_acl.vpc_acl.id}"
-  rule_number    = {{ $current_rule_number }}
-  egress         = true
-  protocol       = "all"
-  rule_action    = "allow"
-  cidr_block     = "{{ $cidr }}"
-  icmp_type      = -1
-  icmp_code      = -1
-}
-{{ end }}
-
-{{ range $_, $port := $.Environment.ExposedVDIPorts }}
-{{ $current_rule_number = Incr $current_rule_number }}
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-allow-vdi-ext-{{ $port }}" {
-  network_acl_id = "${aws_network_acl.vpc_acl.id}"
-  rule_number    = {{ $current_rule_number }}
-  egress         = true
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
-  from_port      = {{ $port }}
-  to_port        = {{ $port }}
-}
-{{ end }}
-
-resource "aws_network_acl_rule" "{{ $team_vpc_name }}-deny-mgmt-int" {
-  network_acl_id = "${aws_network_acl.vpc_acl.id}"
-  rule_number    = 99
-  egress         = true
-  protocol       = "tcp"
-  rule_action    = "deny"
-  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
-  from_port      = 9971
-  to_port        = 9971
-}
-
 
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
 {{ $net := $pnet.Network }}
@@ -181,6 +139,88 @@ resource "aws_subnet" "{{ $network_subnet_name }}" {
   tags = {
     Name = "{{ $netname }}"
   }
+}
+
+// aws_network_acl
+resource "aws_network_acl" "{{ $network_subnet_name }}_acl" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  subnet_ids = ["${aws_subnet.{{ $network_subnet_name }}.id}",]
+}
+
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-out" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 100
+  egress         = true
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-vdi-int" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 101
+  egress         = false
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+
+{{ if ne (index $.Build.Config "admin_ip") "" }}
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-admin" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 102
+  egress         = false
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "admin_ip" }}/32"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+{{ end }}
+
+{{ $current_rule_number := 200 }}
+
+{{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
+{{ $current_rule_number = Incr $current_rule_number }}
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-admin-{{ $cidr_pos }}" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = {{ $current_rule_number }}
+  egress         = false
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "{{ $cidr }}"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+{{ end }}
+
+{{ range $_, $port := $.Environment.ExposedVDIPorts }}
+{{ $current_rule_number = Incr $current_rule_number }}
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-vdi-ext-{{ $port }}" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = {{ $current_rule_number }}
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "{{ index $.Build.Config "vdi_whitelist" }}"
+  from_port      = {{ $port }}
+  to_port        = {{ $port }}
+}
+{{ end }}
+
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-deny-mgmt-int" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 99
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "deny"
+  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
+  from_port      = 9971
+  to_port        = 9971
 }
 
 {{ $pnetrev := (index $.Laforge.StateManager.NewRevs $pnetid) }}
@@ -208,16 +248,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
   {{ end }}
 {{ end }}
 
-resource "aws_key_pair" "laforge" {
-  key_name   = "laforge-key"
-  public_key = "${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge"
-}
-
-resource "aws_key_pair" "cptc" {
-  key_name   = "cptc-key"
-  public_key = "{{ index $.Build.Config "aws_project_ssh_pubkey" }} root@admin.cptc.network"
-}
-
 {{ range $pnetid, $pnet := $.Team.ProvisionedNetworks }}
   {{ $netobj := $pnet.Network }}
   {{ range $phostid, $phost := $pnet.ProvisionedHosts }}
@@ -229,6 +259,7 @@ resource "aws_key_pair" "cptc" {
     resource "aws_network_interface" "{{ $resource_name }}-pmi" {
       subnet_id   = "${aws_subnet.{{ $network_subnet_name }}.id}"
       private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
+      security_groups = ["${aws_security_group.allow_all.id}"]
 
       tags = {
         Name = "{{ $resource_name }}-primary-network-interface"
@@ -251,7 +282,7 @@ resource "aws_key_pair" "cptc" {
       }
 
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
-      #user_data = "file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")"
+      user_data = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
 
       {{ if $host.AllowMACChanges }}
       source_dest_check = false
