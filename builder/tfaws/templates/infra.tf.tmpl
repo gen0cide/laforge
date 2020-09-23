@@ -300,34 +300,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
         Name = "{{ $resource_name }}",
       }
 
-      provisioner "file" {
-        {{ if $host.IsWindows }}
-          connection {
-            host     = "${aws_instance.{{ $resource_name }}.public_ip}"
-            type     = "winrm"
-            user     = "Administrator"
-            timeout  = "60m"
-            password = "{{ $phost.ActualPassword }}"
-          }
-        {{ else }}
-          connection {
-            agent       = "false"
-            host        = "${aws_instance.{{ $resource_name }}.public_ip}"
-            type        = "ssh"
-            user        = "root"
-            timeout     = "60m"
-            private_key = "${file("{{ index $.Build.Config "rel_ssh_private_key_file" }}")}"
-          }
-        {{ end }}
-
-        source = "./networks/{{ $netobj.Base }}/hosts/{{ $host.Base }}/agent"
-        {{ if $host.IsWindows }}
-          destination = "C:\\laforge-agent"
-        {{ else }}
-          destination = "/opt/laforge-agent"
-        {{ end }}
-      }
-
     }
     
     {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
