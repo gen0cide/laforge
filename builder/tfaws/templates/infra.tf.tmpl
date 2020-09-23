@@ -422,6 +422,17 @@ resource "aws_network_acl" "{{ $network_subnet_name }}_acl" {
   subnet_ids = ["${aws_subnet.{{ $network_subnet_name }}.id}",]
 }
 
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-deny-mgmt-int" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 99
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "deny"
+  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
+  from_port      = 9971
+  to_port        = 9971
+}
+
 resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-out" {
   network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
   rule_number    = 100
@@ -433,7 +444,7 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   icmp_code      = -1
 }
 
-resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-emp-in" {
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-emp-in-tcp" {
   network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
   rule_number    = 100
   egress         = false
@@ -444,9 +455,20 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   to_port        = 65535
 }
 
-resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-vdi-int" {
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-emp-in-udp" {
   network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
   rule_number    = 101
+  egress         = false
+  protocol       = "udp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 32768
+  to_port        = 65535
+}
+
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-vdi-int" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 102
   egress         = false
   protocol       = "all"
   rule_action    = "allow"
@@ -458,7 +480,7 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
 {{ if ne (index $.Build.Config "admin_ip") "" }}
 resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-admin" {
   network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
-  rule_number    = 102
+  rule_number    = 103
   egress         = false
   protocol       = "all"
   rule_action    = "allow"
@@ -497,17 +519,6 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   to_port        = {{ $port }}
 }
 {{ end }}
-
-resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-deny-mgmt-int" {
-  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
-  rule_number    = 99
-  egress         = false
-  protocol       = "tcp"
-  rule_action    = "deny"
-  cidr_block     = "{{ index $.Build.Config "vpc_cidr" }}"
-  from_port      = 9971
-  to_port        = 9971
-}
 
 {{ $pnetrev := (index $.Laforge.StateManager.NewRevs $pnetid) }}
 {{ $pnetrev = $pnetrev.Touch }}
