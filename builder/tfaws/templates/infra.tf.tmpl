@@ -17,6 +17,300 @@ terraform {
   }
 }
 
+data "aws_ami" "ubuntu16" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "ubuntu18" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "ubuntu20" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["099720109477"] # Canonical AWS ID
+}
+
+data "aws_ami" "centos7" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["CentOS 7.*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["125523088429"] # CentOS AWS ID
+}
+
+data "aws_ami" "centos8" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["CentOS 8.*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["125523088429"] # CentOS AWS ID
+}
+
+data "aws_ami" "debian8" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["debian-jessie-amd64-hvm-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["379101102735"] # Debian AWS ID
+}
+
+data "aws_ami" "debian9" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["debian-stretch-hvm-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["379101102735"] # Debian AWS ID
+}
+
+data "aws_ami" "debian10" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["debian-10-amd64-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["136693071363"] # Debian AWS ID
+}
+
+data "aws_ami" "w2k12" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2012-R2_RTM-English-64Bit-Base-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
+data "aws_ami" "w2k16" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2016-English-Full-Base-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
+data "aws_ami" "w2k19" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2019-English-Full-Base-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
+data "aws_ami" "w2k12-sql" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2012-R2_RTM-English-64Bit-SQL_2012_SP4_Enterprise-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
+data "aws_ami" "w2k16-sql" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2016-English-64Bit-SQL_2012_SP4_Enterprise-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
+data "aws_ami" "w2k19-sql" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["Windows_Server-2019-English-Full-SQL_2016_SP2_Enterprise-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["801119661308"] # Amazon AWS ID
+}
+
 variable "vmsize" {
   type = "map"
   default = {
@@ -32,17 +326,6 @@ variable "vmsize" {
 variable "vmos" {
   type = "map"
   default = {
-    "ubuntu16" = "ami-05692172625678b4e"
-    "ubuntu18" = "ami-0f400b8037c2bef6c"
-    "ubuntu20" = "ami-0ea76fa632cdbbeee"
-    "centos7" = "ami-0a75b786d9a7f8144"
-    "centos8" = "ami-000e7ce4dd68e7a11"
-    "debian8" = "ami-b2795cd7"
-    "debian9" = "ami-01d0a26bb43892d21"
-    "debian10" = "ami-03c3603751b46f895 "
-    "w2k12" = "ami-047b577fb036bfa95"
-    "w2k16" = "ami-0935ea295cac2689d"
-    "w2k19" = "ami-0ca69a9d06da3835d"
     "w2k12-sql" = "ami-0190209a8a0ed9d6d"
     "w2k16-sql" = "ami-0dcb7ca3202ebea34"
     "w2k19-sql" = "ami-05883face86d5d05e"
@@ -268,7 +551,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
     }
     
     resource "aws_instance" "{{ $resource_name }}" {
-      ami           = "${var.vmos["{{ $host.OS }}"]}"
+      ami           = "${data.aws_ami.{{ $host.OS }}.id}"
       instance_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
       key_name = "${aws_key_pair.laforge.key_name}"
 
