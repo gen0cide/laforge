@@ -323,15 +323,6 @@ variable "vmsize" {
   }
 }
 
-variable "vmos" {
-  type = "map"
-  default = {
-    "w2k12-sql" = "ami-0190209a8a0ed9d6d"
-    "w2k16-sql" = "ami-0dcb7ca3202ebea34"
-    "w2k19-sql" = "ami-05883face86d5d05e"
-  }
-}
-
 provider "aws" {
   region = "{{ index $.Build.Config "aws_region" }}"
   shared_credentials_file = "{{ index $.Build.Config "aws_cred_file" }}"
