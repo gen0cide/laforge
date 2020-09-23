@@ -433,6 +433,17 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   icmp_code      = -1
 }
 
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-emp-in" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 100
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 32768
+  to_port        = 65535
+}
+
 resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-vdi-int" {
   network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
   rule_number    = 101
