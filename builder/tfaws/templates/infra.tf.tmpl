@@ -311,6 +311,27 @@ data "aws_ami" "w2k19-sql" {
   owners = ["801119661308"] # Amazon AWS ID
 }
 
+data "aws_ami" "kali" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["kali-linux-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["679593333241"] # Amazon AWS ID
+}
+
 variable "vmsize" {
   type = "map"
   default = {
