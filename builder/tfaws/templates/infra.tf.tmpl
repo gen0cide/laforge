@@ -394,8 +394,9 @@ resource "local_file" "team_lf_revision" {
   ]
 }
 
+{{ $team_key_name := printf "%s-t%d-key" $.Environment.Base $.Team.TeamNumber }}
 resource "aws_key_pair" "laforge" {
-  key_name   = "laforge-key"
+  key_name   = "{{ $team_key_name }}"
   public_key = "${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge"
 }
 
