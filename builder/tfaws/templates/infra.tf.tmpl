@@ -314,12 +314,12 @@ data "aws_ami" "w2k19-sql" {
 variable "vmsize" {
   type = "map"
   default = {
-    "nano" = "t3.nano"
-    "micro" = "t3.micro"
-    "small" = "t3.small"
-    "medium" = "t3.medium"
-    "large" = "t3.large"
-    "xlarge" = "t3.xlarge"
+    "nano" = "t2.nano"
+    "micro" = "t2.micro"
+    "small" = "t2.small"
+    "medium" = "t2.medium"
+    "large" = "t2.large"
+    "xlarge" = "t2.xlarge"
   }
 }
 
@@ -394,8 +394,9 @@ resource "local_file" "team_lf_revision" {
   ]
 }
 
+{{ $team_key_name := printf "%s-t%d-key" $.Environment.Base $.Team.TeamNumber }}
 resource "aws_key_pair" "laforge" {
-  key_name   = "laforge-key"
+  key_name   = "{{ $team_key_name }}"
   public_key = "${chomp(file("{{ index $.Build.Config "rel_ssh_public_key_file" }}"))} root@laforge"
 }
 
@@ -562,7 +563,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
         Name = "{{ $resource_name }}-primary-network-interface"
       }
     }
-    
+
     resource "aws_instance" "{{ $resource_name }}" {
       ami           = "${data.aws_ami.{{ $host.OS }}.id}"
       instance_type = "${var.vmsize["{{ $host.InstanceSize }}"]}"
@@ -597,7 +598,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       }
 
     }
-    
+
     {{ $phostrev := (index $.Laforge.StateManager.NewRevs $phostid) }}
     {{ $phostrev = $phostrev.TouchWithID $resource_name }}
 
