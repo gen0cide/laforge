@@ -331,8 +331,8 @@ provider "aws" {
 
 {{ $dnsz := index $.Build.Config "aws_dns_zone_id" }}
 
-resource "aws_route53_zone" "{{ $dnsz }}" {
-  name = "{{ $dnsz }}.cptc.network"
+data "aws_route53_zone" "{{ $dnsz }}" {
+  zone_id = "{{ index $.Build.Config "aws_dns_zone_id" }}"
 }
 
 {{ $team_vpc_name := printf "%s-t%d-vpc" $.Environment.Base $.Team.TeamNumber }}
@@ -621,9 +621,9 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
     {{ if $host.TagEquals "vdi" "true" }}
     resource "aws_route53_record" "{{ $resource_name }}" {
-      zone_id = "${aws_route53_zone.{{ $dnsz }}.zone_id}"
+      zone_id = "${data.aws_route53_zone.{{ $dnsz }}.zone_id}"
 
-      name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${aws_route53_zone.{{ $dnsz }}.name}"
+      name = "{{ $host.Hostname }}.{{ $netobj.Name }}.t{{ $.Team.TeamNumber }}.{{ $.Environment.Base }}.${data.aws_route53_zone.{{ $dnsz }}.name}"
       type = "A"
       ttl = "300"
       records = ["${aws_instance.{{ $resource_name }}.public_ip}"]
