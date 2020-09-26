@@ -580,6 +580,10 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
       security_groups = ["${aws_security_group.allow_all.id}"]
 
+      {{ if $host.AllowMACChanges }}
+      source_dest_check = false
+      {{ end }}
+
       tags = {
         Name = "{{ $resource_name }}-primary-network-interface"
       }
@@ -602,10 +606,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
       user_data = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
-
-      {{ if $host.AllowMACChanges }}
-      source_dest_check = false
-      {{ end }}
 
       tags = {
         EnvironmentNetwork = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}",

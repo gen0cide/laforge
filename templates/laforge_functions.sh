@@ -1,4 +1,4 @@
-#!/bin/sh -
+#!/bin/sh
 #======================================================================================================================
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 spell spelllang=en cc=120
 #======================================================================================================================
@@ -190,6 +190,16 @@ function laforge_apt_get_upgrade() {
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_apt_get_update
+#   DESCRIPTION:  (DRY) apt-get update
+#----------------------------------------------------------------------------------------------------------------------
+function laforge_apt_get_update() {
+	laforge_wait_for_apt
+	apt-get update
+	return $?
+}
+
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
 #          NAME:  laforge_apt_key_fetch
 #   DESCRIPTION:  Download and import GPG public key for "apt-secure"
 #    PARAMETERS:  url
@@ -268,7 +278,7 @@ laforge_enable_universe_repository() {
 laforge_ubuntu_prep() {
 	# Install add-apt-repository
 	if ! laforge_check_command_exists add-apt-repository; then
-		laforge_apt_get_install_noinput software-properties-common || return 1
+		laforge_apt_install software-properties-common || return 1
 	fi
 
 	laforge_enable_universe_repository || return 1
