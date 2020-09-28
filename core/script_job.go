@@ -132,7 +132,7 @@ func (j *ScriptJob) EnsureDependencies(e chan error) {
 
 // Do implements the Doer interface
 func (j *ScriptJob) Do(e chan error) {
-	cli.Logger.Warnf("Performing Script Job:\n  %s %s: %s\n  %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeScript.String()), color.HiGreenString("%s", j.AssetPath), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
+   cli.Logger.Warnf("Performing Script Job:\n  %s %s: %s\n   %s   %s: %s   %s: %s (%s)", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeScript.String()), color.HiGreenString("%s", j.AssetPath), color.HiBlueString(">>"), color.HiCyanString("TEAM"), color.WhiteString("%d", j.Target.ProvisionedHost.Team.TeamNumber), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Host.Hostname), color.HiMagentaString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
 	actualfilename := fmt.Sprintf("%d-%s", j.Target.StepNumber, filepath.Base(j.AssetPath))
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
 	err := j.Target.ProvisionedHost.Conn.UploadExecuteAndDelete(j, j.AssetPath, actualfilename, logdir)

@@ -142,7 +142,7 @@ func (j *CommandJob) EnsureDependencies(e chan error) {
 // Do is where we actually run the command
 func (j *CommandJob) Do(e chan error) {
 	// Let the user know what we're doing
-	cli.Logger.Warnf("Performing Command Job:\n  %s %s: %s\n   %s   %s: %s", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeCommand.String()), color.HiGreenString("%s", j.Command.CommandString()), color.HiBlueString(">>"), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
+	cli.Logger.Warnf("Performing Command Job:\n  %s %s: %s\n   %s   %s: %s   %s: %s (%s)", color.HiBlueString(">>"), color.HiCyanString(ObjectTypeCommand.String()), color.HiGreenString("%s", j.Command.CommandString()), color.HiBlueString(">>"), color.HiCyanString("TEAM"), color.WhiteString("%d", j.Target.ProvisionedHost.Team.TeamNumber), color.HiCyanString("HOST"), color.HiGreenString("%s", j.Target.ProvisionedHost.Host.Hostname), color.HiMagentaString("%s", j.Target.ProvisionedHost.Conn.RemoteAddr))
 
 	// Let's get the path to our logs
 	logdir := filepath.Join(j.Base.BaseDir, j.Target.ParentLaforgeID(), "logs")
