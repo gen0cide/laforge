@@ -311,6 +311,48 @@ data "aws_ami" "w2k19-sql" {
   owners = ["801119661308"] # Amazon AWS ID
 }
 
+data "aws_ami" "kali" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["kali-linux-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["679593333241"] # Amazon AWS ID
+}
+
+data "aws_ami" "cptc-kali" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["cptc-kali-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  owners = ["677302527522"] # Amazon AWS ID
+}
+
 variable "vmsize" {
   type = "map"
   default = {
@@ -344,6 +386,19 @@ resource "aws_vpc" "vpc" {
 
   tags = {
     Name = "{{ $team_vpc_name }}"
+  }
+}
+
+{{ $team_vpc_log_name := printf "%s-t%d-vpc-log" $.Environment.Base $.Team.TeamNumber }}
+resource "aws_flow_log" "{{ $team_vpc_log_name }}" {
+  iam_role_arn             = "{{ index $.Environment.Config "cloudwatch_log_role" }}"
+  log_destination          = "{{ index $.Environment.Config "cloudwatch_log_group" }}"
+  traffic_type             = "ALL"
+  vpc_id                   = "${aws_vpc.vpc.id}"
+  max_aggregation_interval = 60
+
+  tags = {
+    Name = "{{ $team_vpc_log_name }}"
   }
 }
 
@@ -559,6 +614,10 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
       security_groups = ["${aws_security_group.allow_all.id}"]
 
+      {{ if $host.AllowMACChanges }}
+      source_dest_check = false
+      {{ end }}
+
       tags = {
         Name = "{{ $resource_name }}-primary-network-interface"
       }
@@ -581,10 +640,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
       {{ $uds := (index $host.Scripts (index $host.Vars "user_data_script_id")) }}
       user_data = "${file("{{ $.Build.RelAssetForTeam $netobj.Base $host.Base $uds.SourceBase }}")}"
-
-      {{ if $host.AllowMACChanges }}
-      source_dest_check = false
-      {{ end }}
 
       tags = {
         EnvironmentNetwork = "{{ $.Environment.Base }}-t{{ $.Team.TeamNumber }}-{{ $netobj.Base }}",
