@@ -412,30 +412,6 @@ resource "aws_route" "vpc_internet_access" {
   gateway_id             = "${aws_internet_gateway.vpc_default.id}"
 }
 
-resource "aws_security_group" "allow_all" {
-  name        = "allow_all"
-  description = "Allow all traffic to ec2, filtering handled by vpc acl rules"
-  vpc_id      = "${aws_vpc.vpc.id}"
-
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_all"
-  }
-}
-
 {{ $teamrev := (index $.Laforge.StateManager.NewRevs $.Team.Path) }}
 {{ $teamrev = $teamrev.Touch }}
 
@@ -609,10 +585,82 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
     {{ $network_subnet_name := printf "%s-t%d-%s" $.Environment.Base $.Team.TeamNumber $netobj.Base }}
 
+    resource "aws_security_group" "{{ $resource_name }}-sg" {
+      name        = "{{ $resource_name }}-sg"
+      description = "Security Group for {{ $resource_name }}"
+      vpc_id      = "${aws_vpc.vpc.id}"
+
+      tags = {
+        Name = "{ $resource_name }}-sg"
+      }
+    }
+
+    {{ range $_, $port := $host.ExposedTCPPorts }}
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-tcp-{{ $port }}" {
+      type              = "ingress"
+      from_port         = {{ $port }}
+      to_port           = {{ $port }}
+      protocol          = "tcp"
+      cidr_blocks       = ["{{ index $.Build.Config "vpc_cidr" }}"]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+    {{ end }}
+    
+    {{ range $_, $port := $host.ExposedUDPPorts }}
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-{{ $port }}" {
+      type              = "ingress"
+      from_port         = {{ $port }}
+      to_port           = {{ $port }}
+      protocol          = "udp"
+      cidr_blocks       = ["{{ index $.Build.Config "vpc_cidr" }}"]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+    {{ end }}
+
+     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-admins" {
+      type              = "ingress"
+      from_port         = 0
+      to_port           = 0
+      protocol          = "-1"
+      cidr_blocks       = [
+        {{ range $_, $cidr := $.Environment.AdminCIDRs }}
+          "{{ $cidr }}",  
+        {{ end }}
+      ]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-tcp-emp-ports" {
+      type              = "ingress"
+      from_port         = 32768
+      to_port           = 65535
+      protocol          = "tcp"
+      cidr_blocks       = ["0.0.0.0/0"]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-emp-ports" {
+      type              = "ingress"
+      from_port         = 32768
+      to_port           = 65535
+      protocol          = "udp"
+       cidr_blocks       = ["0.0.0.0/0"]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-out" {
+      type              = "egress"
+      from_port         = 0
+      to_port           = 0
+      protocol          = "-1"
+      cidr_blocks       = ["0.0.0.0/0"]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+
     resource "aws_network_interface" "{{ $resource_name }}-pmi" {
       subnet_id   = "${aws_subnet.{{ $network_subnet_name }}.id}"
       private_ips = ["${cidrhost("{{ $netobj.CIDR }}", {{ $host.LastOctet }})}"]
-      security_groups = ["${aws_security_group.allow_all.id}"]
+      security_groups = ["${aws_security_group.{{ $resource_name }}-sg.id}"]
 
       {{ if $host.AllowMACChanges }}
       source_dest_check = false
