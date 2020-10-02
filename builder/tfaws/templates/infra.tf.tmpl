@@ -627,15 +627,17 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
     }
     {{ end }}
 
-    {{ range $_, $port := $.Environment.ExposedVDIPorts }}
-    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-vid-ext-{{ $port }}" {
-      type           = "ingress"
-      from_port      = {{ $port }}
-      to_port        = {{ $port }}
-      protocol       = "tcp"
-      cidr_blocks     = ["{{ index $.Build.Config "vdi_whitelist" }}"]
-      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
-    }
+    {{ if $host.TagEquals "vdi" "true" }}
+      {{ range $_, $port := $.Environment.ExposedVDIPorts }}
+      resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-vid-ext-{{ $port }}" {
+        type           = "ingress"
+        from_port      = {{ $port }}
+        to_port        = {{ $port }}
+        protocol       = "tcp"
+        cidr_blocks     = ["{{ index $.Build.Config "vdi_whitelist" }}"]
+        security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+      }
+      {{ end }}
     {{ end }}
 
      resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-admins" {
