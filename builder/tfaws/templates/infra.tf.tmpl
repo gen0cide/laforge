@@ -591,15 +591,20 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       vpc_id      = "${aws_vpc.vpc.id}"
 
       tags = {
-        Name = "{ $resource_name }}-sg"
+        Name = "{{ $resource_name }}-sg"
       }
     }
 
     {{ range $_, $port := $host.ExposedTCPPorts }}
+    {{ $split_ports := Split $port "-" }}
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-tcp-{{ $port }}" {
       type              = "ingress"
-      from_port         = {{ $port }}
-      to_port           = {{ $port }}
+      from_port         = {{ index $split_ports 0 }}
+      {{ if Contains $port "-" }}
+      to_port           = {{ index $split_ports 1 }}
+      {{ else }}
+      to_port           = {{ index $split_ports 0 }}
+      {{ end }}
       protocol          = "tcp"
       cidr_blocks       = ["{{ index $.Build.Config "vpc_cidr" }}"]
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
@@ -608,13 +613,31 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
     
     {{ range $_, $port := $host.ExposedUDPPorts }}
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-{{ $port }}" {
+    {{ $split_ports := Split $port "-" }}
       type              = "ingress"
-      from_port         = {{ $port }}
-      to_port           = {{ $port }}
+      from_port         = {{ index $split_ports 0 }}
+      {{ if Contains $port "-" }}
+      to_port           = {{ index $split_ports 1 }}
+      {{ else }}
+      to_port           = {{ index $split_ports 0 }}
+      {{ end }}
       protocol          = "udp"
       cidr_blocks       = ["{{ index $.Build.Config "vpc_cidr" }}"]
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
     }
+    {{ end }}
+
+    {{ if $host.TagEquals "vdi" "true" }}
+      {{ range $_, $port := $.Environment.ExposedVDIPorts }}
+      resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-vid-ext-{{ $port }}" {
+        type           = "ingress"
+        from_port      = {{ $port }}
+        to_port        = {{ $port }}
+        protocol       = "tcp"
+        cidr_blocks     = ["{{ index $.Build.Config "vdi_whitelist" }}"]
+        security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+      }
+      {{ end }}
     {{ end }}
 
      resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-admins" {
