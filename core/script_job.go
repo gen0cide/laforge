@@ -146,6 +146,12 @@ func (j *ScriptJob) Do(e chan error) {
 
 // CleanUp implements the Doer interface
 func (j *ScriptJob) CleanUp(e chan error) {
+	// Now we'll wait for the tooldown as defined in our command
+	if j.Script.Cooldown > 0 {
+		cli.Logger.Infof("Letting command job %s cooldown for %d seconds.", j.Script.ID, j.Script.Cooldown)
+		time.Sleep(time.Duration(j.Script.Cooldown) * time.Second)
+	}
+
 	e <- nil
 }
 
