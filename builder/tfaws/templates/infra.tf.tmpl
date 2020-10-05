@@ -638,9 +638,17 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
         security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
       }
       {{ end }}
+      resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-all-host-vid" {
+        type              = "ingress"
+        from_port         = 0
+        to_port           = 0
+        protocol          = "-1"
+        cidr_blocks       = ["{{ index $.Build.Config "vpc_cidr" }}"]
+        security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+      }
     {{ end }}
 
-     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-admins" {
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-admins" {
       type              = "ingress"
       from_port         = 0
       to_port           = 0
