@@ -396,6 +396,7 @@ resource "aws_flow_log" "{{ $team_vpc_log_name }}" {
   traffic_type             = "ALL"
   vpc_id                   = "${aws_vpc.vpc.id}"
   max_aggregation_interval = 60
+  log_format               = "$${version} $${account-id} $${interface-id} $${srcaddr} $${dstaddr} $${srcport} $${dstport} $${protocol} $${packets} $${bytes} $${start} $${end} $${action} $${log-status} $${vpc-id}"
 
   tags = {
     Name = "{{ $team_vpc_log_name }}"
@@ -621,7 +622,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
     }
     {{ end }}
-    
+
     {{ range $_, $port := $host.ExposedUDPPorts }}
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-{{ $port }}" {
     {{ $split_ports := Split $port "-" }}
@@ -666,7 +667,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       protocol          = "-1"
       cidr_blocks       = [
         {{ range $_, $cidr := $.Environment.AdminCIDRs }}
-          "{{ $cidr }}",  
+          "{{ $cidr }}",
         {{ end }}
       ]
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
