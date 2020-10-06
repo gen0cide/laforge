@@ -522,6 +522,17 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
 }
 {{ end }}
 
+resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}-allow-icmp-all" {
+  network_acl_id = "${aws_network_acl.{{ $network_subnet_name }}_acl.id}"
+  rule_number    = 104
+  egress         = false
+  protocol       = "icmp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  icmp_type      = -1
+  icmp_code      = -1
+}
+
 {{ $current_rule_number := 200 }}
 
 {{ range $cidr_pos, $cidr := $.Environment.AdminCIDRs }}
@@ -658,6 +669,15 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
           "{{ $cidr }}",  
         {{ end }}
       ]
+      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
+    }
+
+    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-icmp-all" {
+      type              = "ingress"
+      from_port         = -1
+      to_port           = -1
+      protocol          = "icmp"
+      cidr_blocks       = ["0.0.0.0/0"]
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
     }
 
