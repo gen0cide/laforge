@@ -484,7 +484,7 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   protocol       = "tcp"
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
-  from_port      = 32768
+  from_port      = 1024
   to_port        = 65535
 }
 
@@ -495,7 +495,7 @@ resource "aws_network_acl_rule" "{{ $network_subnet_name }}-{{ $team_vpc_name }}
   protocol       = "udp"
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
-  from_port      = 32768
+  from_port      = 1024
   to_port        = 65535
 }
 
@@ -684,7 +684,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-tcp-emp-ports" {
       type              = "ingress"
-      from_port         = 32768
+      from_port         = 1024
       to_port           = 65535
       protocol          = "tcp"
       cidr_blocks       = ["0.0.0.0/0"]
@@ -693,7 +693,7 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
 
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-emp-ports" {
       type              = "ingress"
-      from_port         = 32768
+      from_port         = 1024
       to_port           = 65535
       protocol          = "udp"
        cidr_blocks       = ["0.0.0.0/0"]
