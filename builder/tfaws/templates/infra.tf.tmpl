@@ -682,24 +682,6 @@ resource "local_file" "lfrev-{{ $pnet.Base }}" {
       security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
     }
 
-    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-tcp-emp-ports" {
-      type              = "ingress"
-      from_port         = 1024
-      to_port           = 65535
-      protocol          = "tcp"
-      cidr_blocks       = ["0.0.0.0/0"]
-      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
-    }
-
-    resource "aws_security_group_rule" "{{ $resource_name }}-sgr-udp-emp-ports" {
-      type              = "ingress"
-      from_port         = 1024
-      to_port           = 65535
-      protocol          = "udp"
-       cidr_blocks       = ["0.0.0.0/0"]
-      security_group_id = "${aws_security_group.{{ $resource_name }}-sg.id}"
-    }
-
     resource "aws_security_group_rule" "{{ $resource_name }}-sgr-allow-out" {
       type              = "egress"
       from_port         = 0
