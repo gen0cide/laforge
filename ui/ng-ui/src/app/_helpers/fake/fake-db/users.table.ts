@@ -4,7 +4,7 @@ export class UsersTable {
       id: 1,
       username: 'lucas',
       password: 'admin',
-      email: 'admin@demo.com',
+      email: 'lucas@cptc.test',
       accessToken: 'access-token-8f3ae836da744329a6f93bf20594b5cc',
       refreshToken: 'access-token-f8c137a2c98743f48b643e71161d90aa',
       roles: [1], // Administrator
