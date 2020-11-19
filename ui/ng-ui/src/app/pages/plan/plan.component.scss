@@ -1,0 +1,21 @@
+::ng-deep .mat-card-header-text {
+  margin: 0 !important;
+}
+
+.laforge-card {
+  .mat-card-header {
+    display: flex;
+    align-items: center;
+    // justify-content: space-between;
+
+    .mat-card-title-group {
+      margin-right: auto;
+    }
+  }
+
+  // .mat-card-content {
+  //   .mat-form-field .mat-form-field-wrapper .mat-form-field-flex {
+  //     background-color: #e0d8c3;
+  //   }
+  // }
+}
