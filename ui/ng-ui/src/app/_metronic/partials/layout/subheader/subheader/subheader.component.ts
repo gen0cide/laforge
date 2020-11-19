@@ -4,6 +4,11 @@ import { BreadcrumbItemModel } from '../_models/breadcrumb-item.model';
 import { LayoutService } from '../../../../core';
 import { SubheaderService } from '../_services/subheader.service';
 
+interface Branch {
+  name : string,
+  hash : string
+}
+
 @Component({
   selector: 'app-subheader',
   templateUrl: './subheader.component.html',
@@ -17,6 +22,10 @@ export class SubheaderComponent implements OnInit {
   title$: Observable<string>;
   breadcrumbs$: Observable<BreadcrumbItemModel[]>;
   description$: Observable<string>;
+  branches : Branch[] = [
+    {name: 'Bradley', hash: '98y3if'},
+    {name: 'Lucas', hash: '32a7fh'},
+  ]
 
   constructor(
     private layout: LayoutService,

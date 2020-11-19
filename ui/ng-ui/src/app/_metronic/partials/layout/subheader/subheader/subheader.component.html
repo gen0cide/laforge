@@ -57,6 +57,14 @@
 
     <!--begin::Toolbar-->
     <div class="d-flex align-items-center">
+      <mat-form-field appearance="fill">
+        <mat-label>Git Branch</mat-label>
+        <mat-select>
+          <mat-option *ngFor="let branch of branches" [value]="branch.hash">
+            {{branch.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
       <!--begin::Button-->
       <a
         class="btn btn-fixed-height btn-default btn-hover-primary font-weight-bold px-2 px-lg-5 mr-2 cursor-pointer"
