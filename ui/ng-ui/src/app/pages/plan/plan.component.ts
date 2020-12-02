@@ -1,10 +1,7 @@
 import { Component, NgModule, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
 
-interface Branch {
-  name : string,
-  hash : string
-}
+import { Step } from '../.../../../models/plan.model';
+import { PlanService } from '../../plan.service';
 
 interface EnvConfig {
   text : string
@@ -16,20 +13,30 @@ interface EnvConfig {
   styleUrls: ['./plan.component.scss']
 })
 export class PlanComponent implements OnInit {
-  gitBranch = new FormControl('');
-  branches : Branch[] = [
-    {name: 'Bradley', hash: '98y3if'},
-    {name: 'Lucas', hash: '32a7fh'},
-  ]
   currentConfig : EnvConfig = {
     text: 'This is a test config\
     More config here\
     Last line of the config'
   }
 
-  constructor() { }
+  planSteps : Step[] = []
+  planText : String
+
+  constructor(
+    private planService: PlanService
+  ) { }
 
   ngOnInit(): void {
+    // this.planService.planSteps
+    // this.planService.getStepsObserver().subscribe(
+    //   (steps : Step[]) => {
+    //     this.planSteps = steps;
+    //     this.planText = steps.map(step => step.method + " | " + step.path).reduce((prev, curr) => prev + curr + "\n", "");
+    //     console.log("plan set")
+    //   },
+    //   (error) => {
+    //     console.log(error)
+    //   }
+    // )
   }
-
 }

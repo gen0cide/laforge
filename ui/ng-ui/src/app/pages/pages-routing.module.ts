@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { LayoutComponent } from './_layout/layout.component';
 import { BuildComponent } from './build/build.component';
-import { PlanComponent } from './plan/plan.component';
 import { CommonModule } from "@angular/common";
 
 import { ReactiveFormsModule } from '@angular/forms';
@@ -10,6 +9,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input'
+// import { CodePreviewComponent } from '../_metronic/partials/content/general/code-preview/code-preview.component';
+
+import { PlanComponent } from './plan/plan.component';
 
 const routes: Routes = [
   {
@@ -70,10 +72,6 @@ const routes: Routes = [
   ],
   exports: [
     RouterModule,
-    MatCardModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
-    MatInputModule,
   ],
 })
 export class PagesRoutingModule { }
