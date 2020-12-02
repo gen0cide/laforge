@@ -23,7 +23,7 @@ export class PlanComponent implements OnInit {
   planText : String
 
   constructor(
-    private planService: PlanService
+    public planService: PlanService // TODO: Adjust scope so we can access values while this is private
   ) { }
 
   ngOnInit(): void {
