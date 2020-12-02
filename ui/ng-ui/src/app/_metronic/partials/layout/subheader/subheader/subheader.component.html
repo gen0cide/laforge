@@ -59,14 +59,14 @@
     <div class="d-flex align-items-center">
       <mat-form-field appearance="fill">
         <mat-label>Git Branch</mat-label>
-        <mat-select>
+        <mat-select (selectionChange)="onBranchSelect($event)">
           <mat-option *ngFor="let branch of branches" [value]="branch.hash">
             {{branch.name}}
           </mat-option>
         </mat-select>
       </mat-form-field>
       <!--begin::Button-->
-      <a
+      <!-- <a
         class="btn btn-fixed-height btn-default btn-hover-primary font-weight-bold px-2 px-lg-5 mr-2 cursor-pointer"
       >
         <span
@@ -75,11 +75,11 @@
           class="svg-icon svg-icon-success svg-icon-lg"
         ></span>
         New Member
-      </a>
+      </a> -->
       <!--end::Button-->
 
       <!--begin::Dropdown-->
-      <div
+      <!-- <div
         class="dropdown dropdown-inline"
         data-toggle="tooltip"
         title="Quick actions"
@@ -107,10 +107,10 @@
         >
           <app-dropdown-menu1></app-dropdown-menu1>
         </div>
-      </div>
+      </div> -->
       <!--end::Dropdown-->
       <!--begin::Button-->
-      <a
+      <!-- <a
         class="btn btn-success btn-icon font-weight-bold cursor-pointer"
         data-toggle="modal"
         data-target="#kt_chat_modal"
@@ -120,7 +120,7 @@
           cacheSVG="true"
           class="svg-icon svg-icon-lg"
         ></span>
-      </a>
+      </a> -->
       <!--end::Button-->
     </div>
     <!--end::Toolbar-->

@@ -4,6 +4,9 @@ import { BreadcrumbItemModel } from '../_models/breadcrumb-item.model';
 import { LayoutService } from '../../../../core';
 import { SubheaderService } from '../_services/subheader.service';
 
+import { PlanService } from '../../../../../plan.service';
+import { MatSelectChange } from '@angular/material/select';
+
 interface Branch {
   name : string,
   hash : string
@@ -12,6 +15,7 @@ interface Branch {
 @Component({
   selector: 'app-subheader',
   templateUrl: './subheader.component.html',
+  styleUrls: ['./subheader.component.scss'],
 })
 export class SubheaderComponent implements OnInit {
   subheaderCSSClasses = '';
@@ -29,7 +33,8 @@ export class SubheaderComponent implements OnInit {
 
   constructor(
     private layout: LayoutService,
-    private subheader: SubheaderService
+    private subheader: SubheaderService,
+    private planService: PlanService
   ) {
     this.title$ = this.subheader.titleSubject.asObservable();
     this.breadcrumbs$ = this.subheader.breadCrumbsSubject.asObservable();
@@ -46,6 +51,11 @@ export class SubheaderComponent implements OnInit {
     this.subheaderDisplayDaterangepicker = this.layout.getProp(
       'subheader.displayDaterangepicker'
     );
+  }
+
+  onBranchSelect(changeEvent : MatSelectChange) {
+    // console.log(changeEvent);
+    this.planService.getPlan(changeEvent.value);
   }
 }
 
