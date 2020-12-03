@@ -14,6 +14,11 @@ export class PlanService {
 
   constructor(private http : HttpClient) {}
 
+  clearPlan() {
+    this.planSteps = [];
+    this.planText = "";
+  }
+
   getPlan(gitBranch : string) : void {
     this.http.get('./data/tempPlan.txt', { responseType: "text" }).subscribe(rawSteps => {
       this.planSteps = rawSteps.split("\n").map(step => {
