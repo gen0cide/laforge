@@ -42,12 +42,12 @@ interface ProvisionedStep {
   stepNumber: Number;
   provisionedHost: ProvisionedHost;
   status: Status;
-  script: Script;
-  command: Command;
-  DNSRecord: DNSRecord;
-  fileDownload: FileDownload;
-  fileDelete: FileDelete;
-  fileExtract: FileExtract;
+  script?: Script;
+  command?: Command;
+  DNSRecord?: DNSRecord;
+  fileDownload?: FileDownload;
+  fileDelete?: FileDelete;
+  fileExtract?: FileExtract;
 }
 
 export {
