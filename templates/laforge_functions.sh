@@ -169,7 +169,7 @@ laforge_wait_for_apt() {
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
-#          NAME:  laforge_apt_get_install_noinput
+#          NAME:  laforge_apt_install
 #   DESCRIPTION:  (DRY) apt-get install with noinput options
 #    PARAMETERS:  packages
 #----------------------------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ function laforge_apt_install() {
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
-#          NAME:  laforge_apt_get_upgrade_noinput
+#          NAME:  laforge_apt_get_upgrade
 #   DESCRIPTION:  (DRY) apt-get upgrade with noinput options
 #----------------------------------------------------------------------------------------------------------------------
 function laforge_apt_get_upgrade() {
@@ -295,7 +295,7 @@ laforge_enable_universe_repository() {
 laforge_ubuntu_prep() {
 	# Install add-apt-repository
 	if ! laforge_check_command_exists add-apt-repository; then
-		laforge_apt_get_install_noinput software-properties-common || return 1
+		laforge_apt_install software-properties-common || return 1
 	fi
 
 	laforge_enable_universe_repository || return 1
