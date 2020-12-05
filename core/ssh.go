@@ -16,7 +16,7 @@ import (
 
 	"github.com/pkg/sftp"
 
-	"github.com/docker/docker/pkg/term"
+	"github.com/docker/engine/pkg/term"
 	"github.com/pkg/errors"
 	"github.com/shiena/ansicolor"
 	"golang.org/x/crypto/ssh"

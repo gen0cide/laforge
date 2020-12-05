@@ -1,7 +1,7 @@
 host "{{ $.ID }}" {
 
   hostname = "{{ $.Hostname }}"
-  {{- if gt (len $.Hostname) 0 }}
+  {{- if gt (len $.Description) 0 }}
   description = "{{ $.Description }}"
   {{- end }}
   os = "{{ $.OS }}"
@@ -10,6 +10,9 @@ host "{{ $.ID }}" {
   {{- end }}
   last_octet = {{ $.LastOctet }}
   instance_size = "{{ $.InstanceSize }}"
+  {{- if $.AllowMACChanges }}
+  allow_mac_changes = "{{ $.AllowMACChanges }}"
+  {{- end }}
 
   disk {
     size = {{ $.Disk.Size }}

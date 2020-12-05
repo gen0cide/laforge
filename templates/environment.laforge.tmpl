@@ -12,6 +12,14 @@ environment "{{ $.ID }}" {
   team_count = {{ $.TeamCount }}
   builder = {{ $.Builder | hclstring }}
 
+  {{- if gt (len $.ExposedVDIPorts) 0 }}
+  vdi_allowed_tcp_ports = [
+    {{ range $_, $x := $.ExposedVDIPorts -}}
+    "{{ $x }}",
+    {{ end -}}
+  ]
+  {{- end }}
+
   config = {
     {{ range $key, $val := $.Config -}}
     {{ $key }} = "{{ $val }}"

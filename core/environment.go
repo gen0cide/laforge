@@ -35,6 +35,7 @@ type Environment struct {
 	Builder          string              `hcl:"builder,attr" json:"builder,omitempty"`
 	TeamCount        int                 `hcl:"team_count,attr" json:"team_count,omitempty"`
 	AdminCIDRs       []string            `hcl:"admin_ranges,attr" json:"admin_ranges,omitempty"`
+	ExposedVDIPorts  []string 				 `hcl:"vdi_allowed_tcp_ports" json:"vdi_allowed_tcp_ports,omitempty"`
 	Config           map[string]string   `hcl:"config,optional" json:"config,omitempty"`
 	Tags             map[string]string   `hcl:"tags,optional" json:"tags,omitempty"`
 	Networks         []*IncludedNetwork  `hcl:"included_network,block" json:"included_networks,omitempty"`

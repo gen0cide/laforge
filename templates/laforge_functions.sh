@@ -169,7 +169,7 @@ laforge_wait_for_apt() {
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
-#          NAME:  laforge_apt_get_install_noinput
+#          NAME:  laforge_apt_install
 #   DESCRIPTION:  (DRY) apt-get install with noinput options
 #    PARAMETERS:  packages
 #----------------------------------------------------------------------------------------------------------------------
@@ -180,13 +180,25 @@ function laforge_apt_install() {
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
-#          NAME:  laforge_apt_get_upgrade_noinput
+#          NAME:  laforge_apt_get_upgrade
 #   DESCRIPTION:  (DRY) apt-get upgrade with noinput options
 #----------------------------------------------------------------------------------------------------------------------
 function laforge_apt_get_upgrade() {
 	laforge_wait_for_apt
 	apt-get upgrade -y -o DPkg::Options::=--force-confold
 	return $?
+}
+
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_apt_update
+#   DESCRIPTION:  apt-get update with suppressed output
+#    PARAMETERS:  none
+#----------------------------------------------------------------------------------------------------------------------
+laforge_apt_update() {
+	laforge_wait_for_apt
+
+	laforge_info "Updating apt repositories."
+	apt-get -qq update || return 1
 }
 
 #---  FUNCTION  -------------------------------------------------------------------------------------------------------
@@ -203,6 +215,11 @@ laforge_apt_key_fetch() {
 	return $?
 }
 
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_disable_output
+#   DESCRIPTION:  Creates a log file and forces STDERR and STDOUT to it
+#    PARAMETERS:  none
+#----------------------------------------------------------------------------------------------------------------------
 function laforge_disable_output() {
 	mkdir -p "${LAFORGE_DIR}"
 	# Define our logging file and pipe paths
@@ -254,6 +271,11 @@ laforge_check_services_systemd() {
 	fi
 }
 
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_enable_universe_repository
+#   DESCRIPTION:  Enable the universe repository if it is not already enabled
+#    PARAMETERS:  none
+#----------------------------------------------------------------------------------------------------------------------
 laforge_enable_universe_repository() {
 	if [ "$(grep -R universe /etc/apt/sources.list /etc/apt/sources.list.d/ | grep -v '#')" != "" ]; then
 		# The universe repository is already enabled
@@ -265,16 +287,50 @@ laforge_enable_universe_repository() {
 	return 0
 }
 
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_ubuntu_prep
+#   DESCRIPTION:  Enable the universe repository and do an apt update
+#    PARAMETERS:  none
+#----------------------------------------------------------------------------------------------------------------------
 laforge_ubuntu_prep() {
 	# Install add-apt-repository
 	if ! laforge_check_command_exists add-apt-repository; then
-		laforge_apt_get_install_noinput software-properties-common || return 1
+		laforge_apt_install software-properties-common || return 1
 	fi
 
 	laforge_enable_universe_repository || return 1
 
-	laforge_wait_for_apt
-	apt-get update || return 1
+	laforge_apt_update
+}
+
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  laforge_wait_for_port
+#   DESCRIPTION:  Wait for up to five minutes for a port to become available
+#    PARAMETERS:  none
+#----------------------------------------------------------------------------------------------------------------------
+laforge_wait_for_port() {
+	if [ $# -eq 0 ]; then
+		laforge_error "You need to pass a port to monitor!"
+		exit 1
+	elif [ $# -ne 1 ]; then
+		laforge_error "You need to pass a single argument (a port) to the function"
+	fi
+	port=$1
+
+	# Timeout set at 5 minutes
+	WAIT_TIMEOUT=300
+
+	while !(nc -z localhost ${port}) >/dev/null; do
+		sleep 1
+		let WAIT_TIMEOUT-=1
+
+		# If timeout reaches 0, abort.
+		if [ "$WAIT_TIMEOUT" -eq 0 ]; then
+			laforge_error "Waiting for port ${port} to open has taken too long."
+			laforge_error "Script cannot proceed. Aborting."
+			return 1
+		fi
+	done
 }
 
 #----------------------------------------------------------------------------------------------------------------------
