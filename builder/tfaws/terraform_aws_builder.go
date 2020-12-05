@@ -1,6 +1,6 @@
-// Package tfgcp implements a Laforge Builder module for generating terraform configurations that target Google Compute Platform.
+// Package tfaws implements a Laforge Builder module for generating terraform configurations that target Google Compute Platform.
 //go:generate fileb0x assets.toml
-package tfgcp
+package tfaws
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/agent"
-	"github.com/gen0cide/laforge/builder/tfgcp/static"
+	"github.com/gen0cide/laforge/builder/tfaws/static"
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/hashicorp/hcl/hcl/printer"
 
@@ -27,11 +27,11 @@ import (
 
 // Definition of builder meta-data.
 const (
-	ID          = `tfgcp`
-	Name        = `Terraform GCP Builder`
+	ID          = `tfaws`
+	Name        = `Terraform AWS Builder`
 	Description = `generates terraform configurations that isolate teams into VPCs on Google Compute Platform`
-	Author      = `Alex Levinson <github.com/gen0cide>`
-	Version     = `0.0.2`
+	Author      = `Alex Levinson <github.com/gen0cide>,Fred Rybin <github.com/frybin>`
+	Version     = `0.0.1`
 )
 
 var (
@@ -87,14 +87,9 @@ var (
 			Check:      validations.HasConfigKey(core.Environment{}, "vpc_cidr"),
 		},
 		validations.Requirement{
-			Name:       "GCP Creds JSON File (gcp_cred_file) not defined",
-			Resolution: "define a gcp_cred_file value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_cred_file"),
-		},
-		validations.Requirement{
-			Name:       "GCP Project not defined",
-			Resolution: "define a gcp_project value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_project"),
+			Name:       "AWS Creds JSON File (aws_cred_file) not defined",
+			Resolution: "define a aws_cred_file value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "aws_cred_file"),
 		},
 		validations.Requirement{
 			Name:       "Root DNS Server not defined",
@@ -107,19 +102,9 @@ var (
 			Check:      validations.FieldNotEmpty(core.Environment{}, "team_count"),
 		},
 		validations.Requirement{
-			Name:       "GCP Region not defined",
-			Resolution: "define a gcp_region value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_region"),
-		},
-		validations.Requirement{
-			Name:       "GCP Storage Bucket not defined",
-			Resolution: "define a gcp_storage_bucket value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_storage_bucket"),
-		},
-		validations.Requirement{
-			Name:       "GCP Zone not defined",
-			Resolution: "define a gcp_zone value inside your environment config = { ... } block.",
-			Check:      validations.HasConfigKey(core.Environment{}, "gcp_zone"),
+			Name:       "AWS Region not defined",
+			Resolution: "define a aws_region value inside your environment config = { ... } block.",
+			Check:      validations.HasConfigKey(core.Environment{}, "aws_region"),
 		},
 		validations.Requirement{
 			Name:       "No networks have been included",
@@ -179,9 +164,9 @@ var (
 	primaryTemplate = "infra.tf.tmpl"
 )
 
-// TerraformGCPBuilder implements a laforge builder that packages an environment into
-// a terraform configuration targeting GCP with each team isolated into their own VPC.
-type TerraformGCPBuilder struct {
+// TerraformAWSBuilder implements a laforge builder that packages an environment into
+// a terraform configuration targeting AWS with each team isolated into their own VPC.
+type TerraformAWSBuilder struct {
 	sync.RWMutex
 
 	// Required for the Builder interface
@@ -192,7 +177,7 @@ type TerraformGCPBuilder struct {
 }
 
 // Get retrieves an element from the embedded KV store
-func (t *TerraformGCPBuilder) Get(key string) string {
+func (t *TerraformAWSBuilder) Get(key string) string {
 	t.Lock()
 	defer t.Unlock()
 	res, ok := t.Base.CurrentBuild.Config[key]
@@ -208,52 +193,52 @@ func (t *TerraformGCPBuilder) Get(key string) string {
 }
 
 // Set assigns an element to the embedded KV store
-func (t *TerraformGCPBuilder) Set(key string, val interface{}) {
+func (t *TerraformAWSBuilder) Set(key string, val interface{}) {
 	t.Lock()
 	defer t.Unlock()
 	t.Base.CurrentBuild.Config[key] = fmt.Sprintf("%v", val)
 }
 
-// New creates an empty TerraformGCPBuilder
-func New() *TerraformGCPBuilder {
+// New creates an empty TerraformAWSBuilder
+func New() *TerraformAWSBuilder {
 	lib := templates.NewLibrary()
-	return &TerraformGCPBuilder{
+	return &TerraformAWSBuilder{
 		Library: lib,
 	}
 }
 
 // ID implements the Builder interface (returns the ID of the builder - usually the go package name)
-func (t *TerraformGCPBuilder) ID() string {
+func (t *TerraformAWSBuilder) ID() string {
 	return ID
 }
 
 // Name implements the Builder interface (returns the name of the builder - usually titleized version of the type)
-func (t *TerraformGCPBuilder) Name() string {
+func (t *TerraformAWSBuilder) Name() string {
 	return Name
 }
 
 // Description implements the Builder interface (returns the builder's description)
-func (t *TerraformGCPBuilder) Description() string {
+func (t *TerraformAWSBuilder) Description() string {
 	return Description
 }
 
 // Author implements the Builder interface (author's name and contact info)
-func (t *TerraformGCPBuilder) Author() string {
+func (t *TerraformAWSBuilder) Author() string {
 	return Author
 }
 
 // Version implements the Builder interface (builder version)
-func (t *TerraformGCPBuilder) Version() string {
+func (t *TerraformAWSBuilder) Version() string {
 	return Version
 }
 
 // Validations implements the Builder interface (builder checks)
-func (t *TerraformGCPBuilder) Validations() validations.Validations {
+func (t *TerraformAWSBuilder) Validations() validations.Validations {
 	return rules
 }
 
 // SetLaforge implements the Builder interface
-func (t *TerraformGCPBuilder) SetLaforge(base *core.Laforge) error {
+func (t *TerraformAWSBuilder) SetLaforge(base *core.Laforge) error {
 	t.Base = base
 	if !base.ClearToBuild {
 		return buildutil.Throw(errors.New("context is not cleared to build"), "Laforge has encountered an error and cannot continue to build. This is likely a bug in LaForge.", nil)
@@ -282,12 +267,12 @@ func (t *TerraformGCPBuilder) SetLaforge(base *core.Laforge) error {
 }
 
 // CheckRequirements implements the Builder interface
-func (t *TerraformGCPBuilder) CheckRequirements() error {
+func (t *TerraformAWSBuilder) CheckRequirements() error {
 	return nil
 }
 
 // PrepareAssets implements the Builder interface
-func (t *TerraformGCPBuilder) PrepareAssets() error {
+func (t *TerraformAWSBuilder) PrepareAssets() error {
 	var privkey, pubkey string
 	pathToPubkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem.pub")
 	pathToPrivkey := filepath.Join(t.Base.CurrentBuild.Dir, "data", "ssh.pem")
@@ -410,7 +395,7 @@ func (t *TerraformGCPBuilder) PrepareAssets() error {
 }
 
 // GenerateScripts implements the Builder interface
-func (t *TerraformGCPBuilder) GenerateScripts() error {
+func (t *TerraformAWSBuilder) GenerateScripts() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
 	finChan := make(chan bool, 1)
@@ -521,7 +506,7 @@ func (t *TerraformGCPBuilder) GenerateScripts() error {
 }
 
 // StageDependencies implements the Builder interface
-func (t *TerraformGCPBuilder) StageDependencies() error {
+func (t *TerraformAWSBuilder) StageDependencies() error {
 	if t.Base.StateManager == nil {
 		return errors.New("builder cannot stage dependencies with nil state manager")
 	}
@@ -656,7 +641,7 @@ func (t *TerraformGCPBuilder) StageDependencies() error {
 }
 
 // Render implements the Builder interface
-func (t *TerraformGCPBuilder) Render() error {
+func (t *TerraformAWSBuilder) Render() error {
 	wg := new(sync.WaitGroup)
 	errChan := make(chan error, 1)
 	finChan := make(chan bool, 1)

@@ -1,0 +1,164 @@
+{{ define "script" }}
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload" {
+  triggers {
+    instance_id = ""${aws_instance.{{ .Get "resource_name" }}.id}""
+  }
+
+  depends_on = [
+    "{{ .Get "depends_on" }}"
+  ]
+
+  provisioner "file" {
+    {{ if .Host.IsWindows }}
+      connection {
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "{{ .Competition.RootPassword }}"
+      }
+
+      source      = "{{ .Host.Hostname }}/assets/{{ .Script.Base }}"
+      {{ if eq .Script.Language "shell" }}
+        destination = "{{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}"
+      {{ else }}
+        destination = "{{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}"
+      {{ end }}
+    {{ else }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
+      connection {
+        agent       = "false"
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type        = "ssh"
+        user        = "root"
+        timeout     = "60m"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
+      }
+      source      = "{{ .Host.Hostname }}/assets/{{ .Script.Base }}"
+      destination = "{{ $dstfile }}"
+    {{ end }}
+  }
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_exec" {
+  triggers {
+    instance_id = ""${aws_instance.{{ .Get "resource_name" }}.id}""
+  }
+
+  depends_on = [
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_upload",
+  ]
+
+  provisioner "remote-exec" {
+    {{ if .Host.IsWindows }}
+      connection {
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "{{ .Competition.RootPassword }}"
+      }
+
+      inline = [
+        {{ if eq .Script.Language "shell" }}
+        "{{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}",
+        {{ else }}
+        "powershell -NoProfile -ExecutionPolicy Bypass -File \"{{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}\"",
+        {{ end }}
+      ]
+    {{ else }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
+      connection {
+        agent       = "false"
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type        = "ssh"
+        user        = "root"
+        timeout     = "60m"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
+      }
+
+      inline = [
+        "chmod +x {{ $dstfile }}",
+        "{{ $dstfile }}{{ .Script.ArgString }}",
+      ]
+    {{ end }}
+  }
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_wait" {
+  triggers {
+    instance_id = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+  }
+
+  depends_on = [
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_exec",
+  ]
+
+  {{ $linux_sleep_timer := 3 }}
+  {{ $windows_sleep_timer := 15 }}
+
+  {{ if .Local.IsWindows }}
+    provisioner "local-exec" {
+      {{ if .Host.IsWindows }}
+        command = "Start-Sleep {{ $windows_sleep_timer }}"
+      {{ else }}
+        command = "Start-Sleep {{ $linux_sleep_timer }}"
+      {{ end }}
+      interpreter = ["PowerShell", "-Command"]
+    }
+  {{ else }}
+    provisioner "local-exec" {
+      {{ if .Host.IsWindows }}
+        command = "sleep {{ $windows_sleep_timer }}"
+      {{ else }}
+        command = "sleep {{ $linux_sleep_timer }}"
+      {{ end }}
+    }
+  {{ end }}
+}
+
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  triggers {
+    instance_id = "${aws_instance.{{ .Get "resource_name" }}.public_ip}",
+  }
+
+  depends_on = [
+    "null_resource.provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}_wait",
+  ]
+
+  provisioner "remote-exec" {
+    {{ if .Host.IsWindows }}
+      connection {
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "{{ .Competition.RootPassword }}"
+      }
+
+      inline = [
+        {{ if eq .Script.Language "shell" }}
+          "del {{ printf "C:\\\\laforge_script_%s.bat" (.Get "step_number") }}",
+        {{ else }}
+          "del {{ printf "C:\\\\laforge_script_%s.ps1" (.Get "step_number") }}",
+        {{ end }}
+      ]
+    {{ else }}
+      {{ $dstfile := printf "/root/laforge_script_%s.sh" (.Get "step_number") }}
+      connection {
+        agent       = "false"
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type        = "ssh"
+        user        = "root"
+        timeout     = "60m"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
+      }
+
+      inline = [
+        "rm -f {{ $dstfile }} || true",
+      ]
+    {{ end }}
+  }
+}
+{{ end }}
+

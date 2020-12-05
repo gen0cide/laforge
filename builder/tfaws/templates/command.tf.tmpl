@@ -1,0 +1,31 @@
+{{ define "command" }}
+resource "null_resource" "provision_{{ .Get "resource_name" }}_step{{ .Get "step_number" }}" {
+  depends_on = [
+    "aws_instance.{{ .Get "resource_name" }}"
+  ]
+
+  provisioner "remote-exec" {
+    {{ if .Host.IsWindows }}
+      connection {
+        host     = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type     = "winrm"
+        user     = "Administrator"
+        timeout  = "60m"
+        password = "{{ .Competition.RootPassword }}"
+      }
+    {{ else }}
+      connection {
+        host        = "${aws_instance.{{ .Get "resource_name" }}.public_ip}"
+        type        = "ssh"
+        user        = "root"
+        timeout     = "60m"
+        private_key = "${file("{{ index .Build.Config "rel_ssh_private_key_file" }}")}"
+      }
+    {{ end }}
+
+    inline = [
+      "{{ .Command.CommandString }}",
+    ]
+  }
+}
+{{ end }}

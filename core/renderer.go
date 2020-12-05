@@ -68,6 +68,7 @@ var TemplateFuncLib = template.FuncMap{
 	"ToScreamingDelimited": strcase.ToScreamingDelimited,
 	"ToCamel":              strcase.ToCamel,
 	"ToLowerCamel":         strcase.ToLowerCamel,
+	"Incr":                 Incr,
 }
 
 // UnsafeStringAsInt is a template helper function that will return -1 if it cannot convert the string to an integer.
@@ -82,6 +83,11 @@ func UnsafeStringAsInt(s string) int {
 // Decr is a template helper function to non-destructively decrement an integer
 func Decr(i int) int {
 	return i - 1
+}
+
+// Incr is a template helper function to non-destructively increment an integer
+func Incr(i int) int {
+	return i + 1
 }
 
 // QuotedHCLString is a template function to render safe HCLv2 strings
