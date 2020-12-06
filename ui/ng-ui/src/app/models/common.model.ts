@@ -1,36 +1,36 @@
-import { Build, Environment } from './environment.model'
-import { ProvisionedNetwork } from './network.model'
+import { Build, Environment } from './environment.model';
+import { ProvisionedNetwork } from './network.model';
 
-type ID = String
+type ID = string;
 
 interface varsMap {
-  key?: String;
-  value?: String;
+  key?: string;
+  value?: string;
 }
 
 interface configMap {
-  key?: String;
-  value?: String;
+  key?: string;
+  value?: string;
 }
 
 interface User {
   id: ID;
-  name: String;
-  uuid: String;
-  email: String;
+  name: string;
+  uuid: string;
+  email: string;
 }
 
 interface Tag {
   id: ID;
-  name: String;
-  description?: String;
+  name: string;
+  description?: string;
 }
 
 interface Team {
   id: ID;
-  teamNumber: Number;
+  teamNumber: number;
   config: configMap[];
-  revision: Number;
+  revision: number;
   maintainer: User;
   build: Build;
   environment: Environment;
@@ -49,19 +49,11 @@ enum ProvisionStatus {
 
 interface Status {
   state: ProvisionStatus;
-  startedAt: String;
-  endedAt: String;
-  failed: Boolean;
-  completed: Boolean;
-  error: String;
+  startedAt: string;
+  endedAt: string;
+  failed: boolean;
+  completed: boolean;
+  error: string;
 }
 
-export {
-  ID,
-  varsMap,
-  configMap,
-  User,
-  Tag,
-  Team,
-  Status
-}
+export { ID, varsMap, configMap, User, Tag, Team, Status };

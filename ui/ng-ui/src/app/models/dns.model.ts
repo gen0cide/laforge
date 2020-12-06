@@ -2,25 +2,22 @@ import { configMap, ID, Tag, varsMap } from './common.model';
 
 interface DNSRecord {
   id: ID;
-  name: String;
-  values: String[];
-  type: String;
-  zone: String;
+  name: string;
+  values: string[];
+  type: string;
+  zone: string;
   vars: varsMap[];
   tags: Tag[];
-  disabled: Boolean;
+  disabled: boolean;
 }
 
 interface DNS {
   id: ID;
-  type: String;
-  rootDomain: String;
-  DNSServers: String[];
-  NTPServer: String[];
+  type: string;
+  rootDomain: string;
+  DNSServers: string[];
+  NTPServer: string[];
   config: configMap[];
 }
 
-export {
-  DNSRecord,
-  DNS
-}
+export { DNSRecord, DNS };

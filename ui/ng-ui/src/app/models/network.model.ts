@@ -4,17 +4,17 @@ import { ProvisionedHost } from './host.model';
 
 interface Network {
   id: ID;
-  name: String;
-  cidr: String;
-  vdiVisible: Boolean;
+  name: string;
+  cidr: string;
+  vdiVisible: boolean;
   vars: varsMap[];
   tags: Tag[];
 }
 
 interface ProvisionedNetwork {
   id: ID;
-  name: String;
-  cidr: String;
+  name: string;
+  cidr: string;
   vars: varsMap[];
   tags: Tag[];
   provisionedHosts: ProvisionedHost[];
@@ -23,7 +23,4 @@ interface ProvisionedNetwork {
   build: Build;
 }
 
-export {
-  Network,
-  ProvisionedNetwork
-}
+export { Network, ProvisionedNetwork };

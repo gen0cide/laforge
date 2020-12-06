@@ -3,23 +3,21 @@ import { Finding } from './finding.model';
 
 interface Script {
   id: ID;
-  name: String;
-  language: String;
-  description: String;
-  source: String;
-  sourceType: String;
-  cooldown: Number;
-  timeout: Number;
-  ignoreErrors: Boolean;
-  args: String[];
-  disabled: Boolean;
+  name: string;
+  language: string;
+  description: string;
+  source: string;
+  sourceType: string;
+  cooldown: number;
+  timeout: number;
+  ignoreErrors: boolean;
+  args: string[];
+  disabled: boolean;
   vars: varsMap[];
   tags: Tag[];
-  absPath: String;
+  absPath: string;
   maintainer: User;
   findings: Finding[];
 }
 
-export {
-  Script
-}
+export { Script };

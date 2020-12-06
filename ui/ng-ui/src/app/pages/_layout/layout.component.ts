@@ -3,7 +3,7 @@ import {
   OnInit,
   ViewChild,
   ElementRef,
-  AfterViewInit,
+  AfterViewInit
 } from '@angular/core';
 import { LayoutService, LayoutInitService } from '../../_metronic/core';
 import KTLayoutContent from '../../../assets/js/layout/base/content';
@@ -11,7 +11,7 @@ import KTLayoutContent from '../../../assets/js/layout/base/content';
 @Component({
   selector: 'app-layout',
   templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss'],
+  styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
   // Public variables

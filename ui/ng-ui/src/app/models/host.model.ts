@@ -7,15 +7,15 @@ import { Script } from './script.model';
 
 interface Host {
   id: ID;
-  hostname: String;
-  OS: String;
-  lastOctect: Number;
-  allowMacChanges: Boolean;
-  exposedTCPPorts: String[];
-  exposedUDPPorts: String[];
-  overridePassword: String;
+  hostname: string;
+  OS: string;
+  lastOctect: number;
+  allowMacChanges: boolean;
+  exposedTCPPorts: string[];
+  exposedUDPPorts: string[];
+  overridePassword: string;
   vars: varsMap[];
-  userGroups: String[];
+  userGroups: string[];
   dependsOn: Host[];
   maintainer: User;
   tags: Tag[];
@@ -29,7 +29,7 @@ interface Host {
 
 interface ProvisionedHost {
   id: ID;
-  subnetIP: String;
+  subnetIP: string;
   status: Status;
   provisionedNetwork: ProvisionedNetwork;
   provisionedSteps: ProvisionedStep[];
@@ -38,8 +38,8 @@ interface ProvisionedHost {
 
 interface ProvisionedStep {
   id: ID;
-  provisionType: String;
-  stepNumber: Number;
+  provisionType: string;
+  stepNumber: number;
   provisionedHost: ProvisionedHost;
   status: Status;
   script?: Script;
@@ -50,8 +50,4 @@ interface ProvisionedStep {
   fileExtract?: FileExtract;
 }
 
-export {
-  Host,
-  ProvisionedHost,
-  ProvisionedStep
-}
+export { Host, ProvisionedHost, ProvisionedStep };

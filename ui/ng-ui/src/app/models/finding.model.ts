@@ -19,8 +19,8 @@ enum FindingDifficulty {
 }
 
 interface Finding {
-  name: String;
-  description: String;
+  name: string;
+  description: string;
   severity: FindingSeverity;
   difficulty: FindingDifficulty;
   maintainer: User;
@@ -28,6 +28,4 @@ interface Finding {
   Host: Host;
 }
 
-export {
-  Finding
-}
+export { Finding };

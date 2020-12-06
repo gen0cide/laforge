@@ -2,31 +2,27 @@ import { ID, Tag } from './common.model';
 
 interface FileDownload {
   id: ID;
-  sourceType: String;
-  source: String;
-  destination: String;
-  template: Boolean;
-  mode: String;
-  disabled: Boolean;
-  md5: String;
-  absPath: String;
+  sourceType: string;
+  source: string;
+  destination: string;
+  template: boolean;
+  mode: string;
+  disabled: boolean;
+  md5: string;
+  absPath: string;
   tags: Tag[];
 }
 
 interface FileDelete {
   id: ID;
-  path: String;
+  path: string;
 }
 
 interface FileExtract {
   id: ID;
-  source: String;
-  destination: String;
-  type: String;
+  source: string;
+  destination: string;
+  type: string;
 }
 
-export {
-  FileDownload,
-  FileDelete,
-  FileExtract
-}
+export { FileDownload, FileDelete, FileExtract };
