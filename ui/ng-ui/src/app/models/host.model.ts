@@ -9,7 +9,7 @@ interface Host {
   id: ID;
   hostname: string;
   OS: string;
-  lastOctect: number;
+  lastOctet: number;
   allowMacChanges: boolean;
   exposedTCPPorts: string[];
   exposedUDPPorts: string[];

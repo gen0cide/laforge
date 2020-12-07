@@ -56,4 +56,4 @@ interface Status {
   error: string;
 }
 
-export { ID, varsMap, configMap, User, Tag, Team, Status };
+export { ID, varsMap, configMap, User, Tag, Team, Status, ProvisionStatus };

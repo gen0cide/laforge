@@ -1,16 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StepComponent } from './step/step.component';
-
-
+import { NetworkComponent } from './network/network.component';
+import { HostComponent } from './host/host.component';
 
 @NgModule({
-  declarations: [StepComponent],
-  imports: [
-    CommonModule
-  ],
-  exports: [
-    StepComponent
-  ]
+  declarations: [NetworkComponent, HostComponent],
+  imports: [CommonModule],
+  exports: [NetworkComponent]
 })
-export class ViewComponentsModule { }
+export class ViewComponentsModule {}

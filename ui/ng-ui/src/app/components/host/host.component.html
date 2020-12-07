@@ -1,0 +1,19 @@
+<div class="host">
+  <div class="host-info">
+    <div
+      class="host-status-icon"
+      [class.success]="provisionedHost.status.completed == true && provisionedHost.status.failed == false"
+      [class.failed]="provisionedHost.status.failed == true"
+    >
+      <i class="fal fa-2x fa-server"></i>
+    </div>
+    <div class="host-details">
+      <span class="host-hostname"><b>Hostname:</b> {{provisionedHost.host.hostname}}</span>
+      <span class="host-ip"><b>IP:</b> {{provisionedHost.subnetIP}}</span>
+    </div>
+    <div class="host-options" [class.expanded]="optionsToggled" #options>
+      <i class="fa fa-ellipsis-h" (click)="toggleOptions()"></i>
+      <i class="fa fa-undo-alt restart"></i>
+    </div>
+  </div>
+</div>

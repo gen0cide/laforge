@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ProvisionedNetwork } from 'src/app/models/network.model';
+
+import { corp_network_provisioned } from '../../../data/corp';
 
 @Component({
   selector: 'app-manage',
@@ -6,10 +9,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./manage.component.scss']
 })
 export class ManageComponent implements OnInit {
+  corpNetwork: ProvisionedNetwork = corp_network_provisioned;
 
-  constructor() { }
+  constructor() {}
 
-  ngOnInit(): void {
-  }
-
+  ngOnInit(): void {}
 }

@@ -1,11 +1,11 @@
 import { Component, NgModule, OnInit } from '@angular/core';
 
-import { Step } from '../.../../../models/plan.model';
+// import { Step } from '../.../../../models/plan.model';
 import { PlanService } from '../../plan.service';
 
-interface EnvConfig {
-  text : string
-}
+// interface EnvConfig {
+//   text : string
+// }
 
 @Component({
   selector: 'app-plan',
@@ -13,18 +13,18 @@ interface EnvConfig {
   styleUrls: ['./plan.component.scss']
 })
 export class PlanComponent implements OnInit {
-  currentConfig : EnvConfig = {
-    text: 'This is a test config\
-    More config here\
-    Last line of the config'
-  }
+  // currentConfig : EnvConfig = {
+  //   text: 'This is a test config\
+  //   More config here\
+  //   Last line of the config'
+  // }
 
-  planSteps : Step[] = []
-  planText : String
+  // planSteps : Step[] = []
+  // planText : String
 
   constructor(
     public planService: PlanService // TODO: Adjust scope so we can access values while this is private
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     // this.planService.planSteps

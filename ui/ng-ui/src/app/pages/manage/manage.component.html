@@ -1,24 +1,11 @@
-Manage
-<mat-slider min="1" max="100" step="1" value="1"></mat-slider>
-<!--
-  <mat-table [dataSource]="environmentTableSource" class="mat-elevation-z8">
-   <ng-container matColumnDef="branch">
-      <mat-header-cell *matHeaderCellDef><i class="fad fa-code-branch"></i> Branch </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.branch}} </mat-cell>
-	</ng-container>
-   <ng-container matColumnDef="user">
-      <mat-header-cell *matHeaderCellDef><i class="fad fa-user-visor"></i> User </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.user}} </mat-cell>
-	</ng-container>
-   <ng-container matColumnDef="user">
-      <mat-header-cell *matHeaderCellDef><i class="fad fa-hammer"></i> Status </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.status}} </mat-cell>
-	</ng-container>
-   <ng-container matColumnDef="user">
-      <mat-header-cell *matHeaderCellDef><i class="fas fa-info"></i> Details </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.details}} </mat-cell>
-	</ng-container>
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
--->
+<mat-card class="laforge-card">
+   <mat-card-header>
+     <mat-card-title-group>
+       <mat-card-title>Manage</mat-card-title>
+       <mat-card-subtitle>Manage you current environment</mat-card-subtitle>
+     </mat-card-title-group>
+   </mat-card-header>
+   <mat-card-content>
+     <app-network [provisionedNetwork]="corpNetwork"></app-network>
+   </mat-card-content>
+ </mat-card>
