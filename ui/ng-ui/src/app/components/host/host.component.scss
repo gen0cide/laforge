@@ -32,6 +32,15 @@
       background-color: #00c851;
     }
 
+    .host-status-icon.failed {
+      background-color: #ff4444;
+    }
+
+    .host-status-icon.in-progress {
+      background-color: #ffbb33;
+      // background-color: #33b5e5;
+    }
+
     .host-details {
       display: flex;
       flex-direction: column;

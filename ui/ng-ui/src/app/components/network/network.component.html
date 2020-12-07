@@ -2,8 +2,9 @@
   <div class="network-info">
     <div
       class="network-status-icon"
-      [class.success]="provisionedNetwork.status.completed == true && provisionedNetwork.status.failed == false"
-      [class.failed]="provisionedNetwork.status.failed == true"
+      [class.success]="getStatus() === 'ProvStatusComplete'"
+      [class.failed]="getStatus() === 'ProvStatusFailed'"
+      [class.in-progress]="getStatus() === 'ProvStatusInProgress'"
     >
       <i class="fal fa-2x fa-network-wired"></i>
     </div>

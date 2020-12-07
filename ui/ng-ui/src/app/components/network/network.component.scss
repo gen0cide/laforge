@@ -32,6 +32,15 @@
       background-color: #00c851;
     }
 
+    .network-status-icon.failed {
+      background-color: #ff4444;
+    }
+
+    .network-status-icon.in-progress {
+      // background-color: #ffbb33;
+      background-color: #33b5e5;
+    }
+
     .network-details {
       display: flex;
       flex-direction: column;
@@ -79,6 +88,7 @@
 
     ::ng-deep .host {
       margin-left: 2rem;
+      margin-bottom: 1rem;
     }
 
     hr {

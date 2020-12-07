@@ -18,6 +18,15 @@ const complete_status: Status = {
   error: ''
 };
 
+const in_progress_status: Status = {
+  state: ProvisionStatus.ProvStatusInProgress,
+  startedAt: '1607366996285',
+  endedAt: '1607377862255',
+  failed: false,
+  completed: false,
+  error: ''
+};
+
 const coins_heads_01: Host = {
   id: 'CH01',
   hostname: 'heads-01',
@@ -38,9 +47,63 @@ const coins_heads_01: Host = {
   maintainer: default_user,
   tags: [
     {
-      id: 'tag-1',
+      id: 'focus-1',
       name: 'focus',
       description: 'services'
+    }
+  ]
+};
+
+const dc_01: Host = {
+  id: 'DC01',
+  hostname: 'corp-dc-01',
+  OS: 'w2k16',
+  lastOctet: 10,
+  allowMacChanges: false,
+  exposedTCPPorts: [
+    '123',
+    '135',
+    '464',
+    '49152-65535',
+    '389',
+    '636',
+    '3268',
+    '3269',
+    '53',
+    '88',
+    '445',
+    '3389'
+  ],
+  exposedUDPPorts: ['53', '88', '389', '123', '464'],
+  overridePassword: '',
+  vars: [
+    {
+      key: 'force_master_dns',
+      value: 'false'
+    },
+    {
+      key: 'user_data_script_id',
+      value: '/scripts/windows/powershell-userdata-script'
+    }
+  ],
+  userGroups: [],
+  dependsOn: [],
+  maintainer: default_user,
+  tags: [
+    {
+      id: 'focus-2',
+      name: 'focus',
+      description: 'full-access'
+    },
+    {
+      id: 'network-1',
+      name: 'network',
+      description: 'corp'
+    },
+    {
+      id: 'service-1',
+      name: 'service',
+      description: 'activedirectory'
     }
   ]
 };
@@ -52,6 +115,15 @@ const coins_head_01_provisioned: ProvisionedHost = {
   provisionedNetwork: null,
   provisionedSteps: [],
   host: coins_heads_01
+};
+
+const dc_01_provisioned: ProvisionedHost = {
+  id: 'prov-DC01',
+  subnetIP: '10.0.1.10',
+  status: in_progress_status,
+  provisionedNetwork: null,
+  provisionedSteps: [],
+  host: dc_01
 };
 
 const corp_network: Network = {
@@ -111,7 +183,7 @@ const corp_network_provisioned: ProvisionedNetwork = {
     }
   ],
   tags: [],
-  provisionedHosts: [coins_head_01_provisioned],
+  provisionedHosts: [coins_head_01_provisioned, dc_01_provisioned],
   status: complete_status,
   network: corp_network,
   build: null

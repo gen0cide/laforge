@@ -7,6 +7,7 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
+import { ProvisionStatus } from 'src/app/models/common.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';
 
 @Component({
@@ -38,5 +39,18 @@ export class NetworkComponent implements OnInit {
 
   toggleOptions(): void {
     this.optionsToggled = !this.optionsToggled;
+  }
+
+  getStatus(): string {
+    switch (this.provisionedNetwork.status.state) {
+      case ProvisionStatus.ProvStatusComplete:
+        return 'ProvStatusComplete';
+      case ProvisionStatus.ProvStatusFailed:
+        return 'ProvStatusFailed';
+      case ProvisionStatus.ProvStatusInProgress:
+        return 'ProvStatusInProgress';
+      default:
+        return 'ProvStatusUndefined';
+    }
   }
 }

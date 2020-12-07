@@ -2,8 +2,9 @@
   <div class="host-info">
     <div
       class="host-status-icon"
-      [class.success]="provisionedHost.status.completed == true && provisionedHost.status.failed == false"
-      [class.failed]="provisionedHost.status.failed == true"
+      [class.success]="getStatus() === 'ProvStatusComplete'"
+      [class.failed]="getStatus() === 'ProvStatusFailed'"
+      [class.in-progress]="getStatus() === 'ProvStatusInProgress'"
     >
       <i class="fal fa-2x fa-server"></i>
     </div>
