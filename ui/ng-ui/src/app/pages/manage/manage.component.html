@@ -2,10 +2,10 @@
    <mat-card-header>
      <mat-card-title-group>
        <mat-card-title>Manage</mat-card-title>
-       <mat-card-subtitle>Manage you current environment</mat-card-subtitle>
+       <mat-card-subtitle>Currently managing the <b>{{environment.Name}}</b> environment</mat-card-subtitle>
      </mat-card-title-group>
    </mat-card-header>
    <mat-card-content>
-     <app-network [provisionedNetwork]="corpNetwork"></app-network>
+     <app-team *ngFor="let team of environment.build.teams" [team]="team"></app-team>
    </mat-card-content>
  </mat-card>

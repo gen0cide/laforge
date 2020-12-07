@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { Environment } from 'src/app/models/environment.model';
+// import { ProvisionedNetwork } from 'src/app/models/network.model';
 
-import { corp_network_provisioned } from '../../../data/corp';
+// import { corp_network_provisioned } from '../../../data/corp';
+import { bradley } from 'src/data/sample-config';
 
 @Component({
   selector: 'app-manage',
@@ -9,7 +11,8 @@ import { corp_network_provisioned } from '../../../data/corp';
   styleUrls: ['./manage.component.scss']
 })
 export class ManageComponent implements OnInit {
-  corpNetwork: ProvisionedNetwork = corp_network_provisioned;
+  // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
+  environment: Environment = bradley;
 
   constructor() {}
 

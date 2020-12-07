@@ -37,4 +37,4 @@ interface Environment {
   competition: Competition;
 }
 
-export { Environment, Build };
+export { Environment, Build, Competition };

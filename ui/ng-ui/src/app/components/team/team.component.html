@@ -1,0 +1,19 @@
+<div class="team">
+  <div class="team-info">
+    <div
+      class="team-status-icon"
+      [class.success]="getStatus() === 'ProvStatusComplete'"
+      [class.failed]="getStatus() === 'ProvStatusFailed'"
+      [class.in-progress]="getStatus() === 'ProvStatusInProgress'"
+    >
+      <i class="fal fa-2x fa-users"></i>
+    </div>
+    <div class="team-details">
+      <span class="team-number"><b>Team:</b> {{team.teamNumber}}</span>
+    </div>
+  </div>
+  <div class="networks">
+    <app-network *ngFor="let network of team.provisionedNetworks" [provisionedNetwork]="network"></app-network>
+    <hr/>
+  </div>
+</div>

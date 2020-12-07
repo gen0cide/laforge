@@ -16,7 +16,7 @@ interface DNS {
   type: string;
   rootDomain: string;
   DNSServers: string[];
-  NTPServer: string[];
+  NTPServers: string[];
   config: configMap[];
 }
 

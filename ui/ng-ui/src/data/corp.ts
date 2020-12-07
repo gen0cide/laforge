@@ -112,7 +112,7 @@ const coins_head_01_provisioned: ProvisionedHost = {
   id: 'prov-CH01',
   subnetIP: '10.0.1.2',
   status: complete_status,
-  provisionedNetwork: null,
+  provisionedNetwork: null, // avoid circular dependencies
   provisionedSteps: [],
   host: coins_heads_01
 };
@@ -121,7 +121,7 @@ const dc_01_provisioned: ProvisionedHost = {
   id: 'prov-DC01',
   subnetIP: '10.0.1.10',
   status: in_progress_status,
-  provisionedNetwork: null,
+  provisionedNetwork: null, // avoid circular dependencies
   provisionedSteps: [],
   host: dc_01
 };
@@ -189,4 +189,4 @@ const corp_network_provisioned: ProvisionedNetwork = {
   build: null
 };
 
-export { corp_network_provisioned };
+export { coins_heads_01, dc_01, corp_network, corp_network_provisioned };
