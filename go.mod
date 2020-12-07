@@ -17,6 +17,7 @@ require (
 	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7 // indirect
 	github.com/docker/engine v1.13.1
 	github.com/emicklei/dot v0.14.0
+	github.com/facebook/ent v0.5.1
 	github.com/fatih/color v1.9.0
 	github.com/gen0cide/gscript v0.1.1
 	github.com/gen0cide/utils v0.0.0-20181012043315-207bbefab091
