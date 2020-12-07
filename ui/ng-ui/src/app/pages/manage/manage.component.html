@@ -1,8 +1,11 @@
 <mat-card class="laforge-card">
    <mat-card-header>
+         <mat-card-title>Manage</mat-card-title>
+         <mat-card-subtitle>Manage your environment and all of it's networks/hosts</mat-card-subtitle>
      <mat-card-title-group>
-       <mat-card-title>Manage</mat-card-title>
-       <mat-card-subtitle>Currently managing the <b>{{environment.Name}}</b> environment</mat-card-subtitle>
+         <mat-card-subtitle><b>Name:</b> {{environment.Name}}</mat-card-subtitle>
+         <mat-card-subtitle><b>Description:</b> {{environment.Description}}</mat-card-subtitle>
+         <mat-card-subtitle><b>Maintainer:</b> {{environment.maintainer.name}} &lt;{{environment.maintainer.email}}&gt;</mat-card-subtitle>
      </mat-card-title-group>
    </mat-card-header>
    <mat-card-content>
