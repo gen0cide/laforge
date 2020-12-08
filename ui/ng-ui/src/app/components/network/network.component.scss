@@ -6,7 +6,7 @@
   justify-content: flex-start;
 
   .network-info {
-    width: 30rem;
+    width: 17rem;
     height: 4rem;
     background-color: #f5f5f5;
     border-radius: 2rem;
@@ -82,12 +82,12 @@
   }
 
   .hosts {
-    margin-left: 4rem;
+    margin-left: 2rem;
     padding-top: 1rem;
     border-left: 1px solid #999999;
 
     ::ng-deep .host {
-      margin-left: 2rem;
+      margin-left: 1rem;
       margin-bottom: 1rem;
     }
 

@@ -1,5 +1,5 @@
 <div class="host">
-  <div class="host-info">
+  <div class="host-info" (click)="toggleOptions()" #container>
     <div
       class="host-status-icon"
       [class.success]="getStatus() === 'ProvStatusComplete'"
@@ -8,13 +8,17 @@
     >
       <i class="fal fa-2x fa-server"></i>
     </div>
-    <div class="host-details">
+    <div class="host-preview">
+      <span class="host-hostname"><b>{{provisionedHost.host.hostname}}</b></span>
+    </div>
+    <div class="host-details" [class.expanded]="optionsToggled">
       <span class="host-hostname"><b>Hostname:</b> {{provisionedHost.host.hostname}}</span>
       <span class="host-ip"><b>IP:</b> {{provisionedHost.subnetIP}}</span>
-    </div>
-    <div class="host-options" [class.expanded]="optionsToggled" #options>
-      <i class="fa fa-ellipsis-h" (click)="toggleOptions()"></i>
-      <i class="fa fa-undo-alt restart"></i>
+      <span class="host-status"><b>Status:</b> {{getStatus()}}</span>
+      <div class="host-options" >
+        <i class="fa fa-ellipsis-h" (click)="toggleOptions()"></i>
+        <i class="fa fa-undo-alt restart"></i>
+      </div>
     </div>
   </div>
 </div>

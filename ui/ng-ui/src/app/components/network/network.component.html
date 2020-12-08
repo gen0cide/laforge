@@ -9,13 +9,13 @@
       <i class="fal fa-2x fa-network-wired"></i>
     </div>
     <div class="network-details">
-      <span class="network-name"><b>Name:</b> {{provisionedNetwork.name}}</span>
-      <span class="network-status"><b>Status:</b> {{provisionedNetwork.status.state === 4 ? 'Up' : 'Down'}}</span>
+      <span class="network-name"><b>{{provisionedNetwork.name}}</b></span>
+      <!-- <span class="network-status"><b>Status:</b> {{provisionedNetwork.status.state === 4 ? 'Up' : 'Down'}}</span> -->
     </div>
-    <div class="network-options" [class.expanded]="optionsToggled" #options>
+    <!-- <div class="network-options" [class.expanded]="optionsToggled" #options>
       <i class="fa fa-ellipsis-h" (click)="toggleOptions()"></i>
       <i class="fa fa-undo-alt restart"></i>
-    </div>
+    </div> -->
   </div>
   <div class="hosts">
     <app-host *ngFor="let host of provisionedNetwork.provisionedHosts" [provisionedHost]="host"></app-host>

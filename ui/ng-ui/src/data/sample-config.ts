@@ -47,13 +47,73 @@ const team1: Team = {
   provisionedNetworks: [corp_network_provisioned]
 };
 
+const team2: Team = {
+  id: 'team2',
+  teamNumber: 2,
+  config: [],
+  revision: 1,
+  maintainer: default_user,
+  build: null, // Avoid circular dependencies
+  environment: null, // same as above
+  tags: [],
+  provisionedNetworks: [corp_network_provisioned]
+};
+
+const team3: Team = {
+  id: 'team3',
+  teamNumber: 3,
+  config: [],
+  revision: 1,
+  maintainer: default_user,
+  build: null, // Avoid circular dependencies
+  environment: null, // same as above
+  tags: [],
+  provisionedNetworks: [corp_network_provisioned]
+};
+
+const team4: Team = {
+  id: 'team4',
+  teamNumber: 4,
+  config: [],
+  revision: 1,
+  maintainer: default_user,
+  build: null, // Avoid circular dependencies
+  environment: null, // same as above
+  tags: [],
+  provisionedNetworks: [corp_network_provisioned]
+};
+
+const team5: Team = {
+  id: 'team5',
+  teamNumber: 5,
+  config: [],
+  revision: 1,
+  maintainer: default_user,
+  build: null, // Avoid circular dependencies
+  environment: null, // same as above
+  tags: [],
+  provisionedNetworks: [corp_network_provisioned]
+};
+
+const team6: Team = {
+  id: 'team6',
+  teamNumber: 6,
+  config: [],
+  revision: 1,
+  maintainer: default_user,
+  build: null, // Avoid circular dependencies
+  environment: null, // same as above
+  tags: [],
+  provisionedNetworks: [corp_network_provisioned]
+};
+
 const default_build: Build = {
   id: 'bld-default',
   revision: 1,
   tags: [],
   config: [],
   maintainer: default_user,
-  teams: [team1]
+  teams: [team1, team2, team3, team4, team5, team6]
 };
 
 const bradley: Environment = {

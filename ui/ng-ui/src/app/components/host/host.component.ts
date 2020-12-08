@@ -17,7 +17,7 @@ import { ProvisionedHost } from 'src/app/models/host.model';
 })
 export class HostComponent implements OnInit {
   @Input() provisionedHost: ProvisionedHost;
-  @ViewChild('options') options: ElementRef;
+  @ViewChild('container') container: ElementRef;
   optionsToggled: boolean;
 
   constructor(
@@ -29,7 +29,7 @@ export class HostComponent implements OnInit {
 
   ngOnInit(): void {
     this.renderer.listen('window', 'click', (e: Event) => {
-      if (!this.options.nativeElement.contains(e.target)) {
+      if (!this.container.nativeElement.contains(e.target)) {
         this.optionsToggled = false;
         this.changeDetectorRef.markForCheck();
       }

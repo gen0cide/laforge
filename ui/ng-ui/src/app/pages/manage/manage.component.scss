@@ -2,3 +2,16 @@
   align-items: flex-start;
   justify-content: space-between;
 }
+
+::ng-deep .mat-card-content {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-evenly;
+}
+
+::ng-deep .team {
+  margin-bottom: 2rem;
+  // width: 40%;
+  flex: 1 1 40%;
+}

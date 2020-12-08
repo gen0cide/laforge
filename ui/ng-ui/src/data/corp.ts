@@ -27,6 +27,15 @@ const in_progress_status: Status = {
   error: ''
 };
 
+const failed_status: Status = {
+  state: ProvisionStatus.ProvStatusFailed,
+  startedAt: '1607366996285',
+  endedAt: '1607377862255',
+  failed: true,
+  completed: false,
+  error: 'An unknown error occurred'
+};
+
 const coins_heads_01: Host = {
   id: 'CH01',
   hostname: 'heads-01',
@@ -111,7 +120,7 @@ const dc_01: Host = {
 const coins_head_01_provisioned: ProvisionedHost = {
   id: 'prov-CH01',
   subnetIP: '10.0.1.2',
-  status: complete_status,
+  status: failed_status,
   provisionedNetwork: null, // avoid circular dependencies
   provisionedSteps: [],
   host: coins_heads_01

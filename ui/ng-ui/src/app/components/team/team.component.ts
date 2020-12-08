@@ -1,12 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  Renderer2,
-  ViewChild
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Team } from 'src/app/models/common.model';
 
 @Component({
