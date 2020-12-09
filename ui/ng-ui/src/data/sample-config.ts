@@ -18,6 +18,12 @@ const default_user: User = {
   uuid: 'QnJhZGxleQ==',
   email: 'harkerbd@gmail.com'
 };
+const other_user: User = {
+  id: 'default',
+  name: 'Chike',
+  uuid: 'QnJhZGxleQ==',
+  email: 'chikeudenze@gmail.com'
+};
 
 const default_dns: DNS = {
   id: 'default',
@@ -191,5 +197,80 @@ const bradley: Environment = {
   build: default_build,
   competition: cptc2019
 };
+const chike: Environment = {
+  id: 'chike-1',
+  CompetitionID: 'cptc2019',
+  Name: 'Chike',
+  Description: 'Chike Dev Env',
+  Builder: 'tfgcp',
+  TeamCount: 1,
+  AdminCIDRs: ['35.224.174.165/32', '35.193.160.100/32'],
+  ExposedVDIPorts: [],
+  tags: [],
+  config: [
+    {
+      key: 'vpc_cidr',
+      value: '10.0.0.0/8'
+    },
+    {
+      key: 'admin_ip',
+      value: '35.224.174.165'
+    },
+    {
+      key: 'vdi_whitelist',
+      value: '0.0.0.0/0'
+    },
+    {
+      key: 'gcp_cred_file',
+      value: '/cptc/auth/infra-test-environment.json'
+    },
+    {
+      key: 'gcp_project',
+      value: 'infra-test-environment'
+    },
+    {
+      key: 'gcp_region',
+      value: 'us-central1'
+    },
+    {
+      key: 'gcp_storage_bucket',
+      value: 'us-central1-a'
+    },
+    {
+      key: 'gcp_dns_zone_id',
+      value: 'dinobank-us-public'
+    },
+    {
+      key: 'gcp_project_ssh_pubkey',
+      value:
+          'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjDGacIV4OKVlghKlhDIVueqyrJHalanMF9gAeh+OOp root'
+    },
+    {
+      key: 'etcd_username',
+      value: 'root'
+    },
+    {
+      key: 'etcd_password',
+      value: 'FAXGLAPGOYWEZMPZ'
+    },
+    {
+      key: 'etcd_master',
+      value: 'portal668-0.cptc2019.577934193.composedb.com:19452'
+    },
+    {
+      key: 'etcd_slave',
+      value: 'portal496-1.cptc2019.577934193.composedb.com:19452'
+    },
+    {
+      key: 'master_dns_server',
+      value: '10.0.254.10'
+    }
+  ],
+  maintainer: other_user,
+  networks: [corp_network],
+  hosts: [coins_heads_01, dc_01],
+  build: default_build,
+  competition: cptc2019
+};
 
-export { bradley };
+export { bradley, chike };

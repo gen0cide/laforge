@@ -36,7 +36,9 @@ const routes: Routes = [
       },
       {
         path: 'plan',
-        component: PlanComponent
+        loadChildren: () =>
+            import('./plan/plan.module').then((m) => m.PlanModule)
+        // component: PlanComponent
       },
       {
         path: 'user-management',
@@ -60,7 +62,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [PlanComponent],
+  declarations: [],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
