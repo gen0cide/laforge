@@ -3,11 +3,13 @@
     <mat-card-title-group>
       <mat-card-title>Plan</mat-card-title>
       <mat-card-subtitle>Construct a plan for a LaForge environment from your git branch</mat-card-subtitle>
+      <mat-card-subtitle><b>Name:</b> {{environment.Name}}</mat-card-subtitle>
+      <mat-card-subtitle><b>Description:</b> {{environment.Description}}</mat-card-subtitle>
+      <mat-card-subtitle><b>Maintainer:</b> {{environment.maintainer.name}} &lt;{{environment.maintainer.email}}&gt;</mat-card-subtitle>
     </mat-card-title-group>
   </mat-card-header>
   <mat-card-content>
-    <mat-form-field class="example-full-width">
-      <textarea class="plan-field" matInput placeholder="Please select a git branch..." readonly [value]="planService.planText || ''"></textarea>
-    </mat-form-field>
+    <app-team *ngFor="let team of environment.build.teams" [team]="team"></app-team>
+
   </mat-card-content>
 </mat-card>
