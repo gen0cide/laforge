@@ -117,9 +117,45 @@ const dc_01: Host = {
   ]
 };
 
-const coins_head_01_provisioned: ProvisionedHost = {
+const coins_heads_01_provisioned: ProvisionedHost = {
   id: 'prov-CH01',
+  subnetIP: '10.0.1.1',
+  status: failed_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: coins_heads_01
+};
+
+const coins_heads_02_provisioned: ProvisionedHost = {
+  id: 'prov-CH02',
   subnetIP: '10.0.1.2',
+  status: failed_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: coins_heads_01
+};
+
+const coins_heads_03_provisioned: ProvisionedHost = {
+  id: 'prov-CH03',
+  subnetIP: '10.0.1.3',
+  status: failed_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: coins_heads_01
+};
+
+const coins_heads_04_provisioned: ProvisionedHost = {
+  id: 'prov-CH04',
+  subnetIP: '10.0.1.4',
+  status: failed_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: coins_heads_01
+};
+
+const coins_heads_05_provisioned: ProvisionedHost = {
+  id: 'prov-CH05',
+  subnetIP: '10.0.1.5',
   status: failed_status,
   provisionedNetwork: null, // avoid circular dependencies
   provisionedSteps: [],
@@ -129,6 +165,87 @@ const coins_head_01_provisioned: ProvisionedHost = {
 const dc_01_provisioned: ProvisionedHost = {
   id: 'prov-DC01',
   subnetIP: '10.0.1.10',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_02_provisioned: ProvisionedHost = {
+  id: 'prov-DC02',
+  subnetIP: '10.0.1.12',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_03_provisioned: ProvisionedHost = {
+  id: 'prov-DC03',
+  subnetIP: '10.0.1.13',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_04_provisioned: ProvisionedHost = {
+  id: 'prov-DC04',
+  subnetIP: '10.0.1.14',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_05_provisioned: ProvisionedHost = {
+  id: 'prov-DC05',
+  subnetIP: '10.0.1.15',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_06_provisioned: ProvisionedHost = {
+  id: 'prov-DC06',
+  subnetIP: '10.0.1.16',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_07_provisioned: ProvisionedHost = {
+  id: 'prov-DC07',
+  subnetIP: '10.0.1.17',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_08_provisioned: ProvisionedHost = {
+  id: 'prov-DC08',
+  subnetIP: '10.0.1.18',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_09_provisioned: ProvisionedHost = {
+  id: 'prov-DC09',
+  subnetIP: '10.0.1.19',
+  status: in_progress_status,
+  provisionedNetwork: null, // avoid circular dependencies
+  provisionedSteps: [],
+  host: dc_01
+};
+
+const dc_10_provisioned: ProvisionedHost = {
+  id: 'prov-DC10',
+  subnetIP: '10.0.1.20',
   status: in_progress_status,
   provisionedNetwork: null, // avoid circular dependencies
   provisionedSteps: [],
@@ -192,10 +309,36 @@ const corp_network_provisioned: ProvisionedNetwork = {
     }
   ],
   tags: [],
-  provisionedHosts: [coins_head_01_provisioned, dc_01_provisioned],
+  provisionedHosts: [
+    coins_heads_01_provisioned,
+    coins_heads_02_provisioned,
+    coins_heads_03_provisioned,
+    coins_heads_04_provisioned,
+    coins_heads_05_provisioned,
+    dc_01_provisioned,
+    dc_02_provisioned,
+    dc_03_provisioned,
+    dc_04_provisioned,
+    dc_05_provisioned,
+    dc_06_provisioned,
+    dc_07_provisioned,
+    dc_08_provisioned,
+    dc_09_provisioned,
+    dc_10_provisioned
+  ],
   status: complete_status,
   network: corp_network,
   build: null
 };
 
-export { coins_heads_01, dc_01, corp_network, corp_network_provisioned };
+export {
+  coins_heads_01,
+  dc_01,
+  coins_heads_01_provisioned,
+  dc_01_provisioned,
+  corp_network,
+  corp_network_provisioned,
+  complete_status,
+  in_progress_status,
+  failed_status
+};
