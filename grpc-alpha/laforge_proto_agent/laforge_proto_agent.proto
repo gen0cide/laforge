@@ -1,0 +1,70 @@
+syntax = "proto3";
+package laforge_proto_agent;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent/laforge_proto_agent";
+option java_multiple_files = true;
+option java_package = "io.laforge.proto.agent";
+option java_outer_classname = "laforge_Proto_agent";
+
+service laforge {
+  rpc GetHeartBeat(HeartbeatRequest) returns (HeartbeatReply) {}
+  rpc GetTask(TaskRequest) returns (TaskReply) {}
+  rpc InformTaskStatus(TaskStatusRequest) returns (TaskStatusReply) {}
+}
+
+// Heartbeat info
+message HeartbeatRequest {
+  string client_id  = 1;
+  string hostname = 2;
+  uint64 uptime = 3;
+  uint64 boottime = 4;
+  uint64 numprocs = 5;
+  string os = 6;
+  string hostid = 7;
+  double load1 = 8;
+  double load5 = 9;
+  double load15 = 10;
+  uint64 totalmem = 11;
+  uint64 freemem = 12;
+  uint64 usedmem = 13;
+}
+
+message HeartbeatReply {
+  string status = 1;
+  bool avalible_tasks = 2;
+}
+
+// Task info
+message TaskRequest {
+  string client_id = 1;
+}
+
+message TaskReply {
+  int32 id = 1;
+  enum Command {
+    DEFAULT = 0;
+    DELETE = 1;
+    REBOOT = 2;
+    EXTRACT = 3;
+    DOWNLOAD = 4;
+    CREATEUSER = 5;
+    CREATEUSERPASS = 6;
+    ADDTOGROUP = 7;
+    EXECUTE = 8;
+    VALIDATE = 9;
+  }
+  Command command = 2;
+  string args = 3;
+}
+
+message TaskStatusRequest {
+    string client_id = 1;
+    string status = 2;
+}
+
+message TaskStatusReply {
+    string status = 1;
+}
