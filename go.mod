@@ -3,6 +3,7 @@ module github.com/gen0cide/laforge
 go 1.15
 
 require (
+	github.com/99designs/gqlgen v0.13.0
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d // indirect
@@ -25,9 +26,9 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-errors/errors v1.0.2-0.20180813162953-d98b870cc4e0 // indirect
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
-	github.com/golang/protobuf v1.3.4 // indirect
-	github.com/google/go-cmp v0.4.0 // indirect
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gruntwork-io/terragrunt v0.23.3
 	github.com/hashicorp/hcl v1.0.0
@@ -35,6 +36,7 @@ require (
 	github.com/hashicorp/terraform v0.12.8
 	github.com/iancoleman/strcase v0.1.1
 	github.com/imdario/mergo v0.3.11
+	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/juju/clock v0.0.0-20190205081909-9c5c9712527c // indirect
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/loggo v0.0.0-20200526014432-9ce3a2e09b5e // indirect
@@ -62,14 +64,18 @@ require (
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 	github.com/sirupsen/logrus v1.6.0
 	github.com/tidwall/buntdb v1.1.2
+	github.com/ugorji/go v1.2.1 // indirect
 	github.com/urfave/cli v1.22.4
 	github.com/valyala/fasttemplate v1.2.1 // indirect
+	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/xlab/treeprint v1.0.0
 	github.com/zclconf/go-cty v1.5.1 // indirect
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73
-	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
 	golang.org/x/text v0.3.3 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
