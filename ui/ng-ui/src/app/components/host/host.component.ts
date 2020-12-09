@@ -7,8 +7,7 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedHost } from 'src/app/models/host.model';
+import { ProvisionStatus, Status } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-host',
@@ -16,40 +15,46 @@ import { ProvisionedHost } from 'src/app/models/host.model';
   styleUrls: ['./host.component.scss']
 })
 export class HostComponent implements OnInit {
-  @Input() provisionedHost: ProvisionedHost;
-  @ViewChild('container') container: ElementRef;
-  optionsToggled: boolean;
+  @Input() status: Status;
+  @Input() title: string;
+  // @ViewChild('container') container: ElementRef;
 
-  constructor(
-    private renderer: Renderer2,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
-    this.optionsToggled = false;
+  constructor() {
+    // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
   }
 
   ngOnInit(): void {
-    this.renderer.listen('window', 'click', (e: Event) => {
-      if (!this.container.nativeElement.contains(e.target)) {
-        this.optionsToggled = false;
-        this.changeDetectorRef.markForCheck();
-      }
-    });
+    // this.renderer.listen('window', 'click', (e: Event) => {
+    //   if (!this.container.nativeElement.contains(e.target)) {
+    //     this.optionsToggled = false;
+    //     this.changeDetectorRef.markForCheck();
+    //   }
+    // });
   }
 
-  toggleOptions(): void {
-    this.optionsToggled = !this.optionsToggled;
-  }
-
-  getStatus(): string {
-    switch (this.provisionedHost.status.state) {
+  getStatusIcon(): string {
+    switch (this.status.state) {
       case ProvisionStatus.ProvStatusComplete:
-        return 'ProvStatusComplete';
+        return 'check-circle';
       case ProvisionStatus.ProvStatusFailed:
-        return 'ProvStatusFailed';
+        return 'times-circle';
       case ProvisionStatus.ProvStatusInProgress:
-        return 'ProvStatusInProgress';
+        return 'play-circle';
       default:
-        return 'ProvStatusUndefined';
+        return 'minus-circle';
+    }
+  }
+
+  getStatusColor(): string {
+    switch (this.status.state) {
+      case ProvisionStatus.ProvStatusComplete:
+        return 'success';
+      case ProvisionStatus.ProvStatusFailed:
+        return 'danger';
+      case ProvisionStatus.ProvStatusInProgress:
+        return 'info';
+      default:
+        return 'dark';
     }
   }
 }

@@ -5,13 +5,18 @@
 
 ::ng-deep .mat-card-content {
   display: flex !important;
-  flex-wrap: wrap;
+  flex-direction: column;
+  // flex-wrap: wrap;
   align-items: flex-start;
-  justify-content: space-evenly;
+  justify-content: flex-start;
+}
+
+app-team {
+  width: 100%;
 }
 
 ::ng-deep .team {
   margin-bottom: 2rem;
-  // width: 40%;
-  flex: 1 1 40%;
+  width: 100%;
+  // flex: 1 1 40%;
 }

@@ -7,8 +7,14 @@ import {
   Renderer2,
   ViewChild
 } from '@angular/core';
-import { ProvisionStatus } from 'src/app/models/common.model';
+import { ProvisionStatus, Status } from 'src/app/models/common.model';
+import { ProvisionedHost } from 'src/app/models/host.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';
+import {
+  complete_status,
+  failed_status,
+  in_progress_status
+} from 'src/data/corp';
 
 @Component({
   selector: 'app-network',
@@ -16,7 +22,10 @@ import { ProvisionedNetwork } from 'src/app/models/network.model';
   styleUrls: ['./network.component.scss']
 })
 export class NetworkComponent implements OnInit {
-  @Input() provisionedNetwork: ProvisionedNetwork;
+  @Input() hosts: ProvisionedHost[];
+  @Input() title: string;
+  @Input() details: string;
+  @Input() status: Status;
   @ViewChild('options') options: ElementRef;
   optionsToggled: boolean;
 
@@ -28,7 +37,6 @@ export class NetworkComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // console.log(this.provisionedNetwork);
     this.renderer.listen('window', 'click', (e: Event) => {
       if (!this.options.nativeElement.contains(e.target)) {
         this.optionsToggled = false;
@@ -41,16 +49,34 @@ export class NetworkComponent implements OnInit {
     this.optionsToggled = !this.optionsToggled;
   }
 
-  getStatus(): string {
-    switch (this.provisionedNetwork.status.state) {
+  getStatus(): ProvisionStatus {
+    let status: ProvisionStatus = this.status.state;
+    for (const host of this.hosts) {
+      switch (host.status.state) {
+        case ProvisionStatus.ProvStatusFailed:
+          status = ProvisionStatus.ProvStatusFailed;
+          break;
+        case ProvisionStatus.ProvStatusInProgress:
+          if (status === ProvisionStatus.ProvStatusComplete)
+            status = ProvisionStatus.ProvStatusInProgress;
+          break;
+        default:
+          break;
+      }
+    }
+    return status;
+  }
+
+  getStatusColor(): string {
+    switch (this.getStatus()) {
       case ProvisionStatus.ProvStatusComplete:
-        return 'ProvStatusComplete';
-      case ProvisionStatus.ProvStatusFailed:
-        return 'ProvStatusFailed';
+        return 'success';
       case ProvisionStatus.ProvStatusInProgress:
-        return 'ProvStatusInProgress';
+        return 'info';
+      case ProvisionStatus.ProvStatusFailed:
+        return 'danger';
       default:
-        return 'ProvStatusUndefined';
+        return 'dark';
     }
   }
 }

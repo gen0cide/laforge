@@ -9,6 +9,6 @@
      </mat-card-title-group>
    </mat-card-header>
    <mat-card-content>
-     <app-team *ngFor="let team of environment.build.teams" [team]="team"></app-team>
+     <app-team *ngFor="let team of environment.build.teams" [title]="'Team ' + team.teamNumber" [networks]="team.provisionedNetworks"></app-team>
    </mat-card-content>
  </mat-card>

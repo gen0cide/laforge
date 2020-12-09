@@ -6,96 +6,48 @@
   justify-content: flex-start;
 
   .network-info {
-    width: 17rem;
-    height: 4rem;
+    width: 100%;
+    height: 2.5rem;
     background-color: #f5f5f5;
-    border-radius: 2rem;
+    border-radius: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;
 
     .network-status-icon {
-      width: 4rem;
-      height: 4rem;
-      border-radius: 2rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 1.25rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 1rem;
 
       i {
         color: white;
       }
     }
 
-    .network-status-icon.success {
-      background-color: #00c851;
-    }
-
-    .network-status-icon.failed {
-      background-color: #ff4444;
-    }
-
-    .network-status-icon.in-progress {
-      // background-color: #ffbb33;
-      background-color: #33b5e5;
-    }
-
-    .network-details {
+    .network-header {
+      width: 100%;
       display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-      margin-right: auto;
-    }
-
-    .network-options {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 1.25rem;
-      margin-right: 0.75rem;
-      background-color: #e1e1e1;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.3s;
-
-      i {
-        margin: 0 0.65rem;
-      }
-
-      i.restart {
-        color: #fcc143;
-      }
-    }
-
-    .network-options:not(.expanded):hover {
-      box-shadow: 0 0 3px 0px #555555;
-      transform: scale(1.05);
-    }
-
-    .network-options.expanded {
-      box-shadow: 0 0 3px 0px #555555;
-      transform: scale(1.05);
-      width: 5rem;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0 1.25rem;
     }
   }
 
   .hosts {
-    margin-left: 2rem;
-    padding-top: 1rem;
+    margin-left: 1.25rem;
     border-left: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 
-    ::ng-deep .host {
-      margin-left: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    hr {
-      margin: 0;
-      margin-top: 1rem;
-      border-bottom: 1px solid #999999;
-      width: 12rem;
+    app-host {
+      margin: 0.5rem;
     }
   }
 }

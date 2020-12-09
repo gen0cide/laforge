@@ -6,96 +6,35 @@
   justify-content: flex-start;
 
   .host-info {
-    width: 14rem;
+    width: 100%;
     height: auto;
     background-color: #f5f5f5;
-    border-radius: 2rem;
+    border-radius: 1.25rem;
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: flex-start;
     cursor: pointer;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
 
+    .host-preview {
+      margin-right: 0.5rem;
+    }
+
     .host-status-icon {
-      width: 4rem;
-      height: 4rem;
-      border-radius: 2rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 0.5rem;
+      margin-left: 0.25rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 1rem;
+      margin-right: 0.5rem;
 
       i {
-        color: white;
+        color: inherit;
+        font-size: 1rem;
       }
     }
-
-    .host-status-icon.success {
-      background-color: #00c851;
-    }
-
-    .host-status-icon.failed {
-      background-color: #ff4444;
-    }
-
-    .host-status-icon.in-progress {
-      background-color: #ffbb33;
-      // background-color: #33b5e5;
-    }
-
-    .host-details {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-      // margin-right: auto;
-      padding: 0;
-      height: 0;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out 0s, height 0.3s ease-in-out 0.3s,
-        padding 0.3s ease-in-out;
-      cursor: default;
-    }
-
-    .host-details.expanded {
-      height: 10rem;
-      padding: 0.5rem 1rem;
-      opacity: 1;
-      transition: height 0.3s ease-in-out 0s, opacity 0.3s ease-in-out 0.3s,
-        padding 0.3s ease-in-out;
-    }
-
-    .host-options {
-      width: 100%;
-      height: 2.5rem;
-      border-radius: 1.25rem;
-      // margin-right: 0.75rem;
-      background-color: #e1e1e1;
-      display: flex;
-      align-items: center;
-      justify-content: space-evenly;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.3s;
-
-      i {
-        margin: 0 0.65rem;
-      }
-
-      i.restart {
-        color: #fcc143;
-      }
-    }
-
-    .host-options:hover {
-      box-shadow: 0 0 3px 0px #555555;
-      transform: scale(1.02);
-    }
-
-    // .host-options.expanded {
-    //   box-shadow: 0 0 3px 0px #555555;
-    //   transform: scale(1.05);
-    //   width: 5rem;
-    // }
   }
 }
