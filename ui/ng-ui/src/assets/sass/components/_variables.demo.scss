@@ -6,24 +6,35 @@
 
 // Theme colors
 // Override primary color variants for our Engineering TNG yellow color scheme
-$primary:       									#ffbc2c;
-$primary-hover:    								#ffc850;
-$primary-light:    								#fcf6e8;
-$primary-inverse:  								#FFFFFF;
+$primary: #ffbc2c;
+$primary-hover: #ffc850;
+$primary-light: #fcf6e8;
+$primary-inverse: #ffffff;
 
-$secondary:      									#3699FF;
-$secondary-hover: 								#187DE4;
-$secondary-light:   								#E1F0FF;
-$secondary-inverse: 								#ffffff;
+$secondary: #3699ff;
+$secondary-hover: #187de4;
+$secondary-light: #e1f0ff;
+$secondary-inverse: #ffffff;
 
 // Override warning color variants to make it more orange
-$warning:       									#FC9C43;
-$warning-hover:    								#FFB067;
-$warning-light:    								#fff2e6;
-$warning-inverse:  								#ffffff;
+$warning: #fc9c43;
+$warning-hover: #ffb067;
+$warning-light: #fff2e6;
+$warning-inverse: #ffffff;
+
+// Info colors
+$info: #1cd1ed; // Bootstrap variable
+$info-hover: #1bc4de; // Custom variable
+$info-light: #a8e7f0; // Custom variable
+$info-inverse: #ffffff; // Custom variable
+
+$accent: #19c5bd;
+$accent-hover: #18b5ad;
+$accent-light: #c4f2f0;
+$accent-inverse: #ffffff; // Custom variable
 
 $layout-themes: (
-	dark:  #fff4dd, // Dark theme color
-	light: #fff4dd // Light theme color
+  dark: #fff4dd,
+  // Dark theme color
+  light: #fff4dd // Light theme color
 );
-
