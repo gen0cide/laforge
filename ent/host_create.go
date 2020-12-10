@@ -34,9 +34,9 @@ func (hc *HostCreate) SetDescription(s string) *HostCreate {
 	return hc
 }
 
-// SetString sets the string field.
-func (hc *HostCreate) SetString(s string) *HostCreate {
-	hc.mutation.SetString(s)
+// SetOS sets the OS field.
+func (hc *HostCreate) SetOS(s string) *HostCreate {
+	hc.mutation.SetOS(s)
 	return hc
 }
 
@@ -214,8 +214,8 @@ func (hc *HostCreate) check() error {
 	if _, ok := hc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
 	}
-	if _, ok := hc.mutation.String(); !ok {
-		return &ValidationError{Name: "string", err: errors.New("ent: missing required field \"string\"")}
+	if _, ok := hc.mutation.OS(); !ok {
+		return &ValidationError{Name: "OS", err: errors.New("ent: missing required field \"OS\"")}
 	}
 	if _, ok := hc.mutation.LastOctet(); !ok {
 		return &ValidationError{Name: "last_octet", err: errors.New("ent: missing required field \"last_octet\"")}
@@ -296,13 +296,13 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		})
 		_node.Description = value
 	}
-	if value, ok := hc.mutation.String(); ok {
+	if value, ok := hc.mutation.OS(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: host.FieldString,
+			Column: host.FieldOS,
 		})
-		_node.String = value
+		_node.OS = value
 	}
 	if value, ok := hc.mutation.LastOctet(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

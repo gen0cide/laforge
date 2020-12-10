@@ -332,3 +332,36 @@ func (b *Build) CreateTeam(tid int) *Team {
 	b.Teams[t.SetID()] = t
 	return t
 }
+
+func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.Build, error) {
+	user, err = h.User.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	tag, err = CreateTagEntry(b.ID, h.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	build, err = := client.Build.
+		Create().
+		SetRevision(b.Revision).
+		SetConfig(b.Config).
+		AddMaintainer().
+		AddTag().
+		AddTeam().
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("build was created: ", build)
+	return build, nil
+}

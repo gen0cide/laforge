@@ -41,9 +41,9 @@ func (hu *HostUpdate) SetDescription(s string) *HostUpdate {
 	return hu
 }
 
-// SetString sets the string field.
-func (hu *HostUpdate) SetString(s string) *HostUpdate {
-	hu.mutation.SetString(s)
+// SetOS sets the OS field.
+func (hu *HostUpdate) SetOS(s string) *HostUpdate {
+	hu.mutation.SetOS(s)
 	return hu
 }
 
@@ -322,11 +322,11 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldDescription,
 		})
 	}
-	if value, ok := hu.mutation.String(); ok {
+	if value, ok := hu.mutation.OS(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: host.FieldString,
+			Column: host.FieldOS,
 		})
 	}
 	if value, ok := hu.mutation.LastOctet(); ok {
@@ -612,9 +612,9 @@ func (huo *HostUpdateOne) SetDescription(s string) *HostUpdateOne {
 	return huo
 }
 
-// SetString sets the string field.
-func (huo *HostUpdateOne) SetString(s string) *HostUpdateOne {
-	huo.mutation.SetString(s)
+// SetOS sets the OS field.
+func (huo *HostUpdateOne) SetOS(s string) *HostUpdateOne {
+	huo.mutation.SetOS(s)
 	return huo
 }
 
@@ -891,11 +891,11 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldDescription,
 		})
 	}
-	if value, ok := huo.mutation.String(); ok {
+	if value, ok := huo.mutation.OS(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: host.FieldString,
+			Column: host.FieldOS,
 		})
 	}
 	if value, ok := huo.mutation.LastOctet(); ok {

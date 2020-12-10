@@ -16,7 +16,7 @@ func (Host) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("hostname"),
 		field.String("description"),
-		field.String("string"),
+		field.String("OS"),
 		field.Int("last_octet"),
 		field.Bool("allow_mac_changes"),
 		field.JSON("exposed_tcp_ports", []string{}),

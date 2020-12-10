@@ -20,8 +20,8 @@ type Host struct {
 	Hostname string `json:"hostname,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// String holds the value of the "string" field.
-	String string `json:"string,omitempty"`
+	// OS holds the value of the "OS" field.
+	OS string `json:"OS,omitempty"`
 	// LastOctet holds the value of the "last_octet" field.
 	LastOctet int `json:"last_octet,omitempty"`
 	// AllowMACChanges holds the value of the "allow_mac_changes" field.
@@ -100,7 +100,7 @@ func (*Host) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // hostname
 		&sql.NullString{}, // description
-		&sql.NullString{}, // string
+		&sql.NullString{}, // OS
 		&sql.NullInt64{},  // last_octet
 		&sql.NullBool{},   // allow_mac_changes
 		&[]byte{},         // exposed_tcp_ports
@@ -148,9 +148,9 @@ func (h *Host) assignValues(values ...interface{}) error {
 		h.Description = value.String
 	}
 	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field string", values[2])
+		return fmt.Errorf("unexpected type %T for field OS", values[2])
 	} else if value.Valid {
-		h.String = value.String
+		h.OS = value.String
 	}
 	if value, ok := values[3].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field last_octet", values[3])
@@ -305,8 +305,8 @@ func (h *Host) String() string {
 	builder.WriteString(h.Hostname)
 	builder.WriteString(", description=")
 	builder.WriteString(h.Description)
-	builder.WriteString(", string=")
-	builder.WriteString(h.String)
+	builder.WriteString(", OS=")
+	builder.WriteString(h.OS)
 	builder.WriteString(", last_octet=")
 	builder.WriteString(fmt.Sprintf("%v", h.LastOctet))
 	builder.WriteString(", allow_mac_changes=")

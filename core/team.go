@@ -535,3 +535,39 @@ func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, er
 	}
 	return nil, fmt.Errorf("host %s was not located within network %s for the given build", hostid, netid)
 }
+
+func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt context.Context, client *ent.Client) (*ent.Team, error) {
+	user, err = h.User.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	tag, err = CreateTagEntry(t.ID, h.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	team, err := client.Team.
+		Create().
+		SetTeamNumber(t.TeamNumber).
+		SetConfig(t.Config).
+		SetRevision(t.Revision).
+		AddMaintainer(user).
+		AddBuild(build).
+		AddEnvironment(env).
+		AddTag(tag).
+		AddProvisionedNetworks().
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("team was created: ", team)
+	return build, nil
+}

@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -171,4 +174,26 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 	// 	return err
 	// }
 	return nil
+}
+
+func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(ctx context.Context, client *ent.Client) (*ent.ProvisionedNetwork, error) {
+	pn, err := client.ProvisionedNetwork.
+		Create().
+		SetName().
+		SetCIDR().
+		SetVars().
+		AddTag().
+		AddProvisionedHosts().
+		AddStatus().
+		AddNetwork().
+		AddBuild().
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("team was created: ", team)
+	return build, nil
 }

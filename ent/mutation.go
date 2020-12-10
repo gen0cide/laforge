@@ -7663,7 +7663,7 @@ type HostMutation struct {
 	id                *int
 	hostname          *string
 	description       *string
-	string            *string
+	_OS               *string
 	last_octet        *int
 	addlast_octet     *int
 	allow_mac_changes *bool
@@ -7845,41 +7845,41 @@ func (m *HostMutation) ResetDescription() {
 	m.description = nil
 }
 
-// SetString sets the string field.
-func (m *HostMutation) SetString(s string) {
-	m.string = &s
+// SetOS sets the OS field.
+func (m *HostMutation) SetOS(s string) {
+	m._OS = &s
 }
 
-// String returns the string value in the mutation.
-func (m *HostMutation) String() (r string, exists bool) {
-	v := m.string
+// OS returns the OS value in the mutation.
+func (m *HostMutation) OS() (r string, exists bool) {
+	v := m._OS
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldString returns the old string value of the Host.
+// OldOS returns the old OS value of the Host.
 // If the Host object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldString(ctx context.Context) (v string, err error) {
+func (m *HostMutation) OldOS(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldString is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldOS is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldString requires an ID field in the mutation")
+		return v, fmt.Errorf("OldOS requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldString: %w", err)
+		return v, fmt.Errorf("querying old value for OldOS: %w", err)
 	}
-	return oldValue.String, nil
+	return oldValue.OS, nil
 }
 
-// ResetString reset all changes of the "string" field.
-func (m *HostMutation) ResetString() {
-	m.string = nil
+// ResetOS reset all changes of the "OS" field.
+func (m *HostMutation) ResetOS() {
+	m._OS = nil
 }
 
 // SetLastOctet sets the last_octet field.
@@ -8526,8 +8526,8 @@ func (m *HostMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, host.FieldDescription)
 	}
-	if m.string != nil {
-		fields = append(fields, host.FieldString)
+	if m._OS != nil {
+		fields = append(fields, host.FieldOS)
 	}
 	if m.last_octet != nil {
 		fields = append(fields, host.FieldLastOctet)
@@ -8577,8 +8577,8 @@ func (m *HostMutation) Field(name string) (ent.Value, bool) {
 		return m.Hostname()
 	case host.FieldDescription:
 		return m.Description()
-	case host.FieldString:
-		return m.String()
+	case host.FieldOS:
+		return m.OS()
 	case host.FieldLastOctet:
 		return m.LastOctet()
 	case host.FieldAllowMACChanges:
@@ -8616,8 +8616,8 @@ func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldHostname(ctx)
 	case host.FieldDescription:
 		return m.OldDescription(ctx)
-	case host.FieldString:
-		return m.OldString(ctx)
+	case host.FieldOS:
+		return m.OldOS(ctx)
 	case host.FieldLastOctet:
 		return m.OldLastOctet(ctx)
 	case host.FieldAllowMACChanges:
@@ -8665,12 +8665,12 @@ func (m *HostMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
-	case host.FieldString:
+	case host.FieldOS:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetString(v)
+		m.SetOS(v)
 		return nil
 	case host.FieldLastOctet:
 		v, ok := value.(int)
@@ -8827,8 +8827,8 @@ func (m *HostMutation) ResetField(name string) error {
 	case host.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case host.FieldString:
-		m.ResetString()
+	case host.FieldOS:
+		m.ResetOS()
 		return nil
 	case host.FieldLastOctet:
 		m.ResetLastOctet()

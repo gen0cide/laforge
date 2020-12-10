@@ -299,7 +299,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "hostname", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
-		{Name: "string", Type: field.TypeString},
+		{Name: "os", Type: field.TypeString},
 		{Name: "last_octet", Type: field.TypeInt},
 		{Name: "allow_mac_changes", Type: field.TypeBool},
 		{Name: "exposed_tcp_ports", Type: field.TypeJSON},

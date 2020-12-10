@@ -4,6 +4,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/xlab/treeprint"
 
 	"github.com/imdario/mergo"
@@ -611,6 +613,17 @@ func (l *Laforge) IndexHostDependencies() error {
 	return nil
 }
 
+func (l *Laforge) CreateHostEntries(ctx context.Context, client *ent.Client) error {
+	for _, h := range l.Hosts {
+		err := h.CreateHostEntry(h, ctx, client)
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // IndexEnvironmentDependencies enumerates all known environments and makes sure they have valid network inclusions
 func (l *Laforge) IndexEnvironmentDependencies() error {
 	for _, e := range l.Environments {
@@ -788,15 +801,19 @@ func (l *Laforge) IndexProvisioningStepDependencies() error {
 }
 
 // InitializeTeamContext returns a base context preset with a team context configuration
-func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Laforge, error) {
+func InitializeTeamContext(globalconfig, buildconfig, teamconfig string, ctx context.Context, client *ent.Client) (*Laforge, error) {
 	clone, err := LoadFiles(globalconfig, buildconfig)
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexHostDependencies()
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexEnvironmentDependencies()
 	if err != nil {
 		return nil, err
@@ -853,13 +870,17 @@ func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Lafor
 // InitializeBuildContext returns a base context preset with a build context configuration
 func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) {
 	clone, err := LoadFiles(globalconfig, buildconfig)
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexHostDependencies()
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexEnvironmentDependencies()
 	if err != nil {
 		return nil, err
@@ -914,13 +935,17 @@ func InitializeBuildContext(globalconfig, buildconfig string) (*Laforge, error) 
 // InitializeEnvContext returns a base context preset with a env focused configuration
 func InitializeEnvContext(globalconfig, envconfig string) (*Laforge, error) {
 	clone, err := LoadFiles(globalconfig, envconfig)
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexHostDependencies()
+
 	if err != nil {
 		return nil, err
 	}
+
 	err = clone.IndexEnvironmentDependencies()
 	if err != nil {
 		return nil, err
@@ -954,6 +979,7 @@ func InitializeBaseContext(globalconfig, baseconfig string) (*Laforge, error) {
 	}
 	if clone != nil {
 		err = clone.IndexHostDependencies()
+
 		if err != nil {
 			return nil, err
 		}

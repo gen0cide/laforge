@@ -11,8 +11,8 @@ const (
 	FieldHostname = "hostname"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldString holds the string denoting the string field in the database.
-	FieldString = "string"
+	// FieldOS holds the string denoting the os field in the database.
+	FieldOS = "os"
 	// FieldLastOctet holds the string denoting the last_octet field in the database.
 	FieldLastOctet = "last_octet"
 	// FieldAllowMACChanges holds the string denoting the allow_mac_changes field in the database.
@@ -75,7 +75,7 @@ var Columns = []string{
 	FieldID,
 	FieldHostname,
 	FieldDescription,
-	FieldString,
+	FieldOS,
 	FieldLastOctet,
 	FieldAllowMACChanges,
 	FieldExposedTCPPorts,
