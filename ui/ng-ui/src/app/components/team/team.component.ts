@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ProvisionStatus, Team } from 'src/app/models/common.model';
+import { ProvisionStatus } from 'src/app/models/common.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';
 
 @Component({
@@ -23,8 +23,7 @@ export class TeamComponent implements OnInit {
           status = ProvisionStatus.ProvStatusFailed;
           break;
         case ProvisionStatus.ProvStatusInProgress:
-          if (status === ProvisionStatus.ProvStatusComplete)
-            status = ProvisionStatus.ProvStatusInProgress;
+          if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
           break;
         default:
           break;
@@ -35,8 +34,7 @@ export class TeamComponent implements OnInit {
             status = ProvisionStatus.ProvStatusFailed;
             break;
           case ProvisionStatus.ProvStatusInProgress:
-            if (status === ProvisionStatus.ProvStatusComplete)
-              status = ProvisionStatus.ProvStatusInProgress;
+            if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
             break;
           default:
             break;

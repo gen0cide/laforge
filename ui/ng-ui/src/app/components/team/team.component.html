@@ -10,7 +10,7 @@
       <span class="team-number"><b>{{title}}</b></span>
     </div>
   </div>
-  <div class="networks">
+  <div class="networks" *ngIf="networks">
     <app-network *ngFor="let provNetwork of networks" [hosts]="provNetwork.provisionedHosts" [title]="provNetwork.name" [details]="provNetwork.cidr" [status]="provNetwork.status"></app-network>
   </div>
 </div>

@@ -20,7 +20,7 @@ interface ProvisionedNetwork {
   provisionedHosts: ProvisionedHost[];
   status: Status;
   network: Network;
-  build: Build;
+  // build: Build; Circular dependency
 }
 
 export { Network, ProvisionedNetwork };

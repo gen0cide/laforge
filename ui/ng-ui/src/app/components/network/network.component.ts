@@ -1,20 +1,6 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  Renderer2,
-  ViewChild
-} from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
 import { ProvisionedHost } from 'src/app/models/host.model';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
-import {
-  complete_status,
-  failed_status,
-  in_progress_status
-} from 'src/data/corp';
 
 @Component({
   selector: 'app-network',
@@ -26,23 +12,21 @@ export class NetworkComponent implements OnInit {
   @Input() title: string;
   @Input() details: string;
   @Input() status: Status;
-  @ViewChild('options') options: ElementRef;
+  // @ViewChild('options') options: ElementRef;
   optionsToggled: boolean;
 
-  constructor(
-    private renderer: Renderer2,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
+    // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
     this.optionsToggled = false;
   }
 
   ngOnInit(): void {
-    this.renderer.listen('window', 'click', (e: Event) => {
-      if (!this.options.nativeElement.contains(e.target)) {
-        this.optionsToggled = false;
-        this.changeDetectorRef.markForCheck();
-      }
-    });
+    // this.renderer.listen('window', 'click', (e: Event) => {
+    //   if (!this.options.nativeElement.contains(e.target)) {
+    //     this.optionsToggled = false;
+    //     this.changeDetectorRef.markForCheck();
+    //   }
+    // });
   }
 
   toggleOptions(): void {
@@ -57,8 +41,7 @@ export class NetworkComponent implements OnInit {
           status = ProvisionStatus.ProvStatusFailed;
           break;
         case ProvisionStatus.ProvStatusInProgress:
-          if (status === ProvisionStatus.ProvStatusComplete)
-            status = ProvisionStatus.ProvStatusInProgress;
+          if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
           break;
         default:
           break;

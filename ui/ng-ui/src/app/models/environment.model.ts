@@ -1,7 +1,8 @@
-import { ID, Tag, configMap, User, Team } from './common.model';
+import { environment } from 'src/environments/environment';
+import { ID, Tag, configMap, User, Team, ProvisionStatus } from './common.model';
 import { DNS } from './dns.model';
-import { Host } from './host.model';
-import { Network } from './network.model';
+import { Host, ProvisionedHost } from './host.model';
+import { Network, ProvisionedNetwork } from './network.model';
 
 interface Build {
   id: ID;
@@ -37,4 +38,32 @@ interface Environment {
   competition: Competition;
 }
 
-export { Environment, Build, Competition };
+function resolveStatuses(environment: any): any {
+  return {
+    ...environment,
+    build: {
+      ...environment.build,
+      teams: [
+        ...environment.build.teams.map((team: Team) => ({
+          ...team,
+          provisionedNetworks: team.provisionedNetworks.map((provisionedNetwork: ProvisionedNetwork) => ({
+            ...provisionedNetwork,
+            status: {
+              ...provisionedNetwork.status,
+              state: ProvisionStatus[provisionedNetwork.status.state]
+            },
+            provisionedHosts: provisionedNetwork.provisionedHosts.map((provisionedHost: ProvisionedHost) => ({
+              ...provisionedHost,
+              status: {
+                ...provisionedHost.status,
+                state: ProvisionStatus[provisionedHost.status.state]
+              }
+            }))
+          }))
+        }))
+      ]
+    }
+  };
+}
+
+export { Environment, Build, Competition, resolveStatuses };
