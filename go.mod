@@ -8,6 +8,7 @@ require (
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d // indirect
 	github.com/UnnoTed/fileb0x v1.1.4 // indirect
+	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/alecthomas/chroma v0.8.0
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
 	github.com/bmatcuk/doublestar v1.3.2 // indirect
@@ -24,6 +25,7 @@ require (
 	github.com/gen0cide/winrmcp v0.0.0-20181025022149-44c9dbdf72ab
 	github.com/gin-gonic/contrib v0.0.0-20200810162008-6dee08bf958e
 	github.com/gin-gonic/gin v1.6.3
+	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-errors/errors v1.0.2-0.20180813162953-d98b870cc4e0 // indirect
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
@@ -31,6 +33,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gruntwork-io/terragrunt v0.23.3
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/terraform v0.12.8
@@ -55,11 +58,13 @@ require (
 	github.com/masterzen/winrm v0.0.0-20200615185753-c42b5136ff88
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-zglob v0.0.3
+	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.12.0
 	github.com/rivo/tview v0.0.0-20200818120338-53d50e499bf9
+	github.com/rs/cors v1.7.0
 	github.com/sethvargo/go-password v0.2.0
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 	github.com/sirupsen/logrus v1.6.0
