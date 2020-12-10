@@ -1,16 +1,7 @@
 import { Team, User } from 'src/app/models/common.model';
 import { DNS } from 'src/app/models/dns.model';
-import {
-  Build,
-  Competition,
-  Environment
-} from 'src/app/models/environment.model';
-import {
-  corp_network,
-  coins_heads_01,
-  dc_01,
-  corp_network_provisioned
-} from './corp';
+import { Build, Competition, Environment } from 'src/app/models/environment.model';
+import { corp_network, coins_heads_01, dc_01, corp_network_provisioned } from './corp';
 
 const default_user: User = {
   id: 'default',
@@ -167,8 +158,7 @@ const bradley: Environment = {
     },
     {
       key: 'gcp_project_ssh_pubkey',
-      value:
-        'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjDGacIV4OKVlghKlhDIVueqyrJHalanMF9gAeh+OOp root'
+      value: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjDGacIV4OKVlghKlhDIVueqyrJHalanMF9gAeh+OOp root'
     },
     {
       key: 'etcd_username',
@@ -242,8 +232,7 @@ const chike: Environment = {
     },
     {
       key: 'gcp_project_ssh_pubkey',
-      value:
-          'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjDGacIV4OKVlghKlhDIVueqyrJHalanMF9gAeh+OOp root'
+      value: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjDGacIV4OKVlghKlhDIVueqyrJHalanMF9gAeh+OOp root'
     },
     {
       key: 'etcd_username',

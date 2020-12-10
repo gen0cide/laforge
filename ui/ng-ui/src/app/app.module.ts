@@ -20,6 +20,7 @@ import json from 'highlight.js/lib/languages/json';
 import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
 import { SplashScreenModule } from './_metronic/partials/layout/splash-screen/splash-screen.module';
+import { GraphQLModule } from './graphql.module';
 
 function appInitializer(authService: AuthService) {
   return () => {
@@ -38,7 +39,7 @@ export function getHighlightLanguages() {
     { name: 'typescript', func: typescript },
     { name: 'scss', func: scss },
     { name: 'xml', func: xml },
-    { name: 'json', func: json },
+    { name: 'json', func: json }
   ];
 }
 
@@ -54,30 +55,30 @@ export function getHighlightLanguages() {
     ClipboardModule,
     environment.isMockEnabled
       ? HttpClientInMemoryWebApiModule.forRoot(FakeAPIService, {
-        passThruUnknownUrl: true,
-        dataEncapsulation: false,
-      })
+          passThruUnknownUrl: true,
+          dataEncapsulation: false
+        })
       : [],
     AppRoutingModule,
     InlineSVGModule.forRoot(),
     NgbModule,
+    GraphQLModule
   ],
-  exports: [
-  ],
+  exports: [],
   providers: [
     {
       provide: APP_INITIALIZER,
       useFactory: appInitializer,
       multi: true,
-      deps: [AuthService],
+      deps: [AuthService]
     },
     {
       provide: HIGHLIGHT_OPTIONS,
       useValue: {
-        languages: getHighlightLanguages,
-      },
-    },
+        languages: getHighlightLanguages
+      }
+    }
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
