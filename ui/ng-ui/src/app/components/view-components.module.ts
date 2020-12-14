@@ -8,9 +8,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { NetworkModalComponent } from './network-modal/network-modal.component';
+import { StepComponent } from './step/step.component';
 
 @NgModule({
-  declarations: [NetworkComponent, HostComponent, TeamComponent, HostModalComponent, NetworkModalComponent],
+  declarations: [NetworkComponent, HostComponent, TeamComponent, HostModalComponent, NetworkModalComponent, StepComponent],
   imports: [CommonModule, MatDialogModule, MatTableModule, MatButtonModule],
   exports: [NetworkComponent, HostComponent, TeamComponent]
 })

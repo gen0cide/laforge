@@ -74,4 +74,13 @@
       <mat-row *matRowDef="let row; columns: tagsColumns"></mat-row>
     </mat-table>
   </div>
+  <div class="col-12">
+    <p class="detail-title"><b>Steps</b></p>
+    <app-step
+      *ngFor="let step of data.provisionedHost.provisionedSteps; let i = index"
+      [stepNumber]="i + 1"
+      [provisionedStep]="step"
+      [showDetail]="false"
+    ></app-step>
+  </div>
 </div>

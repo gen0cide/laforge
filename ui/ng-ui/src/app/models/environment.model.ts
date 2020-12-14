@@ -1,7 +1,7 @@
 import { environment } from 'src/environments/environment';
 import { ID, Tag, configMap, User, Team, ProvisionStatus } from './common.model';
 import { DNS } from './dns.model';
-import { Host, ProvisionedHost } from './host.model';
+import { Host, ProvisionedHost, ProvisionedStep } from './host.model';
 import { Network, ProvisionedNetwork } from './network.model';
 
 interface Build {
@@ -58,7 +58,14 @@ function resolveStatuses(environment: any): any {
               status: {
                 ...provisionedHost.status,
                 state: ProvisionStatus[provisionedHost.status.state]
-              }
+              },
+              provisionedSteps: provisionedHost.provisionedSteps.map((provisionedStep: ProvisionedStep) => ({
+                ...provisionedStep,
+                status: {
+                  ...provisionedStep.status,
+                  state: ProvisionStatus[provisionedStep.status.state]
+                }
+              }))
             }))
           }))
         }))

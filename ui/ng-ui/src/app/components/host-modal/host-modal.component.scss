@@ -23,3 +23,7 @@
     box-shadow: 0 0 4px 2px #aaa;
   }
 }
+
+::ng-deep app-step:not(:last-of-type) .step {
+  margin-bottom: 1rem;
+}
