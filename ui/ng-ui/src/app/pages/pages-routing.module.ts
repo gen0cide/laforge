@@ -21,8 +21,7 @@ const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadChildren: () =>
-          import('./dashboard/dashboard.module').then((m) => m.DashboardModule)
+        loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule)
       },
       {
         path: 'build',
@@ -30,22 +29,17 @@ const routes: Routes = [
       },
       {
         path: 'manage',
-        loadChildren: () =>
-          import('./manage/manage.module').then((m) => m.ManageModule)
+        loadChildren: () => import('./manage/manage.module').then((m) => m.ManageModule)
         // component: ManageComponent
       },
       {
         path: 'plan',
-        loadChildren: () =>
-            import('./plan/plan.module').then((m) => m.PlanModule)
+        loadChildren: () => import('./plan/plan.module').then((m) => m.PlanModule)
         // component: PlanComponent
       },
       {
         path: 'user-management',
-        loadChildren: () =>
-          import('../modules/user-management/user-management.module').then(
-            (m) => m.UserManagementModule
-          )
+        loadChildren: () => import('../modules/user-management/user-management.module').then((m) => m.UserManagementModule)
       },
       {
         path: '',
@@ -63,15 +57,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    MatCardModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatInputModule
-  ],
+  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, MatInputModule],
   exports: [RouterModule]
 })
 export class PagesRoutingModule {}

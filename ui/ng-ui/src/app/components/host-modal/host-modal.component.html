@@ -1,0 +1,77 @@
+<div class="host-dialog-header d-flex align-items-center justify-content-between">
+  <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()">
+    <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
+  </div>
+  <h4 class="host-name m-0">{{ data.provisionedHost.host.hostname }}</h4>
+  <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
+    <!-- <mat-icon>undo</mat-icon> -->
+    <i class="fa fa-times"></i>
+  </button>
+</div>
+<hr />
+<div class="row">
+  <div class="col-6">
+    <p class="detail-title"><b>Host ID</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.id }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>OS</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.OS }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Allow MAC Changes?</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.allowMacChanges ? 'yes' : 'no' }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Exposed TCP Ports</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.exposedTCPPorts.length > 0 ? data.provisionedHost.host.exposedTCPPorts.join(', ') : 'N/A' }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Exposed UDP Ports</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.exposedUDPPorts.length > 0 ? data.provisionedHost.host.exposedUDPPorts.join(', ') : 'N/A' }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>User Groups</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.userGroups.length > 0 ? data.provisionedHost.host.userGroups.join(', ') : 'N/A' }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Override Password</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.overridePassword }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Maintainer</b></p>
+    <p class="detail-value">{{ data.provisionedHost.host.maintainer.name }} <{{ data.provisionedHost.host.maintainer.email }}></p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <p class="detail-title"><b>Vars</b></p>
+    <mat-table [dataSource]="data.provisionedHost.host.vars" class="bg-gray-100">
+      <ng-container matColumnDef="key">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.key }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.value }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="varsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: varsColumns"></mat-row>
+    </mat-table>
+  </div>
+  <div class="col-12">
+    <p class="detail-title"><b>Tags</b></p>
+    <mat-table [dataSource]="data.provisionedHost.host.tags" class="bg-gray-100">
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let tag"> {{ tag.name }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let tag"> {{ tag.description }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="tagsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: tagsColumns"></mat-row>
+    </mat-table>
+  </div>
+</div>

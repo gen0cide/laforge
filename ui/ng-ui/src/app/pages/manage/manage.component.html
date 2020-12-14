@@ -1,14 +1,38 @@
 <mat-card class="laforge-card">
-   <mat-card-header>
-         <mat-card-title>Manage</mat-card-title>
-         <mat-card-subtitle>Manage your environment and all of it's networks/hosts</mat-card-subtitle>
-     <mat-card-title-group>
-         <mat-card-subtitle><b>Name:</b> {{environment ? environment.Name : ''}}</mat-card-subtitle>
-         <mat-card-subtitle><b>Description:</b> {{environment ? environment.Description : ''}}</mat-card-subtitle>
-         <mat-card-subtitle><b>Maintainer:</b> {{environment ? environment.maintainer.name : ''}} &lt;{{environment ? environment.maintainer.email : ''}}&gt;</mat-card-subtitle>
-     </mat-card-title-group>
-   </mat-card-header>
-   <mat-card-content >
-     <app-team *ngFor="let team of environment.build.teams" [title]="'Team ' + team.teamNumber" [networks]="team.provisionedNetworks"></app-team>
-   </mat-card-content>
- </mat-card>
+  <mat-card-header *ngIf="loaded">
+    <div class="env-header d-flex align-items-center justify-content-between">
+      <div class="env-info w-50">
+        <mat-card-title>{{ environment.Name }}</mat-card-title>
+        <mat-card-subtitle>{{ environment.Description }}</mat-card-subtitle>
+      </div>
+      <button mat-icon-button color="warn" aria-label="Example icon button with a menu icon" (click)="rebuildEnv()">
+        <!-- <mat-icon>undo</mat-icon> -->
+        <i class="fa fa-undo-alt text-danger"></i>
+      </button>
+    </div>
+    <mat-table [dataSource]="[environment]" class="bg-gray-100">
+      <ng-container matColumnDef="TeamCount">
+        <mat-header-cell *matHeaderCellDef> # Teams </mat-header-cell>
+        <mat-cell *matCellDef="let env"> {{ env.TeamCount }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="AdminCIDRs">
+        <mat-header-cell *matHeaderCellDef> Admin CIDRs </mat-header-cell>
+        <mat-cell *matCellDef="let env"> {{ env.AdminCIDRs.join(', ') }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="ExposedVDIPorts">
+        <mat-header-cell *matHeaderCellDef> Exposed VDI Ports </mat-header-cell>
+        <mat-cell *matCellDef="let env"> {{ env.ExposedVDIPorts.join(', ') }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="maintainer">
+        <mat-header-cell *matHeaderCellDef> Maintainer </mat-header-cell>
+        <mat-cell *matCellDef="let env"> {{ env.maintainer.name }} <{{ env.maintainer.email }}> </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+  </mat-card-header>
+  <mat-card-content *ngIf="loaded">
+    <app-team *ngFor="let team of environment.build.teams" [title]="'Team ' + team.teamNumber" [networks]="team.provisionedNetworks"></app-team>
+  </mat-card-content>
+  <mat-card-content *ngIf="!loaded"> Environment loading... </mat-card-content>
+</mat-card>

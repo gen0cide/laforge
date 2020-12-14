@@ -1,5 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
+import { MatDialog } from '@angular/material/dialog';
+import { ProvisionedHost } from 'src/app/models/host.model';
+import { HostModalComponent } from '../host-modal/host-modal.component';
 
 @Component({
   selector: 'app-host',
@@ -8,10 +11,10 @@ import { ProvisionStatus, Status } from 'src/app/models/common.model';
 })
 export class HostComponent implements OnInit {
   @Input() status: Status;
-  @Input() title: string;
+  @Input() provisionedHost: ProvisionedHost;
   // @ViewChild('container') container: ElementRef;
 
-  constructor() {
+  constructor(public dialog: MatDialog) {
     // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
   }
 
@@ -22,6 +25,13 @@ export class HostComponent implements OnInit {
     //     this.changeDetectorRef.markForCheck();
     //   }
     // });
+  }
+
+  viewDetails(): void {
+    this.dialog.open(HostModalComponent, {
+      width: '50%',
+      data: { provisionedHost: this.provisionedHost }
+    });
   }
 
   getStatusIcon(): string {

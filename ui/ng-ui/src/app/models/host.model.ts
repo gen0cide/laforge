@@ -2,7 +2,7 @@ import { Command } from './command.model';
 import { ID, Status, Tag, User, varsMap } from './common.model';
 import { DNSRecord } from './dns.model';
 import { FileDelete, FileDownload, FileExtract } from './file.model';
-import { ProvisionedNetwork } from './network.model';
+// import { ProvisionedNetwork } from './network.model';
 import { Script } from './script.model';
 
 interface Host {
@@ -31,7 +31,7 @@ interface ProvisionedHost {
   id: ID;
   subnetIP: string;
   status: Status;
-  provisionedNetwork: ProvisionedNetwork;
+  // provisionedNetwork: ProvisionedNetwork;
   provisionedSteps: ProvisionedStep[];
   host: Host;
 }

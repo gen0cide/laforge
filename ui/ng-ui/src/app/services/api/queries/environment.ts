@@ -51,6 +51,10 @@ const getEnvironmentQuery = (id: string) => gql`
           id,
           name,
           cidr,
+          network {
+            id,
+            vdiVisible
+          },
           vars {
             key,
             value
@@ -72,7 +76,24 @@ const getEnvironmentQuery = (id: string) => gql`
             host {
               id,
               hostname,
-              OS
+              OS,
+              allowMacChanges,
+              exposedTCPPorts,
+              exposedUDPPorts,
+              userGroups,
+              overridePassword,
+              maintainer {
+                name,
+                email
+              },
+              vars {
+                key,
+                value
+              },
+              tags {
+                name,
+                description
+              }
             }
           },
           status {

@@ -1,16 +1,15 @@
 <div class="team">
   <div class="team-info">
-    <div
-      class="team-status-icon"
-      [ngClass]="'bg-' + getStatusColor()"
-    >
+    <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
       <i class="fal fa-users"></i>
     </div>
     <div class="team-details">
-      <span class="team-number"><b>{{title}}</b></span>
+      <span class="team-number"
+        ><b>{{ title }}</b></span
+      >
     </div>
   </div>
   <div class="networks" *ngIf="networks">
-    <app-network *ngFor="let provNetwork of networks" [hosts]="provNetwork.provisionedHosts" [title]="provNetwork.name" [details]="provNetwork.cidr" [status]="provNetwork.status"></app-network>
+    <app-network *ngFor="let provNetwork of networks" [provisionedNetwork]="provNetwork" [status]="provNetwork.status"></app-network>
   </div>
 </div>

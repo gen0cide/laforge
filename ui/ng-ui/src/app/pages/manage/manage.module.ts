@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { ManageComponent } from './manage.component';
 import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
 
@@ -15,11 +17,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [ManageComponent],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    MatCardModule,
-    ViewComponentsModule
-  ]
+  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule, MatTableModule, MatButtonModule]
 })
 export class ManageModule {}

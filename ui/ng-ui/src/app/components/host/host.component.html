@@ -1,16 +1,11 @@
-<div class="host">
+<div class="host" (click)="viewDetails()">
   <!-- <div class="host-info" (click)="toggleOptions()" #container> -->
   <div class="host-info" #container>
-    <div
-      class="host-status-icon"
-      [ngClass]="'text-' + getStatusColor()"
-    >
-      <i class="fas fa-1x"
-        [ngClass]="'fa-' + getStatusIcon()"
-      ></i>
+    <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()">
+      <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
     </div>
     <div class="host-preview">
-      <span class="host-hostname">{{title}}</span>
+      <span class="host-hostname">{{ provisionedHost ? provisionedHost.host.hostname : '' }}</span>
     </div>
   </div>
 </div>

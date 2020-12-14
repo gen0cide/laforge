@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
 import { ProvisionedHost } from 'src/app/models/host.model';
+import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { NetworkModalComponent } from '../network-modal/network-modal.component';
 
 @Component({
   selector: 'app-network',
@@ -8,14 +11,12 @@ import { ProvisionedHost } from 'src/app/models/host.model';
   styleUrls: ['./network.component.scss']
 })
 export class NetworkComponent implements OnInit {
-  @Input() hosts: ProvisionedHost[];
-  @Input() title: string;
-  @Input() details: string;
+  @Input() provisionedNetwork: ProvisionedNetwork;
   @Input() status: Status;
   // @ViewChild('options') options: ElementRef;
   optionsToggled: boolean;
 
-  constructor() {
+  constructor(public dialog: MatDialog) {
     // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
     this.optionsToggled = false;
   }
@@ -29,13 +30,20 @@ export class NetworkComponent implements OnInit {
     // });
   }
 
+  viewDetails(): void {
+    this.dialog.open(NetworkModalComponent, {
+      width: '50%',
+      data: { provisionedNetwork: this.provisionedNetwork }
+    });
+  }
+
   toggleOptions(): void {
     this.optionsToggled = !this.optionsToggled;
   }
 
   getStatus(): ProvisionStatus {
     let status: ProvisionStatus = this.status.state;
-    for (const host of this.hosts) {
+    for (const host of this.provisionedNetwork.provisionedHosts) {
       switch (host.status.state) {
         case ProvisionStatus.ProvStatusFailed:
           status = ProvisionStatus.ProvStatusFailed;

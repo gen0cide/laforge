@@ -13,6 +13,8 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
 
     .network-status-icon {
       width: 2.5rem;
@@ -34,6 +36,10 @@
       justify-content: space-between;
       padding: 0 1.25rem;
     }
+  }
+
+  .network-info:hover {
+    background-color: #e5e5e5;
   }
 
   .hosts {

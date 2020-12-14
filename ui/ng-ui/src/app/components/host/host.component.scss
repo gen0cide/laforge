@@ -16,6 +16,7 @@
     cursor: pointer;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
+    transition: background-color 0.3s ease-in-out;
 
     .host-preview {
       margin-right: 0.5rem;
@@ -36,5 +37,9 @@
         font-size: 1rem;
       }
     }
+  }
+
+  .host-info:hover {
+    background-color: #e5e5e5;
   }
 }

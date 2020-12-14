@@ -1,17 +1,18 @@
 <div class="network">
-  <div class="network-info">
-    <div
-      class="network-status-icon"
-      [ngClass]="'bg-' + getStatusColor()"
-    >
+  <div class="network-info" (click)="viewDetails()">
+    <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
       <i class="fal fa-network-wired"></i>
     </div>
     <div class="network-header">
-      <span class="network-title"><b>{{title}}</b></span>
-      <span class="network-details"><em>{{details}}</em></span>
+      <span class="network-title"
+        ><b>{{ provisionedNetwork.name }}</b></span
+      >
+      <span class="network-details"
+        ><em>{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.network.vdiVisible ? 'true' : 'false' }}</em></span
+      >
     </div>
   </div>
   <div class="hosts">
-    <app-host *ngFor="let provHost of hosts" [title]="provHost.host.hostname" [status]="provHost.status"></app-host>
+    <app-host *ngFor="let provHost of provisionedNetwork.provisionedHosts" [provisionedHost]="provHost" [status]="provHost.status"></app-host>
   </div>
 </div>
