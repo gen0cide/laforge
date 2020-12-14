@@ -1,6 +1,7 @@
 import { gql } from 'apollo-angular';
+import { DocumentNode } from 'graphql';
 
-const getEnvironmentQuery = (id: string) => gql`
+const getEnvironmentQuery = (id: string): DocumentNode => gql`
 {
   environment(envUUID: "${id}") {
     id
@@ -93,6 +94,57 @@ const getEnvironmentQuery = (id: string) => gql`
               tags {
                 name,
                 description
+              },
+            },
+            provisionedSteps {
+              id,
+              provisionType,
+              status {
+                state,
+                startedAt,
+                endedAt,
+                error
+              },
+              script {
+                id,
+                name,
+                description,
+                source,
+                sourceType,
+                disabled
+              },
+              command {
+                id,
+                name,
+                description,
+                args,
+                disabled
+              },
+              DNSRecord {
+                id,
+                name,
+                values,
+                type,
+                zone,
+                disabled
+              },
+              fileDownload {
+                id,
+                source,
+                sourceType,
+                destination,
+                mode,
+                disabled,
+              },
+              fileDelete {
+                id
+                path,
+              },
+              fileExtract {
+                id,
+                source,
+                destination,
+                type
               }
             }
           },
