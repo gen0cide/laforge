@@ -240,6 +240,22 @@ type Status {
   error: String!
 }
 
+type AgentStatus {
+  clientId: String!
+  hostname: String!
+  upTime: Int!
+  bootTime: Int!
+  numProcs: Int!
+  OS: String! 
+  hostID: String!
+  load1: Float
+  load5: Float
+  load15: Float
+  totalMem: Int!
+  freeMem: Int!
+  usedMem: Int!
+}
+
 type ProvisionedHost {
   id: ID!
   subnetIP: String!
@@ -248,6 +264,7 @@ type ProvisionedHost {
   provisionedSteps: [ProvisionedStep]!
   host: Host!
   combinedOutput: String # Link to WebSocket
+  heartbeat: AgentStatus!
 }
 
 type ProvisionedStep {

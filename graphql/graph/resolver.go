@@ -22,6 +22,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 	testDNAServerB := "8.8.4.4"
 	testNTPServerA := "129.6.15.28"
 	testNTPServerB := "129.6.15.29"
+	testFloat := 5.5
 	testTag := model.Tag{
 		ID:          "test",
 		Name:        "This is a Test Tag",
@@ -107,7 +108,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Tags:         []*model.Tag{},
 		AbsPath:      "",
 		Maintainer:   &testUser,
-		Findings:     []*model.Finding{&model.Finding{
+		Findings:     []*model.Finding{{
 			Name:        "default local admin password",
 			Description: "",
 			Severity:    model.FindingSeverityMediumSeverity,
@@ -213,6 +214,18 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.0.12",
 		Status:             testStatus,
 		Host:               &testWindowsHost,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "ae3ced80-6385-4421-8a75-9a5ea464c62b",
+			Hostname: "test.windows.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Windows Server 2012",
+			HostID:   "???",
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 	
 	testProHost2 := model.ProvisionedHost{
@@ -220,6 +233,21 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.10.10",
 		Status:             testStatus,
 		Host:               &testLinuxHost1,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "10fd9876-fc42-453d-ab93-c02bfea696bb",
+			Hostname: "test1.linux.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Ubuntu 18",
+			HostID:   "???",
+			Load1:    &testFloat,
+			Load5:    &testFloat,
+			Load15:   &testFloat,
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 
 	testProHost3 := model.ProvisionedHost{
@@ -227,6 +255,21 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.10.15",
 		Status:             testStatus,
 		Host:               &testLinuxHost2,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "51a37e0b-0223-4da5-a613-aac4128f80de",
+			Hostname: "test2.linux.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Ubuntu 18",
+			HostID:   "???",
+			Load1:    &testFloat,
+			Load5:    &testFloat,
+			Load15:   &testFloat,
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 
 	testProHost4 := model.ProvisionedHost{
@@ -234,6 +277,18 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.100.12",
 		Status:             testStatus,
 		Host:               &testWindowsHost,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "91e3c993-e076-4989-8445-2ba895fc1edd",
+			Hostname: "test.windows.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Windows Server 2012",
+			HostID:   "???",
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 	
 	testProHost5 := model.ProvisionedHost{
@@ -241,12 +296,42 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.100.10",
 		Status:             testStatus,
 		Host:               &testLinuxHost1,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "13d4a47c-9ce8-48a2-b6d3-6f5af66b748a",
+			Hostname: "test1.linux.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Ubuntu 18",
+			HostID:   "???",
+			Load1:    &testFloat,
+			Load5:    &testFloat,
+			Load15:   &testFloat,
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 	testProHost6 := model.ProvisionedHost{
 		ID:                 "47f3e7ae-9a87-45c8-900f-8e0043abf4bb",
 		SubnetIP:           "10.0.100.15",
 		Status:             testStatus,
 		Host:               &testLinuxHost2,
+		Heartbeat: &model.AgentStatus{
+			ClientID: "47f3e7ae-9a87-45c8-900f-8e0043abf4bb",
+			Hostname: "test2.linux.host",
+			UpTime:   20000,
+			BootTime: 500,
+			NumProcs: 10,
+			Os:       "Ubuntu 18",
+			HostID:   "???",
+			Load1:    &testFloat,
+			Load5:    &testFloat,
+			Load15:   &testFloat,
+			TotalMem: 16,
+			FreeMem:  10,
+			UsedMem:  6,
+		},
 	}
 
 	// Test Provisioned Steps

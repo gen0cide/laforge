@@ -8,6 +8,22 @@ import (
 	"strconv"
 )
 
+type AgentStatus struct {
+	ClientID string   `json:"clientId"`
+	Hostname string   `json:"hostname"`
+	UpTime   int      `json:"upTime"`
+	BootTime int      `json:"bootTime"`
+	NumProcs int      `json:"numProcs"`
+	Os       string   `json:"OS"`
+	HostID   string   `json:"hostID"`
+	Load1    *float64 `json:"load1"`
+	Load5    *float64 `json:"load5"`
+	Load15   *float64 `json:"load15"`
+	TotalMem int      `json:"totalMem"`
+	FreeMem  int      `json:"freeMem"`
+	UsedMem  int      `json:"usedMem"`
+}
+
 type Build struct {
 	ID         string       `json:"id"`
 	Revision   int          `json:"revision"`
@@ -156,6 +172,7 @@ type ProvisionedHost struct {
 	ProvisionedSteps   []*ProvisionedStep  `json:"provisionedSteps"`
 	Host               *Host               `json:"host"`
 	CombinedOutput     *string             `json:"combinedOutput"`
+	Heartbeat          *AgentStatus        `json:"heartbeat"`
 }
 
 type ProvisionedNetwork struct {
