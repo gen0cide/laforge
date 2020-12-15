@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ProvisionStatus } from 'src/app/models/common.model';
 import { ProvisionedStep } from 'src/app/models/host.model';
 
@@ -7,14 +7,11 @@ import { ProvisionedStep } from 'src/app/models/host.model';
   templateUrl: './step.component.html',
   styleUrls: ['./step.component.scss']
 })
-export class StepComponent implements OnInit {
+export class StepComponent {
   @Input() stepNumber: number;
   @Input() provisionedStep: ProvisionedStep;
   @Input() showDetail: boolean;
-
-  constructor() {}
-
-  ngOnInit(): void {}
+  @Input() style: 'compact' | 'expanded';
 
   getStatusIcon(): string {
     switch (this.provisionedStep.provisionType) {

@@ -1,4 +1,3 @@
-import { environment } from 'src/environments/environment';
 import { ID, Tag, configMap, User, Team, ProvisionStatus } from './common.model';
 import { DNS } from './dns.model';
 import { Host, ProvisionedHost, ProvisionedStep } from './host.model';
@@ -38,6 +37,7 @@ interface Environment {
   competition: Competition;
 }
 
+/* eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any */
 function resolveStatuses(environment: any): any {
   return {
     ...environment,

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ProvisionedHost } from 'src/app/models/host.model';
@@ -9,22 +9,13 @@ import { HostModalComponent } from '../host-modal/host-modal.component';
   templateUrl: './host.component.html',
   styleUrls: ['./host.component.scss']
 })
-export class HostComponent implements OnInit {
+export class HostComponent {
   @Input() status: Status;
   @Input() provisionedHost: ProvisionedHost;
-  // @ViewChild('container') container: ElementRef;
+  @Input() style: 'compact' | 'collapsed' | 'expanded';
 
   constructor(public dialog: MatDialog) {
-    // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
-  }
-
-  ngOnInit(): void {
-    // this.renderer.listen('window', 'click', (e: Event) => {
-    //   if (!this.container.nativeElement.contains(e.target)) {
-    //     this.optionsToggled = false;
-    //     this.changeDetectorRef.markForCheck();
-    //   }
-    // });
+    if (!this.style) this.style = 'compact';
   }
 
   viewDetails(): void {

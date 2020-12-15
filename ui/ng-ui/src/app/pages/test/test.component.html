@@ -1,0 +1,27 @@
+<mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Host Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-host
+      [provisionedHost]="environment.build.teams[0].provisionedNetworks[0].provisionedHosts[0]"
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-host
+      [provisionedHost]="environment.build.teams[0].provisionedNetworks[0].provisionedHosts[0]"
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-host
+      [provisionedHost]="environment.build.teams[0].provisionedNetworks[0].provisionedHosts[0]"
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-host>
+  </mat-card-content>
+</mat-card>

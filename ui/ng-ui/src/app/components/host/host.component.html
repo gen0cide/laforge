@@ -1,11 +1,20 @@
-<div class="host" (click)="viewDetails()">
+<div class="host" (click)="style === 'compact' && viewDetails()" [ngClass]="style">
   <!-- <div class="host-info" (click)="toggleOptions()" #container> -->
-  <div class="host-info" #container>
+  <div class="host-info" (click)="style !== 'compact' && viewDetails()">
     <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()">
       <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
     </div>
     <div class="host-preview">
       <span class="host-hostname">{{ provisionedHost ? provisionedHost.host.hostname : '' }}</span>
     </div>
+  </div>
+  <div class="steps" *ngIf="style === 'expanded'">
+    <app-step
+      *ngFor="let step of provisionedHost.provisionedSteps; let i = index"
+      [stepNumber]="i + 1"
+      [provisionedStep]="step"
+      [showDetail]="false"
+      [style]="'expanded'"
+    ></app-step>
   </div>
 </div>

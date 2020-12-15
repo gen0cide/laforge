@@ -38,6 +38,11 @@ const routes: Routes = [
         // component: PlanComponent
       },
       {
+        path: 'test',
+        loadChildren: () => import('./test/test.module').then((m) => m.TestModule)
+        // component: PlanComponent
+      },
+      {
         path: 'user-management',
         loadChildren: () => import('../modules/user-management/user-management.module').then((m) => m.UserManagementModule)
       },
