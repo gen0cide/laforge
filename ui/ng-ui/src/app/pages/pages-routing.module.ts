@@ -9,10 +9,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-// import { CodePreviewComponent } from '../_metronic/partials/content/general/code-preview/code-preview.component';
-
-import { PlanComponent } from './plan/plan.component';
-// import { ManageComponent } from './manage/manage.component';
 
 const routes: Routes = [
   {
@@ -30,17 +26,18 @@ const routes: Routes = [
       {
         path: 'manage',
         loadChildren: () => import('./manage/manage.module').then((m) => m.ManageModule)
-        // component: ManageComponent
+      },
+      {
+        path: 'monitor',
+        loadChildren: () => import('./monitor/monitor.module').then((m) => m.MonitorModule)
       },
       {
         path: 'plan',
         loadChildren: () => import('./plan/plan.module').then((m) => m.PlanModule)
-        // component: PlanComponent
       },
       {
         path: 'test',
         loadChildren: () => import('./test/test.module').then((m) => m.TestModule)
-        // component: PlanComponent
       },
       {
         path: 'user-management',

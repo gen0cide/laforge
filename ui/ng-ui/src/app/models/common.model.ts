@@ -1,3 +1,4 @@
+import { AgentStatus } from './agent.model';
 import { Build, Environment } from './environment.model';
 import { ProvisionedNetwork } from './network.model';
 
@@ -56,4 +57,27 @@ interface Status {
   error: string;
 }
 
-export { ID, varsMap, configMap, User, Tag, Team, Status, ProvisionStatus };
+interface AgentStatusQueryResult {
+  environment: {
+    build: {
+      teams: [
+        {
+          id: string;
+          provisionedNetworks: [
+            {
+              id: string;
+              provisionedHosts: [
+                {
+                  id: string;
+                  heartbeat: AgentStatus;
+                }
+              ];
+            }
+          ];
+        }
+      ];
+    };
+  };
+}
+
+export { ID, varsMap, configMap, User, Tag, Team, Status, ProvisionStatus, AgentStatusQueryResult };

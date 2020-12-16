@@ -1,3 +1,4 @@
+import { AgentStatus } from './agent.model';
 import { Command } from './command.model';
 import { ID, Status, Tag, User, varsMap } from './common.model';
 import { DNSRecord } from './dns.model';
@@ -31,9 +32,10 @@ interface ProvisionedHost {
   id: ID;
   subnetIP: string;
   status: Status;
-  // provisionedNetwork: ProvisionedNetwork;
+  // provisionedNetwork: ProvisionedNetwork; * avoids circular dependencies *
   provisionedSteps: ProvisionedStep[];
   host: Host;
+  heartbeat?: AgentStatus;
 }
 
 interface ProvisionedStep {

@@ -54,7 +54,6 @@ function resolveStatuses(environment: any): any {
             },
             provisionedHosts: provisionedNetwork.provisionedHosts.map((provisionedHost: ProvisionedHost) => ({
               ...provisionedHost,
-              build: undefined,
               status: {
                 ...provisionedHost.status,
                 state: ProvisionStatus[provisionedHost.status.state]
