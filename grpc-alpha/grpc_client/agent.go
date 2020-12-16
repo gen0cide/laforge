@@ -4,12 +4,14 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"flag"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	pb "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent"
@@ -118,6 +120,8 @@ func DownloadFile(filepath string, url string) error {
 	return err
 }
 
+
+// ValidateMD5Hash ...
 func ValidateMD5Hash(filepath string, md5hash string) error {
 	var calculatedMD5Hash string
 
@@ -126,7 +130,7 @@ func ValidateMD5Hash(filepath string, md5hash string) error {
 
 	// Can't open the file, assuming false
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	// Close the file when we're done
@@ -214,7 +218,7 @@ func RequestTask(c pb.LaforgeClient) {
 			taskArgs := strings.Split(r.Args, ",")
 			filepath := taskArgs[0]
 			md5hash := taskArgs[1]
-			taskeer := ValidateMD5Hash(filepath, md5hash)
+			taskerr := ValidateMD5Hash(filepath, md5hash)
 			RequestTaskStatusRequest(taskerr, clientID, c)
 		default:
 			logger.Infof("Response Message: %v", r)
@@ -223,7 +227,11 @@ func RequestTask(c pb.LaforgeClient) {
 	}
 }
 
+
+// RequestTaskStatusRequest Test
 func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	if taskerr != nil {
 		logger.Errorf("Error: %v", taskerr)
 		taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskFailed}
@@ -235,7 +243,7 @@ func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient
 }
 
 // SendHeartBeat Example
-func SendHeartBeat(c pb.LaforgeClient, taskChannel Channel) {
+func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	request := &pb.HeartbeatRequest{ClientId: clientID}
@@ -261,26 +269,28 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel Channel) {
 		(*request).Load15 = load.Load15
 	}
 	r, err := c.GetHeartBeat(ctx, request)
-	taskChannel <- r
-
 	if err != nil {
 		logger.Errorf("Error: %v", err)
+	}else{
+		taskChannel <- *r
+	}
+	
+}
+
+// StartTaskRunner Test
+func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
+	r := <-taskChannel
+	logger.Infof("Response Message: %s", r.GetStatus())
+	logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
+
+	if r.GetAvalibleTasks() {
+		RequestTask(c)
 	}
 }
 
-func StartTaskRunner(c pb.LaforgeClient, taskChannel Channel) {
-    if r := <- taskChannel {
-		logger.Infof("Response Message: %s", r.GetStatus())
-		logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
-
-		if r.GetAvalibleTasks() {
-			RequestTask(c)
-		}
-	}
-}
-
-func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel Channel) {
+func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
+	defer wg.Done()
 	for {
 		select {
 		case <-ticker.C:
@@ -291,9 +301,9 @@ func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel Channel) {
 	}
 }
 
-func genStartTaskRunner(p *program, c pb.LaforgeClinet, taskChannel Channel) {
+func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
-
+	defer wg.Done()
 	for {
 		select {
 		case <-ticker.C:
@@ -306,6 +316,7 @@ func genStartTaskRunner(p *program, c pb.LaforgeClinet, taskChannel Channel) {
 
 func (p *program) run() error {
 	logger.Infof("I'm running %v.", service.Platform())
+	var wg sync.WaitGroup
 	creds, credErr := credentials.NewClientTLSFromFile(certFile, "")
 	if credErr != nil {
 		logger.Errorf("Cred Error: %v", credErr)
@@ -319,14 +330,14 @@ func (p *program) run() error {
 	}
 	defer conn.Close()
 	c := pb.NewLaforgeClient(conn)
-
+	
 	// START VARS
-	taskChannel := make(chan bool)
-	go genSendHeartBeat(p, c, taskChannel)
-	go genStartTaskRunner(p, c, taskChannel)
+	taskChannel := make(chan pb.HeartbeatReply)
+	wg.Add(2)
+	go genSendHeartBeat(p, c, taskChannel, wg)
+	go genStartTaskRunner(p, c, taskChannel, wg)
 
-	// Need to do something better
-	time.Sleep(60 * time.Second)
+	wg.Wait()
 	return nil
 }
 func (p *program) Stop(s service.Service) error {

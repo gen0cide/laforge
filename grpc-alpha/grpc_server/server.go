@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/frybin/laforge/grpc-alpha/laforge_proto_agent"
+	pb "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -30,20 +30,6 @@ var (
 
 type server struct {
 	pb.UnimplementedLaforgeServer
-}
-
-/* TEST MESSAGES */
-
-//Ping Info
-func (s *server) GetPing(ctx context.Context, in *pb.PingRequest) (*pb.PingReply, error) {
-	log.Printf("Received: %v | ID: %v", in.GetName(), in.GetId())
-	return &pb.PingReply{Name: "Hello " + in.GetName(), Id: in.GetId()}, nil
-}
-
-//HostTest Info
-func (s *server) GetHostTest(ctx context.Context, in *pb.HostTestRequest) (*pb.HostTestReply, error) {
-	log.Printf("Got Host: %v | ID: %v | IP: %s | OS: %s", in.GetName(), in.GetId(), in.GetIp(), in.GetOs())
-	return &pb.HostTestReply{Name: in.GetName(), Id: in.GetId(), Ip: in.GetIp(), Os: in.GetOs()}, nil
 }
 
 //ByteCountIEC Converts Bytes to Higher Order
@@ -79,7 +65,6 @@ func (s *server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 	clientID := in.ClientId
 	tasks := make([]Task, 0)
 	db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
-	task := tasks[0]
 
 	if len(tasks) > 0 {
 		task := tasks[0]
@@ -95,7 +80,7 @@ func (s *server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest)
 	db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
 	task := tasks[0]
 
-	switch status := in.status; status {
+	switch in.Status {
 		case TaskRunning:
 			task.Status = TaskRunning
 		case TaskFailed:

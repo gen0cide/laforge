@@ -11,9 +11,6 @@ const (
 	dbDSN = "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable"
 )
 
-enum TaskStatus {
-
-}
 
 // Task to be assigned
 type Task struct {
