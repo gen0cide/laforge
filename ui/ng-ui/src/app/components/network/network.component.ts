@@ -33,6 +33,7 @@ export class NetworkComponent implements OnInit {
   viewDetails(): void {
     this.dialog.open(NetworkModalComponent, {
       width: '50%',
+      height: '80%',
       data: { provisionedNetwork: this.provisionedNetwork }
     });
   }

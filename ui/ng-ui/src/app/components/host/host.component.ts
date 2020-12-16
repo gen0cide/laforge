@@ -21,33 +21,38 @@ export class HostComponent {
   viewDetails(): void {
     this.dialog.open(HostModalComponent, {
       width: '50%',
+      height: '80%',
       data: { provisionedHost: this.provisionedHost }
     });
   }
 
   getStatusIcon(): string {
-    switch (this.status.state) {
-      case ProvisionStatus.ProvStatusComplete:
-        return 'check-circle';
-      case ProvisionStatus.ProvStatusFailed:
-        return 'times-circle';
-      case ProvisionStatus.ProvStatusInProgress:
-        return 'play-circle';
-      default:
-        return 'minus-circle';
-    }
+    if (this.provisionedHost.heartbeat) return 'check-circle';
+    else return 'minus-circle';
+    // switch (this.status.state) {
+    //   case ProvisionStatus.ProvStatusComplete:
+    //     return 'check-circle';
+    //   case ProvisionStatus.ProvStatusFailed:
+    //     return 'times-circle';
+    //   case ProvisionStatus.ProvStatusInProgress:
+    //     return 'play-circle';
+    //   default:
+    //     return 'minus-circle';
+    // }
   }
 
   getStatusColor(): string {
-    switch (this.status.state) {
-      case ProvisionStatus.ProvStatusComplete:
-        return 'success';
-      case ProvisionStatus.ProvStatusFailed:
-        return 'danger';
-      case ProvisionStatus.ProvStatusInProgress:
-        return 'info';
-      default:
-        return 'dark';
-    }
+    if (this.provisionedHost.heartbeat) return 'success';
+    else return 'dark';
+    // switch (this.status.state) {
+    //   case ProvisionStatus.ProvStatusComplete:
+    //     return 'success';
+    //   case ProvisionStatus.ProvStatusFailed:
+    //     return 'danger';
+    //   case ProvisionStatus.ProvStatusInProgress:
+    //     return 'info';
+    //   default:
+    //     return 'dark';
+    // }
   }
 }

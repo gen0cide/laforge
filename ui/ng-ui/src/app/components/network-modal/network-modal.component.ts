@@ -2,7 +2,6 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProvisionStatus } from 'src/app/models/common.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';
-import { HostModalComponent } from '../host-modal/host-modal.component';
 
 @Component({
   selector: 'app-network-modal',
@@ -12,7 +11,7 @@ import { HostModalComponent } from '../host-modal/host-modal.component';
 export class NetworkModalComponent {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  constructor(public dialogRef: MatDialogRef<HostModalComponent>, @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }) {}
+  constructor(public dialogRef: MatDialogRef<NetworkModalComponent>, @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }) {}
 
   onClose(): void {
     this.dialogRef.close();

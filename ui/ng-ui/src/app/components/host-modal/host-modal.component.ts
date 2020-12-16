@@ -20,19 +20,23 @@ class HostModalComponent {
   }
 
   getStatusIcon(): string {
-    switch (this.data.provisionedHost.status.state) {
-      case ProvisionStatus.ProvStatusComplete:
-        return 'check-circle';
-      case ProvisionStatus.ProvStatusFailed:
-        return 'times-circle';
-      case ProvisionStatus.ProvStatusInProgress:
-        return 'play-circle';
-      default:
-        return 'minus-circle';
-    }
+    if (this.data.provisionedHost.heartbeat) return 'check-circle';
+    else return 'minus-circle';
+    // switch (this.data.provisionedHost.status.state) {
+    //   case ProvisionStatus.ProvStatusComplete:
+    //     return 'check-circle';
+    //   case ProvisionStatus.ProvStatusFailed:
+    //     return 'times-circle';
+    //   case ProvisionStatus.ProvStatusInProgress:
+    //     return 'play-circle';
+    //   default:
+    //     return 'minus-circle';
+    // }
   }
 
   getStatusColor(): string {
+    if (this.data.provisionedHost.heartbeat) return 'success';
+    else return 'dark';
     switch (this.data.provisionedHost.status.state) {
       case ProvisionStatus.ProvStatusComplete:
         return 'success';
