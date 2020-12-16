@@ -31,15 +31,16 @@ function updateAgentStatuses(environment: Environment, statusQueryResult: AgentS
             ...team,
             provisionedNetworks: team.provisionedNetworks.map((provNetwork: ProvisionedNetwork) => ({
               ...provNetwork,
-              provisionedHosts: provNetwork.provisionedHosts.map((provHost: ProvisionedHost) => ({
-                ...provHost,
-                heartbeat: {
-                  ...statusQueryResult.environment.build.teams
-                    .filter((t: any) => t.id === team.id)[0]
-                    .provisionedNetworks.filter((pN: any) => pN.id === provNetwork.id)[0]
-                    .provisionedHosts.filter((pH: any) => pH.id === provHost.id)[0].heartbeat
-                }
-              }))
+              provisionedHosts: provNetwork.provisionedHosts.map((provHost: ProvisionedHost) => {
+                const matchedHost = statusQueryResult.environment.build.teams
+                  .filter((t: any) => t.id === team.id)[0]
+                  .provisionedNetworks.filter((pN: any) => pN.id === provNetwork.id)[0]
+                  .provisionedHosts.filter((pH: any) => pH.id === provHost.id)[0];
+                return {
+                  ...provHost,
+                  heartbeat: matchedHost ? { ...matchedHost.heartbeat } : null
+                };
+              })
             }))
           } as Team)
       )
