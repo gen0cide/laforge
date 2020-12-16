@@ -13,7 +13,7 @@ import { AgentStatusQueryResult } from 'src/app/models/common.model';
 export class ApiService {
   constructor(private apollo: Apollo) {}
 
-  getEnvironment(id: string): Observable<ApolloQueryResult<unknown>> {
+  public getEnvironment(id: string): Observable<ApolloQueryResult<unknown>> {
     // return new Promise((resolve) => resolve(bradley));
 
     return this.apollo.watchQuery({
@@ -29,7 +29,7 @@ export class ApiService {
   //   }).valueChanges;
   // }
 
-  getAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
+  public getAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
     return this.apollo
       .query<AgentStatusQueryResult>({
         query: getAgentStatusesQuery(envId)

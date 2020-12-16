@@ -2,13 +2,15 @@
   <mat-card-header *ngIf="loaded">
     <div class="env-header d-flex align-items-center justify-content-between">
       <div class="env-info w-50">
-        <mat-card-title>{{ environment.Name }}</mat-card-title>
+        <mat-card-title>{{ environment.Name }}<i class="fas fa-2x fa-sync fa-spin" *ngIf="loading"></i></mat-card-title>
         <mat-card-subtitle>{{ environment.Description }}</mat-card-subtitle>
       </div>
-      <button mat-icon-button color="warn" aria-label="Example icon button with a menu icon" (click)="rebuildEnv()">
-        <!-- <mat-icon>undo</mat-icon> -->
-        <i class="fa fa-undo-alt text-danger"></i>
-      </button>
+      <mat-form-field appearance="fill">
+        <mat-label>Update Every...</mat-label>
+        <mat-select (selectionChange)="onIntervalChange($event)" [value]="pollingInterval">
+          <mat-option *ngFor="let interval of intervalOptions" [value]="interval"> {{ interval }} secs </mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
     <mat-table [dataSource]="[environment]" class="bg-gray-100">
       <ng-container matColumnDef="TeamCount">

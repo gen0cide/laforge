@@ -1,21 +1,11 @@
 <!--begin::Subheader-->
-<div
-  class="subheader py-3 py-lg-8"
-  [ngClass]="subheaderCSSClasses"
-  id="kt_subheader"
->
-  <div
-    [ngClass]="subheaderContainerCSSClasses"
-    class="d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap"
-  >
+<div class="subheader py-3 py-lg-8" [ngClass]="subheaderCSSClasses" id="kt_subheader">
+  <div [ngClass]="subheaderContainerCSSClasses" class="d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
     <!--begin::Info-->
     <div class="d-flex align-items-center flex-wrap mr-1">
       <ng-container *ngIf="subheaderMobileToggle">
         <!--begin::Mobile Toggle-->
-        <button
-          class="burger-icon burger-icon-left mr-4 d-inline-block d-lg-none"
-          id="kt_subheader_mobile_toggle"
-        >
+        <button class="burger-icon burger-icon-left mr-4 d-inline-block d-lg-none" id="kt_subheader_mobile_toggle">
           <span></span>
         </button>
         <!--end::Mobile Toggle-->
@@ -25,25 +15,19 @@
       <div class="d-flex align-items-baseline flex-wrap mr-5">
         <!--begin::Page Title-->
         <ng-container *ngIf="title$ | async as _title">
-          <h2 class="subheader-title text-dark font-weight-bold my-1 mr-3">
+          <h2 class="subheader-title text-dark font-weight-bold my-1 mr-3 d-flex align-items-center">
             {{ _title }}
             <ng-container *ngIf="subheaderDisplayDesc">
               <ng-container *ngIf="description$ | async as _description">
-                <small>{{ _description }}</small>
+                |&nbsp;<small>{{ _description }}</small>
               </ng-container>
             </ng-container>
           </h2>
         </ng-container>
         <!--end::Page Title-->
         <!--begin::Breadcrumb-->
-        <ul
-          class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold my-2 p-0"
-        >
-          <li
-            class="breadcrumb-item"
-            *ngFor="let bc of breadcrumbs$ | async"
-            routerLinkActive="active"
-          >
+        <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold my-2 p-0">
+          <li class="breadcrumb-item" *ngFor="let bc of breadcrumbs$ | async" routerLinkActive="active">
             <a [routerLink]="bc.linkPath" class="text-muted">
               {{ bc.linkText }}
             </a>
@@ -61,17 +45,13 @@
         <mat-label>Git Branch</mat-label>
         <mat-select (selectionChange)="onBranchSelect($event)">
           <mat-option *ngFor="let branch of branches" [value]="branch.hash">
-            {{branch.name}}
+            {{ branch.name }}
           </mat-option>
         </mat-select>
       </mat-form-field>
 
       <button class="btn btn-success btn-icon font-weight-bold cursor-pointer" title="Clear plan">
-        <span
-          [inlineSVG]="'./assets/media/svg/icons/Files/File-minus.svg'"
-          cacheSVG="true"
-          class="svg-icon svg-icon-lg"
-        ></span>
+        <span [inlineSVG]="'./assets/media/svg/icons/Files/File-minus.svg'" cacheSVG="true" class="svg-icon svg-icon-lg"></span>
       </button>
       <!--begin::Button-->
       <!-- <a
