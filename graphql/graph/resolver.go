@@ -22,7 +22,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 	testDNAServerB := "8.8.4.4"
 	testNTPServerA := "129.6.15.28"
 	testNTPServerB := "129.6.15.29"
-	testFloat := 5.5
+	testFloat := 1.5
 	testTag := model.Tag{
 		ID:          "test",
 		Name:        "This is a Test Tag",
@@ -76,7 +76,6 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Tags:     []*model.Tag{},
 		Disabled: false,
 	}
-
 	testCommand := model.Command{
 		ID:           "1c675cf8-a995-4669-9fa5-3e8a7fc193a6",
 		Name:         "Show Directory Content",
@@ -91,7 +90,6 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Tags:         []*model.Tag{},
 		Maintainer:   &testUser,
 	}
-
 	testScript := model.Script{
 		ID:           "930cec53-5d82-4685-9ef5-d4d93c76b1a1",
 		Name:         "Generate 'testUser' user",
@@ -118,7 +116,6 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			Host:        &model.Host{},
 		}},
 	}
-
 	testFileDelete := model.FileDelete{
 		ID:   "e7f7e4b5-2854-458a-89af-72b53cd678c8",
 		Path: "/tmp/test.conf",
@@ -135,7 +132,6 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		AbsPath:     "",
 		Tags:        []*model.Tag{},
 	}
-
 	testFileExtract := model.FileExtract{
 		ID:          "ba02a4da-3ee9-4b34-8a81-e1e7b2e92c57",
 		Source:      "/tmp/test.zip",
@@ -217,14 +213,14 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "ae3ced80-6385-4421-8a75-9a5ea464c62b",
 			Hostname: "test.windows.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Windows Server 2012",
+			Os:       "Windows",
 			HostID:   "???",
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 	
@@ -236,17 +232,17 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "10fd9876-fc42-453d-ab93-c02bfea696bb",
 			Hostname: "test1.linux.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Ubuntu 18",
+			Os:       "Linux",
 			HostID:   "???",
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 
@@ -258,17 +254,17 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "51a37e0b-0223-4da5-a613-aac4128f80de",
 			Hostname: "test2.linux.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Ubuntu 18",
+			Os:       "Linux",
 			HostID:   "???",
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 
@@ -280,14 +276,14 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "91e3c993-e076-4989-8445-2ba895fc1edd",
 			Hostname: "test.windows.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Windows Server 2012",
+			Os:       "Windows",
 			HostID:   "???",
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 	
@@ -299,17 +295,17 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "13d4a47c-9ce8-48a2-b6d3-6f5af66b748a",
 			Hostname: "test1.linux.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Ubuntu 18",
+			Os:       "Linux",
 			HostID:   "???",
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 	testProHost6 := model.ProvisionedHost{
@@ -320,17 +316,17 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		Heartbeat: &model.AgentStatus{
 			ClientID: "47f3e7ae-9a87-45c8-900f-8e0043abf4bb",
 			Hostname: "test2.linux.host",
-			UpTime:   20000,
-			BootTime: 500,
+			UpTime:   708,
+			BootTime: 1608158324,
 			NumProcs: 10,
-			Os:       "Ubuntu 18",
+			Os:       "Linux",
 			HostID:   "???",
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 16,
-			FreeMem:  10,
-			UsedMem:  6,
+			TotalMem: 15300000000,
+			FreeMem:  8800000000,
+			UsedMem:  3000000000,
 		},
 	}
 
