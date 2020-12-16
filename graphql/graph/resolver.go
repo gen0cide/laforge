@@ -218,9 +218,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			NumProcs: 10,
 			Os:       "Windows",
 			HostID:   "???",
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 	
@@ -240,9 +240,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 
@@ -262,9 +262,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 
@@ -281,9 +281,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			NumProcs: 10,
 			Os:       "Windows",
 			HostID:   "???",
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 	
@@ -303,9 +303,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 	testProHost6 := model.ProvisionedHost{
@@ -324,9 +324,9 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 			Load1:    &testFloat,
 			Load5:    &testFloat,
 			Load15:   &testFloat,
-			TotalMem: 15300000000,
-			FreeMem:  8800000000,
-			UsedMem:  3000000000,
+			TotalMem: 16426635264,
+			FreeMem:  8437784576,
+			UsedMem:  3781406720,
 		},
 	}
 
