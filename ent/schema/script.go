@@ -34,6 +34,6 @@ func (Script) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tag", Tag.Type),
 		edge.To("maintainer", User.Type),
-		edge.To("findings", Finding.Type),
+		edge.From("finding", Finding.Type).Ref("script"),
 	}
 }

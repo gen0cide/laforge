@@ -25,7 +25,6 @@ type Build struct {
 	Edges                     BuildEdges `json:"edges"`
 	environment_build         *int
 	provisioned_network_build *int
-	team_build                *int
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
@@ -82,7 +81,6 @@ func (*Build) fkValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{}, // environment_build
 		&sql.NullInt64{}, // provisioned_network_build
-		&sql.NullInt64{}, // team_build
 	}
 }
 
@@ -124,12 +122,6 @@ func (b *Build) assignValues(values ...interface{}) error {
 		} else if value.Valid {
 			b.provisioned_network_build = new(int)
 			*b.provisioned_network_build = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_build", value)
-		} else if value.Valid {
-			b.team_build = new(int)
-			*b.team_build = int(value.Int64)
 		}
 	}
 	return nil

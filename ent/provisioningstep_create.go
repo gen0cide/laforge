@@ -11,11 +11,9 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
-	"github.com/gen0cide/laforge/ent/filedelete"
-	"github.com/gen0cide/laforge/ent/filedownload"
-	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -115,49 +113,19 @@ func (psc *ProvisioningStepCreate) AddDNSRecord(d ...*DNSRecord) *ProvisioningSt
 	return psc.AddDNSRecordIDs(ids...)
 }
 
-// AddFileDownloadIDs adds the file_download edge to FileDownload by ids.
-func (psc *ProvisioningStepCreate) AddFileDownloadIDs(ids ...int) *ProvisioningStepCreate {
-	psc.mutation.AddFileDownloadIDs(ids...)
+// AddRemoteFileIDs adds the remote_file edge to RemoteFile by ids.
+func (psc *ProvisioningStepCreate) AddRemoteFileIDs(ids ...int) *ProvisioningStepCreate {
+	psc.mutation.AddRemoteFileIDs(ids...)
 	return psc
 }
 
-// AddFileDownload adds the file_download edges to FileDownload.
-func (psc *ProvisioningStepCreate) AddFileDownload(f ...*FileDownload) *ProvisioningStepCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// AddRemoteFile adds the remote_file edges to RemoteFile.
+func (psc *ProvisioningStepCreate) AddRemoteFile(r ...*RemoteFile) *ProvisioningStepCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return psc.AddFileDownloadIDs(ids...)
-}
-
-// AddFileDeleteIDs adds the file_delete edge to FileDelete by ids.
-func (psc *ProvisioningStepCreate) AddFileDeleteIDs(ids ...int) *ProvisioningStepCreate {
-	psc.mutation.AddFileDeleteIDs(ids...)
-	return psc
-}
-
-// AddFileDelete adds the file_delete edges to FileDelete.
-func (psc *ProvisioningStepCreate) AddFileDelete(f ...*FileDelete) *ProvisioningStepCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psc.AddFileDeleteIDs(ids...)
-}
-
-// AddFileExtractIDs adds the file_extract edge to FileExtract by ids.
-func (psc *ProvisioningStepCreate) AddFileExtractIDs(ids ...int) *ProvisioningStepCreate {
-	psc.mutation.AddFileExtractIDs(ids...)
-	return psc
-}
-
-// AddFileExtract adds the file_extract edges to FileExtract.
-func (psc *ProvisioningStepCreate) AddFileExtract(f ...*FileExtract) *ProvisioningStepCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psc.AddFileExtractIDs(ids...)
+	return psc.AddRemoteFileIDs(ids...)
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -277,10 +245,10 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 	}
 	if nodes := psc.mutation.ProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   provisioningstep.ProvisionedHostTable,
-			Columns: []string{provisioningstep.ProvisionedHostColumn},
+			Columns: provisioningstep.ProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -370,55 +338,17 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := psc.mutation.FileDownloadIDs(); len(nodes) > 0 {
+	if nodes := psc.mutation.RemoteFileIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.FileDownloadTable,
-			Columns: []string{provisioningstep.FileDownloadColumn},
+			Table:   provisioningstep.RemoteFileTable,
+			Columns: []string{provisioningstep.RemoteFileColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: filedownload.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := psc.mutation.FileDeleteIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.FileDeleteTable,
-			Columns: []string{provisioningstep.FileDeleteColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: filedelete.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := psc.mutation.FileExtractIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.FileExtractTable,
-			Columns: []string{provisioningstep.FileExtractColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: fileextract.FieldID,
+					Column: remotefile.FieldID,
 				},
 			},
 		}

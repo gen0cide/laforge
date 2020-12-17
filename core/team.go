@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"path"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/runner"
 	"github.com/pkg/errors"
 )
@@ -537,7 +539,7 @@ func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, er
 }
 
 func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt context.Context, client *ent.Client) (*ent.Team, error) {
-	user, err = h.User.CreateUserEntry(ctx, client)
+	user, err = h.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating team: %v", err)
@@ -560,12 +562,20 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt conte
 		AddBuild(build).
 		AddEnvironment(env).
 		AddTag(tag).
-		AddProvisionedNetworks().
 		Save(ctx)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating team: %v", err)
 		return nil, err
+	}
+
+	for k, v := range b.ProvisionedNetworks {
+		pn, err = v.CreateProvisionedNetworkEntry(build, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating team: %v", err)
+			return nil, err
+		}
 	}
 
 	cli.Logger.Debugf("team was created: ", team)

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -341,20 +344,19 @@ func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.
 		return nil, err
 	}
 
-	tag, err = CreateTagEntry(b.ID, h.Tags, ctx, client)
+	tag, err = CreateTagEntry(b.ID, b.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating build: %v", err)
 		return nil, err
 	}
 
-	build, err = := client.Build.
+	build, err := client.Build.
 		Create().
 		SetRevision(b.Revision).
 		SetConfig(b.Config).
-		AddMaintainer().
-		AddTag().
-		AddTeam().
+		AddMaintainer(user).
+		AddTag(tag).
 		Save(ctx)
 
 	if err != nil {

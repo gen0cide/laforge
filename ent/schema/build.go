@@ -24,6 +24,6 @@ func (Build) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type),
 		edge.To("tag", Tag.Type),
-		edge.To("team", Team.Type),
+		edge.From("team", Team.Type).Ref("build"),
 	}
 }

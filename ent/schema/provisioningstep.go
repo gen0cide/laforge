@@ -27,9 +27,10 @@ func (ProvisioningStep) Edges() []ent.Edge {
 		edge.To("script", Script.Type),
 		edge.To("command", Command.Type),
 		edge.To("dns_record", DNSRecord.Type),
-		edge.To("file_download", FileDownload.Type),
-		edge.To("file_delete", FileDelete.Type),
-		edge.To("file_extract", FileExtract.Type),
+		edge.To("remote_file", RemoteFile.Type),
+		//edge.To("file_download", FileDownload.Type),
+		//edge.To("file_delete", FileDelete.Type),
+		//edge.To("file_extract", FileExtract.Type),
 		edge.To("tag", Tag.Type),
 	}
 }

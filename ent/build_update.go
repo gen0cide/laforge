@@ -377,10 +377,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -393,10 +393,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedTeamIDs(); len(nodes) > 0 && !bu.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -412,10 +412,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -793,10 +793,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if buo.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -809,10 +809,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.RemovedTeamIDs(); len(nodes) > 0 && !buo.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -828,10 +828,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

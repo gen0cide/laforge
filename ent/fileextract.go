@@ -23,8 +23,7 @@ type FileExtract struct {
 	Type string `json:"type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileExtractQuery when eager-loading is set.
-	Edges                          FileExtractEdges `json:"edges"`
-	provisioning_step_file_extract *int
+	Edges FileExtractEdges `json:"edges"`
 }
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
@@ -55,13 +54,6 @@ func (*FileExtract) scanValues() []interface{} {
 	}
 }
 
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*FileExtract) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_file_extract
-	}
-}
-
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the FileExtract fields.
 func (fe *FileExtract) assignValues(values ...interface{}) error {
@@ -88,15 +80,6 @@ func (fe *FileExtract) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field type", values[2])
 	} else if value.Valid {
 		fe.Type = value.String
-	}
-	values = values[3:]
-	if len(values) == len(fileextract.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_file_extract", value)
-		} else if value.Valid {
-			fe.provisioning_step_file_extract = new(int)
-			*fe.provisioning_step_file_extract = int(value.Int64)
-		}
 	}
 	return nil
 }

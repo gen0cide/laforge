@@ -1,6 +1,12 @@
 package core
 
-import "time"
+import (
+	"context"
+	"time"
+
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
+)
 
 const (
 	// ProvStatusUndefined represents an empty provision state
@@ -56,4 +62,24 @@ func (s *Status) Hash() uint64 {
 	default:
 		return uint64(1)
 	}
+}
+
+func (s *Status) CreateStatusEntry(ctx context.Context, client *ent.Client) (*ent.Status, error) {
+	status, err := client.Status.
+		Create().
+		SetState(s.State).
+		SetStatedAt(s.StartedAt).
+		SetEndedAt(s.EndedAt).
+		SetFailed(s.Failed).
+		SetCompleted(s.Completed).
+		SetError(s.Error).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating status: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("status was created: ", status)
+	return status, nil
 }

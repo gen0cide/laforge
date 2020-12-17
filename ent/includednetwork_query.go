@@ -12,6 +12,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -26,8 +27,8 @@ type IncludedNetworkQuery struct {
 	unique     []string
 	predicates []predicate.IncludedNetwork
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withTag                          *TagQuery
+	withIncludedNetworkToEnvironment *EnvironmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -72,6 +73,28 @@ func (inq *IncludedNetworkQuery) QueryTag() *TagQuery {
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, includednetwork.TagTable, includednetwork.TagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(inq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIncludedNetworkToEnvironment chains the current query on the IncludedNetworkToEnvironment edge.
+func (inq *IncludedNetworkQuery) QueryIncludedNetworkToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: inq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := inq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := inq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(inq.driver.Dialect(), step)
 		return fromU, nil
@@ -249,13 +272,14 @@ func (inq *IncludedNetworkQuery) Clone() *IncludedNetworkQuery {
 		return nil
 	}
 	return &IncludedNetworkQuery{
-		config:     inq.config,
-		limit:      inq.limit,
-		offset:     inq.offset,
-		order:      append([]OrderFunc{}, inq.order...),
-		unique:     append([]string{}, inq.unique...),
-		predicates: append([]predicate.IncludedNetwork{}, inq.predicates...),
-		withTag:    inq.withTag.Clone(),
+		config:                           inq.config,
+		limit:                            inq.limit,
+		offset:                           inq.offset,
+		order:                            append([]OrderFunc{}, inq.order...),
+		unique:                           append([]string{}, inq.unique...),
+		predicates:                       append([]predicate.IncludedNetwork{}, inq.predicates...),
+		withTag:                          inq.withTag.Clone(),
+		withIncludedNetworkToEnvironment: inq.withIncludedNetworkToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  inq.sql.Clone(),
 		path: inq.path,
@@ -270,6 +294,17 @@ func (inq *IncludedNetworkQuery) WithTag(opts ...func(*TagQuery)) *IncludedNetwo
 		opt(query)
 	}
 	inq.withTag = query
+	return inq
+}
+
+//  WithIncludedNetworkToEnvironment tells the query-builder to eager-loads the nodes that are connected to
+// the "IncludedNetworkToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+func (inq *IncludedNetworkQuery) WithIncludedNetworkToEnvironment(opts ...func(*EnvironmentQuery)) *IncludedNetworkQuery {
+	query := &EnvironmentQuery{config: inq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	inq.withIncludedNetworkToEnvironment = query
 	return inq
 }
 
@@ -338,22 +373,16 @@ func (inq *IncludedNetworkQuery) prepareQuery(ctx context.Context) error {
 func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork, error) {
 	var (
 		nodes       = []*IncludedNetwork{}
-		withFKs     = inq.withFKs
 		_spec       = inq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			inq.withTag != nil,
+			inq.withIncludedNetworkToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, includednetwork.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &IncludedNetwork{config: inq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -397,6 +426,70 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				return nil, fmt.Errorf(`unexpected foreign-key "included_network_tag" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Tag = append(node.Edges.Tag, n)
+		}
+	}
+
+	if query := inq.withIncludedNetworkToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*IncludedNetwork, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.IncludedNetworkToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*IncludedNetwork)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   includednetwork.IncludedNetworkToEnvironmentTable,
+				Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(includednetwork.IncludedNetworkToEnvironmentPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, inq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "IncludedNetworkToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "IncludedNetworkToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.IncludedNetworkToEnvironment = append(nodes[i].Edges.IncludedNetworkToEnvironment, n)
+			}
 		}
 	}
 

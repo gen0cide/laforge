@@ -234,3 +234,53 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 
 	return nil
 }
+
+func (p *ProvisionedHost) CreateProvisionedHostEntry(pn *ent.ProvisioningNetwork, ctx context.Context, client *ent.Client) (*ent.ProvisionedHost, error) {
+	tag, err = CreateTagEntry(p.ID, p.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	status, err = p.Status.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	host, err = p.Host.CreateHostEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	ph, err := client.ProvisionedHost.
+		Create().
+		SetSubnetIp(p.SubnetIP).
+		AddStatus(status).
+		AddProvisioningNetwork(pn).
+		AddHost(host).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	for k, v := range p.ProvisioningSteps {
+		ps, err = v.CreateProvisioningStepEntry(ph, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("provisioned host was created: ", ph)
+	return ph, nil
+	}
+}

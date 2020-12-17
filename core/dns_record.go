@@ -129,3 +129,31 @@ func (r *DNSRecord) Inherited() bool {
 func (r *DNSRecord) SetValue(val string) {
 	r.Values = append(r.Values, val)
 }
+
+func (r *DNSRecord) CreateDNSRecordEntry(ctx context.Context, client *ent.Client) (*ent.DNSRecord, error) {
+	tag, err = CreateTagEntry(r.ID, r.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating dns record: %v", err)
+		return nil, err
+	}
+	
+	dnsrecord, error := client.DNSRecord.
+		Create().
+		SetName(r.Name).
+		SetValues(r.Values).
+		SetType(r.Type).
+		SetZone(r.Zone).
+		SetVars(r.Vars).
+		SetDisabled(r.Disabled).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating dns record: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("dns record was created: ", dnsrecord)
+	return dnsrecord, nil
+}

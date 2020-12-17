@@ -19,23 +19,21 @@ type ProvisionedHost struct {
 	SubnetIP string `json:"subnet_ip,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedHostQuery when eager-loading is set.
-	Edges                                 ProvisionedHostEdges `json:"edges"`
-	provisioned_network_provisioned_hosts *int
-	provisioning_step_provisioned_host    *int
+	Edges ProvisionedHostEdges `json:"edges"`
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
 type ProvisionedHostEdges struct {
 	// Status holds the value of the status edge.
 	Status []*Status
-	// ProvisioningSteps holds the value of the provisioning_steps edge.
-	ProvisioningSteps []*ProvisioningStep
 	// ProvisionedNetwork holds the value of the provisioned_network edge.
 	ProvisionedNetwork []*ProvisionedNetwork
 	// Host holds the value of the host edge.
 	Host []*Host
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
+	// ProvisionedSteps holds the value of the provisioned_steps edge.
+	ProvisionedSteps []*ProvisioningStep
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
@@ -50,19 +48,10 @@ func (e ProvisionedHostEdges) StatusOrErr() ([]*Status, error) {
 	return nil, &NotLoadedError{edge: "status"}
 }
 
-// ProvisioningStepsOrErr returns the ProvisioningSteps value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisioningStepsOrErr() ([]*ProvisioningStep, error) {
-	if e.loadedTypes[1] {
-		return e.ProvisioningSteps, nil
-	}
-	return nil, &NotLoadedError{edge: "provisioning_steps"}
-}
-
 // ProvisionedNetworkOrErr returns the ProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) ProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.ProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "provisioned_network"}
@@ -71,7 +60,7 @@ func (e ProvisionedHostEdges) ProvisionedNetworkOrErr() ([]*ProvisionedNetwork, 
 // HostOrErr returns the Host value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) HostOrErr() ([]*Host, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Host, nil
 	}
 	return nil, &NotLoadedError{edge: "host"}
@@ -80,10 +69,19 @@ func (e ProvisionedHostEdges) HostOrErr() ([]*Host, error) {
 // TagOrErr returns the Tag value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Tag, nil
 	}
 	return nil, &NotLoadedError{edge: "tag"}
+}
+
+// ProvisionedStepsOrErr returns the ProvisionedSteps value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) ProvisionedStepsOrErr() ([]*ProvisioningStep, error) {
+	if e.loadedTypes[4] {
+		return e.ProvisionedSteps, nil
+	}
+	return nil, &NotLoadedError{edge: "provisioned_steps"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -91,14 +89,6 @@ func (*ProvisionedHost) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // subnet_ip
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*ProvisionedHost) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioned_network_provisioned_hosts
-		&sql.NullInt64{}, // provisioning_step_provisioned_host
 	}
 }
 
@@ -119,32 +109,12 @@ func (ph *ProvisionedHost) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		ph.SubnetIP = value.String
 	}
-	values = values[1:]
-	if len(values) == len(provisionedhost.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_hosts", value)
-		} else if value.Valid {
-			ph.provisioned_network_provisioned_hosts = new(int)
-			*ph.provisioned_network_provisioned_hosts = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioned_host", value)
-		} else if value.Valid {
-			ph.provisioning_step_provisioned_host = new(int)
-			*ph.provisioning_step_provisioned_host = int(value.Int64)
-		}
-	}
 	return nil
 }
 
 // QueryStatus queries the status edge of the ProvisionedHost.
 func (ph *ProvisionedHost) QueryStatus() *StatusQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryStatus(ph)
-}
-
-// QueryProvisioningSteps queries the provisioning_steps edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryProvisioningSteps() *ProvisioningStepQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryProvisioningSteps(ph)
 }
 
 // QueryProvisionedNetwork queries the provisioned_network edge of the ProvisionedHost.
@@ -160,6 +130,11 @@ func (ph *ProvisionedHost) QueryHost() *HostQuery {
 // QueryTag queries the tag edge of the ProvisionedHost.
 func (ph *ProvisionedHost) QueryTag() *TagQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryTag(ph)
+}
+
+// QueryProvisionedSteps queries the provisioned_steps edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedSteps() *ProvisioningStepQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedSteps(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.

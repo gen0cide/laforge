@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -194,4 +197,132 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 	// 	return fmt.Errorf("invalid provisioner type for %s: %T", p.Path(), p.Provisioner)
 	// }
 	return nil
+}
+
+func (p *ProvisioningStep) CreateProvisioningStepEntry(ph *ent.ProvisionedHost, ctx context.Context, client *ent.Client) (*ent.ProvisioningStep, error) {
+	tag, err = CreateTagEntry(p.ID, p.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioning step: %v", err)
+		return nil, err
+	}
+
+	status, err = p.Status.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioning step: %v", err)
+		return nil, err
+	}
+
+	switch p {
+	case p.Script != nil:
+		script, err = p.Script.CreateScriptEntry(ph, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioning step: %v", err)
+			return nil, err
+		}
+
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddScript(script).
+			AddTag(tag).
+			Save(ctx)
+	case p.Command != nil:
+		command, err = p.Command.CreateCommandEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioning step: %v", err)
+			return nil, err
+		}
+
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddCommand(command).
+			AddTag(tag).
+			Save(ctx)
+	case p.DNSRecord != nil:
+		dnsrecord, err = p.DNSRecord.CreateDNSRecordEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioning step: %v", err)
+			return nil, err
+		}
+
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddDNSRecord(dnsrecord).
+			AddTag(tag).
+			Save(ctx)
+	case p.RemoteFile != nil:
+		remotefile, err = p.RemoteFile.CreateRemoteFileEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioning step: %v", err)
+			return nil, err
+		}
+
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddRemoteFile(remotefile).
+			AddTag(tag).
+			Save(ctx)
+	// These will become useful in the future
+	"""
+	case p.FileDownload != nil:
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddFileDownload().
+			AddTag(tag).
+			Save(ctx)
+	case p.FileDelete != nil:
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddFileDelete().
+			AddTag(tag).
+			Save(ctx)
+	case p.FileExtract != nil:
+		ps, err := client.ProvisioningStep.
+			Create().
+			SetProvisionerType(p.ProvisionerType).
+			SetStepNumber(p.StepNumber).
+			AddProvisionedHost(ph).
+			AddStatus(status).
+			AddFileExtract().
+			AddTag(tag).
+			Save(ctx)
+	"""
+	}
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioning step: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("provisioning step was created: ", ps)
+	return ps, nil
 }

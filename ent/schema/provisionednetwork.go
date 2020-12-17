@@ -24,9 +24,10 @@ func (ProvisionedNetwork) Fields() []ent.Field {
 func (ProvisionedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tag", Tag.Type),
-		edge.To("provisioned_hosts", ProvisionedHost.Type),
 		edge.To("status", Status.Type),
 		edge.To("network", Network.Type),
 		edge.To("build", Build.Type),
+		edge.To("ProvisionedNetworkToTeam", Team.Type),
+		edge.From("provisioned_hosts", ProvisionedHost.Type).Ref("provisioned_network"),
 	}
 }

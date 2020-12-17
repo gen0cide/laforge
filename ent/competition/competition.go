@@ -14,8 +14,6 @@ const (
 
 	// EdgeDNS holds the string denoting the dns edge name in mutations.
 	EdgeDNS = "dns"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
 
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
@@ -26,13 +24,6 @@ const (
 	DNSInverseTable = "dn_ss"
 	// DNSColumn is the table column denoting the dns relation/edge.
 	DNSColumn = "competition_dns"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "competition_tag"
 )
 
 // Columns holds all SQL columns for competition fields.

@@ -124,14 +124,14 @@ func (sc *ScriptCreate) AddMaintainer(u ...*User) *ScriptCreate {
 	return sc.AddMaintainerIDs(ids...)
 }
 
-// AddFindingIDs adds the findings edge to Finding by ids.
+// AddFindingIDs adds the finding edge to Finding by ids.
 func (sc *ScriptCreate) AddFindingIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddFindingIDs(ids...)
 	return sc
 }
 
-// AddFindings adds the findings edges to Finding.
-func (sc *ScriptCreate) AddFindings(f ...*Finding) *ScriptCreate {
+// AddFinding adds the finding edges to Finding.
+func (sc *ScriptCreate) AddFinding(f ...*Finding) *ScriptCreate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
@@ -387,12 +387,12 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.FindingsIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

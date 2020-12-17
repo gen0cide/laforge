@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"log"
 	"os"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/core"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/hashicorp/hcl2/hcl"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/urfave/cli"
 )
 
@@ -40,6 +44,29 @@ func performbuild(c *cli.Context) error {
 		}
 		cliLogger.Errorf("Error encountered during bootstrap: %v", err)
 		os.Exit(1)
+	}
+
+	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+
+	if err != nil {
+		log.Fatalf("failed opening connection to sqlite: %v", err)
+	}
+
+	cxt := client.Context()
+	defer client.Close()
+
+	// Run the auto migration tool.
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
+	for k, v := range base.Environments {
+		environment, err = v.CreateEnvironmentEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("Error encountered during bootstrap: %v", err)
+			return err
+		}
 	}
 
 	state := core.NewState()

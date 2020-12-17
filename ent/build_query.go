@@ -119,7 +119,7 @@ func (bq *BuildQuery) QueryTeam() *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.TeamTable, build.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, build.TeamTable, build.TeamPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -505,30 +505,65 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 
 	if query := bq.withTeam; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Team = []*Team{}
+		ids := make(map[int]*Build, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Team = []*Team{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Team(func(s *sql.Selector) {
-			s.Where(sql.InValues(build.TeamColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Build)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   build.TeamTable,
+				Columns: build.TeamPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(build.TeamPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, bq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "team": %v`, err)
+		}
+		query.Where(team.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.build_team
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "build_team" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "build_team" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "team" node returned %v`, n.ID)
 			}
-			node.Edges.Team = append(node.Edges.Team, n)
+			for i := range nodes {
+				nodes[i].Edges.Team = append(nodes[i].Edges.Team, n)
+			}
 		}
 	}
 

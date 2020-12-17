@@ -25,8 +25,7 @@ type Finding struct {
 	Difficulty finding.Difficulty `json:"difficulty,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FindingQuery when eager-loading is set.
-	Edges           FindingEdges `json:"edges"`
-	script_findings *int
+	Edges FindingEdges `json:"edges"`
 }
 
 // FindingEdges holds the relations/edges for other nodes in the graph.
@@ -37,9 +36,11 @@ type FindingEdges struct {
 	Tag []*Tag
 	// Host holds the value of the host edge.
 	Host []*Host
+	// Script holds the value of the script edge.
+	Script []*Script
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -69,6 +70,15 @@ func (e FindingEdges) HostOrErr() ([]*Host, error) {
 	return nil, &NotLoadedError{edge: "host"}
 }
 
+// ScriptOrErr returns the Script value or an error if the edge
+// was not loaded in eager-loading.
+func (e FindingEdges) ScriptOrErr() ([]*Script, error) {
+	if e.loadedTypes[3] {
+		return e.Script, nil
+	}
+	return nil, &NotLoadedError{edge: "script"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Finding) scanValues() []interface{} {
 	return []interface{}{
@@ -77,13 +87,6 @@ func (*Finding) scanValues() []interface{} {
 		&sql.NullString{}, // description
 		&sql.NullString{}, // severity
 		&sql.NullString{}, // difficulty
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Finding) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // script_findings
 	}
 }
 
@@ -119,15 +122,6 @@ func (f *Finding) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		f.Difficulty = finding.Difficulty(value.String)
 	}
-	values = values[4:]
-	if len(values) == len(finding.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field script_findings", value)
-		} else if value.Valid {
-			f.script_findings = new(int)
-			*f.script_findings = int(value.Int64)
-		}
-	}
 	return nil
 }
 
@@ -144,6 +138,11 @@ func (f *Finding) QueryTag() *TagQuery {
 // QueryHost queries the host edge of the Finding.
 func (f *Finding) QueryHost() *HostQuery {
 	return (&FindingClient{config: f.config}).QueryHost(f)
+}
+
+// QueryScript queries the script edge of the Finding.
+func (f *Finding) QueryScript() *ScriptQuery {
+	return (&FindingClient{config: f.config}).QueryScript(f)
 }
 
 // Update returns a builder for updating this Finding.

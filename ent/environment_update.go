@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -131,51 +132,6 @@ func (eu *EnvironmentUpdate) AddUser(u ...*User) *EnvironmentUpdate {
 	return eu.AddUserIDs(ids...)
 }
 
-// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
-func (eu *EnvironmentUpdate) AddIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddIncludedNetworkIDs(ids...)
-	return eu
-}
-
-// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
-func (eu *EnvironmentUpdate) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return eu.AddIncludedNetworkIDs(ids...)
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (eu *EnvironmentUpdate) AddBuildIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddBuildIDs(ids...)
-	return eu
-}
-
-// AddBuild adds the build edges to Build.
-func (eu *EnvironmentUpdate) AddBuild(b ...*Build) *EnvironmentUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return eu.AddBuildIDs(ids...)
-}
-
-// AddNetworkIDs adds the network edge to Network by ids.
-func (eu *EnvironmentUpdate) AddNetworkIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddNetworkIDs(ids...)
-	return eu
-}
-
-// AddNetwork adds the network edges to Network.
-func (eu *EnvironmentUpdate) AddNetwork(n ...*Network) *EnvironmentUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return eu.AddNetworkIDs(ids...)
-}
-
 // AddHostIDs adds the host edge to Host by ids.
 func (eu *EnvironmentUpdate) AddHostIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddHostIDs(ids...)
@@ -204,6 +160,66 @@ func (eu *EnvironmentUpdate) AddCompetition(c ...*Competition) *EnvironmentUpdat
 		ids[i] = c[i].ID
 	}
 	return eu.AddCompetitionIDs(ids...)
+}
+
+// AddBuildIDs adds the build edge to Build by ids.
+func (eu *EnvironmentUpdate) AddBuildIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddBuildIDs(ids...)
+	return eu
+}
+
+// AddBuild adds the build edges to Build.
+func (eu *EnvironmentUpdate) AddBuild(b ...*Build) *EnvironmentUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return eu.AddBuildIDs(ids...)
+}
+
+// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
+func (eu *EnvironmentUpdate) AddIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddIncludedNetworkIDs(ids...)
+	return eu
+}
+
+// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
+func (eu *EnvironmentUpdate) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return eu.AddIncludedNetworkIDs(ids...)
+}
+
+// AddNetworkIDs adds the network edge to Network by ids.
+func (eu *EnvironmentUpdate) AddNetworkIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddNetworkIDs(ids...)
+	return eu
+}
+
+// AddNetwork adds the network edges to Network.
+func (eu *EnvironmentUpdate) AddNetwork(n ...*Network) *EnvironmentUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return eu.AddNetworkIDs(ids...)
+}
+
+// AddTeamIDs adds the team edge to Team by ids.
+func (eu *EnvironmentUpdate) AddTeamIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddTeamIDs(ids...)
+	return eu
+}
+
+// AddTeam adds the team edges to Team.
+func (eu *EnvironmentUpdate) AddTeam(t ...*Team) *EnvironmentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.AddTeamIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -253,69 +269,6 @@ func (eu *EnvironmentUpdate) RemoveUser(u ...*User) *EnvironmentUpdate {
 	return eu.RemoveUserIDs(ids...)
 }
 
-// ClearIncludedNetwork clears all "included_network" edges to type IncludedNetwork.
-func (eu *EnvironmentUpdate) ClearIncludedNetwork() *EnvironmentUpdate {
-	eu.mutation.ClearIncludedNetwork()
-	return eu
-}
-
-// RemoveIncludedNetworkIDs removes the included_network edge to IncludedNetwork by ids.
-func (eu *EnvironmentUpdate) RemoveIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveIncludedNetworkIDs(ids...)
-	return eu
-}
-
-// RemoveIncludedNetwork removes included_network edges to IncludedNetwork.
-func (eu *EnvironmentUpdate) RemoveIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return eu.RemoveIncludedNetworkIDs(ids...)
-}
-
-// ClearBuild clears all "build" edges to type Build.
-func (eu *EnvironmentUpdate) ClearBuild() *EnvironmentUpdate {
-	eu.mutation.ClearBuild()
-	return eu
-}
-
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (eu *EnvironmentUpdate) RemoveBuildIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveBuildIDs(ids...)
-	return eu
-}
-
-// RemoveBuild removes build edges to Build.
-func (eu *EnvironmentUpdate) RemoveBuild(b ...*Build) *EnvironmentUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return eu.RemoveBuildIDs(ids...)
-}
-
-// ClearNetwork clears all "network" edges to type Network.
-func (eu *EnvironmentUpdate) ClearNetwork() *EnvironmentUpdate {
-	eu.mutation.ClearNetwork()
-	return eu
-}
-
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (eu *EnvironmentUpdate) RemoveNetworkIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveNetworkIDs(ids...)
-	return eu
-}
-
-// RemoveNetwork removes network edges to Network.
-func (eu *EnvironmentUpdate) RemoveNetwork(n ...*Network) *EnvironmentUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return eu.RemoveNetworkIDs(ids...)
-}
-
 // ClearHost clears all "host" edges to type Host.
 func (eu *EnvironmentUpdate) ClearHost() *EnvironmentUpdate {
 	eu.mutation.ClearHost()
@@ -356,6 +309,90 @@ func (eu *EnvironmentUpdate) RemoveCompetition(c ...*Competition) *EnvironmentUp
 		ids[i] = c[i].ID
 	}
 	return eu.RemoveCompetitionIDs(ids...)
+}
+
+// ClearBuild clears all "build" edges to type Build.
+func (eu *EnvironmentUpdate) ClearBuild() *EnvironmentUpdate {
+	eu.mutation.ClearBuild()
+	return eu
+}
+
+// RemoveBuildIDs removes the build edge to Build by ids.
+func (eu *EnvironmentUpdate) RemoveBuildIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveBuildIDs(ids...)
+	return eu
+}
+
+// RemoveBuild removes build edges to Build.
+func (eu *EnvironmentUpdate) RemoveBuild(b ...*Build) *EnvironmentUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return eu.RemoveBuildIDs(ids...)
+}
+
+// ClearIncludedNetwork clears all "included_network" edges to type IncludedNetwork.
+func (eu *EnvironmentUpdate) ClearIncludedNetwork() *EnvironmentUpdate {
+	eu.mutation.ClearIncludedNetwork()
+	return eu
+}
+
+// RemoveIncludedNetworkIDs removes the included_network edge to IncludedNetwork by ids.
+func (eu *EnvironmentUpdate) RemoveIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveIncludedNetworkIDs(ids...)
+	return eu
+}
+
+// RemoveIncludedNetwork removes included_network edges to IncludedNetwork.
+func (eu *EnvironmentUpdate) RemoveIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return eu.RemoveIncludedNetworkIDs(ids...)
+}
+
+// ClearNetwork clears all "network" edges to type Network.
+func (eu *EnvironmentUpdate) ClearNetwork() *EnvironmentUpdate {
+	eu.mutation.ClearNetwork()
+	return eu
+}
+
+// RemoveNetworkIDs removes the network edge to Network by ids.
+func (eu *EnvironmentUpdate) RemoveNetworkIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveNetworkIDs(ids...)
+	return eu
+}
+
+// RemoveNetwork removes network edges to Network.
+func (eu *EnvironmentUpdate) RemoveNetwork(n ...*Network) *EnvironmentUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return eu.RemoveNetworkIDs(ids...)
+}
+
+// ClearTeam clears all "team" edges to type Team.
+func (eu *EnvironmentUpdate) ClearTeam() *EnvironmentUpdate {
+	eu.mutation.ClearTeam()
+	return eu
+}
+
+// RemoveTeamIDs removes the team edge to Team by ids.
+func (eu *EnvironmentUpdate) RemoveTeamIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveTeamIDs(ids...)
+	return eu
+}
+
+// RemoveTeam removes team edges to Team.
+func (eu *EnvironmentUpdate) RemoveTeam(t ...*Team) *EnvironmentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.RemoveTeamIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -612,168 +649,6 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eu.mutation.IncludedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.RemovedIncludedNetworkIDs(); len(nodes) > 0 && !eu.mutation.IncludedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if eu.mutation.BuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.RemovedBuildIDs(); len(nodes) > 0 && !eu.mutation.BuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.BuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if eu.mutation.NetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !eu.mutation.NetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.NetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if eu.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -874,6 +749,222 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.BuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedBuildIDs(); len(nodes) > 0 && !eu.mutation.BuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.BuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.IncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedIncludedNetworkIDs(); len(nodes) > 0 && !eu.mutation.IncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.NetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !eu.mutation.NetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.NetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedTeamIDs(); len(nodes) > 0 && !eu.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
 				},
 			},
 		}
@@ -998,51 +1089,6 @@ func (euo *EnvironmentUpdateOne) AddUser(u ...*User) *EnvironmentUpdateOne {
 	return euo.AddUserIDs(ids...)
 }
 
-// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
-func (euo *EnvironmentUpdateOne) AddIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddIncludedNetworkIDs(ids...)
-	return euo
-}
-
-// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
-func (euo *EnvironmentUpdateOne) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return euo.AddIncludedNetworkIDs(ids...)
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (euo *EnvironmentUpdateOne) AddBuildIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddBuildIDs(ids...)
-	return euo
-}
-
-// AddBuild adds the build edges to Build.
-func (euo *EnvironmentUpdateOne) AddBuild(b ...*Build) *EnvironmentUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return euo.AddBuildIDs(ids...)
-}
-
-// AddNetworkIDs adds the network edge to Network by ids.
-func (euo *EnvironmentUpdateOne) AddNetworkIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddNetworkIDs(ids...)
-	return euo
-}
-
-// AddNetwork adds the network edges to Network.
-func (euo *EnvironmentUpdateOne) AddNetwork(n ...*Network) *EnvironmentUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return euo.AddNetworkIDs(ids...)
-}
-
 // AddHostIDs adds the host edge to Host by ids.
 func (euo *EnvironmentUpdateOne) AddHostIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddHostIDs(ids...)
@@ -1071,6 +1117,66 @@ func (euo *EnvironmentUpdateOne) AddCompetition(c ...*Competition) *EnvironmentU
 		ids[i] = c[i].ID
 	}
 	return euo.AddCompetitionIDs(ids...)
+}
+
+// AddBuildIDs adds the build edge to Build by ids.
+func (euo *EnvironmentUpdateOne) AddBuildIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddBuildIDs(ids...)
+	return euo
+}
+
+// AddBuild adds the build edges to Build.
+func (euo *EnvironmentUpdateOne) AddBuild(b ...*Build) *EnvironmentUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return euo.AddBuildIDs(ids...)
+}
+
+// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
+func (euo *EnvironmentUpdateOne) AddIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddIncludedNetworkIDs(ids...)
+	return euo
+}
+
+// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
+func (euo *EnvironmentUpdateOne) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return euo.AddIncludedNetworkIDs(ids...)
+}
+
+// AddNetworkIDs adds the network edge to Network by ids.
+func (euo *EnvironmentUpdateOne) AddNetworkIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddNetworkIDs(ids...)
+	return euo
+}
+
+// AddNetwork adds the network edges to Network.
+func (euo *EnvironmentUpdateOne) AddNetwork(n ...*Network) *EnvironmentUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return euo.AddNetworkIDs(ids...)
+}
+
+// AddTeamIDs adds the team edge to Team by ids.
+func (euo *EnvironmentUpdateOne) AddTeamIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddTeamIDs(ids...)
+	return euo
+}
+
+// AddTeam adds the team edges to Team.
+func (euo *EnvironmentUpdateOne) AddTeam(t ...*Team) *EnvironmentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.AddTeamIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -1120,69 +1226,6 @@ func (euo *EnvironmentUpdateOne) RemoveUser(u ...*User) *EnvironmentUpdateOne {
 	return euo.RemoveUserIDs(ids...)
 }
 
-// ClearIncludedNetwork clears all "included_network" edges to type IncludedNetwork.
-func (euo *EnvironmentUpdateOne) ClearIncludedNetwork() *EnvironmentUpdateOne {
-	euo.mutation.ClearIncludedNetwork()
-	return euo
-}
-
-// RemoveIncludedNetworkIDs removes the included_network edge to IncludedNetwork by ids.
-func (euo *EnvironmentUpdateOne) RemoveIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveIncludedNetworkIDs(ids...)
-	return euo
-}
-
-// RemoveIncludedNetwork removes included_network edges to IncludedNetwork.
-func (euo *EnvironmentUpdateOne) RemoveIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return euo.RemoveIncludedNetworkIDs(ids...)
-}
-
-// ClearBuild clears all "build" edges to type Build.
-func (euo *EnvironmentUpdateOne) ClearBuild() *EnvironmentUpdateOne {
-	euo.mutation.ClearBuild()
-	return euo
-}
-
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (euo *EnvironmentUpdateOne) RemoveBuildIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveBuildIDs(ids...)
-	return euo
-}
-
-// RemoveBuild removes build edges to Build.
-func (euo *EnvironmentUpdateOne) RemoveBuild(b ...*Build) *EnvironmentUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return euo.RemoveBuildIDs(ids...)
-}
-
-// ClearNetwork clears all "network" edges to type Network.
-func (euo *EnvironmentUpdateOne) ClearNetwork() *EnvironmentUpdateOne {
-	euo.mutation.ClearNetwork()
-	return euo
-}
-
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (euo *EnvironmentUpdateOne) RemoveNetworkIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveNetworkIDs(ids...)
-	return euo
-}
-
-// RemoveNetwork removes network edges to Network.
-func (euo *EnvironmentUpdateOne) RemoveNetwork(n ...*Network) *EnvironmentUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return euo.RemoveNetworkIDs(ids...)
-}
-
 // ClearHost clears all "host" edges to type Host.
 func (euo *EnvironmentUpdateOne) ClearHost() *EnvironmentUpdateOne {
 	euo.mutation.ClearHost()
@@ -1223,6 +1266,90 @@ func (euo *EnvironmentUpdateOne) RemoveCompetition(c ...*Competition) *Environme
 		ids[i] = c[i].ID
 	}
 	return euo.RemoveCompetitionIDs(ids...)
+}
+
+// ClearBuild clears all "build" edges to type Build.
+func (euo *EnvironmentUpdateOne) ClearBuild() *EnvironmentUpdateOne {
+	euo.mutation.ClearBuild()
+	return euo
+}
+
+// RemoveBuildIDs removes the build edge to Build by ids.
+func (euo *EnvironmentUpdateOne) RemoveBuildIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveBuildIDs(ids...)
+	return euo
+}
+
+// RemoveBuild removes build edges to Build.
+func (euo *EnvironmentUpdateOne) RemoveBuild(b ...*Build) *EnvironmentUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return euo.RemoveBuildIDs(ids...)
+}
+
+// ClearIncludedNetwork clears all "included_network" edges to type IncludedNetwork.
+func (euo *EnvironmentUpdateOne) ClearIncludedNetwork() *EnvironmentUpdateOne {
+	euo.mutation.ClearIncludedNetwork()
+	return euo
+}
+
+// RemoveIncludedNetworkIDs removes the included_network edge to IncludedNetwork by ids.
+func (euo *EnvironmentUpdateOne) RemoveIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveIncludedNetworkIDs(ids...)
+	return euo
+}
+
+// RemoveIncludedNetwork removes included_network edges to IncludedNetwork.
+func (euo *EnvironmentUpdateOne) RemoveIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return euo.RemoveIncludedNetworkIDs(ids...)
+}
+
+// ClearNetwork clears all "network" edges to type Network.
+func (euo *EnvironmentUpdateOne) ClearNetwork() *EnvironmentUpdateOne {
+	euo.mutation.ClearNetwork()
+	return euo
+}
+
+// RemoveNetworkIDs removes the network edge to Network by ids.
+func (euo *EnvironmentUpdateOne) RemoveNetworkIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveNetworkIDs(ids...)
+	return euo
+}
+
+// RemoveNetwork removes network edges to Network.
+func (euo *EnvironmentUpdateOne) RemoveNetwork(n ...*Network) *EnvironmentUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return euo.RemoveNetworkIDs(ids...)
+}
+
+// ClearTeam clears all "team" edges to type Team.
+func (euo *EnvironmentUpdateOne) ClearTeam() *EnvironmentUpdateOne {
+	euo.mutation.ClearTeam()
+	return euo
+}
+
+// RemoveTeamIDs removes the team edge to Team by ids.
+func (euo *EnvironmentUpdateOne) RemoveTeamIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveTeamIDs(ids...)
+	return euo
+}
+
+// RemoveTeam removes team edges to Team.
+func (euo *EnvironmentUpdateOne) RemoveTeam(t ...*Team) *EnvironmentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.RemoveTeamIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -1477,168 +1604,6 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if euo.mutation.IncludedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.RemovedIncludedNetworkIDs(); len(nodes) > 0 && !euo.mutation.IncludedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if euo.mutation.BuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.RemovedBuildIDs(); len(nodes) > 0 && !euo.mutation.BuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.BuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if euo.mutation.NetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !euo.mutation.NetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.NetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if euo.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1739,6 +1704,222 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.BuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedBuildIDs(); len(nodes) > 0 && !euo.mutation.BuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.BuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.IncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedIncludedNetworkIDs(); len(nodes) > 0 && !euo.mutation.IncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.NetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !euo.mutation.NetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.NetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedTeamIDs(); len(nodes) > 0 && !euo.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
 				},
 			},
 		}

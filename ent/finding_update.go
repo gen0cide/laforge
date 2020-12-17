@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -98,6 +99,21 @@ func (fu *FindingUpdate) AddHost(h ...*Host) *FindingUpdate {
 	return fu.AddHostIDs(ids...)
 }
 
+// AddScriptIDs adds the script edge to Script by ids.
+func (fu *FindingUpdate) AddScriptIDs(ids ...int) *FindingUpdate {
+	fu.mutation.AddScriptIDs(ids...)
+	return fu
+}
+
+// AddScript adds the script edges to Script.
+func (fu *FindingUpdate) AddScript(s ...*Script) *FindingUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return fu.AddScriptIDs(ids...)
+}
+
 // Mutation returns the FindingMutation object of the builder.
 func (fu *FindingUpdate) Mutation() *FindingMutation {
 	return fu.mutation
@@ -164,6 +180,27 @@ func (fu *FindingUpdate) RemoveHost(h ...*Host) *FindingUpdate {
 		ids[i] = h[i].ID
 	}
 	return fu.RemoveHostIDs(ids...)
+}
+
+// ClearScript clears all "script" edges to type Script.
+func (fu *FindingUpdate) ClearScript() *FindingUpdate {
+	fu.mutation.ClearScript()
+	return fu
+}
+
+// RemoveScriptIDs removes the script edge to Script by ids.
+func (fu *FindingUpdate) RemoveScriptIDs(ids ...int) *FindingUpdate {
+	fu.mutation.RemoveScriptIDs(ids...)
+	return fu
+}
+
+// RemoveScript removes script edges to Script.
+func (fu *FindingUpdate) RemoveScript(s ...*Script) *FindingUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return fu.RemoveScriptIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -446,6 +483,60 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if fu.mutation.ScriptCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fu.mutation.RemovedScriptIDs(); len(nodes) > 0 && !fu.mutation.ScriptCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fu.mutation.ScriptIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, fu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{finding.Label}
@@ -533,6 +624,21 @@ func (fuo *FindingUpdateOne) AddHost(h ...*Host) *FindingUpdateOne {
 	return fuo.AddHostIDs(ids...)
 }
 
+// AddScriptIDs adds the script edge to Script by ids.
+func (fuo *FindingUpdateOne) AddScriptIDs(ids ...int) *FindingUpdateOne {
+	fuo.mutation.AddScriptIDs(ids...)
+	return fuo
+}
+
+// AddScript adds the script edges to Script.
+func (fuo *FindingUpdateOne) AddScript(s ...*Script) *FindingUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return fuo.AddScriptIDs(ids...)
+}
+
 // Mutation returns the FindingMutation object of the builder.
 func (fuo *FindingUpdateOne) Mutation() *FindingMutation {
 	return fuo.mutation
@@ -599,6 +705,27 @@ func (fuo *FindingUpdateOne) RemoveHost(h ...*Host) *FindingUpdateOne {
 		ids[i] = h[i].ID
 	}
 	return fuo.RemoveHostIDs(ids...)
+}
+
+// ClearScript clears all "script" edges to type Script.
+func (fuo *FindingUpdateOne) ClearScript() *FindingUpdateOne {
+	fuo.mutation.ClearScript()
+	return fuo
+}
+
+// RemoveScriptIDs removes the script edge to Script by ids.
+func (fuo *FindingUpdateOne) RemoveScriptIDs(ids ...int) *FindingUpdateOne {
+	fuo.mutation.RemoveScriptIDs(ids...)
+	return fuo
+}
+
+// RemoveScript removes script edges to Script.
+func (fuo *FindingUpdateOne) RemoveScript(s ...*Script) *FindingUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return fuo.RemoveScriptIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -871,6 +998,60 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuo.mutation.ScriptCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuo.mutation.RemovedScriptIDs(); len(nodes) > 0 && !fuo.mutation.ScriptCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuo.mutation.ScriptIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
 				},
 			},
 		}

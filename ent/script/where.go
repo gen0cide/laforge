@@ -1063,25 +1063,25 @@ func HasMaintainerWith(preds ...predicate.User) predicate.Script {
 	})
 }
 
-// HasFindings applies the HasEdge predicate on the "findings" edge.
-func HasFindings() predicate.Script {
+// HasFinding applies the HasEdge predicate on the "finding" edge.
+func HasFinding() predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingsTable, FindingsColumn),
+			sqlgraph.To(FindingTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FindingTable, FindingPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasFindingsWith applies the HasEdge predicate on the "findings" edge with a given conditions (other predicates).
-func HasFindingsWith(preds ...predicate.Finding) predicate.Script {
+// HasFindingWith applies the HasEdge predicate on the "finding" edge with a given conditions (other predicates).
+func HasFindingWith(preds ...predicate.Finding) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingsTable, FindingsColumn),
+			sqlgraph.To(FindingInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FindingTable, FindingPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

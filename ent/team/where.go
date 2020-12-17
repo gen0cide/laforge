@@ -291,7 +291,7 @@ func HasBuild() predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -303,7 +303,7 @@ func HasBuildWith(preds ...predicate.Build) predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -313,25 +313,25 @@ func HasBuildWith(preds ...predicate.Build) predicate.Team {
 	})
 }
 
-// HasEnvironment applies the HasEdge predicate on the "environment" edge.
-func HasEnvironment() predicate.Team {
+// HasTeamToEnvironment applies the HasEdge predicate on the "TeamToEnvironment" edge.
+func HasTeamToEnvironment() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentTable, EnvironmentColumn),
+			sqlgraph.To(TeamToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TeamToEnvironmentTable, TeamToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEnvironmentWith applies the HasEdge predicate on the "environment" edge with a given conditions (other predicates).
-func HasEnvironmentWith(preds ...predicate.Environment) predicate.Team {
+// HasTeamToEnvironmentWith applies the HasEdge predicate on the "TeamToEnvironment" edge with a given conditions (other predicates).
+func HasTeamToEnvironmentWith(preds ...predicate.Environment) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentTable, EnvironmentColumn),
+			sqlgraph.To(TeamToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TeamToEnvironmentTable, TeamToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -375,7 +375,7 @@ func HasProvisionedNetworks() predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworksTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworksTable, ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworksTable, ProvisionedNetworksPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -387,7 +387,7 @@ func HasProvisionedNetworksWith(preds ...predicate.ProvisionedNetwork) predicate
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworksInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworksTable, ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworksTable, ProvisionedNetworksPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

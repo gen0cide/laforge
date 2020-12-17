@@ -230,6 +230,19 @@ func (f ProvisioningStepFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return f(ctx, mv)
 }
 
+// The RemoteFileFunc type is an adapter to allow the use of ordinary
+// function as RemoteFile mutator.
+type RemoteFileFunc func(context.Context, *ent.RemoteFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RemoteFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.RemoteFileMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RemoteFileMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The ScriptFunc type is an adapter to allow the use of ordinary
 // function as Script mutator.
 type ScriptFunc func(context.Context, *ent.ScriptMutation) (ent.Value, error)

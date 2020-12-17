@@ -21,8 +21,7 @@ type ProvisioningStep struct {
 	StepNumber int `json:"step_number,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisioningStepQuery when eager-loading is set.
-	Edges                               ProvisioningStepEdges `json:"edges"`
-	provisioned_host_provisioning_steps *int
+	Edges ProvisioningStepEdges `json:"edges"`
 }
 
 // ProvisioningStepEdges holds the relations/edges for other nodes in the graph.
@@ -37,17 +36,13 @@ type ProvisioningStepEdges struct {
 	Command []*Command
 	// DNSRecord holds the value of the dns_record edge.
 	DNSRecord []*DNSRecord
-	// FileDownload holds the value of the file_download edge.
-	FileDownload []*FileDownload
-	// FileDelete holds the value of the file_delete edge.
-	FileDelete []*FileDelete
-	// FileExtract holds the value of the file_extract edge.
-	FileExtract []*FileExtract
+	// RemoteFile holds the value of the remote_file edge.
+	RemoteFile []*RemoteFile
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [7]bool
 }
 
 // ProvisionedHostOrErr returns the ProvisionedHost value or an error if the edge
@@ -95,37 +90,19 @@ func (e ProvisioningStepEdges) DNSRecordOrErr() ([]*DNSRecord, error) {
 	return nil, &NotLoadedError{edge: "dns_record"}
 }
 
-// FileDownloadOrErr returns the FileDownload value or an error if the edge
+// RemoteFileOrErr returns the RemoteFile value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileDownloadOrErr() ([]*FileDownload, error) {
+func (e ProvisioningStepEdges) RemoteFileOrErr() ([]*RemoteFile, error) {
 	if e.loadedTypes[5] {
-		return e.FileDownload, nil
+		return e.RemoteFile, nil
 	}
-	return nil, &NotLoadedError{edge: "file_download"}
-}
-
-// FileDeleteOrErr returns the FileDelete value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileDeleteOrErr() ([]*FileDelete, error) {
-	if e.loadedTypes[6] {
-		return e.FileDelete, nil
-	}
-	return nil, &NotLoadedError{edge: "file_delete"}
-}
-
-// FileExtractOrErr returns the FileExtract value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileExtractOrErr() ([]*FileExtract, error) {
-	if e.loadedTypes[7] {
-		return e.FileExtract, nil
-	}
-	return nil, &NotLoadedError{edge: "file_extract"}
+	return nil, &NotLoadedError{edge: "remote_file"}
 }
 
 // TagOrErr returns the Tag value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[6] {
 		return e.Tag, nil
 	}
 	return nil, &NotLoadedError{edge: "tag"}
@@ -137,13 +114,6 @@ func (*ProvisioningStep) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // provisioner_type
 		&sql.NullInt64{},  // step_number
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*ProvisioningStep) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioned_host_provisioning_steps
 	}
 }
 
@@ -168,15 +138,6 @@ func (ps *ProvisioningStep) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field step_number", values[1])
 	} else if value.Valid {
 		ps.StepNumber = int(value.Int64)
-	}
-	values = values[2:]
-	if len(values) == len(provisioningstep.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioning_steps", value)
-		} else if value.Valid {
-			ps.provisioned_host_provisioning_steps = new(int)
-			*ps.provisioned_host_provisioning_steps = int(value.Int64)
-		}
 	}
 	return nil
 }
@@ -206,19 +167,9 @@ func (ps *ProvisioningStep) QueryDNSRecord() *DNSRecordQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryDNSRecord(ps)
 }
 
-// QueryFileDownload queries the file_download edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileDownload() *FileDownloadQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileDownload(ps)
-}
-
-// QueryFileDelete queries the file_delete edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileDelete() *FileDeleteQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileDelete(ps)
-}
-
-// QueryFileExtract queries the file_extract edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileExtract() *FileExtractQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileExtract(ps)
+// QueryRemoteFile queries the remote_file edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryRemoteFile() *RemoteFileQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryRemoteFile(ps)
 }
 
 // QueryTag queries the tag edge of the ProvisioningStep.

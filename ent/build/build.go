@@ -35,13 +35,11 @@ const (
 	TagInverseTable = "tags"
 	// TagColumn is the table column denoting the tag relation/edge.
 	TagColumn = "build_tag"
-	// TeamTable is the table the holds the team relation/edge.
-	TeamTable = "teams"
+	// TeamTable is the table the holds the team relation/edge. The primary key declared below.
+	TeamTable = "team_build"
 	// TeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamInverseTable = "teams"
-	// TeamColumn is the table column denoting the team relation/edge.
-	TeamColumn = "build_team"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -55,8 +53,13 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"environment_build",
 	"provisioned_network_build",
-	"team_build",
 }
+
+var (
+	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
+	// primary key for the team relation (M2M).
+	TeamPrimaryKey = []string{"team_id", "build_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

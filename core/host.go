@@ -381,7 +381,7 @@ func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Ho
 		return nil, err
 	}
 
-	user, err = h.User.CreateUserEntry(ctx, client)
+	user, err = h.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating host: %v", err)
@@ -399,11 +399,11 @@ func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Ho
 		Create().
 		SetHostname(h.Hostname).
 		SetDescription(h.Description).
-		SetOS(h.OS).
+		SetOs(h.OS).
 		SetLastOctet(h.LastOctet).
-		SetAllowMACChanges(h.AllowMACChanges).
-		SetExposedTCPPorts(h.ExposedTCPPorts).
-		SetExposedUDPPorts(h.ExposedUDPPorts).
+		SetAllowMacChanges(h.AllowMACChanges).
+		SetExposedTcpPorts(h.ExposedTCPPorts).
+		SetExposedUdpPorts(h.ExposedUDPPorts).
 		SetOverridePassword(h.OverridePassword).
 		SetVars(h.Vars).
 		SetUserGroups(h.UserGroups).
@@ -411,7 +411,7 @@ func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Ho
 		SetScripts(h.Scripts).
 		SetCommands(h.Commands).
 		SetRemoteFiles(h.RemoteFiles).
-		SetDNSRecords(h.DNSRecords).
+		SetDnsRecords(h.DNSRecords).
 		AddDisk(disk).
 		AddMaintainer(user).
 		AddTag(tag).

@@ -53,6 +53,7 @@ require (
 	github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786 // indirect
 	github.com/masterzen/winrm v0.0.0-20200615185753-c42b5136ff88
 	github.com/mattn/go-colorable v0.1.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.5
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect

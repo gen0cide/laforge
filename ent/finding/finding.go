@@ -26,6 +26,8 @@ const (
 	EdgeTag = "tag"
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
+	// EdgeScript holds the string denoting the script edge name in mutations.
+	EdgeScript = "script"
 
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
@@ -50,6 +52,11 @@ const (
 	HostInverseTable = "hosts"
 	// HostColumn is the table column denoting the host relation/edge.
 	HostColumn = "finding_host"
+	// ScriptTable is the table the holds the script relation/edge. The primary key declared below.
+	ScriptTable = "finding_script"
+	// ScriptInverseTable is the table name for the Script entity.
+	// It exists in this package in order to avoid circular dependency with the "script" package.
+	ScriptInverseTable = "scripts"
 )
 
 // Columns holds all SQL columns for finding fields.
@@ -61,20 +68,16 @@ var Columns = []string{
 	FieldDifficulty,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Finding type.
-var ForeignKeys = []string{
-	"script_findings",
-}
+var (
+	// ScriptPrimaryKey and ScriptColumn2 are the table columns denoting the
+	// primary key for the script relation (M2M).
+	ScriptPrimaryKey = []string{"finding_id", "script_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

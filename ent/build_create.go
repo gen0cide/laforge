@@ -224,10 +224,10 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   build.TeamTable,
-			Columns: []string{build.TeamColumn},
+			Columns: build.TeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

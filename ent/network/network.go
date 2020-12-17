@@ -18,6 +18,8 @@ const (
 
 	// EdgeTag holds the string denoting the tag edge name in mutations.
 	EdgeTag = "tag"
+	// EdgeNetworkToEnvironment holds the string denoting the networktoenvironment edge name in mutations.
+	EdgeNetworkToEnvironment = "NetworkToEnvironment"
 
 	// Table holds the table name of the network in the database.
 	Table = "networks"
@@ -28,6 +30,11 @@ const (
 	TagInverseTable = "tags"
 	// TagColumn is the table column denoting the tag relation/edge.
 	TagColumn = "network_tag"
+	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge. The primary key declared below.
+	NetworkToEnvironmentTable = "network_NetworkToEnvironment"
+	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	NetworkToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for network fields.
@@ -41,9 +48,14 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Network type.
 var ForeignKeys = []string{
-	"environment_network",
 	"provisioned_network_network",
 }
+
+var (
+	// NetworkToEnvironmentPrimaryKey and NetworkToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the NetworkToEnvironment relation (M2M).
+	NetworkToEnvironmentPrimaryKey = []string{"network_id", "environment_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

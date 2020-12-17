@@ -27,7 +27,6 @@ type FileExtractQuery struct {
 	predicates []predicate.FileExtract
 	// eager-loading edges.
 	withTag *TagQuery
-	withFKs bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -338,22 +337,15 @@ func (feq *FileExtractQuery) prepareQuery(ctx context.Context) error {
 func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error) {
 	var (
 		nodes       = []*FileExtract{}
-		withFKs     = feq.withFKs
 		_spec       = feq.querySpec()
 		loadedTypes = [1]bool{
 			feq.withTag != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, fileextract.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &FileExtract{config: feq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {

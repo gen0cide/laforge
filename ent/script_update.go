@@ -145,14 +145,14 @@ func (su *ScriptUpdate) AddMaintainer(u ...*User) *ScriptUpdate {
 	return su.AddMaintainerIDs(ids...)
 }
 
-// AddFindingIDs adds the findings edge to Finding by ids.
+// AddFindingIDs adds the finding edge to Finding by ids.
 func (su *ScriptUpdate) AddFindingIDs(ids ...int) *ScriptUpdate {
 	su.mutation.AddFindingIDs(ids...)
 	return su
 }
 
-// AddFindings adds the findings edges to Finding.
-func (su *ScriptUpdate) AddFindings(f ...*Finding) *ScriptUpdate {
+// AddFinding adds the finding edges to Finding.
+func (su *ScriptUpdate) AddFinding(f ...*Finding) *ScriptUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
@@ -207,20 +207,20 @@ func (su *ScriptUpdate) RemoveMaintainer(u ...*User) *ScriptUpdate {
 	return su.RemoveMaintainerIDs(ids...)
 }
 
-// ClearFindings clears all "findings" edges to type Finding.
-func (su *ScriptUpdate) ClearFindings() *ScriptUpdate {
-	su.mutation.ClearFindings()
+// ClearFinding clears all "finding" edges to type Finding.
+func (su *ScriptUpdate) ClearFinding() *ScriptUpdate {
+	su.mutation.ClearFinding()
 	return su
 }
 
-// RemoveFindingIDs removes the findings edge to Finding by ids.
+// RemoveFindingIDs removes the finding edge to Finding by ids.
 func (su *ScriptUpdate) RemoveFindingIDs(ids ...int) *ScriptUpdate {
 	su.mutation.RemoveFindingIDs(ids...)
 	return su
 }
 
-// RemoveFindings removes findings edges to Finding.
-func (su *ScriptUpdate) RemoveFindings(f ...*Finding) *ScriptUpdate {
+// RemoveFinding removes finding edges to Finding.
+func (su *ScriptUpdate) RemoveFinding(f ...*Finding) *ScriptUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
@@ -503,12 +503,12 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.FindingsCleared() {
+	if su.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -519,12 +519,12 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !su.mutation.FindingsCleared() {
+	if nodes := su.mutation.RemovedFindingIDs(); len(nodes) > 0 && !su.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -538,12 +538,12 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.FindingsIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -691,14 +691,14 @@ func (suo *ScriptUpdateOne) AddMaintainer(u ...*User) *ScriptUpdateOne {
 	return suo.AddMaintainerIDs(ids...)
 }
 
-// AddFindingIDs adds the findings edge to Finding by ids.
+// AddFindingIDs adds the finding edge to Finding by ids.
 func (suo *ScriptUpdateOne) AddFindingIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.AddFindingIDs(ids...)
 	return suo
 }
 
-// AddFindings adds the findings edges to Finding.
-func (suo *ScriptUpdateOne) AddFindings(f ...*Finding) *ScriptUpdateOne {
+// AddFinding adds the finding edges to Finding.
+func (suo *ScriptUpdateOne) AddFinding(f ...*Finding) *ScriptUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
@@ -753,20 +753,20 @@ func (suo *ScriptUpdateOne) RemoveMaintainer(u ...*User) *ScriptUpdateOne {
 	return suo.RemoveMaintainerIDs(ids...)
 }
 
-// ClearFindings clears all "findings" edges to type Finding.
-func (suo *ScriptUpdateOne) ClearFindings() *ScriptUpdateOne {
-	suo.mutation.ClearFindings()
+// ClearFinding clears all "finding" edges to type Finding.
+func (suo *ScriptUpdateOne) ClearFinding() *ScriptUpdateOne {
+	suo.mutation.ClearFinding()
 	return suo
 }
 
-// RemoveFindingIDs removes the findings edge to Finding by ids.
+// RemoveFindingIDs removes the finding edge to Finding by ids.
 func (suo *ScriptUpdateOne) RemoveFindingIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.RemoveFindingIDs(ids...)
 	return suo
 }
 
-// RemoveFindings removes findings edges to Finding.
-func (suo *ScriptUpdateOne) RemoveFindings(f ...*Finding) *ScriptUpdateOne {
+// RemoveFinding removes finding edges to Finding.
+func (suo *ScriptUpdateOne) RemoveFinding(f ...*Finding) *ScriptUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
@@ -1047,12 +1047,12 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.FindingsCleared() {
+	if suo.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1063,12 +1063,12 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !suo.mutation.FindingsCleared() {
+	if nodes := suo.mutation.RemovedFindingIDs(); len(nodes) > 0 && !suo.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1082,12 +1082,12 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.FindingsIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.FindingsTable,
-			Columns: []string{script.FindingsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.FindingTable,
+			Columns: script.FindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

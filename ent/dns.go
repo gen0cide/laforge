@@ -25,29 +25,8 @@ type DNS struct {
 	// NtpServers holds the value of the "ntp_servers" field.
 	NtpServers []string `json:"ntp_servers,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the DNSQuery when eager-loading is set.
-	Edges           DNSEdges `json:"edges"`
+	Config          []string `json:"config,omitempty"`
 	competition_dns *int
-}
-
-// DNSEdges holds the relations/edges for other nodes in the graph.
-type DNSEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e DNSEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -125,11 +104,6 @@ func (d *DNS) assignValues(values ...interface{}) error {
 		}
 	}
 	return nil
-}
-
-// QueryTag queries the tag edge of the DNS.
-func (d *DNS) QueryTag() *TagQuery {
-	return (&DNSClient{config: d.config}).QueryTag(d)
 }
 
 // Update returns a builder for updating this DNS.

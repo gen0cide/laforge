@@ -176,24 +176,53 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 	return nil
 }
 
-func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(ctx context.Context, client *ent.Client) (*ent.ProvisionedNetwork, error) {
-	pn, err := client.ProvisionedNetwork.
-		Create().
-		SetName().
-		SetCIDR().
-		SetVars().
-		AddTag().
-		AddProvisionedHosts().
-		AddStatus().
-		AddNetwork().
-		AddBuild().
-		Save(ctx)
+func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx context.Context, client *ent.Client) (*ent.ProvisionedNetwork, error) {
+	tag, err = CreateTagEntry(p.Name, p.Tags, ctx, client)
 
 	if err != nil {
-		cli.Logger.Debugf("failed creating team: %v", err)
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
 		return nil, err
 	}
 
-	cli.Logger.Debugf("team was created: ", team)
-	return build, nil
+	status, err = p.Status.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	network, err = p.Network.CreateNetworkEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	pn, err := client.ProvisionedNetwork.
+		Create().
+		SetName(p.Name).
+		SetCidr(p.CIDR).
+		SetVars(p.Vars).
+		AddTag(tag).
+		AddStatus(status).
+		AddNetwork(network).
+		AddBuild(build).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	for k, v := range p.ProvisionedHosts {
+		ph, err = v.CreateProvisionedHostEntry(pn, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned network: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("provisioned network was created: ", pn)
+	return pn, nil
 }

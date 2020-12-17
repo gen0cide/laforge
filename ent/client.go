@@ -26,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -76,6 +77,8 @@ type Client struct {
 	ProvisionedNetwork *ProvisionedNetworkClient
 	// ProvisioningStep is the client for interacting with the ProvisioningStep builders.
 	ProvisioningStep *ProvisioningStepClient
+	// RemoteFile is the client for interacting with the RemoteFile builders.
+	RemoteFile *RemoteFileClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
 	// Status is the client for interacting with the Status builders.
@@ -116,6 +119,7 @@ func (c *Client) init() {
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
 	c.ProvisionedNetwork = NewProvisionedNetworkClient(c.config)
 	c.ProvisioningStep = NewProvisioningStepClient(c.config)
+	c.RemoteFile = NewRemoteFileClient(c.config)
 	c.Script = NewScriptClient(c.config)
 	c.Status = NewStatusClient(c.config)
 	c.Tag = NewTagClient(c.config)
@@ -170,6 +174,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
+		RemoteFile:         NewRemoteFileClient(cfg),
 		Script:             NewScriptClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
@@ -207,6 +212,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
+		RemoteFile:         NewRemoteFileClient(cfg),
 		Script:             NewScriptClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
@@ -257,6 +263,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProvisionedHost.Use(hooks...)
 	c.ProvisionedNetwork.Use(hooks...)
 	c.ProvisioningStep.Use(hooks...)
+	c.RemoteFile.Use(hooks...)
 	c.Script.Use(hooks...)
 	c.Status.Use(hooks...)
 	c.Tag.Use(hooks...)
@@ -387,7 +394,7 @@ func (c *BuildClient) QueryTeam(b *Build) *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.TeamTable, build.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, build.TeamTable, build.TeamPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -619,22 +626,6 @@ func (c *CompetitionClient) QueryDNS(co *Competition) *DNSQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Competition.
-func (c *CompetitionClient) QueryTag(co *Competition) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(competition.Table, competition.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, competition.TagTable, competition.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *CompetitionClient) Hooks() []Hook {
 	return c.hooks.Competition
@@ -721,22 +712,6 @@ func (c *DNSClient) GetX(ctx context.Context, id int) *DNS {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryTag queries the tag edge of a DNS.
-func (c *DNSClient) QueryTag(d *DNS) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := d.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dns.Table, dns.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dns.TagTable, dns.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.
@@ -1067,54 +1042,6 @@ func (c *EnvironmentClient) QueryUser(e *Environment) *UserQuery {
 	return query
 }
 
-// QueryIncludedNetwork queries the included_network edge of a Environment.
-func (c *EnvironmentClient) QueryIncludedNetwork(e *Environment) *IncludedNetworkQuery {
-	query := &IncludedNetworkQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.IncludedNetworkTable, environment.IncludedNetworkColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryBuild queries the build edge of a Environment.
-func (c *EnvironmentClient) QueryBuild(e *Environment) *BuildQuery {
-	query := &BuildQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.BuildTable, environment.BuildColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNetwork queries the network edge of a Environment.
-func (c *EnvironmentClient) QueryNetwork(e *Environment) *NetworkQuery {
-	query := &NetworkQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.NetworkTable, environment.NetworkColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryHost queries the host edge of a Environment.
 func (c *EnvironmentClient) QueryHost(e *Environment) *HostQuery {
 	query := &HostQuery{config: c.config}
@@ -1140,6 +1067,70 @@ func (c *EnvironmentClient) QueryCompetition(e *Environment) *CompetitionQuery {
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(competition.Table, competition.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, environment.CompetitionTable, environment.CompetitionColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuild queries the build edge of a Environment.
+func (c *EnvironmentClient) QueryBuild(e *Environment) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.BuildTable, environment.BuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncludedNetwork queries the included_network edge of a Environment.
+func (c *EnvironmentClient) QueryIncludedNetwork(e *Environment) *IncludedNetworkQuery {
+	query := &IncludedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, environment.IncludedNetworkTable, environment.IncludedNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetwork queries the network edge of a Environment.
+func (c *EnvironmentClient) QueryNetwork(e *Environment) *NetworkQuery {
+	query := &NetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(network.Table, network.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, environment.NetworkTable, environment.NetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeam queries the team edge of a Environment.
+func (c *EnvironmentClient) QueryTeam(e *Environment) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, environment.TeamTable, environment.TeamPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1595,6 +1586,22 @@ func (c *FindingClient) QueryHost(f *Finding) *HostQuery {
 	return query
 }
 
+// QueryScript queries the script edge of a Finding.
+func (c *FindingClient) QueryScript(f *Finding) *ScriptQuery {
+	query := &ScriptQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(finding.Table, finding.FieldID, id),
+			sqlgraph.To(script.Table, script.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, finding.ScriptTable, finding.ScriptPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *FindingClient) Hooks() []Hook {
 	return c.hooks.Finding
@@ -1835,6 +1842,22 @@ func (c *IncludedNetworkClient) QueryTag(in *IncludedNetwork) *TagQuery {
 	return query
 }
 
+// QueryIncludedNetworkToEnvironment queries the IncludedNetworkToEnvironment edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToEnvironment(in *IncludedNetwork) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := in.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *IncludedNetworkClient) Hooks() []Hook {
 	return c.hooks.IncludedNetwork
@@ -1932,6 +1955,22 @@ func (c *NetworkClient) QueryTag(n *Network) *TagQuery {
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, network.TagTable, network.TagColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetworkToEnvironment queries the NetworkToEnvironment edge of a Network.
+func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -2043,22 +2082,6 @@ func (c *ProvisionedHostClient) QueryStatus(ph *ProvisionedHost) *StatusQuery {
 	return query
 }
 
-// QueryProvisioningSteps queries the provisioning_steps edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryProvisioningSteps(ph *ProvisionedHost) *ProvisioningStepQuery {
-	query := &ProvisioningStepQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ph.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
-			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.ProvisioningStepsTable, provisionedhost.ProvisioningStepsColumn),
-		)
-		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryProvisionedNetwork queries the provisioned_network edge of a ProvisionedHost.
 func (c *ProvisionedHostClient) QueryProvisionedNetwork(ph *ProvisionedHost) *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: c.config}
@@ -2067,7 +2090,7 @@ func (c *ProvisionedHostClient) QueryProvisionedNetwork(ph *ProvisionedHost) *Pr
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.ProvisionedNetworkTable, provisionedhost.ProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, provisionedhost.ProvisionedNetworkTable, provisionedhost.ProvisionedNetworkPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2100,6 +2123,22 @@ func (c *ProvisionedHostClient) QueryTag(ph *ProvisionedHost) *TagQuery {
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.TagTable, provisionedhost.TagColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedSteps queries the provisioned_steps edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedSteps(ph *ProvisionedHost) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedStepsTable, provisionedhost.ProvisionedStepsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2211,22 +2250,6 @@ func (c *ProvisionedNetworkClient) QueryTag(pn *ProvisionedNetwork) *TagQuery {
 	return query
 }
 
-// QueryProvisionedHosts queries the provisioned_hosts edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryProvisionedHosts(pn *ProvisionedNetwork) *ProvisionedHostQuery {
-	query := &ProvisionedHostQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := pn.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
-			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.ProvisionedHostsTable, provisionednetwork.ProvisionedHostsColumn),
-		)
-		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryStatus queries the status edge of a ProvisionedNetwork.
 func (c *ProvisionedNetworkClient) QueryStatus(pn *ProvisionedNetwork) *StatusQuery {
 	query := &StatusQuery{config: c.config}
@@ -2268,6 +2291,38 @@ func (c *ProvisionedNetworkClient) QueryBuild(pn *ProvisionedNetwork) *BuildQuer
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(build.Table, build.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.BuildTable, provisionednetwork.BuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedNetworkToTeam queries the ProvisionedNetworkToTeam edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToTeam(pn *ProvisionedNetwork) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pn.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, provisionednetwork.ProvisionedNetworkToTeamTable, provisionednetwork.ProvisionedNetworkToTeamPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHosts queries the provisioned_hosts edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedHosts(pn *ProvisionedNetwork) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pn.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedHostsTable, provisionednetwork.ProvisionedHostsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2371,7 +2426,7 @@ func (c *ProvisioningStepClient) QueryProvisionedHost(ps *ProvisioningStep) *Pro
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisionedHostTable, provisioningstep.ProvisionedHostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, provisioningstep.ProvisionedHostTable, provisioningstep.ProvisionedHostPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2443,47 +2498,15 @@ func (c *ProvisioningStepClient) QueryDNSRecord(ps *ProvisioningStep) *DNSRecord
 	return query
 }
 
-// QueryFileDownload queries the file_download edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryFileDownload(ps *ProvisioningStep) *FileDownloadQuery {
-	query := &FileDownloadQuery{config: c.config}
+// QueryRemoteFile queries the remote_file edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryRemoteFile(ps *ProvisioningStep) *RemoteFileQuery {
+	query := &RemoteFileQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(filedownload.Table, filedownload.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileDownloadTable, provisioningstep.FileDownloadColumn),
-		)
-		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFileDelete queries the file_delete edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryFileDelete(ps *ProvisioningStep) *FileDeleteQuery {
-	query := &FileDeleteQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ps.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(filedelete.Table, filedelete.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileDeleteTable, provisioningstep.FileDeleteColumn),
-		)
-		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFileExtract queries the file_extract edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryFileExtract(ps *ProvisioningStep) *FileExtractQuery {
-	query := &FileExtractQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ps.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(fileextract.Table, fileextract.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileExtractTable, provisioningstep.FileExtractColumn),
+			sqlgraph.To(remotefile.Table, remotefile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.RemoteFileTable, provisioningstep.RemoteFileColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2510,6 +2533,110 @@ func (c *ProvisioningStepClient) QueryTag(ps *ProvisioningStep) *TagQuery {
 // Hooks returns the client hooks.
 func (c *ProvisioningStepClient) Hooks() []Hook {
 	return c.hooks.ProvisioningStep
+}
+
+// RemoteFileClient is a client for the RemoteFile schema.
+type RemoteFileClient struct {
+	config
+}
+
+// NewRemoteFileClient returns a client for the RemoteFile from the given config.
+func NewRemoteFileClient(c config) *RemoteFileClient {
+	return &RemoteFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `remotefile.Hooks(f(g(h())))`.
+func (c *RemoteFileClient) Use(hooks ...Hook) {
+	c.hooks.RemoteFile = append(c.hooks.RemoteFile, hooks...)
+}
+
+// Create returns a create builder for RemoteFile.
+func (c *RemoteFileClient) Create() *RemoteFileCreate {
+	mutation := newRemoteFileMutation(c.config, OpCreate)
+	return &RemoteFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RemoteFile entities.
+func (c *RemoteFileClient) CreateBulk(builders ...*RemoteFileCreate) *RemoteFileCreateBulk {
+	return &RemoteFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RemoteFile.
+func (c *RemoteFileClient) Update() *RemoteFileUpdate {
+	mutation := newRemoteFileMutation(c.config, OpUpdate)
+	return &RemoteFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RemoteFileClient) UpdateOne(rf *RemoteFile) *RemoteFileUpdateOne {
+	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFile(rf))
+	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RemoteFileClient) UpdateOneID(id int) *RemoteFileUpdateOne {
+	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFileID(id))
+	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RemoteFile.
+func (c *RemoteFileClient) Delete() *RemoteFileDelete {
+	mutation := newRemoteFileMutation(c.config, OpDelete)
+	return &RemoteFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *RemoteFileClient) DeleteOne(rf *RemoteFile) *RemoteFileDeleteOne {
+	return c.DeleteOneID(rf.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *RemoteFileClient) DeleteOneID(id int) *RemoteFileDeleteOne {
+	builder := c.Delete().Where(remotefile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RemoteFileDeleteOne{builder}
+}
+
+// Query returns a query builder for RemoteFile.
+func (c *RemoteFileClient) Query() *RemoteFileQuery {
+	return &RemoteFileQuery{config: c.config}
+}
+
+// Get returns a RemoteFile entity by its id.
+func (c *RemoteFileClient) Get(ctx context.Context, id int) (*RemoteFile, error) {
+	return c.Query().Where(remotefile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RemoteFileClient) GetX(ctx context.Context, id int) *RemoteFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTag queries the tag edge of a RemoteFile.
+func (c *RemoteFileClient) QueryTag(rf *RemoteFile) *TagQuery {
+	query := &TagQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := rf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(remotefile.Table, remotefile.FieldID, id),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, remotefile.TagTable, remotefile.TagColumn),
+		)
+		fromV = sqlgraph.Neighbors(rf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RemoteFileClient) Hooks() []Hook {
+	return c.hooks.RemoteFile
 }
 
 // ScriptClient is a client for the Script schema.
@@ -2627,15 +2754,15 @@ func (c *ScriptClient) QueryMaintainer(s *Script) *UserQuery {
 	return query
 }
 
-// QueryFindings queries the findings edge of a Script.
-func (c *ScriptClient) QueryFindings(s *Script) *FindingQuery {
+// QueryFinding queries the finding edge of a Script.
+func (c *ScriptClient) QueryFinding(s *Script) *FindingQuery {
 	query := &FindingQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.FindingsTable, script.FindingsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, script.FindingTable, script.FindingPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -2835,22 +2962,6 @@ func (c *TagClient) GetX(ctx context.Context, id int) *Tag {
 	return obj
 }
 
-// QueryTag queries the tag edge of a Tag.
-func (c *TagClient) QueryTag(t *Tag) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(tag.Table, tag.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, tag.TagTable, tag.TagPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *TagClient) Hooks() []Hook {
 	return c.hooks.Tag
@@ -2963,7 +3074,7 @@ func (c *TeamClient) QueryBuild(t *Team) *BuildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.BuildTable, team.BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, team.BuildTable, team.BuildPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -2971,15 +3082,15 @@ func (c *TeamClient) QueryBuild(t *Team) *BuildQuery {
 	return query
 }
 
-// QueryEnvironment queries the environment edge of a Team.
-func (c *TeamClient) QueryEnvironment(t *Team) *EnvironmentQuery {
+// QueryTeamToEnvironment queries the TeamToEnvironment edge of a Team.
+func (c *TeamClient) QueryTeamToEnvironment(t *Team) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.EnvironmentTable, team.EnvironmentColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, team.TeamToEnvironmentTable, team.TeamToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -3011,7 +3122,7 @@ func (c *TeamClient) QueryProvisionedNetworks(t *Team) *ProvisionedNetworkQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.ProvisionedNetworksTable, team.ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, team.ProvisionedNetworksTable, team.ProvisionedNetworksPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

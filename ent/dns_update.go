@@ -11,7 +11,6 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSUpdate is the builder for updating DNS entities.
@@ -57,45 +56,9 @@ func (du *DNSUpdate) SetConfig(s []string) *DNSUpdate {
 	return du
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (du *DNSUpdate) AddTagIDs(ids ...int) *DNSUpdate {
-	du.mutation.AddTagIDs(ids...)
-	return du
-}
-
-// AddTag adds the tag edges to Tag.
-func (du *DNSUpdate) AddTag(t ...*Tag) *DNSUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return du.AddTagIDs(ids...)
-}
-
 // Mutation returns the DNSMutation object of the builder.
 func (du *DNSUpdate) Mutation() *DNSMutation {
 	return du.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (du *DNSUpdate) ClearTag() *DNSUpdate {
-	du.mutation.ClearTag()
-	return du
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (du *DNSUpdate) RemoveTagIDs(ids ...int) *DNSUpdate {
-	du.mutation.RemoveTagIDs(ids...)
-	return du
-}
-
-// RemoveTag removes tag edges to Tag.
-func (du *DNSUpdate) RemoveTag(t ...*Tag) *DNSUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return du.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -202,60 +165,6 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: dns.FieldConfig,
 		})
 	}
-	if du.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.RemovedTagIDs(); len(nodes) > 0 && !du.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dns.Label}
@@ -304,45 +213,9 @@ func (duo *DNSUpdateOne) SetConfig(s []string) *DNSUpdateOne {
 	return duo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (duo *DNSUpdateOne) AddTagIDs(ids ...int) *DNSUpdateOne {
-	duo.mutation.AddTagIDs(ids...)
-	return duo
-}
-
-// AddTag adds the tag edges to Tag.
-func (duo *DNSUpdateOne) AddTag(t ...*Tag) *DNSUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return duo.AddTagIDs(ids...)
-}
-
 // Mutation returns the DNSMutation object of the builder.
 func (duo *DNSUpdateOne) Mutation() *DNSMutation {
 	return duo.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (duo *DNSUpdateOne) ClearTag() *DNSUpdateOne {
-	duo.mutation.ClearTag()
-	return duo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (duo *DNSUpdateOne) RemoveTagIDs(ids ...int) *DNSUpdateOne {
-	duo.mutation.RemoveTagIDs(ids...)
-	return duo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (duo *DNSUpdateOne) RemoveTag(t ...*Tag) *DNSUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return duo.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -446,60 +319,6 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Value:  value,
 			Column: dns.FieldConfig,
 		})
-	}
-	if duo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.RemovedTagIDs(); len(nodes) > 0 && !duo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &DNS{config: duo.config}
 	_spec.Assign = _node.assignValues

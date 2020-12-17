@@ -19,8 +19,7 @@ type FileDelete struct {
 	Path string `json:"path,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDeleteQuery when eager-loading is set.
-	Edges                         FileDeleteEdges `json:"edges"`
-	provisioning_step_file_delete *int
+	Edges FileDeleteEdges `json:"edges"`
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
@@ -49,13 +48,6 @@ func (*FileDelete) scanValues() []interface{} {
 	}
 }
 
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*FileDelete) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_file_delete
-	}
-}
-
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the FileDelete fields.
 func (fd *FileDelete) assignValues(values ...interface{}) error {
@@ -72,15 +64,6 @@ func (fd *FileDelete) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field path", values[0])
 	} else if value.Valid {
 		fd.Path = value.String
-	}
-	values = values[1:]
-	if len(values) == len(filedelete.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_file_delete", value)
-		} else if value.Valid {
-			fd.provisioning_step_file_delete = new(int)
-			*fd.provisioning_step_file_delete = int(value.Int64)
-		}
 	}
 	return nil
 }

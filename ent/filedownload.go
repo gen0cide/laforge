@@ -33,8 +33,7 @@ type FileDownload struct {
 	AbsPath string `json:"abs_path,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDownloadQuery when eager-loading is set.
-	Edges                           FileDownloadEdges `json:"edges"`
-	provisioning_step_file_download *int
+	Edges FileDownloadEdges `json:"edges"`
 }
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
@@ -67,13 +66,6 @@ func (*FileDownload) scanValues() []interface{} {
 		&sql.NullBool{},   // disabled
 		&sql.NullString{}, // md5
 		&sql.NullString{}, // abs_path
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*FileDownload) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_file_download
 	}
 }
 
@@ -128,15 +120,6 @@ func (fd *FileDownload) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field abs_path", values[7])
 	} else if value.Valid {
 		fd.AbsPath = value.String
-	}
-	values = values[8:]
-	if len(values) == len(filedownload.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_file_download", value)
-		} else if value.Valid {
-			fd.provisioning_step_file_download = new(int)
-			*fd.provisioning_step_file_download = int(value.Int64)
-		}
 	}
 	return nil
 }

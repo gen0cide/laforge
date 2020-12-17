@@ -22,17 +22,18 @@ type IncludedNetwork struct {
 	Hosts []string `json:"hosts,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncludedNetworkQuery when eager-loading is set.
-	Edges                        IncludedNetworkEdges `json:"edges"`
-	environment_included_network *int
+	Edges IncludedNetworkEdges `json:"edges"`
 }
 
 // IncludedNetworkEdges holds the relations/edges for other nodes in the graph.
 type IncludedNetworkEdges struct {
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
+	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
+	IncludedNetworkToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TagOrErr returns the Tag value or an error if the edge
@@ -44,19 +45,21 @@ func (e IncludedNetworkEdges) TagOrErr() ([]*Tag, error) {
 	return nil, &NotLoadedError{edge: "tag"}
 }
 
+// IncludedNetworkToEnvironmentOrErr returns the IncludedNetworkToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncludedNetworkEdges) IncludedNetworkToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.IncludedNetworkToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "IncludedNetworkToEnvironment"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*IncludedNetwork) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // name
 		&[]byte{},         // hosts
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*IncludedNetwork) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // environment_included_network
 	}
 }
 
@@ -85,21 +88,17 @@ func (in *IncludedNetwork) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field hosts: %v", err)
 		}
 	}
-	values = values[2:]
-	if len(values) == len(includednetwork.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_included_network", value)
-		} else if value.Valid {
-			in.environment_included_network = new(int)
-			*in.environment_included_network = int(value.Int64)
-		}
-	}
 	return nil
 }
 
 // QueryTag queries the tag edge of the IncludedNetwork.
 func (in *IncludedNetwork) QueryTag() *TagQuery {
 	return (&IncludedNetworkClient{config: in.config}).QueryTag(in)
+}
+
+// QueryIncludedNetworkToEnvironment queries the IncludedNetworkToEnvironment edge of the IncludedNetwork.
+func (in *IncludedNetwork) QueryIncludedNetworkToEnvironment() *EnvironmentQuery {
+	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToEnvironment(in)
 }
 
 // Update returns a builder for updating this IncludedNetwork.

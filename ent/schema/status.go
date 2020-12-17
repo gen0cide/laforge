@@ -14,7 +14,7 @@ type Status struct {
 // Fields of the Status.
 func (Status) Fields() []ent.Field {
 	return []ent.Field{
-		field.Enum("state").Values("staged", "building", "failed", "succeeded"),
+		field.Enum("state").Values("AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"),
 		field.Time("started_at"),
 		field.Time("ended_at"),
 		field.Bool("failed"),

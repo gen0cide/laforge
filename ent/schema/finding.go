@@ -27,5 +27,6 @@ func (Finding) Edges() []ent.Edge {
 		edge.To("user", User.Type),
 		edge.To("tag", Tag.Type),
 		edge.To("host", Host.Type),
+		edge.To("script", Script.Type),
 	}
 }

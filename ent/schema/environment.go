@@ -31,10 +31,11 @@ func (Environment) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tag", Tag.Type),
 		edge.To("user", User.Type),
-		edge.To("included_network", IncludedNetwork.Type),
-		edge.To("build", Build.Type),
-		edge.To("network", Network.Type),
 		edge.To("host", Host.Type),
 		edge.To("competition", Competition.Type),
+		edge.To("build", Build.Type),
+		edge.From("included_network", IncludedNetwork.Type).Ref("IncludedNetworkToEnvironment"),
+		edge.From("network", Network.Type).Ref("NetworkToEnvironment"),
+		edge.From("team", Team.Type).Ref("TeamToEnvironment"),
 	}
 }

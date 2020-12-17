@@ -4,7 +4,6 @@ package dns
 
 import (
 	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
@@ -324,34 +323,6 @@ func RootDomainEqualFold(v string) predicate.DNS {
 func RootDomainContainsFold(v string) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldRootDomain), v))
-	})
-}
-
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.DNS {
-	return predicate.DNS(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.DNS {
-	return predicate.DNS(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
 	})
 }
 
