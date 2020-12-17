@@ -1,11 +1,14 @@
 package main
 
+//go:generate fileb0x assets.toml
 import (
 	"context"
 	"crypto/md5"
+	"crypto/x509"
 	"encoding/hex"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -14,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gen0cide/laforge/grpc-alpha/grpc_client/static"
 	pb "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent"
 	"github.com/kardianos/service"
 	"github.com/mholt/archiver"
@@ -45,6 +49,7 @@ type program struct {
 	exit chan struct{}
 }
 
+// Start What is Run when the executable is started up.
 func (p *program) Start(s service.Service) error {
 	p.exit = make(chan struct{})
 
@@ -120,7 +125,7 @@ func DownloadFile(filepath string, url string) error {
 }
 
 
-// ValidateMD5Hash ...
+// ValidateMD5Hash Validates the MD5 Hash of a file with the provided MD5 Hash
 func ValidateMD5Hash(filepath string, md5hash string) error {
 	var calculatedMD5Hash string
 
@@ -155,7 +160,7 @@ func ValidateMD5Hash(filepath string, md5hash string) error {
 	}
 }
 
-// RequestTask Hi
+// RequestTask Function Requests task from the GRPC server to be run on the client
 func RequestTask(c pb.LaforgeClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -227,7 +232,7 @@ func RequestTask(c pb.LaforgeClient) {
 }
 
 
-// RequestTaskStatusRequest Test
+// RequestTaskStatusRequest Tell the server the status of a completed task
 func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -241,7 +246,7 @@ func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient
 	}
 }
 
-// SendHeartBeat Example
+// SendHeartBeat Send the GRPC server a Heartbeat with specified parameters
 func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -276,7 +281,7 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	
 }
 
-// StartTaskRunner Test
+// StartTaskRunner Gets a Heartbeat reply from the task channel, and if there are avalible tasks it will request them
 func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	r := <-taskChannel
 	logger.Infof("Response Message: %s", r.GetStatus())
@@ -287,6 +292,7 @@ func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	}
 }
 
+// genSendHeartBeat A goroutine that is called, which periodically send a heartbeat to the GRPC Server
 func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
 	defer wg.Done()
@@ -300,6 +306,7 @@ func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.Heartb
 	}
 }
 
+// genStartTaskRunner A goroutine that is called, which checks responses from GRPC server for avalible tasks
 func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
 	defer wg.Done()
@@ -313,16 +320,23 @@ func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan pb.Hear
 	}
 }
 
+// run Function that is called when the program starts and run all the Go Routines
 func (p *program) run() error {
 	logger.Infof("I'm running %v.", service.Platform())
 	var wg sync.WaitGroup
-	creds, credErr := credentials.NewClientTLSFromFile(certFile, "")
-	if credErr != nil {
-		logger.Errorf("Cred Error: %v", credErr)
-	}
 
+	// TLS Cert for verifying GRPC Server
+	certPem,certerr := static.ReadFile(certFile)
+	if certerr != nil {
+        fmt.Println("File reading error", certerr)
+        return nil
+	}
+	
+	// Starts GRPC Connection with cert included in the binary
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(certPem)
+	creds := credentials.NewClientTLSFromCert(certPool, "")
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds))
-	// conn, err := grpc.Dial(address, grpc.WithInsecure())
 
 	if err != nil {
 		logger.Errorf("did not connect: %v", err)
@@ -339,6 +353,8 @@ func (p *program) run() error {
 	wg.Wait()
 	return nil
 }
+
+// Stop Called when the Agent is closed
 func (p *program) Stop(s service.Service) error {
 	// Any work in Stop should be quick, usually a few seconds at most.
 	logger.Info("I'm Stopping!")

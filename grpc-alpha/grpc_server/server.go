@@ -1,11 +1,14 @@
 package main
 
+//go:generate fileb0x assets.toml
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
 
+	"github.com/gen0cide/laforge/grpc-alpha/grpc_server/static"
 	pb "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -49,7 +52,7 @@ func ByteCountIEC(b uint64) string {
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
 
-//GetHeartBeat Info
+//GetHeartBeat Recives Heartbeat from client and sends back a reply
 func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb.HeartbeatReply, error) {
 	message := fmt.Sprintf("Recived ID: %v | Hostname: %v | Uptime: %v | Boot Time: %v| Number of Running Processes: %v| OS Arch: %v| Host ID: %v| Load1: %v| Load5: %v| Load15: %v| Total Memory: %v| Avalible Memory: %v| Used Memory: %v", in.GetClientId(), in.GetHostname(), in.GetUptime(), in.GetBoottime(), in.GetNumprocs(), in.GetOs(), in.GetHostid(), in.GetLoad1(), in.GetLoad5(), in.GetLoad15(), ByteCountIEC(in.GetTotalmem()), ByteCountIEC(in.GetFreemem()), ByteCountIEC(in.GetUsedmem()))
 	log.Printf(message)
@@ -62,7 +65,7 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 	return &pb.HeartbeatReply{Status: message, AvalibleTasks: avalibleTasks}, nil
 }
 
-//GetTask Info
+//GetTask Gets a task that needs to be run on the client and sends it over
 func (s *server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply, error) {
 	clientID := in.ClientId
 	tasks := make([]Task, 0)
@@ -75,7 +78,7 @@ func (s *server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 	return &pb.TaskReply{Id: 0, Command: pb.TaskReply_DEFAULT}, nil
 }
 
-// InformTaskStatus
+// InformTaskStatus Updates the status of a Task on a client from the response of the client
 func (s *server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
 	clientID := in.ClientId
 	tasks := make([]Task, 0)
@@ -118,11 +121,26 @@ func main() {
 	go web.Run(webPort)
 
 	// secure server
-	creds, _ := credentials.NewServerTLSFromFile(certFile, keyFile)
+	certPem,certerr := static.ReadFile(certFile)
+	if certerr != nil {
+        fmt.Println("File reading error", certerr)
+        return 
+	}
+	keyPem,keyerr := static.ReadFile(keyFile)
+	if keyerr != nil {
+        fmt.Println("File reading error", keyerr)
+        return 
+	}
+
+	cert, tlserr := tls.X509KeyPair(certPem, keyPem)
+	if tlserr != nil {
+        fmt.Println("File reading error", tlserr)
+        return 
+	}
+
+	creds := credentials.NewServerTLSFromCert(&cert)
 	s := grpc.NewServer(grpc.Creds(creds))
 
-	//insecure server
-	// s := grpc.NewServer()
 
 	log.Printf("Starting Laforge Server on port " + port)
 

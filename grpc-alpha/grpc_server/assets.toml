@@ -1,0 +1,28 @@
+pkg = "static"
+dest = "./static/"
+fmt = true
+tags = ""
+
+[updater]
+  enabled = false
+
+
+[compression]
+  compress = true
+  method = "BestCompression"
+  keep = false
+
+
+clean = true
+output = "assets.go"
+noprefix = true
+unexporTed = false
+spread = true
+lcf = true
+debug = false
+
+[[custom]]
+  files = ["./certs/"]
+  base = "certs/"
+  prefix = ""
+  tags = ""
