@@ -1,5 +1,5 @@
 <mat-card class="laforge-card">
-  <mat-card-header *ngIf="loaded">
+  <mat-card-header *ngIf="envLoaded">
     <div class="env-header d-flex align-items-center justify-content-between">
       <div class="env-info w-50">
         <mat-card-title>{{ environment.Name }}<i class="fas fa-2x fa-sync fa-spin" *ngIf="loading"></i></mat-card-title>
@@ -29,12 +29,12 @@
         <mat-header-cell *matHeaderCellDef> Maintainer </mat-header-cell>
         <mat-cell *matCellDef="let env"> {{ env.maintainer.name }} <{{ env.maintainer.email }}> </mat-cell>
       </ng-container>
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      <mat-header-row *matHeaderRowDef="environmentDetailsCols"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: environmentDetailsCols"></mat-row>
     </mat-table>
   </mat-card-header>
-  <mat-card-content *ngIf="loaded">
+  <mat-card-content *ngIf="envLoaded">
     <app-team *ngFor="let team of environment.build.teams" [title]="'Team ' + team.teamNumber" [networks]="team.provisionedNetworks"></app-team>
   </mat-card-content>
-  <mat-card-content *ngIf="!loaded"> Environment loading... </mat-card-content>
+  <mat-card-content *ngIf="!envLoaded"> Environment loading... </mat-card-content>
 </mat-card>

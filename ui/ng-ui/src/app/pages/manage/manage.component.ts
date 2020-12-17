@@ -1,10 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Environment, resolveStatuses } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
-// import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { SubheaderService } from '../../_metronic/partials/layout/subheader/_services/subheader.service';
 
-// import { corp_network_provisioned } from '../../../data/corp';
-// import { bradley } from 'src/data/sample-config';
 @Component({
   selector: 'app-manage',
   templateUrl: './manage.component.html',
@@ -16,12 +14,14 @@ export class ManageComponent implements OnInit {
   loaded = false;
   displayedColumns: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
 
-  constructor(private api: ApiService, private cdRef: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private subheader: SubheaderService) {
+    this.subheader.setTitle('Environment');
+    this.subheader.setDescription('Manage your currently running environment');
+  }
 
   ngOnInit(): void {
     this.api.getEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').subscribe((result) => {
-      console.log('subsribe call');
-      this.environment = resolveStatuses((result.data as any).environment) as Environment;
+      this.environment = resolveStatuses(result.data.environment) as Environment;
       this.loaded = true;
       this.cdRef.detectChanges();
     });
