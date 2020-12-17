@@ -34,6 +34,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/terraform v0.12.8
+	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a // indirect
 	github.com/iancoleman/strcase v0.1.1
 	github.com/imdario/mergo v0.3.11
 	github.com/juju/clock v0.0.0-20190205081909-9c5c9712527c // indirect

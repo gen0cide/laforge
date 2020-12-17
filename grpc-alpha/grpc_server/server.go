@@ -13,12 +13,14 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
+var (
 	port     = ":50051"
-	certFile = "server.crt"
-	keyFile  = "server.key"
+	certFile = "service.pem"
+	keyFile  = "service.key"
 	webPort  = ":5000"
+)
 
+const (
 	TaskFailed = "Failed"
 	TaskRunning = "Running"
 	TaskSucceeded = "Completed"

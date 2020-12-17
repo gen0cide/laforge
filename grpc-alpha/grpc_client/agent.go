@@ -25,12 +25,6 @@ import (
 )
 
 const (
-	address          = "localhost:50051"
-	defaultName      = "Laforge Agent 1"
-	certFile         = "server.crt"
-	heartbeatSeconds = 1
-	clientID         = "1"
-
 	TaskFailed = "Failed"
 	TaskRunning = "Running"
 	TaskSucceeded = "Completed"
@@ -38,6 +32,11 @@ const (
 
 var (
 	logger service.Logger
+	address          = "localhost:50051"
+	defaultName      = "Laforge Agent"
+	certFile         = "service.pem"
+	heartbeatSeconds = 1
+	clientID         = "1"
 )
 
 // Program structures.
