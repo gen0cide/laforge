@@ -42,20 +42,15 @@ export class NetworkComponent implements OnInit {
   // }
 
   getStatus(): ProvisionStatus {
-    let status: ProvisionStatus = this.status.state;
+    let numWithAgentData = 0;
+    let totalAgents = 0;
     for (const host of this.provisionedNetwork.provisionedHosts) {
-      switch (host.status.state) {
-        case ProvisionStatus.ProvStatusFailed:
-          status = ProvisionStatus.ProvStatusFailed;
-          break;
-        case ProvisionStatus.ProvStatusInProgress:
-          if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
-          break;
-        default:
-          break;
-      }
+      totalAgents++;
+      if (host.heartbeat) numWithAgentData++;
     }
-    return status;
+    if (numWithAgentData === totalAgents) return ProvisionStatus.ProvStatusComplete;
+    else if (numWithAgentData === 0) return ProvisionStatus.ProvStatusFailed;
+    else return ProvisionStatus.ProvStatusInProgress;
   }
 
   getStatusColor(): string {
@@ -63,7 +58,7 @@ export class NetworkComponent implements OnInit {
       case ProvisionStatus.ProvStatusComplete:
         return 'success';
       case ProvisionStatus.ProvStatusInProgress:
-        return 'info';
+        return 'warning';
       case ProvisionStatus.ProvStatusFailed:
         return 'danger';
       default:

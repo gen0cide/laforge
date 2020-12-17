@@ -28,12 +28,18 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.api.pullEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').then((env: Environment) => {
-      this.environment = resolveStatuses(env);
-      this.envLoaded = true;
-      this.cdRef.detectChanges();
-      this.initAgentStatusPolling();
-    });
+    this.api.pullEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').then(
+      (env: Environment) => {
+        this.environment = resolveStatuses(env);
+        this.envLoaded = true;
+        this.cdRef.detectChanges();
+        this.initAgentStatusPolling();
+      },
+      (err) => {
+        console.error('yep, cant connect');
+        // console.error(err);
+      }
+    );
   }
 
   ngOnDestroy(): void {
@@ -54,7 +60,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
       this.loading = false;
       this.environment = updateAgentStatuses(this.environment, result);
       this.cdRef.detectChanges();
-    });
+    }, console.error);
   }
   // onBranchSelect(changeEvent: MatSelectChange) {
   onIntervalChange(changeEvent: MatSelectChange): void {

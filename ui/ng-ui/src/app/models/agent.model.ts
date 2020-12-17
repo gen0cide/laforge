@@ -39,7 +39,7 @@ export function updateAgentStatuses(environment: Environment, statusQueryResult:
                   .provisionedHosts.filter((pH: any) => pH.id === provHost.id)[0];
                 return {
                   ...provHost,
-                  heartbeat: matchedHost ? { ...matchedHost.heartbeat } : null
+                  heartbeat: matchedHost.heartbeat
                 };
               })
             }))

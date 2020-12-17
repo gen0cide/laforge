@@ -1,5 +1,5 @@
-<div class="network" (click)="style === 'compact' && viewDetails()" [ngClass]="style">
-  <div class="network-info" (click)="style !== 'compact' && viewDetails()">
+<div class="network" (click)="style === 'collapsed' && viewDetails()" [ngClass]="style">
+  <div class="network-info" (click)="style !== 'collapsed' && viewDetails()">
     <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
       <i class="fal fa-network-wired"></i>
     </div>

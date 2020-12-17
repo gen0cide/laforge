@@ -9,54 +9,65 @@
   </button>
 </div>
 <hr />
-<div class="row" *ngIf="data.provisionedHost.heartbeat">
+<div class="row">
   <div class="col-12">
     <h3 class="text-center">Agent Data</h3>
   </div>
-  <!-- <div class="col-6">
-    <p class="detail-title"><b>Hostname</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.hostname }}</p>
-  </div> -->
-  <div class="col-4">
-    <p class="detail-title"><b>Uptime</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.upTime | amDuration: 'seconds' }}</p>
+  <div class="col-12">
+    <div class="row" *ngIf="!data.provisionedHost.heartbeat">
+      <div class="col-12">
+        <p class="text-center text-danger">Could not connect to the Agent. Please ensure the host deployed properly.</p>
+      </div>
+    </div>
   </div>
-  <div class="col-4">
-    <p class="detail-title"><b>Boot Time</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.bootTime | amFromUnix | amDateFormat: 'hh:mm A' }}</p>
-  </div>
-  <div class="col-4">
-    <p class="detail-title"><b># Processes Running</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.numProcs }}</p>
-  </div>
-  <!-- Fred said to ignore hostID for now -->
-  <!-- <div class="col-6">
-    <p class="detail-title"><b>Host ID</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.hostID }}</p>
-  </div> -->
-  <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1">
-    <p class="detail-title"><b>1 Minute Load</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.load1 / 100 | percent: '1.2' }}</p>
-  </div>
-  <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5">
-    <p class="detail-title"><b>5 Minute Load</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.load5 / 100 | percent: '1.2' }}</p>
-  </div>
-  <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15">
-    <p class="detail-title"><b>15 Minute Load</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.load15 / 100 | percent: '1.2' }}</p>
-  </div>
-  <div class="col-4">
-    <p class="detail-title"><b>Total Memory</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.totalMem | fromBytes }}</p>
-  </div>
-  <div class="col-4">
-    <p class="detail-title"><b>Free Memory</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.freeMem | fromBytes }}</p>
-  </div>
-  <div class="col-4">
-    <p class="detail-title"><b>Used Memory</b></p>
-    <p class="detail-value">{{ data.provisionedHost.heartbeat.usedMem | fromBytes }}</p>
+  <div class="col-12">
+    <div class="row" *ngIf="data.provisionedHost.heartbeat">
+      <!-- <div class="col-6">
+      <p class="detail-title"><b>Hostname</b></p>
+      <p class="detail-value">{{ data.provisionedHost.heartbeat.hostname }}</p>
+    </div> -->
+      <div class="col-4">
+        <p class="detail-title"><b>Uptime</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.upTime | amDuration: 'seconds' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Boot Time</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.bootTime | amFromUnix | amDateFormat: 'hh:mm A' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b># Processes Running</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.numProcs }}</p>
+      </div>
+      <!-- Fred said to ignore hostID for now -->
+      <!-- <div class="col-6">
+      <p class="detail-title"><b>Host ID</b></p>
+      <p class="detail-value">{{ data.provisionedHost.heartbeat.hostID }}</p>
+    </div> -->
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1">
+        <p class="detail-title"><b>1 Minute Load</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.load1 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5">
+        <p class="detail-title"><b>5 Minute Load</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.load5 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15">
+        <p class="detail-title"><b>15 Minute Load</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.load15 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Total Memory</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.totalMem | fromBytes }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Free Memory</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.freeMem | fromBytes }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Used Memory</b></p>
+        <p class="detail-value">{{ data.provisionedHost.heartbeat.usedMem | fromBytes }}</p>
+      </div>
+    </div>
   </div>
 </div>
 <div class="row">
@@ -77,15 +88,21 @@
   </div>
   <div class="col-6">
     <p class="detail-title"><b>Exposed TCP Ports</b></p>
-    <p class="detail-value">{{ data.provisionedHost.host.exposedTCPPorts.length > 0 ? data.provisionedHost.host.exposedTCPPorts.join(', ') : 'N/A' }}</p>
+    <p class="detail-value">
+      {{ data.provisionedHost.host.exposedTCPPorts.length > 0 ? data.provisionedHost.host.exposedTCPPorts.join(', ') : 'N/A' }}
+    </p>
   </div>
   <div class="col-6">
     <p class="detail-title"><b>Exposed UDP Ports</b></p>
-    <p class="detail-value">{{ data.provisionedHost.host.exposedUDPPorts.length > 0 ? data.provisionedHost.host.exposedUDPPorts.join(', ') : 'N/A' }}</p>
+    <p class="detail-value">
+      {{ data.provisionedHost.host.exposedUDPPorts.length > 0 ? data.provisionedHost.host.exposedUDPPorts.join(', ') : 'N/A' }}
+    </p>
   </div>
   <div class="col-6">
     <p class="detail-title"><b>User Groups</b></p>
-    <p class="detail-value">{{ data.provisionedHost.host.userGroups.length > 0 ? data.provisionedHost.host.userGroups.join(', ') : 'N/A' }}</p>
+    <p class="detail-value">
+      {{ data.provisionedHost.host.userGroups.length > 0 ? data.provisionedHost.host.userGroups.join(', ') : 'N/A' }}
+    </p>
   </div>
   <div class="col-6">
     <p class="detail-title"><b>Override Password</b></p>

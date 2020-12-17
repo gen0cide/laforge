@@ -18,32 +18,18 @@ export class TeamComponent implements OnInit {
   ngOnInit(): void {}
 
   getStatus(): ProvisionStatus {
-    let status: ProvisionStatus = ProvisionStatus.ProvStatusComplete;
+    // let status: ProvisionStatus = ProvisionStatus.ProvStatusUndefined;
+    let numWithAgentData = 0;
+    let totalAgents = 0;
     for (const network of this.team.provisionedNetworks) {
-      switch (network.status.state) {
-        case ProvisionStatus.ProvStatusFailed:
-          status = ProvisionStatus.ProvStatusFailed;
-          break;
-        case ProvisionStatus.ProvStatusInProgress:
-          if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
-          break;
-        default:
-          break;
-      }
       for (const host of network.provisionedHosts) {
-        switch (host.status.state) {
-          case ProvisionStatus.ProvStatusFailed:
-            status = ProvisionStatus.ProvStatusFailed;
-            break;
-          case ProvisionStatus.ProvStatusInProgress:
-            if (status === ProvisionStatus.ProvStatusComplete) status = ProvisionStatus.ProvStatusInProgress;
-            break;
-          default:
-            break;
-        }
+        totalAgents++;
+        if (host.heartbeat) numWithAgentData++;
       }
     }
-    return status;
+    if (numWithAgentData === totalAgents) return ProvisionStatus.ProvStatusComplete;
+    else if (numWithAgentData === 0) return ProvisionStatus.ProvStatusFailed;
+    else return ProvisionStatus.ProvStatusInProgress;
   }
 
   getStatusColor(): string {
@@ -51,7 +37,7 @@ export class TeamComponent implements OnInit {
       case ProvisionStatus.ProvStatusComplete:
         return 'success';
       case ProvisionStatus.ProvStatusInProgress:
-        return 'info';
+        return 'warning';
       case ProvisionStatus.ProvStatusFailed:
         return 'danger';
       default:

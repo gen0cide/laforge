@@ -20,8 +20,24 @@ export class NetworkModalComponent {
     this.dialogRef.close();
   }
 
+  getStatus(): ProvisionStatus {
+    let numWithAgentData = 0;
+    let totalAgents = 0;
+    for (const host of this.data.provisionedNetwork.provisionedHosts) {
+      totalAgents++;
+      if (host.heartbeat) numWithAgentData++;
+    }
+    if (numWithAgentData === totalAgents) return ProvisionStatus.ProvStatusComplete;
+    else if (numWithAgentData === 0) return ProvisionStatus.ProvStatusFailed;
+    else return ProvisionStatus.ProvStatusInProgress;
+  }
+
+  getStatusText(): string {
+    return ProvisionStatus[this.getStatus()];
+  }
+
   getStatusIcon(): string {
-    switch (this.data.provisionedNetwork.status.state) {
+    switch (this.getStatus()) {
       case ProvisionStatus.ProvStatusComplete:
         return 'check-circle';
       case ProvisionStatus.ProvStatusFailed:
@@ -34,13 +50,13 @@ export class NetworkModalComponent {
   }
 
   getStatusColor(): string {
-    switch (this.data.provisionedNetwork.status.state) {
+    switch (this.getStatus()) {
       case ProvisionStatus.ProvStatusComplete:
         return 'success';
+      case ProvisionStatus.ProvStatusInProgress:
+        return 'warning';
       case ProvisionStatus.ProvStatusFailed:
         return 'danger';
-      case ProvisionStatus.ProvStatusInProgress:
-        return 'info';
       default:
         return 'dark';
     }

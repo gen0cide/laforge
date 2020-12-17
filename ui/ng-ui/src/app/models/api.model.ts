@@ -13,7 +13,7 @@ export interface AgentStatusQueryResult {
               provisionedHosts: [
                 {
                   id: string;
-                  heartbeat: AgentStatus;
+                  heartbeat?: AgentStatus;
                 }
               ];
             }

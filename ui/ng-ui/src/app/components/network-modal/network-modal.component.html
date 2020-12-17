@@ -9,6 +9,19 @@
   </button>
 </div>
 <hr />
+<div class="row" *ngIf="getStatusText() === 'ProvStatusFailed' || getStatusText() === 'ProvStatusInProgress'">
+  <div class="col-12" *ngIf="getStatusText() === 'ProvStatusFailed'">
+    <p class="text-center text-danger">
+      None of the agents on this network could connect. The network/hosts may still be deploying. Otherwise, please ensure this network
+      deployed properly.
+    </p>
+  </div>
+  <div class="col-12" *ngIf="getStatusText() === 'ProvStatusInProgress'">
+    <p class="text-center text-warning">
+      Some of the agents on this network couldn't connect. They may still be deploying. Otherwise, please ensure they deployed properly.
+    </p>
+  </div>
+</div>
 <div class="row">
   <div class="col-6">
     <p class="detail-title"><b>CIDR</b></p>
