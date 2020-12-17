@@ -210,18 +210,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.0.12",
 		Status:             testStatus,
 		Host:               &testWindowsHost,
-		Heartbeat: &model.AgentStatus{
-			ClientID: "ae3ced80-6385-4421-8a75-9a5ea464c62b",
-			Hostname: "test.windows.host",
-			UpTime:   708,
-			BootTime: 1608158324,
-			NumProcs: 10,
-			Os:       "Windows",
-			HostID:   "???",
-			TotalMem: 16426635264,
-			FreeMem:  8437784576,
-			UsedMem:  3781406720,
-		},
+		Heartbeat: 			nil,
 	}
 	
 	testProHost2 := model.ProvisionedHost{
@@ -229,21 +218,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.10.10",
 		Status:             testStatus,
 		Host:               &testLinuxHost1,
-		Heartbeat: &model.AgentStatus{
-			ClientID: "10fd9876-fc42-453d-ab93-c02bfea696bb",
-			Hostname: "test1.linux.host",
-			UpTime:   708,
-			BootTime: 1608158324,
-			NumProcs: 10,
-			Os:       "Linux",
-			HostID:   "???",
-			Load1:    &testFloat,
-			Load5:    &testFloat,
-			Load15:   &testFloat,
-			TotalMem: 16426635264,
-			FreeMem:  8437784576,
-			UsedMem:  3781406720,
-		},
+		Heartbeat: 			nil,,
 	}
 
 	testProHost3 := model.ProvisionedHost{
