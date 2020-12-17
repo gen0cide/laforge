@@ -1,6 +1,6 @@
 import { ID, Tag, User, varsMap } from './common.model';
 
-interface Command {
+export interface Command {
   id: ID;
   name: string;
   description: string;
@@ -14,5 +14,3 @@ interface Command {
   tags: Tag[];
   maintainer: User;
 }
-
-export { Command };

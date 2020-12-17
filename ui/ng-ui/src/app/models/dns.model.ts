@@ -1,6 +1,6 @@
 import { configMap, ID, Tag, varsMap } from './common.model';
 
-interface DNSRecord {
+export interface DNSRecord {
   id: ID;
   name: string;
   values: string[];
@@ -11,7 +11,7 @@ interface DNSRecord {
   disabled: boolean;
 }
 
-interface DNS {
+export interface DNS {
   id: ID;
   type: string;
   rootDomain: string;
@@ -19,5 +19,3 @@ interface DNS {
   NTPServers: string[];
   config: configMap[];
 }
-
-export { DNSRecord, DNS };

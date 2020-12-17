@@ -1,9 +1,10 @@
-import { AgentStatusQueryResult, Team } from './common.model';
+import { Team } from './common.model';
 import { Environment } from './environment.model';
 import { ProvisionedNetwork } from './network.model';
 import { ProvisionedHost } from 'src/app/models/host.model';
+import { AgentStatusQueryResult } from './api.model';
 
-interface AgentStatus {
+export interface AgentStatus {
   clientId: string;
   hostname: string;
   upTime: number;
@@ -20,7 +21,7 @@ interface AgentStatus {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function updateAgentStatuses(environment: Environment, statusQueryResult: AgentStatusQueryResult): Environment {
+export function updateAgentStatuses(environment: Environment, statusQueryResult: AgentStatusQueryResult): Environment {
   return {
     ...environment,
     build: {
@@ -47,5 +48,3 @@ function updateAgentStatuses(environment: Environment, statusQueryResult: AgentS
     }
   };
 }
-
-export { AgentStatus, updateAgentStatuses };

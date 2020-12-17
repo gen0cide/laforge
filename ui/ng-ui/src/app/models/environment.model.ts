@@ -3,7 +3,7 @@ import { DNS } from './dns.model';
 import { Host, ProvisionedHost, ProvisionedStep } from './host.model';
 import { Network, ProvisionedNetwork } from './network.model';
 
-interface Build {
+export interface Build {
   id: ID;
   revision: number;
   tags: Tag[];
@@ -12,14 +12,14 @@ interface Build {
   teams: Team[];
 }
 
-interface Competition {
+export interface Competition {
   id: ID;
   rootPassword: string;
   config: configMap[];
   dns: DNS;
 }
 
-interface Environment {
+export interface Environment {
   id: ID;
   CompetitionID: string;
   Name: string;
@@ -38,7 +38,7 @@ interface Environment {
 }
 
 /* eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any */
-function resolveStatuses(environment: any): any {
+export function resolveStatuses(environment: any): any {
   return {
     ...environment,
     build: {
@@ -72,5 +72,3 @@ function resolveStatuses(environment: any): any {
     }
   };
 }
-
-export { Environment, Build, Competition, resolveStatuses };

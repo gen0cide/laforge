@@ -1,8 +1,7 @@
 import { ID, varsMap, Tag, Status } from './common.model';
-import { Build } from './environment.model';
 import { ProvisionedHost } from './host.model';
 
-interface Network {
+export interface Network {
   id: ID;
   name: string;
   cidr: string;
@@ -11,7 +10,7 @@ interface Network {
   tags: Tag[];
 }
 
-interface ProvisionedNetwork {
+export interface ProvisionedNetwork {
   id: ID;
   name: string;
   cidr: string;
@@ -22,5 +21,3 @@ interface ProvisionedNetwork {
   network: Network;
   // build: Build; Circular dependency
 }
-
-export { Network, ProvisionedNetwork };

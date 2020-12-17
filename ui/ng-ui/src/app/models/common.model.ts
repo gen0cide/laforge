@@ -1,33 +1,32 @@
-import { AgentStatus } from './agent.model';
 import { Build, Environment } from './environment.model';
 import { ProvisionedNetwork } from './network.model';
 
-type ID = string;
+export type ID = string;
 
-interface varsMap {
+export interface varsMap {
   key?: string;
   value?: string;
 }
 
-interface configMap {
+export interface configMap {
   key?: string;
   value?: string;
 }
 
-interface User {
+export interface User {
   id: ID;
   name: string;
   uuid: string;
   email: string;
 }
 
-interface Tag {
+export interface Tag {
   id: ID;
   name: string;
   description?: string;
 }
 
-interface Team {
+export interface Team {
   id: ID;
   teamNumber: number;
   config: configMap[];
@@ -39,7 +38,7 @@ interface Team {
   provisionedNetworks: ProvisionedNetwork[];
 }
 
-enum ProvisionStatus {
+export enum ProvisionStatus {
   ProvStatusUndefined,
   ProvStatusAwaiting,
   ProvStatusInProgress,
@@ -48,7 +47,7 @@ enum ProvisionStatus {
   ProvStatusTainted
 }
 
-interface Status {
+export interface Status {
   state: ProvisionStatus;
   startedAt: string;
   endedAt: string;
@@ -56,28 +55,3 @@ interface Status {
   completed: boolean;
   error: string;
 }
-
-interface AgentStatusQueryResult {
-  environment: {
-    build: {
-      teams: [
-        {
-          id: string;
-          provisionedNetworks: [
-            {
-              id: string;
-              provisionedHosts: [
-                {
-                  id: string;
-                  heartbeat: AgentStatus;
-                }
-              ];
-            }
-          ];
-        }
-      ];
-    };
-  };
-}
-
-export { ID, varsMap, configMap, User, Tag, Team, Status, ProvisionStatus, AgentStatusQueryResult };

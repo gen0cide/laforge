@@ -1,6 +1,6 @@
 import { ID, Tag } from './common.model';
 
-interface FileDownload {
+export interface FileDownload {
   id: ID;
   sourceType: string;
   source: string;
@@ -13,16 +13,14 @@ interface FileDownload {
   tags: Tag[];
 }
 
-interface FileDelete {
+export interface FileDelete {
   id: ID;
   path: string;
 }
 
-interface FileExtract {
+export interface FileExtract {
   id: ID;
   source: string;
   destination: string;
   type: string;
 }
-
-export { FileDownload, FileDelete, FileExtract };

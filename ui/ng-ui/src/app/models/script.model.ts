@@ -1,7 +1,7 @@
 import { ID, Tag, User, varsMap } from './common.model';
 import { Finding } from './finding.model';
 
-interface Script {
+export interface Script {
   id: ID;
   name: string;
   language: string;
@@ -19,5 +19,3 @@ interface Script {
   maintainer: User;
   findings: Finding[];
 }
-
-export { Script };
