@@ -218,7 +218,7 @@ func TestEnvironment(testStatus *model.Status ) (*model.Environment,[]*model.Pro
 		SubnetIP:           "10.0.10.10",
 		Status:             testStatus,
 		Host:               &testLinuxHost1,
-		Heartbeat: 			nil,,
+		Heartbeat: 			nil,
 	}
 
 	testProHost3 := model.ProvisionedHost{

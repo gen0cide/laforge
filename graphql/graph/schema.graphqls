@@ -264,7 +264,7 @@ type ProvisionedHost {
   provisionedSteps: [ProvisionedStep]!
   host: Host!
   combinedOutput: String # Link to WebSocket
-  heartbeat: AgentStatus!
+  heartbeat: AgentStatus
 }
 
 type ProvisionedStep {
