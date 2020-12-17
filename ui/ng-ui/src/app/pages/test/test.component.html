@@ -25,3 +25,45 @@
     ></app-host>
   </mat-card-content>
 </mat-card>
+<mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Network Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.build.teams[0].provisionedNetworks[1]"
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.build.teams[0].provisionedNetworks[1]"
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.build.teams[0].provisionedNetworks[1]"
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-network>
+  </mat-card-content>
+</mat-card>
+<mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Team Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-team [team]="environment.build.teams[0]" [style]="'compact'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-team [team]="environment.build.teams[0]" [style]="'collapsed'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-team [team]="environment.build.teams[0]" [style]="'expanded'"></app-team>
+  </mat-card-content>
+</mat-card>

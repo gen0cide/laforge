@@ -14,11 +14,10 @@ export class NetworkComponent implements OnInit {
   @Input() provisionedNetwork: ProvisionedNetwork;
   @Input() status: Status;
   // @ViewChild('options') options: ElementRef;
-  optionsToggled: boolean;
+  @Input() style: 'compact' | 'collapsed' | 'expanded';
 
   constructor(public dialog: MatDialog) {
-    // private changeDetectorRef: ChangeDetectorRef // private renderer: Renderer2,
-    this.optionsToggled = false;
+    if (!this.style) this.style = 'compact';
   }
 
   ngOnInit(): void {
@@ -38,9 +37,9 @@ export class NetworkComponent implements OnInit {
     });
   }
 
-  toggleOptions(): void {
-    this.optionsToggled = !this.optionsToggled;
-  }
+  // toggleOptions(): void {
+  //   this.optionsToggled = !this.optionsToggled;
+  // }
 
   getStatus(): ProvisionStatus {
     let status: ProvisionStatus = this.status.state;
