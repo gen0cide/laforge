@@ -11,6 +11,7 @@
   ],
   "rules": {
     "@typescript-eslint/no-empty-function": ["warn"],
-    "no-warning-comments": ["warn", { "terms": ["todo", "fixme"], "location": "anywhere" }]
+    "no-warning-comments": ["warn", { "terms": ["todo", "fixme"], "location": "anywhere" }],
+    "no-console": ["warn"]
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { ApolloQueryResult } from '@apollo/client/core';
 import { QueryRef } from 'apollo-angular';
@@ -18,7 +18,7 @@ import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_s
   templateUrl: './monitor.component.html',
   styleUrls: ['./monitor.component.scss']
 })
-export class MonitorComponent implements OnInit {
+export class MonitorComponent implements OnInit, OnDestroy {
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
   environment: Environment = null;
   loaded = false;
@@ -46,6 +46,10 @@ export class MonitorComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    clearInterval(this.agentPollingInterval);
+  }
+
   initAgentStatusPolling(): void {
     // Prevent us from refetching the environment config every time
     this.environmentSubscription.unsubscribe();
@@ -56,6 +60,7 @@ export class MonitorComponent implements OnInit {
   }
 
   fetchAgentStatuses(): void {
+    console.log('fetching');
     this.loading = true;
     this.cdRef.detectChanges();
     this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
