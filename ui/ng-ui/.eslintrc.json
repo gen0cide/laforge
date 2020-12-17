@@ -2,15 +2,16 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2020,
+    "project": ["tsconfig.json", "tsconfig.app.json"],
     "sourceType": "module"
   },
-  "extends": [
-    "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
-    "plugin:prettier/recommended"
-  ],
+  "plugins": ["@typescript-eslint", "prettier", "@angular-eslint"],
+  "extends": ["plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint", "plugin:prettier/recommended", "plugin:@angular-eslint/recommended"],
   "rules": {
     "@typescript-eslint/no-empty-function": ["warn"],
-    "no-warning-comments": ["warn", { "terms": ["todo", "fixme"], "location": "anywhere" }]
+    "no-warning-comments": ["warn", { "terms": ["todo", "fixme"], "location": "anywhere" }],
+    "no-console": ["warn"],
+    "max-len": ["error", { "code": 140 }],
+    "@angular-eslint/no-empty-lifecycle-method": ["warn"]
   }
 }

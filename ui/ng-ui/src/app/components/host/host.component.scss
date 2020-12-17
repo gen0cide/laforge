@@ -67,14 +67,22 @@
     .host-status-icon {
       width: 2.5rem;
       height: 2.5rem;
+      margin-right: 0.5rem;
       border-radius: 1.25rem;
-      // margin-left: 0.25rem;
-      margin-right: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        color: white;
+      }
     }
   }
 }
 
 .host.expanded {
+  padding-right: 0;
+
   .steps {
     padding: 0.5rem;
     padding-right: 0;

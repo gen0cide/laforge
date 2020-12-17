@@ -6,7 +6,7 @@ import { FileDelete, FileDownload, FileExtract } from './file.model';
 // import { ProvisionedNetwork } from './network.model';
 import { Script } from './script.model';
 
-interface Host {
+export interface Host {
   id: ID;
   hostname: string;
   OS: string;
@@ -28,7 +28,7 @@ interface Host {
   fileExtracts?: FileExtract[];
 }
 
-interface ProvisionedHost {
+export interface ProvisionedHost {
   id: ID;
   subnetIP: string;
   status: Status;
@@ -38,7 +38,7 @@ interface ProvisionedHost {
   heartbeat?: AgentStatus;
 }
 
-interface ProvisionedStep {
+export interface ProvisionedStep {
   id: ID;
   provisionType: string;
   stepNumber: number;
@@ -51,5 +51,3 @@ interface ProvisionedStep {
   fileDelete?: FileDelete;
   fileExtract?: FileExtract;
 }
-
-export { Host, ProvisionedHost, ProvisionedStep };

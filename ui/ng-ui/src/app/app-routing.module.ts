@@ -6,8 +6,7 @@ import { ErrorsComponent } from './modules/errors/errors.component';
 export const routes: Routes = [
   {
     path: 'auth',
-    loadChildren: () =>
-      import('./modules/auth/auth.module').then((m) => m.AuthModule),
+    loadChildren: () => import('./modules/auth/auth.module').then((m) => m.AuthModule)
   },
   {
     path: 'errors',
@@ -16,14 +15,13 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [AuthGuard],
-    loadChildren: () =>
-      import('./pages/layout.module').then((m) => m.LayoutModule),
+    loadChildren: () => import('./pages/layout.module').then((m) => m.LayoutModule)
   },
-  { path: '**', redirectTo: 'errors', pathMatch: 'full' },
+  { path: '**', redirectTo: 'errors', pathMatch: 'full' }
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
+  exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

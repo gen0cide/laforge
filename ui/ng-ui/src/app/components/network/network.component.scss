@@ -44,6 +44,7 @@
 
   .hosts {
     margin-left: 1.25rem;
+    padding-right: 0;
     border-left: 1px solid #999999;
     border-bottom: 1px solid #999999;
     display: flex;
@@ -51,5 +52,15 @@
     align-items: flex-start;
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+}
+
+.network.expanded {
+  .hosts {
+    width: calc(100% - 1.25rem);
+  }
+
+  ::ng-deep app-host {
+    width: 100%;
   }
 }

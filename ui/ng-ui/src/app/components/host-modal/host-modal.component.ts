@@ -11,9 +11,10 @@ import { ProvisionedHost } from 'src/app/models/host.model';
 class HostModalComponent {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  constructor(public dialogRef: MatDialogRef<HostModalComponent>, @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost }) {
-    console.log(data.provisionedHost);
-  }
+  constructor(
+    public dialogRef: MatDialogRef<HostModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost }
+  ) {}
 
   onClose(): void {
     this.dialogRef.close();
@@ -22,6 +23,7 @@ class HostModalComponent {
   getStatusIcon(): string {
     if (this.data.provisionedHost.heartbeat) return 'check-circle';
     else return 'minus-circle';
+    // TODO: Fix for live statuses after finals
     // switch (this.data.provisionedHost.status.state) {
     //   case ProvisionStatus.ProvStatusComplete:
     //     return 'check-circle';
@@ -36,6 +38,7 @@ class HostModalComponent {
 
   getStatusColor(): string {
     if (this.data.provisionedHost.heartbeat) return 'success';
+    // TODO: Fix for live statuses after finals
     else return 'dark';
     switch (this.data.provisionedHost.status.state) {
       case ProvisionStatus.ProvStatusComplete:

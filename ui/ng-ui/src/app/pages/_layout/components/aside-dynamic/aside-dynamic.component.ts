@@ -3,7 +3,6 @@ import { Location } from '@angular/common';
 import { LayoutService, DynamicAsideMenuService } from '../../../../_metronic/core';
 import { Subscription } from 'rxjs';
 
-
 @Component({
   selector: 'app-aside-dynamic',
   templateUrl: './aside-dynamic.component.html',
@@ -28,26 +27,24 @@ export class AsideDynamicComponent implements OnInit, OnDestroy {
     private layout: LayoutService,
     private loc: Location,
     private menu: DynamicAsideMenuService,
-    private cdr: ChangeDetectorRef) { }
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     // load view settings
-    this.disableAsideSelfDisplay =
-      this.layout.getProp('aside.self.display') === false;
+    this.disableAsideSelfDisplay = this.layout.getProp('aside.self.display') === false;
     this.brandSkin = this.layout.getProp('brand.self.theme');
     this.headerLogo = this.getLogo();
     this.ulCSSClasses = this.layout.getProp('aside_menu_nav');
     this.asideMenuCSSClasses = this.layout.getStringCSSClasses('aside_menu');
     this.asideMenuHTMLAttributes = this.layout.getHTMLAttributes('aside_menu');
     this.brandClasses = this.layout.getProp('brand');
-    this.asideSelfMinimizeToggle = this.layout.getProp(
-      'aside.self.minimize.toggle'
-    );
+    this.asideSelfMinimizeToggle = this.layout.getProp('aside.self.minimize.toggle');
     this.asideMenuScroll = this.layout.getProp('aside.menu.scroll') ? 1 : 0;
     this.location = this.loc;
 
     // load menu
-    const subscr = this.menu.menuConfig$.subscribe(res => {
+    const subscr = this.menu.menuConfig$.subscribe((res) => {
       this.menuConfig = res;
       this.cdr.detectChanges();
     });
@@ -63,6 +60,6 @@ export class AsideDynamicComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(sb => sb.unsubscribe());
+    this.subscriptions.forEach((sb) => sb.unsubscribe());
   }
 }

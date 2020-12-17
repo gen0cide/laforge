@@ -8,15 +8,11 @@ const routes: Routes = [
   {
     path: '',
     component: DashboardComponent
-  },
+  }
 ];
 
 @NgModule({
   declarations: [DashboardComponent],
-  imports: [
-    MatSliderModule,
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
+  imports: [MatSliderModule, CommonModule, RouterModule.forChild(routes)]
 })
-export class DashboardModule { }
+export class DashboardModule {}

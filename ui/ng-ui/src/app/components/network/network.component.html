@@ -1,5 +1,5 @@
-<div class="network">
-  <div class="network-info" (click)="viewDetails()">
+<div class="network" (click)="style === 'compact' && viewDetails()" [ngClass]="style">
+  <div class="network-info" (click)="style !== 'compact' && viewDetails()">
     <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
       <i class="fal fa-network-wired"></i>
     </div>
@@ -12,7 +12,12 @@
       >
     </div>
   </div>
-  <div class="hosts">
-    <app-host *ngFor="let provHost of provisionedNetwork.provisionedHosts" [provisionedHost]="provHost" [status]="provHost.status"></app-host>
+  <div class="hosts" *ngIf="style === 'expanded' || style === 'compact'">
+    <app-host
+      *ngFor="let provHost of provisionedNetwork.provisionedHosts"
+      [provisionedHost]="provHost"
+      [status]="provHost.status"
+      [style]="style"
+    ></app-host>
   </div>
 </div>

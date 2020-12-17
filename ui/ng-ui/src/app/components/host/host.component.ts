@@ -27,8 +27,8 @@ export class HostComponent {
   }
 
   getStatusIcon(): string {
-    if (this.provisionedHost.heartbeat) return 'check-circle';
-    else return 'minus-circle';
+    if (this.provisionedHost.heartbeat) return 'check';
+    else return 'minus';
     // switch (this.status.state) {
     //   case ProvisionStatus.ProvStatusComplete:
     //     return 'check-circle';

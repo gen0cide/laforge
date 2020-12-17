@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { ProvisionStatus, Team } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-team',
@@ -9,15 +8,18 @@ import { ProvisionedNetwork } from 'src/app/models/network.model';
 })
 export class TeamComponent implements OnInit {
   @Input() title: string;
-  @Input() networks: ProvisionedNetwork[];
+  @Input() team: Team;
+  @Input() style: 'compact' | 'collapsed' | 'expanded';
 
-  constructor() {}
+  constructor() {
+    if (!this.style) this.style = 'compact';
+  }
 
   ngOnInit(): void {}
 
   getStatus(): ProvisionStatus {
     let status: ProvisionStatus = ProvisionStatus.ProvStatusComplete;
-    for (const network of this.networks) {
+    for (const network of this.team.provisionedNetworks) {
       switch (network.status.state) {
         case ProvisionStatus.ProvStatusFailed:
           status = ProvisionStatus.ProvStatusFailed;

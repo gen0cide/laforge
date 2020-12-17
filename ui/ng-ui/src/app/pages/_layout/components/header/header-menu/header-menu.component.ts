@@ -9,7 +9,7 @@ function getCurrentURL(location) {
 @Component({
   selector: 'app-header-menu',
   templateUrl: './header-menu.component.html',
-  styleUrls: ['./header-menu.component.scss'],
+  styleUrls: ['./header-menu.component.scss']
 })
 export class HeaderMenuComponent implements OnInit {
   ulCSSClasses: string;
@@ -24,9 +24,7 @@ export class HeaderMenuComponent implements OnInit {
   ngOnInit(): void {
     this.ulCSSClasses = this.layout.getStringCSSClasses('header_menu_nav');
     this.rootArrowEnabled = this.layout.getProp('header.menu.self.rootArrow');
-    this.headerMenuDesktopToggle = this.layout.getProp(
-      'header.menu.desktop.toggle'
-    );
+    this.headerMenuDesktopToggle = this.layout.getProp('header.menu.desktop.toggle');
   }
 
   getMenuItemActive(url) {

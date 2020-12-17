@@ -1,7 +1,7 @@
 import { Host } from '@angular/core';
 import { Tag, User } from './common.model';
 
-enum FindingSeverity {
+export enum FindingSeverity {
   ZeroSeverity,
   LowSeverity,
   MediumSeverity,
@@ -10,7 +10,7 @@ enum FindingSeverity {
   NullSeverity
 }
 
-enum FindingDifficulty {
+export enum FindingDifficulty {
   ZeroDifficulty,
   NoviceDifficulty,
   AdvancedDifficulty,
@@ -18,7 +18,7 @@ enum FindingDifficulty {
   NullDifficulty
 }
 
-interface Finding {
+export interface Finding {
   name: string;
   description: string;
   severity: FindingSeverity;
@@ -27,5 +27,3 @@ interface Finding {
   tags: Tag[];
   Host: Host;
 }
-
-export { Finding };

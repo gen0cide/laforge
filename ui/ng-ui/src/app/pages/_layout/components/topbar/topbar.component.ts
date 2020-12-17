@@ -15,7 +15,7 @@ import { KTUtil } from '../../../../../assets/js/components/util';
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.scss'],
+  styleUrls: ['./topbar.component.scss']
 })
 export class TopbarComponent implements OnInit, AfterViewInit {
   user$: Observable<UserModel>;
@@ -41,28 +41,16 @@ export class TopbarComponent implements OnInit, AfterViewInit {
     // topbar extras
     this.extraSearchDisplay = this.layout.getProp('extras.search.display');
     this.extrasSearchLayout = this.layout.getProp('extras.search.layout');
-    this.extrasNotificationsDisplay = this.layout.getProp(
-      'extras.notifications.display'
-    );
-    this.extrasNotificationsLayout = this.layout.getProp(
-      'extras.notifications.layout'
-    );
-    this.extrasQuickActionsDisplay = this.layout.getProp(
-      'extras.quickActions.display'
-    );
-    this.extrasQuickActionsLayout = this.layout.getProp(
-      'extras.quickActions.layout'
-    );
+    this.extrasNotificationsDisplay = this.layout.getProp('extras.notifications.display');
+    this.extrasNotificationsLayout = this.layout.getProp('extras.notifications.layout');
+    this.extrasQuickActionsDisplay = this.layout.getProp('extras.quickActions.display');
+    this.extrasQuickActionsLayout = this.layout.getProp('extras.quickActions.layout');
     this.extrasCartDisplay = this.layout.getProp('extras.cart.display');
     this.extrasCartLayout = this.layout.getProp('extras.cart.layout');
-    this.extrasLanguagesDisplay = this.layout.getProp(
-      'extras.languages.display'
-    );
+    this.extrasLanguagesDisplay = this.layout.getProp('extras.languages.display');
     this.extrasUserDisplay = this.layout.getProp('extras.user.display');
     this.extrasUserLayout = this.layout.getProp('extras.user.layout');
-    this.extrasQuickPanelDisplay = this.layout.getProp(
-      'extras.quickPanel.display'
-    );
+    this.extrasQuickPanelDisplay = this.layout.getProp('extras.quickPanel.display');
   }
 
   ngAfterViewInit(): void {
@@ -73,18 +61,12 @@ export class TopbarComponent implements OnInit, AfterViewInit {
         KTLayoutQuickSearch.init('kt_quick_search');
       }
 
-      if (
-        this.extrasNotificationsDisplay &&
-        this.extrasNotificationsLayout === 'offcanvas'
-      ) {
+      if (this.extrasNotificationsDisplay && this.extrasNotificationsLayout === 'offcanvas') {
         // Init Quick Notifications Offcanvas Panel
         KTLayoutQuickNotifications.init('kt_quick_notifications');
       }
 
-      if (
-        this.extrasQuickActionsDisplay &&
-        this.extrasQuickActionsLayout === 'offcanvas'
-      ) {
+      if (this.extrasQuickActionsDisplay && this.extrasQuickActionsLayout === 'offcanvas') {
         // Init Quick Actions Offcanvas Panel
         KTLayoutQuickActions.init('kt_quick_actions');
       }

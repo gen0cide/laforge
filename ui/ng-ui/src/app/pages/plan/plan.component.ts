@@ -3,7 +3,7 @@ import { Environment } from 'src/app/models/environment.model';
 
 // import { Step } from '../.../../../models/plan.model';
 import { PlanService } from '../../plan.service';
-import {chike} from "../../../data/sample-config";
+import { chike } from '../../../data/sample-config';
 
 // interface EnvConfig {
 //   text : string
@@ -15,7 +15,6 @@ import {chike} from "../../../data/sample-config";
   styleUrls: ['./plan.component.scss']
 })
 export class PlanComponent implements OnInit {
-
   environment: Environment = chike;
   constructor() {}
   ngOnInit(): void {}

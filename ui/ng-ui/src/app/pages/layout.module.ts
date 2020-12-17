@@ -2,10 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InlineSVGModule } from 'ng-inline-svg';
 import { PagesRoutingModule } from './pages-routing.module';
-import {
-  NgbDropdownModule,
-  NgbProgressbarModule,
-} from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslationModule } from '../modules/i18n/translation.module';
 import { LayoutComponent } from './_layout/layout.component';
 import { ScriptsInitComponent } from './_layout/init/scipts-init/scripts-init.component';
@@ -32,7 +29,7 @@ import { AsideDynamicComponent } from './_layout/components/aside-dynamic/aside-
     HeaderMenuComponent,
     TopbarComponent,
     LanguageSelectorComponent,
-    AsideDynamicComponent,
+    AsideDynamicComponent
   ],
   imports: [
     CommonModule,
@@ -43,7 +40,7 @@ import { AsideDynamicComponent } from './_layout/components/aside-dynamic/aside-
     NgbDropdownModule,
     NgbProgressbarModule,
     CoreModule,
-    SubheaderModule,
-  ],
+    SubheaderModule
+  ]
 })
-export class LayoutModule { }
+export class LayoutModule {}

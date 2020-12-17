@@ -1,9 +1,4 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core';
 import { TranslationService } from './modules/i18n/translation.service';
 // language list
 import { locale as enLang } from './modules/i18n/vocabs/en';
@@ -20,25 +15,14 @@ import { Subscription } from 'rxjs';
   selector: 'body[root]',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
 
-  constructor(
-    private translationService: TranslationService,
-    private splashScreenService: SplashScreenService,
-    private router: Router
-  ) {
+  constructor(private translationService: TranslationService, private splashScreenService: SplashScreenService, private router: Router) {
     // register translations
-    this.translationService.loadTranslations(
-      enLang,
-      chLang,
-      esLang,
-      jpLang,
-      deLang,
-      frLang
-    );
+    this.translationService.loadTranslations(enLang, chLang, esLang, jpLang, deLang, frLang);
   }
 
   ngOnInit() {
