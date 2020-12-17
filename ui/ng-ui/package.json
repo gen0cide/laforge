@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
-    "lint": "tsc --noEmit && eslint . --ext js,ts,json --quiet --fix",
+    "lint": "eslint ./src/app --ext js,ts,json --quiet --fix",
     "e2e": "ng e2e",
     "rtl": "webpack --config webpack-rtl.config.js"
   },
@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.1000.4",
+    "@angular-eslint/eslint-plugin": "^0.8.0-beta.6",
     "@angular/cli": "~10.0.4",
     "@angular/compiler-cli": "^10.0.12",
     "@types/jasmine": "~3.5.0",

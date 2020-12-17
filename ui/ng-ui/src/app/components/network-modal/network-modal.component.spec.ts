@@ -8,9 +8,8 @@ describe('NetworkModalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NetworkModalComponent ]
-    })
-    .compileComponents();
+      declarations: [NetworkModalComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -18,6 +18,14 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [MonitorComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule, MatTableModule, MatButtonModule, MatSelectModule]
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    ViewComponentsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatSelectModule
+  ]
 })
 export class MonitorModule {}

@@ -9,7 +9,7 @@ function getCurrentURL(location) {
 @Component({
   selector: 'app-aside',
   templateUrl: './aside.component.html',
-  styleUrls: ['./aside.component.scss'],
+  styleUrls: ['./aside.component.scss']
 })
 export class AsideComponent implements OnInit {
   disableAsideSelfDisplay: boolean;
@@ -23,20 +23,17 @@ export class AsideComponent implements OnInit {
   asideMenuScroll = 1;
   asideSelfMinimizeToggle = false;
 
-  constructor(private layout: LayoutService, private loc: Location) { }
+  constructor(private layout: LayoutService, private loc: Location) {}
 
   ngOnInit(): void {
-    this.disableAsideSelfDisplay =
-      this.layout.getProp('aside.self.display') === false;
+    this.disableAsideSelfDisplay = this.layout.getProp('aside.self.display') === false;
     this.brandSkin = this.layout.getProp('brand.self.theme');
     this.headerLogo = this.getLogo();
     this.ulCSSClasses = this.layout.getProp('aside_menu_nav');
     this.asideMenuCSSClasses = this.layout.getStringCSSClasses('aside_menu');
     this.asideMenuHTMLAttributes = this.layout.getHTMLAttributes('aside_menu');
     this.brandClasses = this.layout.getProp('brand');
-    this.asideSelfMinimizeToggle = this.layout.getProp(
-      'aside.self.minimize.toggle'
-    );
+    this.asideSelfMinimizeToggle = this.layout.getProp('aside.self.minimize.toggle');
     this.asideMenuScroll = this.layout.getProp('aside.menu.scroll') ? 1 : 0;
     this.location = this.loc;
   }

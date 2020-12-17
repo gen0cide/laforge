@@ -19,6 +19,15 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [TestComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule, MatTableModule, MatButtonModule, MatListModule, MatDividerModule]
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    ViewComponentsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatListModule,
+    MatDividerModule
+  ]
 })
 export class TestModule {}

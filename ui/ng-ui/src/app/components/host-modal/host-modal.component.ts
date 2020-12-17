@@ -11,7 +11,10 @@ import { ProvisionedHost } from 'src/app/models/host.model';
 class HostModalComponent {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  constructor(public dialogRef: MatDialogRef<HostModalComponent>, @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost }) {}
+  constructor(
+    public dialogRef: MatDialogRef<HostModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost }
+  ) {}
 
   onClose(): void {
     this.dialogRef.close();

@@ -59,7 +59,15 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, MatInputModule],
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    MatSelectModule,
+    MatInputModule
+  ],
   exports: [RouterModule]
 })
 export class PagesRoutingModule {}

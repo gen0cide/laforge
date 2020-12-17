@@ -11,7 +11,10 @@ import { ProvisionedNetwork } from 'src/app/models/network.model';
 export class NetworkModalComponent {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  constructor(public dialogRef: MatDialogRef<NetworkModalComponent>, @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }) {}
+  constructor(
+    public dialogRef: MatDialogRef<NetworkModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }
+  ) {}
 
   onClose(): void {
     this.dialogRef.close();

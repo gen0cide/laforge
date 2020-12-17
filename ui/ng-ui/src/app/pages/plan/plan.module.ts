@@ -7,19 +7,14 @@ import { MatCardModule } from '@angular/material/card';
 import { ViewComponentsModule } from '../../components/view-components.module';
 
 const routes: Routes = [
-    {
-        path: '',
-        component: PlanComponent
-    }
+  {
+    path: '',
+    component: PlanComponent
+  }
 ];
 
 @NgModule({
-    declarations: [PlanComponent],
-    imports: [
-        CommonModule,
-        RouterModule.forChild(routes),
-        MatCardModule,
-        ViewComponentsModule
-    ]
+  declarations: [PlanComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule]
 })
 export class PlanModule {}

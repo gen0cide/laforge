@@ -10,17 +10,15 @@ import KTLayoutAsideMenu from '../../../../../assets/js/layout/base/aside-menu';
 
 @Component({
   selector: 'app-scripts-init',
-  templateUrl: './scripts-init.component.html',
+  templateUrl: './scripts-init.component.html'
 })
 export class ScriptsInitComponent implements OnInit, AfterViewInit {
   asideSelfMinimizeToggle = false;
 
-  constructor(private layout: LayoutService) { }
+  constructor(private layout: LayoutService) {}
 
   ngOnInit(): void {
-    this.asideSelfMinimizeToggle = this.layout.getProp(
-      'aside.self.minimize.toggle'
-    );
+    this.asideSelfMinimizeToggle = this.layout.getProp('aside.self.minimize.toggle');
   }
 
   ngAfterViewInit() {
