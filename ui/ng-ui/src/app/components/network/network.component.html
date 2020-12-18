@@ -1,23 +1,37 @@
-<div class="network" (click)="style === 'collapsed' && viewDetails()" [ngClass]="style">
-  <div class="network-info" (click)="style !== 'collapsed' && viewDetails()">
-    <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
-      <i class="fal fa-network-wired"></i>
-    </div>
-    <div class="network-header">
-      <span class="network-title"
-        ><b>{{ provisionedNetwork.name }}</b></span
-      >
-      <span class="network-details"
-        ><em>{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.network.vdiVisible ? 'true' : 'false' }}</em></span
-      >
-    </div>
+<div class="network" (click)="style === 'collapsed' && viewDetails()" [ngClass]="style" [class.selectable]="selectable">
+  <div class="rebuild-select" *ngIf="selectable">
+    <mat-checkbox
+      [checked]="isSelected"
+      [indeterminate]="parentSelected"
+      (click)="$event.stopPropagation()"
+      (change)="onSelect()"
+      (indeterminateChange)="onIndeterminateChange($event)"
+      [aria-label]="'Select Network'"
+    ></mat-checkbox>
   </div>
-  <div class="hosts" *ngIf="style === 'expanded' || style === 'compact'">
-    <app-host
-      *ngFor="let provHost of provisionedNetwork.provisionedHosts"
-      [provisionedHost]="provHost"
-      [status]="provHost.status"
-      [style]="style"
-    ></app-host>
+  <div class="network-container">
+    <div class="network-info" (click)="style !== 'collapsed' && viewDetails()">
+      <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
+        <i class="fal fa-network-wired"></i>
+      </div>
+      <div class="network-header">
+        <span class="network-title"
+          ><b>{{ provisionedNetwork.name }}</b></span
+        >
+        <span class="network-details"
+          ><em>{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.network.vdiVisible ? 'true' : 'false' }}</em></span
+        >
+      </div>
+    </div>
+    <div class="hosts" *ngIf="style === 'expanded' || style === 'compact'">
+      <app-host
+        *ngFor="let provHost of provisionedNetwork.provisionedHosts"
+        [provisionedHost]="provHost"
+        [status]="provHost.status"
+        [style]="style"
+        [selectable]="selectable"
+        [parentSelected]="isSelected || parentSelected"
+      ></app-host>
+    </div>
   </div>
 </div>

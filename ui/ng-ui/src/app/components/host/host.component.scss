@@ -1,6 +1,10 @@
 .host {
   padding: 0.5rem;
 
+  .host-container {
+    width: 100%;
+  }
+
   .host-info {
     width: 100%;
     background-color: #f5f5f5;
@@ -28,6 +32,7 @@
 
 .host.compact {
   width: auto;
+  display: flex;
 
   .host-info {
     height: 1.6rem;
@@ -101,5 +106,31 @@
 
   ::ng-deep app-step:not(:last-of-type) .step {
     margin-bottom: 0.5rem;
+  }
+}
+
+.host.compact.selectable {
+  .rebuild-select {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.host.collapsed.selectable,
+.host.expanded.selectable {
+  .rebuild-select {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .host-container {
+    width: calc(100% - 2.5rem);
   }
 }

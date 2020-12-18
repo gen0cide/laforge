@@ -1,20 +1,28 @@
-<div class="team" [ngClass]="style">
-  <div class="team-info">
-    <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
-      <i class="fal fa-users"></i>
-    </div>
-    <div class="team-details">
-      <span class="team-number"
-        ><b>Team {{ team.teamNumber }}</b></span
-      >
-    </div>
+<div class="team" [ngClass]="style" [class.selectable]="selectable">
+  <div class="rebuild-select" *ngIf="selectable">
+    <!-- <input type="checkbox" (change)="onSelect($event)" title="Select for rebuild" aria-label="Select for rebuild" /> -->
+    <mat-checkbox [checked]="isSelected" (change)="onSelect()" [aria-label]="'Select Network'"></mat-checkbox>
   </div>
-  <div class="networks" *ngIf="style === 'expanded' || style === 'compact'">
-    <app-network
-      *ngFor="let provNetwork of team.provisionedNetworks"
-      [provisionedNetwork]="provNetwork"
-      [status]="provNetwork.status"
-      [style]="style"
-    ></app-network>
+  <div class="team-container">
+    <div class="team-info">
+      <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
+        <i class="fal fa-users"></i>
+      </div>
+      <div class="team-details">
+        <span class="team-number"
+          ><b>Team {{ team.teamNumber }}</b></span
+        >
+      </div>
+    </div>
+    <div class="networks" *ngIf="style === 'expanded' || style === 'compact'">
+      <app-network
+        *ngFor="let provNetwork of team.provisionedNetworks"
+        [provisionedNetwork]="provNetwork"
+        [status]="provNetwork.status"
+        [style]="style"
+        [selectable]="selectable"
+        [parentSelected]="isSelected"
+      ></app-network>
+    </div>
   </div>
 </div>

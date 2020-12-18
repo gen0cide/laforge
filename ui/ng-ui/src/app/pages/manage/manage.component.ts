@@ -13,6 +13,7 @@ export class ManageComponent implements OnInit {
   environment: Environment = null;
   loaded = false;
   displayedColumns: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
+  selectionMode = false;
 
   constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private subheader: SubheaderService) {
     this.subheader.setTitle('Environment');
@@ -29,5 +30,9 @@ export class ManageComponent implements OnInit {
 
   rebuildEnv(): void {
     console.log('rebuilding env...');
+  }
+
+  toggleSelectionMode(): void {
+    this.selectionMode = !this.selectionMode;
   }
 }

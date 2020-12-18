@@ -1,9 +1,13 @@
 .network {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
+
+  .network-container {
+    width: 100%;
+  }
 
   .network-info {
     width: 100%;
@@ -62,5 +66,19 @@
 
   ::ng-deep app-host {
     width: 100%;
+  }
+}
+
+.network.selectable {
+  .rebuild-select {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .network-container {
+    width: calc(100% - 2.5rem);
   }
 }

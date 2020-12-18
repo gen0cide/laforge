@@ -5,9 +5,13 @@
   margin: 0;
   margin-bottom: 1rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
+
+  .team-container {
+    width: 100%;
+  }
 
   .team-info {
     // width: 20rem;
@@ -96,5 +100,19 @@
     ::ng-deep .network {
       padding-bottom: 0.5rem;
     }
+  }
+}
+
+.team.selectable {
+  .rebuild-select {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .team-container {
+    width: calc(100% - 2.5rem);
   }
 }

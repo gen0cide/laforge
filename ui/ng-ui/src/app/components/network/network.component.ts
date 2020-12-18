@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
-import { ProvisionedHost } from 'src/app/models/host.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { RebuildService } from 'src/app/services/rebuild/rebuild.service';
 import { NetworkModalComponent } from '../network-modal/network-modal.component';
 
 @Component({
@@ -13,21 +14,18 @@ import { NetworkModalComponent } from '../network-modal/network-modal.component'
 export class NetworkComponent implements OnInit {
   @Input() provisionedNetwork: ProvisionedNetwork;
   @Input() status: Status;
-  // @ViewChild('options') options: ElementRef;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
+  @Input() selectable: boolean;
+  @Input() parentSelected: boolean;
+  isSelected = false;
 
-  constructor(public dialog: MatDialog) {
+  constructor(public dialog: MatDialog, private rebuild: RebuildService) {
     if (!this.style) this.style = 'compact';
+    if (!this.selectable) this.selectable = false;
+    if (!this.parentSelected) this.parentSelected = false;
   }
 
-  ngOnInit(): void {
-    // this.renderer.listen('window', 'click', (e: Event) => {
-    //   if (!this.options.nativeElement.contains(e.target)) {
-    //     this.optionsToggled = false;
-    //     this.changeDetectorRef.markForCheck();
-    //   }
-    // });
-  }
+  ngOnInit(): void {}
 
   viewDetails(): void {
     this.dialog.open(NetworkModalComponent, {
@@ -36,10 +34,6 @@ export class NetworkComponent implements OnInit {
       data: { provisionedNetwork: this.provisionedNetwork }
     });
   }
-
-  // toggleOptions(): void {
-  //   this.optionsToggled = !this.optionsToggled;
-  // }
 
   getStatus(): ProvisionStatus {
     let numWithAgentData = 0;
@@ -64,5 +58,15 @@ export class NetworkComponent implements OnInit {
       default:
         return 'dark';
     }
+  }
+
+  onSelect(): void {
+    this.isSelected = !this.isSelected;
+    if (this.isSelected) this.rebuild.addNetwork(this.provisionedNetwork);
+    else this.rebuild.removeNetwork(this.provisionedNetwork);
+  }
+
+  onIndeterminateChange(isIndeterminate: boolean): void {
+    if (!isIndeterminate && this.isSelected) setTimeout(() => this.rebuild.addNetwork(this.provisionedNetwork), 500);
   }
 }

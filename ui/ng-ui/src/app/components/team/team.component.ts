@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ProvisionStatus, Team } from 'src/app/models/common.model';
+import { RebuildService } from '../../services/rebuild/rebuild.service';
 
 @Component({
   selector: 'app-team',
@@ -10,9 +11,12 @@ export class TeamComponent implements OnInit {
   @Input() title: string;
   @Input() team: Team;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
+  @Input() selectable: boolean;
+  isSelected = false;
 
-  constructor() {
+  constructor(private rebuild: RebuildService) {
     if (!this.style) this.style = 'compact';
+    if (!this.selectable) this.selectable = false;
   }
 
   ngOnInit(): void {}
@@ -43,5 +47,11 @@ export class TeamComponent implements OnInit {
       default:
         return 'dark';
     }
+  }
+
+  onSelect() {
+    this.isSelected = !this.isSelected;
+    if (this.isSelected) this.team.provisionedNetworks.forEach(this.rebuild.addNetwork);
+    else this.team.provisionedNetworks.forEach(this.rebuild.removeNetwork);
   }
 }
