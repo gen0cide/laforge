@@ -17,7 +17,7 @@ func (Network) Fields() []ent.Field {
 		field.String("name"),
 		field.String("cidr"),
 		field.Bool("vdi_visible"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 	}
 }
 

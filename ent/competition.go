@@ -19,7 +19,7 @@ type Competition struct {
 	// RootPassword holds the value of the "root_password" field.
 	RootPassword string `json:"root_password,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
 	Edges                   CompetitionEdges `json:"edges"`

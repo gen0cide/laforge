@@ -1,11 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"path/filepath"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -235,7 +238,8 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 	return nil
 }
 
-func (p *ProvisionedHost) CreateProvisionedHostEntry(pn *ent.ProvisioningNetwork, ctx context.Context, client *ent.Client) (*ent.ProvisionedHost, error) {
+// CreateProvisionedHostEntry ...
+func (p *ProvisionedHost) CreateProvisionedHostEntry(ctx context.Context, pn *ent.ProvisionedNetwork, client *ent.Client) (*ent.ProvisionedHost, error) {
 	tag, err = CreateTagEntry(p.ID, p.Tags, ctx, client)
 
 	if err != nil {
@@ -272,7 +276,7 @@ func (p *ProvisionedHost) CreateProvisionedHostEntry(pn *ent.ProvisioningNetwork
 	}
 
 	for k, v := range p.ProvisioningSteps {
-		ps, err = v.CreateProvisioningStepEntry(ph, ctx, client)
+		ps, err = v.CreateProvisioningStepEntry(ctx, ph, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating provisioned host: %v", err)
@@ -282,5 +286,4 @@ func (p *ProvisionedHost) CreateProvisionedHostEntry(pn *ent.ProvisioningNetwork
 
 	cli.Logger.Debugf("provisioned host was created: ", ph)
 	return ph, nil
-	}
 }

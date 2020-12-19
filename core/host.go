@@ -361,8 +361,8 @@ func (h *Host) Index(base *Laforge) error {
 func (d *Disk) CreateDiskEntry(ctx context.Context, client *ent.Client) (*ent.Disk, error) {
 	disk, err := client.Disk.
 		Create().
-		SetSize(d.Size)
-	Save(ctx)
+		SetSize(d.Size).
+		Save(ctx)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating disk: %v", err)
@@ -374,21 +374,21 @@ func (d *Disk) CreateDiskEntry(ctx context.Context, client *ent.Client) (*ent.Di
 }
 
 func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Host, error) {
-	disk, err = h.Disk.CreateDiskEntry(ctx, client)
+	disk, err := h.Disk.CreateDiskEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating host: %v", err)
 		return nil, err
 	}
 
-	user, err = h.Maintainer.CreateUserEntry(ctx, client)
+	user, err := h.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating host: %v", err)
 		return nil, err
 	}
 
-	tag, err = CreateTagEntry(h.ID, h.Tags, ctx, client)
+	tag, err := CreateTagEntry(h.ID, h.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating host: %v", err)
@@ -399,19 +399,19 @@ func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Ho
 		Create().
 		SetHostname(h.Hostname).
 		SetDescription(h.Description).
-		SetOs(h.OS).
+		SetOS(h.OS).
 		SetLastOctet(h.LastOctet).
-		SetAllowMacChanges(h.AllowMACChanges).
-		SetExposedTcpPorts(h.ExposedTCPPorts).
-		SetExposedUdpPorts(h.ExposedUDPPorts).
+		SetAllowMACChanges(h.AllowMACChanges).
+		SetExposedTCPPorts(h.ExposedTCPPorts).
+		SetExposedUDPPorts(h.ExposedUDPPorts).
 		SetOverridePassword(h.OverridePassword).
 		SetVars(h.Vars).
 		SetUserGroups(h.UserGroups).
-		SetDependsOn(h.DependsOn).
-		SetScripts(h.Scripts).
-		SetCommands(h.Commands).
-		SetRemoteFiles(h.RemoteFiles).
-		SetDnsRecords(h.DNSRecords).
+		// SetDependsOn(h.DependsOn). // Not in the Laforge Host Struct
+		// SetScripts(h.Scripts).
+		// SetCommands(h.Commands).
+		// SetRemoteFiles(h.RemoteFiles).
+		// SetDnsRecords(h.DNSRecords).
 		AddDisk(disk).
 		AddMaintainer(user).
 		AddTag(tag).

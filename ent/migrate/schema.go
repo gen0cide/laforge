@@ -667,7 +667,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "email", Type: field.TypeString},
-		{Name: "build_user", Type: field.TypeInt, Nullable: true},
+		{Name: "build_maintainer", Type: field.TypeInt, Nullable: true},
 		{Name: "command_user", Type: field.TypeInt, Nullable: true},
 		{Name: "environment_user", Type: field.TypeInt, Nullable: true},
 		{Name: "finding_user", Type: field.TypeInt, Nullable: true},
@@ -682,7 +682,7 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_builds_user",
+				Symbol:  "users_builds_maintainer",
 				Columns: []*schema.Column{UsersColumns[4]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},

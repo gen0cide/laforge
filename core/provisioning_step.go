@@ -199,7 +199,9 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 	return nil
 }
 
-func (p *ProvisioningStep) CreateProvisioningStepEntry(ph *ent.ProvisionedHost, ctx context.Context, client *ent.Client) (*ent.ProvisioningStep, error) {
+
+// CreateProvisioningStepEntry ...
+func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *ent.ProvisionedHost, client *ent.Client) (*ent.ProvisioningStep, error) {
 	tag, err = CreateTagEntry(p.ID, p.Tags, ctx, client)
 
 	if err != nil {
@@ -284,39 +286,37 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ph *ent.ProvisionedHost, 
 			AddTag(tag).
 			Save(ctx)
 	// These will become useful in the future
-	"""
-	case p.FileDownload != nil:
-		ps, err := client.ProvisioningStep.
-			Create().
-			SetProvisionerType(p.ProvisionerType).
-			SetStepNumber(p.StepNumber).
-			AddProvisionedHost(ph).
-			AddStatus(status).
-			AddFileDownload().
-			AddTag(tag).
-			Save(ctx)
-	case p.FileDelete != nil:
-		ps, err := client.ProvisioningStep.
-			Create().
-			SetProvisionerType(p.ProvisionerType).
-			SetStepNumber(p.StepNumber).
-			AddProvisionedHost(ph).
-			AddStatus(status).
-			AddFileDelete().
-			AddTag(tag).
-			Save(ctx)
-	case p.FileExtract != nil:
-		ps, err := client.ProvisioningStep.
-			Create().
-			SetProvisionerType(p.ProvisionerType).
-			SetStepNumber(p.StepNumber).
-			AddProvisionedHost(ph).
-			AddStatus(status).
-			AddFileExtract().
-			AddTag(tag).
-			Save(ctx)
-	"""
-	}
+	// case p.FileDownload != nil:
+	// 	ps, err := client.ProvisioningStep.
+	// 		Create().
+	// 		SetProvisionerType(p.ProvisionerType).
+	// 		SetStepNumber(p.StepNumber).
+	// 		AddProvisionedHost(ph).
+	// 		AddStatus(status).
+	// 		AddFileDownload().
+	// 		AddTag(tag).
+	// 		Save(ctx)
+	// case p.FileDelete != nil:
+	// 	ps, err := client.ProvisioningStep.
+	// 		Create().
+	// 		SetProvisionerType(p.ProvisionerType).
+	// 		SetStepNumber(p.StepNumber).
+	// 		AddProvisionedHost(ph).
+	// 		AddStatus(status).
+	// 		AddFileDelete().
+	// 		AddTag(tag).
+	// 		Save(ctx)
+	// case p.FileExtract != nil:
+	// 	ps, err := client.ProvisioningStep.
+	// 		Create().
+	// 		SetProvisionerType(p.ProvisionerType).
+	// 		SetStepNumber(p.StepNumber).
+	// 		AddProvisionedHost(ph).
+	// 		AddStatus(status).
+	// 		AddFileExtract().
+	// 		AddTag(tag).
+	// 		Save(ctx)
+	// }
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating provisioning step: %v", err)
@@ -325,4 +325,5 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ph *ent.ProvisionedHost, 
 
 	cli.Logger.Debugf("provisioning step was created: ", ps)
 	return ps, nil
+}
 }

@@ -71,8 +71,8 @@ func (hc *HostCreate) SetOverridePassword(s string) *HostCreate {
 }
 
 // SetVars sets the vars field.
-func (hc *HostCreate) SetVars(s []string) *HostCreate {
-	hc.mutation.SetVars(s)
+func (hc *HostCreate) SetVars(m map[string]string) *HostCreate {
+	hc.mutation.SetVars(m)
 	return hc
 }
 

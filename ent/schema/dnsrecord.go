@@ -18,7 +18,7 @@ func (DNSRecord) Fields() []ent.Field {
 		field.JSON("values", []string{}),
 		field.String("type"),
 		field.String("zone"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.Bool("disabled"),
 	}
 }

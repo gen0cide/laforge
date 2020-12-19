@@ -25,7 +25,7 @@ type DNS struct {
 	// NtpServers holds the value of the "ntp_servers" field.
 	NtpServers []string `json:"ntp_servers,omitempty"`
 	// Config holds the value of the "config" field.
-	Config          []string `json:"config,omitempty"`
+	Config          map[string]string `json:"config,omitempty"`
 	competition_dns *int
 }
 

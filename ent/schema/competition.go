@@ -15,7 +15,7 @@ type Competition struct {
 func (Competition) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("root_password"),
-		field.JSON("config", []string{}),
+		field.JSON("config", map[string]string{}),
 	}
 }
 

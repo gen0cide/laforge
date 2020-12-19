@@ -33,7 +33,7 @@ type Host struct {
 	// OverridePassword holds the value of the "override_password" field.
 	OverridePassword string `json:"override_password,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// UserGroups holds the value of the "user_groups" field.
 	UserGroups []string `json:"user_groups,omitempty"`
 	// DependsOn holds the value of the "depends_on" field.

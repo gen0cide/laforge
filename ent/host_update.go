@@ -85,8 +85,8 @@ func (hu *HostUpdate) SetOverridePassword(s string) *HostUpdate {
 }
 
 // SetVars sets the vars field.
-func (hu *HostUpdate) SetVars(s []string) *HostUpdate {
-	hu.mutation.SetVars(s)
+func (hu *HostUpdate) SetVars(m map[string]string) *HostUpdate {
+	hu.mutation.SetVars(m)
 	return hu
 }
 
@@ -656,8 +656,8 @@ func (huo *HostUpdateOne) SetOverridePassword(s string) *HostUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (huo *HostUpdateOne) SetVars(s []string) *HostUpdateOne {
-	huo.mutation.SetVars(s)
+func (huo *HostUpdateOne) SetVars(m map[string]string) *HostUpdateOne {
+	huo.mutation.SetVars(m)
 	return huo
 }
 

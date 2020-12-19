@@ -27,8 +27,8 @@ func (cc *CompetitionCreate) SetRootPassword(s string) *CompetitionCreate {
 }
 
 // SetConfig sets the config field.
-func (cc *CompetitionCreate) SetConfig(s []string) *CompetitionCreate {
-	cc.mutation.SetConfig(s)
+func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
+	cc.mutation.SetConfig(m)
 	return cc
 }
 

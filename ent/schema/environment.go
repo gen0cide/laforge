@@ -22,7 +22,7 @@ func (Environment) Fields() []ent.Field {
 		field.Int("revision"),
 		field.JSON("admin_cidrs", []string{}),
 		field.JSON("exposed_vdi_ports", []string{}),
-		field.JSON("config", []string{}),
+		field.JSON("config", map[string]string{}),
 	}
 }
 

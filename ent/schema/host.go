@@ -22,7 +22,7 @@ func (Host) Fields() []ent.Field {
 		field.JSON("exposed_tcp_ports", []string{}),
 		field.JSON("exposed_udp_ports", []string{}),
 		field.String("override_password"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.JSON("user_groups", []string{}),
 		field.JSON("depends_on", []string{}),
 		field.JSON("scripts", []string{}),

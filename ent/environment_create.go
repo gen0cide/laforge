@@ -76,8 +76,8 @@ func (ec *EnvironmentCreate) SetExposedVdiPorts(s []string) *EnvironmentCreate {
 }
 
 // SetConfig sets the config field.
-func (ec *EnvironmentCreate) SetConfig(s []string) *EnvironmentCreate {
-	ec.mutation.SetConfig(s)
+func (ec *EnvironmentCreate) SetConfig(m map[string]string) *EnvironmentCreate {
+	ec.mutation.SetConfig(m)
 	return ec
 }
 

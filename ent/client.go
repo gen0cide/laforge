@@ -354,15 +354,15 @@ func (c *BuildClient) GetX(ctx context.Context, id int) *Build {
 	return obj
 }
 
-// QueryUser queries the user edge of a Build.
-func (c *BuildClient) QueryUser(b *Build) *UserQuery {
+// QueryMaintainer queries the maintainer edge of a Build.
+func (c *BuildClient) QueryMaintainer(b *Build) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.UserTable, build.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, build.MaintainerTable, build.MaintainerColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil

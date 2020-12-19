@@ -91,8 +91,8 @@ func (cu *CommandUpdate) AddTimeout(i int) *CommandUpdate {
 }
 
 // SetVars sets the vars field.
-func (cu *CommandUpdate) SetVars(s []string) *CommandUpdate {
-	cu.mutation.SetVars(s)
+func (cu *CommandUpdate) SetVars(m map[string]string) *CommandUpdate {
+	cu.mutation.SetVars(m)
 	return cu
 }
 
@@ -529,8 +529,8 @@ func (cuo *CommandUpdateOne) AddTimeout(i int) *CommandUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (cuo *CommandUpdateOne) SetVars(s []string) *CommandUpdateOne {
-	cuo.mutation.SetVars(s)
+func (cuo *CommandUpdateOne) SetVars(m map[string]string) *CommandUpdateOne {
+	cuo.mutation.SetVars(m)
 	return cuo
 }
 

@@ -40,8 +40,8 @@ func (nc *NetworkCreate) SetVdiVisible(b bool) *NetworkCreate {
 }
 
 // SetVars sets the vars field.
-func (nc *NetworkCreate) SetVars(s []string) *NetworkCreate {
-	nc.mutation.SetVars(s)
+func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
+	nc.mutation.SetVars(m)
 	return nc
 }
 

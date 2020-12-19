@@ -23,7 +23,7 @@ type Network struct {
 	// VdiVisible holds the value of the "vdi_visible" field.
 	VdiVisible bool `json:"vdi_visible,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NetworkQuery when eager-loading is set.
 	Edges                       NetworkEdges `json:"edges"`

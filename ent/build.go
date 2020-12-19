@@ -19,7 +19,7 @@ type Build struct {
 	// Revision holds the value of the "revision" field.
 	Revision int `json:"revision,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BuildQuery when eager-loading is set.
 	Edges                     BuildEdges `json:"edges"`
@@ -29,8 +29,8 @@ type Build struct {
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
 type BuildEdges struct {
-	// User holds the value of the user edge.
-	User []*User
+	// Maintainer holds the value of the maintainer edge.
+	Maintainer []*User
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
 	// Team holds the value of the team edge.
@@ -40,13 +40,13 @@ type BuildEdges struct {
 	loadedTypes [3]bool
 }
 
-// UserOrErr returns the User value or an error if the edge
+// MaintainerOrErr returns the Maintainer value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) UserOrErr() ([]*User, error) {
+func (e BuildEdges) MaintainerOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.User, nil
+		return e.Maintainer, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "maintainer"}
 }
 
 // TagOrErr returns the Tag value or an error if the edge
@@ -127,9 +127,9 @@ func (b *Build) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryUser queries the user edge of the Build.
-func (b *Build) QueryUser() *UserQuery {
-	return (&BuildClient{config: b.config}).QueryUser(b)
+// QueryMaintainer queries the maintainer edge of the Build.
+func (b *Build) QueryMaintainer() *UserQuery {
+	return (&BuildClient{config: b.config}).QueryMaintainer(b)
 }
 
 // QueryTag queries the tag edge of the Build.

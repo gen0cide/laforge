@@ -613,9 +613,10 @@ func (l *Laforge) IndexHostDependencies() error {
 	return nil
 }
 
+// CreateHostEntries ...
 func (l *Laforge) CreateHostEntries(ctx context.Context, client *ent.Client) error {
 	for _, h := range l.Hosts {
-		err := h.CreateHostEntry(h, ctx, client)
+		_, err := h.CreateHostEntry(ctx, client)
 
 		if err != nil {
 			return err
@@ -801,7 +802,7 @@ func (l *Laforge) IndexProvisioningStepDependencies() error {
 }
 
 // InitializeTeamContext returns a base context preset with a team context configuration
-func InitializeTeamContext(globalconfig, buildconfig, teamconfig string, ctx context.Context, client *ent.Client) (*Laforge, error) {
+func InitializeTeamContext(globalconfig, buildconfig, teamconfig string) (*Laforge, error) {
 	clone, err := LoadFiles(globalconfig, buildconfig)
 
 	if err != nil {

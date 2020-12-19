@@ -336,15 +336,16 @@ func (b *Build) CreateTeam(tid int) *Team {
 	return t
 }
 
+// CreateBuildEntry ...
 func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.Build, error) {
-	user, err = h.User.CreateUserEntry(ctx, client)
+	user, err := b.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating build: %v", err)
 		return nil, err
 	}
 
-	tag, err = CreateTagEntry(b.ID, b.Tags, ctx, client)
+	tag, err := CreateTagEntry(b.ID, b.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating build: %v", err)
@@ -353,7 +354,7 @@ func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.
 
 	build, err := client.Build.
 		Create().
-		SetRevision(b.Revision).
+		SetRevision(int(b.Revision)).
 		SetConfig(b.Config).
 		AddMaintainer(user).
 		AddTag(tag).

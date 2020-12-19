@@ -70,8 +70,8 @@ func (cc *CommandCreate) SetTimeout(i int) *CommandCreate {
 }
 
 // SetVars sets the vars field.
-func (cc *CommandCreate) SetVars(s []string) *CommandCreate {
-	cc.mutation.SetVars(s)
+func (cc *CommandCreate) SetVars(m map[string]string) *CommandCreate {
+	cc.mutation.SetVars(m)
 	return cc
 }
 

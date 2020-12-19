@@ -33,7 +33,7 @@ type Environment struct {
 	// ExposedVdiPorts holds the value of the "exposed_vdi_ports" field.
 	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
 	Edges EnvironmentEdges `json:"edges"`

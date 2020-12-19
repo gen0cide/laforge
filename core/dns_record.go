@@ -1,11 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -131,7 +134,7 @@ func (r *DNSRecord) SetValue(val string) {
 }
 
 func (r *DNSRecord) CreateDNSRecordEntry(ctx context.Context, client *ent.Client) (*ent.DNSRecord, error) {
-	tag, err = CreateTagEntry(r.ID, r.Tags, ctx, client)
+	tag, err := CreateTagEntry(r.ID, r.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating dns record: %v", err)

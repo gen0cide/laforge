@@ -34,8 +34,8 @@ func (cu *CompetitionUpdate) SetRootPassword(s string) *CompetitionUpdate {
 }
 
 // SetConfig sets the config field.
-func (cu *CompetitionUpdate) SetConfig(s []string) *CompetitionUpdate {
-	cu.mutation.SetConfig(s)
+func (cu *CompetitionUpdate) SetConfig(m map[string]string) *CompetitionUpdate {
+	cu.mutation.SetConfig(m)
 	return cu
 }
 
@@ -242,8 +242,8 @@ func (cuo *CompetitionUpdateOne) SetRootPassword(s string) *CompetitionUpdateOne
 }
 
 // SetConfig sets the config field.
-func (cuo *CompetitionUpdateOne) SetConfig(s []string) *CompetitionUpdateOne {
-	cuo.mutation.SetConfig(s)
+func (cuo *CompetitionUpdateOne) SetConfig(m map[string]string) *CompetitionUpdateOne {
+	cuo.mutation.SetConfig(m)
 	return cuo
 }
 

@@ -83,7 +83,7 @@ func (d *DNS) CreateDNSEntry(ctx context.Context, client *ent.Client) (*ent.DNS,
 		Create().
 		SetType(d.Type).
 		SetRootDomain(d.RootDomain).
-		SetDnsServers(d.DNSServers).
+		SetDNSServers(d.DNSServers).
 		SetNtpServers(d.NTPServers).
 		SetConfig(d.Config).
 		Save(ctx)

@@ -38,7 +38,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the User type.
 var ForeignKeys = []string{
-	"build_user",
+	"build_maintainer",
 	"command_user",
 	"environment_user",
 	"finding_user",

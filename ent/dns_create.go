@@ -44,8 +44,8 @@ func (dc *DNSCreate) SetNtpServers(s []string) *DNSCreate {
 }
 
 // SetConfig sets the config field.
-func (dc *DNSCreate) SetConfig(s []string) *DNSCreate {
-	dc.mutation.SetConfig(s)
+func (dc *DNSCreate) SetConfig(m map[string]string) *DNSCreate {
+	dc.mutation.SetConfig(m)
 	return dc
 }
 

@@ -135,7 +135,7 @@ func (n *Network) Octet() string {
 }
 
 func (n *Network) CreateNetworkEntry(ctx context.Context, client *ent.Client) (*ent.Network, error) {
-	tag, err = CreateTagEntry(n.ID, n.Tags, ctx, client)
+	tag, err := CreateTagEntry(n.ID, n.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating network: %v", err)
@@ -144,11 +144,11 @@ func (n *Network) CreateNetworkEntry(ctx context.Context, client *ent.Client) (*
 
 	network, err := client.Network.
 		Create().
-		SetId(n.ID).
+		// SetId(n.ID). // May not be required
 		SetName(n.Name).
 		SetCidr(n.CIDR).
 		SetVdiVisible(n.VDIVisible).
-		SetVars(n.vars).
+		SetVars(n.Vars).
 		AddTag(tag).
 		Save(ctx)
 

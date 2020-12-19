@@ -15,14 +15,14 @@ type Build struct {
 func (Build) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("revision").Positive(),
-		field.JSON("config", []string{}),
+		field.JSON("config", map[string]string{}),
 	}
 }
 
 // Edges of the Build.
 func (Build) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user", User.Type),
+		edge.To("maintainer", User.Type),
 		edge.To("tag", Tag.Type),
 		edge.From("team", Team.Type).Ref("build"),
 	}

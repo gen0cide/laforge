@@ -97,8 +97,8 @@ func (eu *EnvironmentUpdate) SetExposedVdiPorts(s []string) *EnvironmentUpdate {
 }
 
 // SetConfig sets the config field.
-func (eu *EnvironmentUpdate) SetConfig(s []string) *EnvironmentUpdate {
-	eu.mutation.SetConfig(s)
+func (eu *EnvironmentUpdate) SetConfig(m map[string]string) *EnvironmentUpdate {
+	eu.mutation.SetConfig(m)
 	return eu
 }
 
@@ -1054,8 +1054,8 @@ func (euo *EnvironmentUpdateOne) SetExposedVdiPorts(s []string) *EnvironmentUpda
 }
 
 // SetConfig sets the config field.
-func (euo *EnvironmentUpdateOne) SetConfig(s []string) *EnvironmentUpdateOne {
-	euo.mutation.SetConfig(s)
+func (euo *EnvironmentUpdateOne) SetConfig(m map[string]string) *EnvironmentUpdateOne {
+	euo.mutation.SetConfig(m)
 	return euo
 }
 

@@ -51,8 +51,8 @@ func (du *DNSUpdate) SetNtpServers(s []string) *DNSUpdate {
 }
 
 // SetConfig sets the config field.
-func (du *DNSUpdate) SetConfig(s []string) *DNSUpdate {
-	du.mutation.SetConfig(s)
+func (du *DNSUpdate) SetConfig(m map[string]string) *DNSUpdate {
+	du.mutation.SetConfig(m)
 	return du
 }
 
@@ -208,8 +208,8 @@ func (duo *DNSUpdateOne) SetNtpServers(s []string) *DNSUpdateOne {
 }
 
 // SetConfig sets the config field.
-func (duo *DNSUpdateOne) SetConfig(s []string) *DNSUpdateOne {
-	duo.mutation.SetConfig(s)
+func (duo *DNSUpdateOne) SetConfig(m map[string]string) *DNSUpdateOne {
+	duo.mutation.SetConfig(m)
 	return duo
 }
 

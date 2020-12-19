@@ -75,25 +75,25 @@ const (
 // nodes in the graph.
 type BuildMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	revision      *int
-	addrevision   *int
-	_config       *[]string
-	clearedFields map[string]struct{}
-	user          map[int]struct{}
-	removeduser   map[int]struct{}
-	cleareduser   bool
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	team          map[int]struct{}
-	removedteam   map[int]struct{}
-	clearedteam   bool
-	done          bool
-	oldValue      func(context.Context) (*Build, error)
-	predicates    []predicate.Build
+	op                Op
+	typ               string
+	id                *int
+	revision          *int
+	addrevision       *int
+	_config           *map[string]string
+	clearedFields     map[string]struct{}
+	maintainer        map[int]struct{}
+	removedmaintainer map[int]struct{}
+	clearedmaintainer bool
+	tag               map[int]struct{}
+	removedtag        map[int]struct{}
+	clearedtag        bool
+	team              map[int]struct{}
+	removedteam       map[int]struct{}
+	clearedteam       bool
+	done              bool
+	oldValue          func(context.Context) (*Build, error)
+	predicates        []predicate.Build
 }
 
 var _ ent.Mutation = (*BuildMutation)(nil)
@@ -233,12 +233,12 @@ func (m *BuildMutation) ResetRevision() {
 }
 
 // SetConfig sets the config field.
-func (m *BuildMutation) SetConfig(s []string) {
-	m._config = &s
+func (m *BuildMutation) SetConfig(value map[string]string) {
+	m._config = &value
 }
 
 // Config returns the config value in the mutation.
-func (m *BuildMutation) Config() (r []string, exists bool) {
+func (m *BuildMutation) Config() (r map[string]string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -250,7 +250,7 @@ func (m *BuildMutation) Config() (r []string, exists bool) {
 // If the Build object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *BuildMutation) OldConfig(ctx context.Context) (v []string, err error) {
+func (m *BuildMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldConfig is allowed only on UpdateOne operations")
 	}
@@ -269,57 +269,57 @@ func (m *BuildMutation) ResetConfig() {
 	m._config = nil
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (m *BuildMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
+// AddMaintainerIDs adds the maintainer edge to User by ids.
+func (m *BuildMutation) AddMaintainerIDs(ids ...int) {
+	if m.maintainer == nil {
+		m.maintainer = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.user[ids[i]] = struct{}{}
+		m.maintainer[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUser clears the user edge to User.
-func (m *BuildMutation) ClearUser() {
-	m.cleareduser = true
+// ClearMaintainer clears the maintainer edge to User.
+func (m *BuildMutation) ClearMaintainer() {
+	m.clearedmaintainer = true
 }
 
-// UserCleared returns if the edge user was cleared.
-func (m *BuildMutation) UserCleared() bool {
-	return m.cleareduser
+// MaintainerCleared returns if the edge maintainer was cleared.
+func (m *BuildMutation) MaintainerCleared() bool {
+	return m.clearedmaintainer
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (m *BuildMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
+// RemoveMaintainerIDs removes the maintainer edge to User by ids.
+func (m *BuildMutation) RemoveMaintainerIDs(ids ...int) {
+	if m.removedmaintainer == nil {
+		m.removedmaintainer = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeduser[ids[i]] = struct{}{}
+		m.removedmaintainer[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedUser returns the removed ids of user.
-func (m *BuildMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
+// RemovedMaintainer returns the removed ids of maintainer.
+func (m *BuildMutation) RemovedMaintainerIDs() (ids []int) {
+	for id := range m.removedmaintainer {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// UserIDs returns the user ids in the mutation.
-func (m *BuildMutation) UserIDs() (ids []int) {
-	for id := range m.user {
+// MaintainerIDs returns the maintainer ids in the mutation.
+func (m *BuildMutation) MaintainerIDs() (ids []int) {
+	for id := range m.maintainer {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetUser reset all changes of the "user" edge.
-func (m *BuildMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-	m.removeduser = nil
+// ResetMaintainer reset all changes of the "maintainer" edge.
+func (m *BuildMutation) ResetMaintainer() {
+	m.maintainer = nil
+	m.clearedmaintainer = false
+	m.removedmaintainer = nil
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -491,7 +491,7 @@ func (m *BuildMutation) SetField(name string, value ent.Value) error {
 		m.SetRevision(v)
 		return nil
 	case build.FieldConfig:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -576,8 +576,8 @@ func (m *BuildMutation) ResetField(name string) error {
 // mutation.
 func (m *BuildMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.user != nil {
-		edges = append(edges, build.EdgeUser)
+	if m.maintainer != nil {
+		edges = append(edges, build.EdgeMaintainer)
 	}
 	if m.tag != nil {
 		edges = append(edges, build.EdgeTag)
@@ -592,9 +592,9 @@ func (m *BuildMutation) AddedEdges() []string {
 // the given edge name.
 func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
+	case build.EdgeMaintainer:
+		ids := make([]ent.Value, 0, len(m.maintainer))
+		for id := range m.maintainer {
 			ids = append(ids, id)
 		}
 		return ids
@@ -618,8 +618,8 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *BuildMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removeduser != nil {
-		edges = append(edges, build.EdgeUser)
+	if m.removedmaintainer != nil {
+		edges = append(edges, build.EdgeMaintainer)
 	}
 	if m.removedtag != nil {
 		edges = append(edges, build.EdgeTag)
@@ -634,9 +634,9 @@ func (m *BuildMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
+	case build.EdgeMaintainer:
+		ids := make([]ent.Value, 0, len(m.removedmaintainer))
+		for id := range m.removedmaintainer {
 			ids = append(ids, id)
 		}
 		return ids
@@ -660,8 +660,8 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *BuildMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.cleareduser {
-		edges = append(edges, build.EdgeUser)
+	if m.clearedmaintainer {
+		edges = append(edges, build.EdgeMaintainer)
 	}
 	if m.clearedtag {
 		edges = append(edges, build.EdgeTag)
@@ -676,8 +676,8 @@ func (m *BuildMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *BuildMutation) EdgeCleared(name string) bool {
 	switch name {
-	case build.EdgeUser:
-		return m.cleareduser
+	case build.EdgeMaintainer:
+		return m.clearedmaintainer
 	case build.EdgeTag:
 		return m.clearedtag
 	case build.EdgeTeam:
@@ -699,8 +699,8 @@ func (m *BuildMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *BuildMutation) ResetEdge(name string) error {
 	switch name {
-	case build.EdgeUser:
-		m.ResetUser()
+	case build.EdgeMaintainer:
+		m.ResetMaintainer()
 		return nil
 	case build.EdgeTag:
 		m.ResetTag()
@@ -729,7 +729,7 @@ type CommandMutation struct {
 	addcooldown   *int
 	timeout       *int
 	addtimeout    *int
-	vars          *[]string
+	vars          *map[string]string
 	clearedFields map[string]struct{}
 	user          map[int]struct{}
 	removeduser   map[int]struct{}
@@ -1158,12 +1158,12 @@ func (m *CommandMutation) ResetTimeout() {
 }
 
 // SetVars sets the vars field.
-func (m *CommandMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *CommandMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *CommandMutation) Vars() (r []string, exists bool) {
+func (m *CommandMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -1175,7 +1175,7 @@ func (m *CommandMutation) Vars() (r []string, exists bool) {
 // If the Command object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *CommandMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *CommandMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -1461,7 +1461,7 @@ func (m *CommandMutation) SetField(name string, value ent.Value) error {
 		m.SetTimeout(v)
 		return nil
 	case command.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1697,7 +1697,7 @@ type CompetitionMutation struct {
 	typ           string
 	id            *int
 	root_password *string
-	_config       *[]string
+	_config       *map[string]string
 	clearedFields map[string]struct{}
 	dns           map[int]struct{}
 	removeddns    map[int]struct{}
@@ -1824,12 +1824,12 @@ func (m *CompetitionMutation) ResetRootPassword() {
 }
 
 // SetConfig sets the config field.
-func (m *CompetitionMutation) SetConfig(s []string) {
-	m._config = &s
+func (m *CompetitionMutation) SetConfig(value map[string]string) {
+	m._config = &value
 }
 
 // Config returns the config value in the mutation.
-func (m *CompetitionMutation) Config() (r []string, exists bool) {
+func (m *CompetitionMutation) Config() (r map[string]string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -1841,7 +1841,7 @@ func (m *CompetitionMutation) Config() (r []string, exists bool) {
 // If the Competition object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *CompetitionMutation) OldConfig(ctx context.Context) (v []string, err error) {
+func (m *CompetitionMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldConfig is allowed only on UpdateOne operations")
 	}
@@ -1976,7 +1976,7 @@ func (m *CompetitionMutation) SetField(name string, value ent.Value) error {
 		m.SetRootPassword(v)
 		return nil
 	case competition.FieldConfig:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2141,7 +2141,7 @@ type DNSMutation struct {
 	root_domain   *string
 	dns_servers   *[]string
 	ntp_servers   *[]string
-	_config       *[]string
+	_config       *map[string]string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*DNS, error)
@@ -2376,12 +2376,12 @@ func (m *DNSMutation) ResetNtpServers() {
 }
 
 // SetConfig sets the config field.
-func (m *DNSMutation) SetConfig(s []string) {
-	m._config = &s
+func (m *DNSMutation) SetConfig(value map[string]string) {
+	m._config = &value
 }
 
 // Config returns the config value in the mutation.
-func (m *DNSMutation) Config() (r []string, exists bool) {
+func (m *DNSMutation) Config() (r map[string]string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -2393,7 +2393,7 @@ func (m *DNSMutation) Config() (r []string, exists bool) {
 // If the DNS object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *DNSMutation) OldConfig(ctx context.Context) (v []string, err error) {
+func (m *DNSMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldConfig is allowed only on UpdateOne operations")
 	}
@@ -2517,7 +2517,7 @@ func (m *DNSMutation) SetField(name string, value ent.Value) error {
 		m.SetNtpServers(v)
 		return nil
 	case dns.FieldConfig:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2655,7 +2655,7 @@ type DNSRecordMutation struct {
 	values        *[]string
 	_type         *string
 	zone          *string
-	vars          *[]string
+	vars          *map[string]string
 	disabled      *bool
 	clearedFields map[string]struct{}
 	tag           map[int]struct{}
@@ -2894,12 +2894,12 @@ func (m *DNSRecordMutation) ResetZone() {
 }
 
 // SetVars sets the vars field.
-func (m *DNSRecordMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *DNSRecordMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *DNSRecordMutation) Vars() (r []string, exists bool) {
+func (m *DNSRecordMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -2911,7 +2911,7 @@ func (m *DNSRecordMutation) Vars() (r []string, exists bool) {
 // If the DNSRecord object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *DNSRecordMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *DNSRecordMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -3132,7 +3132,7 @@ func (m *DNSRecordMutation) SetField(name string, value ent.Value) error {
 		m.SetZone(v)
 		return nil
 	case dnsrecord.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -3744,7 +3744,7 @@ type EnvironmentMutation struct {
 	addrevision             *int
 	admin_cidrs             *[]string
 	exposed_vdi_ports       *[]string
-	_config                 *[]string
+	_config                 *map[string]string
 	clearedFields           map[string]struct{}
 	tag                     map[int]struct{}
 	removedtag              map[int]struct{}
@@ -4191,12 +4191,12 @@ func (m *EnvironmentMutation) ResetExposedVdiPorts() {
 }
 
 // SetConfig sets the config field.
-func (m *EnvironmentMutation) SetConfig(s []string) {
-	m._config = &s
+func (m *EnvironmentMutation) SetConfig(value map[string]string) {
+	m._config = &value
 }
 
 // Config returns the config value in the mutation.
-func (m *EnvironmentMutation) Config() (r []string, exists bool) {
+func (m *EnvironmentMutation) Config() (r map[string]string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -4208,7 +4208,7 @@ func (m *EnvironmentMutation) Config() (r []string, exists bool) {
 // If the Environment object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *EnvironmentMutation) OldConfig(ctx context.Context) (v []string, err error) {
+func (m *EnvironmentMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldConfig is allowed only on UpdateOne operations")
 	}
@@ -4812,7 +4812,7 @@ func (m *EnvironmentMutation) SetField(name string, value ent.Value) error {
 		m.SetExposedVdiPorts(v)
 		return nil
 	case environment.FieldConfig:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7662,7 +7662,7 @@ type HostMutation struct {
 	exposed_tcp_ports *[]string
 	exposed_udp_ports *[]string
 	override_password *string
-	vars              *[]string
+	vars              *map[string]string
 	user_groups       *[]string
 	depends_on        *[]string
 	scripts           *[]string
@@ -8080,12 +8080,12 @@ func (m *HostMutation) ResetOverridePassword() {
 }
 
 // SetVars sets the vars field.
-func (m *HostMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *HostMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *HostMutation) Vars() (r []string, exists bool) {
+func (m *HostMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -8097,7 +8097,7 @@ func (m *HostMutation) Vars() (r []string, exists bool) {
 // If the Host object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *HostMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -8700,7 +8700,7 @@ func (m *HostMutation) SetField(name string, value ent.Value) error {
 		m.SetOverridePassword(v)
 		return nil
 	case host.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -9535,7 +9535,7 @@ type NetworkMutation struct {
 	name                         *string
 	cidr                         *string
 	vdi_visible                  *bool
-	vars                         *[]string
+	vars                         *map[string]string
 	clearedFields                map[string]struct{}
 	tag                          map[int]struct{}
 	removedtag                   map[int]struct{}
@@ -9739,12 +9739,12 @@ func (m *NetworkMutation) ResetVdiVisible() {
 }
 
 // SetVars sets the vars field.
-func (m *NetworkMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *NetworkMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *NetworkMutation) Vars() (r []string, exists bool) {
+func (m *NetworkMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -9756,7 +9756,7 @@ func (m *NetworkMutation) Vars() (r []string, exists bool) {
 // If the Network object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *NetworkMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *NetworkMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -9972,7 +9972,7 @@ func (m *NetworkMutation) SetField(name string, value ent.Value) error {
 		m.SetVdiVisible(v)
 		return nil
 	case network.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

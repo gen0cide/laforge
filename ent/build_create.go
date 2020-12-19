@@ -29,24 +29,24 @@ func (bc *BuildCreate) SetRevision(i int) *BuildCreate {
 }
 
 // SetConfig sets the config field.
-func (bc *BuildCreate) SetConfig(s []string) *BuildCreate {
-	bc.mutation.SetConfig(s)
+func (bc *BuildCreate) SetConfig(m map[string]string) *BuildCreate {
+	bc.mutation.SetConfig(m)
 	return bc
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (bc *BuildCreate) AddUserIDs(ids ...int) *BuildCreate {
-	bc.mutation.AddUserIDs(ids...)
+// AddMaintainerIDs adds the maintainer edge to User by ids.
+func (bc *BuildCreate) AddMaintainerIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddMaintainerIDs(ids...)
 	return bc
 }
 
-// AddUser adds the user edges to User.
-func (bc *BuildCreate) AddUser(u ...*User) *BuildCreate {
+// AddMaintainer adds the maintainer edges to User.
+func (bc *BuildCreate) AddMaintainer(u ...*User) *BuildCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bc.AddUserIDs(ids...)
+	return bc.AddMaintainerIDs(ids...)
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -184,12 +184,12 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
-	if nodes := bc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.MaintainerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

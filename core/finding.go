@@ -6,6 +6,7 @@ import (
 
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/finding"
 )
 
 const (
@@ -104,29 +105,29 @@ func (f *Finding) TotalScore() int {
 }
 
 func (f *Finding) CreateFindingEntry(ph *ent.ProvisionedHost, script *ent.Script, ctx context.Context, client *ent.Client) (*ent.Finding, error) {
-	tag, err = CreateTagEntry(f.Name, f.Tags, ctx, client)
+	// tag, err := CreateTagEntry(f.Name, f.Tags, ctx, client) // Different Type of Tag
+
+	// if err != nil {
+	// 	cli.Logger.Debugf("failed creating finding: %v", err)
+	// 	return nil, err
+	// }
+
+	user, err := f.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating finding: %v", err)
 		return nil, err
 	}
-
-	user, err = f.Maintainer.CreateUserEntry(ctx, client)
-
-	if err != nil {
-		cli.Logger.Debugf("failed creating finding: %v", err)
-		return nil, err
-	}
-
+	
 	finding, err := client.Finding.
 		Create().
 		SetName(f.Name).
 		SetDescription(f.Description).
-		SetSeverity(f.Severity).
-		SetDifficulty(f.Difficulty).
+		SetSeverity(finding.Severity(f.Severity.String())).
+		SetDifficulty(finding.Difficulty(f.Difficulty.String())).
 		AddUser(user).
-		AddTag(tag).
-		AddHost(ph).
+		// AddTag(tag).
+		AddHost(ph.Edges.Host...).
 		AddScript(script).
 		Save(ctx)
 

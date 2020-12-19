@@ -215,7 +215,7 @@ func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx
 	}
 
 	for k, v := range p.ProvisionedHosts {
-		ph, err = v.CreateProvisionedHostEntry(pn, ctx, client)
+		ph, err = v.CreateProvisionedHostEntry(ctx, pn, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating provisioned network: %v", err)

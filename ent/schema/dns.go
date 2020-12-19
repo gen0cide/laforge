@@ -17,7 +17,7 @@ func (DNS) Fields() []ent.Field {
 		field.String("root_domain"),
 		field.JSON("dns_servers", []string{}),
 		field.JSON("ntp_servers", []string{}),
-		field.JSON("config", []string{}),
+		field.JSON("config", map[string]string{}),
 	}
 }
 

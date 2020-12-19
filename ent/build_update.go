@@ -43,24 +43,24 @@ func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 }
 
 // SetConfig sets the config field.
-func (bu *BuildUpdate) SetConfig(s []string) *BuildUpdate {
-	bu.mutation.SetConfig(s)
+func (bu *BuildUpdate) SetConfig(m map[string]string) *BuildUpdate {
+	bu.mutation.SetConfig(m)
 	return bu
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (bu *BuildUpdate) AddUserIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddUserIDs(ids...)
+// AddMaintainerIDs adds the maintainer edge to User by ids.
+func (bu *BuildUpdate) AddMaintainerIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddMaintainerIDs(ids...)
 	return bu
 }
 
-// AddUser adds the user edges to User.
-func (bu *BuildUpdate) AddUser(u ...*User) *BuildUpdate {
+// AddMaintainer adds the maintainer edges to User.
+func (bu *BuildUpdate) AddMaintainer(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bu.AddUserIDs(ids...)
+	return bu.AddMaintainerIDs(ids...)
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -98,25 +98,25 @@ func (bu *BuildUpdate) Mutation() *BuildMutation {
 	return bu.mutation
 }
 
-// ClearUser clears all "user" edges to type User.
-func (bu *BuildUpdate) ClearUser() *BuildUpdate {
-	bu.mutation.ClearUser()
+// ClearMaintainer clears all "maintainer" edges to type User.
+func (bu *BuildUpdate) ClearMaintainer() *BuildUpdate {
+	bu.mutation.ClearMaintainer()
 	return bu
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (bu *BuildUpdate) RemoveUserIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveUserIDs(ids...)
+// RemoveMaintainerIDs removes the maintainer edge to User by ids.
+func (bu *BuildUpdate) RemoveMaintainerIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveMaintainerIDs(ids...)
 	return bu
 }
 
-// RemoveUser removes user edges to User.
-func (bu *BuildUpdate) RemoveUser(u ...*User) *BuildUpdate {
+// RemoveMaintainer removes maintainer edges to User.
+func (bu *BuildUpdate) RemoveMaintainer(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bu.RemoveUserIDs(ids...)
+	return bu.RemoveMaintainerIDs(ids...)
 }
 
 // ClearTag clears all "tag" edges to type Tag.
@@ -267,12 +267,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: build.FieldConfig,
 		})
 	}
-	if bu.mutation.UserCleared() {
+	if bu.mutation.MaintainerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -283,12 +283,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedUserIDs(); len(nodes) > 0 && !bu.mutation.UserCleared() {
+	if nodes := bu.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !bu.mutation.MaintainerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -302,12 +302,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.MaintainerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -461,24 +461,24 @@ func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 }
 
 // SetConfig sets the config field.
-func (buo *BuildUpdateOne) SetConfig(s []string) *BuildUpdateOne {
-	buo.mutation.SetConfig(s)
+func (buo *BuildUpdateOne) SetConfig(m map[string]string) *BuildUpdateOne {
+	buo.mutation.SetConfig(m)
 	return buo
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (buo *BuildUpdateOne) AddUserIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddUserIDs(ids...)
+// AddMaintainerIDs adds the maintainer edge to User by ids.
+func (buo *BuildUpdateOne) AddMaintainerIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddMaintainerIDs(ids...)
 	return buo
 }
 
-// AddUser adds the user edges to User.
-func (buo *BuildUpdateOne) AddUser(u ...*User) *BuildUpdateOne {
+// AddMaintainer adds the maintainer edges to User.
+func (buo *BuildUpdateOne) AddMaintainer(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return buo.AddUserIDs(ids...)
+	return buo.AddMaintainerIDs(ids...)
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -516,25 +516,25 @@ func (buo *BuildUpdateOne) Mutation() *BuildMutation {
 	return buo.mutation
 }
 
-// ClearUser clears all "user" edges to type User.
-func (buo *BuildUpdateOne) ClearUser() *BuildUpdateOne {
-	buo.mutation.ClearUser()
+// ClearMaintainer clears all "maintainer" edges to type User.
+func (buo *BuildUpdateOne) ClearMaintainer() *BuildUpdateOne {
+	buo.mutation.ClearMaintainer()
 	return buo
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (buo *BuildUpdateOne) RemoveUserIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveUserIDs(ids...)
+// RemoveMaintainerIDs removes the maintainer edge to User by ids.
+func (buo *BuildUpdateOne) RemoveMaintainerIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveMaintainerIDs(ids...)
 	return buo
 }
 
-// RemoveUser removes user edges to User.
-func (buo *BuildUpdateOne) RemoveUser(u ...*User) *BuildUpdateOne {
+// RemoveMaintainer removes maintainer edges to User.
+func (buo *BuildUpdateOne) RemoveMaintainer(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return buo.RemoveUserIDs(ids...)
+	return buo.RemoveMaintainerIDs(ids...)
 }
 
 // ClearTag clears all "tag" edges to type Tag.
@@ -683,12 +683,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Column: build.FieldConfig,
 		})
 	}
-	if buo.mutation.UserCleared() {
+	if buo.mutation.MaintainerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -699,12 +699,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedUserIDs(); len(nodes) > 0 && !buo.mutation.UserCleared() {
+	if nodes := buo.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !buo.mutation.MaintainerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -718,12 +718,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.MaintainerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.UserTable,
-			Columns: []string{build.UserColumn},
+			Table:   build.MaintainerTable,
+			Columns: []string{build.MaintainerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

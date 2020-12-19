@@ -174,25 +174,25 @@ func RevisionLTE(v int) predicate.Build {
 	})
 }
 
-// HasUser applies the HasEdge predicate on the "user" edge.
-func HasUser() predicate.Build {
+// HasMaintainer applies the HasEdge predicate on the "maintainer" edge.
+func HasMaintainer() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(MaintainerTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
-func HasUserWith(preds ...predicate.User) predicate.Build {
+// HasMaintainerWith applies the HasEdge predicate on the "maintainer" edge with a given conditions (other predicates).
+func HasMaintainerWith(preds ...predicate.User) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(MaintainerInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

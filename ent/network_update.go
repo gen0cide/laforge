@@ -47,8 +47,8 @@ func (nu *NetworkUpdate) SetVdiVisible(b bool) *NetworkUpdate {
 }
 
 // SetVars sets the vars field.
-func (nu *NetworkUpdate) SetVars(s []string) *NetworkUpdate {
-	nu.mutation.SetVars(s)
+func (nu *NetworkUpdate) SetVars(m map[string]string) *NetworkUpdate {
+	nu.mutation.SetVars(m)
 	return nu
 }
 
@@ -371,8 +371,8 @@ func (nuo *NetworkUpdateOne) SetVdiVisible(b bool) *NetworkUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (nuo *NetworkUpdateOne) SetVars(s []string) *NetworkUpdateOne {
-	nuo.mutation.SetVars(s)
+func (nuo *NetworkUpdateOne) SetVars(m map[string]string) *NetworkUpdateOne {
+	nuo.mutation.SetVars(m)
 	return nuo
 }
 

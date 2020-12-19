@@ -25,7 +25,7 @@ type User struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges             UserEdges `json:"edges"`
-	build_user        *int
+	build_maintainer  *int
 	command_user      *int
 	environment_user  *int
 	finding_user      *int
@@ -65,7 +65,7 @@ func (*User) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*User) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // build_user
+		&sql.NullInt64{}, // build_maintainer
 		&sql.NullInt64{}, // command_user
 		&sql.NullInt64{}, // environment_user
 		&sql.NullInt64{}, // finding_user
@@ -105,10 +105,10 @@ func (u *User) assignValues(values ...interface{}) error {
 	values = values[3:]
 	if len(values) == len(user.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_user", value)
+			return fmt.Errorf("unexpected type %T for edge-field build_maintainer", value)
 		} else if value.Valid {
-			u.build_user = new(int)
-			*u.build_user = int(value.Int64)
+			u.build_maintainer = new(int)
+			*u.build_maintainer = int(value.Int64)
 		}
 		if value, ok := values[1].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field command_user", value)

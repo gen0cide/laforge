@@ -6,6 +6,7 @@ import (
 
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/status"
 )
 
 const (
@@ -67,8 +68,8 @@ func (s *Status) Hash() uint64 {
 func (s *Status) CreateStatusEntry(ctx context.Context, client *ent.Client) (*ent.Status, error) {
 	status, err := client.Status.
 		Create().
-		SetState(s.State).
-		SetStatedAt(s.StartedAt).
+		SetState(status.State("COMPLETE")). // Will need to change this to be the actual state
+		SetStartedAt(s.StartedAt).
 		SetEndedAt(s.EndedAt).
 		SetFailed(s.Failed).
 		SetCompleted(s.Completed).

@@ -28,10 +28,10 @@ type BuildQuery struct {
 	unique     []string
 	predicates []predicate.Build
 	// eager-loading edges.
-	withUser *UserQuery
-	withTag  *TagQuery
-	withTeam *TeamQuery
-	withFKs  bool
+	withMaintainer *UserQuery
+	withTag        *TagQuery
+	withTeam       *TeamQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +61,8 @@ func (bq *BuildQuery) Order(o ...OrderFunc) *BuildQuery {
 	return bq
 }
 
-// QueryUser chains the current query on the user edge.
-func (bq *BuildQuery) QueryUser() *UserQuery {
+// QueryMaintainer chains the current query on the maintainer edge.
+func (bq *BuildQuery) QueryMaintainer() *UserQuery {
 	query := &UserQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
@@ -75,7 +75,7 @@ func (bq *BuildQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.UserTable, build.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, build.MaintainerTable, build.MaintainerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -297,29 +297,29 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		return nil
 	}
 	return &BuildQuery{
-		config:     bq.config,
-		limit:      bq.limit,
-		offset:     bq.offset,
-		order:      append([]OrderFunc{}, bq.order...),
-		unique:     append([]string{}, bq.unique...),
-		predicates: append([]predicate.Build{}, bq.predicates...),
-		withUser:   bq.withUser.Clone(),
-		withTag:    bq.withTag.Clone(),
-		withTeam:   bq.withTeam.Clone(),
+		config:         bq.config,
+		limit:          bq.limit,
+		offset:         bq.offset,
+		order:          append([]OrderFunc{}, bq.order...),
+		unique:         append([]string{}, bq.unique...),
+		predicates:     append([]predicate.Build{}, bq.predicates...),
+		withMaintainer: bq.withMaintainer.Clone(),
+		withTag:        bq.withTag.Clone(),
+		withTeam:       bq.withTeam.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
 	}
 }
 
-//  WithUser tells the query-builder to eager-loads the nodes that are connected to
-// the "user" edge. The optional arguments used to configure the query builder of the edge.
-func (bq *BuildQuery) WithUser(opts ...func(*UserQuery)) *BuildQuery {
+//  WithMaintainer tells the query-builder to eager-loads the nodes that are connected to
+// the "maintainer" edge. The optional arguments used to configure the query builder of the edge.
+func (bq *BuildQuery) WithMaintainer(opts ...func(*UserQuery)) *BuildQuery {
 	query := &UserQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withUser = query
+	bq.withMaintainer = query
 	return bq
 }
 
@@ -413,7 +413,7 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
 		loadedTypes = [3]bool{
-			bq.withUser != nil,
+			bq.withMaintainer != nil,
 			bq.withTag != nil,
 			bq.withTeam != nil,
 		}
@@ -445,32 +445,32 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		return nodes, nil
 	}
 
-	if query := bq.withUser; query != nil {
+	if query := bq.withMaintainer; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
+			nodes[i].Edges.Maintainer = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(build.UserColumn, fks...))
+			s.Where(sql.InValues(build.MaintainerColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.build_user
+			fk := n.build_maintainer
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "build_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "build_maintainer" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "build_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_maintainer" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.User = append(node.Edges.User, n)
+			node.Edges.Maintainer = append(node.Edges.Maintainer, n)
 		}
 	}
 

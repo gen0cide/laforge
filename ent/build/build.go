@@ -12,8 +12,8 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
+	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
+	EdgeMaintainer = "maintainer"
 	// EdgeTag holds the string denoting the tag edge name in mutations.
 	EdgeTag = "tag"
 	// EdgeTeam holds the string denoting the team edge name in mutations.
@@ -21,13 +21,13 @@ const (
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	// MaintainerTable is the table the holds the maintainer relation/edge.
+	MaintainerTable = "users"
+	// MaintainerInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "build_user"
+	MaintainerInverseTable = "users"
+	// MaintainerColumn is the table column denoting the maintainer relation/edge.
+	MaintainerColumn = "build_maintainer"
 	// TagTable is the table the holds the tag relation/edge.
 	TagTable = "tags"
 	// TagInverseTable is the table name for the Tag entity.
