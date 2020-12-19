@@ -104,6 +104,7 @@ func (f *Finding) TotalScore() int {
 	return int(f.Severity) * int(f.Difficulty)
 }
 
+// CreateFindingEntry ...
 func (f *Finding) CreateFindingEntry(ph *ent.ProvisionedHost, script *ent.Script, ctx context.Context, client *ent.Client) (*ent.Finding, error) {
 	// tag, err := CreateTagEntry(f.Name, f.Tags, ctx, client) // Different Type of Tag
 

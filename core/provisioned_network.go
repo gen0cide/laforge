@@ -176,22 +176,16 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 	return nil
 }
 
+// CreateProvisionedNetworkEntry ...
 func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx context.Context, client *ent.Client) (*ent.ProvisionedNetwork, error) {
-	tag, err = CreateTagEntry(p.Name, p.Tags, ctx, client)
+	status, err := p.Status.CreateStatusEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating provisioned network: %v", err)
 		return nil, err
 	}
 
-	status, err = p.Status.CreateStatusEntry(ctx, client)
-
-	if err != nil {
-		cli.Logger.Debugf("failed creating provisioned network: %v", err)
-		return nil, err
-	}
-
-	network, err = p.Network.CreateNetworkEntry(ctx, client)
+	network, err := p.Network.CreateNetworkEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating provisioned network: %v", err)
@@ -202,8 +196,6 @@ func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx
 		Create().
 		SetName(p.Name).
 		SetCidr(p.CIDR).
-		SetVars(p.Vars).
-		AddTag(tag).
 		AddStatus(status).
 		AddNetwork(network).
 		AddBuild(build).
@@ -214,8 +206,8 @@ func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx
 		return nil, err
 	}
 
-	for k, v := range p.ProvisionedHosts {
-		ph, err = v.CreateProvisionedHostEntry(ctx, pn, client)
+	for _, v := range p.ProvisionedHosts {
+		_, err := v.CreateProvisionedHostEntry(ctx, pn, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating provisioned network: %v", err)

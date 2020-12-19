@@ -24,7 +24,7 @@ func (Script) Fields() []ent.Field {
 		field.Bool("ignore_errors"),
 		field.JSON("args", []string{}),
 		field.Bool("disabled"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.String("abs_path"),
 	}
 }

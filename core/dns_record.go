@@ -133,6 +133,7 @@ func (r *DNSRecord) SetValue(val string) {
 	r.Values = append(r.Values, val)
 }
 
+// CreateDNSRecordEntry ...
 func (r *DNSRecord) CreateDNSRecordEntry(ctx context.Context, client *ent.Client) (*ent.DNSRecord, error) {
 	tag, err := CreateTagEntry(r.ID, r.Tags, ctx, client)
 
@@ -140,8 +141,8 @@ func (r *DNSRecord) CreateDNSRecordEntry(ctx context.Context, client *ent.Client
 		cli.Logger.Debugf("failed creating dns record: %v", err)
 		return nil, err
 	}
-	
-	dnsrecord, error := client.DNSRecord.
+
+	dnsrecord, err := client.DNSRecord.
 		Create().
 		SetName(r.Name).
 		SetValues(r.Values).

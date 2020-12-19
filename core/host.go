@@ -358,6 +358,7 @@ func (h *Host) Index(base *Laforge) error {
 	return nil
 }
 
+// CreateDiskEntry ...
 func (d *Disk) CreateDiskEntry(ctx context.Context, client *ent.Client) (*ent.Disk, error) {
 	disk, err := client.Disk.
 		Create().
@@ -373,6 +374,7 @@ func (d *Disk) CreateDiskEntry(ctx context.Context, client *ent.Client) (*ent.Di
 	return disk, nil
 }
 
+// CreateHostEntry ...
 func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Host, error) {
 	disk, err := h.Disk.CreateDiskEntry(ctx, client)
 

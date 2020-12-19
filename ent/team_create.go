@@ -31,13 +31,13 @@ func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 }
 
 // SetConfig sets the config field.
-func (tc *TeamCreate) SetConfig(s []string) *TeamCreate {
-	tc.mutation.SetConfig(s)
+func (tc *TeamCreate) SetConfig(m map[string]string) *TeamCreate {
+	tc.mutation.SetConfig(m)
 	return tc
 }
 
 // SetRevision sets the revision field.
-func (tc *TeamCreate) SetRevision(i int) *TeamCreate {
+func (tc *TeamCreate) SetRevision(i int64) *TeamCreate {
 	tc.mutation.SetRevision(i)
 	return tc
 }
@@ -222,7 +222,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.Revision(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})

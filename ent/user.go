@@ -8,7 +8,6 @@ import (
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/user"
-	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
@@ -19,7 +18,7 @@ type User struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// UUID holds the value of the "uuid" field.
-	UUID uuid.UUID `json:"uuid,omitempty"`
+	UUID string `json:"uuid,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -57,7 +56,7 @@ func (*User) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // name
-		&uuid.UUID{},      // uuid
+		&sql.NullString{}, // uuid
 		&sql.NullString{}, // email
 	}
 }
@@ -92,10 +91,10 @@ func (u *User) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		u.Name = value.String
 	}
-	if value, ok := values[1].(*uuid.UUID); !ok {
+	if value, ok := values[1].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field uuid", values[1])
-	} else if value != nil {
-		u.UUID = *value
+	} else if value.Valid {
+		u.UUID = value.String
 	}
 	if value, ok := values[2].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field email", values[2])
@@ -181,7 +180,7 @@ func (u *User) String() string {
 	builder.WriteString(", name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", uuid=")
-	builder.WriteString(fmt.Sprintf("%v", u.UUID))
+	builder.WriteString(u.UUID)
 	builder.WriteString(", email=")
 	builder.WriteString(u.Email)
 	builder.WriteByte(')')

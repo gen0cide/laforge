@@ -16,7 +16,7 @@ func (Tag) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("uuid", uuid.UUID{}),
 		field.String("name"),
-		field.JSON("description", []string{}),
+		field.JSON("description", map[string]string{}),
 	}
 }
 

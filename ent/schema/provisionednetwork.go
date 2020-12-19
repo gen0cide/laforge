@@ -16,14 +16,12 @@ func (ProvisionedNetwork) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
 		field.String("cidr"),
-		field.JSON("vars", []string{}),
 	}
 }
 
 // Edges of the ProvisionedNetwork.
 func (ProvisionedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
 		edge.To("status", Status.Type),
 		edge.To("network", Network.Type),
 		edge.To("build", Build.Type),

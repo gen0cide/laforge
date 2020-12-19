@@ -24,7 +24,6 @@ func (ProvisionedHost) Edges() []ent.Edge {
 		edge.To("status", Status.Type),
 		edge.To("provisioned_network", ProvisionedNetwork.Type),
 		edge.To("host", Host.Type),
-		edge.To("tag", Tag.Type),
 		edge.From("provisioned_steps", ProvisioningStep.Type).Ref("provisioned_host"),
 	}
 }

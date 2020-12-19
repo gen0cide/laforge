@@ -11,11 +11,7 @@ const (
 	FieldName = "name"
 	// FieldCidr holds the string denoting the cidr field in the database.
 	FieldCidr = "cidr"
-	// FieldVars holds the string denoting the vars field in the database.
-	FieldVars = "vars"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
 	// EdgeStatus holds the string denoting the status edge name in mutations.
 	EdgeStatus = "status"
 	// EdgeNetwork holds the string denoting the network edge name in mutations.
@@ -29,13 +25,6 @@ const (
 
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioned_network_tag"
 	// StatusTable is the table the holds the status relation/edge.
 	StatusTable = "status"
 	// StatusInverseTable is the table name for the Status entity.
@@ -74,7 +63,6 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldCidr,
-	FieldVars,
 }
 
 var (

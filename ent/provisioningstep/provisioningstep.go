@@ -11,11 +11,11 @@ const (
 	FieldProvisionerType = "provisioner_type"
 	// FieldStepNumber holds the string denoting the step_number field in the database.
 	FieldStepNumber = "step_number"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 
 	// EdgeProvisionedHost holds the string denoting the provisioned_host edge name in mutations.
 	EdgeProvisionedHost = "provisioned_host"
-	// EdgeStatus holds the string denoting the status edge name in mutations.
-	EdgeStatus = "status"
 	// EdgeScript holds the string denoting the script edge name in mutations.
 	EdgeScript = "script"
 	// EdgeCommand holds the string denoting the command edge name in mutations.
@@ -24,8 +24,6 @@ const (
 	EdgeDNSRecord = "dns_record"
 	// EdgeRemoteFile holds the string denoting the remote_file edge name in mutations.
 	EdgeRemoteFile = "remote_file"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
@@ -34,13 +32,6 @@ const (
 	// ProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedHostInverseTable = "provisioned_hosts"
-	// StatusTable is the table the holds the status relation/edge.
-	StatusTable = "status"
-	// StatusInverseTable is the table name for the Status entity.
-	// It exists in this package in order to avoid circular dependency with the "status" package.
-	StatusInverseTable = "status"
-	// StatusColumn is the table column denoting the status relation/edge.
-	StatusColumn = "provisioning_step_status"
 	// ScriptTable is the table the holds the script relation/edge.
 	ScriptTable = "scripts"
 	// ScriptInverseTable is the table name for the Script entity.
@@ -69,13 +60,6 @@ const (
 	RemoteFileInverseTable = "remote_files"
 	// RemoteFileColumn is the table column denoting the remote_file relation/edge.
 	RemoteFileColumn = "provisioning_step_remote_file"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioning_step_tag"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.
@@ -83,6 +67,7 @@ var Columns = []string{
 	FieldID,
 	FieldProvisionerType,
 	FieldStepNumber,
+	FieldStatus,
 }
 
 var (

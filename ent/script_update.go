@@ -104,8 +104,8 @@ func (su *ScriptUpdate) SetDisabled(b bool) *ScriptUpdate {
 }
 
 // SetVars sets the vars field.
-func (su *ScriptUpdate) SetVars(s []string) *ScriptUpdate {
-	su.mutation.SetVars(s)
+func (su *ScriptUpdate) SetVars(m map[string]string) *ScriptUpdate {
+	su.mutation.SetVars(m)
 	return su
 }
 
@@ -650,8 +650,8 @@ func (suo *ScriptUpdateOne) SetDisabled(b bool) *ScriptUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (suo *ScriptUpdateOne) SetVars(s []string) *ScriptUpdateOne {
-	suo.mutation.SetVars(s)
+func (suo *ScriptUpdateOne) SetVars(m map[string]string) *ScriptUpdateOne {
+	suo.mutation.SetVars(m)
 	return suo
 }
 

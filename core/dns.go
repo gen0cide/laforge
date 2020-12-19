@@ -78,6 +78,7 @@ func (d *DNS) Swap(m Mergeable) error {
 	return nil
 }
 
+// CreateDNSEntry ...
 func (d *DNS) CreateDNSEntry(ctx context.Context, client *ent.Client) (*ent.DNS, error) {
 	dns, err := client.DNS.
 		Create().

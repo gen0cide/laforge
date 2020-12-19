@@ -245,8 +245,9 @@ func (r *RemoteFile) AssetName() (string, error) {
 
 }
 
+// CreateRemoteFileEntry ...
 func (r *RemoteFile) CreateRemoteFileEntry(ctx context.Context, client *ent.Client) (*ent.RemoteFile, error) {
-	tag, err = CreateTagEntry(r.ID, r.Tags, ctx, client)
+	tag, err := CreateTagEntry(r.ID, r.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating remote file: %v", err)
@@ -273,6 +274,6 @@ func (r *RemoteFile) CreateRemoteFileEntry(ctx context.Context, client *ent.Clie
 		return nil, err
 	}
 
-	cli.Logger.Debugf("remote file was created: ", ps)
+	cli.Logger.Debugf("remote file was created: ", remotefile)
 	return remotefile, nil
 }

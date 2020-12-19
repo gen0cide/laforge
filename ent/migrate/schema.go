@@ -346,7 +346,6 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "cidr", Type: field.TypeString},
-		{Name: "vars", Type: field.TypeJSON},
 	}
 	// ProvisionedNetworksTable holds the schema information for the "provisioned_networks" table.
 	ProvisionedNetworksTable = &schema.Table{
@@ -360,6 +359,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "provisioner_type", Type: field.TypeString},
 		{Name: "step_number", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeString},
 	}
 	// ProvisioningStepsTable holds the schema information for the "provisioning_steps" table.
 	ProvisioningStepsTable = &schema.Table{
@@ -441,7 +441,6 @@ var (
 		{Name: "error", Type: field.TypeString},
 		{Name: "provisioned_host_status", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_network_status", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_status", Type: field.TypeInt, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
 	StatusTable = &schema.Table{
@@ -461,13 +460,6 @@ var (
 				Columns: []*schema.Column{StatusColumns[8]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "status_provisioning_steps_status",
-				Columns: []*schema.Column{StatusColumns[9]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -490,9 +482,6 @@ var (
 		{Name: "host_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "included_network_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "network_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_host_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "remote_file_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "script_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "status_tag", Type: field.TypeInt, Nullable: true},
@@ -590,57 +579,36 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_provisioned_hosts_tag",
-				Columns: []*schema.Column{TagsColumns[16]},
-
-				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_provisioned_networks_tag",
-				Columns: []*schema.Column{TagsColumns[17]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_provisioning_steps_tag",
-				Columns: []*schema.Column{TagsColumns[18]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_remote_files_tag",
-				Columns: []*schema.Column{TagsColumns[19]},
+				Columns: []*schema.Column{TagsColumns[16]},
 
 				RefColumns: []*schema.Column{RemoteFilesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_scripts_tag",
-				Columns: []*schema.Column{TagsColumns[20]},
+				Columns: []*schema.Column{TagsColumns[17]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_status_tag",
-				Columns: []*schema.Column{TagsColumns[21]},
+				Columns: []*schema.Column{TagsColumns[18]},
 
 				RefColumns: []*schema.Column{StatusColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_teams_tag",
-				Columns: []*schema.Column{TagsColumns[22]},
+				Columns: []*schema.Column{TagsColumns[19]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_users_tag",
-				Columns: []*schema.Column{TagsColumns[23]},
+				Columns: []*schema.Column{TagsColumns[20]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -652,7 +620,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "team_number", Type: field.TypeInt},
 		{Name: "config", Type: field.TypeJSON},
-		{Name: "revision", Type: field.TypeInt},
+		{Name: "revision", Type: field.TypeInt64},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
 	TeamsTable = &schema.Table{
@@ -665,7 +633,7 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "uuid", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
 		{Name: "build_maintainer", Type: field.TypeInt, Nullable: true},
 		{Name: "command_user", Type: field.TypeInt, Nullable: true},
@@ -1000,7 +968,6 @@ func init() {
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	StatusTable.ForeignKeys[2].RefTable = ProvisioningStepsTable
 	TagsTable.ForeignKeys[0].RefTable = BuildsTable
 	TagsTable.ForeignKeys[1].RefTable = CommandsTable
 	TagsTable.ForeignKeys[2].RefTable = DNSRecordsTable
@@ -1013,14 +980,11 @@ func init() {
 	TagsTable.ForeignKeys[9].RefTable = HostsTable
 	TagsTable.ForeignKeys[10].RefTable = IncludedNetworksTable
 	TagsTable.ForeignKeys[11].RefTable = NetworksTable
-	TagsTable.ForeignKeys[12].RefTable = ProvisionedHostsTable
-	TagsTable.ForeignKeys[13].RefTable = ProvisionedNetworksTable
-	TagsTable.ForeignKeys[14].RefTable = ProvisioningStepsTable
-	TagsTable.ForeignKeys[15].RefTable = RemoteFilesTable
-	TagsTable.ForeignKeys[16].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[17].RefTable = StatusTable
-	TagsTable.ForeignKeys[18].RefTable = TeamsTable
-	TagsTable.ForeignKeys[19].RefTable = UsersTable
+	TagsTable.ForeignKeys[12].RefTable = RemoteFilesTable
+	TagsTable.ForeignKeys[13].RefTable = ScriptsTable
+	TagsTable.ForeignKeys[14].RefTable = StatusTable
+	TagsTable.ForeignKeys[15].RefTable = TeamsTable
+	TagsTable.ForeignKeys[16].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = BuildsTable
 	UsersTable.ForeignKeys[1].RefTable = CommandsTable
 	UsersTable.ForeignKeys[2].RefTable = EnvironmentsTable

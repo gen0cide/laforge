@@ -14,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -35,27 +34,6 @@ func (pnc *ProvisionedNetworkCreate) SetName(s string) *ProvisionedNetworkCreate
 func (pnc *ProvisionedNetworkCreate) SetCidr(s string) *ProvisionedNetworkCreate {
 	pnc.mutation.SetCidr(s)
 	return pnc
-}
-
-// SetVars sets the vars field.
-func (pnc *ProvisionedNetworkCreate) SetVars(s []string) *ProvisionedNetworkCreate {
-	pnc.mutation.SetVars(s)
-	return pnc
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (pnc *ProvisionedNetworkCreate) AddTagIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddTagIDs(ids...)
-	return pnc
-}
-
-// AddTag adds the tag edges to Tag.
-func (pnc *ProvisionedNetworkCreate) AddTag(t ...*Tag) *ProvisionedNetworkCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pnc.AddTagIDs(ids...)
 }
 
 // AddStatuIDs adds the status edge to Status by ids.
@@ -190,9 +168,6 @@ func (pnc *ProvisionedNetworkCreate) check() error {
 	if _, ok := pnc.mutation.Cidr(); !ok {
 		return &ValidationError{Name: "cidr", err: errors.New("ent: missing required field \"cidr\"")}
 	}
-	if _, ok := pnc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
-	}
 	return nil
 }
 
@@ -235,33 +210,6 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Column: provisionednetwork.FieldCidr,
 		})
 		_node.Cidr = value
-	}
-	if value, ok := pnc.mutation.Vars(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: provisionednetwork.FieldVars,
-		})
-		_node.Vars = value
-	}
-	if nodes := pnc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pnc.mutation.StatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -37,7 +37,7 @@ type Script struct {
 	// Disabled holds the value of the "disabled" field.
 	Disabled bool `json:"disabled,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// AbsPath holds the value of the "abs_path" field.
 	AbsPath string `json:"abs_path,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

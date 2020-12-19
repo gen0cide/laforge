@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
-	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -35,8 +34,8 @@ func (uu *UserUpdate) SetName(s string) *UserUpdate {
 }
 
 // SetUUID sets the uuid field.
-func (uu *UserUpdate) SetUUID(u uuid.UUID) *UserUpdate {
-	uu.mutation.SetUUID(u)
+func (uu *UserUpdate) SetUUID(s string) *UserUpdate {
+	uu.mutation.SetUUID(s)
 	return uu
 }
 
@@ -165,7 +164,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.UUID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldUUID,
 		})
@@ -256,8 +255,8 @@ func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 }
 
 // SetUUID sets the uuid field.
-func (uuo *UserUpdateOne) SetUUID(u uuid.UUID) *UserUpdateOne {
-	uuo.mutation.SetUUID(u)
+func (uuo *UserUpdateOne) SetUUID(s string) *UserUpdateOne {
+	uuo.mutation.SetUUID(s)
 	return uuo
 }
 
@@ -384,7 +383,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.UUID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldUUID,
 		})

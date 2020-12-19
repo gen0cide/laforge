@@ -15,8 +15,8 @@ type Team struct {
 func (Team) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("team_number"),
-		field.JSON("config", []string{}),
-		field.Int("revision"),
+		field.JSON("config", map[string]string{}),
+		field.Int64("revision"),
 	}
 }
 

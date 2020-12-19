@@ -16,8 +16,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisioningStepUpdate is the builder for updating ProvisioningStep entities.
@@ -52,6 +50,12 @@ func (psu *ProvisioningStepUpdate) AddStepNumber(i int) *ProvisioningStepUpdate 
 	return psu
 }
 
+// SetStatus sets the status field.
+func (psu *ProvisioningStepUpdate) SetStatus(s string) *ProvisioningStepUpdate {
+	psu.mutation.SetStatus(s)
+	return psu
+}
+
 // AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
 func (psu *ProvisioningStepUpdate) AddProvisionedHostIDs(ids ...int) *ProvisioningStepUpdate {
 	psu.mutation.AddProvisionedHostIDs(ids...)
@@ -65,21 +69,6 @@ func (psu *ProvisioningStepUpdate) AddProvisionedHost(p ...*ProvisionedHost) *Pr
 		ids[i] = p[i].ID
 	}
 	return psu.AddProvisionedHostIDs(ids...)
-}
-
-// AddStatuIDs adds the status edge to Status by ids.
-func (psu *ProvisioningStepUpdate) AddStatuIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddStatuIDs(ids...)
-	return psu
-}
-
-// AddStatus adds the status edges to Status.
-func (psu *ProvisioningStepUpdate) AddStatus(s ...*Status) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.AddStatuIDs(ids...)
 }
 
 // AddScriptIDs adds the script edge to Script by ids.
@@ -142,21 +131,6 @@ func (psu *ProvisioningStepUpdate) AddRemoteFile(r ...*RemoteFile) *Provisioning
 	return psu.AddRemoteFileIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (psu *ProvisioningStepUpdate) AddTagIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddTagIDs(ids...)
-	return psu
-}
-
-// AddTag adds the tag edges to Tag.
-func (psu *ProvisioningStepUpdate) AddTag(t ...*Tag) *ProvisioningStepUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psu.AddTagIDs(ids...)
-}
-
 // Mutation returns the ProvisioningStepMutation object of the builder.
 func (psu *ProvisioningStepUpdate) Mutation() *ProvisioningStepMutation {
 	return psu.mutation
@@ -181,27 +155,6 @@ func (psu *ProvisioningStepUpdate) RemoveProvisionedHost(p ...*ProvisionedHost) 
 		ids[i] = p[i].ID
 	}
 	return psu.RemoveProvisionedHostIDs(ids...)
-}
-
-// ClearStatus clears all "status" edges to type Status.
-func (psu *ProvisioningStepUpdate) ClearStatus() *ProvisioningStepUpdate {
-	psu.mutation.ClearStatus()
-	return psu
-}
-
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (psu *ProvisioningStepUpdate) RemoveStatuIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveStatuIDs(ids...)
-	return psu
-}
-
-// RemoveStatus removes status edges to Status.
-func (psu *ProvisioningStepUpdate) RemoveStatus(s ...*Status) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.RemoveStatuIDs(ids...)
 }
 
 // ClearScript clears all "script" edges to type Script.
@@ -286,27 +239,6 @@ func (psu *ProvisioningStepUpdate) RemoveRemoteFile(r ...*RemoteFile) *Provision
 		ids[i] = r[i].ID
 	}
 	return psu.RemoveRemoteFileIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (psu *ProvisioningStepUpdate) ClearTag() *ProvisioningStepUpdate {
-	psu.mutation.ClearTag()
-	return psu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (psu *ProvisioningStepUpdate) RemoveTagIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveTagIDs(ids...)
-	return psu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (psu *ProvisioningStepUpdate) RemoveTag(t ...*Tag) *ProvisioningStepUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psu.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -399,6 +331,13 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Column: provisioningstep.FieldStepNumber,
 		})
 	}
+	if value, ok := psu.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: provisioningstep.FieldStatus,
+		})
+	}
 	if psu.mutation.ProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -445,60 +384,6 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if psu.mutation.StatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedStatusIDs(); len(nodes) > 0 && !psu.mutation.StatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.StatusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
 				},
 			},
 		}
@@ -723,60 +608,6 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if psu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedTagIDs(); len(nodes) > 0 && !psu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, psu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisioningstep.Label}
@@ -814,6 +645,12 @@ func (psuo *ProvisioningStepUpdateOne) AddStepNumber(i int) *ProvisioningStepUpd
 	return psuo
 }
 
+// SetStatus sets the status field.
+func (psuo *ProvisioningStepUpdateOne) SetStatus(s string) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetStatus(s)
+	return psuo
+}
+
 // AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
 func (psuo *ProvisioningStepUpdateOne) AddProvisionedHostIDs(ids ...int) *ProvisioningStepUpdateOne {
 	psuo.mutation.AddProvisionedHostIDs(ids...)
@@ -827,21 +664,6 @@ func (psuo *ProvisioningStepUpdateOne) AddProvisionedHost(p ...*ProvisionedHost)
 		ids[i] = p[i].ID
 	}
 	return psuo.AddProvisionedHostIDs(ids...)
-}
-
-// AddStatuIDs adds the status edge to Status by ids.
-func (psuo *ProvisioningStepUpdateOne) AddStatuIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddStatuIDs(ids...)
-	return psuo
-}
-
-// AddStatus adds the status edges to Status.
-func (psuo *ProvisioningStepUpdateOne) AddStatus(s ...*Status) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.AddStatuIDs(ids...)
 }
 
 // AddScriptIDs adds the script edge to Script by ids.
@@ -904,21 +726,6 @@ func (psuo *ProvisioningStepUpdateOne) AddRemoteFile(r ...*RemoteFile) *Provisio
 	return psuo.AddRemoteFileIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (psuo *ProvisioningStepUpdateOne) AddTagIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddTagIDs(ids...)
-	return psuo
-}
-
-// AddTag adds the tag edges to Tag.
-func (psuo *ProvisioningStepUpdateOne) AddTag(t ...*Tag) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psuo.AddTagIDs(ids...)
-}
-
 // Mutation returns the ProvisioningStepMutation object of the builder.
 func (psuo *ProvisioningStepUpdateOne) Mutation() *ProvisioningStepMutation {
 	return psuo.mutation
@@ -943,27 +750,6 @@ func (psuo *ProvisioningStepUpdateOne) RemoveProvisionedHost(p ...*ProvisionedHo
 		ids[i] = p[i].ID
 	}
 	return psuo.RemoveProvisionedHostIDs(ids...)
-}
-
-// ClearStatus clears all "status" edges to type Status.
-func (psuo *ProvisioningStepUpdateOne) ClearStatus() *ProvisioningStepUpdateOne {
-	psuo.mutation.ClearStatus()
-	return psuo
-}
-
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (psuo *ProvisioningStepUpdateOne) RemoveStatuIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveStatuIDs(ids...)
-	return psuo
-}
-
-// RemoveStatus removes status edges to Status.
-func (psuo *ProvisioningStepUpdateOne) RemoveStatus(s ...*Status) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.RemoveStatuIDs(ids...)
 }
 
 // ClearScript clears all "script" edges to type Script.
@@ -1048,27 +834,6 @@ func (psuo *ProvisioningStepUpdateOne) RemoveRemoteFile(r ...*RemoteFile) *Provi
 		ids[i] = r[i].ID
 	}
 	return psuo.RemoveRemoteFileIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (psuo *ProvisioningStepUpdateOne) ClearTag() *ProvisioningStepUpdateOne {
-	psuo.mutation.ClearTag()
-	return psuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (psuo *ProvisioningStepUpdateOne) RemoveTagIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveTagIDs(ids...)
-	return psuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (psuo *ProvisioningStepUpdateOne) RemoveTag(t ...*Tag) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psuo.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -1159,6 +924,13 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Column: provisioningstep.FieldStepNumber,
 		})
 	}
+	if value, ok := psuo.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: provisioningstep.FieldStatus,
+		})
+	}
 	if psuo.mutation.ProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1205,60 +977,6 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if psuo.mutation.StatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedStatusIDs(); len(nodes) > 0 && !psuo.mutation.StatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.StatusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.StatusTable,
-			Columns: []string{provisioningstep.StatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
 				},
 			},
 		}
@@ -1475,60 +1193,6 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: remotefile.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if psuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !psuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.TagTable,
-			Columns: []string{provisioningstep.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}

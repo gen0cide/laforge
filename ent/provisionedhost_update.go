@@ -15,7 +15,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisionedHostUpdate is the builder for updating ProvisionedHost entities.
@@ -80,21 +79,6 @@ func (phu *ProvisionedHostUpdate) AddHost(h ...*Host) *ProvisionedHostUpdate {
 		ids[i] = h[i].ID
 	}
 	return phu.AddHostIDs(ids...)
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (phu *ProvisionedHostUpdate) AddTagIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddTagIDs(ids...)
-	return phu
-}
-
-// AddTag adds the tag edges to Tag.
-func (phu *ProvisionedHostUpdate) AddTag(t ...*Tag) *ProvisionedHostUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return phu.AddTagIDs(ids...)
 }
 
 // AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
@@ -178,27 +162,6 @@ func (phu *ProvisionedHostUpdate) RemoveHost(h ...*Host) *ProvisionedHostUpdate 
 		ids[i] = h[i].ID
 	}
 	return phu.RemoveHostIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (phu *ProvisionedHostUpdate) ClearTag() *ProvisionedHostUpdate {
-	phu.mutation.ClearTag()
-	return phu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (phu *ProvisionedHostUpdate) RemoveTagIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveTagIDs(ids...)
-	return phu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (phu *ProvisionedHostUpdate) RemoveTag(t ...*Tag) *ProvisionedHostUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return phu.RemoveTagIDs(ids...)
 }
 
 // ClearProvisionedSteps clears all "provisioned_steps" edges to type ProvisioningStep.
@@ -460,60 +423,6 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phu.mutation.RemovedTagIDs(); len(nodes) > 0 && !phu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if phu.mutation.ProvisionedStepsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -637,21 +546,6 @@ func (phuo *ProvisionedHostUpdateOne) AddHost(h ...*Host) *ProvisionedHostUpdate
 	return phuo.AddHostIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (phuo *ProvisionedHostUpdateOne) AddTagIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddTagIDs(ids...)
-	return phuo
-}
-
-// AddTag adds the tag edges to Tag.
-func (phuo *ProvisionedHostUpdateOne) AddTag(t ...*Tag) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return phuo.AddTagIDs(ids...)
-}
-
 // AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedStepIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedStepIDs(ids...)
@@ -733,27 +627,6 @@ func (phuo *ProvisionedHostUpdateOne) RemoveHost(h ...*Host) *ProvisionedHostUpd
 		ids[i] = h[i].ID
 	}
 	return phuo.RemoveHostIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (phuo *ProvisionedHostUpdateOne) ClearTag() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearTag()
-	return phuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveTagIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveTagIDs(ids...)
-	return phuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (phuo *ProvisionedHostUpdateOne) RemoveTag(t ...*Tag) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return phuo.RemoveTagIDs(ids...)
 }
 
 // ClearProvisionedSteps clears all "provisioned_steps" edges to type ProvisioningStep.
@@ -1005,60 +878,6 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: host.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if phuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !phuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}

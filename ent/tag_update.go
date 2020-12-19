@@ -40,8 +40,8 @@ func (tu *TagUpdate) SetName(s string) *TagUpdate {
 }
 
 // SetDescription sets the description field.
-func (tu *TagUpdate) SetDescription(s []string) *TagUpdate {
-	tu.mutation.SetDescription(s)
+func (tu *TagUpdate) SetDescription(m map[string]string) *TagUpdate {
+	tu.mutation.SetDescription(m)
 	return tu
 }
 
@@ -171,8 +171,8 @@ func (tuo *TagUpdateOne) SetName(s string) *TagUpdateOne {
 }
 
 // SetDescription sets the description field.
-func (tuo *TagUpdateOne) SetDescription(s []string) *TagUpdateOne {
-	tuo.mutation.SetDescription(s)
+func (tuo *TagUpdateOne) SetDescription(m map[string]string) *TagUpdateOne {
+	tuo.mutation.SetDescription(m)
 	return tuo
 }
 

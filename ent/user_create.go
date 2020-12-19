@@ -11,7 +11,6 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
-	"github.com/google/uuid"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -28,8 +27,8 @@ func (uc *UserCreate) SetName(s string) *UserCreate {
 }
 
 // SetUUID sets the uuid field.
-func (uc *UserCreate) SetUUID(u uuid.UUID) *UserCreate {
-	uc.mutation.SetUUID(u)
+func (uc *UserCreate) SetUUID(s string) *UserCreate {
+	uc.mutation.SetUUID(s)
 	return uc
 }
 
@@ -151,7 +150,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.UUID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldUUID,
 		})

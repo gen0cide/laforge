@@ -538,15 +538,16 @@ func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, er
 	return nil, fmt.Errorf("host %s was not located within network %s for the given build", hostid, netid)
 }
 
-func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt context.Context, client *ent.Client) (*ent.Team, error) {
-	user, err = h.Maintainer.CreateUserEntry(ctx, client)
+// CreateTeamEntry ...
+func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, ctx context.Context, client *ent.Client) (*ent.Team, error) {
+	user, err := t.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating team: %v", err)
 		return nil, err
 	}
 
-	tag, err = CreateTagEntry(t.ID, h.Tags, ctx, client)
+	tag, err := CreateTagEntry(t.ID, t.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating team: %v", err)
@@ -560,7 +561,7 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt conte
 		SetRevision(t.Revision).
 		AddMaintainer(user).
 		AddBuild(build).
-		AddEnvironment(env).
+		AddTeamToEnvironment(env).
 		AddTag(tag).
 		Save(ctx)
 
@@ -569,8 +570,8 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt conte
 		return nil, err
 	}
 
-	for k, v := range b.ProvisionedNetworks {
-		pn, err = v.CreateProvisionedNetworkEntry(build, ctx, client)
+	for _, v := range t.ProvisionedNetworks {
+		_, err := v.CreateProvisionedNetworkEntry(build, ctx, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating team: %v", err)
@@ -579,5 +580,5 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, cxt conte
 	}
 
 	cli.Logger.Debugf("team was created: ", team)
-	return build, nil
+	return team, nil
 }

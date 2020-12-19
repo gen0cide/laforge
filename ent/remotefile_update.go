@@ -46,8 +46,8 @@ func (rfu *RemoteFileUpdate) SetDestination(s string) *RemoteFileUpdate {
 }
 
 // SetVars sets the vars field.
-func (rfu *RemoteFileUpdate) SetVars(s []string) *RemoteFileUpdate {
-	rfu.mutation.SetVars(s)
+func (rfu *RemoteFileUpdate) SetVars(m map[string]string) *RemoteFileUpdate {
+	rfu.mutation.SetVars(m)
 	return rfu
 }
 
@@ -358,8 +358,8 @@ func (rfuo *RemoteFileUpdateOne) SetDestination(s string) *RemoteFileUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (rfuo *RemoteFileUpdateOne) SetVars(s []string) *RemoteFileUpdateOne {
-	rfuo.mutation.SetVars(s)
+func (rfuo *RemoteFileUpdateOne) SetVars(m map[string]string) *RemoteFileUpdateOne {
+	rfuo.mutation.SetVars(m)
 	return rfuo
 }
 

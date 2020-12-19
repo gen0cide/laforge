@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -20,8 +19,6 @@ type ProvisionedNetwork struct {
 	Name string `json:"name,omitempty"`
 	// Cidr holds the value of the "cidr" field.
 	Cidr string `json:"cidr,omitempty"`
-	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedNetworkQuery when eager-loading is set.
 	Edges ProvisionedNetworkEdges `json:"edges"`
@@ -29,8 +26,6 @@ type ProvisionedNetwork struct {
 
 // ProvisionedNetworkEdges holds the relations/edges for other nodes in the graph.
 type ProvisionedNetworkEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
 	// Status holds the value of the status edge.
 	Status []*Status
 	// Network holds the value of the network edge.
@@ -43,22 +38,13 @@ type ProvisionedNetworkEdges struct {
 	ProvisionedHosts []*ProvisionedHost
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
-}
-
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
+	loadedTypes [5]bool
 }
 
 // StatusOrErr returns the Status value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) StatusOrErr() ([]*Status, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Status, nil
 	}
 	return nil, &NotLoadedError{edge: "status"}
@@ -67,7 +53,7 @@ func (e ProvisionedNetworkEdges) StatusOrErr() ([]*Status, error) {
 // NetworkOrErr returns the Network value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) NetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Network, nil
 	}
 	return nil, &NotLoadedError{edge: "network"}
@@ -76,7 +62,7 @@ func (e ProvisionedNetworkEdges) NetworkOrErr() ([]*Network, error) {
 // BuildOrErr returns the Build value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) BuildOrErr() ([]*Build, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Build, nil
 	}
 	return nil, &NotLoadedError{edge: "build"}
@@ -85,7 +71,7 @@ func (e ProvisionedNetworkEdges) BuildOrErr() ([]*Build, error) {
 // ProvisionedNetworkToTeamOrErr returns the ProvisionedNetworkToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) ProvisionedNetworkToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.ProvisionedNetworkToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedNetworkToTeam"}
@@ -94,7 +80,7 @@ func (e ProvisionedNetworkEdges) ProvisionedNetworkToTeamOrErr() ([]*Team, error
 // ProvisionedHostsOrErr returns the ProvisionedHosts value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) ProvisionedHostsOrErr() ([]*ProvisionedHost, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.ProvisionedHosts, nil
 	}
 	return nil, &NotLoadedError{edge: "provisioned_hosts"}
@@ -106,7 +92,6 @@ func (*ProvisionedNetwork) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // name
 		&sql.NullString{}, // cidr
-		&[]byte{},         // vars
 	}
 }
 
@@ -132,20 +117,7 @@ func (pn *ProvisionedNetwork) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		pn.Cidr = value.String
 	}
-
-	if value, ok := values[2].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[2])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &pn.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
 	return nil
-}
-
-// QueryTag queries the tag edge of the ProvisionedNetwork.
-func (pn *ProvisionedNetwork) QueryTag() *TagQuery {
-	return (&ProvisionedNetworkClient{config: pn.config}).QueryTag(pn)
 }
 
 // QueryStatus queries the status edge of the ProvisionedNetwork.
@@ -200,8 +172,6 @@ func (pn *ProvisionedNetwork) String() string {
 	builder.WriteString(pn.Name)
 	builder.WriteString(", cidr=")
 	builder.WriteString(pn.Cidr)
-	builder.WriteString(", vars=")
-	builder.WriteString(fmt.Sprintf("%v", pn.Vars))
 	builder.WriteByte(')')
 	return builder.String()
 }

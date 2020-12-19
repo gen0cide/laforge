@@ -4,7 +4,6 @@
 package core
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,7 +11,6 @@ import (
 	"regexp"
 
 	"github.com/gen0cide/laforge/core/cli"
-	"github.com/gen0cide/laforge/ent"
 	"github.com/xlab/treeprint"
 
 	"github.com/imdario/mergo"
@@ -606,18 +604,6 @@ func Mask(base, layer *Laforge) (*Laforge, error) {
 func (l *Laforge) IndexHostDependencies() error {
 	for _, h := range l.Hosts {
 		err := h.Index(l)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CreateHostEntries ...
-func (l *Laforge) CreateHostEntries(ctx context.Context, client *ent.Client) error {
-	for _, h := range l.Hosts {
-		_, err := h.CreateHostEntry(ctx, client)
-
 		if err != nil {
 			return err
 		}

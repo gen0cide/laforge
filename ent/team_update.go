@@ -45,20 +45,20 @@ func (tu *TeamUpdate) AddTeamNumber(i int) *TeamUpdate {
 }
 
 // SetConfig sets the config field.
-func (tu *TeamUpdate) SetConfig(s []string) *TeamUpdate {
-	tu.mutation.SetConfig(s)
+func (tu *TeamUpdate) SetConfig(m map[string]string) *TeamUpdate {
+	tu.mutation.SetConfig(m)
 	return tu
 }
 
 // SetRevision sets the revision field.
-func (tu *TeamUpdate) SetRevision(i int) *TeamUpdate {
+func (tu *TeamUpdate) SetRevision(i int64) *TeamUpdate {
 	tu.mutation.ResetRevision()
 	tu.mutation.SetRevision(i)
 	return tu
 }
 
 // AddRevision adds i to revision.
-func (tu *TeamUpdate) AddRevision(i int) *TeamUpdate {
+func (tu *TeamUpdate) AddRevision(i int64) *TeamUpdate {
 	tu.mutation.AddRevision(i)
 	return tu
 }
@@ -340,14 +340,14 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Revision(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})
 	}
 	if value, ok := tu.mutation.AddedRevision(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})
@@ -654,20 +654,20 @@ func (tuo *TeamUpdateOne) AddTeamNumber(i int) *TeamUpdateOne {
 }
 
 // SetConfig sets the config field.
-func (tuo *TeamUpdateOne) SetConfig(s []string) *TeamUpdateOne {
-	tuo.mutation.SetConfig(s)
+func (tuo *TeamUpdateOne) SetConfig(m map[string]string) *TeamUpdateOne {
+	tuo.mutation.SetConfig(m)
 	return tuo
 }
 
 // SetRevision sets the revision field.
-func (tuo *TeamUpdateOne) SetRevision(i int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetRevision(i int64) *TeamUpdateOne {
 	tuo.mutation.ResetRevision()
 	tuo.mutation.SetRevision(i)
 	return tuo
 }
 
 // AddRevision adds i to revision.
-func (tuo *TeamUpdateOne) AddRevision(i int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) AddRevision(i int64) *TeamUpdateOne {
 	tuo.mutation.AddRevision(i)
 	return tuo
 }
@@ -947,14 +947,14 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	}
 	if value, ok := tuo.mutation.Revision(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})
 	}
 	if value, ok := tuo.mutation.AddedRevision(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})

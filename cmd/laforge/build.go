@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 
 	"github.com/gen0cide/laforge/builder"
@@ -49,22 +48,22 @@ func performbuild(c *cli.Context) error {
 	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 
 	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
+		cliLogger.Errorf("failed opening connection to sqlite: %v", err)
 	}
 
-	cxt := client.Context()
+	ctx := context.Background()
 	defer client.Close()
 
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+	if err := client.Schema.Create(ctx); err != nil {
+		cliLogger.Errorf("failed creating schema resources: %v", err)
 	}
 
-	for k, v := range base.Environments {
-		environment, err = v.CreateEnvironmentEntry(ctx, client)
+	for _, v := range base.Environments {
+		_, err := v.CreateEnvironmentEntry(ctx, client)
 
 		if err != nil {
-			cli.Logger.Debugf("Error encountered during bootstrap: %v", err)
+			cliLogger.Errorf("Error encountered during bootstrap: %v", err)
 			return err
 		}
 	}

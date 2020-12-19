@@ -23,7 +23,7 @@ type RemoteFile struct {
 	// Destination holds the value of the "destination" field.
 	Destination string `json:"destination,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// Template holds the value of the "template" field.
 	Template bool `json:"template,omitempty"`
 	// Perms holds the value of the "perms" field.

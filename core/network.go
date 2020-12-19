@@ -134,6 +134,8 @@ func (n *Network) Octet() string {
 	return octets[2]
 }
 
+
+// CreateNetworkEntry ...
 func (n *Network) CreateNetworkEntry(ctx context.Context, client *ent.Client) (*ent.Network, error) {
 	tag, err := CreateTagEntry(n.ID, n.Tags, ctx, client)
 

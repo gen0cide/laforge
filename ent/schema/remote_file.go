@@ -17,7 +17,7 @@ func (RemoteFile) Fields() []ent.Field {
 		field.String("source_type"),
 		field.String("source"),
 		field.String("destination"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.Bool("template"),
 		field.String("perms"),
 		field.Bool("disabled"),

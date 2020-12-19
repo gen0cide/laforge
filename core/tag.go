@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// CreateTagEntry ...
 func CreateTagEntry(name string, description map[string]string, ctx context.Context, client *ent.Client) (*ent.Tag, error) {
 	tag, err := client.Tag.
 		Create().

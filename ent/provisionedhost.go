@@ -30,13 +30,11 @@ type ProvisionedHostEdges struct {
 	ProvisionedNetwork []*ProvisionedNetwork
 	// Host holds the value of the host edge.
 	Host []*Host
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
 	// ProvisionedSteps holds the value of the provisioned_steps edge.
 	ProvisionedSteps []*ProvisioningStep
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // StatusOrErr returns the Status value or an error if the edge
@@ -66,19 +64,10 @@ func (e ProvisionedHostEdges) HostOrErr() ([]*Host, error) {
 	return nil, &NotLoadedError{edge: "host"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisionedHostEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[3] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
-}
-
 // ProvisionedStepsOrErr returns the ProvisionedSteps value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) ProvisionedStepsOrErr() ([]*ProvisioningStep, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.ProvisionedSteps, nil
 	}
 	return nil, &NotLoadedError{edge: "provisioned_steps"}
@@ -125,11 +114,6 @@ func (ph *ProvisionedHost) QueryProvisionedNetwork() *ProvisionedNetworkQuery {
 // QueryHost queries the host edge of the ProvisionedHost.
 func (ph *ProvisionedHost) QueryHost() *HostQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryHost(ph)
-}
-
-// QueryTag queries the tag edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryTag() *TagQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryTag(ph)
 }
 
 // QueryProvisionedSteps queries the provisioned_steps edge of the ProvisionedHost.

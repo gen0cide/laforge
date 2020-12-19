@@ -39,8 +39,8 @@ func (rfc *RemoteFileCreate) SetDestination(s string) *RemoteFileCreate {
 }
 
 // SetVars sets the vars field.
-func (rfc *RemoteFileCreate) SetVars(s []string) *RemoteFileCreate {
-	rfc.mutation.SetVars(s)
+func (rfc *RemoteFileCreate) SetVars(m map[string]string) *RemoteFileCreate {
+	rfc.mutation.SetVars(m)
 	return rfc
 }
 

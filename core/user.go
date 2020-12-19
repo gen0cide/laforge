@@ -83,13 +83,14 @@ func UserWizard() error {
 	return nil
 }
 
+// CreateUserEntry ...
 func (u *User) CreateUserEntry(ctx context.Context, client *ent.Client) (*ent.User, error) {
 	user, err := client.User.
 		Create().
 		SetName(u.Name).
-		SetUUID(u.UUID),
+		SetUUID(u.UUID).
 		SetEmail(u.Email).
-			Save(ctx)
+		Save(ctx)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating user: %v", err)

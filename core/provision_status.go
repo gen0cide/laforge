@@ -65,6 +65,7 @@ func (s *Status) Hash() uint64 {
 	}
 }
 
+// CreateStatusEntry ...
 func (s *Status) CreateStatusEntry(ctx context.Context, client *ent.Client) (*ent.Status, error) {
 	status, err := client.Status.
 		Create().

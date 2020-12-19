@@ -33,8 +33,8 @@ func (tc *TagCreate) SetName(s string) *TagCreate {
 }
 
 // SetDescription sets the description field.
-func (tc *TagCreate) SetDescription(s []string) *TagCreate {
-	tc.mutation.SetDescription(s)
+func (tc *TagCreate) SetDescription(m map[string]string) *TagCreate {
+	tc.mutation.SetDescription(m)
 	return tc
 }
 

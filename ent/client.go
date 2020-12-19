@@ -2114,22 +2114,6 @@ func (c *ProvisionedHostClient) QueryHost(ph *ProvisionedHost) *HostQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryTag(ph *ProvisionedHost) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ph.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.TagTable, provisionedhost.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryProvisionedSteps queries the provisioned_steps edge of a ProvisionedHost.
 func (c *ProvisionedHostClient) QueryProvisionedSteps(ph *ProvisionedHost) *ProvisioningStepQuery {
 	query := &ProvisioningStepQuery{config: c.config}
@@ -2232,22 +2216,6 @@ func (c *ProvisionedNetworkClient) GetX(ctx context.Context, id int) *Provisione
 		panic(err)
 	}
 	return obj
-}
-
-// QueryTag queries the tag edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryTag(pn *ProvisionedNetwork) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := pn.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.TagTable, provisionednetwork.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryStatus queries the status edge of a ProvisionedNetwork.
@@ -2434,22 +2402,6 @@ func (c *ProvisioningStepClient) QueryProvisionedHost(ps *ProvisioningStep) *Pro
 	return query
 }
 
-// QueryStatus queries the status edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryStatus(ps *ProvisioningStep) *StatusQuery {
-	query := &StatusQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ps.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.StatusTable, provisioningstep.StatusColumn),
-		)
-		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryScript queries the script edge of a ProvisioningStep.
 func (c *ProvisioningStepClient) QueryScript(ps *ProvisioningStep) *ScriptQuery {
 	query := &ScriptQuery{config: c.config}
@@ -2507,22 +2459,6 @@ func (c *ProvisioningStepClient) QueryRemoteFile(ps *ProvisioningStep) *RemoteFi
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(remotefile.Table, remotefile.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.RemoteFileTable, provisioningstep.RemoteFileColumn),
-		)
-		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTag queries the tag edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryTag(ps *ProvisioningStep) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ps.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.TagTable, provisioningstep.TagColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil

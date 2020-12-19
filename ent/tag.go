@@ -22,27 +22,24 @@ type Tag struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description             []string `json:"description,omitempty"`
-	build_tag               *int
-	command_tag             *int
-	dns_record_tag          *int
-	disk_tag                *int
-	environment_tag         *int
-	file_delete_tag         *int
-	file_download_tag       *int
-	file_extract_tag        *int
-	finding_tag             *int
-	host_tag                *int
-	included_network_tag    *int
-	network_tag             *int
-	provisioned_host_tag    *int
-	provisioned_network_tag *int
-	provisioning_step_tag   *int
-	remote_file_tag         *int
-	script_tag              *int
-	status_tag              *int
-	team_tag                *int
-	user_tag                *int
+	Description          map[string]string `json:"description,omitempty"`
+	build_tag            *int
+	command_tag          *int
+	dns_record_tag       *int
+	disk_tag             *int
+	environment_tag      *int
+	file_delete_tag      *int
+	file_download_tag    *int
+	file_extract_tag     *int
+	finding_tag          *int
+	host_tag             *int
+	included_network_tag *int
+	network_tag          *int
+	remote_file_tag      *int
+	script_tag           *int
+	status_tag           *int
+	team_tag             *int
+	user_tag             *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -70,9 +67,6 @@ func (*Tag) fkValues() []interface{} {
 		&sql.NullInt64{}, // host_tag
 		&sql.NullInt64{}, // included_network_tag
 		&sql.NullInt64{}, // network_tag
-		&sql.NullInt64{}, // provisioned_host_tag
-		&sql.NullInt64{}, // provisioned_network_tag
-		&sql.NullInt64{}, // provisioning_step_tag
 		&sql.NullInt64{}, // remote_file_tag
 		&sql.NullInt64{}, // script_tag
 		&sql.NullInt64{}, // status_tag
@@ -186,48 +180,30 @@ func (t *Tag) assignValues(values ...interface{}) error {
 			*t.network_tag = int(value.Int64)
 		}
 		if value, ok := values[12].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_tag", value)
-		} else if value.Valid {
-			t.provisioned_host_tag = new(int)
-			*t.provisioned_host_tag = int(value.Int64)
-		}
-		if value, ok := values[13].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_tag", value)
-		} else if value.Valid {
-			t.provisioned_network_tag = new(int)
-			*t.provisioned_network_tag = int(value.Int64)
-		}
-		if value, ok := values[14].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_tag", value)
-		} else if value.Valid {
-			t.provisioning_step_tag = new(int)
-			*t.provisioning_step_tag = int(value.Int64)
-		}
-		if value, ok := values[15].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field remote_file_tag", value)
 		} else if value.Valid {
 			t.remote_file_tag = new(int)
 			*t.remote_file_tag = int(value.Int64)
 		}
-		if value, ok := values[16].(*sql.NullInt64); !ok {
+		if value, ok := values[13].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field script_tag", value)
 		} else if value.Valid {
 			t.script_tag = new(int)
 			*t.script_tag = int(value.Int64)
 		}
-		if value, ok := values[17].(*sql.NullInt64); !ok {
+		if value, ok := values[14].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field status_tag", value)
 		} else if value.Valid {
 			t.status_tag = new(int)
 			*t.status_tag = int(value.Int64)
 		}
-		if value, ok := values[18].(*sql.NullInt64); !ok {
+		if value, ok := values[15].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field team_tag", value)
 		} else if value.Valid {
 			t.team_tag = new(int)
 			*t.team_tag = int(value.Int64)
 		}
-		if value, ok := values[19].(*sql.NullInt64); !ok {
+		if value, ok := values[16].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field user_tag", value)
 		} else if value.Valid {
 			t.user_tag = new(int)

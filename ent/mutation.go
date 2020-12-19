@@ -10176,9 +10176,6 @@ type ProvisionedHostMutation struct {
 	host                       map[int]struct{}
 	removedhost                map[int]struct{}
 	clearedhost                bool
-	tag                        map[int]struct{}
-	removedtag                 map[int]struct{}
-	clearedtag                 bool
 	provisioned_steps          map[int]struct{}
 	removedprovisioned_steps   map[int]struct{}
 	clearedprovisioned_steps   bool
@@ -10462,59 +10459,6 @@ func (m *ProvisionedHostMutation) ResetHost() {
 	m.removedhost = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *ProvisionedHostMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTag clears the tag edge to Tag.
-func (m *ProvisionedHostMutation) ClearTag() {
-	m.clearedtag = true
-}
-
-// TagCleared returns if the edge tag was cleared.
-func (m *ProvisionedHostMutation) TagCleared() bool {
-	return m.clearedtag
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *ProvisionedHostMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed ids of tag.
-func (m *ProvisionedHostMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the tag ids in the mutation.
-func (m *ProvisionedHostMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag reset all changes of the "tag" edge.
-func (m *ProvisionedHostMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
-}
-
 // AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
 func (m *ProvisionedHostMutation) AddProvisionedStepIDs(ids ...int) {
 	if m.provisioned_steps == nil {
@@ -10683,7 +10627,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.status != nil {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -10692,9 +10636,6 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m.host != nil {
 		edges = append(edges, provisionedhost.EdgeHost)
-	}
-	if m.tag != nil {
-		edges = append(edges, provisionedhost.EdgeTag)
 	}
 	if m.provisioned_steps != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
@@ -10724,12 +10665,6 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedSteps:
 		ids := make([]ent.Value, 0, len(m.provisioned_steps))
 		for id := range m.provisioned_steps {
@@ -10743,7 +10678,7 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.removedstatus != nil {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -10752,9 +10687,6 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 	}
 	if m.removedhost != nil {
 		edges = append(edges, provisionedhost.EdgeHost)
-	}
-	if m.removedtag != nil {
-		edges = append(edges, provisionedhost.EdgeTag)
 	}
 	if m.removedprovisioned_steps != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
@@ -10784,12 +10716,6 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedSteps:
 		ids := make([]ent.Value, 0, len(m.removedprovisioned_steps))
 		for id := range m.removedprovisioned_steps {
@@ -10803,7 +10729,7 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.clearedstatus {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -10812,9 +10738,6 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.clearedhost {
 		edges = append(edges, provisionedhost.EdgeHost)
-	}
-	if m.clearedtag {
-		edges = append(edges, provisionedhost.EdgeTag)
 	}
 	if m.clearedprovisioned_steps {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
@@ -10832,8 +10755,6 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.clearedprovisioned_network
 	case provisionedhost.EdgeHost:
 		return m.clearedhost
-	case provisionedhost.EdgeTag:
-		return m.clearedtag
 	case provisionedhost.EdgeProvisionedSteps:
 		return m.clearedprovisioned_steps
 	}
@@ -10862,9 +10783,6 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	case provisionedhost.EdgeHost:
 		m.ResetHost()
 		return nil
-	case provisionedhost.EdgeTag:
-		m.ResetTag()
-		return nil
 	case provisionedhost.EdgeProvisionedSteps:
 		m.ResetProvisionedSteps()
 		return nil
@@ -10881,11 +10799,7 @@ type ProvisionedNetworkMutation struct {
 	id                               *int
 	name                             *string
 	cidr                             *string
-	vars                             *[]string
 	clearedFields                    map[string]struct{}
-	tag                              map[int]struct{}
-	removedtag                       map[int]struct{}
-	clearedtag                       bool
 	status                           map[int]struct{}
 	removedstatus                    map[int]struct{}
 	clearedstatus                    bool
@@ -11057,96 +10971,6 @@ func (m *ProvisionedNetworkMutation) OldCidr(ctx context.Context) (v string, err
 // ResetCidr reset all changes of the "cidr" field.
 func (m *ProvisionedNetworkMutation) ResetCidr() {
 	m.cidr = nil
-}
-
-// SetVars sets the vars field.
-func (m *ProvisionedNetworkMutation) SetVars(s []string) {
-	m.vars = &s
-}
-
-// Vars returns the vars value in the mutation.
-func (m *ProvisionedNetworkMutation) Vars() (r []string, exists bool) {
-	v := m.vars
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVars returns the old vars value of the ProvisionedNetwork.
-// If the ProvisionedNetwork object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ProvisionedNetworkMutation) OldVars(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldVars requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVars: %w", err)
-	}
-	return oldValue.Vars, nil
-}
-
-// ResetVars reset all changes of the "vars" field.
-func (m *ProvisionedNetworkMutation) ResetVars() {
-	m.vars = nil
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *ProvisionedNetworkMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTag clears the tag edge to Tag.
-func (m *ProvisionedNetworkMutation) ClearTag() {
-	m.clearedtag = true
-}
-
-// TagCleared returns if the edge tag was cleared.
-func (m *ProvisionedNetworkMutation) TagCleared() bool {
-	return m.clearedtag
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *ProvisionedNetworkMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed ids of tag.
-func (m *ProvisionedNetworkMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the tag ids in the mutation.
-func (m *ProvisionedNetworkMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag reset all changes of the "tag" edge.
-func (m *ProvisionedNetworkMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
 }
 
 // AddStatuIDs adds the status edge to Status by ids.
@@ -11428,15 +11252,12 @@ func (m *ProvisionedNetworkMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ProvisionedNetworkMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.name != nil {
 		fields = append(fields, provisionednetwork.FieldName)
 	}
 	if m.cidr != nil {
 		fields = append(fields, provisionednetwork.FieldCidr)
-	}
-	if m.vars != nil {
-		fields = append(fields, provisionednetwork.FieldVars)
 	}
 	return fields
 }
@@ -11450,8 +11271,6 @@ func (m *ProvisionedNetworkMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case provisionednetwork.FieldCidr:
 		return m.Cidr()
-	case provisionednetwork.FieldVars:
-		return m.Vars()
 	}
 	return nil, false
 }
@@ -11465,8 +11284,6 @@ func (m *ProvisionedNetworkMutation) OldField(ctx context.Context, name string) 
 		return m.OldName(ctx)
 	case provisionednetwork.FieldCidr:
 		return m.OldCidr(ctx)
-	case provisionednetwork.FieldVars:
-		return m.OldVars(ctx)
 	}
 	return nil, fmt.Errorf("unknown ProvisionedNetwork field %s", name)
 }
@@ -11489,13 +11306,6 @@ func (m *ProvisionedNetworkMutation) SetField(name string, value ent.Value) erro
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCidr(v)
-		return nil
-	case provisionednetwork.FieldVars:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVars(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork field %s", name)
@@ -11553,9 +11363,6 @@ func (m *ProvisionedNetworkMutation) ResetField(name string) error {
 	case provisionednetwork.FieldCidr:
 		m.ResetCidr()
 		return nil
-	case provisionednetwork.FieldVars:
-		m.ResetVars()
-		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork field %s", name)
 }
@@ -11563,10 +11370,7 @@ func (m *ProvisionedNetworkMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisionedNetworkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.tag != nil {
-		edges = append(edges, provisionednetwork.EdgeTag)
-	}
+	edges := make([]string, 0, 5)
 	if m.status != nil {
 		edges = append(edges, provisionednetwork.EdgeStatus)
 	}
@@ -11589,12 +11393,6 @@ func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionednetwork.EdgeStatus:
 		ids := make([]ent.Value, 0, len(m.status))
 		for id := range m.status {
@@ -11632,10 +11430,7 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.removedtag != nil {
-		edges = append(edges, provisionednetwork.EdgeTag)
-	}
+	edges := make([]string, 0, 5)
 	if m.removedstatus != nil {
 		edges = append(edges, provisionednetwork.EdgeStatus)
 	}
@@ -11658,12 +11453,6 @@ func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionednetwork.EdgeStatus:
 		ids := make([]ent.Value, 0, len(m.removedstatus))
 		for id := range m.removedstatus {
@@ -11701,10 +11490,7 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.clearedtag {
-		edges = append(edges, provisionednetwork.EdgeTag)
-	}
+	edges := make([]string, 0, 5)
 	if m.clearedstatus {
 		edges = append(edges, provisionednetwork.EdgeStatus)
 	}
@@ -11727,8 +11513,6 @@ func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionednetwork.EdgeTag:
-		return m.clearedtag
 	case provisionednetwork.EdgeStatus:
 		return m.clearedstatus
 	case provisionednetwork.EdgeNetwork:
@@ -11756,9 +11540,6 @@ func (m *ProvisionedNetworkMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionednetwork.EdgeTag:
-		m.ResetTag()
-		return nil
 	case provisionednetwork.EdgeStatus:
 		m.ResetStatus()
 		return nil
@@ -11788,13 +11569,11 @@ type ProvisioningStepMutation struct {
 	provisioner_type        *string
 	step_number             *int
 	addstep_number          *int
+	status                  *string
 	clearedFields           map[string]struct{}
 	provisioned_host        map[int]struct{}
 	removedprovisioned_host map[int]struct{}
 	clearedprovisioned_host bool
-	status                  map[int]struct{}
-	removedstatus           map[int]struct{}
-	clearedstatus           bool
 	script                  map[int]struct{}
 	removedscript           map[int]struct{}
 	clearedscript           bool
@@ -11807,9 +11586,6 @@ type ProvisioningStepMutation struct {
 	remote_file             map[int]struct{}
 	removedremote_file      map[int]struct{}
 	clearedremote_file      bool
-	tag                     map[int]struct{}
-	removedtag              map[int]struct{}
-	clearedtag              bool
 	done                    bool
 	oldValue                func(context.Context) (*ProvisioningStep, error)
 	predicates              []predicate.ProvisioningStep
@@ -11988,6 +11764,43 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 	m.addstep_number = nil
 }
 
+// SetStatus sets the status field.
+func (m *ProvisioningStepMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the status value in the mutation.
+func (m *ProvisioningStepMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old status value of the ProvisioningStep.
+// If the ProvisioningStep object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ProvisioningStepMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStatus is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus reset all changes of the "status" field.
+func (m *ProvisioningStepMutation) ResetStatus() {
+	m.status = nil
+}
+
 // AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
 func (m *ProvisioningStepMutation) AddProvisionedHostIDs(ids ...int) {
 	if m.provisioned_host == nil {
@@ -12039,59 +11852,6 @@ func (m *ProvisioningStepMutation) ResetProvisionedHost() {
 	m.provisioned_host = nil
 	m.clearedprovisioned_host = false
 	m.removedprovisioned_host = nil
-}
-
-// AddStatuIDs adds the status edge to Status by ids.
-func (m *ProvisioningStepMutation) AddStatuIDs(ids ...int) {
-	if m.status == nil {
-		m.status = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.status[ids[i]] = struct{}{}
-	}
-}
-
-// ClearStatus clears the status edge to Status.
-func (m *ProvisioningStepMutation) ClearStatus() {
-	m.clearedstatus = true
-}
-
-// StatusCleared returns if the edge status was cleared.
-func (m *ProvisioningStepMutation) StatusCleared() bool {
-	return m.clearedstatus
-}
-
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (m *ProvisioningStepMutation) RemoveStatuIDs(ids ...int) {
-	if m.removedstatus == nil {
-		m.removedstatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedstatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedStatus returns the removed ids of status.
-func (m *ProvisioningStepMutation) RemovedStatusIDs() (ids []int) {
-	for id := range m.removedstatus {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// StatusIDs returns the status ids in the mutation.
-func (m *ProvisioningStepMutation) StatusIDs() (ids []int) {
-	for id := range m.status {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetStatus reset all changes of the "status" edge.
-func (m *ProvisioningStepMutation) ResetStatus() {
-	m.status = nil
-	m.clearedstatus = false
-	m.removedstatus = nil
 }
 
 // AddScriptIDs adds the script edge to Script by ids.
@@ -12306,59 +12066,6 @@ func (m *ProvisioningStepMutation) ResetRemoteFile() {
 	m.removedremote_file = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *ProvisioningStepMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTag clears the tag edge to Tag.
-func (m *ProvisioningStepMutation) ClearTag() {
-	m.clearedtag = true
-}
-
-// TagCleared returns if the edge tag was cleared.
-func (m *ProvisioningStepMutation) TagCleared() bool {
-	return m.clearedtag
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *ProvisioningStepMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed ids of tag.
-func (m *ProvisioningStepMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the tag ids in the mutation.
-func (m *ProvisioningStepMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag reset all changes of the "tag" edge.
-func (m *ProvisioningStepMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
-}
-
 // Op returns the operation name.
 func (m *ProvisioningStepMutation) Op() Op {
 	return m.op
@@ -12373,12 +12080,15 @@ func (m *ProvisioningStepMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ProvisioningStepMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.provisioner_type != nil {
 		fields = append(fields, provisioningstep.FieldProvisionerType)
 	}
 	if m.step_number != nil {
 		fields = append(fields, provisioningstep.FieldStepNumber)
+	}
+	if m.status != nil {
+		fields = append(fields, provisioningstep.FieldStatus)
 	}
 	return fields
 }
@@ -12392,6 +12102,8 @@ func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 		return m.ProvisionerType()
 	case provisioningstep.FieldStepNumber:
 		return m.StepNumber()
+	case provisioningstep.FieldStatus:
+		return m.Status()
 	}
 	return nil, false
 }
@@ -12405,6 +12117,8 @@ func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (e
 		return m.OldProvisionerType(ctx)
 	case provisioningstep.FieldStepNumber:
 		return m.OldStepNumber(ctx)
+	case provisioningstep.FieldStatus:
+		return m.OldStatus(ctx)
 	}
 	return nil, fmt.Errorf("unknown ProvisioningStep field %s", name)
 }
@@ -12427,6 +12141,13 @@ func (m *ProvisioningStepMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStepNumber(v)
+		return nil
+	case provisioningstep.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep field %s", name)
@@ -12499,6 +12220,9 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 	case provisioningstep.FieldStepNumber:
 		m.ResetStepNumber()
 		return nil
+	case provisioningstep.FieldStatus:
+		m.ResetStatus()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep field %s", name)
 }
@@ -12506,12 +12230,9 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.provisioned_host != nil {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
-	}
-	if m.status != nil {
-		edges = append(edges, provisioningstep.EdgeStatus)
 	}
 	if m.script != nil {
 		edges = append(edges, provisioningstep.EdgeScript)
@@ -12525,9 +12246,6 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	if m.remote_file != nil {
 		edges = append(edges, provisioningstep.EdgeRemoteFile)
 	}
-	if m.tag != nil {
-		edges = append(edges, provisioningstep.EdgeTag)
-	}
 	return edges
 }
 
@@ -12538,12 +12256,6 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 	case provisioningstep.EdgeProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.provisioned_host))
 		for id := range m.provisioned_host {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.status))
-		for id := range m.status {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12571,12 +12283,6 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -12584,12 +12290,9 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.removedprovisioned_host != nil {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
-	}
-	if m.removedstatus != nil {
-		edges = append(edges, provisioningstep.EdgeStatus)
 	}
 	if m.removedscript != nil {
 		edges = append(edges, provisioningstep.EdgeScript)
@@ -12603,9 +12306,6 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 	if m.removedremote_file != nil {
 		edges = append(edges, provisioningstep.EdgeRemoteFile)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, provisioningstep.EdgeTag)
-	}
 	return edges
 }
 
@@ -12616,12 +12316,6 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	case provisioningstep.EdgeProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.removedprovisioned_host))
 		for id := range m.removedprovisioned_host {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.removedstatus))
-		for id := range m.removedstatus {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12649,12 +12343,6 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -12662,12 +12350,9 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.clearedprovisioned_host {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
-	}
-	if m.clearedstatus {
-		edges = append(edges, provisioningstep.EdgeStatus)
 	}
 	if m.clearedscript {
 		edges = append(edges, provisioningstep.EdgeScript)
@@ -12681,9 +12366,6 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	if m.clearedremote_file {
 		edges = append(edges, provisioningstep.EdgeRemoteFile)
 	}
-	if m.clearedtag {
-		edges = append(edges, provisioningstep.EdgeTag)
-	}
 	return edges
 }
 
@@ -12693,8 +12375,6 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 	switch name {
 	case provisioningstep.EdgeProvisionedHost:
 		return m.clearedprovisioned_host
-	case provisioningstep.EdgeStatus:
-		return m.clearedstatus
 	case provisioningstep.EdgeScript:
 		return m.clearedscript
 	case provisioningstep.EdgeCommand:
@@ -12703,8 +12383,6 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleareddns_record
 	case provisioningstep.EdgeRemoteFile:
 		return m.clearedremote_file
-	case provisioningstep.EdgeTag:
-		return m.clearedtag
 	}
 	return false
 }
@@ -12725,9 +12403,6 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	case provisioningstep.EdgeProvisionedHost:
 		m.ResetProvisionedHost()
 		return nil
-	case provisioningstep.EdgeStatus:
-		m.ResetStatus()
-		return nil
 	case provisioningstep.EdgeScript:
 		m.ResetScript()
 		return nil
@@ -12739,9 +12414,6 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	case provisioningstep.EdgeRemoteFile:
 		m.ResetRemoteFile()
-		return nil
-	case provisioningstep.EdgeTag:
-		m.ResetTag()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
@@ -12757,7 +12429,7 @@ type RemoteFileMutation struct {
 	source_type   *string
 	source        *string
 	destination   *string
-	vars          *[]string
+	vars          *map[string]string
 	template      *bool
 	perms         *string
 	disabled      *bool
@@ -12964,12 +12636,12 @@ func (m *RemoteFileMutation) ResetDestination() {
 }
 
 // SetVars sets the vars field.
-func (m *RemoteFileMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *RemoteFileMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *RemoteFileMutation) Vars() (r []string, exists bool) {
+func (m *RemoteFileMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -12981,7 +12653,7 @@ func (m *RemoteFileMutation) Vars() (r []string, exists bool) {
 // If the RemoteFile object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *RemoteFileMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -13408,7 +13080,7 @@ func (m *RemoteFileMutation) SetField(name string, value ent.Value) error {
 		m.SetDestination(v)
 		return nil
 	case remotefile.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -13647,7 +13319,7 @@ type ScriptMutation struct {
 	ignore_errors     *bool
 	args              *[]string
 	disabled          *bool
-	vars              *[]string
+	vars              *map[string]string
 	abs_path          *string
 	clearedFields     map[string]struct{}
 	tag               map[int]struct{}
@@ -14154,12 +13826,12 @@ func (m *ScriptMutation) ResetDisabled() {
 }
 
 // SetVars sets the vars field.
-func (m *ScriptMutation) SetVars(s []string) {
-	m.vars = &s
+func (m *ScriptMutation) SetVars(value map[string]string) {
+	m.vars = &value
 }
 
 // Vars returns the vars value in the mutation.
-func (m *ScriptMutation) Vars() (r []string, exists bool) {
+func (m *ScriptMutation) Vars() (r map[string]string, exists bool) {
 	v := m.vars
 	if v == nil {
 		return
@@ -14171,7 +13843,7 @@ func (m *ScriptMutation) Vars() (r []string, exists bool) {
 // If the Script object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ScriptMutation) OldVars(ctx context.Context) (v []string, err error) {
+func (m *ScriptMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
 	}
@@ -14582,7 +14254,7 @@ func (m *ScriptMutation) SetField(name string, value ent.Value) error {
 		m.SetDisabled(v)
 		return nil
 	case script.FieldVars:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -15522,7 +15194,7 @@ type TagMutation struct {
 	id            *int
 	uuid          *uuid.UUID
 	name          *string
-	description   *[]string
+	description   *map[string]string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Tag, error)
@@ -15683,12 +15355,12 @@ func (m *TagMutation) ResetName() {
 }
 
 // SetDescription sets the description field.
-func (m *TagMutation) SetDescription(s []string) {
-	m.description = &s
+func (m *TagMutation) SetDescription(value map[string]string) {
+	m.description = &value
 }
 
 // Description returns the description value in the mutation.
-func (m *TagMutation) Description() (r []string, exists bool) {
+func (m *TagMutation) Description() (r map[string]string, exists bool) {
 	v := m.description
 	if v == nil {
 		return
@@ -15700,7 +15372,7 @@ func (m *TagMutation) Description() (r []string, exists bool) {
 // If the Tag object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *TagMutation) OldDescription(ctx context.Context) (v []string, err error) {
+func (m *TagMutation) OldDescription(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldDescription is allowed only on UpdateOne operations")
 	}
@@ -15796,7 +15468,7 @@ func (m *TagMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case tag.FieldDescription:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -15926,9 +15598,9 @@ type TeamMutation struct {
 	id                          *int
 	team_number                 *int
 	addteam_number              *int
-	_config                     *[]string
-	revision                    *int
-	addrevision                 *int
+	_config                     *map[string]string
+	revision                    *int64
+	addrevision                 *int64
 	clearedFields               map[string]struct{}
 	maintainer                  map[int]struct{}
 	removedmaintainer           map[int]struct{}
@@ -16087,12 +15759,12 @@ func (m *TeamMutation) ResetTeamNumber() {
 }
 
 // SetConfig sets the config field.
-func (m *TeamMutation) SetConfig(s []string) {
-	m._config = &s
+func (m *TeamMutation) SetConfig(value map[string]string) {
+	m._config = &value
 }
 
 // Config returns the config value in the mutation.
-func (m *TeamMutation) Config() (r []string, exists bool) {
+func (m *TeamMutation) Config() (r map[string]string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -16104,7 +15776,7 @@ func (m *TeamMutation) Config() (r []string, exists bool) {
 // If the Team object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *TeamMutation) OldConfig(ctx context.Context) (v []string, err error) {
+func (m *TeamMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldConfig is allowed only on UpdateOne operations")
 	}
@@ -16124,13 +15796,13 @@ func (m *TeamMutation) ResetConfig() {
 }
 
 // SetRevision sets the revision field.
-func (m *TeamMutation) SetRevision(i int) {
+func (m *TeamMutation) SetRevision(i int64) {
 	m.revision = &i
 	m.addrevision = nil
 }
 
 // Revision returns the revision value in the mutation.
-func (m *TeamMutation) Revision() (r int, exists bool) {
+func (m *TeamMutation) Revision() (r int64, exists bool) {
 	v := m.revision
 	if v == nil {
 		return
@@ -16142,7 +15814,7 @@ func (m *TeamMutation) Revision() (r int, exists bool) {
 // If the Team object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *TeamMutation) OldRevision(ctx context.Context) (v int, err error) {
+func (m *TeamMutation) OldRevision(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldRevision is allowed only on UpdateOne operations")
 	}
@@ -16157,7 +15829,7 @@ func (m *TeamMutation) OldRevision(ctx context.Context) (v int, err error) {
 }
 
 // AddRevision adds i to revision.
-func (m *TeamMutation) AddRevision(i int) {
+func (m *TeamMutation) AddRevision(i int64) {
 	if m.addrevision != nil {
 		*m.addrevision += i
 	} else {
@@ -16166,7 +15838,7 @@ func (m *TeamMutation) AddRevision(i int) {
 }
 
 // AddedRevision returns the value that was added to the revision field in this mutation.
-func (m *TeamMutation) AddedRevision() (r int, exists bool) {
+func (m *TeamMutation) AddedRevision() (r int64, exists bool) {
 	v := m.addrevision
 	if v == nil {
 		return
@@ -16515,14 +16187,14 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 		m.SetTeamNumber(v)
 		return nil
 	case team.FieldConfig:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
 		return nil
 	case team.FieldRevision:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -16571,7 +16243,7 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 		m.AddTeamNumber(v)
 		return nil
 	case team.FieldRevision:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -16818,7 +16490,7 @@ type UserMutation struct {
 	typ           string
 	id            *int
 	name          *string
-	uuid          *uuid.UUID
+	uuid          *string
 	email         *string
 	clearedFields map[string]struct{}
 	tag           map[int]struct{}
@@ -16946,12 +16618,12 @@ func (m *UserMutation) ResetName() {
 }
 
 // SetUUID sets the uuid field.
-func (m *UserMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
+func (m *UserMutation) SetUUID(s string) {
+	m.uuid = &s
 }
 
 // UUID returns the uuid value in the mutation.
-func (m *UserMutation) UUID() (r uuid.UUID, exists bool) {
+func (m *UserMutation) UUID() (r string, exists bool) {
 	v := m.uuid
 	if v == nil {
 		return
@@ -16963,7 +16635,7 @@ func (m *UserMutation) UUID() (r uuid.UUID, exists bool) {
 // If the User object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *UserMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *UserMutation) OldUUID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldUUID is allowed only on UpdateOne operations")
 	}
@@ -17142,7 +16814,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case user.FieldUUID:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

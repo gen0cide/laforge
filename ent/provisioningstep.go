@@ -19,6 +19,8 @@ type ProvisioningStep struct {
 	ProvisionerType string `json:"provisioner_type,omitempty"`
 	// StepNumber holds the value of the "step_number" field.
 	StepNumber int `json:"step_number,omitempty"`
+	// Status holds the value of the "status" field.
+	Status string `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisioningStepQuery when eager-loading is set.
 	Edges ProvisioningStepEdges `json:"edges"`
@@ -28,8 +30,6 @@ type ProvisioningStep struct {
 type ProvisioningStepEdges struct {
 	// ProvisionedHost holds the value of the provisioned_host edge.
 	ProvisionedHost []*ProvisionedHost
-	// Status holds the value of the status edge.
-	Status []*Status
 	// Script holds the value of the script edge.
 	Script []*Script
 	// Command holds the value of the command edge.
@@ -38,11 +38,9 @@ type ProvisioningStepEdges struct {
 	DNSRecord []*DNSRecord
 	// RemoteFile holds the value of the remote_file edge.
 	RemoteFile []*RemoteFile
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [5]bool
 }
 
 // ProvisionedHostOrErr returns the ProvisionedHost value or an error if the edge
@@ -54,19 +52,10 @@ func (e ProvisioningStepEdges) ProvisionedHostOrErr() ([]*ProvisionedHost, error
 	return nil, &NotLoadedError{edge: "provisioned_host"}
 }
 
-// StatusOrErr returns the Status value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) StatusOrErr() ([]*Status, error) {
-	if e.loadedTypes[1] {
-		return e.Status, nil
-	}
-	return nil, &NotLoadedError{edge: "status"}
-}
-
 // ScriptOrErr returns the Script value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) ScriptOrErr() ([]*Script, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Script, nil
 	}
 	return nil, &NotLoadedError{edge: "script"}
@@ -75,7 +64,7 @@ func (e ProvisioningStepEdges) ScriptOrErr() ([]*Script, error) {
 // CommandOrErr returns the Command value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) CommandOrErr() ([]*Command, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Command, nil
 	}
 	return nil, &NotLoadedError{edge: "command"}
@@ -84,7 +73,7 @@ func (e ProvisioningStepEdges) CommandOrErr() ([]*Command, error) {
 // DNSRecordOrErr returns the DNSRecord value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) DNSRecordOrErr() ([]*DNSRecord, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.DNSRecord, nil
 	}
 	return nil, &NotLoadedError{edge: "dns_record"}
@@ -93,19 +82,10 @@ func (e ProvisioningStepEdges) DNSRecordOrErr() ([]*DNSRecord, error) {
 // RemoteFileOrErr returns the RemoteFile value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) RemoteFileOrErr() ([]*RemoteFile, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.RemoteFile, nil
 	}
 	return nil, &NotLoadedError{edge: "remote_file"}
-}
-
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[6] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -114,6 +94,7 @@ func (*ProvisioningStep) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // provisioner_type
 		&sql.NullInt64{},  // step_number
+		&sql.NullString{}, // status
 	}
 }
 
@@ -139,17 +120,17 @@ func (ps *ProvisioningStep) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		ps.StepNumber = int(value.Int64)
 	}
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field status", values[2])
+	} else if value.Valid {
+		ps.Status = value.String
+	}
 	return nil
 }
 
 // QueryProvisionedHost queries the provisioned_host edge of the ProvisioningStep.
 func (ps *ProvisioningStep) QueryProvisionedHost() *ProvisionedHostQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisionedHost(ps)
-}
-
-// QueryStatus queries the status edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryStatus() *StatusQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryStatus(ps)
 }
 
 // QueryScript queries the script edge of the ProvisioningStep.
@@ -170,11 +151,6 @@ func (ps *ProvisioningStep) QueryDNSRecord() *DNSRecordQuery {
 // QueryRemoteFile queries the remote_file edge of the ProvisioningStep.
 func (ps *ProvisioningStep) QueryRemoteFile() *RemoteFileQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryRemoteFile(ps)
-}
-
-// QueryTag queries the tag edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryTag() *TagQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryTag(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.
@@ -204,6 +180,8 @@ func (ps *ProvisioningStep) String() string {
 	builder.WriteString(ps.ProvisionerType)
 	builder.WriteString(", step_number=")
 	builder.WriteString(fmt.Sprintf("%v", ps.StepNumber))
+	builder.WriteString(", status=")
+	builder.WriteString(ps.Status)
 	builder.WriteByte(')')
 	return builder.String()
 }

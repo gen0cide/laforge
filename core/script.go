@@ -202,15 +202,16 @@ func (s *Script) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile)
 	return nil
 }
 
+// CreateScriptEntry ...
 func (s *Script) CreateScriptEntry(ph *ent.ProvisionedHost, ctx context.Context, client *ent.Client) (*ent.Script, error) {
-	tag, err = CreateTagEntry(s.ID, s.Tags, ctx, client)
+	tag, err := CreateTagEntry(s.ID, s.Tags, ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating script: %v", err)
 		return nil, err
 	}
 
-	user, err = s.Maintainer.CreateUserEntry(ctx, client)
+	user, err := s.Maintainer.CreateUserEntry(ctx, client)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating script: %v", err)
@@ -240,8 +241,8 @@ func (s *Script) CreateScriptEntry(ph *ent.ProvisionedHost, ctx context.Context,
 		return nil, err
 	}
 
-	for k, v := range s.Findings {
-		finding, err = v.CreateFindingEntry(ph, script, ctx, client)
+	for _, v := range s.Findings {
+		_, err := v.CreateFindingEntry(ph, script, ctx, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating script: %v", err)
@@ -249,6 +250,6 @@ func (s *Script) CreateScriptEntry(ph *ent.ProvisionedHost, ctx context.Context,
 		}
 	}
 
-	cli.Logger.Debugf("script was created: ", ps)
+	cli.Logger.Debugf("script was created: ", script)
 	return script, nil
 }

@@ -19,9 +19,9 @@ type Team struct {
 	// TeamNumber holds the value of the "team_number" field.
 	TeamNumber int `json:"team_number,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Revision holds the value of the "revision" field.
-	Revision int `json:"revision,omitempty"`
+	Revision int64 `json:"revision,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TeamQuery when eager-loading is set.
 	Edges TeamEdges `json:"edges"`
@@ -127,7 +127,7 @@ func (t *Team) assignValues(values ...interface{}) error {
 	if value, ok := values[2].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field revision", values[2])
 	} else if value.Valid {
-		t.Revision = int(value.Int64)
+		t.Revision = value.Int64
 	}
 	return nil
 }

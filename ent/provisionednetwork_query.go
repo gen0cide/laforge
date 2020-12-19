@@ -18,7 +18,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -31,7 +30,6 @@ type ProvisionedNetworkQuery struct {
 	unique     []string
 	predicates []predicate.ProvisionedNetwork
 	// eager-loading edges.
-	withTag                      *TagQuery
 	withStatus                   *StatusQuery
 	withNetwork                  *NetworkQuery
 	withBuild                    *BuildQuery
@@ -64,28 +62,6 @@ func (pnq *ProvisionedNetworkQuery) Offset(offset int) *ProvisionedNetworkQuery 
 func (pnq *ProvisionedNetworkQuery) Order(o ...OrderFunc) *ProvisionedNetworkQuery {
 	pnq.order = append(pnq.order, o...)
 	return pnq
-}
-
-// QueryTag chains the current query on the tag edge.
-func (pnq *ProvisionedNetworkQuery) QueryTag() *TagQuery {
-	query := &TagQuery{config: pnq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pnq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pnq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.TagTable, provisionednetwork.TagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(pnq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryStatus chains the current query on the status edge.
@@ -374,7 +350,6 @@ func (pnq *ProvisionedNetworkQuery) Clone() *ProvisionedNetworkQuery {
 		order:                        append([]OrderFunc{}, pnq.order...),
 		unique:                       append([]string{}, pnq.unique...),
 		predicates:                   append([]predicate.ProvisionedNetwork{}, pnq.predicates...),
-		withTag:                      pnq.withTag.Clone(),
 		withStatus:                   pnq.withStatus.Clone(),
 		withNetwork:                  pnq.withNetwork.Clone(),
 		withBuild:                    pnq.withBuild.Clone(),
@@ -384,17 +359,6 @@ func (pnq *ProvisionedNetworkQuery) Clone() *ProvisionedNetworkQuery {
 		sql:  pnq.sql.Clone(),
 		path: pnq.path,
 	}
-}
-
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (pnq *ProvisionedNetworkQuery) WithTag(opts ...func(*TagQuery)) *ProvisionedNetworkQuery {
-	query := &TagQuery{config: pnq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	pnq.withTag = query
-	return pnq
 }
 
 //  WithStatus tells the query-builder to eager-loads the nodes that are connected to
@@ -518,8 +482,7 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	var (
 		nodes       = []*ProvisionedNetwork{}
 		_spec       = pnq.querySpec()
-		loadedTypes = [6]bool{
-			pnq.withTag != nil,
+		loadedTypes = [5]bool{
 			pnq.withStatus != nil,
 			pnq.withNetwork != nil,
 			pnq.withBuild != nil,
@@ -546,35 +509,6 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-
-	if query := pnq.withTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedNetwork)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisionednetwork.TagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioned_network_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioned_network_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_network_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
-		}
 	}
 
 	if query := pnq.withStatus; query != nil {

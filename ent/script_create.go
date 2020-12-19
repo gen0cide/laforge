@@ -83,8 +83,8 @@ func (sc *ScriptCreate) SetDisabled(b bool) *ScriptCreate {
 }
 
 // SetVars sets the vars field.
-func (sc *ScriptCreate) SetVars(s []string) *ScriptCreate {
-	sc.mutation.SetVars(s)
+func (sc *ScriptCreate) SetVars(m map[string]string) *ScriptCreate {
+	sc.mutation.SetVars(m)
 	return sc
 }
 

@@ -15,7 +15,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -42,27 +41,6 @@ func (pnu *ProvisionedNetworkUpdate) SetName(s string) *ProvisionedNetworkUpdate
 func (pnu *ProvisionedNetworkUpdate) SetCidr(s string) *ProvisionedNetworkUpdate {
 	pnu.mutation.SetCidr(s)
 	return pnu
-}
-
-// SetVars sets the vars field.
-func (pnu *ProvisionedNetworkUpdate) SetVars(s []string) *ProvisionedNetworkUpdate {
-	pnu.mutation.SetVars(s)
-	return pnu
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (pnu *ProvisionedNetworkUpdate) AddTagIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddTagIDs(ids...)
-	return pnu
-}
-
-// AddTag adds the tag edges to Tag.
-func (pnu *ProvisionedNetworkUpdate) AddTag(t ...*Tag) *ProvisionedNetworkUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pnu.AddTagIDs(ids...)
 }
 
 // AddStatuIDs adds the status edge to Status by ids.
@@ -143,27 +121,6 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedHosts(p ...*ProvisionedHost) 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
 func (pnu *ProvisionedNetworkUpdate) Mutation() *ProvisionedNetworkMutation {
 	return pnu.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (pnu *ProvisionedNetworkUpdate) ClearTag() *ProvisionedNetworkUpdate {
-	pnu.mutation.ClearTag()
-	return pnu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (pnu *ProvisionedNetworkUpdate) RemoveTagIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveTagIDs(ids...)
-	return pnu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (pnu *ProvisionedNetworkUpdate) RemoveTag(t ...*Tag) *ProvisionedNetworkUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pnu.RemoveTagIDs(ids...)
 }
 
 // ClearStatus clears all "status" edges to type Status.
@@ -353,67 +310,6 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 			Value:  value,
 			Column: provisionednetwork.FieldCidr,
 		})
-	}
-	if value, ok := pnu.mutation.Vars(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: provisionednetwork.FieldVars,
-		})
-	}
-	if pnu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnu.mutation.RemovedTagIDs(); len(nodes) > 0 && !pnu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pnu.mutation.StatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -715,27 +611,6 @@ func (pnuo *ProvisionedNetworkUpdateOne) SetCidr(s string) *ProvisionedNetworkUp
 	return pnuo
 }
 
-// SetVars sets the vars field.
-func (pnuo *ProvisionedNetworkUpdateOne) SetVars(s []string) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.SetVars(s)
-	return pnuo
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) AddTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddTagIDs(ids...)
-	return pnuo
-}
-
-// AddTag adds the tag edges to Tag.
-func (pnuo *ProvisionedNetworkUpdateOne) AddTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pnuo.AddTagIDs(ids...)
-}
-
 // AddStatuIDs adds the status edge to Status by ids.
 func (pnuo *ProvisionedNetworkUpdateOne) AddStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddStatuIDs(ids...)
@@ -814,27 +689,6 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedHosts(p ...*ProvisionedHo
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
 func (pnuo *ProvisionedNetworkUpdateOne) Mutation() *ProvisionedNetworkMutation {
 	return pnuo.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (pnuo *ProvisionedNetworkUpdateOne) ClearTag() *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.ClearTag()
-	return pnuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveTagIDs(ids...)
-	return pnuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pnuo.RemoveTagIDs(ids...)
 }
 
 // ClearStatus clears all "status" edges to type Status.
@@ -1022,67 +876,6 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 			Value:  value,
 			Column: provisionednetwork.FieldCidr,
 		})
-	}
-	if value, ok := pnuo.mutation.Vars(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: provisionednetwork.FieldVars,
-		})
-	}
-	if pnuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !pnuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionednetwork.TagTable,
-			Columns: []string{provisionednetwork.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pnuo.mutation.StatusCleared() {
 		edge := &sqlgraph.EdgeSpec{

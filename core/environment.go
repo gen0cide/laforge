@@ -392,6 +392,7 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 	}
 }
 
+// CreateEnvironmentEntry ...
 func (e *Environment) CreateEnvironmentEntry(ctx context.Context, client *ent.Client) (*ent.Environment, error) {
 	tag, err := CreateTagEntry(e.ID, e.Tags, ctx, client)
 
@@ -443,8 +444,8 @@ func (e *Environment) CreateEnvironmentEntry(ctx context.Context, client *ent.Cl
 		return nil, err
 	}
 
-	for k, v := range e.Build.Teams {
-		team, err := v.CreateTeamEntry(environment, build, ctx, client)
+	for _, v := range e.Build.Teams {
+		_, err := v.CreateTeamEntry(environment, build, ctx, client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating environment: %v", err)

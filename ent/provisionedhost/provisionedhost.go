@@ -16,8 +16,6 @@ const (
 	EdgeProvisionedNetwork = "provisioned_network"
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
 	// EdgeProvisionedSteps holds the string denoting the provisioned_steps edge name in mutations.
 	EdgeProvisionedSteps = "provisioned_steps"
 
@@ -42,13 +40,6 @@ const (
 	HostInverseTable = "hosts"
 	// HostColumn is the table column denoting the host relation/edge.
 	HostColumn = "provisioned_host_host"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioned_host_tag"
 	// ProvisionedStepsTable is the table the holds the provisioned_steps relation/edge. The primary key declared below.
 	ProvisionedStepsTable = "provisioning_step_provisioned_host"
 	// ProvisionedStepsInverseTable is the table name for the ProvisioningStep entity.

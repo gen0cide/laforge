@@ -99,7 +99,7 @@ func TeamNumber(v int) predicate.Team {
 }
 
 // Revision applies equality check predicate on the "revision" field. It's identical to RevisionEQ.
-func Revision(v int) predicate.Team {
+func Revision(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRevision), v))
 	})
@@ -182,21 +182,21 @@ func TeamNumberLTE(v int) predicate.Team {
 }
 
 // RevisionEQ applies the EQ predicate on the "revision" field.
-func RevisionEQ(v int) predicate.Team {
+func RevisionEQ(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionNEQ applies the NEQ predicate on the "revision" field.
-func RevisionNEQ(v int) predicate.Team {
+func RevisionNEQ(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionIn applies the In predicate on the "revision" field.
-func RevisionIn(vs ...int) predicate.Team {
+func RevisionIn(vs ...int64) predicate.Team {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -213,7 +213,7 @@ func RevisionIn(vs ...int) predicate.Team {
 }
 
 // RevisionNotIn applies the NotIn predicate on the "revision" field.
-func RevisionNotIn(vs ...int) predicate.Team {
+func RevisionNotIn(vs ...int64) predicate.Team {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -230,28 +230,28 @@ func RevisionNotIn(vs ...int) predicate.Team {
 }
 
 // RevisionGT applies the GT predicate on the "revision" field.
-func RevisionGT(v int) predicate.Team {
+func RevisionGT(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionGTE applies the GTE predicate on the "revision" field.
-func RevisionGTE(v int) predicate.Team {
+func RevisionGTE(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionLT applies the LT predicate on the "revision" field.
-func RevisionLT(v int) predicate.Team {
+func RevisionLT(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionLTE applies the LTE predicate on the "revision" field.
-func RevisionLTE(v int) predicate.Team {
+func RevisionLTE(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldRevision), v))
 	})
