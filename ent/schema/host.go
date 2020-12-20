@@ -24,11 +24,11 @@ func (Host) Fields() []ent.Field {
 		field.String("override_password"),
 		field.JSON("vars", map[string]string{}),
 		field.JSON("user_groups", []string{}),
-		field.JSON("depends_on", []string{}),
-		field.JSON("scripts", []string{}),
-		field.JSON("commands", []string{}),
-		field.JSON("remote_files", []string{}),
-		field.JSON("dns_records", []string{}),
+		field.JSON("depends_on", []string{}).Optional(),
+		field.JSON("scripts", []string{}).Optional(),
+		field.JSON("commands", []string{}).Optional(),
+		field.JSON("remote_files", []string{}).Optional(),
+		field.JSON("dns_records", []string{}).Optional(),
 	}
 }
 

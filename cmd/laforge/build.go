@@ -45,7 +45,7 @@ func performbuild(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 
 	if err != nil {
 		cliLogger.Errorf("failed opening connection to sqlite: %v", err)
@@ -59,15 +59,6 @@ func performbuild(c *cli.Context) error {
 		cliLogger.Errorf("failed creating schema resources: %v", err)
 	}
 
-	for _, v := range base.Environments {
-		_, err := v.CreateEnvironmentEntry(ctx, client)
-
-		if err != nil {
-			cliLogger.Errorf("Error encountered during bootstrap: %v", err)
-			return err
-		}
-	}
-
 	state := core.NewState()
 	state.Base = base
 
@@ -77,6 +68,15 @@ func performbuild(c *cli.Context) error {
 	if err != nil {
 		cliLogger.Errorf("Error encountered initializing builder:\n%v", err)
 		os.Exit(1)
+	}
+
+	for _, v := range base.Environments {
+		_, err := v.CreateEnvironmentEntry(ctx, client)
+
+		if err != nil {
+			cliLogger.Errorf("Error encountered during bootstrap: %v", err)
+			return err
+		}
 	}
 
 	cliLogger.Infof("Build directory initialized")

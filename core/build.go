@@ -354,7 +354,7 @@ func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.
 
 	build, err := client.Build.
 		Create().
-		SetRevision(int(b.Revision)).
+		SetRevision(int(b.Revision)+1). // Maybe not out of range now?
 		SetConfig(b.Config).
 		AddMaintainer(user).
 		AddTag(tag).

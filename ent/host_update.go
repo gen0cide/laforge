@@ -102,9 +102,21 @@ func (hu *HostUpdate) SetDependsOn(s []string) *HostUpdate {
 	return hu
 }
 
+// ClearDependsOn clears the value of depends_on.
+func (hu *HostUpdate) ClearDependsOn() *HostUpdate {
+	hu.mutation.ClearDependsOn()
+	return hu
+}
+
 // SetScripts sets the scripts field.
 func (hu *HostUpdate) SetScripts(s []string) *HostUpdate {
 	hu.mutation.SetScripts(s)
+	return hu
+}
+
+// ClearScripts clears the value of scripts.
+func (hu *HostUpdate) ClearScripts() *HostUpdate {
+	hu.mutation.ClearScripts()
 	return hu
 }
 
@@ -114,15 +126,33 @@ func (hu *HostUpdate) SetCommands(s []string) *HostUpdate {
 	return hu
 }
 
+// ClearCommands clears the value of commands.
+func (hu *HostUpdate) ClearCommands() *HostUpdate {
+	hu.mutation.ClearCommands()
+	return hu
+}
+
 // SetRemoteFiles sets the remote_files field.
 func (hu *HostUpdate) SetRemoteFiles(s []string) *HostUpdate {
 	hu.mutation.SetRemoteFiles(s)
 	return hu
 }
 
+// ClearRemoteFiles clears the value of remote_files.
+func (hu *HostUpdate) ClearRemoteFiles() *HostUpdate {
+	hu.mutation.ClearRemoteFiles()
+	return hu
+}
+
 // SetDNSRecords sets the dns_records field.
 func (hu *HostUpdate) SetDNSRecords(s []string) *HostUpdate {
 	hu.mutation.SetDNSRecords(s)
+	return hu
+}
+
+// ClearDNSRecords clears the value of dns_records.
+func (hu *HostUpdate) ClearDNSRecords() *HostUpdate {
+	hu.mutation.ClearDNSRecords()
 	return hu
 }
 
@@ -392,10 +422,22 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldDependsOn,
 		})
 	}
+	if hu.mutation.DependsOnCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldDependsOn,
+		})
+	}
 	if value, ok := hu.mutation.Scripts(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: host.FieldScripts,
+		})
+	}
+	if hu.mutation.ScriptsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: host.FieldScripts,
 		})
 	}
@@ -406,6 +448,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldCommands,
 		})
 	}
+	if hu.mutation.CommandsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldCommands,
+		})
+	}
 	if value, ok := hu.mutation.RemoteFiles(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
@@ -413,10 +461,22 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldRemoteFiles,
 		})
 	}
+	if hu.mutation.RemoteFilesCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldRemoteFiles,
+		})
+	}
 	if value, ok := hu.mutation.DNSRecords(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: host.FieldDNSRecords,
+		})
+	}
+	if hu.mutation.DNSRecordsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: host.FieldDNSRecords,
 		})
 	}
@@ -673,9 +733,21 @@ func (huo *HostUpdateOne) SetDependsOn(s []string) *HostUpdateOne {
 	return huo
 }
 
+// ClearDependsOn clears the value of depends_on.
+func (huo *HostUpdateOne) ClearDependsOn() *HostUpdateOne {
+	huo.mutation.ClearDependsOn()
+	return huo
+}
+
 // SetScripts sets the scripts field.
 func (huo *HostUpdateOne) SetScripts(s []string) *HostUpdateOne {
 	huo.mutation.SetScripts(s)
+	return huo
+}
+
+// ClearScripts clears the value of scripts.
+func (huo *HostUpdateOne) ClearScripts() *HostUpdateOne {
+	huo.mutation.ClearScripts()
 	return huo
 }
 
@@ -685,15 +757,33 @@ func (huo *HostUpdateOne) SetCommands(s []string) *HostUpdateOne {
 	return huo
 }
 
+// ClearCommands clears the value of commands.
+func (huo *HostUpdateOne) ClearCommands() *HostUpdateOne {
+	huo.mutation.ClearCommands()
+	return huo
+}
+
 // SetRemoteFiles sets the remote_files field.
 func (huo *HostUpdateOne) SetRemoteFiles(s []string) *HostUpdateOne {
 	huo.mutation.SetRemoteFiles(s)
 	return huo
 }
 
+// ClearRemoteFiles clears the value of remote_files.
+func (huo *HostUpdateOne) ClearRemoteFiles() *HostUpdateOne {
+	huo.mutation.ClearRemoteFiles()
+	return huo
+}
+
 // SetDNSRecords sets the dns_records field.
 func (huo *HostUpdateOne) SetDNSRecords(s []string) *HostUpdateOne {
 	huo.mutation.SetDNSRecords(s)
+	return huo
+}
+
+// ClearDNSRecords clears the value of dns_records.
+func (huo *HostUpdateOne) ClearDNSRecords() *HostUpdateOne {
+	huo.mutation.ClearDNSRecords()
 	return huo
 }
 
@@ -961,10 +1051,22 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldDependsOn,
 		})
 	}
+	if huo.mutation.DependsOnCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldDependsOn,
+		})
+	}
 	if value, ok := huo.mutation.Scripts(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: host.FieldScripts,
+		})
+	}
+	if huo.mutation.ScriptsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: host.FieldScripts,
 		})
 	}
@@ -975,6 +1077,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldCommands,
 		})
 	}
+	if huo.mutation.CommandsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldCommands,
+		})
+	}
 	if value, ok := huo.mutation.RemoteFiles(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
@@ -982,10 +1090,22 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldRemoteFiles,
 		})
 	}
+	if huo.mutation.RemoteFilesCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: host.FieldRemoteFiles,
+		})
+	}
 	if value, ok := huo.mutation.DNSRecords(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: host.FieldDNSRecords,
+		})
+	}
+	if huo.mutation.DNSRecordsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: host.FieldDNSRecords,
 		})
 	}

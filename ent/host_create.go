@@ -238,21 +238,6 @@ func (hc *HostCreate) check() error {
 	if _, ok := hc.mutation.UserGroups(); !ok {
 		return &ValidationError{Name: "user_groups", err: errors.New("ent: missing required field \"user_groups\"")}
 	}
-	if _, ok := hc.mutation.DependsOn(); !ok {
-		return &ValidationError{Name: "depends_on", err: errors.New("ent: missing required field \"depends_on\"")}
-	}
-	if _, ok := hc.mutation.Scripts(); !ok {
-		return &ValidationError{Name: "scripts", err: errors.New("ent: missing required field \"scripts\"")}
-	}
-	if _, ok := hc.mutation.Commands(); !ok {
-		return &ValidationError{Name: "commands", err: errors.New("ent: missing required field \"commands\"")}
-	}
-	if _, ok := hc.mutation.RemoteFiles(); !ok {
-		return &ValidationError{Name: "remote_files", err: errors.New("ent: missing required field \"remote_files\"")}
-	}
-	if _, ok := hc.mutation.DNSRecords(); !ok {
-		return &ValidationError{Name: "dns_records", err: errors.New("ent: missing required field \"dns_records\"")}
-	}
 	return nil
 }
 

@@ -8185,9 +8185,22 @@ func (m *HostMutation) OldDependsOn(ctx context.Context) (v []string, err error)
 	return oldValue.DependsOn, nil
 }
 
+// ClearDependsOn clears the value of depends_on.
+func (m *HostMutation) ClearDependsOn() {
+	m.depends_on = nil
+	m.clearedFields[host.FieldDependsOn] = struct{}{}
+}
+
+// DependsOnCleared returns if the field depends_on was cleared in this mutation.
+func (m *HostMutation) DependsOnCleared() bool {
+	_, ok := m.clearedFields[host.FieldDependsOn]
+	return ok
+}
+
 // ResetDependsOn reset all changes of the "depends_on" field.
 func (m *HostMutation) ResetDependsOn() {
 	m.depends_on = nil
+	delete(m.clearedFields, host.FieldDependsOn)
 }
 
 // SetScripts sets the scripts field.
@@ -8222,9 +8235,22 @@ func (m *HostMutation) OldScripts(ctx context.Context) (v []string, err error) {
 	return oldValue.Scripts, nil
 }
 
+// ClearScripts clears the value of scripts.
+func (m *HostMutation) ClearScripts() {
+	m.scripts = nil
+	m.clearedFields[host.FieldScripts] = struct{}{}
+}
+
+// ScriptsCleared returns if the field scripts was cleared in this mutation.
+func (m *HostMutation) ScriptsCleared() bool {
+	_, ok := m.clearedFields[host.FieldScripts]
+	return ok
+}
+
 // ResetScripts reset all changes of the "scripts" field.
 func (m *HostMutation) ResetScripts() {
 	m.scripts = nil
+	delete(m.clearedFields, host.FieldScripts)
 }
 
 // SetCommands sets the commands field.
@@ -8259,9 +8285,22 @@ func (m *HostMutation) OldCommands(ctx context.Context) (v []string, err error) 
 	return oldValue.Commands, nil
 }
 
+// ClearCommands clears the value of commands.
+func (m *HostMutation) ClearCommands() {
+	m.commands = nil
+	m.clearedFields[host.FieldCommands] = struct{}{}
+}
+
+// CommandsCleared returns if the field commands was cleared in this mutation.
+func (m *HostMutation) CommandsCleared() bool {
+	_, ok := m.clearedFields[host.FieldCommands]
+	return ok
+}
+
 // ResetCommands reset all changes of the "commands" field.
 func (m *HostMutation) ResetCommands() {
 	m.commands = nil
+	delete(m.clearedFields, host.FieldCommands)
 }
 
 // SetRemoteFiles sets the remote_files field.
@@ -8296,9 +8335,22 @@ func (m *HostMutation) OldRemoteFiles(ctx context.Context) (v []string, err erro
 	return oldValue.RemoteFiles, nil
 }
 
+// ClearRemoteFiles clears the value of remote_files.
+func (m *HostMutation) ClearRemoteFiles() {
+	m.remote_files = nil
+	m.clearedFields[host.FieldRemoteFiles] = struct{}{}
+}
+
+// RemoteFilesCleared returns if the field remote_files was cleared in this mutation.
+func (m *HostMutation) RemoteFilesCleared() bool {
+	_, ok := m.clearedFields[host.FieldRemoteFiles]
+	return ok
+}
+
 // ResetRemoteFiles reset all changes of the "remote_files" field.
 func (m *HostMutation) ResetRemoteFiles() {
 	m.remote_files = nil
+	delete(m.clearedFields, host.FieldRemoteFiles)
 }
 
 // SetDNSRecords sets the dns_records field.
@@ -8333,9 +8385,22 @@ func (m *HostMutation) OldDNSRecords(ctx context.Context) (v []string, err error
 	return oldValue.DNSRecords, nil
 }
 
+// ClearDNSRecords clears the value of dns_records.
+func (m *HostMutation) ClearDNSRecords() {
+	m.dns_records = nil
+	m.clearedFields[host.FieldDNSRecords] = struct{}{}
+}
+
+// DNSRecordsCleared returns if the field dns_records was cleared in this mutation.
+func (m *HostMutation) DNSRecordsCleared() bool {
+	_, ok := m.clearedFields[host.FieldDNSRecords]
+	return ok
+}
+
 // ResetDNSRecords reset all changes of the "dns_records" field.
 func (m *HostMutation) ResetDNSRecords() {
 	m.dns_records = nil
+	delete(m.clearedFields, host.FieldDNSRecords)
 }
 
 // AddDiskIDs adds the disk edge to Disk by ids.
@@ -8792,7 +8857,23 @@ func (m *HostMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared
 // during this mutation.
 func (m *HostMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(host.FieldDependsOn) {
+		fields = append(fields, host.FieldDependsOn)
+	}
+	if m.FieldCleared(host.FieldScripts) {
+		fields = append(fields, host.FieldScripts)
+	}
+	if m.FieldCleared(host.FieldCommands) {
+		fields = append(fields, host.FieldCommands)
+	}
+	if m.FieldCleared(host.FieldRemoteFiles) {
+		fields = append(fields, host.FieldRemoteFiles)
+	}
+	if m.FieldCleared(host.FieldDNSRecords) {
+		fields = append(fields, host.FieldDNSRecords)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicates if this field was
@@ -8805,6 +8886,23 @@ func (m *HostMutation) FieldCleared(name string) bool {
 // ClearField clears the value for the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *HostMutation) ClearField(name string) error {
+	switch name {
+	case host.FieldDependsOn:
+		m.ClearDependsOn()
+		return nil
+	case host.FieldScripts:
+		m.ClearScripts()
+		return nil
+	case host.FieldCommands:
+		m.ClearCommands()
+		return nil
+	case host.FieldRemoteFiles:
+		m.ClearRemoteFiles()
+		return nil
+	case host.FieldDNSRecords:
+		m.ClearDNSRecords()
+		return nil
+	}
 	return fmt.Errorf("unknown Host nullable field %s", name)
 }
 

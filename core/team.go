@@ -540,12 +540,12 @@ func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, er
 
 // CreateTeamEntry ...
 func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, ctx context.Context, client *ent.Client) (*ent.Team, error) {
-	user, err := t.Maintainer.CreateUserEntry(ctx, client)
+	// user, err := t.Maintainer.CreateUserEntry(ctx, client)
 
-	if err != nil {
-		cli.Logger.Debugf("failed creating team: %v", err)
-		return nil, err
-	}
+	// if err != nil {
+	// 	cli.Logger.Debugf("failed creating team: %v", err)
+	// 	return nil, err
+	// }
 
 	tag, err := CreateTagEntry(t.ID, t.Tags, ctx, client)
 
@@ -559,7 +559,7 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, ctx conte
 		SetTeamNumber(t.TeamNumber).
 		SetConfig(t.Config).
 		SetRevision(t.Revision).
-		AddMaintainer(user).
+		// AddMaintainer(user).
 		AddBuild(build).
 		AddTeamToEnvironment(env).
 		AddTag(tag).
