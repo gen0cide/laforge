@@ -23,7 +23,6 @@ type FileExtractQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.FileExtract
 	// eager-loading edges.
 	withTag *TagQuery
@@ -252,7 +251,6 @@ func (feq *FileExtractQuery) Clone() *FileExtractQuery {
 		limit:      feq.limit,
 		offset:     feq.offset,
 		order:      append([]OrderFunc{}, feq.order...),
-		unique:     append([]string{}, feq.unique...),
 		predicates: append([]predicate.FileExtract{}, feq.predicates...),
 		withTag:    feq.withTag.Clone(),
 		// clone intermediate query.

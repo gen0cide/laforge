@@ -104,7 +104,7 @@ var _ ent.Mutation = (*BuildMutation)(nil)
 // buildOption allows to manage the mutation configuration using functional options.
 type buildOption func(*BuildMutation)
 
-// newBuildMutation creates new mutation for $n.Name.
+// newBuildMutation creates new mutation for Build.
 func newBuildMutation(c config, op Op, opts ...buildOption) *BuildMutation {
 	m := &BuildMutation{
 		config:        c,
@@ -829,7 +829,7 @@ var _ ent.Mutation = (*CommandMutation)(nil)
 // commandOption allows to manage the mutation configuration using functional options.
 type commandOption func(*CommandMutation)
 
-// newCommandMutation creates new mutation for $n.Name.
+// newCommandMutation creates new mutation for Command.
 func newCommandMutation(c config, op Op, opts ...commandOption) *CommandMutation {
 	m := &CommandMutation{
 		config:        c,
@@ -1794,7 +1794,7 @@ var _ ent.Mutation = (*CompetitionMutation)(nil)
 // competitionOption allows to manage the mutation configuration using functional options.
 type competitionOption func(*CompetitionMutation)
 
-// newCompetitionMutation creates new mutation for $n.Name.
+// newCompetitionMutation creates new mutation for Competition.
 func newCompetitionMutation(c config, op Op, opts ...competitionOption) *CompetitionMutation {
 	m := &CompetitionMutation{
 		config:        c,
@@ -2235,7 +2235,7 @@ var _ ent.Mutation = (*DNSMutation)(nil)
 // dnsOption allows to manage the mutation configuration using functional options.
 type dnsOption func(*DNSMutation)
 
-// newDNSMutation creates new mutation for $n.Name.
+// newDNSMutation creates new mutation for DNS.
 func newDNSMutation(c config, op Op, opts ...dnsOption) *DNSMutation {
 	m := &DNSMutation{
 		config:        c,
@@ -2753,7 +2753,7 @@ var _ ent.Mutation = (*DNSRecordMutation)(nil)
 // dnsrecordOption allows to manage the mutation configuration using functional options.
 type dnsrecordOption func(*DNSRecordMutation)
 
-// newDNSRecordMutation creates new mutation for $n.Name.
+// newDNSRecordMutation creates new mutation for DNSRecord.
 func newDNSRecordMutation(c config, op Op, opts ...dnsrecordOption) *DNSRecordMutation {
 	m := &DNSRecordMutation{
 		config:        c,
@@ -3410,7 +3410,7 @@ var _ ent.Mutation = (*DiskMutation)(nil)
 // diskOption allows to manage the mutation configuration using functional options.
 type diskOption func(*DiskMutation)
 
-// newDiskMutation creates new mutation for $n.Name.
+// newDiskMutation creates new mutation for Disk.
 func newDiskMutation(c config, op Op, opts ...diskOption) *DiskMutation {
 	m := &DiskMutation{
 		config:        c,
@@ -3862,7 +3862,7 @@ var _ ent.Mutation = (*EnvironmentMutation)(nil)
 // environmentOption allows to manage the mutation configuration using functional options.
 type environmentOption func(*EnvironmentMutation)
 
-// newEnvironmentMutation creates new mutation for $n.Name.
+// newEnvironmentMutation creates new mutation for Environment.
 func newEnvironmentMutation(c config, op Op, opts ...environmentOption) *EnvironmentMutation {
 	m := &EnvironmentMutation{
 		config:        c,
@@ -5300,7 +5300,7 @@ var _ ent.Mutation = (*FileDeleteMutation)(nil)
 // filedeleteOption allows to manage the mutation configuration using functional options.
 type filedeleteOption func(*FileDeleteMutation)
 
-// newFileDeleteMutation creates new mutation for $n.Name.
+// newFileDeleteMutation creates new mutation for FileDelete.
 func newFileDeleteMutation(c config, op Op, opts ...filedeleteOption) *FileDeleteMutation {
 	m := &FileDeleteMutation{
 		config:        c,
@@ -5693,7 +5693,7 @@ var _ ent.Mutation = (*FileDownloadMutation)(nil)
 // filedownloadOption allows to manage the mutation configuration using functional options.
 type filedownloadOption func(*FileDownloadMutation)
 
-// newFileDownloadMutation creates new mutation for $n.Name.
+// newFileDownloadMutation creates new mutation for FileDownload.
 func newFileDownloadMutation(c config, op Op, opts ...filedownloadOption) *FileDownloadMutation {
 	m := &FileDownloadMutation{
 		config:        c,
@@ -6459,7 +6459,7 @@ var _ ent.Mutation = (*FileExtractMutation)(nil)
 // fileextractOption allows to manage the mutation configuration using functional options.
 type fileextractOption func(*FileExtractMutation)
 
-// newFileExtractMutation creates new mutation for $n.Name.
+// newFileExtractMutation creates new mutation for FileExtract.
 func newFileExtractMutation(c config, op Op, opts ...fileextractOption) *FileExtractMutation {
 	m := &FileExtractMutation{
 		config:        c,
@@ -6965,7 +6965,7 @@ var _ ent.Mutation = (*FindingMutation)(nil)
 // findingOption allows to manage the mutation configuration using functional options.
 type findingOption func(*FindingMutation)
 
-// newFindingMutation creates new mutation for $n.Name.
+// newFindingMutation creates new mutation for Finding.
 func newFindingMutation(c config, op Op, opts ...findingOption) *FindingMutation {
 	m := &FindingMutation{
 		config:        c,
@@ -7771,7 +7771,7 @@ var _ ent.Mutation = (*HostMutation)(nil)
 // hostOption allows to manage the mutation configuration using functional options.
 type hostOption func(*HostMutation)
 
-// newHostMutation creates new mutation for $n.Name.
+// newHostMutation creates new mutation for Host.
 func newHostMutation(c config, op Op, opts ...hostOption) *HostMutation {
 	m := &HostMutation{
 		config:        c,
@@ -9208,7 +9208,7 @@ var _ ent.Mutation = (*IncludedNetworkMutation)(nil)
 // includednetworkOption allows to manage the mutation configuration using functional options.
 type includednetworkOption func(*IncludedNetworkMutation)
 
-// newIncludedNetworkMutation creates new mutation for $n.Name.
+// newIncludedNetworkMutation creates new mutation for IncludedNetwork.
 func newIncludedNetworkMutation(c config, op Op, opts ...includednetworkOption) *IncludedNetworkMutation {
 	m := &IncludedNetworkMutation{
 		config:        c,
@@ -9733,7 +9733,7 @@ var _ ent.Mutation = (*NetworkMutation)(nil)
 // networkOption allows to manage the mutation configuration using functional options.
 type networkOption func(*NetworkMutation)
 
-// newNetworkMutation creates new mutation for $n.Name.
+// newNetworkMutation creates new mutation for Network.
 func newNetworkMutation(c config, op Op, opts ...networkOption) *NetworkMutation {
 	m := &NetworkMutation{
 		config:        c,
@@ -10369,7 +10369,7 @@ var _ ent.Mutation = (*ProvisionedHostMutation)(nil)
 // provisionedhostOption allows to manage the mutation configuration using functional options.
 type provisionedhostOption func(*ProvisionedHostMutation)
 
-// newProvisionedHostMutation creates new mutation for $n.Name.
+// newProvisionedHostMutation creates new mutation for ProvisionedHost.
 func newProvisionedHostMutation(c config, op Op, opts ...provisionedhostOption) *ProvisionedHostMutation {
 	m := &ProvisionedHostMutation{
 		config:        c,
@@ -11005,7 +11005,7 @@ var _ ent.Mutation = (*ProvisionedNetworkMutation)(nil)
 // provisionednetworkOption allows to manage the mutation configuration using functional options.
 type provisionednetworkOption func(*ProvisionedNetworkMutation)
 
-// newProvisionedNetworkMutation creates new mutation for $n.Name.
+// newProvisionedNetworkMutation creates new mutation for ProvisionedNetwork.
 func newProvisionedNetworkMutation(c config, op Op, opts ...provisionednetworkOption) *ProvisionedNetworkMutation {
 	m := &ProvisionedNetworkMutation{
 		config:        c,
@@ -11776,7 +11776,7 @@ var _ ent.Mutation = (*ProvisioningStepMutation)(nil)
 // provisioningstepOption allows to manage the mutation configuration using functional options.
 type provisioningstepOption func(*ProvisioningStepMutation)
 
-// newProvisioningStepMutation creates new mutation for $n.Name.
+// newProvisioningStepMutation creates new mutation for ProvisioningStep.
 func newProvisioningStepMutation(c config, op Op, opts ...provisioningstepOption) *ProvisioningStepMutation {
 	m := &ProvisioningStepMutation{
 		config:        c,
@@ -12630,7 +12630,7 @@ var _ ent.Mutation = (*RemoteFileMutation)(nil)
 // remotefileOption allows to manage the mutation configuration using functional options.
 type remotefileOption func(*RemoteFileMutation)
 
-// newRemoteFileMutation creates new mutation for $n.Name.
+// newRemoteFileMutation creates new mutation for RemoteFile.
 func newRemoteFileMutation(c config, op Op, opts ...remotefileOption) *RemoteFileMutation {
 	m := &RemoteFileMutation{
 		config:        c,
@@ -13521,7 +13521,7 @@ var _ ent.Mutation = (*ScriptMutation)(nil)
 // scriptOption allows to manage the mutation configuration using functional options.
 type scriptOption func(*ScriptMutation)
 
-// newScriptMutation creates new mutation for $n.Name.
+// newScriptMutation creates new mutation for Script.
 func newScriptMutation(c config, op Op, opts ...scriptOption) *ScriptMutation {
 	m := &ScriptMutation{
 		config:        c,
@@ -14731,7 +14731,7 @@ var _ ent.Mutation = (*StatusMutation)(nil)
 // statusOption allows to manage the mutation configuration using functional options.
 type statusOption func(*StatusMutation)
 
-// newStatusMutation creates new mutation for $n.Name.
+// newStatusMutation creates new mutation for Status.
 func newStatusMutation(c config, op Op, opts ...statusOption) *StatusMutation {
 	m := &StatusMutation{
 		config:        c,
@@ -15386,7 +15386,7 @@ var _ ent.Mutation = (*TagMutation)(nil)
 // tagOption allows to manage the mutation configuration using functional options.
 type tagOption func(*TagMutation)
 
-// newTagMutation creates new mutation for $n.Name.
+// newTagMutation creates new mutation for Tag.
 func newTagMutation(c config, op Op, opts ...tagOption) *TagMutation {
 	m := &TagMutation{
 		config:        c,
@@ -15807,7 +15807,7 @@ var _ ent.Mutation = (*TeamMutation)(nil)
 // teamOption allows to manage the mutation configuration using functional options.
 type teamOption func(*TeamMutation)
 
-// newTeamMutation creates new mutation for $n.Name.
+// newTeamMutation creates new mutation for Team.
 func newTeamMutation(c config, op Op, opts ...teamOption) *TeamMutation {
 	m := &TeamMutation{
 		config:        c,
@@ -16686,7 +16686,7 @@ var _ ent.Mutation = (*UserMutation)(nil)
 // userOption allows to manage the mutation configuration using functional options.
 type userOption func(*UserMutation)
 
-// newUserMutation creates new mutation for $n.Name.
+// newUserMutation creates new mutation for User.
 func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 	m := &UserMutation{
 		config:        c,

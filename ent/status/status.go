@@ -4,6 +4,8 @@ package status
 
 import (
 	"fmt"
+	"io"
+	"strconv"
 )
 
 const (
@@ -94,4 +96,22 @@ func StateValidator(s State) error {
 	default:
 		return fmt.Errorf("status: invalid enum value for state field: %q", s)
 	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (s State) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(s.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (s *State) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*s = State(str)
+	if err := StateValidator(*s); err != nil {
+		return fmt.Errorf("%s is not a valid State", str)
+	}
+	return nil
 }

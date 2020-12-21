@@ -27,7 +27,6 @@ type TeamQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Team
 	// eager-loading edges.
 	withMaintainer          *UserQuery
@@ -348,7 +347,6 @@ func (tq *TeamQuery) Clone() *TeamQuery {
 		limit:                   tq.limit,
 		offset:                  tq.offset,
 		order:                   append([]OrderFunc{}, tq.order...),
-		unique:                  append([]string{}, tq.unique...),
 		predicates:              append([]predicate.Team{}, tq.predicates...),
 		withMaintainer:          tq.withMaintainer.Clone(),
 		withBuild:               tq.withBuild.Clone(),

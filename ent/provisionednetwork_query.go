@@ -27,7 +27,6 @@ type ProvisionedNetworkQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.ProvisionedNetwork
 	// eager-loading edges.
 	withStatus                   *StatusQuery
@@ -348,7 +347,6 @@ func (pnq *ProvisionedNetworkQuery) Clone() *ProvisionedNetworkQuery {
 		limit:                        pnq.limit,
 		offset:                       pnq.offset,
 		order:                        append([]OrderFunc{}, pnq.order...),
-		unique:                       append([]string{}, pnq.unique...),
 		predicates:                   append([]predicate.ProvisionedNetwork{}, pnq.predicates...),
 		withStatus:                   pnq.withStatus.Clone(),
 		withNetwork:                  pnq.withNetwork.Clone(),

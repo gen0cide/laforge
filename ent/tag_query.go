@@ -21,7 +21,6 @@ type TagQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Tag
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
@@ -227,7 +226,6 @@ func (tq *TagQuery) Clone() *TagQuery {
 		limit:      tq.limit,
 		offset:     tq.offset,
 		order:      append([]OrderFunc{}, tq.order...),
-		unique:     append([]string{}, tq.unique...),
 		predicates: append([]predicate.Tag{}, tq.predicates...),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),

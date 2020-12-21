@@ -24,7 +24,6 @@ type IncludedNetworkQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.IncludedNetwork
 	// eager-loading edges.
 	withTag                          *TagQuery
@@ -276,7 +275,6 @@ func (inq *IncludedNetworkQuery) Clone() *IncludedNetworkQuery {
 		limit:                            inq.limit,
 		offset:                           inq.offset,
 		order:                            append([]OrderFunc{}, inq.order...),
-		unique:                           append([]string{}, inq.unique...),
 		predicates:                       append([]predicate.IncludedNetwork{}, inq.predicates...),
 		withTag:                          inq.withTag.Clone(),
 		withIncludedNetworkToEnvironment: inq.withIncludedNetworkToEnvironment.Clone(),

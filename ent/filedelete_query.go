@@ -23,7 +23,6 @@ type FileDeleteQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.FileDelete
 	// eager-loading edges.
 	withTag *TagQuery
@@ -252,7 +251,6 @@ func (fdq *FileDeleteQuery) Clone() *FileDeleteQuery {
 		limit:      fdq.limit,
 		offset:     fdq.offset,
 		order:      append([]OrderFunc{}, fdq.order...),
-		unique:     append([]string{}, fdq.unique...),
 		predicates: append([]predicate.FileDelete{}, fdq.predicates...),
 		withTag:    fdq.withTag.Clone(),
 		// clone intermediate query.

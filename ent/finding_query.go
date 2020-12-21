@@ -26,7 +26,6 @@ type FindingQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Finding
 	// eager-loading edges.
 	withUser   *UserQuery
@@ -324,7 +323,6 @@ func (fq *FindingQuery) Clone() *FindingQuery {
 		limit:      fq.limit,
 		offset:     fq.offset,
 		order:      append([]OrderFunc{}, fq.order...),
-		unique:     append([]string{}, fq.unique...),
 		predicates: append([]predicate.Finding{}, fq.predicates...),
 		withUser:   fq.withUser.Clone(),
 		withTag:    fq.withTag.Clone(),

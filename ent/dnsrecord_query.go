@@ -23,7 +23,6 @@ type DNSRecordQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.DNSRecord
 	// eager-loading edges.
 	withTag *TagQuery
@@ -253,7 +252,6 @@ func (drq *DNSRecordQuery) Clone() *DNSRecordQuery {
 		limit:      drq.limit,
 		offset:     drq.offset,
 		order:      append([]OrderFunc{}, drq.order...),
-		unique:     append([]string{}, drq.unique...),
 		predicates: append([]predicate.DNSRecord{}, drq.predicates...),
 		withTag:    drq.withTag.Clone(),
 		// clone intermediate query.

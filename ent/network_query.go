@@ -24,7 +24,6 @@ type NetworkQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Network
 	// eager-loading edges.
 	withTag                  *TagQuery
@@ -277,7 +276,6 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 		limit:                    nq.limit,
 		offset:                   nq.offset,
 		order:                    append([]OrderFunc{}, nq.order...),
-		unique:                   append([]string{}, nq.unique...),
 		predicates:               append([]predicate.Network{}, nq.predicates...),
 		withTag:                  nq.withTag.Clone(),
 		withNetworkToEnvironment: nq.withNetworkToEnvironment.Clone(),

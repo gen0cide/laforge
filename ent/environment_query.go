@@ -30,7 +30,6 @@ type EnvironmentQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Environment
 	// eager-loading edges.
 	withTag             *TagQuery
@@ -420,7 +419,6 @@ func (eq *EnvironmentQuery) Clone() *EnvironmentQuery {
 		limit:               eq.limit,
 		offset:              eq.offset,
 		order:               append([]OrderFunc{}, eq.order...),
-		unique:              append([]string{}, eq.unique...),
 		predicates:          append([]predicate.Environment{}, eq.predicates...),
 		withTag:             eq.withTag.Clone(),
 		withUser:            eq.withUser.Clone(),

@@ -23,7 +23,6 @@ type StatusQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Status
 	// eager-loading edges.
 	withTag *TagQuery
@@ -253,7 +252,6 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		limit:      sq.limit,
 		offset:     sq.offset,
 		order:      append([]OrderFunc{}, sq.order...),
-		unique:     append([]string{}, sq.unique...),
 		predicates: append([]predicate.Status{}, sq.predicates...),
 		withTag:    sq.withTag.Clone(),
 		// clone intermediate query.

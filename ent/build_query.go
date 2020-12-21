@@ -26,7 +26,6 @@ type BuildQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Build
 	// eager-loading edges.
 	withMaintainer                *UserQuery
@@ -325,7 +324,6 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		limit:                         bq.limit,
 		offset:                        bq.offset,
 		order:                         append([]OrderFunc{}, bq.order...),
-		unique:                        append([]string{}, bq.unique...),
 		predicates:                    append([]predicate.Build{}, bq.predicates...),
 		withMaintainer:                bq.withMaintainer.Clone(),
 		withTag:                       bq.withTag.Clone(),

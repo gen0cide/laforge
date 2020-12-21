@@ -26,7 +26,6 @@ type ProvisionedHostQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.ProvisionedHost
 	// eager-loading edges.
 	withStatus             *StatusQuery
@@ -324,7 +323,6 @@ func (phq *ProvisionedHostQuery) Clone() *ProvisionedHostQuery {
 		limit:                  phq.limit,
 		offset:                 phq.offset,
 		order:                  append([]OrderFunc{}, phq.order...),
-		unique:                 append([]string{}, phq.unique...),
 		predicates:             append([]predicate.ProvisionedHost{}, phq.predicates...),
 		withStatus:             phq.withStatus.Clone(),
 		withProvisionedNetwork: phq.withProvisionedNetwork.Clone(),

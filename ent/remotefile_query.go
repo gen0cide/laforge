@@ -23,7 +23,6 @@ type RemoteFileQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.RemoteFile
 	// eager-loading edges.
 	withTag *TagQuery
@@ -253,7 +252,6 @@ func (rfq *RemoteFileQuery) Clone() *RemoteFileQuery {
 		limit:      rfq.limit,
 		offset:     rfq.offset,
 		order:      append([]OrderFunc{}, rfq.order...),
-		unique:     append([]string{}, rfq.unique...),
 		predicates: append([]predicate.RemoteFile{}, rfq.predicates...),
 		withTag:    rfq.withTag.Clone(),
 		// clone intermediate query.

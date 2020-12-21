@@ -23,7 +23,6 @@ type CompetitionQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Competition
 	// eager-loading edges.
 	withDNS *DNSQuery
@@ -253,7 +252,6 @@ func (cq *CompetitionQuery) Clone() *CompetitionQuery {
 		limit:      cq.limit,
 		offset:     cq.offset,
 		order:      append([]OrderFunc{}, cq.order...),
-		unique:     append([]string{}, cq.unique...),
 		predicates: append([]predicate.Competition{}, cq.predicates...),
 		withDNS:    cq.withDNS.Clone(),
 		// clone intermediate query.

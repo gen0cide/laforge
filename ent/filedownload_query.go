@@ -23,7 +23,6 @@ type FileDownloadQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.FileDownload
 	// eager-loading edges.
 	withTag *TagQuery
@@ -252,7 +251,6 @@ func (fdq *FileDownloadQuery) Clone() *FileDownloadQuery {
 		limit:      fdq.limit,
 		offset:     fdq.offset,
 		order:      append([]OrderFunc{}, fdq.order...),
-		unique:     append([]string{}, fdq.unique...),
 		predicates: append([]predicate.FileDownload{}, fdq.predicates...),
 		withTag:    fdq.withTag.Clone(),
 		// clone intermediate query.

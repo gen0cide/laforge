@@ -25,7 +25,6 @@ type ScriptQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Script
 	// eager-loading edges.
 	withTag        *TagQuery
@@ -301,7 +300,6 @@ func (sq *ScriptQuery) Clone() *ScriptQuery {
 		limit:          sq.limit,
 		offset:         sq.offset,
 		order:          append([]OrderFunc{}, sq.order...),
-		unique:         append([]string{}, sq.unique...),
 		predicates:     append([]predicate.Script{}, sq.predicates...),
 		withTag:        sq.withTag.Clone(),
 		withMaintainer: sq.withMaintainer.Clone(),

@@ -21,7 +21,6 @@ type DNSQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.DNS
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
@@ -227,7 +226,6 @@ func (dq *DNSQuery) Clone() *DNSQuery {
 		limit:      dq.limit,
 		offset:     dq.offset,
 		order:      append([]OrderFunc{}, dq.order...),
-		unique:     append([]string{}, dq.unique...),
 		predicates: append([]predicate.DNS{}, dq.predicates...),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),

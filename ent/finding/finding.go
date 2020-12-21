@@ -4,6 +4,8 @@ package finding
 
 import (
 	"fmt"
+	"io"
+	"strconv"
 )
 
 const (
@@ -135,4 +137,40 @@ func DifficultyValidator(d Difficulty) error {
 	default:
 		return fmt.Errorf("finding: invalid enum value for difficulty field: %q", d)
 	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (s Severity) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(s.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (s *Severity) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*s = Severity(str)
+	if err := SeverityValidator(*s); err != nil {
+		return fmt.Errorf("%s is not a valid Severity", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (d Difficulty) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(d.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (d *Difficulty) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*d = Difficulty(str)
+	if err := DifficultyValidator(*d); err != nil {
+		return fmt.Errorf("%s is not a valid Difficulty", str)
+	}
+	return nil
 }

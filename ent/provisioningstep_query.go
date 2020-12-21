@@ -27,7 +27,6 @@ type ProvisioningStepQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.ProvisioningStep
 	// eager-loading edges.
 	withProvisionedHost *ProvisionedHostQuery
@@ -348,7 +347,6 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		limit:               psq.limit,
 		offset:              psq.offset,
 		order:               append([]OrderFunc{}, psq.order...),
-		unique:              append([]string{}, psq.unique...),
 		predicates:          append([]predicate.ProvisioningStep{}, psq.predicates...),
 		withProvisionedHost: psq.withProvisionedHost.Clone(),
 		withScript:          psq.withScript.Clone(),
