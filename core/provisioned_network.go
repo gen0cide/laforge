@@ -177,7 +177,7 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 }
 
 // CreateProvisionedNetworkEntry ...
-func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx context.Context, client *ent.Client) (*ent.ProvisionedNetwork, error) {
+func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(ctx context.Context,build *ent.Build, team *ent.Team, client *ent.Client) (*ent.ProvisionedNetwork, error) {
 	status, err := p.Status.CreateStatusEntry(ctx, client)
 
 	if err != nil {
@@ -199,6 +199,7 @@ func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(build *ent.Build, ctx
 		AddStatus(status).
 		AddNetwork(network).
 		AddBuild(build).
+		AddProvisionedNetworkToTeam(team).
 		Save(ctx)
 
 	if err != nil {

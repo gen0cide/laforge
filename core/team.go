@@ -571,7 +571,7 @@ func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, ctx conte
 	}
 
 	for _, v := range t.ProvisionedNetworks {
-		_, err := v.CreateProvisionedNetworkEntry(build, ctx, client)
+		_, err := v.CreateProvisionedNetworkEntry(ctx,build,team,client)
 
 		if err != nil {
 			cli.Logger.Debugf("failed creating team: %v", err)
