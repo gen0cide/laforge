@@ -34,9 +34,9 @@ func (hc *HostCreate) SetDescription(s string) *HostCreate {
 	return hc
 }
 
-// SetString sets the string field.
-func (hc *HostCreate) SetString(s string) *HostCreate {
-	hc.mutation.SetString(s)
+// SetOS sets the OS field.
+func (hc *HostCreate) SetOS(s string) *HostCreate {
+	hc.mutation.SetOS(s)
 	return hc
 }
 
@@ -71,8 +71,8 @@ func (hc *HostCreate) SetOverridePassword(s string) *HostCreate {
 }
 
 // SetVars sets the vars field.
-func (hc *HostCreate) SetVars(s []string) *HostCreate {
-	hc.mutation.SetVars(s)
+func (hc *HostCreate) SetVars(m map[string]string) *HostCreate {
+	hc.mutation.SetVars(m)
 	return hc
 }
 
@@ -214,8 +214,8 @@ func (hc *HostCreate) check() error {
 	if _, ok := hc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
 	}
-	if _, ok := hc.mutation.String(); !ok {
-		return &ValidationError{Name: "string", err: errors.New("ent: missing required field \"string\"")}
+	if _, ok := hc.mutation.OS(); !ok {
+		return &ValidationError{Name: "OS", err: errors.New("ent: missing required field \"OS\"")}
 	}
 	if _, ok := hc.mutation.LastOctet(); !ok {
 		return &ValidationError{Name: "last_octet", err: errors.New("ent: missing required field \"last_octet\"")}
@@ -237,21 +237,6 @@ func (hc *HostCreate) check() error {
 	}
 	if _, ok := hc.mutation.UserGroups(); !ok {
 		return &ValidationError{Name: "user_groups", err: errors.New("ent: missing required field \"user_groups\"")}
-	}
-	if _, ok := hc.mutation.DependsOn(); !ok {
-		return &ValidationError{Name: "depends_on", err: errors.New("ent: missing required field \"depends_on\"")}
-	}
-	if _, ok := hc.mutation.Scripts(); !ok {
-		return &ValidationError{Name: "scripts", err: errors.New("ent: missing required field \"scripts\"")}
-	}
-	if _, ok := hc.mutation.Commands(); !ok {
-		return &ValidationError{Name: "commands", err: errors.New("ent: missing required field \"commands\"")}
-	}
-	if _, ok := hc.mutation.RemoteFiles(); !ok {
-		return &ValidationError{Name: "remote_files", err: errors.New("ent: missing required field \"remote_files\"")}
-	}
-	if _, ok := hc.mutation.DNSRecords(); !ok {
-		return &ValidationError{Name: "dns_records", err: errors.New("ent: missing required field \"dns_records\"")}
 	}
 	return nil
 }
@@ -296,13 +281,13 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		})
 		_node.Description = value
 	}
-	if value, ok := hc.mutation.String(); ok {
+	if value, ok := hc.mutation.OS(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: host.FieldString,
+			Column: host.FieldOS,
 		})
-		_node.String = value
+		_node.OS = value
 	}
 	if value, ok := hc.mutation.LastOctet(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

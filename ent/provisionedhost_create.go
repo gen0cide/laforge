@@ -14,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisionedHostCreate is the builder for creating a ProvisionedHost entity.
@@ -43,21 +42,6 @@ func (phc *ProvisionedHostCreate) AddStatus(s ...*Status) *ProvisionedHostCreate
 		ids[i] = s[i].ID
 	}
 	return phc.AddStatuIDs(ids...)
-}
-
-// AddProvisioningStepIDs adds the provisioning_steps edge to ProvisioningStep by ids.
-func (phc *ProvisionedHostCreate) AddProvisioningStepIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisioningStepIDs(ids...)
-	return phc
-}
-
-// AddProvisioningSteps adds the provisioning_steps edges to ProvisioningStep.
-func (phc *ProvisionedHostCreate) AddProvisioningSteps(p ...*ProvisioningStep) *ProvisionedHostCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return phc.AddProvisioningStepIDs(ids...)
 }
 
 // AddProvisionedNetworkIDs adds the provisioned_network edge to ProvisionedNetwork by ids.
@@ -90,19 +74,19 @@ func (phc *ProvisionedHostCreate) AddHost(h ...*Host) *ProvisionedHostCreate {
 	return phc.AddHostIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (phc *ProvisionedHostCreate) AddTagIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddTagIDs(ids...)
+// AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
+func (phc *ProvisionedHostCreate) AddProvisionedStepIDs(ids ...int) *ProvisionedHostCreate {
+	phc.mutation.AddProvisionedStepIDs(ids...)
 	return phc
 }
 
-// AddTag adds the tag edges to Tag.
-func (phc *ProvisionedHostCreate) AddTag(t ...*Tag) *ProvisionedHostCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// AddProvisionedSteps adds the provisioned_steps edges to ProvisioningStep.
+func (phc *ProvisionedHostCreate) AddProvisionedSteps(p ...*ProvisioningStep) *ProvisionedHostCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
-	return phc.AddTagIDs(ids...)
+	return phc.AddProvisionedStepIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -213,31 +197,12 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := phc.mutation.ProvisioningStepsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.ProvisioningStepsTable,
-			Columns: []string{provisionedhost.ProvisioningStepsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisioningstep.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := phc.mutation.ProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: []string{provisionedhost.ProvisionedNetworkColumn},
+			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -270,17 +235,17 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := phc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := phc.mutation.ProvisionedStepsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.TagTable,
-			Columns: []string{provisionedhost.TagColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedStepsTable,
+			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: provisioningstep.FieldID,
 				},
 			},
 		}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -39,8 +40,8 @@ func (nc *NetworkCreate) SetVdiVisible(b bool) *NetworkCreate {
 }
 
 // SetVars sets the vars field.
-func (nc *NetworkCreate) SetVars(s []string) *NetworkCreate {
-	nc.mutation.SetVars(s)
+func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
+	nc.mutation.SetVars(m)
 	return nc
 }
 
@@ -57,6 +58,21 @@ func (nc *NetworkCreate) AddTag(t ...*Tag) *NetworkCreate {
 		ids[i] = t[i].ID
 	}
 	return nc.AddTagIDs(ids...)
+}
+
+// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
+func (nc *NetworkCreate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkCreate {
+	nc.mutation.AddNetworkToEnvironmentIDs(ids...)
+	return nc
+}
+
+// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
+func (nc *NetworkCreate) AddNetworkToEnvironment(e ...*Environment) *NetworkCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nc.AddNetworkToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the NetworkMutation object of the builder.
@@ -192,6 +208,25 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   network.NetworkToEnvironmentTable,
+			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

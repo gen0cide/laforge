@@ -237,41 +237,13 @@ func HasStatusWith(preds ...predicate.Status) predicate.ProvisionedHost {
 	})
 }
 
-// HasProvisioningSteps applies the HasEdge predicate on the "provisioning_steps" edge.
-func HasProvisioningSteps() predicate.ProvisionedHost {
-	return predicate.ProvisionedHost(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisioningStepsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisioningStepsTable, ProvisioningStepsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasProvisioningStepsWith applies the HasEdge predicate on the "provisioning_steps" edge with a given conditions (other predicates).
-func HasProvisioningStepsWith(preds ...predicate.ProvisioningStep) predicate.ProvisionedHost {
-	return predicate.ProvisionedHost(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisioningStepsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisioningStepsTable, ProvisioningStepsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasProvisionedNetwork applies the HasEdge predicate on the "provisioned_network" edge.
 func HasProvisionedNetwork() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworkTable, ProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkTable, ProvisionedNetworkPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -283,7 +255,7 @@ func HasProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworkTable, ProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkTable, ProvisionedNetworkPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -321,25 +293,25 @@ func HasHostWith(preds ...predicate.Host) predicate.ProvisionedHost {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.ProvisionedHost {
+// HasProvisionedSteps applies the HasEdge predicate on the "provisioned_steps" edge.
+func HasProvisionedSteps() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(ProvisionedStepsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedStepsTable, ProvisionedStepsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.ProvisionedHost {
+// HasProvisionedStepsWith applies the HasEdge predicate on the "provisioned_steps" edge with a given conditions (other predicates).
+func HasProvisionedStepsWith(preds ...predicate.ProvisioningStep) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(ProvisionedStepsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedStepsTable, ProvisionedStepsPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

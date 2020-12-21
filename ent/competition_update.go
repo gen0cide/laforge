@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionUpdate is the builder for updating Competition entities.
@@ -35,8 +34,8 @@ func (cu *CompetitionUpdate) SetRootPassword(s string) *CompetitionUpdate {
 }
 
 // SetConfig sets the config field.
-func (cu *CompetitionUpdate) SetConfig(s []string) *CompetitionUpdate {
-	cu.mutation.SetConfig(s)
+func (cu *CompetitionUpdate) SetConfig(m map[string]string) *CompetitionUpdate {
+	cu.mutation.SetConfig(m)
 	return cu
 }
 
@@ -53,21 +52,6 @@ func (cu *CompetitionUpdate) AddDNS(d ...*DNS) *CompetitionUpdate {
 		ids[i] = d[i].ID
 	}
 	return cu.AddDnIDs(ids...)
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cu *CompetitionUpdate) AddTagIDs(ids ...int) *CompetitionUpdate {
-	cu.mutation.AddTagIDs(ids...)
-	return cu
-}
-
-// AddTag adds the tag edges to Tag.
-func (cu *CompetitionUpdate) AddTag(t ...*Tag) *CompetitionUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cu.AddTagIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -94,27 +78,6 @@ func (cu *CompetitionUpdate) RemoveDNS(d ...*DNS) *CompetitionUpdate {
 		ids[i] = d[i].ID
 	}
 	return cu.RemoveDnIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (cu *CompetitionUpdate) ClearTag() *CompetitionUpdate {
-	cu.mutation.ClearTag()
-	return cu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (cu *CompetitionUpdate) RemoveTagIDs(ids ...int) *CompetitionUpdate {
-	cu.mutation.RemoveTagIDs(ids...)
-	return cu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (cu *CompetitionUpdate) RemoveTag(t ...*Tag) *CompetitionUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cu.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -254,60 +217,6 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedTagIDs(); len(nodes) > 0 && !cu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{competition.Label}
@@ -333,8 +242,8 @@ func (cuo *CompetitionUpdateOne) SetRootPassword(s string) *CompetitionUpdateOne
 }
 
 // SetConfig sets the config field.
-func (cuo *CompetitionUpdateOne) SetConfig(s []string) *CompetitionUpdateOne {
-	cuo.mutation.SetConfig(s)
+func (cuo *CompetitionUpdateOne) SetConfig(m map[string]string) *CompetitionUpdateOne {
+	cuo.mutation.SetConfig(m)
 	return cuo
 }
 
@@ -351,21 +260,6 @@ func (cuo *CompetitionUpdateOne) AddDNS(d ...*DNS) *CompetitionUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return cuo.AddDnIDs(ids...)
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cuo *CompetitionUpdateOne) AddTagIDs(ids ...int) *CompetitionUpdateOne {
-	cuo.mutation.AddTagIDs(ids...)
-	return cuo
-}
-
-// AddTag adds the tag edges to Tag.
-func (cuo *CompetitionUpdateOne) AddTag(t ...*Tag) *CompetitionUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cuo.AddTagIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -392,27 +286,6 @@ func (cuo *CompetitionUpdateOne) RemoveDNS(d ...*DNS) *CompetitionUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return cuo.RemoveDnIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (cuo *CompetitionUpdateOne) ClearTag() *CompetitionUpdateOne {
-	cuo.mutation.ClearTag()
-	return cuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (cuo *CompetitionUpdateOne) RemoveTagIDs(ids ...int) *CompetitionUpdateOne {
-	cuo.mutation.RemoveTagIDs(ids...)
-	return cuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (cuo *CompetitionUpdateOne) RemoveTag(t ...*Tag) *CompetitionUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cuo.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -542,60 +415,6 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: dns.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if cuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !cuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}

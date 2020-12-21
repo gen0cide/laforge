@@ -9,6 +9,7 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -45,6 +46,21 @@ func (inc *IncludedNetworkCreate) AddTag(t ...*Tag) *IncludedNetworkCreate {
 		ids[i] = t[i].ID
 	}
 	return inc.AddTagIDs(ids...)
+}
+
+// AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkCreate {
+	inc.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
+	return inc
+}
+
+// AddIncludedNetworkToEnvironment adds the IncludedNetworkToEnvironment edges to Environment.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return inc.AddIncludedNetworkToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the IncludedNetworkMutation object of the builder.
@@ -158,6 +174,25 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := inc.mutation.IncludedNetworkToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
+			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

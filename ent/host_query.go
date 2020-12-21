@@ -25,7 +25,6 @@ type HostQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Host
 	// eager-loading edges.
 	withDisk       *DiskQuery
@@ -301,7 +300,6 @@ func (hq *HostQuery) Clone() *HostQuery {
 		limit:          hq.limit,
 		offset:         hq.offset,
 		order:          append([]OrderFunc{}, hq.order...),
-		unique:         append([]string{}, hq.unique...),
 		predicates:     append([]predicate.Host{}, hq.predicates...),
 		withDisk:       hq.withDisk.Clone(),
 		withMaintainer: hq.withMaintainer.Clone(),

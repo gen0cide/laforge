@@ -105,10 +105,10 @@ func Description(v string) predicate.Host {
 	})
 }
 
-// String applies equality check predicate on the "string" field. It's identical to StringEQ.
-func String(v string) predicate.Host {
+// OS applies equality check predicate on the "OS" field. It's identical to OSEQ.
+func OS(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldString), v))
+		s.Where(sql.EQ(s.C(FieldOS), v))
 	})
 }
 
@@ -355,22 +355,22 @@ func DescriptionContainsFold(v string) predicate.Host {
 	})
 }
 
-// StringEQ applies the EQ predicate on the "string" field.
-func StringEQ(v string) predicate.Host {
+// OSEQ applies the EQ predicate on the "OS" field.
+func OSEQ(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldString), v))
+		s.Where(sql.EQ(s.C(FieldOS), v))
 	})
 }
 
-// StringNEQ applies the NEQ predicate on the "string" field.
-func StringNEQ(v string) predicate.Host {
+// OSNEQ applies the NEQ predicate on the "OS" field.
+func OSNEQ(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldString), v))
+		s.Where(sql.NEQ(s.C(FieldOS), v))
 	})
 }
 
-// StringIn applies the In predicate on the "string" field.
-func StringIn(vs ...string) predicate.Host {
+// OSIn applies the In predicate on the "OS" field.
+func OSIn(vs ...string) predicate.Host {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -382,12 +382,12 @@ func StringIn(vs ...string) predicate.Host {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldString), v...))
+		s.Where(sql.In(s.C(FieldOS), v...))
 	})
 }
 
-// StringNotIn applies the NotIn predicate on the "string" field.
-func StringNotIn(vs ...string) predicate.Host {
+// OSNotIn applies the NotIn predicate on the "OS" field.
+func OSNotIn(vs ...string) predicate.Host {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -399,70 +399,70 @@ func StringNotIn(vs ...string) predicate.Host {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldString), v...))
+		s.Where(sql.NotIn(s.C(FieldOS), v...))
 	})
 }
 
-// StringGT applies the GT predicate on the "string" field.
-func StringGT(v string) predicate.Host {
+// OSGT applies the GT predicate on the "OS" field.
+func OSGT(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldString), v))
+		s.Where(sql.GT(s.C(FieldOS), v))
 	})
 }
 
-// StringGTE applies the GTE predicate on the "string" field.
-func StringGTE(v string) predicate.Host {
+// OSGTE applies the GTE predicate on the "OS" field.
+func OSGTE(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldString), v))
+		s.Where(sql.GTE(s.C(FieldOS), v))
 	})
 }
 
-// StringLT applies the LT predicate on the "string" field.
-func StringLT(v string) predicate.Host {
+// OSLT applies the LT predicate on the "OS" field.
+func OSLT(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldString), v))
+		s.Where(sql.LT(s.C(FieldOS), v))
 	})
 }
 
-// StringLTE applies the LTE predicate on the "string" field.
-func StringLTE(v string) predicate.Host {
+// OSLTE applies the LTE predicate on the "OS" field.
+func OSLTE(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldString), v))
+		s.Where(sql.LTE(s.C(FieldOS), v))
 	})
 }
 
-// StringContains applies the Contains predicate on the "string" field.
-func StringContains(v string) predicate.Host {
+// OSContains applies the Contains predicate on the "OS" field.
+func OSContains(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldString), v))
+		s.Where(sql.Contains(s.C(FieldOS), v))
 	})
 }
 
-// StringHasPrefix applies the HasPrefix predicate on the "string" field.
-func StringHasPrefix(v string) predicate.Host {
+// OSHasPrefix applies the HasPrefix predicate on the "OS" field.
+func OSHasPrefix(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldString), v))
+		s.Where(sql.HasPrefix(s.C(FieldOS), v))
 	})
 }
 
-// StringHasSuffix applies the HasSuffix predicate on the "string" field.
-func StringHasSuffix(v string) predicate.Host {
+// OSHasSuffix applies the HasSuffix predicate on the "OS" field.
+func OSHasSuffix(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldString), v))
+		s.Where(sql.HasSuffix(s.C(FieldOS), v))
 	})
 }
 
-// StringEqualFold applies the EqualFold predicate on the "string" field.
-func StringEqualFold(v string) predicate.Host {
+// OSEqualFold applies the EqualFold predicate on the "OS" field.
+func OSEqualFold(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldString), v))
+		s.Where(sql.EqualFold(s.C(FieldOS), v))
 	})
 }
 
-// StringContainsFold applies the ContainsFold predicate on the "string" field.
-func StringContainsFold(v string) predicate.Host {
+// OSContainsFold applies the ContainsFold predicate on the "OS" field.
+func OSContainsFold(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldString), v))
+		s.Where(sql.ContainsFold(s.C(FieldOS), v))
 	})
 }
 
@@ -664,6 +664,76 @@ func OverridePasswordEqualFold(v string) predicate.Host {
 func OverridePasswordContainsFold(v string) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldOverridePassword), v))
+	})
+}
+
+// DependsOnIsNil applies the IsNil predicate on the "depends_on" field.
+func DependsOnIsNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDependsOn)))
+	})
+}
+
+// DependsOnNotNil applies the NotNil predicate on the "depends_on" field.
+func DependsOnNotNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDependsOn)))
+	})
+}
+
+// ScriptsIsNil applies the IsNil predicate on the "scripts" field.
+func ScriptsIsNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldScripts)))
+	})
+}
+
+// ScriptsNotNil applies the NotNil predicate on the "scripts" field.
+func ScriptsNotNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldScripts)))
+	})
+}
+
+// CommandsIsNil applies the IsNil predicate on the "commands" field.
+func CommandsIsNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCommands)))
+	})
+}
+
+// CommandsNotNil applies the NotNil predicate on the "commands" field.
+func CommandsNotNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCommands)))
+	})
+}
+
+// RemoteFilesIsNil applies the IsNil predicate on the "remote_files" field.
+func RemoteFilesIsNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldRemoteFiles)))
+	})
+}
+
+// RemoteFilesNotNil applies the NotNil predicate on the "remote_files" field.
+func RemoteFilesNotNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldRemoteFiles)))
+	})
+}
+
+// DNSRecordsIsNil applies the IsNil predicate on the "dns_records" field.
+func DNSRecordsIsNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDNSRecords)))
+	})
+}
+
+// DNSRecordsNotNil applies the NotNil predicate on the "dns_records" field.
+func DNSRecordsNotNil() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDNSRecords)))
 	})
 }
 

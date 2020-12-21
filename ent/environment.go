@@ -33,11 +33,10 @@ type Environment struct {
 	// ExposedVdiPorts holds the value of the "exposed_vdi_ports" field.
 	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
-	Edges            EnvironmentEdges `json:"edges"`
-	team_environment *int
+	Edges EnvironmentEdges `json:"edges"`
 }
 
 // EnvironmentEdges holds the relations/edges for other nodes in the graph.
@@ -46,19 +45,21 @@ type EnvironmentEdges struct {
 	Tag []*Tag
 	// User holds the value of the user edge.
 	User []*User
-	// IncludedNetwork holds the value of the included_network edge.
-	IncludedNetwork []*IncludedNetwork
-	// Build holds the value of the build edge.
-	Build []*Build
-	// Network holds the value of the network edge.
-	Network []*Network
 	// Host holds the value of the host edge.
 	Host []*Host
 	// Competition holds the value of the competition edge.
 	Competition []*Competition
+	// Build holds the value of the build edge.
+	Build []*Build
+	// IncludedNetwork holds the value of the included_network edge.
+	IncludedNetwork []*IncludedNetwork
+	// Network holds the value of the network edge.
+	Network []*Network
+	// Team holds the value of the team edge.
+	Team []*Team
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // TagOrErr returns the Tag value or an error if the edge
@@ -79,37 +80,10 @@ func (e EnvironmentEdges) UserOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
-// IncludedNetworkOrErr returns the IncludedNetwork value or an error if the edge
-// was not loaded in eager-loading.
-func (e EnvironmentEdges) IncludedNetworkOrErr() ([]*IncludedNetwork, error) {
-	if e.loadedTypes[2] {
-		return e.IncludedNetwork, nil
-	}
-	return nil, &NotLoadedError{edge: "included_network"}
-}
-
-// BuildOrErr returns the Build value or an error if the edge
-// was not loaded in eager-loading.
-func (e EnvironmentEdges) BuildOrErr() ([]*Build, error) {
-	if e.loadedTypes[3] {
-		return e.Build, nil
-	}
-	return nil, &NotLoadedError{edge: "build"}
-}
-
-// NetworkOrErr returns the Network value or an error if the edge
-// was not loaded in eager-loading.
-func (e EnvironmentEdges) NetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[4] {
-		return e.Network, nil
-	}
-	return nil, &NotLoadedError{edge: "network"}
-}
-
 // HostOrErr returns the Host value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) HostOrErr() ([]*Host, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[2] {
 		return e.Host, nil
 	}
 	return nil, &NotLoadedError{edge: "host"}
@@ -118,10 +92,46 @@ func (e EnvironmentEdges) HostOrErr() ([]*Host, error) {
 // CompetitionOrErr returns the Competition value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) CompetitionOrErr() ([]*Competition, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[3] {
 		return e.Competition, nil
 	}
 	return nil, &NotLoadedError{edge: "competition"}
+}
+
+// BuildOrErr returns the Build value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) BuildOrErr() ([]*Build, error) {
+	if e.loadedTypes[4] {
+		return e.Build, nil
+	}
+	return nil, &NotLoadedError{edge: "build"}
+}
+
+// IncludedNetworkOrErr returns the IncludedNetwork value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) IncludedNetworkOrErr() ([]*IncludedNetwork, error) {
+	if e.loadedTypes[5] {
+		return e.IncludedNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "included_network"}
+}
+
+// NetworkOrErr returns the Network value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) NetworkOrErr() ([]*Network, error) {
+	if e.loadedTypes[6] {
+		return e.Network, nil
+	}
+	return nil, &NotLoadedError{edge: "network"}
+}
+
+// TeamOrErr returns the Team value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) TeamOrErr() ([]*Team, error) {
+	if e.loadedTypes[7] {
+		return e.Team, nil
+	}
+	return nil, &NotLoadedError{edge: "team"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,13 +147,6 @@ func (*Environment) scanValues() []interface{} {
 		&[]byte{},         // admin_cidrs
 		&[]byte{},         // exposed_vdi_ports
 		&[]byte{},         // config
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Environment) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // team_environment
 	}
 }
 
@@ -213,15 +216,6 @@ func (e *Environment) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field config: %v", err)
 		}
 	}
-	values = values[9:]
-	if len(values) == len(environment.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_environment", value)
-		} else if value.Valid {
-			e.team_environment = new(int)
-			*e.team_environment = int(value.Int64)
-		}
-	}
 	return nil
 }
 
@@ -235,21 +229,6 @@ func (e *Environment) QueryUser() *UserQuery {
 	return (&EnvironmentClient{config: e.config}).QueryUser(e)
 }
 
-// QueryIncludedNetwork queries the included_network edge of the Environment.
-func (e *Environment) QueryIncludedNetwork() *IncludedNetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryIncludedNetwork(e)
-}
-
-// QueryBuild queries the build edge of the Environment.
-func (e *Environment) QueryBuild() *BuildQuery {
-	return (&EnvironmentClient{config: e.config}).QueryBuild(e)
-}
-
-// QueryNetwork queries the network edge of the Environment.
-func (e *Environment) QueryNetwork() *NetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryNetwork(e)
-}
-
 // QueryHost queries the host edge of the Environment.
 func (e *Environment) QueryHost() *HostQuery {
 	return (&EnvironmentClient{config: e.config}).QueryHost(e)
@@ -258,6 +237,26 @@ func (e *Environment) QueryHost() *HostQuery {
 // QueryCompetition queries the competition edge of the Environment.
 func (e *Environment) QueryCompetition() *CompetitionQuery {
 	return (&EnvironmentClient{config: e.config}).QueryCompetition(e)
+}
+
+// QueryBuild queries the build edge of the Environment.
+func (e *Environment) QueryBuild() *BuildQuery {
+	return (&EnvironmentClient{config: e.config}).QueryBuild(e)
+}
+
+// QueryIncludedNetwork queries the included_network edge of the Environment.
+func (e *Environment) QueryIncludedNetwork() *IncludedNetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryIncludedNetwork(e)
+}
+
+// QueryNetwork queries the network edge of the Environment.
+func (e *Environment) QueryNetwork() *NetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryNetwork(e)
+}
+
+// QueryTeam queries the team edge of the Environment.
+func (e *Environment) QueryTeam() *TeamQuery {
+	return (&EnvironmentClient{config: e.config}).QueryTeam(e)
 }
 
 // Update returns a builder for updating this Environment.

@@ -40,50 +40,14 @@ func (tu *TagUpdate) SetName(s string) *TagUpdate {
 }
 
 // SetDescription sets the description field.
-func (tu *TagUpdate) SetDescription(s string) *TagUpdate {
-	tu.mutation.SetDescription(s)
+func (tu *TagUpdate) SetDescription(m map[string]string) *TagUpdate {
+	tu.mutation.SetDescription(m)
 	return tu
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (tu *TagUpdate) AddTagIDs(ids ...int) *TagUpdate {
-	tu.mutation.AddTagIDs(ids...)
-	return tu
-}
-
-// AddTag adds the tag edges to Tag.
-func (tu *TagUpdate) AddTag(t ...*Tag) *TagUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tu.AddTagIDs(ids...)
 }
 
 // Mutation returns the TagMutation object of the builder.
 func (tu *TagUpdate) Mutation() *TagMutation {
 	return tu.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (tu *TagUpdate) ClearTag() *TagUpdate {
-	tu.mutation.ClearTag()
-	return tu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (tu *TagUpdate) RemoveTagIDs(ids ...int) *TagUpdate {
-	tu.mutation.RemoveTagIDs(ids...)
-	return tu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (tu *TagUpdate) RemoveTag(t ...*Tag) *TagUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tu.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -171,64 +135,10 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Description(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeJSON,
 			Value:  value,
 			Column: tag.FieldDescription,
 		})
-	}
-	if tu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedTagIDs(); len(nodes) > 0 && !tu.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -261,50 +171,14 @@ func (tuo *TagUpdateOne) SetName(s string) *TagUpdateOne {
 }
 
 // SetDescription sets the description field.
-func (tuo *TagUpdateOne) SetDescription(s string) *TagUpdateOne {
-	tuo.mutation.SetDescription(s)
+func (tuo *TagUpdateOne) SetDescription(m map[string]string) *TagUpdateOne {
+	tuo.mutation.SetDescription(m)
 	return tuo
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (tuo *TagUpdateOne) AddTagIDs(ids ...int) *TagUpdateOne {
-	tuo.mutation.AddTagIDs(ids...)
-	return tuo
-}
-
-// AddTag adds the tag edges to Tag.
-func (tuo *TagUpdateOne) AddTag(t ...*Tag) *TagUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tuo.AddTagIDs(ids...)
 }
 
 // Mutation returns the TagMutation object of the builder.
 func (tuo *TagUpdateOne) Mutation() *TagMutation {
 	return tuo.mutation
-}
-
-// ClearTag clears all "tag" edges to type Tag.
-func (tuo *TagUpdateOne) ClearTag() *TagUpdateOne {
-	tuo.mutation.ClearTag()
-	return tuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (tuo *TagUpdateOne) RemoveTagIDs(ids ...int) *TagUpdateOne {
-	tuo.mutation.RemoveTagIDs(ids...)
-	return tuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (tuo *TagUpdateOne) RemoveTag(t ...*Tag) *TagUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tuo.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -390,64 +264,10 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	if value, ok := tuo.mutation.Description(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeJSON,
 			Value:  value,
 			Column: tag.FieldDescription,
 		})
-	}
-	if tuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !tuo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Tag{config: tuo.config}
 	_spec.Assign = _node.assignValues

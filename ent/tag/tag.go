@@ -14,13 +14,8 @@ const (
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
-	// TagTable is the table the holds the tag relation/edge. The primary key declared below.
-	TagTable = "tag_tag"
 )
 
 // Columns holds all SQL columns for tag fields.
@@ -35,8 +30,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"build_tag",
 	"command_tag",
-	"competition_tag",
-	"dns_tag",
 	"dns_record_tag",
 	"disk_tag",
 	"environment_tag",
@@ -47,20 +40,12 @@ var ForeignKeys = []string{
 	"host_tag",
 	"included_network_tag",
 	"network_tag",
-	"provisioned_host_tag",
-	"provisioned_network_tag",
-	"provisioning_step_tag",
+	"remote_file_tag",
 	"script_tag",
 	"status_tag",
 	"team_tag",
 	"user_tag",
 }
-
-var (
-	// TagPrimaryKey and TagColumn2 are the table columns denoting the
-	// primary key for the tag relation (M2M).
-	TagPrimaryKey = []string{"tag_id", "tag_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

@@ -15,7 +15,6 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionQuery is the builder for querying Competition entities.
@@ -24,11 +23,9 @@ type CompetitionQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Competition
 	// eager-loading edges.
 	withDNS *DNSQuery
-	withTag *TagQuery
 	withFKs bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -74,28 +71,6 @@ func (cq *CompetitionQuery) QueryDNS() *DNSQuery {
 			sqlgraph.From(competition.Table, competition.FieldID, selector),
 			sqlgraph.To(dns.Table, dns.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, competition.DNSTable, competition.DNSColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTag chains the current query on the tag edge.
-func (cq *CompetitionQuery) QueryTag() *TagQuery {
-	query := &TagQuery{config: cq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := cq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := cq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(competition.Table, competition.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, competition.TagTable, competition.TagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -277,10 +252,8 @@ func (cq *CompetitionQuery) Clone() *CompetitionQuery {
 		limit:      cq.limit,
 		offset:     cq.offset,
 		order:      append([]OrderFunc{}, cq.order...),
-		unique:     append([]string{}, cq.unique...),
 		predicates: append([]predicate.Competition{}, cq.predicates...),
 		withDNS:    cq.withDNS.Clone(),
-		withTag:    cq.withTag.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -295,17 +268,6 @@ func (cq *CompetitionQuery) WithDNS(opts ...func(*DNSQuery)) *CompetitionQuery {
 		opt(query)
 	}
 	cq.withDNS = query
-	return cq
-}
-
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (cq *CompetitionQuery) WithTag(opts ...func(*TagQuery)) *CompetitionQuery {
-	query := &TagQuery{config: cq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	cq.withTag = query
 	return cq
 }
 
@@ -376,9 +338,8 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 		nodes       = []*Competition{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			cq.withDNS != nil,
-			cq.withTag != nil,
 		}
 	)
 	if withFKs {
@@ -434,35 +395,6 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 				return nil, fmt.Errorf(`unexpected foreign-key "competition_dns" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.DNS = append(node.Edges.DNS, n)
-		}
-	}
-
-	if query := cq.withTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Competition)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(competition.TagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.competition_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "competition_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "competition_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
 		}
 	}
 

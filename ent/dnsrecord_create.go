@@ -45,8 +45,8 @@ func (drc *DNSRecordCreate) SetZone(s string) *DNSRecordCreate {
 }
 
 // SetVars sets the vars field.
-func (drc *DNSRecordCreate) SetVars(s []string) *DNSRecordCreate {
-	drc.mutation.SetVars(s)
+func (drc *DNSRecordCreate) SetVars(m map[string]string) *DNSRecordCreate {
+	drc.mutation.SetVars(m)
 	return drc
 }
 

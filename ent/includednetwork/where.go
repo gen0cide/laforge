@@ -237,6 +237,34 @@ func HasTagWith(preds ...predicate.Tag) predicate.IncludedNetwork {
 	})
 }
 
+// HasIncludedNetworkToEnvironment applies the HasEdge predicate on the "IncludedNetworkToEnvironment" edge.
+func HasIncludedNetworkToEnvironment() predicate.IncludedNetwork {
+	return predicate.IncludedNetwork(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(IncludedNetworkToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, IncludedNetworkToEnvironmentTable, IncludedNetworkToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncludedNetworkToEnvironmentWith applies the HasEdge predicate on the "IncludedNetworkToEnvironment" edge with a given conditions (other predicates).
+func HasIncludedNetworkToEnvironmentWith(preds ...predicate.Environment) predicate.IncludedNetwork {
+	return predicate.IncludedNetwork(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(IncludedNetworkToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, IncludedNetworkToEnvironmentTable, IncludedNetworkToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups list of predicates with the AND operator between them.
 func And(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {

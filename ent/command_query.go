@@ -24,7 +24,6 @@ type CommandQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Command
 	// eager-loading edges.
 	withUser *UserQuery
@@ -277,7 +276,6 @@ func (cq *CommandQuery) Clone() *CommandQuery {
 		limit:      cq.limit,
 		offset:     cq.offset,
 		order:      append([]OrderFunc{}, cq.order...),
-		unique:     append([]string{}, cq.unique...),
 		predicates: append([]predicate.Command{}, cq.predicates...),
 		withUser:   cq.withUser.Clone(),
 		withTag:    cq.withTag.Clone(),

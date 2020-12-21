@@ -19,35 +19,35 @@ type Build struct {
 	// Revision holds the value of the "revision" field.
 	Revision int `json:"revision,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BuildQuery when eager-loading is set.
-	Edges                     BuildEdges `json:"edges"`
-	environment_build         *int
-	provisioned_network_build *int
-	team_build                *int
+	Edges             BuildEdges `json:"edges"`
+	environment_build *int
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
 type BuildEdges struct {
-	// User holds the value of the user edge.
-	User []*User
+	// Maintainer holds the value of the maintainer edge.
+	Maintainer []*User
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
 	// Team holds the value of the team edge.
 	Team []*Team
+	// ProvisionedNetworkToBuild holds the value of the ProvisionedNetworkToBuild edge.
+	ProvisionedNetworkToBuild []*ProvisionedNetwork
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
-// UserOrErr returns the User value or an error if the edge
+// MaintainerOrErr returns the Maintainer value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) UserOrErr() ([]*User, error) {
+func (e BuildEdges) MaintainerOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.User, nil
+		return e.Maintainer, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "maintainer"}
 }
 
 // TagOrErr returns the Tag value or an error if the edge
@@ -68,6 +68,15 @@ func (e BuildEdges) TeamOrErr() ([]*Team, error) {
 	return nil, &NotLoadedError{edge: "team"}
 }
 
+// ProvisionedNetworkToBuildOrErr returns the ProvisionedNetworkToBuild value or an error if the edge
+// was not loaded in eager-loading.
+func (e BuildEdges) ProvisionedNetworkToBuildOrErr() ([]*ProvisionedNetwork, error) {
+	if e.loadedTypes[3] {
+		return e.ProvisionedNetworkToBuild, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToBuild"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Build) scanValues() []interface{} {
 	return []interface{}{
@@ -81,8 +90,6 @@ func (*Build) scanValues() []interface{} {
 func (*Build) fkValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{}, // environment_build
-		&sql.NullInt64{}, // provisioned_network_build
-		&sql.NullInt64{}, // team_build
 	}
 }
 
@@ -119,25 +126,13 @@ func (b *Build) assignValues(values ...interface{}) error {
 			b.environment_build = new(int)
 			*b.environment_build = int(value.Int64)
 		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_build", value)
-		} else if value.Valid {
-			b.provisioned_network_build = new(int)
-			*b.provisioned_network_build = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_build", value)
-		} else if value.Valid {
-			b.team_build = new(int)
-			*b.team_build = int(value.Int64)
-		}
 	}
 	return nil
 }
 
-// QueryUser queries the user edge of the Build.
-func (b *Build) QueryUser() *UserQuery {
-	return (&BuildClient{config: b.config}).QueryUser(b)
+// QueryMaintainer queries the maintainer edge of the Build.
+func (b *Build) QueryMaintainer() *UserQuery {
+	return (&BuildClient{config: b.config}).QueryMaintainer(b)
 }
 
 // QueryTag queries the tag edge of the Build.
@@ -148,6 +143,11 @@ func (b *Build) QueryTag() *TagQuery {
 // QueryTeam queries the team edge of the Build.
 func (b *Build) QueryTeam() *TeamQuery {
 	return (&BuildClient{config: b.config}).QueryTeam(b)
+}
+
+// QueryProvisionedNetworkToBuild queries the ProvisionedNetworkToBuild edge of the Build.
+func (b *Build) QueryProvisionedNetworkToBuild() *ProvisionedNetworkQuery {
+	return (&BuildClient{config: b.config}).QueryProvisionedNetworkToBuild(b)
 }
 
 // Update returns a builder for updating this Build.

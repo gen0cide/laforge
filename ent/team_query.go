@@ -27,15 +27,13 @@ type TeamQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Team
 	// eager-loading edges.
 	withMaintainer          *UserQuery
 	withBuild               *BuildQuery
-	withEnvironment         *EnvironmentQuery
+	withTeamToEnvironment   *EnvironmentQuery
 	withTag                 *TagQuery
 	withProvisionedNetworks *ProvisionedNetworkQuery
-	withFKs                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,7 +99,7 @@ func (tq *TeamQuery) QueryBuild() *BuildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.BuildTable, team.BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, team.BuildTable, team.BuildPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -109,8 +107,8 @@ func (tq *TeamQuery) QueryBuild() *BuildQuery {
 	return query
 }
 
-// QueryEnvironment chains the current query on the environment edge.
-func (tq *TeamQuery) QueryEnvironment() *EnvironmentQuery {
+// QueryTeamToEnvironment chains the current query on the TeamToEnvironment edge.
+func (tq *TeamQuery) QueryTeamToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: tq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
@@ -123,7 +121,7 @@ func (tq *TeamQuery) QueryEnvironment() *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.EnvironmentTable, team.EnvironmentColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, team.TeamToEnvironmentTable, team.TeamToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -167,7 +165,7 @@ func (tq *TeamQuery) QueryProvisionedNetworks() *ProvisionedNetworkQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.ProvisionedNetworksTable, team.ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, team.ProvisionedNetworksTable, team.ProvisionedNetworksPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,11 +347,10 @@ func (tq *TeamQuery) Clone() *TeamQuery {
 		limit:                   tq.limit,
 		offset:                  tq.offset,
 		order:                   append([]OrderFunc{}, tq.order...),
-		unique:                  append([]string{}, tq.unique...),
 		predicates:              append([]predicate.Team{}, tq.predicates...),
 		withMaintainer:          tq.withMaintainer.Clone(),
 		withBuild:               tq.withBuild.Clone(),
-		withEnvironment:         tq.withEnvironment.Clone(),
+		withTeamToEnvironment:   tq.withTeamToEnvironment.Clone(),
 		withTag:                 tq.withTag.Clone(),
 		withProvisionedNetworks: tq.withProvisionedNetworks.Clone(),
 		// clone intermediate query.
@@ -384,14 +381,14 @@ func (tq *TeamQuery) WithBuild(opts ...func(*BuildQuery)) *TeamQuery {
 	return tq
 }
 
-//  WithEnvironment tells the query-builder to eager-loads the nodes that are connected to
-// the "environment" edge. The optional arguments used to configure the query builder of the edge.
-func (tq *TeamQuery) WithEnvironment(opts ...func(*EnvironmentQuery)) *TeamQuery {
+//  WithTeamToEnvironment tells the query-builder to eager-loads the nodes that are connected to
+// the "TeamToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+func (tq *TeamQuery) WithTeamToEnvironment(opts ...func(*EnvironmentQuery)) *TeamQuery {
 	query := &EnvironmentQuery{config: tq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withEnvironment = query
+	tq.withTeamToEnvironment = query
 	return tq
 }
 
@@ -482,26 +479,19 @@ func (tq *TeamQuery) prepareQuery(ctx context.Context) error {
 func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 	var (
 		nodes       = []*Team{}
-		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
 		loadedTypes = [5]bool{
 			tq.withMaintainer != nil,
 			tq.withBuild != nil,
-			tq.withEnvironment != nil,
+			tq.withTeamToEnvironment != nil,
 			tq.withTag != nil,
 			tq.withProvisionedNetworks != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, team.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &Team{config: tq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -550,59 +540,129 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 
 	if query := tq.withBuild; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Build = []*Build{}
+		ids := make(map[int]*Team, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Build = []*Build{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Build(func(s *sql.Selector) {
-			s.Where(sql.InValues(team.BuildColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Team)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   team.BuildTable,
+				Columns: team.BuildPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(team.BuildPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, tq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "build": %v`, err)
+		}
+		query.Where(build.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.team_build
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "team_build" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "team_build" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "build" node returned %v`, n.ID)
 			}
-			node.Edges.Build = append(node.Edges.Build, n)
+			for i := range nodes {
+				nodes[i].Edges.Build = append(nodes[i].Edges.Build, n)
+			}
 		}
 	}
 
-	if query := tq.withEnvironment; query != nil {
+	if query := tq.withTeamToEnvironment; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Environment = []*Environment{}
+		ids := make(map[int]*Team, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.TeamToEnvironment = []*Environment{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Environment(func(s *sql.Selector) {
-			s.Where(sql.InValues(team.EnvironmentColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Team)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   team.TeamToEnvironmentTable,
+				Columns: team.TeamToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(team.TeamToEnvironmentPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, tq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "TeamToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.team_environment
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "team_environment" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "team_environment" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "TeamToEnvironment" node returned %v`, n.ID)
 			}
-			node.Edges.Environment = append(node.Edges.Environment, n)
+			for i := range nodes {
+				nodes[i].Edges.TeamToEnvironment = append(nodes[i].Edges.TeamToEnvironment, n)
+			}
 		}
 	}
 
@@ -637,30 +697,65 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 
 	if query := tq.withProvisionedNetworks; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisionedNetworks = []*ProvisionedNetwork{}
+		ids := make(map[int]*Team, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisionedNetworks = []*ProvisionedNetwork{}
 		}
-		query.withFKs = true
-		query.Where(predicate.ProvisionedNetwork(func(s *sql.Selector) {
-			s.Where(sql.InValues(team.ProvisionedNetworksColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Team)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   team.ProvisionedNetworksTable,
+				Columns: team.ProvisionedNetworksPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(team.ProvisionedNetworksPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, tq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "provisioned_networks": %v`, err)
+		}
+		query.Where(provisionednetwork.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.team_provisioned_networks
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "team_provisioned_networks" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "team_provisioned_networks" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "provisioned_networks" node returned %v`, n.ID)
 			}
-			node.Edges.ProvisionedNetworks = append(node.Edges.ProvisionedNetworks, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedNetworks = append(nodes[i].Edges.ProvisionedNetworks, n)
+			}
 		}
 	}
 

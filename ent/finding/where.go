@@ -507,6 +507,34 @@ func HasHostWith(preds ...predicate.Host) predicate.Finding {
 	})
 }
 
+// HasScript applies the HasEdge predicate on the "script" edge.
+func HasScript() predicate.Finding {
+	return predicate.Finding(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScriptTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ScriptTable, ScriptPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScriptWith applies the HasEdge predicate on the "script" edge with a given conditions (other predicates).
+func HasScriptWith(preds ...predicate.Script) predicate.Finding {
+	return predicate.Finding(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScriptInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ScriptTable, ScriptPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups list of predicates with the AND operator between them.
 func And(predicates ...predicate.Finding) predicate.Finding {
 	return predicate.Finding(func(s *sql.Selector) {

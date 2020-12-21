@@ -12,14 +12,12 @@ const (
 
 	// EdgeStatus holds the string denoting the status edge name in mutations.
 	EdgeStatus = "status"
-	// EdgeProvisioningSteps holds the string denoting the provisioning_steps edge name in mutations.
-	EdgeProvisioningSteps = "provisioning_steps"
 	// EdgeProvisionedNetwork holds the string denoting the provisioned_network edge name in mutations.
 	EdgeProvisionedNetwork = "provisioned_network"
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeProvisionedSteps holds the string denoting the provisioned_steps edge name in mutations.
+	EdgeProvisionedSteps = "provisioned_steps"
 
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
@@ -30,20 +28,11 @@ const (
 	StatusInverseTable = "status"
 	// StatusColumn is the table column denoting the status relation/edge.
 	StatusColumn = "provisioned_host_status"
-	// ProvisioningStepsTable is the table the holds the provisioning_steps relation/edge.
-	ProvisioningStepsTable = "provisioning_steps"
-	// ProvisioningStepsInverseTable is the table name for the ProvisioningStep entity.
-	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
-	ProvisioningStepsInverseTable = "provisioning_steps"
-	// ProvisioningStepsColumn is the table column denoting the provisioning_steps relation/edge.
-	ProvisioningStepsColumn = "provisioned_host_provisioning_steps"
-	// ProvisionedNetworkTable is the table the holds the provisioned_network relation/edge.
-	ProvisionedNetworkTable = "provisioned_networks"
+	// ProvisionedNetworkTable is the table the holds the provisioned_network relation/edge. The primary key declared below.
+	ProvisionedNetworkTable = "provisioned_host_provisioned_network"
 	// ProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	ProvisionedNetworkInverseTable = "provisioned_networks"
-	// ProvisionedNetworkColumn is the table column denoting the provisioned_network relation/edge.
-	ProvisionedNetworkColumn = "provisioned_host_provisioned_network"
 	// HostTable is the table the holds the host relation/edge.
 	HostTable = "hosts"
 	// HostInverseTable is the table name for the Host entity.
@@ -51,13 +40,11 @@ const (
 	HostInverseTable = "hosts"
 	// HostColumn is the table column denoting the host relation/edge.
 	HostColumn = "provisioned_host_host"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioned_host_tag"
+	// ProvisionedStepsTable is the table the holds the provisioned_steps relation/edge. The primary key declared below.
+	ProvisionedStepsTable = "provisioning_step_provisioned_host"
+	// ProvisionedStepsInverseTable is the table name for the ProvisioningStep entity.
+	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
+	ProvisionedStepsInverseTable = "provisioning_steps"
 )
 
 // Columns holds all SQL columns for provisionedhost fields.
@@ -66,21 +53,19 @@ var Columns = []string{
 	FieldSubnetIP,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
-var ForeignKeys = []string{
-	"provisioned_network_provisioned_hosts",
-	"provisioning_step_provisioned_host",
-}
+var (
+	// ProvisionedNetworkPrimaryKey and ProvisionedNetworkColumn2 are the table columns denoting the
+	// primary key for the provisioned_network relation (M2M).
+	ProvisionedNetworkPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
+	// ProvisionedStepsPrimaryKey and ProvisionedStepsColumn2 are the table columns denoting the
+	// primary key for the provisioned_steps relation (M2M).
+	ProvisionedStepsPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

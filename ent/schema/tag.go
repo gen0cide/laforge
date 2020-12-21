@@ -2,7 +2,6 @@ package schema
 
 import (
 	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -17,13 +16,11 @@ func (Tag) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("uuid", uuid.UUID{}),
 		field.String("name"),
-		field.String("description"),
+		field.JSON("description", map[string]string{}),
 	}
 }
 
 // Edges of the Tag.
 func (Tag) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("tag", Tag.Type),
-	}
+	return nil
 }

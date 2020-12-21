@@ -33,7 +33,7 @@ type Command struct {
 	// Timeout holds the value of the "timeout" field.
 	Timeout int `json:"timeout,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CommandQuery when eager-loading is set.
 	Edges                     CommandEdges `json:"edges"`

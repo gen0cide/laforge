@@ -11,7 +11,6 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionCreate is the builder for creating a Competition entity.
@@ -28,8 +27,8 @@ func (cc *CompetitionCreate) SetRootPassword(s string) *CompetitionCreate {
 }
 
 // SetConfig sets the config field.
-func (cc *CompetitionCreate) SetConfig(s []string) *CompetitionCreate {
-	cc.mutation.SetConfig(s)
+func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
+	cc.mutation.SetConfig(m)
 	return cc
 }
 
@@ -46,21 +45,6 @@ func (cc *CompetitionCreate) AddDNS(d ...*DNS) *CompetitionCreate {
 		ids[i] = d[i].ID
 	}
 	return cc.AddDnIDs(ids...)
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cc *CompetitionCreate) AddTagIDs(ids ...int) *CompetitionCreate {
-	cc.mutation.AddTagIDs(ids...)
-	return cc
-}
-
-// AddTag adds the tag edges to Tag.
-func (cc *CompetitionCreate) AddTag(t ...*Tag) *CompetitionCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cc.AddTagIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -174,25 +158,6 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: dns.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := cc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.TagTable,
-			Columns: []string{competition.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}

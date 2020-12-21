@@ -99,7 +99,7 @@ func TeamNumber(v int) predicate.Team {
 }
 
 // Revision applies equality check predicate on the "revision" field. It's identical to RevisionEQ.
-func Revision(v int) predicate.Team {
+func Revision(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRevision), v))
 	})
@@ -182,21 +182,21 @@ func TeamNumberLTE(v int) predicate.Team {
 }
 
 // RevisionEQ applies the EQ predicate on the "revision" field.
-func RevisionEQ(v int) predicate.Team {
+func RevisionEQ(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionNEQ applies the NEQ predicate on the "revision" field.
-func RevisionNEQ(v int) predicate.Team {
+func RevisionNEQ(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionIn applies the In predicate on the "revision" field.
-func RevisionIn(vs ...int) predicate.Team {
+func RevisionIn(vs ...int64) predicate.Team {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -213,7 +213,7 @@ func RevisionIn(vs ...int) predicate.Team {
 }
 
 // RevisionNotIn applies the NotIn predicate on the "revision" field.
-func RevisionNotIn(vs ...int) predicate.Team {
+func RevisionNotIn(vs ...int64) predicate.Team {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -230,28 +230,28 @@ func RevisionNotIn(vs ...int) predicate.Team {
 }
 
 // RevisionGT applies the GT predicate on the "revision" field.
-func RevisionGT(v int) predicate.Team {
+func RevisionGT(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionGTE applies the GTE predicate on the "revision" field.
-func RevisionGTE(v int) predicate.Team {
+func RevisionGTE(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionLT applies the LT predicate on the "revision" field.
-func RevisionLT(v int) predicate.Team {
+func RevisionLT(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldRevision), v))
 	})
 }
 
 // RevisionLTE applies the LTE predicate on the "revision" field.
-func RevisionLTE(v int) predicate.Team {
+func RevisionLTE(v int64) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldRevision), v))
 	})
@@ -291,7 +291,7 @@ func HasBuild() predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -303,7 +303,7 @@ func HasBuildWith(preds ...predicate.Build) predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -313,25 +313,25 @@ func HasBuildWith(preds ...predicate.Build) predicate.Team {
 	})
 }
 
-// HasEnvironment applies the HasEdge predicate on the "environment" edge.
-func HasEnvironment() predicate.Team {
+// HasTeamToEnvironment applies the HasEdge predicate on the "TeamToEnvironment" edge.
+func HasTeamToEnvironment() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentTable, EnvironmentColumn),
+			sqlgraph.To(TeamToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TeamToEnvironmentTable, TeamToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEnvironmentWith applies the HasEdge predicate on the "environment" edge with a given conditions (other predicates).
-func HasEnvironmentWith(preds ...predicate.Environment) predicate.Team {
+// HasTeamToEnvironmentWith applies the HasEdge predicate on the "TeamToEnvironment" edge with a given conditions (other predicates).
+func HasTeamToEnvironmentWith(preds ...predicate.Environment) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentTable, EnvironmentColumn),
+			sqlgraph.To(TeamToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TeamToEnvironmentTable, TeamToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -375,7 +375,7 @@ func HasProvisionedNetworks() predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworksTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworksTable, ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworksTable, ProvisionedNetworksPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -387,7 +387,7 @@ func HasProvisionedNetworksWith(preds ...predicate.ProvisionedNetwork) predicate
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworksInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedNetworksTable, ProvisionedNetworksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworksTable, ProvisionedNetworksPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

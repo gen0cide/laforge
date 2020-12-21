@@ -4,7 +4,6 @@ import (
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // User holds the schema definition for the User entity.
@@ -16,7 +15,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
-		field.UUID("uuid", uuid.UUID{}),
+		field.String("uuid"),
 		field.String("email"),
 	}
 }

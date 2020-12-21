@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -75,8 +76,8 @@ func (ec *EnvironmentCreate) SetExposedVdiPorts(s []string) *EnvironmentCreate {
 }
 
 // SetConfig sets the config field.
-func (ec *EnvironmentCreate) SetConfig(s []string) *EnvironmentCreate {
-	ec.mutation.SetConfig(s)
+func (ec *EnvironmentCreate) SetConfig(m map[string]string) *EnvironmentCreate {
+	ec.mutation.SetConfig(m)
 	return ec
 }
 
@@ -110,51 +111,6 @@ func (ec *EnvironmentCreate) AddUser(u ...*User) *EnvironmentCreate {
 	return ec.AddUserIDs(ids...)
 }
 
-// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
-func (ec *EnvironmentCreate) AddIncludedNetworkIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddIncludedNetworkIDs(ids...)
-	return ec
-}
-
-// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
-func (ec *EnvironmentCreate) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentCreate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ec.AddIncludedNetworkIDs(ids...)
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (ec *EnvironmentCreate) AddBuildIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddBuildIDs(ids...)
-	return ec
-}
-
-// AddBuild adds the build edges to Build.
-func (ec *EnvironmentCreate) AddBuild(b ...*Build) *EnvironmentCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return ec.AddBuildIDs(ids...)
-}
-
-// AddNetworkIDs adds the network edge to Network by ids.
-func (ec *EnvironmentCreate) AddNetworkIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddNetworkIDs(ids...)
-	return ec
-}
-
-// AddNetwork adds the network edges to Network.
-func (ec *EnvironmentCreate) AddNetwork(n ...*Network) *EnvironmentCreate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return ec.AddNetworkIDs(ids...)
-}
-
 // AddHostIDs adds the host edge to Host by ids.
 func (ec *EnvironmentCreate) AddHostIDs(ids ...int) *EnvironmentCreate {
 	ec.mutation.AddHostIDs(ids...)
@@ -183,6 +139,66 @@ func (ec *EnvironmentCreate) AddCompetition(c ...*Competition) *EnvironmentCreat
 		ids[i] = c[i].ID
 	}
 	return ec.AddCompetitionIDs(ids...)
+}
+
+// AddBuildIDs adds the build edge to Build by ids.
+func (ec *EnvironmentCreate) AddBuildIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddBuildIDs(ids...)
+	return ec
+}
+
+// AddBuild adds the build edges to Build.
+func (ec *EnvironmentCreate) AddBuild(b ...*Build) *EnvironmentCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return ec.AddBuildIDs(ids...)
+}
+
+// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
+func (ec *EnvironmentCreate) AddIncludedNetworkIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddIncludedNetworkIDs(ids...)
+	return ec
+}
+
+// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
+func (ec *EnvironmentCreate) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ec.AddIncludedNetworkIDs(ids...)
+}
+
+// AddNetworkIDs adds the network edge to Network by ids.
+func (ec *EnvironmentCreate) AddNetworkIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddNetworkIDs(ids...)
+	return ec
+}
+
+// AddNetwork adds the network edges to Network.
+func (ec *EnvironmentCreate) AddNetwork(n ...*Network) *EnvironmentCreate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return ec.AddNetworkIDs(ids...)
+}
+
+// AddTeamIDs adds the team edge to Team by ids.
+func (ec *EnvironmentCreate) AddTeamIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddTeamIDs(ids...)
+	return ec
+}
+
+// AddTeam adds the team edges to Team.
+func (ec *EnvironmentCreate) AddTeam(t ...*Team) *EnvironmentCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ec.AddTeamIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -400,63 +416,6 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.IncludedNetworkTable,
-			Columns: []string{environment.IncludedNetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: includednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ec.mutation.BuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ec.mutation.NetworkIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.NetworkTable,
-			Columns: []string{environment.NetworkColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ec.mutation.HostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -487,6 +446,82 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.BuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   environment.BuildTable,
+			Columns: []string{environment.BuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.IncludedNetworkTable,
+			Columns: environment.IncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.NetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.NetworkTable,
+			Columns: environment.NetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.TeamTable,
+			Columns: environment.TeamPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
 				},
 			},
 		}

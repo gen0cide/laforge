@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"path"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/runner"
 	"github.com/pkg/errors"
 )
@@ -534,4 +536,49 @@ func (t *Team) LocateProvisionedHost(netid, hostid string) (*ProvisionedHost, er
 		}
 	}
 	return nil, fmt.Errorf("host %s was not located within network %s for the given build", hostid, netid)
+}
+
+// CreateTeamEntry ...
+func (t *Team) CreateTeamEntry(env *ent.Environment, build *ent.Build, ctx context.Context, client *ent.Client) (*ent.Team, error) {
+	// user, err := t.Maintainer.CreateUserEntry(ctx, client)
+
+	// if err != nil {
+	// 	cli.Logger.Debugf("failed creating team: %v", err)
+	// 	return nil, err
+	// }
+
+	tag, err := CreateTagEntry(t.ID, t.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	team, err := client.Team.
+		Create().
+		SetTeamNumber(t.TeamNumber).
+		SetConfig(t.Config).
+		SetRevision(t.Revision).
+		// AddMaintainer(user).
+		AddBuild(build).
+		AddTeamToEnvironment(env).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating team: %v", err)
+		return nil, err
+	}
+
+	for _, v := range t.ProvisionedNetworks {
+		_, err := v.CreateProvisionedNetworkEntry(ctx,build,team,client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating team: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("team was created: ", team)
+	return team, nil
 }

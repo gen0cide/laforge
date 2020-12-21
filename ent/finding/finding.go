@@ -4,6 +4,8 @@ package finding
 
 import (
 	"fmt"
+	"io"
+	"strconv"
 )
 
 const (
@@ -26,6 +28,8 @@ const (
 	EdgeTag = "tag"
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
+	// EdgeScript holds the string denoting the script edge name in mutations.
+	EdgeScript = "script"
 
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
@@ -50,6 +54,11 @@ const (
 	HostInverseTable = "hosts"
 	// HostColumn is the table column denoting the host relation/edge.
 	HostColumn = "finding_host"
+	// ScriptTable is the table the holds the script relation/edge. The primary key declared below.
+	ScriptTable = "finding_script"
+	// ScriptInverseTable is the table name for the Script entity.
+	// It exists in this package in order to avoid circular dependency with the "script" package.
+	ScriptInverseTable = "scripts"
 )
 
 // Columns holds all SQL columns for finding fields.
@@ -61,20 +70,16 @@ var Columns = []string{
 	FieldDifficulty,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Finding type.
-var ForeignKeys = []string{
-	"script_findings",
-}
+var (
+	// ScriptPrimaryKey and ScriptColumn2 are the table columns denoting the
+	// primary key for the script relation (M2M).
+	ScriptPrimaryKey = []string{"finding_id", "script_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -132,4 +137,40 @@ func DifficultyValidator(d Difficulty) error {
 	default:
 		return fmt.Errorf("finding: invalid enum value for difficulty field: %q", d)
 	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (s Severity) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(s.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (s *Severity) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*s = Severity(str)
+	if err := SeverityValidator(*s); err != nil {
+		return fmt.Errorf("%s is not a valid Severity", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (d Difficulty) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(d.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (d *Difficulty) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*d = Difficulty(str)
+	if err := DifficultyValidator(*d); err != nil {
+		return fmt.Errorf("%s is not a valid Difficulty", str)
+	}
+	return nil
 }

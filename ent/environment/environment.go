@@ -30,16 +30,18 @@ const (
 	EdgeTag = "tag"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
-	// EdgeIncludedNetwork holds the string denoting the included_network edge name in mutations.
-	EdgeIncludedNetwork = "included_network"
-	// EdgeBuild holds the string denoting the build edge name in mutations.
-	EdgeBuild = "build"
-	// EdgeNetwork holds the string denoting the network edge name in mutations.
-	EdgeNetwork = "network"
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
 	// EdgeCompetition holds the string denoting the competition edge name in mutations.
 	EdgeCompetition = "competition"
+	// EdgeBuild holds the string denoting the build edge name in mutations.
+	EdgeBuild = "build"
+	// EdgeIncludedNetwork holds the string denoting the included_network edge name in mutations.
+	EdgeIncludedNetwork = "included_network"
+	// EdgeNetwork holds the string denoting the network edge name in mutations.
+	EdgeNetwork = "network"
+	// EdgeTeam holds the string denoting the team edge name in mutations.
+	EdgeTeam = "team"
 
 	// Table holds the table name of the environment in the database.
 	Table = "environments"
@@ -57,27 +59,6 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "environment_user"
-	// IncludedNetworkTable is the table the holds the included_network relation/edge.
-	IncludedNetworkTable = "included_networks"
-	// IncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
-	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
-	IncludedNetworkInverseTable = "included_networks"
-	// IncludedNetworkColumn is the table column denoting the included_network relation/edge.
-	IncludedNetworkColumn = "environment_included_network"
-	// BuildTable is the table the holds the build relation/edge.
-	BuildTable = "builds"
-	// BuildInverseTable is the table name for the Build entity.
-	// It exists in this package in order to avoid circular dependency with the "build" package.
-	BuildInverseTable = "builds"
-	// BuildColumn is the table column denoting the build relation/edge.
-	BuildColumn = "environment_build"
-	// NetworkTable is the table the holds the network relation/edge.
-	NetworkTable = "networks"
-	// NetworkInverseTable is the table name for the Network entity.
-	// It exists in this package in order to avoid circular dependency with the "network" package.
-	NetworkInverseTable = "networks"
-	// NetworkColumn is the table column denoting the network relation/edge.
-	NetworkColumn = "environment_network"
 	// HostTable is the table the holds the host relation/edge.
 	HostTable = "hosts"
 	// HostInverseTable is the table name for the Host entity.
@@ -92,6 +73,28 @@ const (
 	CompetitionInverseTable = "competitions"
 	// CompetitionColumn is the table column denoting the competition relation/edge.
 	CompetitionColumn = "environment_competition"
+	// BuildTable is the table the holds the build relation/edge.
+	BuildTable = "builds"
+	// BuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	BuildInverseTable = "builds"
+	// BuildColumn is the table column denoting the build relation/edge.
+	BuildColumn = "environment_build"
+	// IncludedNetworkTable is the table the holds the included_network relation/edge. The primary key declared below.
+	IncludedNetworkTable = "included_network_IncludedNetworkToEnvironment"
+	// IncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
+	IncludedNetworkInverseTable = "included_networks"
+	// NetworkTable is the table the holds the network relation/edge. The primary key declared below.
+	NetworkTable = "network_NetworkToEnvironment"
+	// NetworkInverseTable is the table name for the Network entity.
+	// It exists in this package in order to avoid circular dependency with the "network" package.
+	NetworkInverseTable = "networks"
+	// TeamTable is the table the holds the team relation/edge. The primary key declared below.
+	TeamTable = "team_TeamToEnvironment"
+	// TeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	TeamInverseTable = "teams"
 )
 
 // Columns holds all SQL columns for environment fields.
@@ -108,20 +111,22 @@ var Columns = []string{
 	FieldConfig,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Environment type.
-var ForeignKeys = []string{
-	"team_environment",
-}
+var (
+	// IncludedNetworkPrimaryKey and IncludedNetworkColumn2 are the table columns denoting the
+	// primary key for the included_network relation (M2M).
+	IncludedNetworkPrimaryKey = []string{"included_network_id", "environment_id"}
+	// NetworkPrimaryKey and NetworkColumn2 are the table columns denoting the
+	// primary key for the network relation (M2M).
+	NetworkPrimaryKey = []string{"network_id", "environment_id"}
+	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
+	// primary key for the team relation (M2M).
+	TeamPrimaryKey = []string{"team_id", "environment_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

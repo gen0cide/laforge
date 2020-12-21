@@ -174,25 +174,25 @@ func RevisionLTE(v int) predicate.Build {
 	})
 }
 
-// HasUser applies the HasEdge predicate on the "user" edge.
-func HasUser() predicate.Build {
+// HasMaintainer applies the HasEdge predicate on the "maintainer" edge.
+func HasMaintainer() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(MaintainerTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
-func HasUserWith(preds ...predicate.User) predicate.Build {
+// HasMaintainerWith applies the HasEdge predicate on the "maintainer" edge with a given conditions (other predicates).
+func HasMaintainerWith(preds ...predicate.User) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(MaintainerInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -236,7 +236,7 @@ func HasTeam() predicate.Build {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TeamTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TeamTable, TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, TeamTable, TeamPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -248,7 +248,35 @@ func HasTeamWith(preds ...predicate.Team) predicate.Build {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TeamInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TeamTable, TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, TeamTable, TeamPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedNetworkToBuild applies the HasEdge predicate on the "ProvisionedNetworkToBuild" edge.
+func HasProvisionedNetworkToBuild() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedNetworkToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkToBuildTable, ProvisionedNetworkToBuildPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedNetworkToBuildWith applies the HasEdge predicate on the "ProvisionedNetworkToBuild" edge with a given conditions (other predicates).
+func HasProvisionedNetworkToBuildWith(preds ...predicate.ProvisionedNetwork) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedNetworkToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkToBuildTable, ProvisionedNetworkToBuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

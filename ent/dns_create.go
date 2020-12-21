@@ -10,7 +10,6 @@ import (
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSCreate is the builder for creating a DNS entity.
@@ -45,24 +44,9 @@ func (dc *DNSCreate) SetNtpServers(s []string) *DNSCreate {
 }
 
 // SetConfig sets the config field.
-func (dc *DNSCreate) SetConfig(s []string) *DNSCreate {
-	dc.mutation.SetConfig(s)
+func (dc *DNSCreate) SetConfig(m map[string]string) *DNSCreate {
+	dc.mutation.SetConfig(m)
 	return dc
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (dc *DNSCreate) AddTagIDs(ids ...int) *DNSCreate {
-	dc.mutation.AddTagIDs(ids...)
-	return dc
-}
-
-// AddTag adds the tag edges to Tag.
-func (dc *DNSCreate) AddTag(t ...*Tag) *DNSCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return dc.AddTagIDs(ids...)
 }
 
 // Mutation returns the DNSMutation object of the builder.
@@ -197,25 +181,6 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 			Column: dns.FieldConfig,
 		})
 		_node.Config = value
-	}
-	if nodes := dc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dns.TagTable,
-			Columns: []string{dns.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

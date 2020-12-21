@@ -36,8 +36,8 @@ const (
 	EdgeTag = "tag"
 	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
 	EdgeMaintainer = "maintainer"
-	// EdgeFindings holds the string denoting the findings edge name in mutations.
-	EdgeFindings = "findings"
+	// EdgeFinding holds the string denoting the finding edge name in mutations.
+	EdgeFinding = "finding"
 
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
@@ -55,13 +55,11 @@ const (
 	MaintainerInverseTable = "users"
 	// MaintainerColumn is the table column denoting the maintainer relation/edge.
 	MaintainerColumn = "script_maintainer"
-	// FindingsTable is the table the holds the findings relation/edge.
-	FindingsTable = "findings"
-	// FindingsInverseTable is the table name for the Finding entity.
+	// FindingTable is the table the holds the finding relation/edge. The primary key declared below.
+	FindingTable = "finding_script"
+	// FindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
-	FindingsInverseTable = "findings"
-	// FindingsColumn is the table column denoting the findings relation/edge.
-	FindingsColumn = "script_findings"
+	FindingInverseTable = "findings"
 )
 
 // Columns holds all SQL columns for script fields.
@@ -85,6 +83,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioning_step_script",
 }
+
+var (
+	// FindingPrimaryKey and FindingColumn2 are the table columns denoting the
+	// primary key for the finding relation (M2M).
+	FindingPrimaryKey = []string{"finding_id", "script_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

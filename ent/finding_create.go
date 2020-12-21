@@ -11,6 +11,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -89,6 +90,21 @@ func (fc *FindingCreate) AddHost(h ...*Host) *FindingCreate {
 		ids[i] = h[i].ID
 	}
 	return fc.AddHostIDs(ids...)
+}
+
+// AddScriptIDs adds the script edge to Script by ids.
+func (fc *FindingCreate) AddScriptIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddScriptIDs(ids...)
+	return fc
+}
+
+// AddScript adds the script edges to Script.
+func (fc *FindingCreate) AddScript(s ...*Script) *FindingCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return fc.AddScriptIDs(ids...)
 }
 
 // Mutation returns the FindingMutation object of the builder.
@@ -272,6 +288,25 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fc.mutation.ScriptIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   finding.ScriptTable,
+			Columns: finding.ScriptPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: script.FieldID,
 				},
 			},
 		}

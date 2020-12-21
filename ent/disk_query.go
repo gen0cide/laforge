@@ -23,7 +23,6 @@ type DiskQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Disk
 	// eager-loading edges.
 	withTag *TagQuery
@@ -253,7 +252,6 @@ func (dq *DiskQuery) Clone() *DiskQuery {
 		limit:      dq.limit,
 		offset:     dq.offset,
 		order:      append([]OrderFunc{}, dq.order...),
-		unique:     append([]string{}, dq.unique...),
 		predicates: append([]predicate.Disk{}, dq.predicates...),
 		withTag:    dq.withTag.Clone(),
 		// clone intermediate query.

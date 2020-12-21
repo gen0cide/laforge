@@ -105,6 +105,13 @@ func StepNumber(v int) predicate.ProvisioningStep {
 	})
 }
 
+// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
+func Status(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatus), v))
+	})
+}
+
 // ProvisionerTypeEQ applies the EQ predicate on the "provisioner_type" field.
 func ProvisionerTypeEQ(v string) predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {
@@ -292,13 +299,124 @@ func StepNumberLTE(v int) predicate.ProvisioningStep {
 	})
 }
 
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatus), v))
+	})
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStatus), v))
+	})
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...string) predicate.ProvisioningStep {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldStatus), v...))
+	})
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...string) predicate.ProvisioningStep {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldStatus), v...))
+	})
+}
+
+// StatusGT applies the GT predicate on the "status" field.
+func StatusGT(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStatus), v))
+	})
+}
+
+// StatusGTE applies the GTE predicate on the "status" field.
+func StatusGTE(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStatus), v))
+	})
+}
+
+// StatusLT applies the LT predicate on the "status" field.
+func StatusLT(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStatus), v))
+	})
+}
+
+// StatusLTE applies the LTE predicate on the "status" field.
+func StatusLTE(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStatus), v))
+	})
+}
+
+// StatusContains applies the Contains predicate on the "status" field.
+func StatusContains(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldStatus), v))
+	})
+}
+
+// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
+func StatusHasPrefix(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldStatus), v))
+	})
+}
+
+// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
+func StatusHasSuffix(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldStatus), v))
+	})
+}
+
+// StatusEqualFold applies the EqualFold predicate on the "status" field.
+func StatusEqualFold(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldStatus), v))
+	})
+}
+
+// StatusContainsFold applies the ContainsFold predicate on the "status" field.
+func StatusContainsFold(v string) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldStatus), v))
+	})
+}
+
 // HasProvisionedHost applies the HasEdge predicate on the "provisioned_host" edge.
 func HasProvisionedHost() predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostTable, ProvisionedHostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedHostTable, ProvisionedHostPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -310,35 +428,7 @@ func HasProvisionedHostWith(preds ...predicate.ProvisionedHost) predicate.Provis
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostTable, ProvisionedHostColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasStatus applies the HasEdge predicate on the "status" edge.
-func HasStatus() predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(StatusTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StatusTable, StatusColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasStatusWith applies the HasEdge predicate on the "status" edge with a given conditions (other predicates).
-func HasStatusWith(preds ...predicate.Status) predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(StatusInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StatusTable, StatusColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedHostTable, ProvisionedHostPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -432,109 +522,25 @@ func HasDNSRecordWith(preds ...predicate.DNSRecord) predicate.ProvisioningStep {
 	})
 }
 
-// HasFileDownload applies the HasEdge predicate on the "file_download" edge.
-func HasFileDownload() predicate.ProvisioningStep {
+// HasRemoteFile applies the HasEdge predicate on the "remote_file" edge.
+func HasRemoteFile() predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDownloadTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadTable, FileDownloadColumn),
+			sqlgraph.To(RemoteFileTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RemoteFileTable, RemoteFileColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasFileDownloadWith applies the HasEdge predicate on the "file_download" edge with a given conditions (other predicates).
-func HasFileDownloadWith(preds ...predicate.FileDownload) predicate.ProvisioningStep {
+// HasRemoteFileWith applies the HasEdge predicate on the "remote_file" edge with a given conditions (other predicates).
+func HasRemoteFileWith(preds ...predicate.RemoteFile) predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDownloadInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadTable, FileDownloadColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasFileDelete applies the HasEdge predicate on the "file_delete" edge.
-func HasFileDelete() predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDeleteTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteTable, FileDeleteColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFileDeleteWith applies the HasEdge predicate on the "file_delete" edge with a given conditions (other predicates).
-func HasFileDeleteWith(preds ...predicate.FileDelete) predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDeleteInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteTable, FileDeleteColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasFileExtract applies the HasEdge predicate on the "file_extract" edge.
-func HasFileExtract() predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileExtractTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractTable, FileExtractColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFileExtractWith applies the HasEdge predicate on the "file_extract" edge with a given conditions (other predicates).
-func HasFileExtractWith(preds ...predicate.FileExtract) predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileExtractInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractTable, FileExtractColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.ProvisioningStep {
-	return predicate.ProvisioningStep(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(RemoteFileInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RemoteFileTable, RemoteFileColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -4,6 +4,8 @@ package status
 
 import (
 	"fmt"
+	"io"
+	"strconv"
 )
 
 const (
@@ -53,7 +55,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioned_host_status",
 	"provisioned_network_status",
-	"provisioning_step_status",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -76,10 +77,11 @@ type State string
 
 // State values.
 const (
-	StateStaged    State = "staged"
-	StateBuilding  State = "building"
-	StateFailed    State = "failed"
-	StateSucceeded State = "succeeded"
+	StateAWAITING   State = "AWAITING"
+	StateINPROGRESS State = "INPROGRESS"
+	StateFAILED     State = "FAILED"
+	StateCOMPLETE   State = "COMPLETE"
+	StateTAINTED    State = "TAINTED"
 )
 
 func (s State) String() string {
@@ -89,9 +91,27 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StateStaged, StateBuilding, StateFailed, StateSucceeded:
+	case StateAWAITING, StateINPROGRESS, StateFAILED, StateCOMPLETE, StateTAINTED:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for state field: %q", s)
 	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (s State) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(s.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (s *State) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*s = State(str)
+	if err := StateValidator(*s); err != nil {
+		return fmt.Errorf("%s is not a valid State", str)
+	}
+	return nil
 }

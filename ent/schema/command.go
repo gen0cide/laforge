@@ -22,7 +22,7 @@ func (Command) Fields() []ent.Field {
 		field.Bool("disabled"),
 		field.Int("cooldown").Positive(),
 		field.Int("timeout").Positive(),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 	}
 }
 

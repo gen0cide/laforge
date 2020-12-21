@@ -16,6 +16,7 @@ func (ProvisioningStep) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("provisioner_type"),
 		field.Int("step_number"),
+		field.String("status"),
 	}
 }
 
@@ -23,13 +24,9 @@ func (ProvisioningStep) Fields() []ent.Field {
 func (ProvisioningStep) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("provisioned_host", ProvisionedHost.Type),
-		edge.To("status", Status.Type),
 		edge.To("script", Script.Type),
 		edge.To("command", Command.Type),
 		edge.To("dns_record", DNSRecord.Type),
-		edge.To("file_download", FileDownload.Type),
-		edge.To("file_delete", FileDelete.Type),
-		edge.To("file_extract", FileExtract.Type),
-		edge.To("tag", Tag.Type),
+		edge.To("remote_file", RemoteFile.Type),
 	}
 }

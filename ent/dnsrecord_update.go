@@ -52,8 +52,8 @@ func (dru *DNSRecordUpdate) SetZone(s string) *DNSRecordUpdate {
 }
 
 // SetVars sets the vars field.
-func (dru *DNSRecordUpdate) SetVars(s []string) *DNSRecordUpdate {
-	dru.mutation.SetVars(s)
+func (dru *DNSRecordUpdate) SetVars(m map[string]string) *DNSRecordUpdate {
+	dru.mutation.SetVars(m)
 	return dru
 }
 
@@ -312,8 +312,8 @@ func (druo *DNSRecordUpdateOne) SetZone(s string) *DNSRecordUpdateOne {
 }
 
 // SetVars sets the vars field.
-func (druo *DNSRecordUpdateOne) SetVars(s []string) *DNSRecordUpdateOne {
-	druo.mutation.SetVars(s)
+func (druo *DNSRecordUpdateOne) SetVars(m map[string]string) *DNSRecordUpdateOne {
+	druo.mutation.SetVars(m)
 	return druo
 }
 

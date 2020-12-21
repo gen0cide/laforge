@@ -31,13 +31,13 @@ func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 }
 
 // SetConfig sets the config field.
-func (tc *TeamCreate) SetConfig(s []string) *TeamCreate {
-	tc.mutation.SetConfig(s)
+func (tc *TeamCreate) SetConfig(m map[string]string) *TeamCreate {
+	tc.mutation.SetConfig(m)
 	return tc
 }
 
 // SetRevision sets the revision field.
-func (tc *TeamCreate) SetRevision(i int) *TeamCreate {
+func (tc *TeamCreate) SetRevision(i int64) *TeamCreate {
 	tc.mutation.SetRevision(i)
 	return tc
 }
@@ -72,19 +72,19 @@ func (tc *TeamCreate) AddBuild(b ...*Build) *TeamCreate {
 	return tc.AddBuildIDs(ids...)
 }
 
-// AddEnvironmentIDs adds the environment edge to Environment by ids.
-func (tc *TeamCreate) AddEnvironmentIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddEnvironmentIDs(ids...)
+// AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
+func (tc *TeamCreate) AddTeamToEnvironmentIDs(ids ...int) *TeamCreate {
+	tc.mutation.AddTeamToEnvironmentIDs(ids...)
 	return tc
 }
 
-// AddEnvironment adds the environment edges to Environment.
-func (tc *TeamCreate) AddEnvironment(e ...*Environment) *TeamCreate {
+// AddTeamToEnvironment adds the TeamToEnvironment edges to Environment.
+func (tc *TeamCreate) AddTeamToEnvironment(e ...*Environment) *TeamCreate {
 	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
-	return tc.AddEnvironmentIDs(ids...)
+	return tc.AddTeamToEnvironmentIDs(ids...)
 }
 
 // AddTagIDs adds the tag edge to Tag by ids.
@@ -222,7 +222,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.Revision(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: team.FieldRevision,
 		})
@@ -249,10 +249,10 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.BuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   team.BuildTable,
-			Columns: []string{team.BuildColumn},
+			Columns: team.BuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -266,12 +266,12 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.TeamToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   team.EnvironmentTable,
-			Columns: []string{team.EnvironmentColumn},
+			Table:   team.TeamToEnvironmentTable,
+			Columns: team.TeamToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -306,10 +306,10 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.ProvisionedNetworksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   team.ProvisionedNetworksTable,
-			Columns: []string{team.ProvisionedNetworksColumn},
+			Columns: team.ProvisionedNetworksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

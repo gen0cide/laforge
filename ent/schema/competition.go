@@ -15,7 +15,7 @@ type Competition struct {
 func (Competition) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("root_password"),
-		field.JSON("config", []string{}),
+		field.JSON("config", map[string]string{}),
 	}
 }
 
@@ -23,6 +23,5 @@ func (Competition) Fields() []ent.Field {
 func (Competition) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("dns", DNS.Type),
-		edge.To("tag", Tag.Type),
 	}
 }

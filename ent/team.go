@@ -19,13 +19,12 @@ type Team struct {
 	// TeamNumber holds the value of the "team_number" field.
 	TeamNumber int `json:"team_number,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Revision holds the value of the "revision" field.
-	Revision int `json:"revision,omitempty"`
+	Revision int64 `json:"revision,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TeamQuery when eager-loading is set.
-	Edges      TeamEdges `json:"edges"`
-	build_team *int
+	Edges TeamEdges `json:"edges"`
 }
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
@@ -34,8 +33,8 @@ type TeamEdges struct {
 	Maintainer []*User
 	// Build holds the value of the build edge.
 	Build []*Build
-	// Environment holds the value of the environment edge.
-	Environment []*Environment
+	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
+	TeamToEnvironment []*Environment
 	// Tag holds the value of the tag edge.
 	Tag []*Tag
 	// ProvisionedNetworks holds the value of the provisioned_networks edge.
@@ -63,13 +62,13 @@ func (e TeamEdges) BuildOrErr() ([]*Build, error) {
 	return nil, &NotLoadedError{edge: "build"}
 }
 
-// EnvironmentOrErr returns the Environment value or an error if the edge
+// TeamToEnvironmentOrErr returns the TeamToEnvironment value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) EnvironmentOrErr() ([]*Environment, error) {
+func (e TeamEdges) TeamToEnvironmentOrErr() ([]*Environment, error) {
 	if e.loadedTypes[2] {
-		return e.Environment, nil
+		return e.TeamToEnvironment, nil
 	}
-	return nil, &NotLoadedError{edge: "environment"}
+	return nil, &NotLoadedError{edge: "TeamToEnvironment"}
 }
 
 // TagOrErr returns the Tag value or an error if the edge
@@ -97,13 +96,6 @@ func (*Team) scanValues() []interface{} {
 		&sql.NullInt64{}, // team_number
 		&[]byte{},        // config
 		&sql.NullInt64{}, // revision
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Team) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // build_team
 	}
 }
 
@@ -135,16 +127,7 @@ func (t *Team) assignValues(values ...interface{}) error {
 	if value, ok := values[2].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field revision", values[2])
 	} else if value.Valid {
-		t.Revision = int(value.Int64)
-	}
-	values = values[3:]
-	if len(values) == len(team.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_team", value)
-		} else if value.Valid {
-			t.build_team = new(int)
-			*t.build_team = int(value.Int64)
-		}
+		t.Revision = value.Int64
 	}
 	return nil
 }
@@ -159,9 +142,9 @@ func (t *Team) QueryBuild() *BuildQuery {
 	return (&TeamClient{config: t.config}).QueryBuild(t)
 }
 
-// QueryEnvironment queries the environment edge of the Team.
-func (t *Team) QueryEnvironment() *EnvironmentQuery {
-	return (&TeamClient{config: t.config}).QueryEnvironment(t)
+// QueryTeamToEnvironment queries the TeamToEnvironment edge of the Team.
+func (t *Team) QueryTeamToEnvironment() *EnvironmentQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToEnvironment(t)
 }
 
 // QueryTag queries the tag edge of the Team.

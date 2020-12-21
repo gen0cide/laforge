@@ -11,42 +11,27 @@ const (
 	FieldProvisionerType = "provisioner_type"
 	// FieldStepNumber holds the string denoting the step_number field in the database.
 	FieldStepNumber = "step_number"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 
 	// EdgeProvisionedHost holds the string denoting the provisioned_host edge name in mutations.
 	EdgeProvisionedHost = "provisioned_host"
-	// EdgeStatus holds the string denoting the status edge name in mutations.
-	EdgeStatus = "status"
 	// EdgeScript holds the string denoting the script edge name in mutations.
 	EdgeScript = "script"
 	// EdgeCommand holds the string denoting the command edge name in mutations.
 	EdgeCommand = "command"
 	// EdgeDNSRecord holds the string denoting the dns_record edge name in mutations.
 	EdgeDNSRecord = "dns_record"
-	// EdgeFileDownload holds the string denoting the file_download edge name in mutations.
-	EdgeFileDownload = "file_download"
-	// EdgeFileDelete holds the string denoting the file_delete edge name in mutations.
-	EdgeFileDelete = "file_delete"
-	// EdgeFileExtract holds the string denoting the file_extract edge name in mutations.
-	EdgeFileExtract = "file_extract"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeRemoteFile holds the string denoting the remote_file edge name in mutations.
+	EdgeRemoteFile = "remote_file"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
-	// ProvisionedHostTable is the table the holds the provisioned_host relation/edge.
-	ProvisionedHostTable = "provisioned_hosts"
+	// ProvisionedHostTable is the table the holds the provisioned_host relation/edge. The primary key declared below.
+	ProvisionedHostTable = "provisioning_step_provisioned_host"
 	// ProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedHostInverseTable = "provisioned_hosts"
-	// ProvisionedHostColumn is the table column denoting the provisioned_host relation/edge.
-	ProvisionedHostColumn = "provisioning_step_provisioned_host"
-	// StatusTable is the table the holds the status relation/edge.
-	StatusTable = "status"
-	// StatusInverseTable is the table name for the Status entity.
-	// It exists in this package in order to avoid circular dependency with the "status" package.
-	StatusInverseTable = "status"
-	// StatusColumn is the table column denoting the status relation/edge.
-	StatusColumn = "provisioning_step_status"
 	// ScriptTable is the table the holds the script relation/edge.
 	ScriptTable = "scripts"
 	// ScriptInverseTable is the table name for the Script entity.
@@ -68,34 +53,13 @@ const (
 	DNSRecordInverseTable = "dns_records"
 	// DNSRecordColumn is the table column denoting the dns_record relation/edge.
 	DNSRecordColumn = "provisioning_step_dns_record"
-	// FileDownloadTable is the table the holds the file_download relation/edge.
-	FileDownloadTable = "file_downloads"
-	// FileDownloadInverseTable is the table name for the FileDownload entity.
-	// It exists in this package in order to avoid circular dependency with the "filedownload" package.
-	FileDownloadInverseTable = "file_downloads"
-	// FileDownloadColumn is the table column denoting the file_download relation/edge.
-	FileDownloadColumn = "provisioning_step_file_download"
-	// FileDeleteTable is the table the holds the file_delete relation/edge.
-	FileDeleteTable = "file_deletes"
-	// FileDeleteInverseTable is the table name for the FileDelete entity.
-	// It exists in this package in order to avoid circular dependency with the "filedelete" package.
-	FileDeleteInverseTable = "file_deletes"
-	// FileDeleteColumn is the table column denoting the file_delete relation/edge.
-	FileDeleteColumn = "provisioning_step_file_delete"
-	// FileExtractTable is the table the holds the file_extract relation/edge.
-	FileExtractTable = "file_extracts"
-	// FileExtractInverseTable is the table name for the FileExtract entity.
-	// It exists in this package in order to avoid circular dependency with the "fileextract" package.
-	FileExtractInverseTable = "file_extracts"
-	// FileExtractColumn is the table column denoting the file_extract relation/edge.
-	FileExtractColumn = "provisioning_step_file_extract"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioning_step_tag"
+	// RemoteFileTable is the table the holds the remote_file relation/edge.
+	RemoteFileTable = "remote_files"
+	// RemoteFileInverseTable is the table name for the RemoteFile entity.
+	// It exists in this package in order to avoid circular dependency with the "remotefile" package.
+	RemoteFileInverseTable = "remote_files"
+	// RemoteFileColumn is the table column denoting the remote_file relation/edge.
+	RemoteFileColumn = "provisioning_step_remote_file"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.
@@ -103,22 +67,19 @@ var Columns = []string{
 	FieldID,
 	FieldProvisionerType,
 	FieldStepNumber,
+	FieldStatus,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisioningStep type.
-var ForeignKeys = []string{
-	"provisioned_host_provisioning_steps",
-}
+var (
+	// ProvisionedHostPrimaryKey and ProvisionedHostColumn2 are the table columns denoting the
+	// primary key for the provisioned_host relation (M2M).
+	ProvisionedHostPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

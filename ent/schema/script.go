@@ -24,7 +24,7 @@ func (Script) Fields() []ent.Field {
 		field.Bool("ignore_errors"),
 		field.JSON("args", []string{}),
 		field.Bool("disabled"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.String("abs_path"),
 	}
 }
@@ -34,6 +34,6 @@ func (Script) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tag", Tag.Type),
 		edge.To("maintainer", User.Type),
-		edge.To("findings", Finding.Type),
+		edge.From("finding", Finding.Type).Ref("script"),
 	}
 }

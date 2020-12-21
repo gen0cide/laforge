@@ -33,24 +33,9 @@ func (tc *TagCreate) SetName(s string) *TagCreate {
 }
 
 // SetDescription sets the description field.
-func (tc *TagCreate) SetDescription(s string) *TagCreate {
-	tc.mutation.SetDescription(s)
+func (tc *TagCreate) SetDescription(m map[string]string) *TagCreate {
+	tc.mutation.SetDescription(m)
 	return tc
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (tc *TagCreate) AddTagIDs(ids ...int) *TagCreate {
-	tc.mutation.AddTagIDs(ids...)
-	return tc
-}
-
-// AddTag adds the tag edges to Tag.
-func (tc *TagCreate) AddTag(t ...*Tag) *TagCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tc.AddTagIDs(ids...)
 }
 
 // Mutation returns the TagMutation object of the builder.
@@ -158,30 +143,11 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.Description(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeJSON,
 			Value:  value,
 			Column: tag.FieldDescription,
 		})
 		_node.Description = value
-	}
-	if nodes := tc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.TagTable,
-			Columns: tag.TagPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

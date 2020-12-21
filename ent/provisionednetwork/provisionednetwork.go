@@ -11,36 +11,20 @@ const (
 	FieldName = "name"
 	// FieldCidr holds the string denoting the cidr field in the database.
 	FieldCidr = "cidr"
-	// FieldVars holds the string denoting the vars field in the database.
-	FieldVars = "vars"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeProvisionedHosts holds the string denoting the provisioned_hosts edge name in mutations.
-	EdgeProvisionedHosts = "provisioned_hosts"
 	// EdgeStatus holds the string denoting the status edge name in mutations.
 	EdgeStatus = "status"
 	// EdgeNetwork holds the string denoting the network edge name in mutations.
 	EdgeNetwork = "network"
 	// EdgeBuild holds the string denoting the build edge name in mutations.
 	EdgeBuild = "build"
+	// EdgeProvisionedNetworkToTeam holds the string denoting the provisionednetworktoteam edge name in mutations.
+	EdgeProvisionedNetworkToTeam = "ProvisionedNetworkToTeam"
+	// EdgeProvisionedHosts holds the string denoting the provisioned_hosts edge name in mutations.
+	EdgeProvisionedHosts = "provisioned_hosts"
 
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "provisioned_network_tag"
-	// ProvisionedHostsTable is the table the holds the provisioned_hosts relation/edge.
-	ProvisionedHostsTable = "provisioned_hosts"
-	// ProvisionedHostsInverseTable is the table name for the ProvisionedHost entity.
-	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
-	ProvisionedHostsInverseTable = "provisioned_hosts"
-	// ProvisionedHostsColumn is the table column denoting the provisioned_hosts relation/edge.
-	ProvisionedHostsColumn = "provisioned_network_provisioned_hosts"
 	// StatusTable is the table the holds the status relation/edge.
 	StatusTable = "status"
 	// StatusInverseTable is the table name for the Status entity.
@@ -55,13 +39,21 @@ const (
 	NetworkInverseTable = "networks"
 	// NetworkColumn is the table column denoting the network relation/edge.
 	NetworkColumn = "provisioned_network_network"
-	// BuildTable is the table the holds the build relation/edge.
-	BuildTable = "builds"
+	// BuildTable is the table the holds the build relation/edge. The primary key declared below.
+	BuildTable = "build_ProvisionedNetworkToBuild"
 	// BuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	BuildInverseTable = "builds"
-	// BuildColumn is the table column denoting the build relation/edge.
-	BuildColumn = "provisioned_network_build"
+	// ProvisionedNetworkToTeamTable is the table the holds the ProvisionedNetworkToTeam relation/edge. The primary key declared below.
+	ProvisionedNetworkToTeamTable = "provisioned_network_ProvisionedNetworkToTeam"
+	// ProvisionedNetworkToTeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	ProvisionedNetworkToTeamInverseTable = "teams"
+	// ProvisionedHostsTable is the table the holds the provisioned_hosts relation/edge. The primary key declared below.
+	ProvisionedHostsTable = "provisioned_host_provisioned_network"
+	// ProvisionedHostsInverseTable is the table name for the ProvisionedHost entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
+	ProvisionedHostsInverseTable = "provisioned_hosts"
 )
 
 // Columns holds all SQL columns for provisionednetwork fields.
@@ -69,24 +61,24 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldCidr,
-	FieldVars,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedNetwork type.
-var ForeignKeys = []string{
-	"provisioned_host_provisioned_network",
-	"team_provisioned_networks",
-}
+var (
+	// BuildPrimaryKey and BuildColumn2 are the table columns denoting the
+	// primary key for the build relation (M2M).
+	BuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
+	// ProvisionedNetworkToTeamPrimaryKey and ProvisionedNetworkToTeamColumn2 are the table columns denoting the
+	// primary key for the ProvisionedNetworkToTeam relation (M2M).
+	ProvisionedNetworkToTeamPrimaryKey = []string{"provisioned_network_id", "team_id"}
+	// ProvisionedHostsPrimaryKey and ProvisionedHostsColumn2 are the table columns denoting the
+	// primary key for the provisioned_hosts relation (M2M).
+	ProvisionedHostsPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

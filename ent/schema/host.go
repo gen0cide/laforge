@@ -16,19 +16,19 @@ func (Host) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("hostname"),
 		field.String("description"),
-		field.String("string"),
+		field.String("OS"),
 		field.Int("last_octet"),
 		field.Bool("allow_mac_changes"),
 		field.JSON("exposed_tcp_ports", []string{}),
 		field.JSON("exposed_udp_ports", []string{}),
 		field.String("override_password"),
-		field.JSON("vars", []string{}),
+		field.JSON("vars", map[string]string{}),
 		field.JSON("user_groups", []string{}),
-		field.JSON("depends_on", []string{}),
-		field.JSON("scripts", []string{}),
-		field.JSON("commands", []string{}),
-		field.JSON("remote_files", []string{}),
-		field.JSON("dns_records", []string{}),
+		field.JSON("depends_on", []string{}).Optional(),
+		field.JSON("scripts", []string{}).Optional(),
+		field.JSON("commands", []string{}).Optional(),
+		field.JSON("remote_files", []string{}).Optional(),
+		field.JSON("dns_records", []string{}).Optional(),
 	}
 }
 

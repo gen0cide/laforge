@@ -37,7 +37,7 @@ type Script struct {
 	// Disabled holds the value of the "disabled" field.
 	Disabled bool `json:"disabled,omitempty"`
 	// Vars holds the value of the "vars" field.
-	Vars []string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty"`
 	// AbsPath holds the value of the "abs_path" field.
 	AbsPath string `json:"abs_path,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -52,8 +52,8 @@ type ScriptEdges struct {
 	Tag []*Tag
 	// Maintainer holds the value of the maintainer edge.
 	Maintainer []*User
-	// Findings holds the value of the findings edge.
-	Findings []*Finding
+	// Finding holds the value of the finding edge.
+	Finding []*Finding
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -77,13 +77,13 @@ func (e ScriptEdges) MaintainerOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "maintainer"}
 }
 
-// FindingsOrErr returns the Findings value or an error if the edge
+// FindingOrErr returns the Finding value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) FindingsOrErr() ([]*Finding, error) {
+func (e ScriptEdges) FindingOrErr() ([]*Finding, error) {
 	if e.loadedTypes[2] {
-		return e.Findings, nil
+		return e.Finding, nil
 	}
-	return nil, &NotLoadedError{edge: "findings"}
+	return nil, &NotLoadedError{edge: "finding"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -212,9 +212,9 @@ func (s *Script) QueryMaintainer() *UserQuery {
 	return (&ScriptClient{config: s.config}).QueryMaintainer(s)
 }
 
-// QueryFindings queries the findings edge of the Script.
-func (s *Script) QueryFindings() *FindingQuery {
-	return (&ScriptClient{config: s.config}).QueryFindings(s)
+// QueryFinding queries the finding edge of the Script.
+func (s *Script) QueryFinding() *FindingQuery {
+	return (&ScriptClient{config: s.config}).QueryFinding(s)
 }
 
 // Update returns a builder for updating this Script.

@@ -12,22 +12,24 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
+	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
+	EdgeMaintainer = "maintainer"
 	// EdgeTag holds the string denoting the tag edge name in mutations.
 	EdgeTag = "tag"
 	// EdgeTeam holds the string denoting the team edge name in mutations.
 	EdgeTeam = "team"
+	// EdgeProvisionedNetworkToBuild holds the string denoting the provisionednetworktobuild edge name in mutations.
+	EdgeProvisionedNetworkToBuild = "ProvisionedNetworkToBuild"
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	// MaintainerTable is the table the holds the maintainer relation/edge.
+	MaintainerTable = "users"
+	// MaintainerInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "build_user"
+	MaintainerInverseTable = "users"
+	// MaintainerColumn is the table column denoting the maintainer relation/edge.
+	MaintainerColumn = "build_maintainer"
 	// TagTable is the table the holds the tag relation/edge.
 	TagTable = "tags"
 	// TagInverseTable is the table name for the Tag entity.
@@ -35,13 +37,16 @@ const (
 	TagInverseTable = "tags"
 	// TagColumn is the table column denoting the tag relation/edge.
 	TagColumn = "build_tag"
-	// TeamTable is the table the holds the team relation/edge.
-	TeamTable = "teams"
+	// TeamTable is the table the holds the team relation/edge. The primary key declared below.
+	TeamTable = "team_build"
 	// TeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamInverseTable = "teams"
-	// TeamColumn is the table column denoting the team relation/edge.
-	TeamColumn = "build_team"
+	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge. The primary key declared below.
+	ProvisionedNetworkToBuildTable = "build_ProvisionedNetworkToBuild"
+	// ProvisionedNetworkToBuildInverseTable is the table name for the ProvisionedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
+	ProvisionedNetworkToBuildInverseTable = "provisioned_networks"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -54,9 +59,16 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
 var ForeignKeys = []string{
 	"environment_build",
-	"provisioned_network_build",
-	"team_build",
 }
+
+var (
+	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
+	// primary key for the team relation (M2M).
+	TeamPrimaryKey = []string{"team_id", "build_id"}
+	// ProvisionedNetworkToBuildPrimaryKey and ProvisionedNetworkToBuildColumn2 are the table columns denoting the
+	// primary key for the ProvisionedNetworkToBuild relation (M2M).
+	ProvisionedNetworkToBuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

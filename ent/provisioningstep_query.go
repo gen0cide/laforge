@@ -14,15 +14,11 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
-	"github.com/gen0cide/laforge/ent/filedelete"
-	"github.com/gen0cide/laforge/ent/filedownload"
-	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisioningStepQuery is the builder for querying ProvisioningStep entities.
@@ -31,19 +27,13 @@ type ProvisioningStepQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.ProvisioningStep
 	// eager-loading edges.
 	withProvisionedHost *ProvisionedHostQuery
-	withStatus          *StatusQuery
 	withScript          *ScriptQuery
 	withCommand         *CommandQuery
 	withDNSRecord       *DNSRecordQuery
-	withFileDownload    *FileDownloadQuery
-	withFileDelete      *FileDeleteQuery
-	withFileExtract     *FileExtractQuery
-	withTag             *TagQuery
-	withFKs             bool
+	withRemoteFile      *RemoteFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -87,29 +77,7 @@ func (psq *ProvisioningStepQuery) QueryProvisionedHost() *ProvisionedHostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisionedHostTable, provisioningstep.ProvisionedHostColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryStatus chains the current query on the status edge.
-func (psq *ProvisioningStepQuery) QueryStatus() *StatusQuery {
-	query := &StatusQuery{config: psq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := psq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := psq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.StatusTable, provisioningstep.StatusColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, provisioningstep.ProvisionedHostTable, provisioningstep.ProvisionedHostPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -183,9 +151,9 @@ func (psq *ProvisioningStepQuery) QueryDNSRecord() *DNSRecordQuery {
 	return query
 }
 
-// QueryFileDownload chains the current query on the file_download edge.
-func (psq *ProvisioningStepQuery) QueryFileDownload() *FileDownloadQuery {
-	query := &FileDownloadQuery{config: psq.config}
+// QueryRemoteFile chains the current query on the remote_file edge.
+func (psq *ProvisioningStepQuery) QueryRemoteFile() *RemoteFileQuery {
+	query := &RemoteFileQuery{config: psq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := psq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -196,74 +164,8 @@ func (psq *ProvisioningStepQuery) QueryFileDownload() *FileDownloadQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(filedownload.Table, filedownload.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileDownloadTable, provisioningstep.FileDownloadColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFileDelete chains the current query on the file_delete edge.
-func (psq *ProvisioningStepQuery) QueryFileDelete() *FileDeleteQuery {
-	query := &FileDeleteQuery{config: psq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := psq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := psq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(filedelete.Table, filedelete.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileDeleteTable, provisioningstep.FileDeleteColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFileExtract chains the current query on the file_extract edge.
-func (psq *ProvisioningStepQuery) QueryFileExtract() *FileExtractQuery {
-	query := &FileExtractQuery{config: psq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := psq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := psq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(fileextract.Table, fileextract.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.FileExtractTable, provisioningstep.FileExtractColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTag chains the current query on the tag edge.
-func (psq *ProvisioningStepQuery) QueryTag() *TagQuery {
-	query := &TagQuery{config: psq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := psq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := psq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.TagTable, provisioningstep.TagColumn),
+			sqlgraph.To(remotefile.Table, remotefile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.RemoteFileTable, provisioningstep.RemoteFileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -445,17 +347,12 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		limit:               psq.limit,
 		offset:              psq.offset,
 		order:               append([]OrderFunc{}, psq.order...),
-		unique:              append([]string{}, psq.unique...),
 		predicates:          append([]predicate.ProvisioningStep{}, psq.predicates...),
 		withProvisionedHost: psq.withProvisionedHost.Clone(),
-		withStatus:          psq.withStatus.Clone(),
 		withScript:          psq.withScript.Clone(),
 		withCommand:         psq.withCommand.Clone(),
 		withDNSRecord:       psq.withDNSRecord.Clone(),
-		withFileDownload:    psq.withFileDownload.Clone(),
-		withFileDelete:      psq.withFileDelete.Clone(),
-		withFileExtract:     psq.withFileExtract.Clone(),
-		withTag:             psq.withTag.Clone(),
+		withRemoteFile:      psq.withRemoteFile.Clone(),
 		// clone intermediate query.
 		sql:  psq.sql.Clone(),
 		path: psq.path,
@@ -470,17 +367,6 @@ func (psq *ProvisioningStepQuery) WithProvisionedHost(opts ...func(*ProvisionedH
 		opt(query)
 	}
 	psq.withProvisionedHost = query
-	return psq
-}
-
-//  WithStatus tells the query-builder to eager-loads the nodes that are connected to
-// the "status" edge. The optional arguments used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithStatus(opts ...func(*StatusQuery)) *ProvisioningStepQuery {
-	query := &StatusQuery{config: psq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	psq.withStatus = query
 	return psq
 }
 
@@ -517,47 +403,14 @@ func (psq *ProvisioningStepQuery) WithDNSRecord(opts ...func(*DNSRecordQuery)) *
 	return psq
 }
 
-//  WithFileDownload tells the query-builder to eager-loads the nodes that are connected to
-// the "file_download" edge. The optional arguments used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithFileDownload(opts ...func(*FileDownloadQuery)) *ProvisioningStepQuery {
-	query := &FileDownloadQuery{config: psq.config}
+//  WithRemoteFile tells the query-builder to eager-loads the nodes that are connected to
+// the "remote_file" edge. The optional arguments used to configure the query builder of the edge.
+func (psq *ProvisioningStepQuery) WithRemoteFile(opts ...func(*RemoteFileQuery)) *ProvisioningStepQuery {
+	query := &RemoteFileQuery{config: psq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	psq.withFileDownload = query
-	return psq
-}
-
-//  WithFileDelete tells the query-builder to eager-loads the nodes that are connected to
-// the "file_delete" edge. The optional arguments used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithFileDelete(opts ...func(*FileDeleteQuery)) *ProvisioningStepQuery {
-	query := &FileDeleteQuery{config: psq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	psq.withFileDelete = query
-	return psq
-}
-
-//  WithFileExtract tells the query-builder to eager-loads the nodes that are connected to
-// the "file_extract" edge. The optional arguments used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithFileExtract(opts ...func(*FileExtractQuery)) *ProvisioningStepQuery {
-	query := &FileExtractQuery{config: psq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	psq.withFileExtract = query
-	return psq
-}
-
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithTag(opts ...func(*TagQuery)) *ProvisioningStepQuery {
-	query := &TagQuery{config: psq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	psq.withTag = query
+	psq.withRemoteFile = query
 	return psq
 }
 
@@ -626,30 +479,19 @@ func (psq *ProvisioningStepQuery) prepareQuery(ctx context.Context) error {
 func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningStep, error) {
 	var (
 		nodes       = []*ProvisioningStep{}
-		withFKs     = psq.withFKs
 		_spec       = psq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [5]bool{
 			psq.withProvisionedHost != nil,
-			psq.withStatus != nil,
 			psq.withScript != nil,
 			psq.withCommand != nil,
 			psq.withDNSRecord != nil,
-			psq.withFileDownload != nil,
-			psq.withFileDelete != nil,
-			psq.withFileExtract != nil,
-			psq.withTag != nil,
+			psq.withRemoteFile != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, provisioningstep.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &ProvisioningStep{config: psq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -669,59 +511,65 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 
 	if query := psq.withProvisionedHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisionedHost = []*ProvisionedHost{}
+		ids := make(map[int]*ProvisioningStep, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisionedHost = []*ProvisionedHost{}
 		}
-		query.withFKs = true
-		query.Where(predicate.ProvisionedHost(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisionedHostColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioned_host
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioned_host" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioned_host" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.ProvisionedHost = append(node.Edges.ProvisionedHost, n)
-		}
-	}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisioningStep)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   provisioningstep.ProvisionedHostTable,
+				Columns: provisioningstep.ProvisionedHostPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisioningstep.ProvisionedHostPrimaryKey[0], fks...))
+			},
 
-	if query := psq.withStatus; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Status = []*Status{}
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
 		}
-		query.withFKs = true
-		query.Where(predicate.Status(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.StatusColumn, fks...))
-		}))
+		if err := sqlgraph.QueryEdges(ctx, psq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "provisioned_host": %v`, err)
+		}
+		query.Where(provisionedhost.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_status
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_status" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_status" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "provisioned_host" node returned %v`, n.ID)
 			}
-			node.Edges.Status = append(node.Edges.Status, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedHost = append(nodes[i].Edges.ProvisionedHost, n)
+			}
 		}
 	}
 
@@ -812,119 +660,32 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		}
 	}
 
-	if query := psq.withFileDownload; query != nil {
+	if query := psq.withRemoteFile; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*ProvisioningStep)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.FileDownload = []*FileDownload{}
+			nodes[i].Edges.RemoteFile = []*RemoteFile{}
 		}
 		query.withFKs = true
-		query.Where(predicate.FileDownload(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.FileDownloadColumn, fks...))
+		query.Where(predicate.RemoteFile(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisioningstep.RemoteFileColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_file_download
+			fk := n.provisioning_step_remote_file
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_file_download" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "provisioning_step_remote_file" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_file_download" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_remote_file" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.FileDownload = append(node.Edges.FileDownload, n)
-		}
-	}
-
-	if query := psq.withFileDelete; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.FileDelete = []*FileDelete{}
-		}
-		query.withFKs = true
-		query.Where(predicate.FileDelete(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.FileDeleteColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioning_step_file_delete
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_file_delete" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_file_delete" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.FileDelete = append(node.Edges.FileDelete, n)
-		}
-	}
-
-	if query := psq.withFileExtract; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.FileExtract = []*FileExtract{}
-		}
-		query.withFKs = true
-		query.Where(predicate.FileExtract(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.FileExtractColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioning_step_file_extract
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_file_extract" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_file_extract" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.FileExtract = append(node.Edges.FileExtract, n)
-		}
-	}
-
-	if query := psq.withTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.TagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioning_step_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.RemoteFile = append(node.Edges.RemoteFile, n)
 		}
 	}
 

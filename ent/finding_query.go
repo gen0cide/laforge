@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -25,13 +26,12 @@ type FindingQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.Finding
 	// eager-loading edges.
-	withUser *UserQuery
-	withTag  *TagQuery
-	withHost *HostQuery
-	withFKs  bool
+	withUser   *UserQuery
+	withTag    *TagQuery
+	withHost   *HostQuery
+	withScript *ScriptQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -120,6 +120,28 @@ func (fq *FindingQuery) QueryHost() *HostQuery {
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, finding.HostTable, finding.HostColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryScript chains the current query on the script edge.
+func (fq *FindingQuery) QueryScript() *ScriptQuery {
+	query := &ScriptQuery{config: fq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(finding.Table, finding.FieldID, selector),
+			sqlgraph.To(script.Table, script.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, finding.ScriptTable, finding.ScriptPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -301,11 +323,11 @@ func (fq *FindingQuery) Clone() *FindingQuery {
 		limit:      fq.limit,
 		offset:     fq.offset,
 		order:      append([]OrderFunc{}, fq.order...),
-		unique:     append([]string{}, fq.unique...),
 		predicates: append([]predicate.Finding{}, fq.predicates...),
 		withUser:   fq.withUser.Clone(),
 		withTag:    fq.withTag.Clone(),
 		withHost:   fq.withHost.Clone(),
+		withScript: fq.withScript.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
@@ -342,6 +364,17 @@ func (fq *FindingQuery) WithHost(opts ...func(*HostQuery)) *FindingQuery {
 		opt(query)
 	}
 	fq.withHost = query
+	return fq
+}
+
+//  WithScript tells the query-builder to eager-loads the nodes that are connected to
+// the "script" edge. The optional arguments used to configure the query builder of the edge.
+func (fq *FindingQuery) WithScript(opts ...func(*ScriptQuery)) *FindingQuery {
+	query := &ScriptQuery{config: fq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	fq.withScript = query
 	return fq
 }
 
@@ -410,24 +443,18 @@ func (fq *FindingQuery) prepareQuery(ctx context.Context) error {
 func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 	var (
 		nodes       = []*Finding{}
-		withFKs     = fq.withFKs
 		_spec       = fq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			fq.withUser != nil,
 			fq.withTag != nil,
 			fq.withHost != nil,
+			fq.withScript != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, finding.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &Finding{config: fq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -529,6 +556,70 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "finding_host" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Host = append(node.Edges.Host, n)
+		}
+	}
+
+	if query := fq.withScript; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Finding, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Script = []*Script{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Finding)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   finding.ScriptTable,
+				Columns: finding.ScriptPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(finding.ScriptPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, fq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "script": %v`, err)
+		}
+		query.Where(script.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "script" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Script = append(nodes[i].Edges.Script, n)
+			}
 		}
 	}
 

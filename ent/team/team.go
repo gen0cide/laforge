@@ -18,8 +18,8 @@ const (
 	EdgeMaintainer = "maintainer"
 	// EdgeBuild holds the string denoting the build edge name in mutations.
 	EdgeBuild = "build"
-	// EdgeEnvironment holds the string denoting the environment edge name in mutations.
-	EdgeEnvironment = "environment"
+	// EdgeTeamToEnvironment holds the string denoting the teamtoenvironment edge name in mutations.
+	EdgeTeamToEnvironment = "TeamToEnvironment"
 	// EdgeTag holds the string denoting the tag edge name in mutations.
 	EdgeTag = "tag"
 	// EdgeProvisionedNetworks holds the string denoting the provisioned_networks edge name in mutations.
@@ -34,20 +34,16 @@ const (
 	MaintainerInverseTable = "users"
 	// MaintainerColumn is the table column denoting the maintainer relation/edge.
 	MaintainerColumn = "team_maintainer"
-	// BuildTable is the table the holds the build relation/edge.
-	BuildTable = "builds"
+	// BuildTable is the table the holds the build relation/edge. The primary key declared below.
+	BuildTable = "team_build"
 	// BuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	BuildInverseTable = "builds"
-	// BuildColumn is the table column denoting the build relation/edge.
-	BuildColumn = "team_build"
-	// EnvironmentTable is the table the holds the environment relation/edge.
-	EnvironmentTable = "environments"
-	// EnvironmentInverseTable is the table name for the Environment entity.
+	// TeamToEnvironmentTable is the table the holds the TeamToEnvironment relation/edge. The primary key declared below.
+	TeamToEnvironmentTable = "team_TeamToEnvironment"
+	// TeamToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
-	EnvironmentInverseTable = "environments"
-	// EnvironmentColumn is the table column denoting the environment relation/edge.
-	EnvironmentColumn = "team_environment"
+	TeamToEnvironmentInverseTable = "environments"
 	// TagTable is the table the holds the tag relation/edge.
 	TagTable = "tags"
 	// TagInverseTable is the table name for the Tag entity.
@@ -55,13 +51,11 @@ const (
 	TagInverseTable = "tags"
 	// TagColumn is the table column denoting the tag relation/edge.
 	TagColumn = "team_tag"
-	// ProvisionedNetworksTable is the table the holds the provisioned_networks relation/edge.
-	ProvisionedNetworksTable = "provisioned_networks"
+	// ProvisionedNetworksTable is the table the holds the provisioned_networks relation/edge. The primary key declared below.
+	ProvisionedNetworksTable = "provisioned_network_ProvisionedNetworkToTeam"
 	// ProvisionedNetworksInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	ProvisionedNetworksInverseTable = "provisioned_networks"
-	// ProvisionedNetworksColumn is the table column denoting the provisioned_networks relation/edge.
-	ProvisionedNetworksColumn = "team_provisioned_networks"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -72,20 +66,22 @@ var Columns = []string{
 	FieldRevision,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Team type.
-var ForeignKeys = []string{
-	"build_team",
-}
+var (
+	// BuildPrimaryKey and BuildColumn2 are the table columns denoting the
+	// primary key for the build relation (M2M).
+	BuildPrimaryKey = []string{"team_id", "build_id"}
+	// TeamToEnvironmentPrimaryKey and TeamToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the TeamToEnvironment relation (M2M).
+	TeamToEnvironmentPrimaryKey = []string{"team_id", "environment_id"}
+	// ProvisionedNetworksPrimaryKey and ProvisionedNetworksColumn2 are the table columns denoting the
+	// primary key for the provisioned_networks relation (M2M).
+	ProvisionedNetworksPrimaryKey = []string{"provisioned_network_id", "team_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

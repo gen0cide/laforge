@@ -18,7 +18,8 @@ require (
 	github.com/docker/engine v1.13.1
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/emicklei/dot v0.14.0
-	github.com/facebook/ent v0.5.1
+	github.com/facebook/ent v0.5.4-0.20201219064708-3b4b94b6bef9
+	github.com/facebookincubator/ent-contrib v0.0.0-20201221124235-47969f6e6e4d // indirect
 	github.com/fatih/color v1.9.0
 	github.com/gen0cide/gscript v0.1.1
 	github.com/gen0cide/utils v0.0.0-20181012043315-207bbefab091
@@ -53,7 +54,7 @@ require (
 	github.com/mailru/easyjson v0.7.6
 	github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786 // indirect
 	github.com/masterzen/winrm v0.0.0-20200615185753-c42b5136ff88
-	github.com/mattn/go-colorable v0.1.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.5
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect

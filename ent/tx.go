@@ -46,6 +46,8 @@ type Tx struct {
 	ProvisionedNetwork *ProvisionedNetworkClient
 	// ProvisioningStep is the client for interacting with the ProvisioningStep builders.
 	ProvisioningStep *ProvisioningStepClient
+	// RemoteFile is the client for interacting with the RemoteFile builders.
+	RemoteFile *RemoteFileClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
 	// Status is the client for interacting with the Status builders.
@@ -208,6 +210,7 @@ func (tx *Tx) init() {
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)
+	tx.RemoteFile = NewRemoteFileClient(tx.config)
 	tx.Script = NewScriptClient(tx.config)
 	tx.Status = NewStatusClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)

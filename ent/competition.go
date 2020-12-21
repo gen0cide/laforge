@@ -19,7 +19,7 @@ type Competition struct {
 	// RootPassword holds the value of the "root_password" field.
 	RootPassword string `json:"root_password,omitempty"`
 	// Config holds the value of the "config" field.
-	Config []string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
 	Edges                   CompetitionEdges `json:"edges"`
@@ -30,11 +30,9 @@ type Competition struct {
 type CompetitionEdges struct {
 	// DNS holds the value of the dns edge.
 	DNS []*DNS
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // DNSOrErr returns the DNS value or an error if the edge
@@ -44,15 +42,6 @@ func (e CompetitionEdges) DNSOrErr() ([]*DNS, error) {
 		return e.DNS, nil
 	}
 	return nil, &NotLoadedError{edge: "dns"}
-}
-
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e CompetitionEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[1] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -111,11 +100,6 @@ func (c *Competition) assignValues(values ...interface{}) error {
 // QueryDNS queries the dns edge of the Competition.
 func (c *Competition) QueryDNS() *DNSQuery {
 	return (&CompetitionClient{config: c.config}).QueryDNS(c)
-}
-
-// QueryTag queries the tag edge of the Competition.
-func (c *Competition) QueryTag() *TagQuery {
-	return (&CompetitionClient{config: c.config}).QueryTag(c)
 }
 
 // Update returns a builder for updating this Competition.

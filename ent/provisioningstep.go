@@ -19,35 +19,28 @@ type ProvisioningStep struct {
 	ProvisionerType string `json:"provisioner_type,omitempty"`
 	// StepNumber holds the value of the "step_number" field.
 	StepNumber int `json:"step_number,omitempty"`
+	// Status holds the value of the "status" field.
+	Status string `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisioningStepQuery when eager-loading is set.
-	Edges                               ProvisioningStepEdges `json:"edges"`
-	provisioned_host_provisioning_steps *int
+	Edges ProvisioningStepEdges `json:"edges"`
 }
 
 // ProvisioningStepEdges holds the relations/edges for other nodes in the graph.
 type ProvisioningStepEdges struct {
 	// ProvisionedHost holds the value of the provisioned_host edge.
 	ProvisionedHost []*ProvisionedHost
-	// Status holds the value of the status edge.
-	Status []*Status
 	// Script holds the value of the script edge.
 	Script []*Script
 	// Command holds the value of the command edge.
 	Command []*Command
 	// DNSRecord holds the value of the dns_record edge.
 	DNSRecord []*DNSRecord
-	// FileDownload holds the value of the file_download edge.
-	FileDownload []*FileDownload
-	// FileDelete holds the value of the file_delete edge.
-	FileDelete []*FileDelete
-	// FileExtract holds the value of the file_extract edge.
-	FileExtract []*FileExtract
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// RemoteFile holds the value of the remote_file edge.
+	RemoteFile []*RemoteFile
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [5]bool
 }
 
 // ProvisionedHostOrErr returns the ProvisionedHost value or an error if the edge
@@ -59,19 +52,10 @@ func (e ProvisioningStepEdges) ProvisionedHostOrErr() ([]*ProvisionedHost, error
 	return nil, &NotLoadedError{edge: "provisioned_host"}
 }
 
-// StatusOrErr returns the Status value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) StatusOrErr() ([]*Status, error) {
-	if e.loadedTypes[1] {
-		return e.Status, nil
-	}
-	return nil, &NotLoadedError{edge: "status"}
-}
-
 // ScriptOrErr returns the Script value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) ScriptOrErr() ([]*Script, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Script, nil
 	}
 	return nil, &NotLoadedError{edge: "script"}
@@ -80,7 +64,7 @@ func (e ProvisioningStepEdges) ScriptOrErr() ([]*Script, error) {
 // CommandOrErr returns the Command value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) CommandOrErr() ([]*Command, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Command, nil
 	}
 	return nil, &NotLoadedError{edge: "command"}
@@ -89,46 +73,19 @@ func (e ProvisioningStepEdges) CommandOrErr() ([]*Command, error) {
 // DNSRecordOrErr returns the DNSRecord value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisioningStepEdges) DNSRecordOrErr() ([]*DNSRecord, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.DNSRecord, nil
 	}
 	return nil, &NotLoadedError{edge: "dns_record"}
 }
 
-// FileDownloadOrErr returns the FileDownload value or an error if the edge
+// RemoteFileOrErr returns the RemoteFile value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileDownloadOrErr() ([]*FileDownload, error) {
-	if e.loadedTypes[5] {
-		return e.FileDownload, nil
+func (e ProvisioningStepEdges) RemoteFileOrErr() ([]*RemoteFile, error) {
+	if e.loadedTypes[4] {
+		return e.RemoteFile, nil
 	}
-	return nil, &NotLoadedError{edge: "file_download"}
-}
-
-// FileDeleteOrErr returns the FileDelete value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileDeleteOrErr() ([]*FileDelete, error) {
-	if e.loadedTypes[6] {
-		return e.FileDelete, nil
-	}
-	return nil, &NotLoadedError{edge: "file_delete"}
-}
-
-// FileExtractOrErr returns the FileExtract value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) FileExtractOrErr() ([]*FileExtract, error) {
-	if e.loadedTypes[7] {
-		return e.FileExtract, nil
-	}
-	return nil, &NotLoadedError{edge: "file_extract"}
-}
-
-// TagOrErr returns the Tag value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisioningStepEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[8] {
-		return e.Tag, nil
-	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "remote_file"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,13 +94,7 @@ func (*ProvisioningStep) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // provisioner_type
 		&sql.NullInt64{},  // step_number
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*ProvisioningStep) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioned_host_provisioning_steps
+		&sql.NullString{}, // status
 	}
 }
 
@@ -169,14 +120,10 @@ func (ps *ProvisioningStep) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		ps.StepNumber = int(value.Int64)
 	}
-	values = values[2:]
-	if len(values) == len(provisioningstep.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioning_steps", value)
-		} else if value.Valid {
-			ps.provisioned_host_provisioning_steps = new(int)
-			*ps.provisioned_host_provisioning_steps = int(value.Int64)
-		}
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field status", values[2])
+	} else if value.Valid {
+		ps.Status = value.String
 	}
 	return nil
 }
@@ -184,11 +131,6 @@ func (ps *ProvisioningStep) assignValues(values ...interface{}) error {
 // QueryProvisionedHost queries the provisioned_host edge of the ProvisioningStep.
 func (ps *ProvisioningStep) QueryProvisionedHost() *ProvisionedHostQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisionedHost(ps)
-}
-
-// QueryStatus queries the status edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryStatus() *StatusQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryStatus(ps)
 }
 
 // QueryScript queries the script edge of the ProvisioningStep.
@@ -206,24 +148,9 @@ func (ps *ProvisioningStep) QueryDNSRecord() *DNSRecordQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryDNSRecord(ps)
 }
 
-// QueryFileDownload queries the file_download edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileDownload() *FileDownloadQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileDownload(ps)
-}
-
-// QueryFileDelete queries the file_delete edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileDelete() *FileDeleteQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileDelete(ps)
-}
-
-// QueryFileExtract queries the file_extract edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryFileExtract() *FileExtractQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryFileExtract(ps)
-}
-
-// QueryTag queries the tag edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryTag() *TagQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryTag(ps)
+// QueryRemoteFile queries the remote_file edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryRemoteFile() *RemoteFileQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryRemoteFile(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.
@@ -253,6 +180,8 @@ func (ps *ProvisioningStep) String() string {
 	builder.WriteString(ps.ProvisionerType)
 	builder.WriteString(", step_number=")
 	builder.WriteString(fmt.Sprintf("%v", ps.StepNumber))
+	builder.WriteString(", status=")
+	builder.WriteString(ps.Status)
 	builder.WriteByte(')')
 	return builder.String()
 }

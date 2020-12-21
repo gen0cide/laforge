@@ -18,7 +18,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisionedHostQuery is the builder for querying ProvisionedHost entities.
@@ -27,15 +26,12 @@ type ProvisionedHostQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
-	unique     []string
 	predicates []predicate.ProvisionedHost
 	// eager-loading edges.
 	withStatus             *StatusQuery
-	withProvisioningSteps  *ProvisioningStepQuery
 	withProvisionedNetwork *ProvisionedNetworkQuery
 	withHost               *HostQuery
-	withTag                *TagQuery
-	withFKs                bool
+	withProvisionedSteps   *ProvisioningStepQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -87,28 +83,6 @@ func (phq *ProvisionedHostQuery) QueryStatus() *StatusQuery {
 	return query
 }
 
-// QueryProvisioningSteps chains the current query on the provisioning_steps edge.
-func (phq *ProvisionedHostQuery) QueryProvisioningSteps() *ProvisioningStepQuery {
-	query := &ProvisioningStepQuery{config: phq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := phq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := phq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
-			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.ProvisioningStepsTable, provisionedhost.ProvisioningStepsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryProvisionedNetwork chains the current query on the provisioned_network edge.
 func (phq *ProvisionedHostQuery) QueryProvisionedNetwork() *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: phq.config}
@@ -123,7 +97,7 @@ func (phq *ProvisionedHostQuery) QueryProvisionedNetwork() *ProvisionedNetworkQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.ProvisionedNetworkTable, provisionedhost.ProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, provisionedhost.ProvisionedNetworkTable, provisionedhost.ProvisionedNetworkPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
 		return fromU, nil
@@ -153,9 +127,9 @@ func (phq *ProvisionedHostQuery) QueryHost() *HostQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (phq *ProvisionedHostQuery) QueryTag() *TagQuery {
-	query := &TagQuery{config: phq.config}
+// QueryProvisionedSteps chains the current query on the provisioned_steps edge.
+func (phq *ProvisionedHostQuery) QueryProvisionedSteps() *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: phq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := phq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -166,8 +140,8 @@ func (phq *ProvisionedHostQuery) QueryTag() *TagQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.TagTable, provisionedhost.TagColumn),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedStepsTable, provisionedhost.ProvisionedStepsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,13 +323,11 @@ func (phq *ProvisionedHostQuery) Clone() *ProvisionedHostQuery {
 		limit:                  phq.limit,
 		offset:                 phq.offset,
 		order:                  append([]OrderFunc{}, phq.order...),
-		unique:                 append([]string{}, phq.unique...),
 		predicates:             append([]predicate.ProvisionedHost{}, phq.predicates...),
 		withStatus:             phq.withStatus.Clone(),
-		withProvisioningSteps:  phq.withProvisioningSteps.Clone(),
 		withProvisionedNetwork: phq.withProvisionedNetwork.Clone(),
 		withHost:               phq.withHost.Clone(),
-		withTag:                phq.withTag.Clone(),
+		withProvisionedSteps:   phq.withProvisionedSteps.Clone(),
 		// clone intermediate query.
 		sql:  phq.sql.Clone(),
 		path: phq.path,
@@ -370,17 +342,6 @@ func (phq *ProvisionedHostQuery) WithStatus(opts ...func(*StatusQuery)) *Provisi
 		opt(query)
 	}
 	phq.withStatus = query
-	return phq
-}
-
-//  WithProvisioningSteps tells the query-builder to eager-loads the nodes that are connected to
-// the "provisioning_steps" edge. The optional arguments used to configure the query builder of the edge.
-func (phq *ProvisionedHostQuery) WithProvisioningSteps(opts ...func(*ProvisioningStepQuery)) *ProvisionedHostQuery {
-	query := &ProvisioningStepQuery{config: phq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	phq.withProvisioningSteps = query
 	return phq
 }
 
@@ -406,14 +367,14 @@ func (phq *ProvisionedHostQuery) WithHost(opts ...func(*HostQuery)) *Provisioned
 	return phq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (phq *ProvisionedHostQuery) WithTag(opts ...func(*TagQuery)) *ProvisionedHostQuery {
-	query := &TagQuery{config: phq.config}
+//  WithProvisionedSteps tells the query-builder to eager-loads the nodes that are connected to
+// the "provisioned_steps" edge. The optional arguments used to configure the query builder of the edge.
+func (phq *ProvisionedHostQuery) WithProvisionedSteps(opts ...func(*ProvisioningStepQuery)) *ProvisionedHostQuery {
+	query := &ProvisioningStepQuery{config: phq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	phq.withTag = query
+	phq.withProvisionedSteps = query
 	return phq
 }
 
@@ -482,26 +443,18 @@ func (phq *ProvisionedHostQuery) prepareQuery(ctx context.Context) error {
 func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost, error) {
 	var (
 		nodes       = []*ProvisionedHost{}
-		withFKs     = phq.withFKs
 		_spec       = phq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			phq.withStatus != nil,
-			phq.withProvisioningSteps != nil,
 			phq.withProvisionedNetwork != nil,
 			phq.withHost != nil,
-			phq.withTag != nil,
+			phq.withProvisionedSteps != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, provisionedhost.ForeignKeys...)
-	}
 	_spec.ScanValues = func() []interface{} {
 		node := &ProvisionedHost{config: phq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -548,61 +501,67 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		}
 	}
 
-	if query := phq.withProvisioningSteps; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedHost)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningSteps = []*ProvisioningStep{}
-		}
-		query.withFKs = true
-		query.Where(predicate.ProvisioningStep(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisionedhost.ProvisioningStepsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioned_host_provisioning_steps
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioned_host_provisioning_steps" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_host_provisioning_steps" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.ProvisioningSteps = append(node.Edges.ProvisioningSteps, n)
-		}
-	}
-
 	if query := phq.withProvisionedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedHost)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisionedNetwork = []*ProvisionedNetwork{}
+		ids := make(map[int]*ProvisionedHost, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisionedNetwork = []*ProvisionedNetwork{}
 		}
-		query.withFKs = true
-		query.Where(predicate.ProvisionedNetwork(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisionedhost.ProvisionedNetworkColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisionedHost)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   provisionedhost.ProvisionedNetworkTable,
+				Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisionedhost.ProvisionedNetworkPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, phq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "provisioned_network": %v`, err)
+		}
+		query.Where(provisionednetwork.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioned_host_provisioned_network
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioned_host_provisioned_network" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_host_provisioned_network" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "provisioned_network" node returned %v`, n.ID)
 			}
-			node.Edges.ProvisionedNetwork = append(node.Edges.ProvisionedNetwork, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedNetwork = append(nodes[i].Edges.ProvisionedNetwork, n)
+			}
 		}
 	}
 
@@ -635,32 +594,67 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		}
 	}
 
-	if query := phq.withTag; query != nil {
+	if query := phq.withProvisionedSteps; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedHost)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+		ids := make(map[int]*ProvisionedHost, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisionedSteps = []*ProvisioningStep{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisionedhost.TagColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisionedHost)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   provisionedhost.ProvisionedStepsTable,
+				Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisionedhost.ProvisionedStepsPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, phq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "provisioned_steps": %v`, err)
+		}
+		query.Where(provisioningstep.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioned_host_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioned_host_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_host_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "provisioned_steps" node returned %v`, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedSteps = append(nodes[i].Edges.ProvisionedSteps, n)
+			}
 		}
 	}
 
