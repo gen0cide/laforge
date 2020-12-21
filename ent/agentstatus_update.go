@@ -434,10 +434,10 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if asu.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -450,10 +450,10 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := asu.mutation.RemovedHostIDs(); len(nodes) > 0 && !asu.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -469,10 +469,10 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := asu.mutation.HostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -909,10 +909,10 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if asuo.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -925,10 +925,10 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if nodes := asuo.mutation.RemovedHostIDs(); len(nodes) > 0 && !asuo.mutation.HostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -944,10 +944,10 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if nodes := asuo.mutation.HostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   agentstatus.HostTable,
-			Columns: []string{agentstatus.HostColumn},
+			Columns: agentstatus.HostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

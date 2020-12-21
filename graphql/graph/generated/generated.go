@@ -240,8 +240,6 @@ type ComplexityRoot struct {
 		Network          func(childComplexity int) int
 		ProvisionedHosts func(childComplexity int) int
 		Status           func(childComplexity int) int
-		Tags             func(childComplexity int) int
-		Vars             func(childComplexity int) int
 	}
 
 	ProvisioningStep struct {
@@ -404,9 +402,6 @@ type ProvisionedHostResolver interface {
 	Heartbeat(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error)
 }
 type ProvisionedNetworkResolver interface {
-	Vars(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*model.VarsMap, error)
-	Tags(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*ent.Tag, error)
-
 	Status(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Status, error)
 	Network(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Network, error)
 	Build(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Build, error)
@@ -1384,20 +1379,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ProvisionedNetwork.Status(childComplexity), true
 
-	case "ProvisionedNetwork.tags":
-		if e.complexity.ProvisionedNetwork.Tags == nil {
-			break
-		}
-
-		return e.complexity.ProvisionedNetwork.Tags(childComplexity), true
-
-	case "ProvisionedNetwork.vars":
-		if e.complexity.ProvisionedNetwork.Vars == nil {
-			break
-		}
-
-		return e.complexity.ProvisionedNetwork.Vars(childComplexity), true
-
 	case "ProvisioningStep.command":
 		if e.complexity.ProvisioningStep.Command == nil {
 			break
@@ -2103,8 +2084,6 @@ type ProvisionedNetwork {
   id: ID!
   name: String!
   cidr: String!
-  vars: [varsMap]
-  tags: [Tag]
   provisionedHosts: [ProvisionedHost]!
   status: Status!
   network: Network!
@@ -6652,70 +6631,6 @@ func (ec *executionContext) _ProvisionedNetwork_cidr(ctx context.Context, field 
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProvisionedNetwork_vars(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedNetwork) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ProvisionedNetwork",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ProvisionedNetwork().Vars(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.VarsMap)
-	fc.Result = res
-	return ec.marshalOvarsMap2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐVarsMap(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProvisionedNetwork_tags(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedNetwork) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ProvisionedNetwork",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ProvisionedNetwork().Tags(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Tag)
-	fc.Result = res
-	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProvisionedNetwork_provisionedHosts(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedNetwork) (ret graphql.Marshaler) {
@@ -11379,28 +11294,6 @@ func (ec *executionContext) _ProvisionedNetwork(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "vars":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ProvisionedNetwork_vars(ctx, field, obj)
-				return res
-			})
-		case "tags":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ProvisionedNetwork_tags(ctx, field, obj)
-				return res
-			})
 		case "provisionedHosts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {

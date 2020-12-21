@@ -18,6 +18,8 @@ const (
 	EdgeHost = "host"
 	// EdgeProvisionedSteps holds the string denoting the provisioned_steps edge name in mutations.
 	EdgeProvisionedSteps = "provisioned_steps"
+	// EdgeAgentStatus holds the string denoting the agent_status edge name in mutations.
+	EdgeAgentStatus = "agent_status"
 
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
@@ -45,17 +47,17 @@ const (
 	// ProvisionedStepsInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	ProvisionedStepsInverseTable = "provisioning_steps"
+	// AgentStatusTable is the table the holds the agent_status relation/edge. The primary key declared below.
+	AgentStatusTable = "agent_status_host"
+	// AgentStatusInverseTable is the table name for the AgentStatus entity.
+	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
+	AgentStatusInverseTable = "agent_status"
 )
 
 // Columns holds all SQL columns for provisionedhost fields.
 var Columns = []string{
 	FieldID,
 	FieldSubnetIP,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
-var ForeignKeys = []string{
-	"agent_status_host",
 }
 
 var (
@@ -65,17 +67,15 @@ var (
 	// ProvisionedStepsPrimaryKey and ProvisionedStepsColumn2 are the table columns denoting the
 	// primary key for the provisioned_steps relation (M2M).
 	ProvisionedStepsPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
+	// AgentStatusPrimaryKey and AgentStatusColumn2 are the table columns denoting the
+	// primary key for the agent_status relation (M2M).
+	AgentStatusPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

@@ -39,13 +39,11 @@ const (
 
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// HostTable is the table the holds the host relation/edge.
-	HostTable = "provisioned_hosts"
+	// HostTable is the table the holds the host relation/edge. The primary key declared below.
+	HostTable = "agent_status_host"
 	// HostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	HostInverseTable = "provisioned_hosts"
-	// HostColumn is the table column denoting the host relation/edge.
-	HostColumn = "agent_status_host"
 )
 
 // Columns holds all SQL columns for agentstatus fields.
@@ -65,6 +63,12 @@ var Columns = []string{
 	FieldFreeMem,
 	FieldUsedMem,
 }
+
+var (
+	// HostPrimaryKey and HostColumn2 are the table columns denoting the
+	// primary key for the host relation (M2M).
+	HostPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

@@ -55,6 +55,7 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioned_host_status",
 	"provisioned_network_status",
+	"provisioning_step_status",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -69,7 +69,7 @@ func (asq *AgentStatusQuery) QueryHost() *ProvisionedHostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentstatus.HostTable, agentstatus.HostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.HostTable, agentstatus.HostPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
 		return fromU, nil
@@ -363,30 +363,65 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 
 	if query := asq.withHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*AgentStatus)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Host = []*ProvisionedHost{}
+		ids := make(map[int]*AgentStatus, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Host = []*ProvisionedHost{}
 		}
-		query.withFKs = true
-		query.Where(predicate.ProvisionedHost(func(s *sql.Selector) {
-			s.Where(sql.InValues(agentstatus.HostColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*AgentStatus)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   agentstatus.HostTable,
+				Columns: agentstatus.HostPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(agentstatus.HostPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, asq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "host": %v`, err)
+		}
+		query.Where(provisionedhost.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.agent_status_host
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "agent_status_host" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_host" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "host" node returned %v`, n.ID)
 			}
-			node.Edges.Host = append(node.Edges.Host, n)
+			for i := range nodes {
+				nodes[i].Edges.Host = append(nodes[i].Edges.Host, n)
+			}
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -87,6 +88,21 @@ func (phc *ProvisionedHostCreate) AddProvisionedSteps(p ...*ProvisioningStep) *P
 		ids[i] = p[i].ID
 	}
 	return phc.AddProvisionedStepIDs(ids...)
+}
+
+// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
+func (phc *ProvisionedHostCreate) AddAgentStatuIDs(ids ...int) *ProvisionedHostCreate {
+	phc.mutation.AddAgentStatuIDs(ids...)
+	return phc
+}
+
+// AddAgentStatus adds the agent_status edges to AgentStatus.
+func (phc *ProvisionedHostCreate) AddAgentStatus(a ...*AgentStatus) *ProvisionedHostCreate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phc.AddAgentStatuIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -246,6 +262,25 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := phc.mutation.AgentStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
 				},
 			},
 		}

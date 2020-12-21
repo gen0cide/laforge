@@ -213,8 +213,6 @@ type ProvisionedNetwork {
   id: ID!
   name: String!
   cidr: String!
-  vars: [varsMap]
-  tags: [Tag]
   provisionedHosts: [ProvisionedHost]!
   status: Status!
   network: Network!

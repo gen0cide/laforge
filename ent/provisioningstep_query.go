@@ -19,6 +19,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/status"
 )
 
 // ProvisioningStepQuery is the builder for querying ProvisioningStep entities.
@@ -29,6 +30,7 @@ type ProvisioningStepQuery struct {
 	order      []OrderFunc
 	predicates []predicate.ProvisioningStep
 	// eager-loading edges.
+	withStatus          *StatusQuery
 	withProvisionedHost *ProvisionedHostQuery
 	withScript          *ScriptQuery
 	withCommand         *CommandQuery
@@ -61,6 +63,28 @@ func (psq *ProvisioningStepQuery) Offset(offset int) *ProvisioningStepQuery {
 func (psq *ProvisioningStepQuery) Order(o ...OrderFunc) *ProvisioningStepQuery {
 	psq.order = append(psq.order, o...)
 	return psq
+}
+
+// QueryStatus chains the current query on the status edge.
+func (psq *ProvisioningStepQuery) QueryStatus() *StatusQuery {
+	query := &StatusQuery{config: psq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := psq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := psq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.StatusTable, provisioningstep.StatusColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryProvisionedHost chains the current query on the provisioned_host edge.
@@ -348,6 +372,7 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		offset:              psq.offset,
 		order:               append([]OrderFunc{}, psq.order...),
 		predicates:          append([]predicate.ProvisioningStep{}, psq.predicates...),
+		withStatus:          psq.withStatus.Clone(),
 		withProvisionedHost: psq.withProvisionedHost.Clone(),
 		withScript:          psq.withScript.Clone(),
 		withCommand:         psq.withCommand.Clone(),
@@ -357,6 +382,17 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		sql:  psq.sql.Clone(),
 		path: psq.path,
 	}
+}
+
+//  WithStatus tells the query-builder to eager-loads the nodes that are connected to
+// the "status" edge. The optional arguments used to configure the query builder of the edge.
+func (psq *ProvisioningStepQuery) WithStatus(opts ...func(*StatusQuery)) *ProvisioningStepQuery {
+	query := &StatusQuery{config: psq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	psq.withStatus = query
+	return psq
 }
 
 //  WithProvisionedHost tells the query-builder to eager-loads the nodes that are connected to
@@ -480,7 +516,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	var (
 		nodes       = []*ProvisioningStep{}
 		_spec       = psq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
+			psq.withStatus != nil,
 			psq.withProvisionedHost != nil,
 			psq.withScript != nil,
 			psq.withCommand != nil,
@@ -507,6 +544,35 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+
+	if query := psq.withStatus; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*ProvisioningStep)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Status = []*Status{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Status(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisioningstep.StatusColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.provisioning_step_status
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "provisioning_step_status" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_status" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Status = append(node.Edges.Status, n)
+		}
 	}
 
 	if query := psq.withProvisionedHost; query != nil {

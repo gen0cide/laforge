@@ -371,7 +371,7 @@ func (c *AgentStatusClient) QueryHost(as *AgentStatus) *ProvisionedHostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentstatus.HostTable, agentstatus.HostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.HostTable, agentstatus.HostPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
 		return fromV, nil
@@ -2259,6 +2259,22 @@ func (c *ProvisionedHostClient) QueryProvisionedSteps(ph *ProvisionedHost) *Prov
 	return query
 }
 
+// QueryAgentStatus queries the agent_status edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryAgentStatus(ph *ProvisionedHost) *AgentStatusQuery {
+	query := &AgentStatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(agentstatus.Table, agentstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.AgentStatusTable, provisionedhost.AgentStatusPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProvisionedHostClient) Hooks() []Hook {
 	return c.hooks.ProvisionedHost
@@ -2513,6 +2529,22 @@ func (c *ProvisioningStepClient) GetX(ctx context.Context, id int) *Provisioning
 		panic(err)
 	}
 	return obj
+}
+
+// QueryStatus queries the status edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryStatus(ps *ProvisioningStep) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.StatusTable, provisioningstep.StatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryProvisionedHost queries the provisioned_host edge of a ProvisioningStep.

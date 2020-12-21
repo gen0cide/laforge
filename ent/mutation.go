@@ -11707,6 +11707,9 @@ type ProvisionedHostMutation struct {
 	provisioned_steps          map[int]struct{}
 	removedprovisioned_steps   map[int]struct{}
 	clearedprovisioned_steps   bool
+	agent_status               map[int]struct{}
+	removedagent_status        map[int]struct{}
+	clearedagent_status        bool
 	done                       bool
 	oldValue                   func(context.Context) (*ProvisionedHost, error)
 	predicates                 []predicate.ProvisionedHost
@@ -12040,6 +12043,59 @@ func (m *ProvisionedHostMutation) ResetProvisionedSteps() {
 	m.removedprovisioned_steps = nil
 }
 
+// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
+func (m *ProvisionedHostMutation) AddAgentStatuIDs(ids ...int) {
+	if m.agent_status == nil {
+		m.agent_status = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.agent_status[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAgentStatus clears the agent_status edge to AgentStatus.
+func (m *ProvisionedHostMutation) ClearAgentStatus() {
+	m.clearedagent_status = true
+}
+
+// AgentStatusCleared returns if the edge agent_status was cleared.
+func (m *ProvisionedHostMutation) AgentStatusCleared() bool {
+	return m.clearedagent_status
+}
+
+// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
+func (m *ProvisionedHostMutation) RemoveAgentStatuIDs(ids ...int) {
+	if m.removedagent_status == nil {
+		m.removedagent_status = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedagent_status[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAgentStatus returns the removed ids of agent_status.
+func (m *ProvisionedHostMutation) RemovedAgentStatusIDs() (ids []int) {
+	for id := range m.removedagent_status {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AgentStatusIDs returns the agent_status ids in the mutation.
+func (m *ProvisionedHostMutation) AgentStatusIDs() (ids []int) {
+	for id := range m.agent_status {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAgentStatus reset all changes of the "agent_status" edge.
+func (m *ProvisionedHostMutation) ResetAgentStatus() {
+	m.agent_status = nil
+	m.clearedagent_status = false
+	m.removedagent_status = nil
+}
+
 // Op returns the operation name.
 func (m *ProvisionedHostMutation) Op() Op {
 	return m.op
@@ -12155,7 +12211,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.status != nil {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -12167,6 +12223,9 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m.provisioned_steps != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	}
+	if m.agent_status != nil {
+		edges = append(edges, provisionedhost.EdgeAgentStatus)
 	}
 	return edges
 }
@@ -12199,6 +12258,12 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeAgentStatus:
+		ids := make([]ent.Value, 0, len(m.agent_status))
+		for id := range m.agent_status {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -12206,7 +12271,7 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedstatus != nil {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -12218,6 +12283,9 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 	}
 	if m.removedprovisioned_steps != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	}
+	if m.removedagent_status != nil {
+		edges = append(edges, provisionedhost.EdgeAgentStatus)
 	}
 	return edges
 }
@@ -12250,6 +12318,12 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeAgentStatus:
+		ids := make([]ent.Value, 0, len(m.removedagent_status))
+		for id := range m.removedagent_status {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -12257,7 +12331,7 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedstatus {
 		edges = append(edges, provisionedhost.EdgeStatus)
 	}
@@ -12269,6 +12343,9 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.clearedprovisioned_steps {
 		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	}
+	if m.clearedagent_status {
+		edges = append(edges, provisionedhost.EdgeAgentStatus)
 	}
 	return edges
 }
@@ -12285,6 +12362,8 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.clearedhost
 	case provisionedhost.EdgeProvisionedSteps:
 		return m.clearedprovisioned_steps
+	case provisionedhost.EdgeAgentStatus:
+		return m.clearedagent_status
 	}
 	return false
 }
@@ -12313,6 +12392,9 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 		return nil
 	case provisionedhost.EdgeProvisionedSteps:
 		m.ResetProvisionedSteps()
+		return nil
+	case provisionedhost.EdgeAgentStatus:
+		m.ResetAgentStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost edge %s", name)
@@ -13097,8 +13179,10 @@ type ProvisioningStepMutation struct {
 	provisioner_type        *string
 	step_number             *int
 	addstep_number          *int
-	status                  *string
 	clearedFields           map[string]struct{}
+	status                  map[int]struct{}
+	removedstatus           map[int]struct{}
+	clearedstatus           bool
 	provisioned_host        map[int]struct{}
 	removedprovisioned_host map[int]struct{}
 	clearedprovisioned_host bool
@@ -13292,41 +13376,57 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 	m.addstep_number = nil
 }
 
-// SetStatus sets the status field.
-func (m *ProvisioningStepMutation) SetStatus(s string) {
-	m.status = &s
+// AddStatuIDs adds the status edge to Status by ids.
+func (m *ProvisioningStepMutation) AddStatuIDs(ids ...int) {
+	if m.status == nil {
+		m.status = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.status[ids[i]] = struct{}{}
+	}
 }
 
-// Status returns the status value in the mutation.
-func (m *ProvisioningStepMutation) Status() (r string, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
+// ClearStatus clears the status edge to Status.
+func (m *ProvisioningStepMutation) ClearStatus() {
+	m.clearedstatus = true
 }
 
-// OldStatus returns the old status value of the ProvisioningStep.
-// If the ProvisioningStep object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ProvisioningStepMutation) OldStatus(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldStatus is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
+// StatusCleared returns if the edge status was cleared.
+func (m *ProvisioningStepMutation) StatusCleared() bool {
+	return m.clearedstatus
 }
 
-// ResetStatus reset all changes of the "status" field.
+// RemoveStatuIDs removes the status edge to Status by ids.
+func (m *ProvisioningStepMutation) RemoveStatuIDs(ids ...int) {
+	if m.removedstatus == nil {
+		m.removedstatus = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedstatus[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStatus returns the removed ids of status.
+func (m *ProvisioningStepMutation) RemovedStatusIDs() (ids []int) {
+	for id := range m.removedstatus {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StatusIDs returns the status ids in the mutation.
+func (m *ProvisioningStepMutation) StatusIDs() (ids []int) {
+	for id := range m.status {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStatus reset all changes of the "status" edge.
 func (m *ProvisioningStepMutation) ResetStatus() {
 	m.status = nil
+	m.clearedstatus = false
+	m.removedstatus = nil
 }
 
 // AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
@@ -13608,15 +13708,12 @@ func (m *ProvisioningStepMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ProvisioningStepMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.provisioner_type != nil {
 		fields = append(fields, provisioningstep.FieldProvisionerType)
 	}
 	if m.step_number != nil {
 		fields = append(fields, provisioningstep.FieldStepNumber)
-	}
-	if m.status != nil {
-		fields = append(fields, provisioningstep.FieldStatus)
 	}
 	return fields
 }
@@ -13630,8 +13727,6 @@ func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 		return m.ProvisionerType()
 	case provisioningstep.FieldStepNumber:
 		return m.StepNumber()
-	case provisioningstep.FieldStatus:
-		return m.Status()
 	}
 	return nil, false
 }
@@ -13645,8 +13740,6 @@ func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (e
 		return m.OldProvisionerType(ctx)
 	case provisioningstep.FieldStepNumber:
 		return m.OldStepNumber(ctx)
-	case provisioningstep.FieldStatus:
-		return m.OldStatus(ctx)
 	}
 	return nil, fmt.Errorf("unknown ProvisioningStep field %s", name)
 }
@@ -13669,13 +13762,6 @@ func (m *ProvisioningStepMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStepNumber(v)
-		return nil
-	case provisioningstep.FieldStatus:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep field %s", name)
@@ -13748,9 +13834,6 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 	case provisioningstep.FieldStepNumber:
 		m.ResetStepNumber()
 		return nil
-	case provisioningstep.FieldStatus:
-		m.ResetStatus()
-		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep field %s", name)
 }
@@ -13758,7 +13841,10 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
+	if m.status != nil {
+		edges = append(edges, provisioningstep.EdgeStatus)
+	}
 	if m.provisioned_host != nil {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
 	}
@@ -13781,6 +13867,12 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case provisioningstep.EdgeStatus:
+		ids := make([]ent.Value, 0, len(m.status))
+		for id := range m.status {
+			ids = append(ids, id)
+		}
+		return ids
 	case provisioningstep.EdgeProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.provisioned_host))
 		for id := range m.provisioned_host {
@@ -13818,7 +13910,10 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
+	if m.removedstatus != nil {
+		edges = append(edges, provisioningstep.EdgeStatus)
+	}
 	if m.removedprovisioned_host != nil {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
 	}
@@ -13841,6 +13936,12 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case provisioningstep.EdgeStatus:
+		ids := make([]ent.Value, 0, len(m.removedstatus))
+		for id := range m.removedstatus {
+			ids = append(ids, id)
+		}
+		return ids
 	case provisioningstep.EdgeProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.removedprovisioned_host))
 		for id := range m.removedprovisioned_host {
@@ -13878,7 +13979,10 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
+	if m.clearedstatus {
+		edges = append(edges, provisioningstep.EdgeStatus)
+	}
 	if m.clearedprovisioned_host {
 		edges = append(edges, provisioningstep.EdgeProvisionedHost)
 	}
@@ -13901,6 +14005,8 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 	switch name {
+	case provisioningstep.EdgeStatus:
+		return m.clearedstatus
 	case provisioningstep.EdgeProvisionedHost:
 		return m.clearedprovisioned_host
 	case provisioningstep.EdgeScript:
@@ -13928,6 +14034,9 @@ func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	switch name {
+	case provisioningstep.EdgeStatus:
+		m.ResetStatus()
+		return nil
 	case provisioningstep.EdgeProvisionedHost:
 		m.ResetProvisionedHost()
 		return nil

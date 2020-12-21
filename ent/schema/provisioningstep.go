@@ -16,13 +16,13 @@ func (ProvisioningStep) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("provisioner_type"),
 		field.Int("step_number"),
-		field.String("status"),
 	}
 }
 
 // Edges of the ProvisioningStep.
 func (ProvisioningStep) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("status", Status.Type),
 		edge.To("provisioned_host", ProvisionedHost.Type),
 		edge.To("script", Script.Type),
 		edge.To("command", Command.Type),

@@ -33,6 +33,7 @@ type Status struct {
 	Edges                      StatusEdges `json:"edges"`
 	provisioned_host_status    *int
 	provisioned_network_status *int
+	provisioning_step_status   *int
 }
 
 // StatusEdges holds the relations/edges for other nodes in the graph.
@@ -71,6 +72,7 @@ func (*Status) fkValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{}, // provisioned_host_status
 		&sql.NullInt64{}, // provisioned_network_status
+		&sql.NullInt64{}, // provisioning_step_status
 	}
 }
 
@@ -129,6 +131,12 @@ func (s *Status) assignValues(values ...interface{}) error {
 		} else if value.Valid {
 			s.provisioned_network_status = new(int)
 			*s.provisioned_network_status = int(value.Int64)
+		}
+		if value, ok := values[2].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_status", value)
+		} else if value.Valid {
+			s.provisioning_step_status = new(int)
+			*s.provisioning_step_status = int(value.Int64)
 		}
 	}
 	return nil

@@ -245,24 +245,20 @@ func (r *provisionedHostResolver) Host(ctx context.Context, obj *ent.Provisioned
 	return h, nil
 }
 
-// TODO
+// Not Implimented
 func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO
 func (r *provisionedHostResolver) Heartbeat(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	a, err := obj.QueryAgentStatus().Only(ctx)
 
-// Not Implimented
-func (r *provisionedNetworkResolver) Vars(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*model.VarsMap, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Agent Status for Host: %v", err)
+	}
 
-// Not Implimented
-func (r *provisionedNetworkResolver) Tags(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	log.Println("Agent Status returned: ", a)
+	return a, nil
 }
 
 func (r *provisionedNetworkResolver) Status(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Status, error) {
@@ -313,9 +309,15 @@ func (r *provisioningStepResolver) ProvisionedHost(ctx context.Context, obj *ent
 	return ph, nil
 }
 
-// Not Implimented
 func (r *provisioningStepResolver) Status(ctx context.Context, obj *ent.ProvisioningStep) (*ent.Status, error) {
-	panic(fmt.Errorf("not implemented"))
+	s, err := obj.QueryStatus().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Status: %v", err)
+	}
+
+	log.Println("Status returned: ", s)
+	return s, nil
 }
 
 func (r *provisioningStepResolver) Script(ctx context.Context, obj *ent.ProvisioningStep) (*ent.Script, error) {
