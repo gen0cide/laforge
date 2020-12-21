@@ -1,0 +1,30 @@
+.step {
+  .step-info {
+    height: auto;
+    background-color: #f5f5f5;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+
+    .step-preview {
+      margin-right: 0.5rem;
+    }
+
+    .step-status-icon {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 0.5rem;
+      margin-left: 0.25rem;
+      margin-right: 0.5rem;
+
+      i {
+        color: inherit !important;
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .step-info:hover {
+    background-color: #e5e5e5;
+  }
+}
