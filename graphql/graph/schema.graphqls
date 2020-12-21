@@ -261,13 +261,13 @@ type ProvisionedHost {
   subnetIP: String!
   status: Status!
   provisionedNetwork: ProvisionedNetwork!
-  provisionedSteps: [ProvisionedStep]!
+  provisionedSteps: [ProvisioningStep]!
   host: Host!
   combinedOutput: String # Link to WebSocket
   heartbeat: AgentStatus
 }
 
-type ProvisionedStep {
+type ProvisioningStep {
   id: ID!
   provisionType: String!
   stepNumber: Int!
@@ -286,7 +286,7 @@ type Query {
   environment(envUUID: String!): Environment!
   provisionedHost(proHostUUID: String!): ProvisionedHost!
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork!
-  provisionedStep(proStepUUID: String!): ProvisionedStep!
+  provisionedStep(proStepUUID: String!): ProvisioningStep!
 }
 
 type Mutation {
