@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -331,4 +334,37 @@ func (b *Build) CreateTeam(tid int) *Team {
 
 	b.Teams[t.SetID()] = t
 	return t
+}
+
+// CreateBuildEntry ...
+func (b *Build) CreateBuildEntry(ctx context.Context, client *ent.Client) (*ent.Build, error) {
+	user, err := b.Maintainer.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	tag, err := CreateTagEntry(b.ID, b.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	build, err := client.Build.
+		Create().
+		SetRevision(int(b.Revision)+1). // Maybe not out of range now?
+		SetConfig(b.Config).
+		AddMaintainer(user).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating build: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("build was created: ", build)
+	return build, nil
 }

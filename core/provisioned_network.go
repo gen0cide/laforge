@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -171,4 +174,48 @@ func (p *ProvisionedNetwork) Gather(g *Snapshot) error {
 	// 	return err
 	// }
 	return nil
+}
+
+// CreateProvisionedNetworkEntry ...
+func (p *ProvisionedNetwork) CreateProvisionedNetworkEntry(ctx context.Context,build *ent.Build, team *ent.Team, client *ent.Client) (*ent.ProvisionedNetwork, error) {
+	status, err := p.Status.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	network, err := p.Network.CreateNetworkEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	pn, err := client.ProvisionedNetwork.
+		Create().
+		SetName(p.Name).
+		SetCidr(p.CIDR).
+		AddStatus(status).
+		AddNetwork(network).
+		AddBuild(build).
+		AddProvisionedNetworkToTeam(team).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned network: %v", err)
+		return nil, err
+	}
+
+	for _, v := range p.ProvisionedHosts {
+		_, err := v.CreateProvisionedHostEntry(ctx, pn, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned network: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("provisioned network was created: ", pn)
+	return pn, nil
 }

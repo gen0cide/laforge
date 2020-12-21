@@ -1,11 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -128,4 +131,33 @@ func (r *DNSRecord) Inherited() bool {
 // SetValue is an override which allows you to set the value of a DNS record during a template run
 func (r *DNSRecord) SetValue(val string) {
 	r.Values = append(r.Values, val)
+}
+
+// CreateDNSRecordEntry ...
+func (r *DNSRecord) CreateDNSRecordEntry(ctx context.Context, client *ent.Client) (*ent.DNSRecord, error) {
+	tag, err := CreateTagEntry(r.ID, r.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating dns record: %v", err)
+		return nil, err
+	}
+
+	dnsrecord, err := client.DNSRecord.
+		Create().
+		SetName(r.Name).
+		SetValues(r.Values).
+		SetType(r.Type).
+		SetZone(r.Zone).
+		SetVars(r.Vars).
+		SetDisabled(r.Disabled).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating dns record: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("dns record was created: ", dnsrecord)
+	return dnsrecord, nil
 }

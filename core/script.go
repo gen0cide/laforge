@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -197,4 +200,56 @@ func (s *Script) ResolveSource(base *Laforge, pr *PathResolver, caller CallFile)
 	s.AbsPath = testSrc
 	pr.Mapping[s.Source] = lfr
 	return nil
+}
+
+// CreateScriptEntry ...
+func (s *Script) CreateScriptEntry(ph *ent.ProvisionedHost, ctx context.Context, client *ent.Client) (*ent.Script, error) {
+	tag, err := CreateTagEntry(s.ID, s.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating script: %v", err)
+		return nil, err
+	}
+
+	user, err := s.Maintainer.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating script: %v", err)
+		return nil, err
+	}
+
+	script, err := client.Script.
+		Create().
+		SetName(s.Name).
+		SetLanguage(s.Language).
+		SetDescription(s.Description).
+		SetSource(s.Source).
+		SetSourceType(s.SourceType).
+		SetCooldown(s.Cooldown).
+		SetTimeout(s.Timeout).
+		SetIgnoreErrors(s.IgnoreErrors).
+		SetArgs(s.Args).
+		SetDisabled(s.Disabled).
+		SetVars(s.Vars).
+		SetAbsPath(s.AbsPath).
+		AddTag(tag).
+		AddMaintainer(user).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating script: %v", err)
+		return nil, err
+	}
+
+	for _, v := range s.Findings {
+		_, err := v.CreateFindingEntry(ph, script, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating script: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("script was created: ", script)
+	return script, nil
 }
