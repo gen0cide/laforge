@@ -39,13 +39,11 @@ const (
 	NetworkInverseTable = "networks"
 	// NetworkColumn is the table column denoting the network relation/edge.
 	NetworkColumn = "provisioned_network_network"
-	// BuildTable is the table the holds the build relation/edge.
-	BuildTable = "builds"
+	// BuildTable is the table the holds the build relation/edge. The primary key declared below.
+	BuildTable = "build_ProvisionedNetworkToBuild"
 	// BuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	BuildInverseTable = "builds"
-	// BuildColumn is the table column denoting the build relation/edge.
-	BuildColumn = "provisioned_network_build"
 	// ProvisionedNetworkToTeamTable is the table the holds the ProvisionedNetworkToTeam relation/edge. The primary key declared below.
 	ProvisionedNetworkToTeamTable = "provisioned_network_ProvisionedNetworkToTeam"
 	// ProvisionedNetworkToTeamInverseTable is the table name for the Team entity.
@@ -66,6 +64,9 @@ var Columns = []string{
 }
 
 var (
+	// BuildPrimaryKey and BuildColumn2 are the table columns denoting the
+	// primary key for the build relation (M2M).
+	BuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
 	// ProvisionedNetworkToTeamPrimaryKey and ProvisionedNetworkToTeamColumn2 are the table columns denoting the
 	// primary key for the ProvisionedNetworkToTeam relation (M2M).
 	ProvisionedNetworkToTeamPrimaryKey = []string{"provisioned_network_id", "team_id"}

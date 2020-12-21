@@ -18,6 +18,8 @@ const (
 	EdgeTag = "tag"
 	// EdgeTeam holds the string denoting the team edge name in mutations.
 	EdgeTeam = "team"
+	// EdgeProvisionedNetworkToBuild holds the string denoting the provisionednetworktobuild edge name in mutations.
+	EdgeProvisionedNetworkToBuild = "ProvisionedNetworkToBuild"
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
@@ -40,6 +42,11 @@ const (
 	// TeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamInverseTable = "teams"
+	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge. The primary key declared below.
+	ProvisionedNetworkToBuildTable = "build_ProvisionedNetworkToBuild"
+	// ProvisionedNetworkToBuildInverseTable is the table name for the ProvisionedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
+	ProvisionedNetworkToBuildInverseTable = "provisioned_networks"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -52,13 +59,15 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
 var ForeignKeys = []string{
 	"environment_build",
-	"provisioned_network_build",
 }
 
 var (
 	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
 	// primary key for the team relation (M2M).
 	TeamPrimaryKey = []string{"team_id", "build_id"}
+	// ProvisionedNetworkToBuildPrimaryKey and ProvisionedNetworkToBuildColumn2 are the table columns denoting the
+	// primary key for the ProvisionedNetworkToBuild relation (M2M).
+	ProvisionedNetworkToBuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

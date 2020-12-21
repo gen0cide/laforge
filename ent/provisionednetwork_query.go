@@ -122,7 +122,7 @@ func (pnq *ProvisionedNetworkQuery) QueryBuild() *BuildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, selector),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.BuildTable, provisionednetwork.BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.BuildTable, provisionednetwork.BuildPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pnq.driver.Dialect(), step)
 		return fromU, nil
@@ -571,30 +571,65 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 
 	if query := pnq.withBuild; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedNetwork)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Build = []*Build{}
+		ids := make(map[int]*ProvisionedNetwork, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Build = []*Build{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Build(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisionednetwork.BuildColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisionedNetwork)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   provisionednetwork.BuildTable,
+				Columns: provisionednetwork.BuildPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisionednetwork.BuildPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, pnq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "build": %v`, err)
+		}
+		query.Where(build.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioned_network_build
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioned_network_build" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_network_build" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "build" node returned %v`, n.ID)
 			}
-			node.Edges.Build = append(node.Edges.Build, n)
+			for i := range nodes {
+				nodes[i].Edges.Build = append(nodes[i].Edges.Build, n)
+			}
 		}
 	}
 

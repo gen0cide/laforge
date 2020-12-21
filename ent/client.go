@@ -402,6 +402,22 @@ func (c *BuildClient) QueryTeam(b *Build) *TeamQuery {
 	return query
 }
 
+// QueryProvisionedNetworkToBuild queries the ProvisionedNetworkToBuild edge of a Build.
+func (c *BuildClient) QueryProvisionedNetworkToBuild(b *Build) *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, build.ProvisionedNetworkToBuildTable, build.ProvisionedNetworkToBuildPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BuildClient) Hooks() []Hook {
 	return c.hooks.Build
@@ -2258,7 +2274,7 @@ func (c *ProvisionedNetworkClient) QueryBuild(pn *ProvisionedNetwork) *BuildQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.BuildTable, provisionednetwork.BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.BuildTable, provisionednetwork.BuildPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil

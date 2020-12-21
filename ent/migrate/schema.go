@@ -14,7 +14,6 @@ var (
 		{Name: "revision", Type: field.TypeInt},
 		{Name: "config", Type: field.TypeJSON},
 		{Name: "environment_build", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_build", Type: field.TypeInt, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
@@ -27,13 +26,6 @@ var (
 				Columns: []*schema.Column{BuildsColumns[3]},
 
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "builds_provisioned_networks_build",
-				Columns: []*schema.Column{BuildsColumns[4]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -700,6 +692,33 @@ var (
 			},
 		},
 	}
+	// BuildProvisionedNetworkToBuildColumns holds the columns for the "build_ProvisionedNetworkToBuild" table.
+	BuildProvisionedNetworkToBuildColumns = []*schema.Column{
+		{Name: "build_id", Type: field.TypeInt},
+		{Name: "provisioned_network_id", Type: field.TypeInt},
+	}
+	// BuildProvisionedNetworkToBuildTable holds the schema information for the "build_ProvisionedNetworkToBuild" table.
+	BuildProvisionedNetworkToBuildTable = &schema.Table{
+		Name:       "build_ProvisionedNetworkToBuild",
+		Columns:    BuildProvisionedNetworkToBuildColumns,
+		PrimaryKey: []*schema.Column{BuildProvisionedNetworkToBuildColumns[0], BuildProvisionedNetworkToBuildColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "build_ProvisionedNetworkToBuild_build_id",
+				Columns: []*schema.Column{BuildProvisionedNetworkToBuildColumns[0]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "build_ProvisionedNetworkToBuild_provisioned_network_id",
+				Columns: []*schema.Column{BuildProvisionedNetworkToBuildColumns[1]},
+
+				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// FindingScriptColumns holds the columns for the "finding_script" table.
 	FindingScriptColumns = []*schema.Column{
 		{Name: "finding_id", Type: field.TypeInt},
@@ -941,6 +960,7 @@ var (
 		TagsTable,
 		TeamsTable,
 		UsersTable,
+		BuildProvisionedNetworkToBuildTable,
 		FindingScriptTable,
 		IncludedNetworkIncludedNetworkToEnvironmentTable,
 		NetworkNetworkToEnvironmentTable,
@@ -954,7 +974,6 @@ var (
 
 func init() {
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	BuildsTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	CommandsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DnSsTable.ForeignKeys[0].RefTable = CompetitionsTable
@@ -992,6 +1011,8 @@ func init() {
 	UsersTable.ForeignKeys[4].RefTable = HostsTable
 	UsersTable.ForeignKeys[5].RefTable = ScriptsTable
 	UsersTable.ForeignKeys[6].RefTable = TeamsTable
+	BuildProvisionedNetworkToBuildTable.ForeignKeys[0].RefTable = BuildsTable
+	BuildProvisionedNetworkToBuildTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	FindingScriptTable.ForeignKeys[0].RefTable = FindingsTable
 	FindingScriptTable.ForeignKeys[1].RefTable = ScriptsTable
 	IncludedNetworkIncludedNetworkToEnvironmentTable.ForeignKeys[0].RefTable = IncludedNetworksTable

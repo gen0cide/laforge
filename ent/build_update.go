@@ -11,6 +11,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
@@ -93,6 +94,21 @@ func (bu *BuildUpdate) AddTeam(t ...*Team) *BuildUpdate {
 	return bu.AddTeamIDs(ids...)
 }
 
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (bu *BuildUpdate) AddProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddProvisionedNetworkToBuildIDs(ids...)
+	return bu
+}
+
+// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to ProvisionedNetwork.
+func (bu *BuildUpdate) AddProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bu.AddProvisionedNetworkToBuildIDs(ids...)
+}
+
 // Mutation returns the BuildMutation object of the builder.
 func (bu *BuildUpdate) Mutation() *BuildMutation {
 	return bu.mutation
@@ -159,6 +175,27 @@ func (bu *BuildUpdate) RemoveTeam(t ...*Team) *BuildUpdate {
 		ids[i] = t[i].ID
 	}
 	return bu.RemoveTeamIDs(ids...)
+}
+
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type ProvisionedNetwork.
+func (bu *BuildUpdate) ClearProvisionedNetworkToBuild() *BuildUpdate {
+	bu.mutation.ClearProvisionedNetworkToBuild()
+	return bu
+}
+
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (bu *BuildUpdate) RemoveProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
+	return bu
+}
+
+// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to ProvisionedNetwork.
+func (bu *BuildUpdate) RemoveProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bu.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -429,6 +466,60 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.ProvisionedNetworkToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !bu.mutation.ProvisionedNetworkToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{build.Label}
@@ -511,6 +602,21 @@ func (buo *BuildUpdateOne) AddTeam(t ...*Team) *BuildUpdateOne {
 	return buo.AddTeamIDs(ids...)
 }
 
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (buo *BuildUpdateOne) AddProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddProvisionedNetworkToBuildIDs(ids...)
+	return buo
+}
+
+// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to ProvisionedNetwork.
+func (buo *BuildUpdateOne) AddProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return buo.AddProvisionedNetworkToBuildIDs(ids...)
+}
+
 // Mutation returns the BuildMutation object of the builder.
 func (buo *BuildUpdateOne) Mutation() *BuildMutation {
 	return buo.mutation
@@ -577,6 +683,27 @@ func (buo *BuildUpdateOne) RemoveTeam(t ...*Team) *BuildUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return buo.RemoveTeamIDs(ids...)
+}
+
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type ProvisionedNetwork.
+func (buo *BuildUpdateOne) ClearProvisionedNetworkToBuild() *BuildUpdateOne {
+	buo.mutation.ClearProvisionedNetworkToBuild()
+	return buo
+}
+
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (buo *BuildUpdateOne) RemoveProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
+	return buo
+}
+
+// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to ProvisionedNetwork.
+func (buo *BuildUpdateOne) RemoveProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return buo.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -837,6 +964,60 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: team.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.ProvisionedNetworkToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !buo.mutation.ProvisionedNetworkToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.ProvisionedNetworkToBuildTable,
+			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
 				},
 			},
 		}

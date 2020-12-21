@@ -75,25 +75,28 @@ const (
 // nodes in the graph.
 type BuildMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	revision          *int
-	addrevision       *int
-	_config           *map[string]string
-	clearedFields     map[string]struct{}
-	maintainer        map[int]struct{}
-	removedmaintainer map[int]struct{}
-	clearedmaintainer bool
-	tag               map[int]struct{}
-	removedtag        map[int]struct{}
-	clearedtag        bool
-	team              map[int]struct{}
-	removedteam       map[int]struct{}
-	clearedteam       bool
-	done              bool
-	oldValue          func(context.Context) (*Build, error)
-	predicates        []predicate.Build
+	op                                Op
+	typ                               string
+	id                                *int
+	revision                          *int
+	addrevision                       *int
+	_config                           *map[string]string
+	clearedFields                     map[string]struct{}
+	maintainer                        map[int]struct{}
+	removedmaintainer                 map[int]struct{}
+	clearedmaintainer                 bool
+	tag                               map[int]struct{}
+	removedtag                        map[int]struct{}
+	clearedtag                        bool
+	team                              map[int]struct{}
+	removedteam                       map[int]struct{}
+	clearedteam                       bool
+	_ProvisionedNetworkToBuild        map[int]struct{}
+	removed_ProvisionedNetworkToBuild map[int]struct{}
+	cleared_ProvisionedNetworkToBuild bool
+	done                              bool
+	oldValue                          func(context.Context) (*Build, error)
+	predicates                        []predicate.Build
 }
 
 var _ ent.Mutation = (*BuildMutation)(nil)
@@ -428,6 +431,59 @@ func (m *BuildMutation) ResetTeam() {
 	m.removedteam = nil
 }
 
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (m *BuildMutation) AddProvisionedNetworkToBuildIDs(ids ...int) {
+	if m._ProvisionedNetworkToBuild == nil {
+		m._ProvisionedNetworkToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedNetworkToBuild clears the ProvisionedNetworkToBuild edge to ProvisionedNetwork.
+func (m *BuildMutation) ClearProvisionedNetworkToBuild() {
+	m.cleared_ProvisionedNetworkToBuild = true
+}
+
+// ProvisionedNetworkToBuildCleared returns if the edge ProvisionedNetworkToBuild was cleared.
+func (m *BuildMutation) ProvisionedNetworkToBuildCleared() bool {
+	return m.cleared_ProvisionedNetworkToBuild
+}
+
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
+func (m *BuildMutation) RemoveProvisionedNetworkToBuildIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToBuild == nil {
+		m.removed_ProvisionedNetworkToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedNetworkToBuild returns the removed ids of ProvisionedNetworkToBuild.
+func (m *BuildMutation) RemovedProvisionedNetworkToBuildIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedNetworkToBuildIDs returns the ProvisionedNetworkToBuild ids in the mutation.
+func (m *BuildMutation) ProvisionedNetworkToBuildIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedNetworkToBuild reset all changes of the "ProvisionedNetworkToBuild" edge.
+func (m *BuildMutation) ResetProvisionedNetworkToBuild() {
+	m._ProvisionedNetworkToBuild = nil
+	m.cleared_ProvisionedNetworkToBuild = false
+	m.removed_ProvisionedNetworkToBuild = nil
+}
+
 // Op returns the operation name.
 func (m *BuildMutation) Op() Op {
 	return m.op
@@ -575,7 +631,7 @@ func (m *BuildMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *BuildMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.maintainer != nil {
 		edges = append(edges, build.EdgeMaintainer)
 	}
@@ -584,6 +640,9 @@ func (m *BuildMutation) AddedEdges() []string {
 	}
 	if m.team != nil {
 		edges = append(edges, build.EdgeTeam)
+	}
+	if m._ProvisionedNetworkToBuild != nil {
+		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
 	}
 	return edges
 }
@@ -610,6 +669,12 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case build.EdgeProvisionedNetworkToBuild:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToBuild))
+		for id := range m._ProvisionedNetworkToBuild {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -617,7 +682,7 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *BuildMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedmaintainer != nil {
 		edges = append(edges, build.EdgeMaintainer)
 	}
@@ -626,6 +691,9 @@ func (m *BuildMutation) RemovedEdges() []string {
 	}
 	if m.removedteam != nil {
 		edges = append(edges, build.EdgeTeam)
+	}
+	if m.removed_ProvisionedNetworkToBuild != nil {
+		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
 	}
 	return edges
 }
@@ -652,6 +720,12 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case build.EdgeProvisionedNetworkToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToBuild))
+		for id := range m.removed_ProvisionedNetworkToBuild {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -659,7 +733,7 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *BuildMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedmaintainer {
 		edges = append(edges, build.EdgeMaintainer)
 	}
@@ -668,6 +742,9 @@ func (m *BuildMutation) ClearedEdges() []string {
 	}
 	if m.clearedteam {
 		edges = append(edges, build.EdgeTeam)
+	}
+	if m.cleared_ProvisionedNetworkToBuild {
+		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
 	}
 	return edges
 }
@@ -682,6 +759,8 @@ func (m *BuildMutation) EdgeCleared(name string) bool {
 		return m.clearedtag
 	case build.EdgeTeam:
 		return m.clearedteam
+	case build.EdgeProvisionedNetworkToBuild:
+		return m.cleared_ProvisionedNetworkToBuild
 	}
 	return false
 }
@@ -707,6 +786,9 @@ func (m *BuildMutation) ResetEdge(name string) error {
 		return nil
 	case build.EdgeTeam:
 		m.ResetTeam()
+		return nil
+	case build.EdgeProvisionedNetworkToBuild:
+		m.ResetProvisionedNetworkToBuild()
 		return nil
 	}
 	return fmt.Errorf("unknown Build edge %s", name)

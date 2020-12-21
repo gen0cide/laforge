@@ -251,10 +251,10 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 	}
 	if nodes := pnc.mutation.BuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   provisionednetwork.BuildTable,
-			Columns: []string{provisionednetwork.BuildColumn},
+			Columns: provisionednetwork.BuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

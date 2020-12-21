@@ -389,7 +389,7 @@ func HasBuild() predicate.ProvisionedNetwork {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -401,7 +401,7 @@ func HasBuildWith(preds ...predicate.Build) predicate.ProvisionedNetwork {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BuildTable, BuildColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, BuildTable, BuildPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
