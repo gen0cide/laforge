@@ -149,11 +149,6 @@ func (bc *BuildCreate) check() error {
 	if _, ok := bc.mutation.Revision(); !ok {
 		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
 	}
-	if v, ok := bc.mutation.Revision(); ok {
-		if err := build.RevisionValidator(v); err != nil {
-			return &ValidationError{Name: "revision", err: fmt.Errorf("ent: validator failed for field \"revision\": %w", err)}
-		}
-	}
 	if _, ok := bc.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
 	}

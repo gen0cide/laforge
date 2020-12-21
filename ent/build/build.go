@@ -84,8 +84,3 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
-
-var (
-	// RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
-	RevisionValidator func(int) error
-)

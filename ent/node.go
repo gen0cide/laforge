@@ -14,6 +14,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/schema"
 	"github.com/facebookincubator/ent-contrib/entgql"
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -66,6 +67,131 @@ type Edge struct {
 	Type string `json:"type,omitempty"` // edge type.
 	Name string `json:"name,omitempty"` // edge name.
 	IDs  []int  `json:"ids,omitempty"`  // node ids (where this edge point to).
+}
+
+func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     as.ID,
+		Type:   "AgentStatus",
+		Fields: make([]*Field, 13),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(as.ClientID); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "ClientID",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Hostname); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "Hostname",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.UpTime); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int",
+		Name:  "UpTime",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.BootTime); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "int",
+		Name:  "BootTime",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.NumProcs); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "int",
+		Name:  "NumProcs",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Os); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "Os",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.HostID); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "HostID",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Load1); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "float64",
+		Name:  "Load1",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Load5); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "float64",
+		Name:  "Load5",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Load15); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "float64",
+		Name:  "Load15",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.TotalMem); err != nil {
+		return nil, err
+	}
+	node.Fields[10] = &Field{
+		Type:  "int",
+		Name:  "TotalMem",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.FreeMem); err != nil {
+		return nil, err
+	}
+	node.Fields[11] = &Field{
+		Type:  "int",
+		Name:  "FreeMem",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.UsedMem); err != nil {
+		return nil, err
+	}
+	node.Fields[12] = &Field{
+		Type:  "int",
+		Name:  "UsedMem",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "ProvisionedHost",
+		Name: "host",
+	}
+	node.Edges[0].IDs, err = as.QueryHost().
+		Select(provisionedhost.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 func (b *Build) Node(ctx context.Context) (node *Node, err error) {
@@ -1860,6 +1986,15 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
+	case agentstatus.Table:
+		n, err := c.AgentStatus.Query().
+			Where(agentstatus.ID(id)).
+			CollectFields(ctx, "AgentStatus").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case build.Table:
 		n, err := c.Build.Query().
 			Where(build.ID(id)).
@@ -2138,6 +2273,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case agentstatus.Table:
+		nodes, err := c.AgentStatus.Query().
+			Where(agentstatus.IDIn(ids...)).
+			CollectFields(ctx, "AgentStatus").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case build.Table:
 		nodes, err := c.Build.Query().
 			Where(build.IDIn(ids...)).

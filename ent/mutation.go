@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -46,6 +47,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAgentStatus        = "AgentStatus"
 	TypeBuild              = "Build"
 	TypeCommand            = "Command"
 	TypeCompetition        = "Competition"
@@ -70,6 +72,1352 @@ const (
 	TypeTeam               = "Team"
 	TypeUser               = "User"
 )
+
+// AgentStatusMutation represents an operation that mutate the AgentStatusSlice
+// nodes in the graph.
+type AgentStatusMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	_ClientID     *string
+	_Hostname     *string
+	_UpTime       *int
+	add_UpTime    *int
+	_BootTime     *int
+	add_BootTime  *int
+	_NumProcs     *int
+	add_NumProcs  *int
+	_Os           *string
+	_HostID       *string
+	_Load1        *float64
+	add_Load1     *float64
+	_Load5        *float64
+	add_Load5     *float64
+	_Load15       *float64
+	add_Load15    *float64
+	_TotalMem     *int
+	add_TotalMem  *int
+	_FreeMem      *int
+	add_FreeMem   *int
+	_UsedMem      *int
+	add_UsedMem   *int
+	clearedFields map[string]struct{}
+	host          map[int]struct{}
+	removedhost   map[int]struct{}
+	clearedhost   bool
+	done          bool
+	oldValue      func(context.Context) (*AgentStatus, error)
+	predicates    []predicate.AgentStatus
+}
+
+var _ ent.Mutation = (*AgentStatusMutation)(nil)
+
+// agentstatusOption allows to manage the mutation configuration using functional options.
+type agentstatusOption func(*AgentStatusMutation)
+
+// newAgentStatusMutation creates new mutation for AgentStatus.
+func newAgentStatusMutation(c config, op Op, opts ...agentstatusOption) *AgentStatusMutation {
+	m := &AgentStatusMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAgentStatus,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAgentStatusID sets the id field of the mutation.
+func withAgentStatusID(id int) agentstatusOption {
+	return func(m *AgentStatusMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AgentStatus
+		)
+		m.oldValue = func(ctx context.Context) (*AgentStatus, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AgentStatus.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAgentStatus sets the old AgentStatus of the mutation.
+func withAgentStatus(node *AgentStatus) agentstatusOption {
+	return func(m *AgentStatusMutation) {
+		m.oldValue = func(context.Context) (*AgentStatus, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AgentStatusMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AgentStatusMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *AgentStatusMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetClientID sets the ClientID field.
+func (m *AgentStatusMutation) SetClientID(s string) {
+	m._ClientID = &s
+}
+
+// ClientID returns the ClientID value in the mutation.
+func (m *AgentStatusMutation) ClientID() (r string, exists bool) {
+	v := m._ClientID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientID returns the old ClientID value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldClientID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldClientID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientID: %w", err)
+	}
+	return oldValue.ClientID, nil
+}
+
+// ResetClientID reset all changes of the "ClientID" field.
+func (m *AgentStatusMutation) ResetClientID() {
+	m._ClientID = nil
+}
+
+// SetHostname sets the Hostname field.
+func (m *AgentStatusMutation) SetHostname(s string) {
+	m._Hostname = &s
+}
+
+// Hostname returns the Hostname value in the mutation.
+func (m *AgentStatusMutation) Hostname() (r string, exists bool) {
+	v := m._Hostname
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHostname returns the old Hostname value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldHostname(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHostname is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHostname requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHostname: %w", err)
+	}
+	return oldValue.Hostname, nil
+}
+
+// ResetHostname reset all changes of the "Hostname" field.
+func (m *AgentStatusMutation) ResetHostname() {
+	m._Hostname = nil
+}
+
+// SetUpTime sets the UpTime field.
+func (m *AgentStatusMutation) SetUpTime(i int) {
+	m._UpTime = &i
+	m.add_UpTime = nil
+}
+
+// UpTime returns the UpTime value in the mutation.
+func (m *AgentStatusMutation) UpTime() (r int, exists bool) {
+	v := m._UpTime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpTime returns the old UpTime value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldUpTime(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpTime is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpTime: %w", err)
+	}
+	return oldValue.UpTime, nil
+}
+
+// AddUpTime adds i to UpTime.
+func (m *AgentStatusMutation) AddUpTime(i int) {
+	if m.add_UpTime != nil {
+		*m.add_UpTime += i
+	} else {
+		m.add_UpTime = &i
+	}
+}
+
+// AddedUpTime returns the value that was added to the UpTime field in this mutation.
+func (m *AgentStatusMutation) AddedUpTime() (r int, exists bool) {
+	v := m.add_UpTime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpTime reset all changes of the "UpTime" field.
+func (m *AgentStatusMutation) ResetUpTime() {
+	m._UpTime = nil
+	m.add_UpTime = nil
+}
+
+// SetBootTime sets the BootTime field.
+func (m *AgentStatusMutation) SetBootTime(i int) {
+	m._BootTime = &i
+	m.add_BootTime = nil
+}
+
+// BootTime returns the BootTime value in the mutation.
+func (m *AgentStatusMutation) BootTime() (r int, exists bool) {
+	v := m._BootTime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBootTime returns the old BootTime value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldBootTime(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBootTime is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBootTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBootTime: %w", err)
+	}
+	return oldValue.BootTime, nil
+}
+
+// AddBootTime adds i to BootTime.
+func (m *AgentStatusMutation) AddBootTime(i int) {
+	if m.add_BootTime != nil {
+		*m.add_BootTime += i
+	} else {
+		m.add_BootTime = &i
+	}
+}
+
+// AddedBootTime returns the value that was added to the BootTime field in this mutation.
+func (m *AgentStatusMutation) AddedBootTime() (r int, exists bool) {
+	v := m.add_BootTime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBootTime reset all changes of the "BootTime" field.
+func (m *AgentStatusMutation) ResetBootTime() {
+	m._BootTime = nil
+	m.add_BootTime = nil
+}
+
+// SetNumProcs sets the NumProcs field.
+func (m *AgentStatusMutation) SetNumProcs(i int) {
+	m._NumProcs = &i
+	m.add_NumProcs = nil
+}
+
+// NumProcs returns the NumProcs value in the mutation.
+func (m *AgentStatusMutation) NumProcs() (r int, exists bool) {
+	v := m._NumProcs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumProcs returns the old NumProcs value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldNumProcs(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldNumProcs is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldNumProcs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumProcs: %w", err)
+	}
+	return oldValue.NumProcs, nil
+}
+
+// AddNumProcs adds i to NumProcs.
+func (m *AgentStatusMutation) AddNumProcs(i int) {
+	if m.add_NumProcs != nil {
+		*m.add_NumProcs += i
+	} else {
+		m.add_NumProcs = &i
+	}
+}
+
+// AddedNumProcs returns the value that was added to the NumProcs field in this mutation.
+func (m *AgentStatusMutation) AddedNumProcs() (r int, exists bool) {
+	v := m.add_NumProcs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumProcs reset all changes of the "NumProcs" field.
+func (m *AgentStatusMutation) ResetNumProcs() {
+	m._NumProcs = nil
+	m.add_NumProcs = nil
+}
+
+// SetOs sets the Os field.
+func (m *AgentStatusMutation) SetOs(s string) {
+	m._Os = &s
+}
+
+// Os returns the Os value in the mutation.
+func (m *AgentStatusMutation) Os() (r string, exists bool) {
+	v := m._Os
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOs returns the old Os value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldOs(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldOs is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldOs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOs: %w", err)
+	}
+	return oldValue.Os, nil
+}
+
+// ResetOs reset all changes of the "Os" field.
+func (m *AgentStatusMutation) ResetOs() {
+	m._Os = nil
+}
+
+// SetHostID sets the HostID field.
+func (m *AgentStatusMutation) SetHostID(s string) {
+	m._HostID = &s
+}
+
+// HostID returns the HostID value in the mutation.
+func (m *AgentStatusMutation) HostID() (r string, exists bool) {
+	v := m._HostID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHostID returns the old HostID value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldHostID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHostID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHostID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHostID: %w", err)
+	}
+	return oldValue.HostID, nil
+}
+
+// ResetHostID reset all changes of the "HostID" field.
+func (m *AgentStatusMutation) ResetHostID() {
+	m._HostID = nil
+}
+
+// SetLoad1 sets the Load1 field.
+func (m *AgentStatusMutation) SetLoad1(f float64) {
+	m._Load1 = &f
+	m.add_Load1 = nil
+}
+
+// Load1 returns the Load1 value in the mutation.
+func (m *AgentStatusMutation) Load1() (r float64, exists bool) {
+	v := m._Load1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoad1 returns the old Load1 value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldLoad1(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLoad1 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLoad1 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoad1: %w", err)
+	}
+	return oldValue.Load1, nil
+}
+
+// AddLoad1 adds f to Load1.
+func (m *AgentStatusMutation) AddLoad1(f float64) {
+	if m.add_Load1 != nil {
+		*m.add_Load1 += f
+	} else {
+		m.add_Load1 = &f
+	}
+}
+
+// AddedLoad1 returns the value that was added to the Load1 field in this mutation.
+func (m *AgentStatusMutation) AddedLoad1() (r float64, exists bool) {
+	v := m.add_Load1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLoad1 reset all changes of the "Load1" field.
+func (m *AgentStatusMutation) ResetLoad1() {
+	m._Load1 = nil
+	m.add_Load1 = nil
+}
+
+// SetLoad5 sets the Load5 field.
+func (m *AgentStatusMutation) SetLoad5(f float64) {
+	m._Load5 = &f
+	m.add_Load5 = nil
+}
+
+// Load5 returns the Load5 value in the mutation.
+func (m *AgentStatusMutation) Load5() (r float64, exists bool) {
+	v := m._Load5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoad5 returns the old Load5 value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldLoad5(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLoad5 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLoad5 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoad5: %w", err)
+	}
+	return oldValue.Load5, nil
+}
+
+// AddLoad5 adds f to Load5.
+func (m *AgentStatusMutation) AddLoad5(f float64) {
+	if m.add_Load5 != nil {
+		*m.add_Load5 += f
+	} else {
+		m.add_Load5 = &f
+	}
+}
+
+// AddedLoad5 returns the value that was added to the Load5 field in this mutation.
+func (m *AgentStatusMutation) AddedLoad5() (r float64, exists bool) {
+	v := m.add_Load5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLoad5 reset all changes of the "Load5" field.
+func (m *AgentStatusMutation) ResetLoad5() {
+	m._Load5 = nil
+	m.add_Load5 = nil
+}
+
+// SetLoad15 sets the Load15 field.
+func (m *AgentStatusMutation) SetLoad15(f float64) {
+	m._Load15 = &f
+	m.add_Load15 = nil
+}
+
+// Load15 returns the Load15 value in the mutation.
+func (m *AgentStatusMutation) Load15() (r float64, exists bool) {
+	v := m._Load15
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoad15 returns the old Load15 value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldLoad15(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLoad15 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLoad15 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoad15: %w", err)
+	}
+	return oldValue.Load15, nil
+}
+
+// AddLoad15 adds f to Load15.
+func (m *AgentStatusMutation) AddLoad15(f float64) {
+	if m.add_Load15 != nil {
+		*m.add_Load15 += f
+	} else {
+		m.add_Load15 = &f
+	}
+}
+
+// AddedLoad15 returns the value that was added to the Load15 field in this mutation.
+func (m *AgentStatusMutation) AddedLoad15() (r float64, exists bool) {
+	v := m.add_Load15
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLoad15 reset all changes of the "Load15" field.
+func (m *AgentStatusMutation) ResetLoad15() {
+	m._Load15 = nil
+	m.add_Load15 = nil
+}
+
+// SetTotalMem sets the TotalMem field.
+func (m *AgentStatusMutation) SetTotalMem(i int) {
+	m._TotalMem = &i
+	m.add_TotalMem = nil
+}
+
+// TotalMem returns the TotalMem value in the mutation.
+func (m *AgentStatusMutation) TotalMem() (r int, exists bool) {
+	v := m._TotalMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalMem returns the old TotalMem value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldTotalMem(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTotalMem is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTotalMem requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalMem: %w", err)
+	}
+	return oldValue.TotalMem, nil
+}
+
+// AddTotalMem adds i to TotalMem.
+func (m *AgentStatusMutation) AddTotalMem(i int) {
+	if m.add_TotalMem != nil {
+		*m.add_TotalMem += i
+	} else {
+		m.add_TotalMem = &i
+	}
+}
+
+// AddedTotalMem returns the value that was added to the TotalMem field in this mutation.
+func (m *AgentStatusMutation) AddedTotalMem() (r int, exists bool) {
+	v := m.add_TotalMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalMem reset all changes of the "TotalMem" field.
+func (m *AgentStatusMutation) ResetTotalMem() {
+	m._TotalMem = nil
+	m.add_TotalMem = nil
+}
+
+// SetFreeMem sets the FreeMem field.
+func (m *AgentStatusMutation) SetFreeMem(i int) {
+	m._FreeMem = &i
+	m.add_FreeMem = nil
+}
+
+// FreeMem returns the FreeMem value in the mutation.
+func (m *AgentStatusMutation) FreeMem() (r int, exists bool) {
+	v := m._FreeMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFreeMem returns the old FreeMem value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldFreeMem(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFreeMem is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFreeMem requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFreeMem: %w", err)
+	}
+	return oldValue.FreeMem, nil
+}
+
+// AddFreeMem adds i to FreeMem.
+func (m *AgentStatusMutation) AddFreeMem(i int) {
+	if m.add_FreeMem != nil {
+		*m.add_FreeMem += i
+	} else {
+		m.add_FreeMem = &i
+	}
+}
+
+// AddedFreeMem returns the value that was added to the FreeMem field in this mutation.
+func (m *AgentStatusMutation) AddedFreeMem() (r int, exists bool) {
+	v := m.add_FreeMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFreeMem reset all changes of the "FreeMem" field.
+func (m *AgentStatusMutation) ResetFreeMem() {
+	m._FreeMem = nil
+	m.add_FreeMem = nil
+}
+
+// SetUsedMem sets the UsedMem field.
+func (m *AgentStatusMutation) SetUsedMem(i int) {
+	m._UsedMem = &i
+	m.add_UsedMem = nil
+}
+
+// UsedMem returns the UsedMem value in the mutation.
+func (m *AgentStatusMutation) UsedMem() (r int, exists bool) {
+	v := m._UsedMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsedMem returns the old UsedMem value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldUsedMem(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUsedMem is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUsedMem requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsedMem: %w", err)
+	}
+	return oldValue.UsedMem, nil
+}
+
+// AddUsedMem adds i to UsedMem.
+func (m *AgentStatusMutation) AddUsedMem(i int) {
+	if m.add_UsedMem != nil {
+		*m.add_UsedMem += i
+	} else {
+		m.add_UsedMem = &i
+	}
+}
+
+// AddedUsedMem returns the value that was added to the UsedMem field in this mutation.
+func (m *AgentStatusMutation) AddedUsedMem() (r int, exists bool) {
+	v := m.add_UsedMem
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUsedMem reset all changes of the "UsedMem" field.
+func (m *AgentStatusMutation) ResetUsedMem() {
+	m._UsedMem = nil
+	m.add_UsedMem = nil
+}
+
+// AddHostIDs adds the host edge to ProvisionedHost by ids.
+func (m *AgentStatusMutation) AddHostIDs(ids ...int) {
+	if m.host == nil {
+		m.host = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.host[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHost clears the host edge to ProvisionedHost.
+func (m *AgentStatusMutation) ClearHost() {
+	m.clearedhost = true
+}
+
+// HostCleared returns if the edge host was cleared.
+func (m *AgentStatusMutation) HostCleared() bool {
+	return m.clearedhost
+}
+
+// RemoveHostIDs removes the host edge to ProvisionedHost by ids.
+func (m *AgentStatusMutation) RemoveHostIDs(ids ...int) {
+	if m.removedhost == nil {
+		m.removedhost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedhost[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHost returns the removed ids of host.
+func (m *AgentStatusMutation) RemovedHostIDs() (ids []int) {
+	for id := range m.removedhost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HostIDs returns the host ids in the mutation.
+func (m *AgentStatusMutation) HostIDs() (ids []int) {
+	for id := range m.host {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHost reset all changes of the "host" edge.
+func (m *AgentStatusMutation) ResetHost() {
+	m.host = nil
+	m.clearedhost = false
+	m.removedhost = nil
+}
+
+// Op returns the operation name.
+func (m *AgentStatusMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (AgentStatus).
+func (m *AgentStatusMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *AgentStatusMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m._ClientID != nil {
+		fields = append(fields, agentstatus.FieldClientID)
+	}
+	if m._Hostname != nil {
+		fields = append(fields, agentstatus.FieldHostname)
+	}
+	if m._UpTime != nil {
+		fields = append(fields, agentstatus.FieldUpTime)
+	}
+	if m._BootTime != nil {
+		fields = append(fields, agentstatus.FieldBootTime)
+	}
+	if m._NumProcs != nil {
+		fields = append(fields, agentstatus.FieldNumProcs)
+	}
+	if m._Os != nil {
+		fields = append(fields, agentstatus.FieldOs)
+	}
+	if m._HostID != nil {
+		fields = append(fields, agentstatus.FieldHostID)
+	}
+	if m._Load1 != nil {
+		fields = append(fields, agentstatus.FieldLoad1)
+	}
+	if m._Load5 != nil {
+		fields = append(fields, agentstatus.FieldLoad5)
+	}
+	if m._Load15 != nil {
+		fields = append(fields, agentstatus.FieldLoad15)
+	}
+	if m._TotalMem != nil {
+		fields = append(fields, agentstatus.FieldTotalMem)
+	}
+	if m._FreeMem != nil {
+		fields = append(fields, agentstatus.FieldFreeMem)
+	}
+	if m._UsedMem != nil {
+		fields = append(fields, agentstatus.FieldUsedMem)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *AgentStatusMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case agentstatus.FieldClientID:
+		return m.ClientID()
+	case agentstatus.FieldHostname:
+		return m.Hostname()
+	case agentstatus.FieldUpTime:
+		return m.UpTime()
+	case agentstatus.FieldBootTime:
+		return m.BootTime()
+	case agentstatus.FieldNumProcs:
+		return m.NumProcs()
+	case agentstatus.FieldOs:
+		return m.Os()
+	case agentstatus.FieldHostID:
+		return m.HostID()
+	case agentstatus.FieldLoad1:
+		return m.Load1()
+	case agentstatus.FieldLoad5:
+		return m.Load5()
+	case agentstatus.FieldLoad15:
+		return m.Load15()
+	case agentstatus.FieldTotalMem:
+		return m.TotalMem()
+	case agentstatus.FieldFreeMem:
+		return m.FreeMem()
+	case agentstatus.FieldUsedMem:
+		return m.UsedMem()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *AgentStatusMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case agentstatus.FieldClientID:
+		return m.OldClientID(ctx)
+	case agentstatus.FieldHostname:
+		return m.OldHostname(ctx)
+	case agentstatus.FieldUpTime:
+		return m.OldUpTime(ctx)
+	case agentstatus.FieldBootTime:
+		return m.OldBootTime(ctx)
+	case agentstatus.FieldNumProcs:
+		return m.OldNumProcs(ctx)
+	case agentstatus.FieldOs:
+		return m.OldOs(ctx)
+	case agentstatus.FieldHostID:
+		return m.OldHostID(ctx)
+	case agentstatus.FieldLoad1:
+		return m.OldLoad1(ctx)
+	case agentstatus.FieldLoad5:
+		return m.OldLoad5(ctx)
+	case agentstatus.FieldLoad15:
+		return m.OldLoad15(ctx)
+	case agentstatus.FieldTotalMem:
+		return m.OldTotalMem(ctx)
+	case agentstatus.FieldFreeMem:
+		return m.OldFreeMem(ctx)
+	case agentstatus.FieldUsedMem:
+		return m.OldUsedMem(ctx)
+	}
+	return nil, fmt.Errorf("unknown AgentStatus field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *AgentStatusMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case agentstatus.FieldClientID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientID(v)
+		return nil
+	case agentstatus.FieldHostname:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHostname(v)
+		return nil
+	case agentstatus.FieldUpTime:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpTime(v)
+		return nil
+	case agentstatus.FieldBootTime:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBootTime(v)
+		return nil
+	case agentstatus.FieldNumProcs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumProcs(v)
+		return nil
+	case agentstatus.FieldOs:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOs(v)
+		return nil
+	case agentstatus.FieldHostID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHostID(v)
+		return nil
+	case agentstatus.FieldLoad1:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoad1(v)
+		return nil
+	case agentstatus.FieldLoad5:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoad5(v)
+		return nil
+	case agentstatus.FieldLoad15:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoad15(v)
+		return nil
+	case agentstatus.FieldTotalMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalMem(v)
+		return nil
+	case agentstatus.FieldFreeMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFreeMem(v)
+		return nil
+	case agentstatus.FieldUsedMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsedMem(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentStatus field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *AgentStatusMutation) AddedFields() []string {
+	var fields []string
+	if m.add_UpTime != nil {
+		fields = append(fields, agentstatus.FieldUpTime)
+	}
+	if m.add_BootTime != nil {
+		fields = append(fields, agentstatus.FieldBootTime)
+	}
+	if m.add_NumProcs != nil {
+		fields = append(fields, agentstatus.FieldNumProcs)
+	}
+	if m.add_Load1 != nil {
+		fields = append(fields, agentstatus.FieldLoad1)
+	}
+	if m.add_Load5 != nil {
+		fields = append(fields, agentstatus.FieldLoad5)
+	}
+	if m.add_Load15 != nil {
+		fields = append(fields, agentstatus.FieldLoad15)
+	}
+	if m.add_TotalMem != nil {
+		fields = append(fields, agentstatus.FieldTotalMem)
+	}
+	if m.add_FreeMem != nil {
+		fields = append(fields, agentstatus.FieldFreeMem)
+	}
+	if m.add_UsedMem != nil {
+		fields = append(fields, agentstatus.FieldUsedMem)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *AgentStatusMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case agentstatus.FieldUpTime:
+		return m.AddedUpTime()
+	case agentstatus.FieldBootTime:
+		return m.AddedBootTime()
+	case agentstatus.FieldNumProcs:
+		return m.AddedNumProcs()
+	case agentstatus.FieldLoad1:
+		return m.AddedLoad1()
+	case agentstatus.FieldLoad5:
+		return m.AddedLoad5()
+	case agentstatus.FieldLoad15:
+		return m.AddedLoad15()
+	case agentstatus.FieldTotalMem:
+		return m.AddedTotalMem()
+	case agentstatus.FieldFreeMem:
+		return m.AddedFreeMem()
+	case agentstatus.FieldUsedMem:
+		return m.AddedUsedMem()
+	}
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *AgentStatusMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case agentstatus.FieldUpTime:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpTime(v)
+		return nil
+	case agentstatus.FieldBootTime:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBootTime(v)
+		return nil
+	case agentstatus.FieldNumProcs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumProcs(v)
+		return nil
+	case agentstatus.FieldLoad1:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoad1(v)
+		return nil
+	case agentstatus.FieldLoad5:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoad5(v)
+		return nil
+	case agentstatus.FieldLoad15:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoad15(v)
+		return nil
+	case agentstatus.FieldTotalMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalMem(v)
+		return nil
+	case agentstatus.FieldFreeMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFreeMem(v)
+		return nil
+	case agentstatus.FieldUsedMem:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUsedMem(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentStatus numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *AgentStatusMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *AgentStatusMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AgentStatusMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AgentStatus nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *AgentStatusMutation) ResetField(name string) error {
+	switch name {
+	case agentstatus.FieldClientID:
+		m.ResetClientID()
+		return nil
+	case agentstatus.FieldHostname:
+		m.ResetHostname()
+		return nil
+	case agentstatus.FieldUpTime:
+		m.ResetUpTime()
+		return nil
+	case agentstatus.FieldBootTime:
+		m.ResetBootTime()
+		return nil
+	case agentstatus.FieldNumProcs:
+		m.ResetNumProcs()
+		return nil
+	case agentstatus.FieldOs:
+		m.ResetOs()
+		return nil
+	case agentstatus.FieldHostID:
+		m.ResetHostID()
+		return nil
+	case agentstatus.FieldLoad1:
+		m.ResetLoad1()
+		return nil
+	case agentstatus.FieldLoad5:
+		m.ResetLoad5()
+		return nil
+	case agentstatus.FieldLoad15:
+		m.ResetLoad15()
+		return nil
+	case agentstatus.FieldTotalMem:
+		m.ResetTotalMem()
+		return nil
+	case agentstatus.FieldFreeMem:
+		m.ResetFreeMem()
+		return nil
+	case agentstatus.FieldUsedMem:
+		m.ResetUsedMem()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentStatus field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *AgentStatusMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.host != nil {
+		edges = append(edges, agentstatus.EdgeHost)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case agentstatus.EdgeHost:
+		ids := make([]ent.Value, 0, len(m.host))
+		for id := range m.host {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *AgentStatusMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedhost != nil {
+		edges = append(edges, agentstatus.EdgeHost)
+	}
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case agentstatus.EdgeHost:
+		ids := make([]ent.Value, 0, len(m.removedhost))
+		for id := range m.removedhost {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *AgentStatusMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedhost {
+		edges = append(edges, agentstatus.EdgeHost)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *AgentStatusMutation) EdgeCleared(name string) bool {
+	switch name {
+	case agentstatus.EdgeHost:
+		return m.clearedhost
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *AgentStatusMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AgentStatus unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *AgentStatusMutation) ResetEdge(name string) error {
+	switch name {
+	case agentstatus.EdgeHost:
+		m.ResetHost()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentStatus edge %s", name)
+}
 
 // BuildMutation represents an operation that mutate the Builds
 // nodes in the graph.

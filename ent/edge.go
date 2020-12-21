@@ -4,6 +4,14 @@ package ent
 
 import "context"
 
+func (as *AgentStatus) Host(ctx context.Context) ([]*ProvisionedHost, error) {
+	result, err := as.Edges.HostOrErr()
+	if IsNotLoaded(err) {
+		result, err = as.QueryHost().All(ctx)
+	}
+	return result, err
+}
+
 func (b *Build) Maintainer(ctx context.Context) ([]*User, error) {
 	result, err := b.Edges.MaintainerOrErr()
 	if IsNotLoaded(err) {

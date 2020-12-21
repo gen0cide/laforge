@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/schema"
@@ -13,12 +12,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	buildFields := schema.Build{}.Fields()
-	_ = buildFields
-	// buildDescRevision is the schema descriptor for revision field.
-	buildDescRevision := buildFields[0].Descriptor()
-	// build.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
-	build.RevisionValidator = buildDescRevision.Validators[0].(func(int) error)
 	commandFields := schema.Command{}.Fields()
 	_ = commandFields
 	// commandDescCooldown is the schema descriptor for cooldown field.

@@ -8,6 +8,30 @@ import (
 )
 
 var (
+	// AgentStatusColumns holds the columns for the "agent_status" table.
+	AgentStatusColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "client_id", Type: field.TypeString},
+		{Name: "hostname", Type: field.TypeString},
+		{Name: "up_time", Type: field.TypeInt},
+		{Name: "boot_time", Type: field.TypeInt},
+		{Name: "num_procs", Type: field.TypeInt},
+		{Name: "os", Type: field.TypeString},
+		{Name: "host_id", Type: field.TypeString},
+		{Name: "load1", Type: field.TypeFloat64},
+		{Name: "load5", Type: field.TypeFloat64},
+		{Name: "load15", Type: field.TypeFloat64},
+		{Name: "total_mem", Type: field.TypeInt},
+		{Name: "free_mem", Type: field.TypeInt},
+		{Name: "used_mem", Type: field.TypeInt},
+	}
+	// AgentStatusTable holds the schema information for the "agent_status" table.
+	AgentStatusTable = &schema.Table{
+		Name:        "agent_status",
+		Columns:     AgentStatusColumns,
+		PrimaryKey:  []*schema.Column{AgentStatusColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// BuildsColumns holds the columns for the "builds" table.
 	BuildsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -325,13 +349,22 @@ var (
 	ProvisionedHostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "subnet_ip", Type: field.TypeString},
+		{Name: "agent_status_host", Type: field.TypeInt, Nullable: true},
 	}
 	// ProvisionedHostsTable holds the schema information for the "provisioned_hosts" table.
 	ProvisionedHostsTable = &schema.Table{
-		Name:        "provisioned_hosts",
-		Columns:     ProvisionedHostsColumns,
-		PrimaryKey:  []*schema.Column{ProvisionedHostsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "provisioned_hosts",
+		Columns:    ProvisionedHostsColumns,
+		PrimaryKey: []*schema.Column{ProvisionedHostsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "provisioned_hosts_agent_status_host",
+				Columns: []*schema.Column{ProvisionedHostsColumns[2]},
+
+				RefColumns: []*schema.Column{AgentStatusColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ProvisionedNetworksColumns holds the columns for the "provisioned_networks" table.
 	ProvisionedNetworksColumns = []*schema.Column{
@@ -937,6 +970,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AgentStatusTable,
 		BuildsTable,
 		CommandsTable,
 		CompetitionsTable,
@@ -983,6 +1017,7 @@ func init() {
 	HostsTable.ForeignKeys[1].RefTable = FindingsTable
 	HostsTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
 	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
+	ProvisionedHostsTable.ForeignKeys[0].RefTable = AgentStatusTable
 	RemoteFilesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable

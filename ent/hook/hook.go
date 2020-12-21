@@ -9,6 +9,19 @@ import (
 	"github.com/gen0cide/laforge/ent"
 )
 
+// The AgentStatusFunc type is an adapter to allow the use of ordinary
+// function as AgentStatus mutator.
+type AgentStatusFunc func(context.Context, *ent.AgentStatusMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AgentStatusMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentStatusMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The BuildFunc type is an adapter to allow the use of ordinary
 // function as Build mutator.
 type BuildFunc func(context.Context, *ent.BuildMutation) (ent.Value, error)

@@ -14,7 +14,7 @@ type Build struct {
 // Fields of the Build.
 func (Build) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("revision").Positive(),
+		field.Int("revision"),
 		field.JSON("config", map[string]string{}),
 	}
 }

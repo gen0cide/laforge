@@ -32,6 +32,7 @@ type ProvisionedHostQuery struct {
 	withProvisionedNetwork *ProvisionedNetworkQuery
 	withHost               *HostQuery
 	withProvisionedSteps   *ProvisioningStepQuery
+	withFKs                bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -443,6 +444,7 @@ func (phq *ProvisionedHostQuery) prepareQuery(ctx context.Context) error {
 func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost, error) {
 	var (
 		nodes       = []*ProvisionedHost{}
+		withFKs     = phq.withFKs
 		_spec       = phq.querySpec()
 		loadedTypes = [4]bool{
 			phq.withStatus != nil,
@@ -451,10 +453,16 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			phq.withProvisionedSteps != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, provisionedhost.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &ProvisionedHost{config: phq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {

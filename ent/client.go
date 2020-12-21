@@ -9,6 +9,7 @@ import (
 
 	"github.com/gen0cide/laforge/ent/migrate"
 
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -43,6 +44,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AgentStatus is the client for interacting with the AgentStatus builders.
+	AgentStatus *AgentStatusClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
 	// Command is the client for interacting with the Command builders.
@@ -104,6 +107,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AgentStatus = NewAgentStatusClient(c.config)
 	c.Build = NewBuildClient(c.config)
 	c.Command = NewCommandClient(c.config)
 	c.Competition = NewCompetitionClient(c.config)
@@ -159,6 +163,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		AgentStatus:        NewAgentStatusClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
@@ -197,6 +202,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
 		config:             cfg,
+		AgentStatus:        NewAgentStatusClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
@@ -226,7 +232,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Build.
+//		AgentStatus.
 //		Query().
 //		Count(ctx)
 //
@@ -248,6 +254,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.AgentStatus.Use(hooks...)
 	c.Build.Use(hooks...)
 	c.Command.Use(hooks...)
 	c.Competition.Use(hooks...)
@@ -271,6 +278,110 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Tag.Use(hooks...)
 	c.Team.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// AgentStatusClient is a client for the AgentStatus schema.
+type AgentStatusClient struct {
+	config
+}
+
+// NewAgentStatusClient returns a client for the AgentStatus from the given config.
+func NewAgentStatusClient(c config) *AgentStatusClient {
+	return &AgentStatusClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentstatus.Hooks(f(g(h())))`.
+func (c *AgentStatusClient) Use(hooks ...Hook) {
+	c.hooks.AgentStatus = append(c.hooks.AgentStatus, hooks...)
+}
+
+// Create returns a create builder for AgentStatus.
+func (c *AgentStatusClient) Create() *AgentStatusCreate {
+	mutation := newAgentStatusMutation(c.config, OpCreate)
+	return &AgentStatusCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentStatus entities.
+func (c *AgentStatusClient) CreateBulk(builders ...*AgentStatusCreate) *AgentStatusCreateBulk {
+	return &AgentStatusCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentStatus.
+func (c *AgentStatusClient) Update() *AgentStatusUpdate {
+	mutation := newAgentStatusMutation(c.config, OpUpdate)
+	return &AgentStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentStatusClient) UpdateOne(as *AgentStatus) *AgentStatusUpdateOne {
+	mutation := newAgentStatusMutation(c.config, OpUpdateOne, withAgentStatus(as))
+	return &AgentStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentStatusClient) UpdateOneID(id int) *AgentStatusUpdateOne {
+	mutation := newAgentStatusMutation(c.config, OpUpdateOne, withAgentStatusID(id))
+	return &AgentStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentStatus.
+func (c *AgentStatusClient) Delete() *AgentStatusDelete {
+	mutation := newAgentStatusMutation(c.config, OpDelete)
+	return &AgentStatusDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AgentStatusClient) DeleteOne(as *AgentStatus) *AgentStatusDeleteOne {
+	return c.DeleteOneID(as.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AgentStatusClient) DeleteOneID(id int) *AgentStatusDeleteOne {
+	builder := c.Delete().Where(agentstatus.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentStatusDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentStatus.
+func (c *AgentStatusClient) Query() *AgentStatusQuery {
+	return &AgentStatusQuery{config: c.config}
+}
+
+// Get returns a AgentStatus entity by its id.
+func (c *AgentStatusClient) Get(ctx context.Context, id int) (*AgentStatus, error) {
+	return c.Query().Where(agentstatus.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentStatusClient) GetX(ctx context.Context, id int) *AgentStatus {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryHost queries the host edge of a AgentStatus.
+func (c *AgentStatusClient) QueryHost(as *AgentStatus) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := as.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentstatus.HostTable, agentstatus.HostColumn),
+		)
+		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentStatusClient) Hooks() []Hook {
+	return c.hooks.AgentStatus
 }
 
 // BuildClient is a client for the Build schema.

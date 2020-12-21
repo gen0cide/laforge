@@ -205,18 +205,12 @@ func (bu *BuildUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(bu.hooks) == 0 {
-		if err = bu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = bu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BuildMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = bu.check(); err != nil {
-				return 0, err
 			}
 			bu.mutation = mutation
 			affected, err = bu.sqlSave(ctx)
@@ -253,16 +247,6 @@ func (bu *BuildUpdate) ExecX(ctx context.Context) {
 	if err := bu.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (bu *BuildUpdate) check() error {
-	if v, ok := bu.mutation.Revision(); ok {
-		if err := build.RevisionValidator(v); err != nil {
-			return &ValidationError{Name: "revision", err: fmt.Errorf("ent: validator failed for field \"revision\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -713,18 +697,12 @@ func (buo *BuildUpdateOne) Save(ctx context.Context) (*Build, error) {
 		node *Build
 	)
 	if len(buo.hooks) == 0 {
-		if err = buo.check(); err != nil {
-			return nil, err
-		}
 		node, err = buo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BuildMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = buo.check(); err != nil {
-				return nil, err
 			}
 			buo.mutation = mutation
 			node, err = buo.sqlSave(ctx)
@@ -761,16 +739,6 @@ func (buo *BuildUpdateOne) ExecX(ctx context.Context) {
 	if err := buo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (buo *BuildUpdateOne) check() error {
-	if v, ok := buo.mutation.Revision(); ok {
-		if err := build.RevisionValidator(v); err != nil {
-			return &ValidationError{Name: "revision", err: fmt.Errorf("ent: validator failed for field \"revision\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error) {

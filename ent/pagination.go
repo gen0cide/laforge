@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -253,6 +254,236 @@ const (
 	pageInfoField   = "pageInfo"
 	totalCountField = "totalCount"
 )
+
+// AgentStatusEdge is the edge representation of AgentStatus.
+type AgentStatusEdge struct {
+	Node   *AgentStatus `json:"node"`
+	Cursor Cursor       `json:"cursor"`
+}
+
+// AgentStatusConnection is the connection containing edges to AgentStatus.
+type AgentStatusConnection struct {
+	Edges      []*AgentStatusEdge `json:"edges"`
+	PageInfo   PageInfo           `json:"pageInfo"`
+	TotalCount int                `json:"totalCount"`
+}
+
+// AgentStatusPaginateOption enables pagination customization.
+type AgentStatusPaginateOption func(*agentStatusPager) error
+
+// WithAgentStatusOrder configures pagination ordering.
+func WithAgentStatusOrder(order *AgentStatusOrder) AgentStatusPaginateOption {
+	if order == nil {
+		order = DefaultAgentStatusOrder
+	}
+	o := *order
+	return func(pager *agentStatusPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAgentStatusOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAgentStatusFilter configures pagination filter.
+func WithAgentStatusFilter(filter func(*AgentStatusQuery) (*AgentStatusQuery, error)) AgentStatusPaginateOption {
+	return func(pager *agentStatusPager) error {
+		if filter == nil {
+			return errors.New("AgentStatusQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type agentStatusPager struct {
+	order  *AgentStatusOrder
+	filter func(*AgentStatusQuery) (*AgentStatusQuery, error)
+}
+
+func newAgentStatusPager(opts []AgentStatusPaginateOption) (*agentStatusPager, error) {
+	pager := &agentStatusPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAgentStatusOrder
+	}
+	return pager, nil
+}
+
+func (p *agentStatusPager) applyFilter(query *AgentStatusQuery) (*AgentStatusQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *agentStatusPager) toCursor(as *AgentStatus) Cursor {
+	return p.order.Field.toCursor(as)
+}
+
+func (p *agentStatusPager) applyCursors(query *AgentStatusQuery, after, before *Cursor) *AgentStatusQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultAgentStatusOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *agentStatusPager) applyOrder(query *AgentStatusQuery, reverse bool) *AgentStatusQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultAgentStatusOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultAgentStatusOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to AgentStatus.
+func (as *AgentStatusQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AgentStatusPaginateOption,
+) (*AgentStatusConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAgentStatusPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if as, err = pager.applyFilter(as); err != nil {
+		return nil, err
+	}
+
+	conn := &AgentStatusConnection{Edges: []*AgentStatusEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := as.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := as.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	as = pager.applyCursors(as, after, before)
+	as = pager.applyOrder(as, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		as = as.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		as = as.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := as.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *AgentStatus
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *AgentStatus {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *AgentStatus {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*AgentStatusEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &AgentStatusEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// AgentStatusOrderField defines the ordering field of AgentStatus.
+type AgentStatusOrderField struct {
+	field    string
+	toCursor func(*AgentStatus) Cursor
+}
+
+// AgentStatusOrder defines the ordering of AgentStatus.
+type AgentStatusOrder struct {
+	Direction OrderDirection         `json:"direction"`
+	Field     *AgentStatusOrderField `json:"field"`
+}
+
+// DefaultAgentStatusOrder is the default ordering of AgentStatus.
+var DefaultAgentStatusOrder = &AgentStatusOrder{
+	Direction: OrderDirectionAsc,
+	Field: &AgentStatusOrderField{
+		field: agentstatus.FieldID,
+		toCursor: func(as *AgentStatus) Cursor {
+			return Cursor{ID: as.ID}
+		},
+	},
+}
+
+// ToEdge converts AgentStatus into AgentStatusEdge.
+func (as *AgentStatus) ToEdge(order *AgentStatusOrder) *AgentStatusEdge {
+	if order == nil {
+		order = DefaultAgentStatusOrder
+	}
+	return &AgentStatusEdge{
+		Node:   as,
+		Cursor: order.Field.toCursor(as),
+	}
+}
 
 // BuildEdge is the edge representation of Build.
 type BuildEdge struct {

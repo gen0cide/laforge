@@ -9,6 +9,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (as *AgentStatusQuery) CollectFields(ctx context.Context, satisfies ...string) *AgentStatusQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		as = as.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return as
+}
+
+func (as *AgentStatusQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *AgentStatusQuery {
+	return as
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (b *BuildQuery) CollectFields(ctx context.Context, satisfies ...string) *BuildQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		b = b.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

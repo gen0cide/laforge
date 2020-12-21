@@ -6,6 +6,9 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 )
 
+// AgentStatus is the predicate function for agentstatus builders.
+type AgentStatus func(*sql.Selector)
+
 // Build is the predicate function for build builders.
 type Build func(*sql.Selector)
 
