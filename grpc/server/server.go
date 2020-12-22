@@ -7,13 +7,16 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 
+	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server/static"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"gorm.io/gorm"
 )
 
 var (
@@ -29,11 +32,8 @@ const (
 	TaskSucceeded = "Completed"
 )
 
-var (
-	db *gorm.DB
-)
-
 type server struct {
+	client *ent.Client
 	pb.UnimplementedLaforgeServer
 }
 
@@ -57,6 +57,65 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 	message := fmt.Sprintf("Recived ID: %v | Hostname: %v | Uptime: %v | Boot Time: %v| Number of Running Processes: %v| OS Arch: %v| Host ID: %v| Load1: %v| Load5: %v| Load15: %v| Total Memory: %v| Avalible Memory: %v| Used Memory: %v", in.GetClientId(), in.GetHostname(), in.GetUptime(), in.GetBoottime(), in.GetNumprocs(), in.GetOs(), in.GetHostid(), in.GetLoad1(), in.GetLoad5(), in.GetLoad15(), ByteCountIEC(in.GetTotalmem()), ByteCountIEC(in.GetFreemem()), ByteCountIEC(in.GetUsedmem()))
 	log.Printf(message)
 	avalibleTasks := false
+	uuid, err := strconv.Atoi(in.GetClientId())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+	}
+
+	statusExist, err := s.client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Exist(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Agent Status: %v", err)
+	}
+
+	// TODO; Will Wanna change this relationship to be 1-M between Host and AgentStatus
+	if statusExist{
+		agentStatus, err := s.client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
+		}
+		agentStatus, err = agentStatus.Update().
+							SetUpTime(int(in.GetUptime())).
+							SetBootTime(int(in.GetBoottime())).
+							SetNumProcs(int(in.GetNumprocs())).
+							SetLoad1(in.GetLoad1()).
+							SetLoad5(in.GetLoad5()).
+							SetLoad15(in.GetLoad15()).
+							SetTotalMem(int(in.GetTotalmem())).
+							SetFreeMem(int(in.GetFreemem())).
+							SetUsedMem(int(in.GetUsedmem())).
+							Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed updating Agent Status: %v", err)
+		}
+	} else{
+		ph, err := s.client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
+
+		_, err = s.client.AgentStatus.
+		Create().
+		SetClientID(in.GetClientId()).
+		SetHostname(in.GetHostname()).
+		SetUpTime(int(in.GetUptime())).
+		SetBootTime(int(in.GetBoottime())).
+		SetNumProcs(int(in.GetNumprocs())).
+		SetOs(in.GetOs()).
+		SetHostID(in.GetHostid()).
+		SetLoad1(in.GetLoad1()).
+		SetLoad5(in.GetLoad5()).
+		SetLoad15(in.GetLoad15()).
+		SetTotalMem(int(in.GetTotalmem())).
+		SetFreeMem(int(in.GetFreemem())).
+		SetUsedMem(int(in.GetUsedmem())).
+		AddHost(ph).
+		Save(ctx)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed Creating Agent Status: %v", err)
+		}
+	}
+
+
 	// TODO: Implement This with ENT 
 	// tasks := make([]Task, 0)
 	// db.Find(&tasks, map[string]interface{}{"client_id": in.GetClientId(), "completed": false})
@@ -108,7 +167,18 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	db = OpenDB()
+	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
+	if err != nil {
+		log.Fatalf("failed opening connection to sqlite: %v", err)
+	}
+
+	ctx := context.Background()
+	defer client.Close()
+
+	// Run the auto migration tool.
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
 
 	log.Printf("Starting API Server on port " + webPort)
 	web := gin.Default()
@@ -147,7 +217,10 @@ func main() {
 
 	log.Printf("Starting Laforge Server on port " + port)
 
-	pb.RegisterLaforgeServer(s, &server{})
+	pb.RegisterLaforgeServer(s, &server{
+		client:                     client,
+		UnimplementedLaforgeServer: pb.UnimplementedLaforgeServer{},
+	})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

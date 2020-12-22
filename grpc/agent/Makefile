@@ -1,5 +1,5 @@
 GPRCADDRESS = "localhost:50051"
-AgentID 	= "45846255432156"
+AgentID 	= "1"
 
 copy_certs:
 	cp ../certs/service.pem ./certs/
