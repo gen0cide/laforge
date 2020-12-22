@@ -1,0 +1,4 @@
+# macOS DSSTORE stuff
+._*
+# test database
+test.sqlite
