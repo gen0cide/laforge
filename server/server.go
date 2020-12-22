@@ -23,18 +23,17 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-const defaultPort = "8080"
-var (
-	port     = ":50051"
-	certFile = "service.pem"
-	keyFile  = "service.key"
-	webPort  = ":5000"
-)
+const defaultPort = "80"
 
 func main() {
-	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
-	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
+
+	pgHost, ok := os.LookupEnv("PG_HOST")
+	client := &ent.Client{}
+
+	if !ok {
+		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
+	} else {
+		client = ent.PGOpen(pgHost)
 	}
 
 	ctx := context.Background()
@@ -58,7 +57,7 @@ func main() {
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:4200"},
+		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:4200", "http://localhost:80"},
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)

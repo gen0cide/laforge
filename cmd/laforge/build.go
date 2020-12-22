@@ -45,10 +45,13 @@ func performbuild(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
+	pgHost, ok := os.LookupEnv("PG_HOST")
+	client := &ent.Client{}
 
-	if err != nil {
-		cliLogger.Errorf("failed opening connection to sqlite: %v", err)
+	if !ok {
+		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
+	} else {
+		client = ent.PGOpen(pgHost)
 	}
 
 	ctx := context.Background()
