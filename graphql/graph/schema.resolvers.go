@@ -416,13 +416,21 @@ func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.P
 }
 
 func (r *provisionedHostResolver) Heartbeat(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error) {
-	a, err := obj.QueryAgentStatus().Only(ctx)
+	check, err := obj.QueryAgentStatus().Exist(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed querying Agent Status for Host: %v", err)
+		return nil, fmt.Errorf("failed querying Agent Status: %v", err)
 	}
 
-	return a, nil
+	if check {
+		a, err := obj.QueryAgentStatus().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
+		}
+		return a, nil
+	}
+
+	return nil, nil
 }
 
 func (r *provisionedNetworkResolver) Status(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Status, error) {
