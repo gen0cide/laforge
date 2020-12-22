@@ -265,6 +265,21 @@ type ProvisionedHost {
   heartbeat: AgentStatus
 }
 
+type RemoteFile {
+  id: ID!
+  sourceType: String!
+  source: String!
+  destination: String!
+  vars: [varsMap]
+  templete: Boolean!
+  perms: String!
+  disabled: Boolean!
+  md5: String!
+  absPath: String!
+  ext: String!
+  tags: [Tag]
+}
+
 type ProvisioningStep {
   id: ID!
   provisionType: String!
@@ -274,9 +289,10 @@ type ProvisioningStep {
   script: Script
   command: Command
   DNSRecord: DNSRecord
-  fileDownload: FileDownload
-  fileDelete: FileDelete
-  fileExtract: FileExtract
+  remoteFile: RemoteFile
+  # fileDownload: FileDownload # Not Needed for now
+  # fileDelete: FileDelete
+  # fileExtract: FileExtract
 }
 
 type Query {
