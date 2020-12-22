@@ -250,6 +250,12 @@ func (r *findingResolver) Difficulty(ctx context.Context, obj *ent.Finding) (mod
 
 func (r *findingResolver) Maintainer(ctx context.Context, obj *ent.Finding) (*ent.User, error) {
 	u, err := obj.QueryUser().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying User: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *findingResolver) Tags(ctx context.Context, obj *ent.Finding) ([]*ent.Tag, error) {
