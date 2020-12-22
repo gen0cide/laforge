@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gen0cide/laforge/grpc-alpha/grpc_client/static"
-	pb "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent"
+	"github.com/gen0cide/laforge/grpc/agent/static"
+	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/kardianos/service"
 	"github.com/mholt/archiver"
 	"github.com/shirou/gopsutil/host"
