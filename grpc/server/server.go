@@ -20,9 +20,9 @@ import (
 )
 
 var (
-	port     = ":50051"
-	certFile = "service.pem"
-	keyFile  = "service.key"
+	Port     = ":50051"
+	CertFile = "service.pem"
+	KeyFile  = "service.key"
 	webPort  = ":5000"
 )
 
@@ -32,8 +32,8 @@ const (
 	TaskSucceeded = "Completed"
 )
 
-type server struct {
-	client *ent.Client
+type Server struct {
+	Client *ent.Client
 	pb.UnimplementedLaforgeServer
 }
 
@@ -53,7 +53,7 @@ func ByteCountIEC(b uint64) string {
 }
 
 //GetHeartBeat Recives Heartbeat from client and sends back a reply
-func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb.HeartbeatReply, error) {
+func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb.HeartbeatReply, error) {
 	message := fmt.Sprintf("Recived ID: %v | Hostname: %v | Uptime: %v | Boot Time: %v| Number of Running Processes: %v| OS Arch: %v| Host ID: %v| Load1: %v| Load5: %v| Load15: %v| Total Memory: %v| Avalible Memory: %v| Used Memory: %v", in.GetClientId(), in.GetHostname(), in.GetUptime(), in.GetBoottime(), in.GetNumprocs(), in.GetOs(), in.GetHostid(), in.GetLoad1(), in.GetLoad5(), in.GetLoad15(), ByteCountIEC(in.GetTotalmem()), ByteCountIEC(in.GetFreemem()), ByteCountIEC(in.GetUsedmem()))
 	log.Printf(message)
 	avalibleTasks := false
@@ -63,7 +63,7 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
 	}
 
-	statusExist, err := s.client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Exist(ctx)
+	statusExist, err := s.Client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Exist(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Agent Status: %v", err)
@@ -71,7 +71,7 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 
 	// TODO; Will Wanna change this relationship to be 1-M between Host and AgentStatus
 	if statusExist{
-		agentStatus, err := s.client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Only(ctx)
+		agentStatus, err := s.Client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Only(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
 		}
@@ -90,9 +90,9 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 			return nil, fmt.Errorf("failed updating Agent Status: %v", err)
 		}
 	} else{
-		ph, err := s.client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
+		ph, err := s.Client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
 
-		_, err = s.client.AgentStatus.
+		_, err = s.Client.AgentStatus.
 		Create().
 		SetClientID(in.GetClientId()).
 		SetHostname(in.GetHostname()).
@@ -126,7 +126,7 @@ func (s *server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 }
 
 //GetTask Gets a task that needs to be run on the client and sends it over
-func (s *server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply, error) {
+func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply, error) {
 	// TODO: Implement This with ENT 
 	// clientID := in.ClientId
 	// db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
@@ -140,7 +140,7 @@ func (s *server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 }
 
 // InformTaskStatus Updates the status of a Task on a client from the response of the client
-func (s *server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
+func (s *Server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
 	// TODO: Implement This with ENT 
 	// clientID := in.ClientId
 	// tasks := make([]Task, 0)
@@ -162,7 +162,7 @@ func (s *server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest)
 }
 
 func main() {
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", Port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -194,12 +194,12 @@ func main() {
 	go web.Run(webPort)
 
 	// secure server
-	certPem,certerr := static.ReadFile(certFile)
+	certPem,certerr := static.ReadFile(CertFile)
 	if certerr != nil {
         fmt.Println("File reading error", certerr)
         return 
 	}
-	keyPem,keyerr := static.ReadFile(keyFile)
+	keyPem,keyerr := static.ReadFile(KeyFile)
 	if keyerr != nil {
         fmt.Println("File reading error", keyerr)
         return 
@@ -215,10 +215,10 @@ func main() {
 	s := grpc.NewServer(grpc.Creds(creds))
 
 
-	log.Printf("Starting Laforge Server on port " + port)
+	log.Printf("Starting Laforge Server on port " + Port)
 
-	pb.RegisterLaforgeServer(s, &server{
-		client:                     client,
+	pb.RegisterLaforgeServer(s, &Server{
+		Client:                     client,
 		UnimplementedLaforgeServer: pb.UnimplementedLaforgeServer{},
 	})
 	if err := s.Serve(lis); err != nil {
