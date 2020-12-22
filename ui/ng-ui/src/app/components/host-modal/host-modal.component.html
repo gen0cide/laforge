@@ -147,11 +147,15 @@
   <div class="col-12">
     <p class="detail-title"><b>Steps</b></p>
     <app-step
-      *ngFor="let step of data.provisionedHost.provisionedSteps; let i = index"
+      *ngFor="
+        let step of data.provisionedHost.provisionedSteps == null ? provisionedSteps : data.provisionedHost.provisionedSteps;
+        let i = index
+      "
       [stepNumber]="i + 1"
       [provisionedStep]="step"
       [showDetail]="false"
       [style]="'compact'"
     ></app-step>
+    <i class="fas fa-2x fa-sync fa-spin" *ngIf="data.provisionedHost.provisionedSteps == null && provisionedSteps == null"></i>
   </div>
 </div>

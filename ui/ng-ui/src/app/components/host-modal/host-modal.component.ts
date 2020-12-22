@@ -1,20 +1,32 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedHost } from 'src/app/models/host.model';
+import { ProvisionedHost, ProvisionedStep } from 'src/app/models/host.model';
+import { ApiService } from 'src/app/services/api/api.service';
 
 @Component({
   selector: 'app-host-modal',
   templateUrl: './host-modal.component.html',
   styleUrls: ['./host-modal.component.scss']
 })
-class HostModalComponent {
+class HostModalComponent implements OnInit {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
+  provisionedSteps: ProvisionedStep[];
+
   constructor(
     public dialogRef: MatDialogRef<HostModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost }
+    @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost; needsToQuerySteps?: boolean },
+    private api: ApiService
   ) {}
+
+  ngOnInit(): void {
+    if (this.data.provisionedHost.provisionedSteps == null) {
+      this.api.pullHostSteps(this.data.provisionedHost.id).then((steps: ProvisionedStep[]) => {
+        this.provisionedSteps = steps;
+      });
+    }
+  }
 
   onClose(): void {
     this.dialogRef.close();

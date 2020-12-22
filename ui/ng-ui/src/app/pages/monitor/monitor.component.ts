@@ -2,10 +2,12 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { Subscription } from 'rxjs';
 import { updateAgentStatuses } from 'src/app/models/agent.model';
-import { AgentStatusQueryResult } from 'src/app/models/api.model';
+import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
 import { Environment, resolveStatuses } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
+import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-manage',
@@ -14,6 +16,7 @@ import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_s
 })
 export class MonitorComponent implements OnInit, OnDestroy {
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
+  envs: EnvironmentInfo[];
   environment: Environment = null;
   envLoaded = false;
   environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
@@ -22,13 +25,30 @@ export class MonitorComponent implements OnInit, OnDestroy {
   loading = false;
   intervalOptions = [10, 30, 60, 120];
 
-  constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private subheader: SubheaderService) {
+  constructor(
+    private api: ApiService,
+    private cdRef: ChangeDetectorRef,
+    private subheader: SubheaderService,
+    private envService: EnvironmentService
+  ) {
     this.subheader.setTitle('Monitor Agents');
     this.subheader.setDescription('View live data being sent from the host agents');
   }
 
   ngOnInit(): void {
-    this.api.pullEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').then(
+    this.api.pullEnvironments().then((envs: EnvironmentInfo[]) => {
+      this.envs = envs;
+      this.cdRef.detectChanges();
+    });
+  }
+
+  envIsSelected(): boolean {
+    return this.envService.getCurrentEnv() != null;
+  }
+
+  grabEnvironmentTree(changeEvent: MatSelectChange): void {
+    this.envService.setCurrentEnv(this.envs.filter((e) => e.id === changeEvent.value)[0]);
+    this.api.pullEnvTree(this.envService.getCurrentEnv().id).then(
       (env: Environment) => {
         this.environment = resolveStatuses(env);
         this.envLoaded = true;
@@ -37,7 +57,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
       },
       (err) => {
         console.error('yep, cant connect');
-        // console.error(err);
+        console.error(err);
       }
     );
   }

@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
 import { ApolloQueryResult } from '@apollo/client/core';
 import { Apollo } from 'apollo-angular';
-import { getEnvironmentQuery } from './queries/environment';
+import { getEnvironmentQuery, getEnvironmentsQuery } from './queries/environment';
 import { Observable } from 'rxjs';
 import { getAgentStatusesQuery } from './queries/agent';
-import { AgentStatusQueryResult, EnvironmentQueryResult } from 'src/app/models/api.model';
+import {
+  AgentStatusQueryResult,
+  EnvironmentInfo,
+  EnvironmentInfoQueryResult,
+  EnvironmentQueryResult,
+  HostStepsQueryResult
+} from 'src/app/models/api.model';
 import { Environment } from 'src/app/models/environment.model';
+import { getEnvConfigQuery } from './queries/env-tree';
+import { getProvisionedSteps } from './queries/steps';
+import { ProvisionedStep } from 'src/app/models/host.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +36,19 @@ export class ApiService {
    * Pulls an environment from the API once, without exposing a subscription or observable
    * @param id The Environment ID of the environment
    */
+  public async pullEnvironments(): Promise<EnvironmentInfo[]> {
+    const res = await this.apollo
+      .query<EnvironmentInfoQueryResult>({
+        query: getEnvironmentsQuery()
+      })
+      .toPromise();
+    return res.data.environments;
+  }
+
+  /**
+   * Pulls an environment from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
   public async pullEnvironment(id: string): Promise<Environment> {
     const res = await this.apollo
       .query<EnvironmentQueryResult>({
@@ -34,6 +56,32 @@ export class ApiService {
       })
       .toPromise();
     return res.data.environment;
+  }
+
+  /**
+   * Pulls an environment tree from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
+  public async pullEnvTree(id: string): Promise<Environment> {
+    const res = await this.apollo
+      .query<EnvironmentQueryResult>({
+        query: getEnvConfigQuery(id)
+      })
+      .toPromise();
+    return res.data.environment;
+  }
+
+  /**
+   * Pulls an environment tree from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
+  public async pullHostSteps(hostId: string): Promise<ProvisionedStep[]> {
+    const res = await this.apollo
+      .query<HostStepsQueryResult>({
+        query: getProvisionedSteps(hostId)
+      })
+      .toPromise();
+    return res.data.provisionedHost.provisionedSteps;
   }
 
   /**

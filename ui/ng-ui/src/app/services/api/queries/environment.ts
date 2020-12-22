@@ -161,4 +161,14 @@ const getEnvironmentQuery = (id: string): DocumentNode => gql`
 }
 `;
 
-export { getEnvironmentQuery };
+const getEnvironmentsQuery = (): DocumentNode => gql`
+  {
+    environments {
+      id
+      Name
+      CompetitionID
+    }
+  }
+`;
+
+export { getEnvironmentQuery, getEnvironmentsQuery };
