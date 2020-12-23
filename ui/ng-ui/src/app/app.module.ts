@@ -21,6 +21,7 @@ import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
 import { SplashScreenModule } from './_metronic/partials/layout/splash-screen/splash-screen.module';
 import { GraphQLModule } from './graphql.module';
+import { APP_BASE_HREF } from '@angular/common';
 
 function appInitializer(authService: AuthService) {
   return () => {
@@ -77,6 +78,10 @@ export function getHighlightLanguages() {
       useValue: {
         languages: getHighlightLanguages
       }
+    },
+    {
+      provide: APP_BASE_HREF,
+      useValue: '/ui/'
     }
   ],
   bootstrap: [AppComponent]

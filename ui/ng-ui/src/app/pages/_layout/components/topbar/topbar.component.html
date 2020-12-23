@@ -5,17 +5,10 @@
     <!--begin::Notifications-->
     <div class="dropdown" ngbDropdown placement="bottom">
       <!--begin::Toggle-->
-      <div
-        class="topbar-item"
-        data-toggle="dropdown"
-        data-offset="10px,0px"
-        ngbDropdownToggle
-      >
-        <div
-          class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 pulse pulse-primary"
-        >
+      <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px" ngbDropdownToggle>
+        <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 pulse pulse-primary">
           <span
-            [inlineSVG]="'./assets/media/svg/icons/Code/Compiling.svg'"
+            [inlineSVG]="'/assets/media/svg/icons/Code/Compiling.svg'"
             cacheSVG="true"
             class="svg-icon svg-icon-xl svg-icon-primary"
           ></span>
@@ -25,10 +18,7 @@
       <!--end::Toggle-->
 
       <!--begin::Dropdown-->
-      <div
-        ngbDropdownMenu
-        class="dropdown-menu p-0 m-0 dropdown-menu-anim-up dropdown-menu-lg"
-      >
+      <div ngbDropdownMenu class="dropdown-menu p-0 m-0 dropdown-menu-anim-up dropdown-menu-lg">
         <form>
           <app-notifications-dropdown-inner></app-notifications-dropdown-inner>
         </form>
@@ -44,37 +34,19 @@
     <!--begin::User-->
     <ng-container *ngIf="user$ | async as _user">
       <div class="dropdown" ngbDropdown placement="bottom-right">
-        <div
-          class="topbar-item"
-          data-toggle="dropdown"
-          data-offset="0px,0px"
-          ngbDropdownToggle
-        >
-          <div
-            class="btn btn-icon w-auto btn-clean d-flex align-items-center btn-lg px-2"
-          >
-            <span
-              class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1"
-              >Hi,</span
-            >
-            <span
-              class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3"
-              >{{ _user.fullname }}</span
-            >
+        <div class="topbar-item" data-toggle="dropdown" data-offset="0px,0px" ngbDropdownToggle>
+          <div class="btn btn-icon w-auto btn-clean d-flex align-items-center btn-lg px-2">
+            <span class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1">Hi,</span>
+            <span class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3">{{ _user.fullname }}</span>
             <span class="symbol symbol-35 symbol-light">
-            <!--todo: gravatar-->
-              <span class="symbol-label font-size-h5 font-weight-bold">{{
-                _user.fullname | firstLetter
-              }}</span>
+              <!--todo: gravatar-->
+              <span class="symbol-label font-size-h5 font-weight-bold">{{ _user.fullname | firstLetter }}</span>
             </span>
           </div>
         </div>
         <!--end::Toggle-->
         <!--begin::Dropdown-->
-        <div
-          ngbDropdownMenu
-          class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg p-0"
-        >
+        <div ngbDropdownMenu class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg p-0">
           <app-user-dropdown-inner></app-user-dropdown-inner>
         </div>
       </div>
