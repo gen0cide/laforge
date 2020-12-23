@@ -292,6 +292,14 @@ func (ph *ProvisionedHost) ProvisionedSteps(ctx context.Context) ([]*Provisionin
 	return result, err
 }
 
+func (ph *ProvisionedHost) AgentStatus(ctx context.Context) ([]*AgentStatus, error) {
+	result, err := ph.Edges.AgentStatusOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryAgentStatus().All(ctx)
+	}
+	return result, err
+}
+
 func (pn *ProvisionedNetwork) Status(ctx context.Context) ([]*Status, error) {
 	result, err := pn.Edges.StatusOrErr()
 	if IsNotLoaded(err) {
@@ -328,6 +336,14 @@ func (pn *ProvisionedNetwork) ProvisionedHosts(ctx context.Context) ([]*Provisio
 	result, err := pn.Edges.ProvisionedHostsOrErr()
 	if IsNotLoaded(err) {
 		result, err = pn.QueryProvisionedHosts().All(ctx)
+	}
+	return result, err
+}
+
+func (ps *ProvisioningStep) Status(ctx context.Context) ([]*Status, error) {
+	result, err := ps.Edges.StatusOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryStatus().All(ctx)
 	}
 	return result, err
 }

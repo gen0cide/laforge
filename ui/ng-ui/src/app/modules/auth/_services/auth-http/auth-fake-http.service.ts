@@ -53,7 +53,7 @@ export class AuthHTTPService {
     user.accessToken = 'access-token-' + Math.random();
     user.refreshToken = 'access-token-' + Math.random();
     user.expiresIn = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000);
-    user.pic = './assets/media/users/default.jpg';
+    user.pic = '/assets/media/users/default.jpg';
 
     return this.http.post<UserModel>(API_USERS_URL, user);
   }

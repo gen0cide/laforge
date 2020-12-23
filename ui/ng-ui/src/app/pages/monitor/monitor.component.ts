@@ -2,10 +2,14 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { Subscription } from 'rxjs';
 import { updateAgentStatuses } from 'src/app/models/agent.model';
-import { AgentStatusQueryResult } from 'src/app/models/api.model';
+import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
 import { Environment, resolveStatuses } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
+import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
+import { filter } from 'rxjs/operators';
+import { QueryRef } from 'apollo-angular';
+import { EmptyObject } from 'apollo-angular/types';
 
 @Component({
   selector: 'app-manage',
@@ -14,6 +18,7 @@ import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_s
 })
 export class MonitorComponent implements OnInit, OnDestroy {
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
+  envs: EnvironmentInfo[];
   environment: Environment = null;
   envLoaded = false;
   environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
@@ -21,14 +26,33 @@ export class MonitorComponent implements OnInit, OnDestroy {
   pollingInterval = 60;
   loading = false;
   intervalOptions = [10, 30, 60, 120];
+  agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
+  agentStatusSubscription: Subscription;
 
-  constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private subheader: SubheaderService) {
+  constructor(
+    private api: ApiService,
+    private cdRef: ChangeDetectorRef,
+    private subheader: SubheaderService,
+    private envService: EnvironmentService
+  ) {
     this.subheader.setTitle('Monitor Agents');
     this.subheader.setDescription('View live data being sent from the host agents');
   }
 
   ngOnInit(): void {
-    this.api.pullEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').then(
+    this.api.pullEnvironments().then((envs: EnvironmentInfo[]) => {
+      this.envs = envs;
+      this.cdRef.detectChanges();
+    });
+  }
+
+  envIsSelected(): boolean {
+    return this.envService.getCurrentEnv() != null;
+  }
+
+  grabEnvironmentTree(changeEvent: MatSelectChange): void {
+    this.envService.setCurrentEnv(this.envs.filter((e) => e.id === changeEvent.value)[0]);
+    this.api.pullEnvTree(this.envService.getCurrentEnv().id).then(
       (env: Environment) => {
         this.environment = resolveStatuses(env);
         this.envLoaded = true;
@@ -37,39 +61,54 @@ export class MonitorComponent implements OnInit, OnDestroy {
       },
       (err) => {
         console.error('yep, cant connect');
-        // console.error(err);
+        console.error(err);
       }
     );
   }
 
   ngOnDestroy(): void {
-    clearInterval(this.agentPollingInterval);
+    // clearInterval(this.agentPollingInterval);
+    this.agentStatusSubscription.unsubscribe();
   }
 
   initAgentStatusPolling(): void {
-    // Go ahead and query the statuses for the first time
-    this.fetchAgentStatuses();
-    // Set up the query to be polled every interval
-    this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    console.log('Agent status polling initializing...');
+    this.agentStatusQuery = this.api.getAgentStatuses(this.environment.id);
+    this.agentStatusQuery.startPolling(this.pollingInterval * 1000);
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    // Force UI to refresh so we can detect stale agent data
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
+    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(({ data: result }) => {
+      if (result) {
+        this.loading = false;
+        this.environment = updateAgentStatuses(this.environment, result);
+        // console.log('data updated');
+      }
+    }, console.error);
   }
 
   fetchAgentStatuses(): void {
+    // console.log('Polling agent statuses...');
     this.loading = true;
     this.cdRef.detectChanges();
-    this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
-      this.loading = false;
-      this.environment = updateAgentStatuses(this.environment, result);
-      this.cdRef.detectChanges();
-    }, console.error);
+    // this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
+    //   this.loading = false;
+    //   this.environment = updateAgentStatuses(this.environment, result);
+    //   this.cdRef.detectChanges();
+    // }, console.error);
   }
   // onBranchSelect(changeEvent: MatSelectChange) {
   onIntervalChange(changeEvent: MatSelectChange): void {
     // Update the interval based on select's value
     this.pollingInterval = changeEvent.value;
+    this.agentStatusQuery.stopPolling();
+    this.agentStatusQuery.startPolling(changeEvent.value * 1000);
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
     // Stop the old polling
-    clearInterval(this.agentPollingInterval);
+    // clearInterval(this.agentPollingInterval);
     // Set up polling again with new interval
-    this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    // this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
   }
 
   rebuildEnv(): void {

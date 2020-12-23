@@ -2,7 +2,7 @@ import { AgentStatus } from './agent.model';
 import { Command } from './command.model';
 import { ID, Status, Tag, User, varsMap } from './common.model';
 import { DNSRecord } from './dns.model';
-import { FileDelete, FileDownload, FileExtract } from './file.model';
+import { FileDelete, FileDownload, FileExtract, RemoteFile } from './file.model';
 // import { ProvisionedNetwork } from './network.model';
 import { Script } from './script.model';
 
@@ -33,7 +33,7 @@ export interface ProvisionedHost {
   subnetIP: string;
   status: Status;
   // provisionedNetwork: ProvisionedNetwork; * avoids circular dependencies *
-  provisionedSteps: ProvisionedStep[];
+  provisionedSteps?: ProvisionedStep[] /* optional, allows us to query steps later */;
   host: Host;
   heartbeat?: AgentStatus;
 }
@@ -47,7 +47,5 @@ export interface ProvisionedStep {
   script?: Script;
   command?: Command;
   DNSRecord?: DNSRecord;
-  fileDownload?: FileDownload;
-  fileDelete?: FileDelete;
-  fileExtract?: FileExtract;
+  remoteFile?: RemoteFile;
 }

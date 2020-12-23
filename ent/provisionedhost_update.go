@@ -9,6 +9,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -94,6 +95,21 @@ func (phu *ProvisionedHostUpdate) AddProvisionedSteps(p ...*ProvisioningStep) *P
 		ids[i] = p[i].ID
 	}
 	return phu.AddProvisionedStepIDs(ids...)
+}
+
+// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
+func (phu *ProvisionedHostUpdate) AddAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddAgentStatuIDs(ids...)
+	return phu
+}
+
+// AddAgentStatus adds the agent_status edges to AgentStatus.
+func (phu *ProvisionedHostUpdate) AddAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phu.AddAgentStatuIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -183,6 +199,27 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedSteps(p ...*ProvisioningStep)
 		ids[i] = p[i].ID
 	}
 	return phu.RemoveProvisionedStepIDs(ids...)
+}
+
+// ClearAgentStatus clears all "agent_status" edges to type AgentStatus.
+func (phu *ProvisionedHostUpdate) ClearAgentStatus() *ProvisionedHostUpdate {
+	phu.mutation.ClearAgentStatus()
+	return phu
+}
+
+// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
+func (phu *ProvisionedHostUpdate) RemoveAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveAgentStatuIDs(ids...)
+	return phu
+}
+
+// RemoveAgentStatus removes agent_status edges to AgentStatus.
+func (phu *ProvisionedHostUpdate) RemoveAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phu.RemoveAgentStatuIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -477,6 +514,60 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if phu.mutation.AgentStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.RemovedAgentStatusIDs(); len(nodes) > 0 && !phu.mutation.AgentStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.AgentStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, phu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionedhost.Label}
@@ -559,6 +650,21 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedSteps(p ...*ProvisioningStep
 		ids[i] = p[i].ID
 	}
 	return phuo.AddProvisionedStepIDs(ids...)
+}
+
+// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
+func (phuo *ProvisionedHostUpdateOne) AddAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddAgentStatuIDs(ids...)
+	return phuo
+}
+
+// AddAgentStatus adds the agent_status edges to AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) AddAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phuo.AddAgentStatuIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -648,6 +754,27 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedSteps(p ...*ProvisioningS
 		ids[i] = p[i].ID
 	}
 	return phuo.RemoveProvisionedStepIDs(ids...)
+}
+
+// ClearAgentStatus clears all "agent_status" edges to type AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) ClearAgentStatus() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearAgentStatus()
+	return phuo
+}
+
+// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveAgentStatuIDs(ids...)
+	return phuo
+}
+
+// RemoveAgentStatus removes agent_status edges to AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) RemoveAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phuo.RemoveAgentStatuIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -932,6 +1059,60 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.AgentStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.RemovedAgentStatusIDs(); len(nodes) > 0 && !phuo.mutation.AgentStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.AgentStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.AgentStatusTable,
+			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: agentstatus.FieldID,
 				},
 			},
 		}

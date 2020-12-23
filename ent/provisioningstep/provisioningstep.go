@@ -11,9 +11,9 @@ const (
 	FieldProvisionerType = "provisioner_type"
 	// FieldStepNumber holds the string denoting the step_number field in the database.
 	FieldStepNumber = "step_number"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
 
+	// EdgeStatus holds the string denoting the status edge name in mutations.
+	EdgeStatus = "status"
 	// EdgeProvisionedHost holds the string denoting the provisioned_host edge name in mutations.
 	EdgeProvisionedHost = "provisioned_host"
 	// EdgeScript holds the string denoting the script edge name in mutations.
@@ -27,6 +27,13 @@ const (
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
+	// StatusTable is the table the holds the status relation/edge.
+	StatusTable = "status"
+	// StatusInverseTable is the table name for the Status entity.
+	// It exists in this package in order to avoid circular dependency with the "status" package.
+	StatusInverseTable = "status"
+	// StatusColumn is the table column denoting the status relation/edge.
+	StatusColumn = "provisioning_step_status"
 	// ProvisionedHostTable is the table the holds the provisioned_host relation/edge. The primary key declared below.
 	ProvisionedHostTable = "provisioning_step_provisioned_host"
 	// ProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
@@ -67,7 +74,6 @@ var Columns = []string{
 	FieldID,
 	FieldProvisionerType,
 	FieldStepNumber,
-	FieldStatus,
 }
 
 var (

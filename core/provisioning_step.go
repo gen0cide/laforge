@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
@@ -201,6 +202,22 @@ func (p *ProvisioningStep) Gather(g *Snapshot) error {
 
 // CreateProvisioningStepEntry ...
 func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *ent.ProvisionedHost, client *ent.Client) (*ent.ProvisioningStep, error) {
+	// TODO: This Will Need to actually be made in the future
+	pStatus := Status{
+		State:     "COMPLETE",
+		StartedAt: time.Now(),
+		EndedAt:   time.Now(),
+		Failed:    false,
+		Completed: true,
+		Error:     "",
+	}
+
+	status, err := pStatus.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
 	if p.Script != nil {
 		script, err := p.Script.CreateScriptEntry(ph, ctx, client)
 
@@ -213,9 +230,9 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *
 			Create().
 			SetProvisionerType(p.ProvisionerType).
 			SetStepNumber(p.StepNumber).
-			SetStatus(p.Status).
 			AddProvisionedHost(ph).
 			AddScript(script).
+			AddStatus(status).
 			Save(ctx)
 
 		if err != nil {
@@ -237,7 +254,7 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *
 			Create().
 			SetProvisionerType(p.ProvisionerType).
 			SetStepNumber(p.StepNumber).
-			SetStatus(p.Status).
+			AddStatus(status).
 			AddProvisionedHost(ph).
 			AddCommand(command).
 			Save(ctx)
@@ -261,7 +278,7 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *
 			Create().
 			SetProvisionerType(p.ProvisionerType).
 			SetStepNumber(p.StepNumber).
-			SetStatus(p.Status).
+			AddStatus(status).
 			AddProvisionedHost(ph).
 			AddDNSRecord(dnsrecord).
 			Save(ctx)
@@ -285,7 +302,7 @@ func (p *ProvisioningStep) CreateProvisioningStepEntry(ctx context.Context, ph *
 			Create().
 			SetProvisionerType(p.ProvisionerType).
 			SetStepNumber(p.StepNumber).
-			SetStatus(p.Status).
+			AddStatus(status).
 			AddProvisionedHost(ph).
 			AddRemoteFile(remotefile).
 			Save(ctx)

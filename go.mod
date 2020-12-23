@@ -25,6 +25,7 @@ require (
 	github.com/gen0cide/gscript v0.1.1
 	github.com/gen0cide/utils v0.0.0-20181012043315-207bbefab091
 	github.com/gen0cide/winrmcp v0.0.0-20181025022149-44c9dbdf72ab
+	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-gonic/contrib v0.0.0-20200810162008-6dee08bf958e
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-chi/chi v4.1.2+incompatible
@@ -42,6 +43,8 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a // indirect
 	github.com/iancoleman/strcase v0.1.1
 	github.com/imdario/mergo v0.3.11
+	github.com/jackc/pgx/v4 v4.10.1
+	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/juju/clock v0.0.0-20190205081909-9c5c9712527c // indirect
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/loggo v0.0.0-20200526014432-9ce3a2e09b5e // indirect
@@ -52,7 +55,6 @@ require (
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/kardianos/service v1.1.0
 	github.com/karrick/godirwalk v1.16.1
-	github.com/kr/pty v1.1.5 // indirect
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/mailru/easyjson v0.7.6

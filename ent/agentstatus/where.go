@@ -106,21 +106,21 @@ func Hostname(v string) predicate.AgentStatus {
 }
 
 // UpTime applies equality check predicate on the "UpTime" field. It's identical to UpTimeEQ.
-func UpTime(v int) predicate.AgentStatus {
+func UpTime(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpTime), v))
 	})
 }
 
 // BootTime applies equality check predicate on the "BootTime" field. It's identical to BootTimeEQ.
-func BootTime(v int) predicate.AgentStatus {
+func BootTime(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBootTime), v))
 	})
 }
 
 // NumProcs applies equality check predicate on the "NumProcs" field. It's identical to NumProcsEQ.
-func NumProcs(v int) predicate.AgentStatus {
+func NumProcs(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldNumProcs), v))
 	})
@@ -162,23 +162,30 @@ func Load15(v float64) predicate.AgentStatus {
 }
 
 // TotalMem applies equality check predicate on the "TotalMem" field. It's identical to TotalMemEQ.
-func TotalMem(v int) predicate.AgentStatus {
+func TotalMem(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldTotalMem), v))
 	})
 }
 
 // FreeMem applies equality check predicate on the "FreeMem" field. It's identical to FreeMemEQ.
-func FreeMem(v int) predicate.AgentStatus {
+func FreeMem(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldFreeMem), v))
 	})
 }
 
 // UsedMem applies equality check predicate on the "UsedMem" field. It's identical to UsedMemEQ.
-func UsedMem(v int) predicate.AgentStatus {
+func UsedMem(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUsedMem), v))
+	})
+}
+
+// Timestamp applies equality check predicate on the "Timestamp" field. It's identical to TimestampEQ.
+func Timestamp(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTimestamp), v))
 	})
 }
 
@@ -405,21 +412,21 @@ func HostnameContainsFold(v string) predicate.AgentStatus {
 }
 
 // UpTimeEQ applies the EQ predicate on the "UpTime" field.
-func UpTimeEQ(v int) predicate.AgentStatus {
+func UpTimeEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpTime), v))
 	})
 }
 
 // UpTimeNEQ applies the NEQ predicate on the "UpTime" field.
-func UpTimeNEQ(v int) predicate.AgentStatus {
+func UpTimeNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldUpTime), v))
 	})
 }
 
 // UpTimeIn applies the In predicate on the "UpTime" field.
-func UpTimeIn(vs ...int) predicate.AgentStatus {
+func UpTimeIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -436,7 +443,7 @@ func UpTimeIn(vs ...int) predicate.AgentStatus {
 }
 
 // UpTimeNotIn applies the NotIn predicate on the "UpTime" field.
-func UpTimeNotIn(vs ...int) predicate.AgentStatus {
+func UpTimeNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -453,49 +460,49 @@ func UpTimeNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // UpTimeGT applies the GT predicate on the "UpTime" field.
-func UpTimeGT(v int) predicate.AgentStatus {
+func UpTimeGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldUpTime), v))
 	})
 }
 
 // UpTimeGTE applies the GTE predicate on the "UpTime" field.
-func UpTimeGTE(v int) predicate.AgentStatus {
+func UpTimeGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldUpTime), v))
 	})
 }
 
 // UpTimeLT applies the LT predicate on the "UpTime" field.
-func UpTimeLT(v int) predicate.AgentStatus {
+func UpTimeLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldUpTime), v))
 	})
 }
 
 // UpTimeLTE applies the LTE predicate on the "UpTime" field.
-func UpTimeLTE(v int) predicate.AgentStatus {
+func UpTimeLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpTime), v))
 	})
 }
 
 // BootTimeEQ applies the EQ predicate on the "BootTime" field.
-func BootTimeEQ(v int) predicate.AgentStatus {
+func BootTimeEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBootTime), v))
 	})
 }
 
 // BootTimeNEQ applies the NEQ predicate on the "BootTime" field.
-func BootTimeNEQ(v int) predicate.AgentStatus {
+func BootTimeNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBootTime), v))
 	})
 }
 
 // BootTimeIn applies the In predicate on the "BootTime" field.
-func BootTimeIn(vs ...int) predicate.AgentStatus {
+func BootTimeIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -512,7 +519,7 @@ func BootTimeIn(vs ...int) predicate.AgentStatus {
 }
 
 // BootTimeNotIn applies the NotIn predicate on the "BootTime" field.
-func BootTimeNotIn(vs ...int) predicate.AgentStatus {
+func BootTimeNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -529,49 +536,49 @@ func BootTimeNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // BootTimeGT applies the GT predicate on the "BootTime" field.
-func BootTimeGT(v int) predicate.AgentStatus {
+func BootTimeGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBootTime), v))
 	})
 }
 
 // BootTimeGTE applies the GTE predicate on the "BootTime" field.
-func BootTimeGTE(v int) predicate.AgentStatus {
+func BootTimeGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBootTime), v))
 	})
 }
 
 // BootTimeLT applies the LT predicate on the "BootTime" field.
-func BootTimeLT(v int) predicate.AgentStatus {
+func BootTimeLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBootTime), v))
 	})
 }
 
 // BootTimeLTE applies the LTE predicate on the "BootTime" field.
-func BootTimeLTE(v int) predicate.AgentStatus {
+func BootTimeLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBootTime), v))
 	})
 }
 
 // NumProcsEQ applies the EQ predicate on the "NumProcs" field.
-func NumProcsEQ(v int) predicate.AgentStatus {
+func NumProcsEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldNumProcs), v))
 	})
 }
 
 // NumProcsNEQ applies the NEQ predicate on the "NumProcs" field.
-func NumProcsNEQ(v int) predicate.AgentStatus {
+func NumProcsNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldNumProcs), v))
 	})
 }
 
 // NumProcsIn applies the In predicate on the "NumProcs" field.
-func NumProcsIn(vs ...int) predicate.AgentStatus {
+func NumProcsIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -588,7 +595,7 @@ func NumProcsIn(vs ...int) predicate.AgentStatus {
 }
 
 // NumProcsNotIn applies the NotIn predicate on the "NumProcs" field.
-func NumProcsNotIn(vs ...int) predicate.AgentStatus {
+func NumProcsNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -605,28 +612,28 @@ func NumProcsNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // NumProcsGT applies the GT predicate on the "NumProcs" field.
-func NumProcsGT(v int) predicate.AgentStatus {
+func NumProcsGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldNumProcs), v))
 	})
 }
 
 // NumProcsGTE applies the GTE predicate on the "NumProcs" field.
-func NumProcsGTE(v int) predicate.AgentStatus {
+func NumProcsGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldNumProcs), v))
 	})
 }
 
 // NumProcsLT applies the LT predicate on the "NumProcs" field.
-func NumProcsLT(v int) predicate.AgentStatus {
+func NumProcsLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldNumProcs), v))
 	})
 }
 
 // NumProcsLTE applies the LTE predicate on the "NumProcs" field.
-func NumProcsLTE(v int) predicate.AgentStatus {
+func NumProcsLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldNumProcs), v))
 	})
@@ -1083,21 +1090,21 @@ func Load15LTE(v float64) predicate.AgentStatus {
 }
 
 // TotalMemEQ applies the EQ predicate on the "TotalMem" field.
-func TotalMemEQ(v int) predicate.AgentStatus {
+func TotalMemEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldTotalMem), v))
 	})
 }
 
 // TotalMemNEQ applies the NEQ predicate on the "TotalMem" field.
-func TotalMemNEQ(v int) predicate.AgentStatus {
+func TotalMemNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldTotalMem), v))
 	})
 }
 
 // TotalMemIn applies the In predicate on the "TotalMem" field.
-func TotalMemIn(vs ...int) predicate.AgentStatus {
+func TotalMemIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1114,7 +1121,7 @@ func TotalMemIn(vs ...int) predicate.AgentStatus {
 }
 
 // TotalMemNotIn applies the NotIn predicate on the "TotalMem" field.
-func TotalMemNotIn(vs ...int) predicate.AgentStatus {
+func TotalMemNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1131,49 +1138,49 @@ func TotalMemNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // TotalMemGT applies the GT predicate on the "TotalMem" field.
-func TotalMemGT(v int) predicate.AgentStatus {
+func TotalMemGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldTotalMem), v))
 	})
 }
 
 // TotalMemGTE applies the GTE predicate on the "TotalMem" field.
-func TotalMemGTE(v int) predicate.AgentStatus {
+func TotalMemGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldTotalMem), v))
 	})
 }
 
 // TotalMemLT applies the LT predicate on the "TotalMem" field.
-func TotalMemLT(v int) predicate.AgentStatus {
+func TotalMemLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldTotalMem), v))
 	})
 }
 
 // TotalMemLTE applies the LTE predicate on the "TotalMem" field.
-func TotalMemLTE(v int) predicate.AgentStatus {
+func TotalMemLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldTotalMem), v))
 	})
 }
 
 // FreeMemEQ applies the EQ predicate on the "FreeMem" field.
-func FreeMemEQ(v int) predicate.AgentStatus {
+func FreeMemEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldFreeMem), v))
 	})
 }
 
 // FreeMemNEQ applies the NEQ predicate on the "FreeMem" field.
-func FreeMemNEQ(v int) predicate.AgentStatus {
+func FreeMemNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldFreeMem), v))
 	})
 }
 
 // FreeMemIn applies the In predicate on the "FreeMem" field.
-func FreeMemIn(vs ...int) predicate.AgentStatus {
+func FreeMemIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1190,7 +1197,7 @@ func FreeMemIn(vs ...int) predicate.AgentStatus {
 }
 
 // FreeMemNotIn applies the NotIn predicate on the "FreeMem" field.
-func FreeMemNotIn(vs ...int) predicate.AgentStatus {
+func FreeMemNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1207,49 +1214,49 @@ func FreeMemNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // FreeMemGT applies the GT predicate on the "FreeMem" field.
-func FreeMemGT(v int) predicate.AgentStatus {
+func FreeMemGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldFreeMem), v))
 	})
 }
 
 // FreeMemGTE applies the GTE predicate on the "FreeMem" field.
-func FreeMemGTE(v int) predicate.AgentStatus {
+func FreeMemGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldFreeMem), v))
 	})
 }
 
 // FreeMemLT applies the LT predicate on the "FreeMem" field.
-func FreeMemLT(v int) predicate.AgentStatus {
+func FreeMemLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldFreeMem), v))
 	})
 }
 
 // FreeMemLTE applies the LTE predicate on the "FreeMem" field.
-func FreeMemLTE(v int) predicate.AgentStatus {
+func FreeMemLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldFreeMem), v))
 	})
 }
 
 // UsedMemEQ applies the EQ predicate on the "UsedMem" field.
-func UsedMemEQ(v int) predicate.AgentStatus {
+func UsedMemEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUsedMem), v))
 	})
 }
 
 // UsedMemNEQ applies the NEQ predicate on the "UsedMem" field.
-func UsedMemNEQ(v int) predicate.AgentStatus {
+func UsedMemNEQ(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldUsedMem), v))
 	})
 }
 
 // UsedMemIn applies the In predicate on the "UsedMem" field.
-func UsedMemIn(vs ...int) predicate.AgentStatus {
+func UsedMemIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1266,7 +1273,7 @@ func UsedMemIn(vs ...int) predicate.AgentStatus {
 }
 
 // UsedMemNotIn applies the NotIn predicate on the "UsedMem" field.
-func UsedMemNotIn(vs ...int) predicate.AgentStatus {
+func UsedMemNotIn(vs ...int64) predicate.AgentStatus {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1283,30 +1290,106 @@ func UsedMemNotIn(vs ...int) predicate.AgentStatus {
 }
 
 // UsedMemGT applies the GT predicate on the "UsedMem" field.
-func UsedMemGT(v int) predicate.AgentStatus {
+func UsedMemGT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldUsedMem), v))
 	})
 }
 
 // UsedMemGTE applies the GTE predicate on the "UsedMem" field.
-func UsedMemGTE(v int) predicate.AgentStatus {
+func UsedMemGTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldUsedMem), v))
 	})
 }
 
 // UsedMemLT applies the LT predicate on the "UsedMem" field.
-func UsedMemLT(v int) predicate.AgentStatus {
+func UsedMemLT(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldUsedMem), v))
 	})
 }
 
 // UsedMemLTE applies the LTE predicate on the "UsedMem" field.
-func UsedMemLTE(v int) predicate.AgentStatus {
+func UsedMemLTE(v int64) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUsedMem), v))
+	})
+}
+
+// TimestampEQ applies the EQ predicate on the "Timestamp" field.
+func TimestampEQ(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTimestamp), v))
+	})
+}
+
+// TimestampNEQ applies the NEQ predicate on the "Timestamp" field.
+func TimestampNEQ(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTimestamp), v))
+	})
+}
+
+// TimestampIn applies the In predicate on the "Timestamp" field.
+func TimestampIn(vs ...int64) predicate.AgentStatus {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldTimestamp), v...))
+	})
+}
+
+// TimestampNotIn applies the NotIn predicate on the "Timestamp" field.
+func TimestampNotIn(vs ...int64) predicate.AgentStatus {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldTimestamp), v...))
+	})
+}
+
+// TimestampGT applies the GT predicate on the "Timestamp" field.
+func TimestampGT(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTimestamp), v))
+	})
+}
+
+// TimestampGTE applies the GTE predicate on the "Timestamp" field.
+func TimestampGTE(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTimestamp), v))
+	})
+}
+
+// TimestampLT applies the LT predicate on the "Timestamp" field.
+func TimestampLT(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTimestamp), v))
+	})
+}
+
+// TimestampLTE applies the LTE predicate on the "Timestamp" field.
+func TimestampLTE(v int64) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTimestamp), v))
 	})
 }
 
@@ -1316,7 +1399,7 @@ func HasHost() predicate.AgentStatus {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostTable, HostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostTable, HostPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1328,7 +1411,7 @@ func HasHostWith(preds ...predicate.ProvisionedHost) predicate.AgentStatus {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostTable, HostColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostTable, HostPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

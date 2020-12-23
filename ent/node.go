@@ -73,7 +73,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     as.ID,
 		Type:   "AgentStatus",
-		Fields: make([]*Field, 13),
+		Fields: make([]*Field, 14),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -97,7 +97,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "UpTime",
 		Value: string(buf),
 	}
@@ -105,7 +105,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "BootTime",
 		Value: string(buf),
 	}
@@ -113,7 +113,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[4] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "NumProcs",
 		Value: string(buf),
 	}
@@ -161,7 +161,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[10] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "TotalMem",
 		Value: string(buf),
 	}
@@ -169,7 +169,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[11] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "FreeMem",
 		Value: string(buf),
 	}
@@ -177,8 +177,16 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[12] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "UsedMem",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Timestamp); err != nil {
+		return nil, err
+	}
+	node.Fields[13] = &Field{
+		Type:  "int64",
+		Name:  "Timestamp",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1231,7 +1239,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 4),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -1278,6 +1286,16 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[3].IDs, err = ph.QueryProvisionedSteps().
 		Select(provisioningstep.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "AgentStatus",
+		Name: "agent_status",
+	}
+	node.Edges[4].IDs, err = ph.QueryAgentStatus().
+		Select(agentstatus.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -1366,8 +1384,8 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ps.ID,
 		Type:   "ProvisioningStep",
-		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 5),
+		Fields: make([]*Field, 2),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ps.ProvisionerType); err != nil {
@@ -1386,59 +1404,61 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "step_number",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(ps.Status); err != nil {
-		return nil, err
-	}
-	node.Fields[2] = &Field{
-		Type:  "string",
-		Name:  "status",
-		Value: string(buf),
-	}
 	node.Edges[0] = &Edge{
-		Type: "ProvisionedHost",
-		Name: "provisioned_host",
+		Type: "Status",
+		Name: "status",
 	}
-	node.Edges[0].IDs, err = ps.QueryProvisionedHost().
-		Select(provisionedhost.FieldID).
+	node.Edges[0].IDs, err = ps.QueryStatus().
+		Select(status.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[1] = &Edge{
-		Type: "Script",
-		Name: "script",
+		Type: "ProvisionedHost",
+		Name: "provisioned_host",
 	}
-	node.Edges[1].IDs, err = ps.QueryScript().
-		Select(script.FieldID).
+	node.Edges[1].IDs, err = ps.QueryProvisionedHost().
+		Select(provisionedhost.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[2] = &Edge{
-		Type: "Command",
-		Name: "command",
+		Type: "Script",
+		Name: "script",
 	}
-	node.Edges[2].IDs, err = ps.QueryCommand().
-		Select(command.FieldID).
+	node.Edges[2].IDs, err = ps.QueryScript().
+		Select(script.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[3] = &Edge{
-		Type: "DNSRecord",
-		Name: "dns_record",
+		Type: "Command",
+		Name: "command",
 	}
-	node.Edges[3].IDs, err = ps.QueryDNSRecord().
-		Select(dnsrecord.FieldID).
+	node.Edges[3].IDs, err = ps.QueryCommand().
+		Select(command.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[4] = &Edge{
+		Type: "DNSRecord",
+		Name: "dns_record",
+	}
+	node.Edges[4].IDs, err = ps.QueryDNSRecord().
+		Select(dnsrecord.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
 		Type: "RemoteFile",
 		Name: "remote_file",
 	}
-	node.Edges[4].IDs, err = ps.QueryRemoteFile().
+	node.Edges[5].IDs, err = ps.QueryRemoteFile().
 		Select(remotefile.FieldID).
 		Ints(ctx)
 	if err != nil {

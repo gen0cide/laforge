@@ -1,17 +1,43 @@
 import { Injectable } from '@angular/core';
-import { ApolloQueryResult } from '@apollo/client/core';
-import { Apollo } from 'apollo-angular';
-import { getEnvironmentQuery } from './queries/environment';
+import { ApolloQueryResult, FetchResult } from '@apollo/client/core';
+import { Apollo, QueryRef } from 'apollo-angular';
+import { getEnvironmentQuery, getEnvironmentsQuery } from './queries/environment';
 import { Observable } from 'rxjs';
 import { getAgentStatusesQuery } from './queries/agent';
-import { AgentStatusQueryResult, EnvironmentQueryResult } from 'src/app/models/api.model';
+import {
+  AgentStatusQueryResult,
+  EnvironmentInfo,
+  EnvironmentInfoQueryResult,
+  EnvironmentQueryResult,
+  HostStepsQueryResult
+} from 'src/app/models/api.model';
 import { Environment } from 'src/app/models/environment.model';
+import { getEnvConfigQuery } from './queries/env-tree';
+import { getProvisionedSteps } from './queries/steps';
+import { ProvisionedStep } from 'src/app/models/host.model';
+import { EmptyObject } from 'apollo-angular/types';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  private statusPollingInterval: number;
+
   constructor(private apollo: Apollo) {}
+
+  /**
+   * Set the interval used for agent status polling
+   * @param interval the polling interval in milliseconds
+   */
+  public setStatusPollingInterval(interval: number): void {
+    this.statusPollingInterval = interval;
+  }
+  /**
+   * Get the interval used for agent status polling
+   */
+  public getStatusPollingInterval(): number {
+    return this.statusPollingInterval;
+  }
 
   /**
    * Sets up a subscription with the API to return an observable that updates as teh values change in the database
@@ -21,6 +47,19 @@ export class ApiService {
     return this.apollo.watchQuery<EnvironmentQueryResult>({
       query: getEnvironmentQuery(id)
     }).valueChanges;
+  }
+
+  /**
+   * Pulls an environment from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
+  public async pullEnvironments(): Promise<EnvironmentInfo[]> {
+    const res = await this.apollo
+      .query<EnvironmentInfoQueryResult>({
+        query: getEnvironmentsQuery()
+      })
+      .toPromise();
+    return res.data.environments;
   }
 
   /**
@@ -37,15 +76,62 @@ export class ApiService {
   }
 
   /**
+   * Pulls an environment tree from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
+  public async pullEnvTree(id: string): Promise<Environment> {
+    const res = await this.apollo
+      .query<EnvironmentQueryResult>({
+        query: getEnvConfigQuery(id)
+      })
+      .toPromise();
+    return res.data.environment;
+  }
+
+  /**
+   * Pulls an environment tree from the API once, without exposing a subscription or observable
+   * @param id The Environment ID of the environment
+   */
+  public async pullHostSteps(hostId: string): Promise<ProvisionedStep[]> {
+    const res = await this.apollo
+      .query<HostStepsQueryResult>({
+        query: getProvisionedSteps(hostId)
+      })
+      .toPromise();
+    return res.data.provisionedHost.provisionedSteps;
+  }
+
+  /**
    * Pulls the statuses of all running agents from the API once, without exposing a subscription or observable
    * @param envId The Environment ID of the environment
    */
-  public async getAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
+  public getAgentStatuses(envId: string): QueryRef<AgentStatusQueryResult, EmptyObject> {
+    return this.apollo.watchQuery<AgentStatusQueryResult>({
+      query: getAgentStatusesQuery,
+      variables: {
+        id: `${envId}`
+      },
+      // pollInterval: 0,
+      // fetchPolicy: 'cache-and-network'
+    });
+  }
+
+  /**
+   * Pulls the statuses of all running agents from the API once, without exposing a subscription or observable
+   * @param envId The Environment ID of the environment
+   */
+  public async pullAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
+    console.log('test');
     const res = await this.apollo
       .query<AgentStatusQueryResult>({
-        query: getAgentStatusesQuery(envId)
+        query: getAgentStatusesQuery,
+        variables: {
+          id: envId
+        }
       })
-      .toPromise();
-    return res.data;
+      .toPromise()
+      .then((result: ApolloQueryResult<AgentStatusQueryResult>) => result.data);
+    console.log('test 2');
+    return res;
   }
 }

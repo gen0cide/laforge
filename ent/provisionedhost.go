@@ -19,8 +19,7 @@ type ProvisionedHost struct {
 	SubnetIP string `json:"subnet_ip,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedHostQuery when eager-loading is set.
-	Edges             ProvisionedHostEdges `json:"edges"`
-	agent_status_host *int
+	Edges ProvisionedHostEdges `json:"edges"`
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
@@ -33,9 +32,11 @@ type ProvisionedHostEdges struct {
 	Host []*Host
 	// ProvisionedSteps holds the value of the provisioned_steps edge.
 	ProvisionedSteps []*ProvisioningStep
+	// AgentStatus holds the value of the agent_status edge.
+	AgentStatus []*AgentStatus
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // StatusOrErr returns the Status value or an error if the edge
@@ -74,18 +75,20 @@ func (e ProvisionedHostEdges) ProvisionedStepsOrErr() ([]*ProvisioningStep, erro
 	return nil, &NotLoadedError{edge: "provisioned_steps"}
 }
 
+// AgentStatusOrErr returns the AgentStatus value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) AgentStatusOrErr() ([]*AgentStatus, error) {
+	if e.loadedTypes[4] {
+		return e.AgentStatus, nil
+	}
+	return nil, &NotLoadedError{edge: "agent_status"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ProvisionedHost) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // subnet_ip
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*ProvisionedHost) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // agent_status_host
 	}
 }
 
@@ -105,15 +108,6 @@ func (ph *ProvisionedHost) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field subnet_ip", values[0])
 	} else if value.Valid {
 		ph.SubnetIP = value.String
-	}
-	values = values[1:]
-	if len(values) == len(provisionedhost.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field agent_status_host", value)
-		} else if value.Valid {
-			ph.agent_status_host = new(int)
-			*ph.agent_status_host = int(value.Int64)
-		}
 	}
 	return nil
 }
@@ -136,6 +130,11 @@ func (ph *ProvisionedHost) QueryHost() *HostQuery {
 // QueryProvisionedSteps queries the provisioned_steps edge of the ProvisionedHost.
 func (ph *ProvisionedHost) QueryProvisionedSteps() *ProvisioningStepQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedSteps(ph)
+}
+
+// QueryAgentStatus queries the agent_status edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryAgentStatus() *AgentStatusQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryAgentStatus(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.

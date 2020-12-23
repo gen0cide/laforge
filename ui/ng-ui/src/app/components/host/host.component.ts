@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProvisionedHost } from 'src/app/models/host.model';
 import { HostModalComponent } from '../host-modal/host-modal.component';
 import { RebuildService } from '../../services/rebuild/rebuild.service';
+import { ApiService } from 'src/app/services/api/api.service';
 
 @Component({
   selector: 'app-host',
@@ -18,7 +19,7 @@ export class HostComponent {
   @Input() parentSelected: boolean;
   isSelected = false;
 
-  constructor(public dialog: MatDialog, private rebuild: RebuildService) {
+  constructor(public dialog: MatDialog, private rebuild: RebuildService, private api: ApiService) {
     if (!this.style) this.style = 'compact';
     if (!this.selectable) this.selectable = false;
     if (!this.parentSelected) this.parentSelected = false;
@@ -32,8 +33,18 @@ export class HostComponent {
     });
   }
 
+  isAgentStale(): boolean {
+    if (this.provisionedHost.heartbeat == null) return true;
+    return Date.now() / 1000 - this.provisionedHost.heartbeat.timestamp > this.api.getStatusPollingInterval() + 60
+  }
+
   getStatusIcon(): string {
-    if (this.provisionedHost.heartbeat) return 'check';
+    if (this.provisionedHost.heartbeat != null) {
+      if (this.isAgentStale())
+        return 'exclamation';
+      else
+        return 'check';
+    }
     else return 'minus';
     // switch (this.status.state) {
     //   case ProvisionStatus.ProvStatusComplete:
@@ -48,7 +59,12 @@ export class HostComponent {
   }
 
   getStatusColor(): string {
-    if (this.provisionedHost.heartbeat) return 'success';
+    if (this.provisionedHost.heartbeat != null) {
+      if (this.isAgentStale())
+        return 'warning'
+      else
+        return 'success';
+    }
     else return 'dark';
     // switch (this.status.state) {
     //   case ProvisionStatus.ProvStatusComplete:

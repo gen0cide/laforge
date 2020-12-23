@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/status"
 )
 
 // ProvisioningStepCreate is the builder for creating a ProvisioningStep entity.
@@ -36,10 +37,19 @@ func (psc *ProvisioningStepCreate) SetStepNumber(i int) *ProvisioningStepCreate 
 	return psc
 }
 
-// SetStatus sets the status field.
-func (psc *ProvisioningStepCreate) SetStatus(s string) *ProvisioningStepCreate {
-	psc.mutation.SetStatus(s)
+// AddStatuIDs adds the status edge to Status by ids.
+func (psc *ProvisioningStepCreate) AddStatuIDs(ids ...int) *ProvisioningStepCreate {
+	psc.mutation.AddStatuIDs(ids...)
 	return psc
+}
+
+// AddStatus adds the status edges to Status.
+func (psc *ProvisioningStepCreate) AddStatus(s ...*Status) *ProvisioningStepCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return psc.AddStatuIDs(ids...)
 }
 
 // AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
@@ -174,9 +184,6 @@ func (psc *ProvisioningStepCreate) check() error {
 	if _, ok := psc.mutation.StepNumber(); !ok {
 		return &ValidationError{Name: "step_number", err: errors.New("ent: missing required field \"step_number\"")}
 	}
-	if _, ok := psc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
-	}
 	return nil
 }
 
@@ -220,13 +227,24 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		})
 		_node.StepNumber = value
 	}
-	if value, ok := psc.mutation.Status(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: provisioningstep.FieldStatus,
-		})
-		_node.Status = value
+	if nodes := psc.mutation.StatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.StatusTable,
+			Columns: []string{provisioningstep.StatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

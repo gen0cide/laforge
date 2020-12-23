@@ -22,7 +22,7 @@ export class UserModel extends AuthModel {
     this.password = user.password || '';
     this.fullname = user.fullname || '';
     this.email = user.email || '';
-    this.pic = user.pic || './assets/media/users/default.jpg';
+    this.pic = user.pic || '/assets/media/users/default.jpg';
     this.roles = user.roles || [];
     this.occupation = user.occupation || '';
     this.companyName = user.companyName || '';

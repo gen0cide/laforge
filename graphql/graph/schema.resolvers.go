@@ -6,12 +6,12 @@ package graph
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -20,127 +20,301 @@ import (
 )
 
 func (r *buildResolver) Tags(ctx context.Context, obj *ent.Build) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *buildResolver) Config(ctx context.Context, obj *ent.Build) ([]*model.ConfigMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.ConfigMap, 0)
+
+	for k, v := range obj.Config {
+		results = append(results, &model.ConfigMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *buildResolver) Maintainer(ctx context.Context, obj *ent.Build) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	u, err := obj.QueryMaintainer().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Maintainer: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *buildResolver) Teams(ctx context.Context, obj *ent.Build) ([]*ent.Team, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTeam().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Teams: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *commandResolver) Vars(ctx context.Context, obj *ent.Command) ([]*model.VarsMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.VarsMap, 0)
+
+	for k, v := range obj.Vars {
+		results = append(results, &model.VarsMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *commandResolver) Tags(ctx context.Context, obj *ent.Command) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *commandResolver) Maintainer(ctx context.Context, obj *ent.Command) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	u, err := obj.QueryUser().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying User: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *competitionResolver) Config(ctx context.Context, obj *ent.Competition) ([]*model.ConfigMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.ConfigMap, 0)
+
+	for k, v := range obj.Config {
+		results = append(results, &model.ConfigMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *competitionResolver) DNS(ctx context.Context, obj *ent.Competition) (*ent.DNS, error) {
-	panic(fmt.Errorf("not implemented"))
+	d, err := obj.QueryDNS().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying DNS: %v", err)
+	}
+
+	return d, nil
 }
 
 func (r *dNSResolver) NTPServer(ctx context.Context, obj *ent.DNS) ([]*string, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*string, 0)
+
+	for _, elem := range obj.DNSServers {
+		results = append(results, &elem)
+	}
+
+	return results, nil
 }
 
 func (r *dNSResolver) Config(ctx context.Context, obj *ent.DNS) ([]*model.ConfigMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.ConfigMap, 0)
+
+	for k, v := range obj.Config {
+		results = append(results, &model.ConfigMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *dNSRecordResolver) Vars(ctx context.Context, obj *ent.DNSRecord) ([]*model.VarsMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.VarsMap, 0)
+
+	for k, v := range obj.Vars {
+		results = append(results, &model.VarsMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *dNSRecordResolver) Tags(ctx context.Context, obj *ent.DNSRecord) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *environmentResolver) Tags(ctx context.Context, obj *ent.Environment) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *environmentResolver) Config(ctx context.Context, obj *ent.Environment) ([]*model.ConfigMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.ConfigMap, 0)
+
+	for k, v := range obj.Config {
+		results = append(results, &model.ConfigMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *environmentResolver) Maintainer(ctx context.Context, obj *ent.Environment) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	u, err := obj.QueryUser().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying User: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *environmentResolver) Networks(ctx context.Context, obj *ent.Environment) ([]*ent.Network, error) {
-	panic(fmt.Errorf("not implemented"))
+	n, err := obj.QueryNetwork().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Network: %v", err)
+	}
+
+	return n, nil
 }
 
 func (r *environmentResolver) Hosts(ctx context.Context, obj *ent.Environment) ([]*ent.Host, error) {
-	panic(fmt.Errorf("not implemented"))
+	h, err := obj.QueryHost().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Host: %v", err)
+	}
+
+	return h, nil
 }
 
 func (r *environmentResolver) Build(ctx context.Context, obj *ent.Environment) (*ent.Build, error) {
-	panic(fmt.Errorf("not implemented"))
+	b, err := obj.QueryBuild().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Build: %v", err)
+	}
+
+	return b, nil
 }
 
 func (r *environmentResolver) Competition(ctx context.Context, obj *ent.Environment) (*ent.Competition, error) {
-	panic(fmt.Errorf("not implemented"))
+	c, err := obj.QueryCompetition().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Competition: %v", err)
+	}
+
+	return c, nil
 }
 
 func (r *fileDownloadResolver) Templete(ctx context.Context, obj *ent.FileDownload) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.Template, nil
 }
 
 func (r *fileDownloadResolver) Tags(ctx context.Context, obj *ent.FileDownload) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *findingResolver) Severity(ctx context.Context, obj *ent.Finding) (model.FindingSeverity, error) {
-	panic(fmt.Errorf("not implemented"))
+	return model.FindingSeverity(obj.Severity), nil
 }
 
 func (r *findingResolver) Difficulty(ctx context.Context, obj *ent.Finding) (model.FindingDifficulty, error) {
-	panic(fmt.Errorf("not implemented"))
+	return model.FindingDifficulty(obj.Difficulty), nil
 }
 
 func (r *findingResolver) Maintainer(ctx context.Context, obj *ent.Finding) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	u, err := obj.QueryUser().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying User: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *findingResolver) Tags(ctx context.Context, obj *ent.Finding) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *findingResolver) Host(ctx context.Context, obj *ent.Finding) (*ent.Host, error) {
-	panic(fmt.Errorf("not implemented"))
+	h, err := obj.QueryHost().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Host: %v", err)
+	}
+
+	return h, nil
 }
 
 func (r *hostResolver) Vars(ctx context.Context, obj *ent.Host) ([]*model.VarsMap, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*model.VarsMap, 0)
+
+	for k, v := range obj.Vars {
+		results = append(results, &model.VarsMap{k, v})
+	}
+
+	return results, nil
 }
 
 func (r *hostResolver) DependsOn(ctx context.Context, obj *ent.Host) ([]*ent.Host, error) {
-	panic(fmt.Errorf("not implemented"))
+	results := make([]*ent.Host, 0)
+
+	for dependsOn := range obj.DependsOn {
+		h, err := r.client.Host.Query().Where(host.IDEQ(dependsOn)).Only(ctx)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Host: %v", err)
+		}
+
+		results = append(results, h)
+	}
+
+	return results, nil
 }
 
 func (r *hostResolver) Maintainer(ctx context.Context, obj *ent.Host) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	u, err := obj.QueryMaintainer().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying User: %v", err)
+	}
+
+	return u, nil
 }
 
 func (r *hostResolver) Tags(ctx context.Context, obj *ent.Host) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tags: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *hostResolver) DNSRecords(ctx context.Context, obj *ent.Host) ([]*ent.DNSRecord, error) {
@@ -159,17 +333,14 @@ func (r *hostResolver) Scripts(ctx context.Context, obj *ent.Host) ([]*ent.Scrip
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Not Implimented
 func (r *hostResolver) FileDeletes(ctx context.Context, obj *ent.Host) ([]*ent.FileDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Not Implimented
 func (r *hostResolver) FileDownloads(ctx context.Context, obj *ent.Host) ([]*ent.FileDownload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Not Implimented
 func (r *hostResolver) FileExtracts(ctx context.Context, obj *ent.Host) ([]*ent.FileExtract, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -187,7 +358,6 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	log.Println("Build returned: ", b)
 	return b, nil
 }
 
@@ -208,7 +378,6 @@ func (r *networkResolver) Tags(ctx context.Context, obj *ent.Network) ([]*ent.Ta
 		return nil, fmt.Errorf("failed querying Tags: %v", err)
 	}
 
-	log.Println("Tags returned: ", t)
 	return t, nil
 }
 
@@ -219,7 +388,6 @@ func (r *provisionedHostResolver) Status(ctx context.Context, obj *ent.Provision
 		return nil, fmt.Errorf("failed querying Status: %v", err)
 	}
 
-	log.Println("Status returned: ", s)
 	return s, nil
 }
 
@@ -230,7 +398,6 @@ func (r *provisionedHostResolver) ProvisionedNetwork(ctx context.Context, obj *e
 		return nil, fmt.Errorf("failed querying ProvisionedNetwork: %v", err)
 	}
 
-	log.Println("ProvisionedNetwork returned: ", pn)
 	return pn, nil
 }
 
@@ -241,28 +408,29 @@ func (r *provisionedHostResolver) Host(ctx context.Context, obj *ent.Provisioned
 		return nil, fmt.Errorf("failed querying Host: %v", err)
 	}
 
-	log.Println("Host returned: ", h)
 	return h, nil
 }
 
-// TODO
 func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO
 func (r *provisionedHostResolver) Heartbeat(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	check, err := obj.QueryAgentStatus().Exist(ctx)
 
-// Not Implimented
-func (r *provisionedNetworkResolver) Vars(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*model.VarsMap, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Agent Status: %v", err)
+	}
 
-// Not Implimented
-func (r *provisionedNetworkResolver) Tags(ctx context.Context, obj *ent.ProvisionedNetwork) ([]*ent.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	if check {
+		a, err := obj.QueryAgentStatus().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
+		}
+		return a, nil
+	}
+
+	return nil, nil
 }
 
 func (r *provisionedNetworkResolver) Status(ctx context.Context, obj *ent.ProvisionedNetwork) (*ent.Status, error) {
@@ -272,7 +440,6 @@ func (r *provisionedNetworkResolver) Status(ctx context.Context, obj *ent.Provis
 		return nil, fmt.Errorf("failed querying Status: %v", err)
 	}
 
-	log.Println("Status returned: ", s)
 	return s, nil
 }
 
@@ -283,7 +450,6 @@ func (r *provisionedNetworkResolver) Network(ctx context.Context, obj *ent.Provi
 		return nil, fmt.Errorf("failed querying Network: %v", err)
 	}
 
-	log.Println("Network returned: ", n)
 	return n, nil
 }
 
@@ -294,7 +460,6 @@ func (r *provisionedNetworkResolver) Build(ctx context.Context, obj *ent.Provisi
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	log.Println("Build returned: ", b)
 	return b, nil
 }
 
@@ -309,61 +474,89 @@ func (r *provisioningStepResolver) ProvisionedHost(ctx context.Context, obj *ent
 		return nil, fmt.Errorf("failed querying ProvisionedHost: %v", err)
 	}
 
-	log.Println("ProvisionedHost returned: ", ph)
 	return ph, nil
 }
 
-// Not Implimented
 func (r *provisioningStepResolver) Status(ctx context.Context, obj *ent.ProvisioningStep) (*ent.Status, error) {
-	panic(fmt.Errorf("not implemented"))
+	s, err := obj.QueryStatus().Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Status: %v", err)
+	}
+
+	return s, nil
 }
 
 func (r *provisioningStepResolver) Script(ctx context.Context, obj *ent.ProvisioningStep) (*ent.Script, error) {
-	s, err := obj.QueryScript().Only(ctx)
+	check, err := obj.QueryScript().Exist(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Script: %v", err)
 	}
 
-	log.Println("Script returned: ", s)
-	return s, nil
+	if check {
+		s, err := obj.QueryScript().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Script: %v", err)
+		}
+		return s, nil
+	}
+
+	return nil, nil
 }
 
 func (r *provisioningStepResolver) Command(ctx context.Context, obj *ent.ProvisioningStep) (*ent.Command, error) {
-	c, err := obj.QueryCommand().Only(ctx)
+	check, err := obj.QueryCommand().Exist(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Command: %v", err)
 	}
 
-	log.Println("Command returned: ", c)
-	return c, nil
+	if check {
+		c, err := obj.QueryCommand().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Command: %v", err)
+		}
+		return c, nil
+	}
+
+	return nil, nil
 }
 
 func (r *provisioningStepResolver) DNSRecord(ctx context.Context, obj *ent.ProvisioningStep) (*ent.DNSRecord, error) {
-	d, err := obj.QueryDNSRecord().Only(ctx)
+	check, err := obj.QueryDNSRecord().Exist(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed querying DNSRecord: %v", err)
 	}
 
-	log.Println("DNSRecord returned: ", d)
-	return d, nil
+	if check {
+		d, err := obj.QueryDNSRecord().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying DNSRecord: %v", err)
+		}
+		return d, nil
+	}
+
+	return nil, nil
 }
 
-// Not Implimented
-func (r *provisioningStepResolver) FileDownload(ctx context.Context, obj *ent.ProvisioningStep) (*ent.FileDownload, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+func (r *provisioningStepResolver) RemoteFile(ctx context.Context, obj *ent.ProvisioningStep) (*ent.RemoteFile, error) {
+	check, err := obj.QueryRemoteFile().Exist(ctx)
 
-// Not Implimented
-func (r *provisioningStepResolver) FileDelete(ctx context.Context, obj *ent.ProvisioningStep) (*ent.FileDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Remote File: %v", err)
+	}
 
-// Not Implimented
-func (r *provisioningStepResolver) FileExtract(ctx context.Context, obj *ent.ProvisioningStep) (*ent.FileExtract, error) {
-	panic(fmt.Errorf("not implemented"))
+	if check {
+		f, err := obj.QueryRemoteFile().Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying Remote File: %v", err)
+		}
+		return f, nil
+	}
+
+	return nil, nil
 }
 
 func (r *queryResolver) Environments(ctx context.Context) ([]*ent.Environment, error) {
@@ -373,7 +566,6 @@ func (r *queryResolver) Environments(ctx context.Context) ([]*ent.Environment, e
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
 
-	log.Println("Environment returned: ", e)
 	return e, nil
 }
 
@@ -390,7 +582,6 @@ func (r *queryResolver) Environment(ctx context.Context, envUUID string) (*ent.E
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
 
-	log.Println("Environment returned: ", e)
 	return e, nil
 }
 
@@ -407,7 +598,6 @@ func (r *queryResolver) ProvisionedHost(ctx context.Context, proHostUUID string)
 		return nil, fmt.Errorf("failed querying ProvisionedHost: %v", err)
 	}
 
-	log.Println("ProvisionedHost returned: ", ph)
 	return ph, nil
 }
 
@@ -424,7 +614,6 @@ func (r *queryResolver) ProvisionedNetwork(ctx context.Context, proNetUUID strin
 		return nil, fmt.Errorf("failed querying ProvisionedNetwork: %v", err)
 	}
 
-	log.Println("ProvisionedNetwork returned: ", pn)
 	return pn, nil
 }
 
@@ -441,8 +630,31 @@ func (r *queryResolver) ProvisionedStep(ctx context.Context, proStepUUID string)
 		return nil, fmt.Errorf("failed querying ProvisionedStep: %v", err)
 	}
 
-	log.Println("ProvisionedStep returned: ", ps)
 	return ps, nil
+}
+
+func (r *remoteFileResolver) Vars(ctx context.Context, obj *ent.RemoteFile) ([]*model.VarsMap, error) {
+	results := make([]*model.VarsMap, 0)
+
+	for k, v := range obj.Vars {
+		results = append(results, &model.VarsMap{k, v})
+	}
+
+	return results, nil
+}
+
+func (r *remoteFileResolver) Templete(ctx context.Context, obj *ent.RemoteFile) (bool, error) {
+	return obj.Template, nil
+}
+
+func (r *remoteFileResolver) Tags(ctx context.Context, obj *ent.RemoteFile) ([]*ent.Tag, error) {
+	t, err := obj.QueryTag().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Tag: %v", err)
+	}
+
+	return t, nil
 }
 
 func (r *scriptResolver) Vars(ctx context.Context, obj *ent.Script) ([]*model.VarsMap, error) {
@@ -462,7 +674,6 @@ func (r *scriptResolver) Tags(ctx context.Context, obj *ent.Script) ([]*ent.Tag,
 		return nil, fmt.Errorf("failed querying Tag: %v", err)
 	}
 
-	log.Println("Tag returned: ", t)
 	return t, nil
 }
 
@@ -473,7 +684,6 @@ func (r *scriptResolver) Maintainer(ctx context.Context, obj *ent.Script) (*ent.
 		return nil, fmt.Errorf("failed querying User: %v", err)
 	}
 
-	log.Println("User returned: ", u)
 	return u, nil
 }
 
@@ -484,7 +694,6 @@ func (r *scriptResolver) Findings(ctx context.Context, obj *ent.Script) ([]*ent.
 		return nil, fmt.Errorf("failed querying Finding: %v", err)
 	}
 
-	log.Println("Finding returned: ", f)
 	return f, nil
 }
 
@@ -535,7 +744,6 @@ func (r *teamResolver) Maintainer(ctx context.Context, obj *ent.Team) (*ent.User
 		return nil, fmt.Errorf("failed querying User: %v", err)
 	}
 
-	log.Println("User returned: ", m)
 	return m, nil
 }
 
@@ -546,7 +754,6 @@ func (r *teamResolver) Build(ctx context.Context, obj *ent.Team) (*ent.Build, er
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	log.Println("Build returned: ", b)
 	return b, nil
 }
 
@@ -557,7 +764,6 @@ func (r *teamResolver) Environment(ctx context.Context, obj *ent.Team) (*ent.Env
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
 
-	log.Println("Environment returned: ", e)
 	return e, nil
 }
 
@@ -568,7 +774,6 @@ func (r *teamResolver) Tags(ctx context.Context, obj *ent.Team) ([]*ent.Tag, err
 		return nil, fmt.Errorf("failed querying Tag: %v", err)
 	}
 
-	log.Println("Tag returned: ", t)
 	return t, nil
 }
 
@@ -623,6 +828,9 @@ func (r *Resolver) ProvisioningStep() generated.ProvisioningStepResolver {
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// RemoteFile returns generated.RemoteFileResolver implementation.
+func (r *Resolver) RemoteFile() generated.RemoteFileResolver { return &remoteFileResolver{r} }
+
 // Script returns generated.ScriptResolver implementation.
 func (r *Resolver) Script() generated.ScriptResolver { return &scriptResolver{r} }
 
@@ -650,6 +858,7 @@ type provisionedHostResolver struct{ *Resolver }
 type provisionedNetworkResolver struct{ *Resolver }
 type provisioningStepResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type remoteFileResolver struct{ *Resolver }
 type scriptResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }

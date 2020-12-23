@@ -1,13 +1,12 @@
 syntax = "proto3";
-package laforge_proto_agent;
+package agent_proto;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
-option go_package = "github.com/gen0cide/laforge/grpc-alpha/laforge_proto_agent/laforge_proto_agent";
+option go_package = "github.com/gen0cide/laforge/grpc/proto";
 option java_multiple_files = true;
-option java_package = "io.laforge.proto.agent";
-option java_outer_classname = "laforge_Proto_agent";
+option java_package = "io.agent.proto";
+option java_outer_classname = "agent_proto";
 
 service laforge {
   rpc GetHeartBeat(HeartbeatRequest) returns (HeartbeatReply) {}
@@ -30,6 +29,7 @@ message HeartbeatRequest {
   uint64 totalmem = 11;
   uint64 freemem = 12;
   uint64 usedmem = 13;
+  google.protobuf.Timestamp timestamp = 14;
 }
 
 message HeartbeatReply {

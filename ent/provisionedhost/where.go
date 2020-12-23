@@ -321,6 +321,34 @@ func HasProvisionedStepsWith(preds ...predicate.ProvisioningStep) predicate.Prov
 	})
 }
 
+// HasAgentStatus applies the HasEdge predicate on the "agent_status" edge.
+func HasAgentStatus() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AgentStatusTable, AgentStatusPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAgentStatusWith applies the HasEdge predicate on the "agent_status" edge with a given conditions (other predicates).
+func HasAgentStatusWith(preds ...predicate.AgentStatus) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AgentStatusTable, AgentStatusPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups list of predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisionedHost) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {

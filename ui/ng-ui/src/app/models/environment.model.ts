@@ -58,13 +58,15 @@ export function resolveStatuses(environment: any): any {
                 ...provisionedHost.status,
                 state: ProvisionStatus[provisionedHost.status.state]
               },
-              provisionedSteps: provisionedHost.provisionedSteps.map((provisionedStep: ProvisionedStep) => ({
-                ...provisionedStep,
-                status: {
-                  ...provisionedStep.status,
-                  state: ProvisionStatus[provisionedStep.status.state]
-                }
-              }))
+              provisionedSteps: provisionedHost.provisionedSteps
+                ? provisionedHost.provisionedSteps.map((provisionedStep: ProvisionedStep) => ({
+                    ...provisionedStep,
+                    status: {
+                      ...provisionedStep.status,
+                      state: ProvisionStatus[provisionedStep.status.state]
+                    }
+                  }))
+                : null
             }))
           }))
         }))
