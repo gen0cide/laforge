@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -16,14 +16,34 @@ import (
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server"
 	"github.com/gen0cide/laforge/grpc/server/static"
-	"github.com/go-chi/chi"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
 const defaultPort = "80"
+
+// Defining the Graphql handler
+func graphqlHandler(client *ent.Client) gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.NewDefaultServer(graph.NewSchema(client))
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL", "/query")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
 
 func main() {
 
@@ -50,28 +70,37 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	srv := handler.NewDefaultServer(graph.NewSchema(client))
+	router := gin.Default()
 
-	router := chi.NewRouter()
+	host, ok := os.LookupEnv("HOST")
+
+	if !ok {
+		host = "localhost"
+	} 
 
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
-	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:4200", "http://localhost:80"},
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:	  []string{"http://"+host+":8080", "http://"+host+":4200", "http://"+host+":80"},
+		AllowMethods:     []string{"PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-		Debug:            false,
-	}).Handler)
+		MaxAge: 12 * time.Hour,
+	}))
 
-	port := os.Getenv("PORT")
-	if port == "" {
+	port, ok := os.LookupEnv("PORT")
+
+	if !ok {
 		port = defaultPort
-	}
+	} 
 
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", srv)
+	router.Static("/", "./dist")
+	router.GET("/playground",playgroundHandler())
+	router.POST("/query", graphqlHandler(client))
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	go http.ListenAndServe(":"+port, router)
+	go router.Run(port)
+
 
 	// secure server
 	certPem,certerr := static.ReadFile(server.CertFile)
