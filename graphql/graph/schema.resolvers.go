@@ -863,4 +863,3 @@ type scriptResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
-

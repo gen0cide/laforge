@@ -2,7 +2,6 @@ syntax = "proto3";
 package agent_proto;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
 option go_package = "github.com/gen0cide/laforge/grpc/proto";
 option java_multiple_files = true;
@@ -30,6 +29,7 @@ message HeartbeatRequest {
   uint64 totalmem = 11;
   uint64 freemem = 12;
   uint64 usedmem = 13;
+  google.protobuf.Timestamp timestamp = 14;
 }
 
 message HeartbeatReply {

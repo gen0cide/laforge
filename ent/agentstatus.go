@@ -20,11 +20,11 @@ type AgentStatus struct {
 	// Hostname holds the value of the "Hostname" field.
 	Hostname string `json:"Hostname,omitempty"`
 	// UpTime holds the value of the "UpTime" field.
-	UpTime int `json:"UpTime,omitempty"`
+	UpTime int64 `json:"UpTime,omitempty"`
 	// BootTime holds the value of the "BootTime" field.
-	BootTime int `json:"BootTime,omitempty"`
+	BootTime int64 `json:"BootTime,omitempty"`
 	// NumProcs holds the value of the "NumProcs" field.
-	NumProcs int `json:"NumProcs,omitempty"`
+	NumProcs int64 `json:"NumProcs,omitempty"`
 	// Os holds the value of the "Os" field.
 	Os string `json:"Os,omitempty"`
 	// HostID holds the value of the "HostID" field.
@@ -36,11 +36,13 @@ type AgentStatus struct {
 	// Load15 holds the value of the "Load15" field.
 	Load15 float64 `json:"Load15,omitempty"`
 	// TotalMem holds the value of the "TotalMem" field.
-	TotalMem int `json:"TotalMem,omitempty"`
+	TotalMem int64 `json:"TotalMem,omitempty"`
 	// FreeMem holds the value of the "FreeMem" field.
-	FreeMem int `json:"FreeMem,omitempty"`
+	FreeMem int64 `json:"FreeMem,omitempty"`
 	// UsedMem holds the value of the "UsedMem" field.
-	UsedMem int `json:"UsedMem,omitempty"`
+	UsedMem int64 `json:"UsedMem,omitempty"`
+	// Timestamp holds the value of the "Timestamp" field.
+	Timestamp int64 `json:"Timestamp,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentStatusQuery when eager-loading is set.
 	Edges AgentStatusEdges `json:"edges"`
@@ -81,6 +83,7 @@ func (*AgentStatus) scanValues() []interface{} {
 		&sql.NullInt64{},   // TotalMem
 		&sql.NullInt64{},   // FreeMem
 		&sql.NullInt64{},   // UsedMem
+		&sql.NullInt64{},   // Timestamp
 	}
 }
 
@@ -109,17 +112,17 @@ func (as *AgentStatus) assignValues(values ...interface{}) error {
 	if value, ok := values[2].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field UpTime", values[2])
 	} else if value.Valid {
-		as.UpTime = int(value.Int64)
+		as.UpTime = value.Int64
 	}
 	if value, ok := values[3].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field BootTime", values[3])
 	} else if value.Valid {
-		as.BootTime = int(value.Int64)
+		as.BootTime = value.Int64
 	}
 	if value, ok := values[4].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field NumProcs", values[4])
 	} else if value.Valid {
-		as.NumProcs = int(value.Int64)
+		as.NumProcs = value.Int64
 	}
 	if value, ok := values[5].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field Os", values[5])
@@ -149,17 +152,22 @@ func (as *AgentStatus) assignValues(values ...interface{}) error {
 	if value, ok := values[10].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field TotalMem", values[10])
 	} else if value.Valid {
-		as.TotalMem = int(value.Int64)
+		as.TotalMem = value.Int64
 	}
 	if value, ok := values[11].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field FreeMem", values[11])
 	} else if value.Valid {
-		as.FreeMem = int(value.Int64)
+		as.FreeMem = value.Int64
 	}
 	if value, ok := values[12].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field UsedMem", values[12])
 	} else if value.Valid {
-		as.UsedMem = int(value.Int64)
+		as.UsedMem = value.Int64
+	}
+	if value, ok := values[13].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field Timestamp", values[13])
+	} else if value.Valid {
+		as.Timestamp = value.Int64
 	}
 	return nil
 }
@@ -218,6 +226,8 @@ func (as *AgentStatus) String() string {
 	builder.WriteString(fmt.Sprintf("%v", as.FreeMem))
 	builder.WriteString(", UsedMem=")
 	builder.WriteString(fmt.Sprintf("%v", as.UsedMem))
+	builder.WriteString(", Timestamp=")
+	builder.WriteString(fmt.Sprintf("%v", as.Timestamp))
 	builder.WriteByte(')')
 	return builder.String()
 }

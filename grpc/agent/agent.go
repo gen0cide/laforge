@@ -19,6 +19,7 @@ import (
 
 	"github.com/gen0cide/laforge/grpc/agent/static"
 	pb "github.com/gen0cide/laforge/grpc/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/kardianos/service"
 	"github.com/mholt/archiver"
 	"github.com/shirou/gopsutil/host"
@@ -272,6 +273,7 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 		(*request).Load5 = load.Load5
 		(*request).Load15 = load.Load15
 	}
+	(*request).Timestamp = ptypes.TimestampNow()
 	r, err := c.GetHeartBeat(ctx, request)
 	if err != nil {
 		logger.Errorf("Error: %v", err)

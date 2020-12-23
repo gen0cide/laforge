@@ -33,19 +33,19 @@ func (asc *AgentStatusCreate) SetHostname(s string) *AgentStatusCreate {
 }
 
 // SetUpTime sets the UpTime field.
-func (asc *AgentStatusCreate) SetUpTime(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetUpTime(i int64) *AgentStatusCreate {
 	asc.mutation.SetUpTime(i)
 	return asc
 }
 
 // SetBootTime sets the BootTime field.
-func (asc *AgentStatusCreate) SetBootTime(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetBootTime(i int64) *AgentStatusCreate {
 	asc.mutation.SetBootTime(i)
 	return asc
 }
 
 // SetNumProcs sets the NumProcs field.
-func (asc *AgentStatusCreate) SetNumProcs(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetNumProcs(i int64) *AgentStatusCreate {
 	asc.mutation.SetNumProcs(i)
 	return asc
 }
@@ -81,20 +81,26 @@ func (asc *AgentStatusCreate) SetLoad15(f float64) *AgentStatusCreate {
 }
 
 // SetTotalMem sets the TotalMem field.
-func (asc *AgentStatusCreate) SetTotalMem(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetTotalMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetTotalMem(i)
 	return asc
 }
 
 // SetFreeMem sets the FreeMem field.
-func (asc *AgentStatusCreate) SetFreeMem(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetFreeMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetFreeMem(i)
 	return asc
 }
 
 // SetUsedMem sets the UsedMem field.
-func (asc *AgentStatusCreate) SetUsedMem(i int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) SetUsedMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetUsedMem(i)
+	return asc
+}
+
+// SetTimestamp sets the Timestamp field.
+func (asc *AgentStatusCreate) SetTimestamp(i int64) *AgentStatusCreate {
+	asc.mutation.SetTimestamp(i)
 	return asc
 }
 
@@ -203,6 +209,9 @@ func (asc *AgentStatusCreate) check() error {
 	if _, ok := asc.mutation.UsedMem(); !ok {
 		return &ValidationError{Name: "UsedMem", err: errors.New("ent: missing required field \"UsedMem\"")}
 	}
+	if _, ok := asc.mutation.Timestamp(); !ok {
+		return &ValidationError{Name: "Timestamp", err: errors.New("ent: missing required field \"Timestamp\"")}
+	}
 	return nil
 }
 
@@ -248,7 +257,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.UpTime(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUpTime,
 		})
@@ -256,7 +265,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.BootTime(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldBootTime,
 		})
@@ -264,7 +273,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.NumProcs(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldNumProcs,
 		})
@@ -312,7 +321,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.TotalMem(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldTotalMem,
 		})
@@ -320,7 +329,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.FreeMem(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldFreeMem,
 		})
@@ -328,11 +337,19 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if value, ok := asc.mutation.UsedMem(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUsedMem,
 		})
 		_node.UsedMem = value
+	}
+	if value, ok := asc.mutation.Timestamp(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: agentstatus.FieldTimestamp,
+		})
+		_node.Timestamp = value
 	}
 	if nodes := asc.mutation.HostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
