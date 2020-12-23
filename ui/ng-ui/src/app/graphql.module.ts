@@ -7,7 +7,9 @@ const uri = 'http://localhost:8080/query'; // <-- add the URL of the GraphQL ser
 export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
   return {
     link: httpLink.create({ uri }),
-    cache: new InMemoryCache()
+    cache: new InMemoryCache({
+      resultCaching: false
+    })
   };
 }
 

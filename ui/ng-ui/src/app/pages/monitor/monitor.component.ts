@@ -67,29 +67,39 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   initAgentStatusPolling(): void {
+    console.log('Agent status polling initializing...');
+    this.api.getAgentStatuses(this.environment.id).valueChanges.subscribe(({ data: result }) => {
+      if (result) {
+        this.loading = false;
+        this.environment = updateAgentStatuses(this.environment, result);
+        this.cdRef.detectChanges();
+        console.log('data updated');
+      }
+    });
     // Go ahead and query the statuses for the first time
-    this.fetchAgentStatuses();
+    // this.fetchAgentStatuses();
     // Set up the query to be polled every interval
-    this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    // this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
   }
 
   fetchAgentStatuses(): void {
+    console.log('Polling agent statuses...');
     this.loading = true;
     this.cdRef.detectChanges();
-    this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
-      this.loading = false;
-      this.environment = updateAgentStatuses(this.environment, result);
-      this.cdRef.detectChanges();
-    }, console.error);
+    // this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
+    //   this.loading = false;
+    //   this.environment = updateAgentStatuses(this.environment, result);
+    //   this.cdRef.detectChanges();
+    // }, console.error);
   }
   // onBranchSelect(changeEvent: MatSelectChange) {
   onIntervalChange(changeEvent: MatSelectChange): void {
     // Update the interval based on select's value
     this.pollingInterval = changeEvent.value;
     // Stop the old polling
-    clearInterval(this.agentPollingInterval);
+    // clearInterval(this.agentPollingInterval);
     // Set up polling again with new interval
-    this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    // this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
   }
 
   rebuildEnv(): void {

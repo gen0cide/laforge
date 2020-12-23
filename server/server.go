@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-const defaultPort = "80"
+const defaultPort = ":80"
 
 // Defining the Graphql handler
 func graphqlHandler(client *ent.Client) gin.HandlerFunc {
@@ -82,7 +82,7 @@ func main() {
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:	  []string{"http://"+host+":8080", "http://"+host+":4200", "http://"+host+":80"},
-		AllowMethods:     []string{"PUT", "PATCH"},
+		AllowMethods:     []string{"GET","PUT", "PATCH"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -94,11 +94,11 @@ func main() {
 	if !ok {
 		port = defaultPort
 	} 
-
-	router.Static("/", "./dist")
+	gqlHandler := graphqlHandler(client)
+	router.Static("/ui/", "./dist")
 	router.GET("/playground",playgroundHandler())
-	router.POST("/query", graphqlHandler(client))
-
+	router.POST("/query", gqlHandler)
+	router.GET("/query", gqlHandler)
 	go router.Run(port)
 
 

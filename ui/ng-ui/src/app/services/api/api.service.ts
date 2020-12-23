@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ApolloQueryResult } from '@apollo/client/core';
-import { Apollo } from 'apollo-angular';
+import { ApolloQueryResult, FetchResult } from '@apollo/client/core';
+import { Apollo, QueryRef } from 'apollo-angular';
 import { getEnvironmentQuery, getEnvironmentsQuery } from './queries/environment';
 import { Observable } from 'rxjs';
 import { getAgentStatusesQuery } from './queries/agent';
@@ -15,6 +15,7 @@ import { Environment } from 'src/app/models/environment.model';
 import { getEnvConfigQuery } from './queries/env-tree';
 import { getProvisionedSteps } from './queries/steps';
 import { ProvisionedStep } from 'src/app/models/host.model';
+import { EmptyObject } from 'apollo-angular/types';
 
 @Injectable({
   providedIn: 'root'
@@ -88,12 +89,33 @@ export class ApiService {
    * Pulls the statuses of all running agents from the API once, without exposing a subscription or observable
    * @param envId The Environment ID of the environment
    */
-  public async getAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
+  public getAgentStatuses(envId: string): QueryRef<AgentStatusQueryResult, EmptyObject> {
+    return this.apollo.watchQuery<AgentStatusQueryResult>({
+      query: getAgentStatusesQuery,
+      variables: {
+        id: `${envId}`
+      },
+      pollInterval: 1000,
+      fetchPolicy: 'network-only'
+    });
+  }
+
+  /**
+   * Pulls the statuses of all running agents from the API once, without exposing a subscription or observable
+   * @param envId The Environment ID of the environment
+   */
+  public async pullAgentStatuses(envId: string): Promise<AgentStatusQueryResult> {
+    console.log('test');
     const res = await this.apollo
       .query<AgentStatusQueryResult>({
-        query: getAgentStatusesQuery(envId)
+        query: getAgentStatusesQuery,
+        variables: {
+          id: envId
+        }
       })
-      .toPromise();
-    return res.data;
+      .toPromise()
+      .then((result: ApolloQueryResult<AgentStatusQueryResult>) => result.data);
+    console.log('test 2');
+    return res;
   }
 }

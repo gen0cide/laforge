@@ -21,7 +21,7 @@ const fakeAuth = {
   accessToken: 'access-token-' + Math.random(),
   refreshToken: 'access-token-' + Math.random(),
   expiresIn: new Date(Date.now() + 100 * 24 * 60 * 60 * 1000),
-  pic: './assets/media/users/default.jpg',
+  pic: '/assets/media/users/default.jpg',
 };
 
 const fakeRoutes: Routes = [

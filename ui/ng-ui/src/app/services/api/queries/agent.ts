@@ -1,9 +1,9 @@
 import { gql } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
 
-const getAgentStatusesQuery = (environmentId: string): DocumentNode => gql`
-  {
-    environment(envUUID: "${environmentId}") {
+const getAgentStatusesQuery = gql`
+  query($id: String!) {
+    environment(envUUID: $id) {
       build {
         teams {
           id
