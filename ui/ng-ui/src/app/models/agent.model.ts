@@ -18,6 +18,7 @@ export interface AgentStatus {
   totalMem: number;
   freeMem: number;
   usedMem: number;
+  timestamp: number;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

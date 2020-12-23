@@ -75,25 +75,20 @@ export class MonitorComponent implements OnInit, OnDestroy {
     console.log('Agent status polling initializing...');
     this.agentStatusQuery = this.api.getAgentStatuses(this.environment.id);
     this.agentStatusQuery.startPolling(this.pollingInterval * 1000);
-    // this.agentStatusQuery.setOptions({
-    //   skip: true
-    // })
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    // Force UI to refresh so we can detect stale agent data
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
     this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(({ data: result }) => {
       if (result) {
         this.loading = false;
         this.environment = updateAgentStatuses(this.environment, result);
-        this.cdRef.detectChanges();
-        console.log('data updated');
+        // console.log('data updated');
       }
-    });
-    // Go ahead and query the statuses for the first time
-    // this.fetchAgentStatuses();
-    // Set up the query to be polled every interval
-    // this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    }, console.error);
   }
 
   fetchAgentStatuses(): void {
-    console.log('Polling agent statuses...');
+    // console.log('Polling agent statuses...');
     this.loading = true;
     this.cdRef.detectChanges();
     // this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
@@ -108,7 +103,8 @@ export class MonitorComponent implements OnInit, OnDestroy {
     this.pollingInterval = changeEvent.value;
     this.agentStatusQuery.stopPolling();
     this.agentStatusQuery.startPolling(changeEvent.value * 1000);
-    console.log(this.pollingInterval * 1000)
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
     // Stop the old polling
     // clearInterval(this.agentPollingInterval);
     // Set up polling again with new interval

@@ -21,7 +21,23 @@ import { EmptyObject } from 'apollo-angular/types';
   providedIn: 'root'
 })
 export class ApiService {
+  private statusPollingInterval: number;
+
   constructor(private apollo: Apollo) {}
+
+  /**
+   * Set the interval used for agent status polling
+   * @param interval the polling interval in milliseconds
+   */
+  public setStatusPollingInterval(interval: number): void {
+    this.statusPollingInterval = interval;
+  }
+  /**
+   * Get the interval used for agent status polling
+   */
+  public getStatusPollingInterval(): number {
+    return this.statusPollingInterval;
+  }
 
   /**
    * Sets up a subscription with the API to return an observable that updates as teh values change in the database

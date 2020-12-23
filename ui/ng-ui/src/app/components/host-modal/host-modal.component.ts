@@ -32,8 +32,18 @@ class HostModalComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  isAgentStale(): boolean {
+    if (this.data.provisionedHost.heartbeat == null) return true;
+    return Date.now() / 1000 - this.data.provisionedHost.heartbeat.timestamp > this.api.getStatusPollingInterval() + 60
+  }
+
   getStatusIcon(): string {
-    if (this.data.provisionedHost.heartbeat) return 'check-circle';
+    if (this.data.provisionedHost.heartbeat != null) {
+      if (this.isAgentStale())
+        return 'exclamation-circle';
+      else
+        return 'check-circle';
+    }
     else return 'minus-circle';
     // TODO: Fix for live statuses after finals
     // switch (this.data.provisionedHost.status.state) {
@@ -49,9 +59,14 @@ class HostModalComponent implements OnInit {
   }
 
   getStatusColor(): string {
-    if (this.data.provisionedHost.heartbeat) return 'success';
-    // TODO: Fix for live statuses after finals
+    if (this.data.provisionedHost.heartbeat != null) {
+      if (this.isAgentStale())
+        return 'warning'
+      else
+        return 'success';
+    }
     else return 'dark';
+    // TODO: Fix for live statuses after finals
     switch (this.data.provisionedHost.status.state) {
       case ProvisionStatus.ProvStatusComplete:
         return 'success';

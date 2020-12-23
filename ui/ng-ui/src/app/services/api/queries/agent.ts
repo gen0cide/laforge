@@ -26,6 +26,7 @@ const getAgentStatusesQuery = gql`
                 freeMem
                 freeMem
                 usedMem
+                timestamp
               }
             }
           }
