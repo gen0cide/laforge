@@ -9,6 +9,7 @@ import (
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/pkg/errors"
 )
 
@@ -247,24 +248,53 @@ func (p *ProvisionedHost) CreateProvisionedHostEntry(ctx context.Context, pn *en
 		return nil, err
 	}
 
-	host, err := p.Host.CreateHostEntry(ctx, client)
+	ph, err := client.ProvisionedHost.
+		Create().
+		SetSubnetIP(p.SubnetIP).
+		AddStatus(status).
+		AddProvisionedNetwork(pn).
+		Save(ctx)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating provisioned host: %v", err)
 		return nil, err
 	}
 
-	ph, err := client.ProvisionedHost.
-		Create().
-		SetSubnetIP(p.SubnetIP).
-		AddStatus(status).
-		AddProvisionedNetwork(pn).
-		AddHost(host).
-		Save(ctx)
+	statusExist, err := client.Host.Query().Where(host.HostnameEQ(p.Host.Hostname)).Exist(ctx)
 
 	if err != nil {
 		cli.Logger.Debugf("failed creating provisioned host: %v", err)
 		return nil, err
+	}
+
+	if statusExist {
+		host, err := client.Host.Query().Where(host.HostnameEQ(p.Host.Hostname)).Only(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+
+		ph, err = ph.Update().AddHost(host).Save(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+	} else {
+		host, err := p.Host.CreateHostEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+
+		ph, err = ph.Update().AddHost(host).Save(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
 	}
 
 	for _, v := range p.ProvisioningSteps {
