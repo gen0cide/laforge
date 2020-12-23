@@ -40,40 +40,40 @@ func (asu *AgentStatusUpdate) SetHostname(s string) *AgentStatusUpdate {
 }
 
 // SetUpTime sets the UpTime field.
-func (asu *AgentStatusUpdate) SetUpTime(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetUpTime(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetUpTime()
 	asu.mutation.SetUpTime(i)
 	return asu
 }
 
 // AddUpTime adds i to UpTime.
-func (asu *AgentStatusUpdate) AddUpTime(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddUpTime(i int64) *AgentStatusUpdate {
 	asu.mutation.AddUpTime(i)
 	return asu
 }
 
 // SetBootTime sets the BootTime field.
-func (asu *AgentStatusUpdate) SetBootTime(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetBootTime(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetBootTime()
 	asu.mutation.SetBootTime(i)
 	return asu
 }
 
 // AddBootTime adds i to BootTime.
-func (asu *AgentStatusUpdate) AddBootTime(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddBootTime(i int64) *AgentStatusUpdate {
 	asu.mutation.AddBootTime(i)
 	return asu
 }
 
 // SetNumProcs sets the NumProcs field.
-func (asu *AgentStatusUpdate) SetNumProcs(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetNumProcs(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetNumProcs()
 	asu.mutation.SetNumProcs(i)
 	return asu
 }
 
 // AddNumProcs adds i to NumProcs.
-func (asu *AgentStatusUpdate) AddNumProcs(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddNumProcs(i int64) *AgentStatusUpdate {
 	asu.mutation.AddNumProcs(i)
 	return asu
 }
@@ -130,41 +130,54 @@ func (asu *AgentStatusUpdate) AddLoad15(f float64) *AgentStatusUpdate {
 }
 
 // SetTotalMem sets the TotalMem field.
-func (asu *AgentStatusUpdate) SetTotalMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetTotalMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetTotalMem()
 	asu.mutation.SetTotalMem(i)
 	return asu
 }
 
 // AddTotalMem adds i to TotalMem.
-func (asu *AgentStatusUpdate) AddTotalMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddTotalMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddTotalMem(i)
 	return asu
 }
 
 // SetFreeMem sets the FreeMem field.
-func (asu *AgentStatusUpdate) SetFreeMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetFreeMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetFreeMem()
 	asu.mutation.SetFreeMem(i)
 	return asu
 }
 
 // AddFreeMem adds i to FreeMem.
-func (asu *AgentStatusUpdate) AddFreeMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddFreeMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddFreeMem(i)
 	return asu
 }
 
 // SetUsedMem sets the UsedMem field.
-func (asu *AgentStatusUpdate) SetUsedMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) SetUsedMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetUsedMem()
 	asu.mutation.SetUsedMem(i)
 	return asu
 }
 
 // AddUsedMem adds i to UsedMem.
-func (asu *AgentStatusUpdate) AddUsedMem(i int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddUsedMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddUsedMem(i)
+	return asu
+}
+
+// SetTimestamp sets the Timestamp field.
+func (asu *AgentStatusUpdate) SetTimestamp(i int64) *AgentStatusUpdate {
+	asu.mutation.ResetTimestamp()
+	asu.mutation.SetTimestamp(i)
+	return asu
+}
+
+// AddTimestamp adds i to Timestamp.
+func (asu *AgentStatusUpdate) AddTimestamp(i int64) *AgentStatusUpdate {
+	asu.mutation.AddTimestamp(i)
 	return asu
 }
 
@@ -294,42 +307,42 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := asu.mutation.UpTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUpTime,
 		})
 	}
 	if value, ok := asu.mutation.AddedUpTime(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUpTime,
 		})
 	}
 	if value, ok := asu.mutation.BootTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldBootTime,
 		})
 	}
 	if value, ok := asu.mutation.AddedBootTime(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldBootTime,
 		})
 	}
 	if value, ok := asu.mutation.NumProcs(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldNumProcs,
 		})
 	}
 	if value, ok := asu.mutation.AddedNumProcs(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldNumProcs,
 		})
@@ -392,44 +405,58 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := asu.mutation.TotalMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldTotalMem,
 		})
 	}
 	if value, ok := asu.mutation.AddedTotalMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldTotalMem,
 		})
 	}
 	if value, ok := asu.mutation.FreeMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldFreeMem,
 		})
 	}
 	if value, ok := asu.mutation.AddedFreeMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldFreeMem,
 		})
 	}
 	if value, ok := asu.mutation.UsedMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUsedMem,
 		})
 	}
 	if value, ok := asu.mutation.AddedUsedMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUsedMem,
+		})
+	}
+	if value, ok := asu.mutation.Timestamp(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: agentstatus.FieldTimestamp,
+		})
+	}
+	if value, ok := asu.mutation.AddedTimestamp(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: agentstatus.FieldTimestamp,
 		})
 	}
 	if asu.mutation.HostCleared() {
@@ -517,40 +544,40 @@ func (asuo *AgentStatusUpdateOne) SetHostname(s string) *AgentStatusUpdateOne {
 }
 
 // SetUpTime sets the UpTime field.
-func (asuo *AgentStatusUpdateOne) SetUpTime(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetUpTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetUpTime()
 	asuo.mutation.SetUpTime(i)
 	return asuo
 }
 
 // AddUpTime adds i to UpTime.
-func (asuo *AgentStatusUpdateOne) AddUpTime(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddUpTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddUpTime(i)
 	return asuo
 }
 
 // SetBootTime sets the BootTime field.
-func (asuo *AgentStatusUpdateOne) SetBootTime(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetBootTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetBootTime()
 	asuo.mutation.SetBootTime(i)
 	return asuo
 }
 
 // AddBootTime adds i to BootTime.
-func (asuo *AgentStatusUpdateOne) AddBootTime(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddBootTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddBootTime(i)
 	return asuo
 }
 
 // SetNumProcs sets the NumProcs field.
-func (asuo *AgentStatusUpdateOne) SetNumProcs(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetNumProcs(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetNumProcs()
 	asuo.mutation.SetNumProcs(i)
 	return asuo
 }
 
 // AddNumProcs adds i to NumProcs.
-func (asuo *AgentStatusUpdateOne) AddNumProcs(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddNumProcs(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddNumProcs(i)
 	return asuo
 }
@@ -607,41 +634,54 @@ func (asuo *AgentStatusUpdateOne) AddLoad15(f float64) *AgentStatusUpdateOne {
 }
 
 // SetTotalMem sets the TotalMem field.
-func (asuo *AgentStatusUpdateOne) SetTotalMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetTotalMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetTotalMem()
 	asuo.mutation.SetTotalMem(i)
 	return asuo
 }
 
 // AddTotalMem adds i to TotalMem.
-func (asuo *AgentStatusUpdateOne) AddTotalMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddTotalMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddTotalMem(i)
 	return asuo
 }
 
 // SetFreeMem sets the FreeMem field.
-func (asuo *AgentStatusUpdateOne) SetFreeMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetFreeMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetFreeMem()
 	asuo.mutation.SetFreeMem(i)
 	return asuo
 }
 
 // AddFreeMem adds i to FreeMem.
-func (asuo *AgentStatusUpdateOne) AddFreeMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddFreeMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddFreeMem(i)
 	return asuo
 }
 
 // SetUsedMem sets the UsedMem field.
-func (asuo *AgentStatusUpdateOne) SetUsedMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) SetUsedMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetUsedMem()
 	asuo.mutation.SetUsedMem(i)
 	return asuo
 }
 
 // AddUsedMem adds i to UsedMem.
-func (asuo *AgentStatusUpdateOne) AddUsedMem(i int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddUsedMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddUsedMem(i)
+	return asuo
+}
+
+// SetTimestamp sets the Timestamp field.
+func (asuo *AgentStatusUpdateOne) SetTimestamp(i int64) *AgentStatusUpdateOne {
+	asuo.mutation.ResetTimestamp()
+	asuo.mutation.SetTimestamp(i)
+	return asuo
+}
+
+// AddTimestamp adds i to Timestamp.
+func (asuo *AgentStatusUpdateOne) AddTimestamp(i int64) *AgentStatusUpdateOne {
+	asuo.mutation.AddTimestamp(i)
 	return asuo
 }
 
@@ -769,42 +809,42 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if value, ok := asuo.mutation.UpTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUpTime,
 		})
 	}
 	if value, ok := asuo.mutation.AddedUpTime(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUpTime,
 		})
 	}
 	if value, ok := asuo.mutation.BootTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldBootTime,
 		})
 	}
 	if value, ok := asuo.mutation.AddedBootTime(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldBootTime,
 		})
 	}
 	if value, ok := asuo.mutation.NumProcs(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldNumProcs,
 		})
 	}
 	if value, ok := asuo.mutation.AddedNumProcs(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldNumProcs,
 		})
@@ -867,44 +907,58 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if value, ok := asuo.mutation.TotalMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldTotalMem,
 		})
 	}
 	if value, ok := asuo.mutation.AddedTotalMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldTotalMem,
 		})
 	}
 	if value, ok := asuo.mutation.FreeMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldFreeMem,
 		})
 	}
 	if value, ok := asuo.mutation.AddedFreeMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldFreeMem,
 		})
 	}
 	if value, ok := asuo.mutation.UsedMem(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUsedMem,
 		})
 	}
 	if value, ok := asuo.mutation.AddedUsedMem(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: agentstatus.FieldUsedMem,
+		})
+	}
+	if value, ok := asuo.mutation.Timestamp(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: agentstatus.FieldTimestamp,
+		})
+	}
+	if value, ok := asuo.mutation.AddedTimestamp(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: agentstatus.FieldTimestamp,
 		})
 	}
 	if asuo.mutation.HostCleared() {

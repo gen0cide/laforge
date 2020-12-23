@@ -73,7 +73,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     as.ID,
 		Type:   "AgentStatus",
-		Fields: make([]*Field, 13),
+		Fields: make([]*Field, 14),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -97,7 +97,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "UpTime",
 		Value: string(buf),
 	}
@@ -105,7 +105,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "BootTime",
 		Value: string(buf),
 	}
@@ -113,7 +113,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[4] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "NumProcs",
 		Value: string(buf),
 	}
@@ -161,7 +161,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[10] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "TotalMem",
 		Value: string(buf),
 	}
@@ -169,7 +169,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[11] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "FreeMem",
 		Value: string(buf),
 	}
@@ -177,8 +177,16 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[12] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "UsedMem",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(as.Timestamp); err != nil {
+		return nil, err
+	}
+	node.Fields[13] = &Field{
+		Type:  "int64",
+		Name:  "Timestamp",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

@@ -63,19 +63,20 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	AgentStatus struct {
-		BootTime func(childComplexity int) int
-		ClientID func(childComplexity int) int
-		FreeMem  func(childComplexity int) int
-		HostID   func(childComplexity int) int
-		Hostname func(childComplexity int) int
-		Load1    func(childComplexity int) int
-		Load15   func(childComplexity int) int
-		Load5    func(childComplexity int) int
-		NumProcs func(childComplexity int) int
-		Os       func(childComplexity int) int
-		TotalMem func(childComplexity int) int
-		UpTime   func(childComplexity int) int
-		UsedMem  func(childComplexity int) int
+		BootTime  func(childComplexity int) int
+		ClientID  func(childComplexity int) int
+		FreeMem   func(childComplexity int) int
+		HostID    func(childComplexity int) int
+		Hostname  func(childComplexity int) int
+		Load1     func(childComplexity int) int
+		Load15    func(childComplexity int) int
+		Load5     func(childComplexity int) int
+		NumProcs  func(childComplexity int) int
+		Os        func(childComplexity int) int
+		Timestamp func(childComplexity int) int
+		TotalMem  func(childComplexity int) int
+		UpTime    func(childComplexity int) int
+		UsedMem   func(childComplexity int) int
 	}
 
 	Build struct {
@@ -551,6 +552,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AgentStatus.Os(childComplexity), true
+
+	case "AgentStatus.timestamp":
+		if e.complexity.AgentStatus.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.AgentStatus.Timestamp(childComplexity), true
 
 	case "AgentStatus.totalMem":
 		if e.complexity.AgentStatus.TotalMem == nil {
@@ -2211,6 +2219,7 @@ type AgentStatus {
   totalMem: Int!
   freeMem: Int!
   usedMem: Int!
+  timestamp: Int!
 }
 
 type ProvisionedHost {
@@ -2501,9 +2510,9 @@ func (ec *executionContext) _AgentStatus_upTime(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AgentStatus_bootTime(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
@@ -2536,9 +2545,9 @@ func (ec *executionContext) _AgentStatus_bootTime(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AgentStatus_numProcs(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
@@ -2571,9 +2580,9 @@ func (ec *executionContext) _AgentStatus_numProcs(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AgentStatus_OS(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
@@ -2772,9 +2781,9 @@ func (ec *executionContext) _AgentStatus_totalMem(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AgentStatus_freeMem(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
@@ -2807,9 +2816,9 @@ func (ec *executionContext) _AgentStatus_freeMem(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AgentStatus_usedMem(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
@@ -2842,9 +2851,44 @@ func (ec *executionContext) _AgentStatus_usedMem(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AgentStatus_timestamp(ctx context.Context, field graphql.CollectedField, obj *ent.AgentStatus) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AgentStatus",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Build_id(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
@@ -10482,6 +10526,11 @@ func (ec *executionContext) _AgentStatus(ctx context.Context, sel ast.SelectionS
 			}
 		case "usedMem":
 			out.Values[i] = ec._AgentStatus_usedMem(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "timestamp":
+			out.Values[i] = ec._AgentStatus_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

@@ -252,6 +252,7 @@ type AgentStatus {
   totalMem: Int!
   freeMem: Int!
   usedMem: Int!
+  timestamp: Int!
 }
 
 type ProvisionedHost {

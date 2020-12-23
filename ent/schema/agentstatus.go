@@ -16,17 +16,18 @@ func (AgentStatus) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("ClientID"),
 		field.String("Hostname"),
-		field.Int("UpTime"),
-		field.Int("BootTime"),
-		field.Int("NumProcs"),
+		field.Int64("UpTime"),
+		field.Int64("BootTime"),
+		field.Int64("NumProcs"),
 		field.String("Os"),
 		field.String("HostID"),
 		field.Float("Load1"),
 		field.Float("Load5"),
 		field.Float("Load15"),
-		field.Int("TotalMem"),
-		field.Int("FreeMem"),
-		field.Int("UsedMem"),
+		field.Int64("TotalMem"),
+		field.Int64("FreeMem"),
+		field.Int64("UsedMem"),
+		field.Int64("Timestamp"),
 	}
 }
 

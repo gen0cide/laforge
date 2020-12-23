@@ -55,7 +55,6 @@ func ByteCountIEC(b uint64) string {
 //GetHeartBeat Recives Heartbeat from client and sends back a reply
 func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb.HeartbeatReply, error) {
 	message := fmt.Sprintf("Recived ID: %v | Hostname: %v | Uptime: %v | Boot Time: %v| Number of Running Processes: %v| OS Arch: %v| Host ID: %v| Load1: %v| Load5: %v| Load15: %v| Total Memory: %v| Avalible Memory: %v| Used Memory: %v", in.GetClientId(), in.GetHostname(), in.GetUptime(), in.GetBoottime(), in.GetNumprocs(), in.GetOs(), in.GetHostid(), in.GetLoad1(), in.GetLoad5(), in.GetLoad15(), ByteCountIEC(in.GetTotalmem()), ByteCountIEC(in.GetFreemem()), ByteCountIEC(in.GetUsedmem()))
-	log.Printf(message)
 	avalibleTasks := false
 	uuid, err := strconv.Atoi(in.GetClientId())
 
@@ -76,15 +75,16 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
 		}
 		agentStatus, err = agentStatus.Update().
-							SetUpTime(int(in.GetUptime())).
-							SetBootTime(int(in.GetBoottime())).
-							SetNumProcs(int(in.GetNumprocs())).
+							SetUpTime(int64(in.GetUptime())).
+							SetBootTime(int64(in.GetBoottime())).
+							SetNumProcs(int64(in.GetNumprocs())).
 							SetLoad1(in.GetLoad1()).
 							SetLoad5(in.GetLoad5()).
 							SetLoad15(in.GetLoad15()).
-							SetTotalMem(int(in.GetTotalmem())).
-							SetFreeMem(int(in.GetFreemem())).
-							SetUsedMem(int(in.GetUsedmem())).
+							SetTotalMem(int64(in.GetTotalmem())).
+							SetFreeMem(int64(in.GetFreemem())).
+							SetUsedMem(int64(in.GetUsedmem())).
+							SetTimestamp(in.GetTimestamp().Seconds).
 							Save(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed updating Agent Status: %v", err)
@@ -96,17 +96,18 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 		Create().
 		SetClientID(in.GetClientId()).
 		SetHostname(in.GetHostname()).
-		SetUpTime(int(in.GetUptime())).
-		SetBootTime(int(in.GetBoottime())).
-		SetNumProcs(int(in.GetNumprocs())).
+		SetUpTime(int64(in.GetUptime())).
+		SetBootTime(int64(in.GetBoottime())).
+		SetNumProcs(int64(in.GetNumprocs())).
 		SetOs(in.GetOs()).
 		SetHostID(in.GetHostid()).
 		SetLoad1(in.GetLoad1()).
 		SetLoad5(in.GetLoad5()).
 		SetLoad15(in.GetLoad15()).
-		SetTotalMem(int(in.GetTotalmem())).
-		SetFreeMem(int(in.GetFreemem())).
-		SetUsedMem(int(in.GetUsedmem())).
+		SetTotalMem(int64(in.GetTotalmem())).
+		SetFreeMem(int64(in.GetFreemem())).
+		SetUsedMem(int64(in.GetUsedmem())).
+		SetTimestamp(in.GetTimestamp().Seconds).
 		AddHost(ph).
 		Save(ctx)
 

@@ -82,12 +82,12 @@ type AgentStatusMutation struct {
 	id            *int
 	_ClientID     *string
 	_Hostname     *string
-	_UpTime       *int
-	add_UpTime    *int
-	_BootTime     *int
-	add_BootTime  *int
-	_NumProcs     *int
-	add_NumProcs  *int
+	_UpTime       *int64
+	add_UpTime    *int64
+	_BootTime     *int64
+	add_BootTime  *int64
+	_NumProcs     *int64
+	add_NumProcs  *int64
 	_Os           *string
 	_HostID       *string
 	_Load1        *float64
@@ -96,12 +96,14 @@ type AgentStatusMutation struct {
 	add_Load5     *float64
 	_Load15       *float64
 	add_Load15    *float64
-	_TotalMem     *int
-	add_TotalMem  *int
-	_FreeMem      *int
-	add_FreeMem   *int
-	_UsedMem      *int
-	add_UsedMem   *int
+	_TotalMem     *int64
+	add_TotalMem  *int64
+	_FreeMem      *int64
+	add_FreeMem   *int64
+	_UsedMem      *int64
+	add_UsedMem   *int64
+	_Timestamp    *int64
+	add_Timestamp *int64
 	clearedFields map[string]struct{}
 	host          map[int]struct{}
 	removedhost   map[int]struct{}
@@ -265,13 +267,13 @@ func (m *AgentStatusMutation) ResetHostname() {
 }
 
 // SetUpTime sets the UpTime field.
-func (m *AgentStatusMutation) SetUpTime(i int) {
+func (m *AgentStatusMutation) SetUpTime(i int64) {
 	m._UpTime = &i
 	m.add_UpTime = nil
 }
 
 // UpTime returns the UpTime value in the mutation.
-func (m *AgentStatusMutation) UpTime() (r int, exists bool) {
+func (m *AgentStatusMutation) UpTime() (r int64, exists bool) {
 	v := m._UpTime
 	if v == nil {
 		return
@@ -283,7 +285,7 @@ func (m *AgentStatusMutation) UpTime() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldUpTime(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldUpTime(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldUpTime is allowed only on UpdateOne operations")
 	}
@@ -298,7 +300,7 @@ func (m *AgentStatusMutation) OldUpTime(ctx context.Context) (v int, err error) 
 }
 
 // AddUpTime adds i to UpTime.
-func (m *AgentStatusMutation) AddUpTime(i int) {
+func (m *AgentStatusMutation) AddUpTime(i int64) {
 	if m.add_UpTime != nil {
 		*m.add_UpTime += i
 	} else {
@@ -307,7 +309,7 @@ func (m *AgentStatusMutation) AddUpTime(i int) {
 }
 
 // AddedUpTime returns the value that was added to the UpTime field in this mutation.
-func (m *AgentStatusMutation) AddedUpTime() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedUpTime() (r int64, exists bool) {
 	v := m.add_UpTime
 	if v == nil {
 		return
@@ -322,13 +324,13 @@ func (m *AgentStatusMutation) ResetUpTime() {
 }
 
 // SetBootTime sets the BootTime field.
-func (m *AgentStatusMutation) SetBootTime(i int) {
+func (m *AgentStatusMutation) SetBootTime(i int64) {
 	m._BootTime = &i
 	m.add_BootTime = nil
 }
 
 // BootTime returns the BootTime value in the mutation.
-func (m *AgentStatusMutation) BootTime() (r int, exists bool) {
+func (m *AgentStatusMutation) BootTime() (r int64, exists bool) {
 	v := m._BootTime
 	if v == nil {
 		return
@@ -340,7 +342,7 @@ func (m *AgentStatusMutation) BootTime() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldBootTime(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldBootTime(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldBootTime is allowed only on UpdateOne operations")
 	}
@@ -355,7 +357,7 @@ func (m *AgentStatusMutation) OldBootTime(ctx context.Context) (v int, err error
 }
 
 // AddBootTime adds i to BootTime.
-func (m *AgentStatusMutation) AddBootTime(i int) {
+func (m *AgentStatusMutation) AddBootTime(i int64) {
 	if m.add_BootTime != nil {
 		*m.add_BootTime += i
 	} else {
@@ -364,7 +366,7 @@ func (m *AgentStatusMutation) AddBootTime(i int) {
 }
 
 // AddedBootTime returns the value that was added to the BootTime field in this mutation.
-func (m *AgentStatusMutation) AddedBootTime() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedBootTime() (r int64, exists bool) {
 	v := m.add_BootTime
 	if v == nil {
 		return
@@ -379,13 +381,13 @@ func (m *AgentStatusMutation) ResetBootTime() {
 }
 
 // SetNumProcs sets the NumProcs field.
-func (m *AgentStatusMutation) SetNumProcs(i int) {
+func (m *AgentStatusMutation) SetNumProcs(i int64) {
 	m._NumProcs = &i
 	m.add_NumProcs = nil
 }
 
 // NumProcs returns the NumProcs value in the mutation.
-func (m *AgentStatusMutation) NumProcs() (r int, exists bool) {
+func (m *AgentStatusMutation) NumProcs() (r int64, exists bool) {
 	v := m._NumProcs
 	if v == nil {
 		return
@@ -397,7 +399,7 @@ func (m *AgentStatusMutation) NumProcs() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldNumProcs(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldNumProcs(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldNumProcs is allowed only on UpdateOne operations")
 	}
@@ -412,7 +414,7 @@ func (m *AgentStatusMutation) OldNumProcs(ctx context.Context) (v int, err error
 }
 
 // AddNumProcs adds i to NumProcs.
-func (m *AgentStatusMutation) AddNumProcs(i int) {
+func (m *AgentStatusMutation) AddNumProcs(i int64) {
 	if m.add_NumProcs != nil {
 		*m.add_NumProcs += i
 	} else {
@@ -421,7 +423,7 @@ func (m *AgentStatusMutation) AddNumProcs(i int) {
 }
 
 // AddedNumProcs returns the value that was added to the NumProcs field in this mutation.
-func (m *AgentStatusMutation) AddedNumProcs() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedNumProcs() (r int64, exists bool) {
 	v := m.add_NumProcs
 	if v == nil {
 		return
@@ -681,13 +683,13 @@ func (m *AgentStatusMutation) ResetLoad15() {
 }
 
 // SetTotalMem sets the TotalMem field.
-func (m *AgentStatusMutation) SetTotalMem(i int) {
+func (m *AgentStatusMutation) SetTotalMem(i int64) {
 	m._TotalMem = &i
 	m.add_TotalMem = nil
 }
 
 // TotalMem returns the TotalMem value in the mutation.
-func (m *AgentStatusMutation) TotalMem() (r int, exists bool) {
+func (m *AgentStatusMutation) TotalMem() (r int64, exists bool) {
 	v := m._TotalMem
 	if v == nil {
 		return
@@ -699,7 +701,7 @@ func (m *AgentStatusMutation) TotalMem() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldTotalMem(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldTotalMem(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldTotalMem is allowed only on UpdateOne operations")
 	}
@@ -714,7 +716,7 @@ func (m *AgentStatusMutation) OldTotalMem(ctx context.Context) (v int, err error
 }
 
 // AddTotalMem adds i to TotalMem.
-func (m *AgentStatusMutation) AddTotalMem(i int) {
+func (m *AgentStatusMutation) AddTotalMem(i int64) {
 	if m.add_TotalMem != nil {
 		*m.add_TotalMem += i
 	} else {
@@ -723,7 +725,7 @@ func (m *AgentStatusMutation) AddTotalMem(i int) {
 }
 
 // AddedTotalMem returns the value that was added to the TotalMem field in this mutation.
-func (m *AgentStatusMutation) AddedTotalMem() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedTotalMem() (r int64, exists bool) {
 	v := m.add_TotalMem
 	if v == nil {
 		return
@@ -738,13 +740,13 @@ func (m *AgentStatusMutation) ResetTotalMem() {
 }
 
 // SetFreeMem sets the FreeMem field.
-func (m *AgentStatusMutation) SetFreeMem(i int) {
+func (m *AgentStatusMutation) SetFreeMem(i int64) {
 	m._FreeMem = &i
 	m.add_FreeMem = nil
 }
 
 // FreeMem returns the FreeMem value in the mutation.
-func (m *AgentStatusMutation) FreeMem() (r int, exists bool) {
+func (m *AgentStatusMutation) FreeMem() (r int64, exists bool) {
 	v := m._FreeMem
 	if v == nil {
 		return
@@ -756,7 +758,7 @@ func (m *AgentStatusMutation) FreeMem() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldFreeMem(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldFreeMem(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldFreeMem is allowed only on UpdateOne operations")
 	}
@@ -771,7 +773,7 @@ func (m *AgentStatusMutation) OldFreeMem(ctx context.Context) (v int, err error)
 }
 
 // AddFreeMem adds i to FreeMem.
-func (m *AgentStatusMutation) AddFreeMem(i int) {
+func (m *AgentStatusMutation) AddFreeMem(i int64) {
 	if m.add_FreeMem != nil {
 		*m.add_FreeMem += i
 	} else {
@@ -780,7 +782,7 @@ func (m *AgentStatusMutation) AddFreeMem(i int) {
 }
 
 // AddedFreeMem returns the value that was added to the FreeMem field in this mutation.
-func (m *AgentStatusMutation) AddedFreeMem() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedFreeMem() (r int64, exists bool) {
 	v := m.add_FreeMem
 	if v == nil {
 		return
@@ -795,13 +797,13 @@ func (m *AgentStatusMutation) ResetFreeMem() {
 }
 
 // SetUsedMem sets the UsedMem field.
-func (m *AgentStatusMutation) SetUsedMem(i int) {
+func (m *AgentStatusMutation) SetUsedMem(i int64) {
 	m._UsedMem = &i
 	m.add_UsedMem = nil
 }
 
 // UsedMem returns the UsedMem value in the mutation.
-func (m *AgentStatusMutation) UsedMem() (r int, exists bool) {
+func (m *AgentStatusMutation) UsedMem() (r int64, exists bool) {
 	v := m._UsedMem
 	if v == nil {
 		return
@@ -813,7 +815,7 @@ func (m *AgentStatusMutation) UsedMem() (r int, exists bool) {
 // If the AgentStatus object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *AgentStatusMutation) OldUsedMem(ctx context.Context) (v int, err error) {
+func (m *AgentStatusMutation) OldUsedMem(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldUsedMem is allowed only on UpdateOne operations")
 	}
@@ -828,7 +830,7 @@ func (m *AgentStatusMutation) OldUsedMem(ctx context.Context) (v int, err error)
 }
 
 // AddUsedMem adds i to UsedMem.
-func (m *AgentStatusMutation) AddUsedMem(i int) {
+func (m *AgentStatusMutation) AddUsedMem(i int64) {
 	if m.add_UsedMem != nil {
 		*m.add_UsedMem += i
 	} else {
@@ -837,7 +839,7 @@ func (m *AgentStatusMutation) AddUsedMem(i int) {
 }
 
 // AddedUsedMem returns the value that was added to the UsedMem field in this mutation.
-func (m *AgentStatusMutation) AddedUsedMem() (r int, exists bool) {
+func (m *AgentStatusMutation) AddedUsedMem() (r int64, exists bool) {
 	v := m.add_UsedMem
 	if v == nil {
 		return
@@ -849,6 +851,63 @@ func (m *AgentStatusMutation) AddedUsedMem() (r int, exists bool) {
 func (m *AgentStatusMutation) ResetUsedMem() {
 	m._UsedMem = nil
 	m.add_UsedMem = nil
+}
+
+// SetTimestamp sets the Timestamp field.
+func (m *AgentStatusMutation) SetTimestamp(i int64) {
+	m._Timestamp = &i
+	m.add_Timestamp = nil
+}
+
+// Timestamp returns the Timestamp value in the mutation.
+func (m *AgentStatusMutation) Timestamp() (r int64, exists bool) {
+	v := m._Timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old Timestamp value of the AgentStatus.
+// If the AgentStatus object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *AgentStatusMutation) OldTimestamp(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTimestamp is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// AddTimestamp adds i to Timestamp.
+func (m *AgentStatusMutation) AddTimestamp(i int64) {
+	if m.add_Timestamp != nil {
+		*m.add_Timestamp += i
+	} else {
+		m.add_Timestamp = &i
+	}
+}
+
+// AddedTimestamp returns the value that was added to the Timestamp field in this mutation.
+func (m *AgentStatusMutation) AddedTimestamp() (r int64, exists bool) {
+	v := m.add_Timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTimestamp reset all changes of the "Timestamp" field.
+func (m *AgentStatusMutation) ResetTimestamp() {
+	m._Timestamp = nil
+	m.add_Timestamp = nil
 }
 
 // AddHostIDs adds the host edge to ProvisionedHost by ids.
@@ -918,7 +977,7 @@ func (m *AgentStatusMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *AgentStatusMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m._ClientID != nil {
 		fields = append(fields, agentstatus.FieldClientID)
 	}
@@ -958,6 +1017,9 @@ func (m *AgentStatusMutation) Fields() []string {
 	if m._UsedMem != nil {
 		fields = append(fields, agentstatus.FieldUsedMem)
 	}
+	if m._Timestamp != nil {
+		fields = append(fields, agentstatus.FieldTimestamp)
+	}
 	return fields
 }
 
@@ -992,6 +1054,8 @@ func (m *AgentStatusMutation) Field(name string) (ent.Value, bool) {
 		return m.FreeMem()
 	case agentstatus.FieldUsedMem:
 		return m.UsedMem()
+	case agentstatus.FieldTimestamp:
+		return m.Timestamp()
 	}
 	return nil, false
 }
@@ -1027,6 +1091,8 @@ func (m *AgentStatusMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldFreeMem(ctx)
 	case agentstatus.FieldUsedMem:
 		return m.OldUsedMem(ctx)
+	case agentstatus.FieldTimestamp:
+		return m.OldTimestamp(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentStatus field %s", name)
 }
@@ -1051,21 +1117,21 @@ func (m *AgentStatusMutation) SetField(name string, value ent.Value) error {
 		m.SetHostname(v)
 		return nil
 	case agentstatus.FieldUpTime:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpTime(v)
 		return nil
 	case agentstatus.FieldBootTime:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBootTime(v)
 		return nil
 	case agentstatus.FieldNumProcs:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1107,25 +1173,32 @@ func (m *AgentStatusMutation) SetField(name string, value ent.Value) error {
 		m.SetLoad15(v)
 		return nil
 	case agentstatus.FieldTotalMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTotalMem(v)
 		return nil
 	case agentstatus.FieldFreeMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFreeMem(v)
 		return nil
 	case agentstatus.FieldUsedMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUsedMem(v)
+		return nil
+	case agentstatus.FieldTimestamp:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus field %s", name)
@@ -1162,6 +1235,9 @@ func (m *AgentStatusMutation) AddedFields() []string {
 	if m.add_UsedMem != nil {
 		fields = append(fields, agentstatus.FieldUsedMem)
 	}
+	if m.add_Timestamp != nil {
+		fields = append(fields, agentstatus.FieldTimestamp)
+	}
 	return fields
 }
 
@@ -1188,6 +1264,8 @@ func (m *AgentStatusMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedFreeMem()
 	case agentstatus.FieldUsedMem:
 		return m.AddedUsedMem()
+	case agentstatus.FieldTimestamp:
+		return m.AddedTimestamp()
 	}
 	return nil, false
 }
@@ -1198,21 +1276,21 @@ func (m *AgentStatusMutation) AddedField(name string) (ent.Value, bool) {
 func (m *AgentStatusMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case agentstatus.FieldUpTime:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddUpTime(v)
 		return nil
 	case agentstatus.FieldBootTime:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddBootTime(v)
 		return nil
 	case agentstatus.FieldNumProcs:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1240,25 +1318,32 @@ func (m *AgentStatusMutation) AddField(name string, value ent.Value) error {
 		m.AddLoad15(v)
 		return nil
 	case agentstatus.FieldTotalMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTotalMem(v)
 		return nil
 	case agentstatus.FieldFreeMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddFreeMem(v)
 		return nil
 	case agentstatus.FieldUsedMem:
-		v, ok := value.(int)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddUsedMem(v)
+		return nil
+	case agentstatus.FieldTimestamp:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTimestamp(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus numeric field %s", name)
@@ -1326,6 +1411,9 @@ func (m *AgentStatusMutation) ResetField(name string) error {
 		return nil
 	case agentstatus.FieldUsedMem:
 		m.ResetUsedMem()
+		return nil
+	case agentstatus.FieldTimestamp:
+		m.ResetTimestamp()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus field %s", name)

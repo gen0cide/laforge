@@ -33,6 +33,8 @@ const (
 	FieldFreeMem = "free_mem"
 	// FieldUsedMem holds the string denoting the usedmem field in the database.
 	FieldUsedMem = "used_mem"
+	// FieldTimestamp holds the string denoting the timestamp field in the database.
+	FieldTimestamp = "timestamp"
 
 	// EdgeHost holds the string denoting the host edge name in mutations.
 	EdgeHost = "host"
@@ -62,6 +64,7 @@ var Columns = []string{
 	FieldTotalMem,
 	FieldFreeMem,
 	FieldUsedMem,
+	FieldTimestamp,
 }
 
 var (
