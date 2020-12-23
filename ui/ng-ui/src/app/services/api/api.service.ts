@@ -95,8 +95,8 @@ export class ApiService {
       variables: {
         id: `${envId}`
       },
-      pollInterval: 1000,
-      fetchPolicy: 'network-only'
+      // pollInterval: 0,
+      // fetchPolicy: 'cache-and-network'
     });
   }
 
