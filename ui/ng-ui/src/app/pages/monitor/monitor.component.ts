@@ -8,6 +8,8 @@ import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 import { filter } from 'rxjs/operators';
+import { QueryRef } from 'apollo-angular';
+import { EmptyObject } from 'apollo-angular/types';
 
 @Component({
   selector: 'app-manage',
@@ -24,6 +26,8 @@ export class MonitorComponent implements OnInit, OnDestroy {
   pollingInterval = 60;
   loading = false;
   intervalOptions = [10, 30, 60, 120];
+  agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
+  agentStatusSubscription: Subscription;
 
   constructor(
     private api: ApiService,
@@ -63,12 +67,18 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    clearInterval(this.agentPollingInterval);
+    // clearInterval(this.agentPollingInterval);
+    this.agentStatusSubscription.unsubscribe();
   }
 
   initAgentStatusPolling(): void {
     console.log('Agent status polling initializing...');
-    this.api.getAgentStatuses(this.environment.id).valueChanges.subscribe(({ data: result }) => {
+    this.agentStatusQuery = this.api.getAgentStatuses(this.environment.id);
+    this.agentStatusQuery.startPolling(this.pollingInterval * 1000);
+    // this.agentStatusQuery.setOptions({
+    //   skip: true
+    // })
+    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(({ data: result }) => {
       if (result) {
         this.loading = false;
         this.environment = updateAgentStatuses(this.environment, result);
@@ -96,6 +106,9 @@ export class MonitorComponent implements OnInit, OnDestroy {
   onIntervalChange(changeEvent: MatSelectChange): void {
     // Update the interval based on select's value
     this.pollingInterval = changeEvent.value;
+    this.agentStatusQuery.stopPolling();
+    this.agentStatusQuery.startPolling(changeEvent.value * 1000);
+    console.log(this.pollingInterval * 1000)
     // Stop the old polling
     // clearInterval(this.agentPollingInterval);
     // Set up polling again with new interval
