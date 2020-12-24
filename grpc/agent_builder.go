@@ -14,30 +14,37 @@ import (
 )
 
 func buildAgent(agentID string, serverAddress string, binarypath string){
-
-	command:="go build -ldflags=\" -X 'main.clientID="+agentID+"' -X 'main.address="+serverAddress+"'\" -o "+binarypath+" github.com/gen0cide/laforge/grpc/agent"
+	if runtime.GOOS == "windows"{
+		binarypath = binarypath+".exe"
+	}
+	command :="go build -ldflags=\" -s -w -X 'main.clientID="+agentID+"' -X 'main.address="+serverAddress+"'\" -o "+binarypath+" github.com/gen0cide/laforge/grpc/agent"
 	cmd := exec.Command("bash","-c",command)
+	if runtime.GOOS == "windows"{
+		cmd = exec.Command("cmd","/C",command)
+	}
 	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", stdoutStderr)
+	fmt.Printf("Created %s, Output %s\n", binarypath, stdoutStderr)
 
 }
 
 func main(){
-	agents := []map[string]string{}
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	
 	client := &ent.Client{}
-
-	agents = append(agents, map[string]string{"1": "test/test"} )
-	serverAddress := "localhost:50051"
-
+	
+	pgHost, ok := os.LookupEnv("PG_HOST")
 	if !ok {
 		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
 	} else {
 		client = ent.PGOpen(pgHost)
+	}
+
+	serverAddress, ok := os.LookupEnv("GRPC_SERVER")
+	if !ok {
+		serverAddress = "localhost:50051"
 	}
 
 	ctx := context.Background()
@@ -82,8 +89,13 @@ func main(){
 			log.Fatalf("failed casting UUID to int: %v", err)
 		}
 		teamName := team.TeamNumber
+		env, err := team.QueryTeamToEnvironment().Only(ctx)
+		if err != nil {
+			log.Fatalf("failed casting UUID to int: %v", err)
+		}
+		envName := env.Name
 
-		binaryName := filepath.Join("team",fmt.Sprint(teamName),networkName,hostName)
+		binaryName := filepath.Join(envName,"team",fmt.Sprint(teamName),networkName,hostName)
 		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName)
 	}	
 }
