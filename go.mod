@@ -7,6 +7,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d // indirect
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/UnnoTed/fileb0x v1.1.4 // indirect
 	github.com/alecthomas/chroma v0.8.0
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
@@ -40,7 +41,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/terraform v0.12.8
-	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a // indirect
+	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a
 	github.com/iancoleman/strcase v0.1.1
 	github.com/imdario/mergo v0.3.11
 	github.com/jackc/pgx/v4 v4.10.1

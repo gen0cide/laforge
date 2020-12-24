@@ -16,7 +16,7 @@ func RebootSystem() {
 
 	exitwin := user32.MustFindProc("ExitWindowsEx")
 
-	r1, _, err := exitwin.Call(0x02, 0)
+	r1, _, _ := exitwin.Call(0x02, 0)
 	if r1 != 1 {
 		ExecuteCommand("cmd", "/C", "shutdown", "/r")
 	}

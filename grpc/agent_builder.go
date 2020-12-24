@@ -13,14 +13,15 @@ import (
 	"github.com/gen0cide/laforge/ent"
 )
 
-func buildAgent(agentID string, serverAddress string, binarypath string){
-	if runtime.GOOS == "windows"{
-		binarypath = binarypath+".exe"
+func buildAgent(agentID string, serverAddress string, binarypath string) {
+	if runtime.GOOS == "windows" {
+		binarypath = binarypath + ".exe"
 	}
-	command :="go build -ldflags=\" -s -w -X 'main.clientID="+agentID+"' -X 'main.address="+serverAddress+"'\" -o "+binarypath+" github.com/gen0cide/laforge/grpc/agent"
-	cmd := exec.Command("bash","-c",command)
-	if runtime.GOOS == "windows"{
-		cmd = exec.Command("cmd","/C",command)
+	command := "go build -ldflags=\" -s -w -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
+	fmt.Println(command)
+	cmd := exec.Command("bash", "-c", command)
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("powershell", "-c", command)
 	}
 	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
@@ -31,10 +32,10 @@ func buildAgent(agentID string, serverAddress string, binarypath string){
 
 }
 
-func main(){
-	
+func main() {
+
 	client := &ent.Client{}
-	
+
 	pgHost, ok := os.LookupEnv("PG_HOST")
 	if !ok {
 		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
@@ -55,47 +56,47 @@ func main(){
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	phs,err := client.ProvisionedHost.Query().All(ctx)
+	phs, err := client.ProvisionedHost.Query().All(ctx)
 	if err != nil {
-		log.Fatalf("failed casting UUID to int: %v", err)
+		log.Fatalf("Failed to Query All Provisioned Hosts: %v", err)
 	}
 
-	for _, ph := range phs { 
+	for _, ph := range phs {
 		host, err := ph.QueryHost().Only(ctx)
 		if err != nil {
-			log.Fatalf("failed casting UUID to int: %v", err)
+			log.Fatalf("Failed to Query Host: %v", err)
 		}
 		hostName := host.Hostname
 
 		switch runtime.GOOS {
 		case "windows":
-			if !strings.Contains(host.OS,"w2k"){
+			if !strings.Contains(host.OS, "w2k") {
 				continue
 			}
 		case "linux":
-			if strings.Contains(host.OS,"w2k"){
+			if strings.Contains(host.OS, "w2k") {
 				continue
-			}	
+			}
 		}
-	
+
 		pn, err := ph.QueryProvisionedNetwork().Only(ctx)
 		if err != nil {
-			log.Fatalf("failed casting UUID to int: %v", err)
+			log.Fatalf("Failed to Query Provisioned Network: %v", err)
 		}
 		networkName := pn.Name
 
-		team , err := pn.QueryProvisionedNetworkToTeam().Only(ctx)
+		team, err := pn.QueryProvisionedNetworkToTeam().Only(ctx)
 		if err != nil {
-			log.Fatalf("failed casting UUID to int: %v", err)
+			log.Fatalf("Failed to Query Team: %v", err)
 		}
 		teamName := team.TeamNumber
 		env, err := team.QueryTeamToEnvironment().Only(ctx)
 		if err != nil {
-			log.Fatalf("failed casting UUID to int: %v", err)
+			log.Fatalf("Failed to Query Enviroment: %v", err)
 		}
 		envName := env.Name
 
-		binaryName := filepath.Join(envName,"team",fmt.Sprint(teamName),networkName,hostName)
+		binaryName := filepath.Join(envName, "team", fmt.Sprint(teamName), networkName, hostName)
 		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName)
-	}	
+	}
 }
