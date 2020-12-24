@@ -5,7 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 
 import { UserModel } from '../../_models/user.model';
 import { AuthModel } from '../../_models/auth.model';
-import { UsersTable } from '../../../../_helpers/fake/fake-db/users.table';
+import { UsersTable } from '../../../../_helpers/fake/fake-db/users.table.prod';
 import { environment } from '../../../../../environments/environment';
 
 const API_USERS_URL = `${environment.apiUrl}/users`;
