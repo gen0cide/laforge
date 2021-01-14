@@ -10,14 +10,14 @@ export interface Host {
   id: ID;
   hostname: string;
   OS: string;
-  lastOctet: number;
+  lastOctet?: number;
   allowMacChanges: boolean;
   exposedTCPPorts: string[];
   exposedUDPPorts: string[];
   overridePassword: string;
   vars: varsMap[];
   userGroups: string[];
-  dependsOn: Host[];
+  dependsOn?: Host[];
   maintainer: User;
   tags: Tag[];
   dnsRecords?: DNSRecord[];

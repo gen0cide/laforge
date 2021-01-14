@@ -11,6 +11,7 @@ import { filter } from 'rxjs/operators';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
 import { ApolloError } from '@apollo/client/core';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-manage',
@@ -60,23 +61,27 @@ export class MonitorComponent implements OnInit, OnDestroy {
           ...env,
           build: {
             ...env.build,
-            teams: [...env.build.teams].sort((a,b) => a.teamNumber - b.teamNumber).map(team => ({
-              ...team,
-              provisionedNetworks: [...team.provisionedNetworks].sort((a, b) => {
-                if (a.name < b.name) return -1;
-                if (a.name > b.name) return 1;
-                return 0;
-              }).map(network => ({
-                ...network,
-                provisionedHosts: [...network.provisionedHosts].sort((a, b) => {
-                  if (a.host.hostname < b.host.hostname) return -1;
-                  if (a.host.hostname > b.host.hostname) return 1;
-                  return 0;
-                })
+            teams: [...env.build.teams]
+              .sort((a, b) => a.teamNumber - b.teamNumber)
+              .map((team) => ({
+                ...team,
+                provisionedNetworks: [...team.provisionedNetworks]
+                  .sort((a, b) => {
+                    if (a.name < b.name) return -1;
+                    if (a.name > b.name) return 1;
+                    return 0;
+                  })
+                  .map((network) => ({
+                    ...network,
+                    provisionedHosts: [...network.provisionedHosts].sort((a, b) => {
+                      if (a.host.hostname < b.host.hostname) return -1;
+                      if (a.host.hostname > b.host.hostname) return 1;
+                      return 0;
+                    })
+                  }))
               }))
-            }))
           }
-        }
+        };
         this.envLoaded = true;
         this.cdRef.detectChanges();
         this.initAgentStatusPolling();
@@ -98,23 +103,42 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   initAgentStatusPolling(): void {
+    if (environment.isMockApi) {
+      this.api.pullAgentStatuses(this.environment.id).then(
+        (res) => {
+          this.environment = updateAgentStatuses(this.environment, res);
+          this.loading = false;
+          this.apolloError = {};
+          this.cdRef.detectChanges();
+        },
+        (err) => {
+          /* eslint-disable-next-line quotes */
+          this.apolloError = { ...err, message: "Couldn't load mock data" };
+          this.cdRef.detectChanges();
+        }
+      );
+      return;
+    }
     console.log('Agent status polling initializing...');
     this.agentStatusQuery = this.api.getAgentStatuses(this.environment.id);
     this.agentStatusQuery.startPolling(this.pollingInterval * 1000);
     this.api.setStatusPollingInterval(this.pollingInterval);
     // Force UI to refresh so we can detect stale agent data
     this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
-    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(({ data: result }) => {
-      if (result) {
-        this.loading = false;
-        this.environment = updateAgentStatuses(this.environment, result);
-        this.apolloError = {};
-        // console.log('data updated');
+    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(
+      ({ data: result }) => {
+        if (result) {
+          this.loading = false;
+          this.environment = updateAgentStatuses(this.environment, result);
+          this.apolloError = {};
+          // console.log('data updated');
+        }
+      },
+      (err) => {
+        this.apolloError = { ...err, message: 'Too many database connections' };
+        this.cdRef.detectChanges();
       }
-    }, (err) => {
-      this.apolloError = { ...err, message: 'Too many database connections' };
-      this.cdRef.detectChanges();
-    });
+    );
   }
 
   fetchAgentStatuses(): void {

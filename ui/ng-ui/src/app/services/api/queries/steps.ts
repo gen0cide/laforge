@@ -1,7 +1,8 @@
 import { gql } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
+import { ID } from 'src/app/models/common.model';
 
-const getProvisionedSteps = (hostId: string): DocumentNode => gql`
+const getProvisionedSteps = (hostId: ID): DocumentNode => gql`
   {
     provisionedHost(proHostUUID: "${hostId}") {
       id

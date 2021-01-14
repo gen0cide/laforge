@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "demo1-app": {
+    "laforge": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -71,24 +71,60 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "dev": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
+              "outputPath": "dist",
+              "showCircularDependencies": false,
+              "allowedCommonJsDependencies": [
+                "object-path",
+                "apexcharts",
+                "clipboard.js",
+                "highlight.js"
+              ],
+              "index": "src/index.html",
+              "main": "src/main.ts",
+              "polyfills": "src/polyfills.ts",
+              "tsConfig": "tsconfig.app.json",
+              "aot": true,
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                "src/data"
+              ],
+              "styles": [
+                "src/styles.scss"
+              ],
+              "scripts": [
+                "node_modules/apexcharts/dist/apexcharts.min.js",
+                "node_modules/clipboard/dist/clipboard.js"
+              ]
             }
           }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "demo1-app:build"
+            "browserTarget": "laforge:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "demo1-app:build:production"
+              "browserTarget": "laforge:build:production"
+            },
+            "dev": {
+              "browserTarget": "laforge:build:dev"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "demo1-app:build"
+            "browserTarget": "laforge:build"
           }
         },
         "test": {
@@ -126,18 +162,18 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "demo1-app:serve"
+            "devServerTarget": "laforge:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "demo1-app:serve:production"
+              "devServerTarget": "laforge:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "demo1-app",
+  "defaultProject": "laforge",
   "cli": {
     "analytics": false
   }

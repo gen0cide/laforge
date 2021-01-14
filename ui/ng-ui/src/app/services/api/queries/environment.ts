@@ -1,7 +1,8 @@
 import { gql } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
+import { ID } from 'src/app/models/common.model';
 
-const BAK_getEnvironmentQuery = (id: string): DocumentNode => gql`
+const BAK_getEnvironmentQuery = (id: ID): DocumentNode => gql`
 {
   environment(envUUID: "${id}") {
     id
@@ -161,7 +162,7 @@ const BAK_getEnvironmentQuery = (id: string): DocumentNode => gql`
 }
 `;
 
-const getEnvironmentQuery = (id: string): DocumentNode => gql`
+const getEnvironmentQuery = (id: ID): DocumentNode => gql`
 {
   environment(envUUID: "${id}") {
     id
