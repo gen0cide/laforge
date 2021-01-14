@@ -44,15 +44,15 @@
       <p class="detail-title"><b>Host ID</b></p>
       <p class="detail-value">{{ data.provisionedHost.heartbeat.hostID }}</p>
     </div> -->
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1 != null">
         <p class="detail-title"><b>1 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load1 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5 != null">
         <p class="detail-title"><b>5 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load5 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15 != null">
         <p class="detail-title"><b>15 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load15 / 100 | percent: '1.2' }}</p>
       </div>

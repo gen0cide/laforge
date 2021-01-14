@@ -17,7 +17,7 @@ export interface ProvisionedNetwork {
   vars: varsMap[];
   tags: Tag[];
   provisionedHosts: ProvisionedHost[];
-  status: Status;
+  status?: Status;
   network: Network;
   // build: Build; Circular dependency
 }

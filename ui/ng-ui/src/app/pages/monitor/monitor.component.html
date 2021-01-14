@@ -10,6 +10,8 @@
       </mat-select>
     </mat-form-field>
     <mat-card-subtitle *ngIf="envs == null">Loading Environments...</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="apolloError.message" class="text-danger">Something went wrong, please refresh the page.</mat-card-subtitle>
+    <!-- <mat-card-subtitle *ngIf="apolloError.message" class="text-danger">{{apolloError.message}}</mat-card-subtitle> -->
   </mat-card-header>
   <mat-card-header *ngIf="envLoaded">
     <div class="env-header d-flex align-items-center justify-content-between">
