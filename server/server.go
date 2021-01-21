@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -24,6 +23,19 @@ import (
 )
 
 const defaultPort = ":80"
+
+// Defining the Graphql handler
+func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	// h := handler.NewDefaultServer(graph.NewSchema(client))
+
+	return func(c *gin.Context) {
+		// h.ServeHTTP(c.Writer, c.Request)
+		c.Redirect(301, "/ui")
+		c.Abort()
+	}
+}
 
 // Defining the Graphql handler
 func graphqlHandler(client *ent.Client) gin.HandlerFunc {
@@ -72,21 +84,14 @@ func main() {
 
 	router := gin.Default()
 
-	host, ok := os.LookupEnv("HOST")
-
-	if !ok {
-		host = "localhost"
-	} 
 
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:	  []string{"http://"+host+":8080", "http://"+host+":4200", "http://"+host+":80"},
+		AllowOrigins:	  []string{"*"},
 		AllowMethods:     []string{"GET","PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
 	}))
 
 	port, ok := os.LookupEnv("PORT")
@@ -95,7 +100,20 @@ func main() {
 		port = defaultPort
 	} 
 	gqlHandler := graphqlHandler(client)
-	router.Static("/ui/", "./dist")
+	redirectHandler := redirectToRootHandler(client)
+	router.GET("/", redirectHandler)
+	// router.Static("/ui/", "./dist")
+	router.GET("/ui/*filename", func(c *gin.Context) {
+		filename := c.Param("filename")
+		fmt.Println(filename)
+		if filename == "/monitor" || filename == "/monitor/" {
+			c.Redirect(301, "/ui/")
+		} else {
+			c.File("./dist/" + filename)
+		}
+	})
+	router.Static("/assets/", "./dist/assets")
+	router.Static("/agents/", "./agents")
 	router.GET("/playground",playgroundHandler())
 	router.POST("/query", gqlHandler)
 	router.GET("/query", gqlHandler)
