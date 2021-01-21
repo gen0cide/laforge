@@ -10,14 +10,14 @@ export interface Host {
   id: ID;
   hostname: string;
   OS: string;
-  lastOctet: number;
+  lastOctet?: number;
   allowMacChanges: boolean;
   exposedTCPPorts: string[];
   exposedUDPPorts: string[];
   overridePassword: string;
   vars: varsMap[];
   userGroups: string[];
-  dependsOn: Host[];
+  dependsOn?: Host[];
   maintainer: User;
   tags: Tag[];
   dnsRecords?: DNSRecord[];
@@ -31,7 +31,7 @@ export interface Host {
 export interface ProvisionedHost {
   id: ID;
   subnetIP: string;
-  status: Status;
+  status?: Status;
   // provisionedNetwork: ProvisionedNetwork; * avoids circular dependencies *
   provisionedSteps?: ProvisionedStep[] /* optional, allows us to query steps later */;
   host: Host;
@@ -43,7 +43,7 @@ export interface ProvisionedStep {
   provisionType: string;
   stepNumber: number;
   provisionedHost: ProvisionedHost;
-  status: Status;
+  status?: Status;
   script?: Script;
   command?: Command;
   DNSRecord?: DNSRecord;

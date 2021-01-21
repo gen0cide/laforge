@@ -10,6 +10,8 @@ import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_s
 import { filter } from 'rxjs/operators';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
+import { ApolloError } from '@apollo/client/core';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-manage',
@@ -28,6 +30,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
   intervalOptions = [10, 30, 60, 120];
   agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
   agentStatusSubscription: Subscription;
+  apolloError: any = {};
 
   constructor(
     private api: ApiService,
@@ -54,46 +57,92 @@ export class MonitorComponent implements OnInit, OnDestroy {
     this.envService.setCurrentEnv(this.envs.filter((e) => e.id === changeEvent.value)[0]);
     this.api.pullEnvTree(this.envService.getCurrentEnv().id).then(
       (env: Environment) => {
-        this.environment = resolveStatuses(env);
+        this.environment = {
+          ...env,
+          build: {
+            ...env.build,
+            teams: [...env.build.teams]
+              .sort((a, b) => a.teamNumber - b.teamNumber)
+              .map((team) => ({
+                ...team,
+                provisionedNetworks: [...team.provisionedNetworks]
+                  .sort((a, b) => {
+                    if (a.name < b.name) return -1;
+                    if (a.name > b.name) return 1;
+                    return 0;
+                  })
+                  .map((network) => ({
+                    ...network,
+                    provisionedHosts: [...network.provisionedHosts].sort((a, b) => {
+                      if (a.host.hostname < b.host.hostname) return -1;
+                      if (a.host.hostname > b.host.hostname) return 1;
+                      return 0;
+                    })
+                  }))
+              }))
+          }
+        };
         this.envLoaded = true;
         this.cdRef.detectChanges();
         this.initAgentStatusPolling();
       },
       (err) => {
-        console.error('yep, cant connect');
-        console.error(err);
+        this.apolloError = err;
+        this.cdRef.detectChanges();
+        // console.log(typeof err);
+        // console.log(err.toString());
+        // console.error('yep, cant connect');
+        // console.error(err);
       }
     );
   }
 
   ngOnDestroy(): void {
-    // clearInterval(this.agentPollingInterval);
+    clearInterval(this.agentPollingInterval);
     this.agentStatusSubscription.unsubscribe();
   }
 
   initAgentStatusPolling(): void {
+    if (environment.isMockApi) {
+      this.api.pullAgentStatuses(this.environment.id).then(
+        (res) => {
+          this.environment = updateAgentStatuses(this.environment, res);
+          this.loading = false;
+          this.apolloError = {};
+          this.cdRef.detectChanges();
+        },
+        (err) => {
+          /* eslint-disable-next-line quotes */
+          this.apolloError = { ...err, message: "Couldn't load mock data" };
+          this.cdRef.detectChanges();
+        }
+      );
+      return;
+    }
     console.log('Agent status polling initializing...');
     this.agentStatusQuery = this.api.getAgentStatuses(this.environment.id);
     this.agentStatusQuery.startPolling(this.pollingInterval * 1000);
-    // this.agentStatusQuery.setOptions({
-    //   skip: true
-    // })
-    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(({ data: result }) => {
-      if (result) {
-        this.loading = false;
-        this.environment = updateAgentStatuses(this.environment, result);
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    // Force UI to refresh so we can detect stale agent data
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
+    this.agentStatusSubscription = this.agentStatusQuery.valueChanges.subscribe(
+      ({ data: result }) => {
+        if (result) {
+          this.loading = false;
+          this.environment = updateAgentStatuses(this.environment, result);
+          this.apolloError = {};
+          // console.log('data updated');
+        }
+      },
+      (err) => {
+        this.apolloError = { ...err, message: 'Too many database connections' };
         this.cdRef.detectChanges();
-        console.log('data updated');
       }
-    });
-    // Go ahead and query the statuses for the first time
-    // this.fetchAgentStatuses();
-    // Set up the query to be polled every interval
-    // this.agentPollingInterval = setInterval(() => this.fetchAgentStatuses(), this.pollingInterval * 1000);
+    );
   }
 
   fetchAgentStatuses(): void {
-    console.log('Polling agent statuses...');
+    // console.log('Polling agent statuses...');
     this.loading = true;
     this.cdRef.detectChanges();
     // this.api.getAgentStatuses(this.environment.id).then((result: AgentStatusQueryResult) => {
@@ -108,7 +157,9 @@ export class MonitorComponent implements OnInit, OnDestroy {
     this.pollingInterval = changeEvent.value;
     this.agentStatusQuery.stopPolling();
     this.agentStatusQuery.startPolling(changeEvent.value * 1000);
-    console.log(this.pollingInterval * 1000)
+    this.api.setStatusPollingInterval(this.pollingInterval);
+    this.agentPollingInterval = setInterval(() => this.cdRef.detectChanges(), this.pollingInterval);
+    this.cdRef.detectChanges();
     // Stop the old polling
     // clearInterval(this.agentPollingInterval);
     // Set up polling again with new interval

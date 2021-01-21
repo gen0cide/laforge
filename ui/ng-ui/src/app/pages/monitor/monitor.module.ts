@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
+// import { TeamComponent } from 'src/app/components/view-components.module';
 
 const routes: Routes = [
   {
@@ -25,7 +26,7 @@ const routes: Routes = [
     ViewComponentsModule,
     MatTableModule,
     MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
   ]
 })
 export class MonitorModule {}

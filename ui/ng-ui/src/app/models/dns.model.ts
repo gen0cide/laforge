@@ -16,6 +16,6 @@ export interface DNS {
   type: string;
   rootDomain: string;
   DNSServers: string[];
-  NTPServers: string[];
+  NTPServer: string[];
   config: configMap[];
 }

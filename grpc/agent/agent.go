@@ -30,17 +30,17 @@ import (
 )
 
 const (
-	TaskFailed = "Failed"
-	TaskRunning = "Running"
+	TaskFailed    = "Failed"
+	TaskRunning   = "Running"
 	TaskSucceeded = "Completed"
 )
 
 var (
-	logger service.Logger
+	logger           service.Logger
 	address          = "localhost:50051"
 	defaultName      = "Laforge Agent"
 	certFile         = "service.pem"
-	heartbeatSeconds = 1
+	heartbeatSeconds = 10
 	clientID         = "1"
 )
 
@@ -125,12 +125,11 @@ func DownloadFile(filepath string, url string) error {
 	return err
 }
 
-
 // ValidateMD5Hash Validates the MD5 Hash of a file with the provided MD5 Hash
 func ValidateMD5Hash(filepath string, md5hash string) error {
 	var calculatedMD5Hash string
 
-	// Open the file 
+	// Open the file
 	file, err := os.Open(filepath)
 
 	// Can't open the file, assuming false
@@ -227,11 +226,10 @@ func RequestTask(c pb.LaforgeClient) {
 			RequestTaskStatusRequest(taskerr, clientID, c)
 		default:
 			logger.Infof("Response Message: %v", r)
-		    RequestTaskStatusRequest(nil, clientID, c)
+			RequestTaskStatusRequest(nil, clientID, c)
 		}
 	}
 }
-
 
 // RequestTaskStatusRequest Tell the server the status of a completed task
 func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient) {
@@ -277,17 +275,17 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	r, err := c.GetHeartBeat(ctx, request)
 	if err != nil {
 		logger.Errorf("Error: %v", err)
-	}else{
+	} else {
 		taskChannel <- *r
 	}
-	
+
 }
 
 // StartTaskRunner Gets a Heartbeat reply from the task channel, and if there are avalible tasks it will request them
 func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	r := <-taskChannel
-	logger.Infof("Response Message: %s", r.GetStatus())
-	logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
+	// logger.Infof("Response Message: %s", r.GetStatus())
+	// logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
 
 	if r.GetAvalibleTasks() {
 		RequestTask(c)
@@ -328,12 +326,12 @@ func (p *program) run() error {
 	var wg sync.WaitGroup
 
 	// TLS Cert for verifying GRPC Server
-	certPem,certerr := static.ReadFile(certFile)
+	certPem, certerr := static.ReadFile(certFile)
 	if certerr != nil {
-        fmt.Println("File reading error", certerr)
-        return nil
+		fmt.Println("File reading error", certerr)
+		return nil
 	}
-	
+
 	// Starts GRPC Connection with cert included in the binary
 	certPool := x509.NewCertPool()
 	certPool.AppendCertsFromPEM(certPem)
@@ -345,7 +343,7 @@ func (p *program) run() error {
 	}
 	defer conn.Close()
 	c := pb.NewLaforgeClient(conn)
-	
+
 	// START VARS
 	taskChannel := make(chan pb.HeartbeatReply)
 	wg.Add(2)

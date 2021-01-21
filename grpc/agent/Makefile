@@ -1,4 +1,4 @@
-GPRCADDRESS = "18.232.181.162:50051"
+GPRCADDRESS = "localhost:50051"
 AgentID 	= "3"
 
 copy_certs:

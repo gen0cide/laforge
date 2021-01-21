@@ -8,13 +8,13 @@ export interface AgentStatusQueryResult {
     build: {
       teams: [
         {
-          id: string;
+          id: ID;
           provisionedNetworks: [
             {
-              id: string;
+              id: ID;
               provisionedHosts: [
                 {
-                  id: string;
+                  id: ID;
                   heartbeat?: AgentStatus;
                 }
               ];

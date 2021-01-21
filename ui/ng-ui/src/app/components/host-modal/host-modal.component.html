@@ -1,6 +1,7 @@
 <div class="host-dialog-header d-flex align-items-center justify-content-between">
-  <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()">
+  <div class="host-status-icon d-flex align-items-center justify-content-start" [ngClass]="'text-' + getStatusColor()">
     <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
+    <h4 class="m-0">&nbsp;{{ isAgentStale() ? data.provisionedHost.heartbeat == null ? 'No Connection' : 'Connection Lost' : 'Connected'}}</h4>
   </div>
   <h4 class="host-name m-0">{{ data.provisionedHost.host.hostname }}</h4>
   <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
@@ -11,7 +12,7 @@
 <hr />
 <div class="row">
   <div class="col-12">
-    <h3 class="text-center">Agent Data</h3>
+    <h3 class="text-center">Agent Data{{ data.provisionedHost.heartbeat && (' - ' + (data.provisionedHost.heartbeat.timestamp | amFromUnix | amDateFormat: 'hh:mm A') ) }}</h3>
   </div>
   <div class="col-12">
     <div class="row" *ngIf="!data.provisionedHost.heartbeat">
@@ -43,15 +44,15 @@
       <p class="detail-title"><b>Host ID</b></p>
       <p class="detail-value">{{ data.provisionedHost.heartbeat.hostID }}</p>
     </div> -->
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load1 != null">
         <p class="detail-title"><b>1 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load1 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load5 != null">
         <p class="detail-title"><b>5 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load5 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15">
+      <div class="col-4" *ngIf="data.provisionedHost.heartbeat.load15 != null">
         <p class="detail-title"><b>15 Minute Load</b></p>
         <p class="detail-value">{{ data.provisionedHost.heartbeat.load15 / 100 | percent: '1.2' }}</p>
       </div>

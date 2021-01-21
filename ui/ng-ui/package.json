@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve -c=dev",
     "build": "ng build",
     "test": "ng test",
     "lint": "eslint ./src/app --ext js,ts,json --quiet --fix",

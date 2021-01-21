@@ -1,7 +1,7 @@
 import { Build, Environment } from './environment.model';
 import { ProvisionedNetwork } from './network.model';
 
-export type ID = string;
+export type ID = string | number;
 
 export interface varsMap {
   key?: string;
@@ -14,14 +14,14 @@ export interface configMap {
 }
 
 export interface User {
-  id: ID;
+  id?: ID;
   name: string;
-  uuid: string;
+  uuid?: string;
   email: string;
 }
 
 export interface Tag {
-  id: ID;
+  id?: ID;
   name: string;
   description?: string;
 }
@@ -29,12 +29,10 @@ export interface Tag {
 export interface Team {
   id: ID;
   teamNumber: number;
-  config: configMap[];
-  revision: number;
-  maintainer: User;
-  build: Build;
-  environment: Environment;
-  tags: Tag[];
+  config?: configMap[];
+  revision?: number;
+  maintainer?: User;
+  tags?: Tag[];
   provisionedNetworks: ProvisionedNetwork[];
 }
 
