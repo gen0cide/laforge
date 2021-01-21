@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -73,4 +76,24 @@ func (d *DNS) Swap(m Mergeable) error {
 	}
 	*d = *rawVal
 	return nil
+}
+
+// CreateDNSEntry ...
+func (d *DNS) CreateDNSEntry(ctx context.Context, client *ent.Client) (*ent.DNS, error) {
+	dns, err := client.DNS.
+		Create().
+		SetType(d.Type).
+		SetRootDomain(d.RootDomain).
+		SetDNSServers(d.DNSServers).
+		SetNtpServers(d.NTPServers).
+		SetConfig(d.Config).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating dns: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("dns was created: ", dns)
+	return dns, nil
 }

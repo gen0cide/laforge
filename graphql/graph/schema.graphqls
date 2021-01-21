@@ -1,0 +1,309 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type varsMap {
+  key: String!
+  value: String!
+}
+
+type configMap {
+  key: String!
+  value: String!
+}
+
+type Disk {
+  size: Int!
+}
+
+type User {
+  id: ID!
+  name: String!
+  uuid: String!
+  email: String!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  description: String
+}
+
+enum FindingSeverity {
+  ZeroSeverity
+  LowSeverity
+  MediumSeverity
+  HighSeverity
+  CriticalSeverity
+  NullSeverity
+}
+
+enum FindingDifficulty {
+  ZeroDifficulty
+  NoviceDifficulty
+  AdvancedDifficulty
+  ExpertDifficulty
+  NullDifficulty
+}
+
+type Finding {
+  name: String!
+  description: String!
+  severity: FindingSeverity!
+  difficulty: FindingDifficulty!
+  maintainer: User!
+  tags: [Tag]
+  Host: Host!
+}
+
+type DNSRecord {
+  id: ID!
+  name: String!
+  values: [String]!
+  type: String!
+  zone: String!
+  vars: [varsMap]
+  tags: [Tag]
+  disabled: Boolean!
+}
+
+type Script {
+  id: ID!
+  name: String!
+  language: String!
+  description: String!
+  source: String!
+  sourceType: String!
+  cooldown: Int!
+  timeout: Int!
+  ignoreErrors: Boolean!
+  args: [String]!
+  disabled: Boolean!
+  vars: [varsMap]
+  tags: [Tag]
+  absPath: String!
+  maintainer: User!
+  findings: [Finding]!
+}
+type Command {
+  id: ID!
+  name: String!
+  description: String!
+  program: String!
+  args: [String]!
+  ignoreErrors: Boolean!
+  cooldown: Int!
+  timeout: Int!
+  disabled: Boolean!
+  vars: [varsMap]
+  tags: [Tag]
+  maintainer: User!
+}
+type FileDownload {
+  id: ID!
+  sourceType: String!
+  source: String!
+  destination: String!
+  templete: Boolean!
+  mode: String!
+  disabled: Boolean!
+  md5: String!
+  absPath: String!
+  tags: [Tag]
+}
+type FileDelete {
+  id: ID!
+  path: String!
+}
+type FileExtract {
+  id: ID!
+  source: String!
+  destination: String!
+  type: String!
+}
+
+type Host {
+  id: ID!
+  hostname: String!
+  OS: String!
+  lastOctet: Int!
+  allowMacChanges: Boolean!
+  exposedTCPPorts: [String]!
+  exposedUDPPorts: [String]!
+  overridePassword: String!
+  vars: [varsMap]
+  userGroups: [String]!
+  dependsOn: [Host]!
+  maintainer: User!
+  tags: [Tag]
+  dnsRecords: [DNSRecord]
+  commands: [Command]
+  disk: Disk!
+  scripts: [Script]
+  fileDeletes: [FileDelete]
+  fileDownloads: [FileDownload]
+  fileExtracts: [FileExtract]
+}
+
+type Network {
+  id: ID!
+  name: String!
+  cidr: String!
+  vdiVisible: Boolean!
+  vars: [varsMap]
+  tags: [Tag]
+}
+
+type DNS {
+  id: ID!
+  type: String!
+  rootDomain: String!
+  DNSServers: [String]!
+  NTPServer: [String]!
+  config: [configMap]
+}
+
+type Build {
+  id: ID!
+  revision: Int!
+  tags: [Tag]
+  config: [configMap]
+  maintainer: User!
+  teams: [Team]!
+}
+
+type Environment {
+  id: ID!
+  CompetitionID: String!
+  Name: String!
+  Description: String!
+  Builder: String!
+  TeamCount: Int!
+  AdminCIDRs: [String]!
+  ExposedVDIPorts: [String]!
+  tags: [Tag]
+  config: [configMap]
+  maintainer: User!
+  networks: [Network]!
+  hosts: [Host]!
+  build: Build!
+  competition: Competition!
+}
+
+type Competition {
+  id: ID!
+  rootPassword: String!
+  config: [configMap]
+  dns: DNS!
+}
+
+type Team {
+  id: ID!
+  teamNumber: Int!
+  config: [configMap]
+  revision: Int!
+  maintainer: User!
+  build: Build!
+  environment: Environment!
+  tags: [Tag]
+  provisionedNetworks: [ProvisionedNetwork]!
+}
+
+type ProvisionedNetwork {
+  id: ID!
+  name: String!
+  cidr: String!
+  provisionedHosts: [ProvisionedHost]!
+  status: Status!
+  network: Network!
+  build: Build!
+}
+
+enum ProvisionStatus {
+  ProvStatusUndefined
+  ProvStatusPlanning
+  ProvStatusAwaiting
+  ProvStatusInProgress
+  ProvStatusFailed
+  ProvStatusComplete
+  ProvStatusTainted
+}
+
+type Status {
+  state: ProvisionStatus!
+  startedAt: String!
+  endedAt: String!
+  failed: Boolean!
+  completed: Boolean!
+  error: String!
+}
+
+type AgentStatus {
+  clientId: String!
+  hostname: String!
+  upTime: Int!
+  bootTime: Int!
+  numProcs: Int!
+  OS: String! 
+  hostID: String!
+  load1: Float
+  load5: Float
+  load15: Float
+  totalMem: Int!
+  freeMem: Int!
+  usedMem: Int!
+  timestamp: Int!
+}
+
+type ProvisionedHost {
+  id: ID!
+  subnetIP: String!
+  status: Status!
+  provisionedNetwork: ProvisionedNetwork!
+  provisionedSteps: [ProvisioningStep]!
+  host: Host!
+  combinedOutput: String # Link to WebSocket
+  heartbeat: AgentStatus
+}
+
+type RemoteFile {
+  id: ID!
+  sourceType: String!
+  source: String!
+  destination: String!
+  vars: [varsMap]
+  templete: Boolean!
+  perms: String!
+  disabled: Boolean!
+  md5: String!
+  absPath: String!
+  ext: String!
+  tags: [Tag]
+}
+
+type ProvisioningStep {
+  id: ID!
+  provisionType: String!
+  stepNumber: Int!
+  provisionedHost: ProvisionedHost!
+  status: Status!
+  script: Script
+  command: Command
+  DNSRecord: DNSRecord
+  remoteFile: RemoteFile
+  # fileDownload: FileDownload # Not Needed for now
+  # fileDelete: FileDelete
+  # fileExtract: FileExtract
+}
+
+type Query {
+  environments: [Environment]!
+  environment(envUUID: String!): Environment!
+  provisionedHost(proHostUUID: String!): ProvisionedHost!
+  provisionedNetwork(proNetUUID: String!): ProvisionedNetwork!
+  provisionedStep(proStepUUID: String!): ProvisioningStep!
+}
+
+type Mutation {
+  executePlan(buildUUID: String!): Build!
+}

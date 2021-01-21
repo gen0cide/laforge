@@ -1,11 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 
 	"github.com/pkg/errors"
 )
@@ -138,4 +141,44 @@ func (c *Command) Swap(m Mergeable) error {
 	}
 	*c = *rawVal
 	return nil
+}
+
+// CreateCommandEntry ...
+func (c *Command) CreateCommandEntry(ctx context.Context, client *ent.Client) (*ent.Command, error) {
+	tag, err := CreateTagEntry(c.ID, c.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating command: %v", err)
+		return nil, err
+	}
+
+	user, err := c.Maintainer.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating command: %v", err)
+		return nil, err
+	}
+
+	command, err := client.Command.
+		Create().
+		SetName(c.Name).
+		SetDescription(c.Description).
+		SetProgram(c.Program).
+		SetArgs(c.Args).
+		SetIgnoreErrors(c.IgnoreErrors).
+		SetDisabled(c.Disabled).
+		SetCooldown(c.Cooldown).
+		SetTimeout(c.Timeout).
+		SetVars(c.Vars).
+		AddUser(user).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating command: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("command was created: ", command)
+	return command, nil
 }

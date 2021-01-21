@@ -1,0 +1,25 @@
+<div class="d-flex flex-column flex-root h-100 bg-black" id="kt_login_wrapper">
+  <img src="assets/media/login/login-top.jpg" alt="" />
+  <!--begin::Login-->
+  <div
+    class="login login-1 login-signin-on d-flex flex-column flex-lg-row flex-column-fluid"
+    style="background-color: #000000"
+    id="kt_login"
+  >
+    <!--begin::Content-->
+    <div class="login-content flex-row-fluid d-flex flex-column justify-content-center position-relative overflow-hidden p-7 mx-auto">
+      <!--begin::Content body-->
+      <div class="d-flex flex-column-fluid flex-center">
+        <router-outlet></router-outlet>
+      </div>
+      <!--end::Content body-->
+
+      <!--begin::Content footer-->
+      <div class="d-flex justify-content-lg-start justify-content-center align-items-end py-7 py-lg-0"></div>
+      <!--end::Content footer-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Login-->
+  <img src="assets/media/login/login-bottom.jpg" alt="" />
+</div>

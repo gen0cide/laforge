@@ -1,0 +1,34 @@
+<div class="host" (click)="style === 'compact' && viewDetails()" [ngClass]="style" [class.selectable]="selectable">
+  <div class="rebuild-select" *ngIf="selectable">
+    <mat-checkbox
+      [checked]="isSelected"
+      [indeterminate]="parentSelected"
+      (click)="$event.stopPropagation()"
+      (change)="onSelect()"
+      (indeterminateChange)="onIndeterminateChange($event)"
+      [aria-label]="'Select Network'"
+    ></mat-checkbox>
+  </div>
+  <div class="host-container">
+    <div class="host-info" (click)="style !== 'compact' && viewDetails()">
+      <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()" *ngIf="style === 'compact'">
+        <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon() + '-circle'"></i>
+      </div>
+      <div class="host-status-icon" [ngClass]="'bg-' + getStatusColor()" *ngIf="style !== 'compact'">
+        <i class="fas" [ngClass]="'fa-' + getStatusIcon()"></i>
+      </div>
+      <div class="host-preview">
+        <span class="host-hostname">{{ provisionedHost ? provisionedHost.host.hostname : '' }}</span>
+      </div>
+    </div>
+    <div class="steps" *ngIf="style === 'expanded'">
+      <app-step
+        *ngFor="let step of provisionedHost.provisionedSteps; let i = index"
+        [stepNumber]="i + 1"
+        [provisionedStep]="step"
+        [showDetail]="false"
+        [style]="'expanded'"
+      ></app-step>
+    </div>
+  </div>
+</div>

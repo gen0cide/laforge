@@ -1,0 +1,12 @@
+node_modules
+package.json
+package-lock.json
+dist
+
+# Ignore some template stuff
+src/app/_helpers
+src/app/_metronic
+src/app/modules
+src/assets
+src/data
+src/environments

@@ -1,12 +1,14 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"net/mail"
 	"os/user"
 	"reflect"
 
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/google/uuid"
 
 	"gopkg.in/AlecAivazis/survey.v1"
@@ -79,4 +81,22 @@ func UserWizard() error {
 	}
 	cli.Logger.Warnf("Global configuration written to ~/.laforge/global.laforge")
 	return nil
+}
+
+// CreateUserEntry ...
+func (u *User) CreateUserEntry(ctx context.Context, client *ent.Client) (*ent.User, error) {
+	user, err := client.User.
+		Create().
+		SetName(u.Name).
+		SetUUID(u.UUID).
+		SetEmail(u.Email).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating user: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("user was created: ", user)
+	return user, nil
 }

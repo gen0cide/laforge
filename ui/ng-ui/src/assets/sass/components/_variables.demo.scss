@@ -1,0 +1,63 @@
+//
+// To make future updates easier consider overriding the global variables from _variables.bootstrap.scss and _variables.custom.scss for current demo in this file.
+// Note that this file is included first and variables defined in _variables.bootstrap.scss and _variables.custom.scss
+// are not accessible in this file but you can override any global variable as shown below:
+//
+
+// Black color
+$black: #000000;
+
+// White color
+$white: #ffffff;
+
+// Theme colors
+// Override primary color variants for our Engineering TNG yellow color scheme
+$primary: #ffbc2c;
+$primary-hover: #ffc850;
+$primary-light: #fcf6e8;
+$primary-inverse: $white;
+
+$secondary: #84bd00;
+$secondary-hover: #9de000;
+$secondary-light: #daff85;
+$secondary-inverse: $white;
+
+// Override warning color variants to make it more orange
+$warning: #fc9c43;
+$warning-hover: #ffb067;
+$warning-light: #fff2e6;
+$warning-inverse: $white;
+
+// Override warning color variants to make it more orange
+$danger: #cc0c00;
+$danger-hover: #f01000;
+$danger-light: #ff9b94;
+$danger-inverse: $white;
+
+// Override warning color variants to make it more orange
+$success: #00af66;
+$success-hover: #00d17a;
+$success-light: #75ffc6;
+$success-inverse: $white;
+
+// Info colors
+$info: #00b5e2; // Bootstrap variable
+$info-hover: #05cdff; // Custom variable
+$info-light: #a8eeff; // Custom variable
+$info-inverse: $white; // Custom variable
+
+$accent: #5c88da;
+$accent-hover: #7a9ee1;
+$accent-light: #eaf0fa;
+$accent-inverse: $white; // Custom variable
+
+$dark: #7c878e; // Bootstrap variable
+$dark-hover: #8f989e; // Custom variable
+$dark-light: #e6e8ea; // Custom variable
+$dark-inverse: $white; // Custom variable
+
+$layout-themes: (
+  dark: #fff4dd,
+  // Dark theme color
+  light: #fff4dd // Light theme color
+);

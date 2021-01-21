@@ -2,6 +2,7 @@ package core
 
 import (
 	//nolint:gosec
+	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -240,4 +243,37 @@ func (r *RemoteFile) AssetName() (string, error) {
 
 	return fmt.Sprintf("%s%s", r.MD5, r.Ext), nil
 
+}
+
+// CreateRemoteFileEntry ...
+func (r *RemoteFile) CreateRemoteFileEntry(ctx context.Context, client *ent.Client) (*ent.RemoteFile, error) {
+	tag, err := CreateTagEntry(r.ID, r.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating remote file: %v", err)
+		return nil, err
+	}
+
+	remotefile, err := client.RemoteFile.
+		Create().
+		SetSourceType(r.SourceType).
+		SetSource(r.Source).
+		SetDestination(r.Destination).
+		SetVars(r.Vars).
+		SetTemplate(r.Template).
+		SetPerms(r.Perms).
+		SetDisabled(r.Disabled).
+		SetMd5(r.MD5).
+		SetAbsPath(r.AbsPath).
+		SetExt(r.Ext).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating remote file: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("remote file was created: ", remotefile)
+	return remotefile, nil
 }

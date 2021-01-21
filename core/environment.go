@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/karrick/godirwalk"
 	"github.com/pkg/errors"
 )
@@ -35,7 +37,7 @@ type Environment struct {
 	Builder          string              `hcl:"builder,attr" json:"builder,omitempty"`
 	TeamCount        int                 `hcl:"team_count,attr" json:"team_count,omitempty"`
 	AdminCIDRs       []string            `hcl:"admin_ranges,attr" json:"admin_ranges,omitempty"`
-	ExposedVDIPorts  []string 				 `hcl:"vdi_allowed_tcp_ports" json:"vdi_allowed_tcp_ports,omitempty"`
+	ExposedVDIPorts  []string            `hcl:"vdi_allowed_tcp_ports" json:"vdi_allowed_tcp_ports,omitempty"`
 	Config           map[string]string   `hcl:"config,optional" json:"config,omitempty"`
 	Tags             map[string]string   `hcl:"tags,optional" json:"tags,omitempty"`
 	Networks         []*IncludedNetwork  `hcl:"included_network,block" json:"included_networks,omitempty"`
@@ -388,4 +390,69 @@ func (l *Laforge) GetAllEnvs() (map[string]*Laforge, error) {
 			return emap, nil
 		}
 	}
+}
+
+// CreateEnvironmentEntry ...
+func (e *Environment) CreateEnvironmentEntry(ctx context.Context, client *ent.Client) (*ent.Environment, error) {
+	tag, err := CreateTagEntry(e.ID, e.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating environment: %v", err)
+		return nil, err
+	}
+
+	user, err := e.Maintainer.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating environment: %v", err)
+		return nil, err
+	}
+
+	build, err := e.Build.CreateBuildEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating environment: %v", err)
+		return nil, err
+	}
+
+	competition, err := e.Competition.CreateCompetitionEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating environment: %v", err)
+		return nil, err
+	}
+
+	environment, err := client.Environment.
+		Create().
+		SetCompetitionID(e.CompetitionID).
+		SetName(e.Name).
+		SetDescription(e.Description).
+		SetBuilder(e.Builder).
+		SetTeamCount(e.TeamCount).
+		SetRevision(int(e.Revision)).
+		SetAdminCidrs(e.AdminCIDRs).
+		SetExposedVdiPorts(e.ExposedVDIPorts).
+		SetConfig(e.Config).
+		AddTag(tag).
+		AddUser(user).
+		AddBuild(build).
+		AddCompetition(competition).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating environment: %v", err)
+		return nil, err
+	}
+
+	for _, v := range e.Build.Teams {
+		_, err := v.CreateTeamEntry(environment, build, ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating environment: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("environment was created: ", environment)
+	return environment, nil
 }

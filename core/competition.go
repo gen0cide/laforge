@@ -1,9 +1,12 @@
 package core
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -108,4 +111,30 @@ func (c *Competition) PasswordForHost(h *Host) string {
 	}
 
 	return h.OverridePassword
+}
+
+
+// CreateCompetitionEntry ...
+func (c *Competition) CreateCompetitionEntry(ctx context.Context, client *ent.Client) (*ent.Competition, error) {
+	dns, err := c.DNS.CreateDNSEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating competition: %v", err)
+		return nil, err
+	}
+
+	competition, err := client.Competition.
+		Create().
+		SetRootPassword(c.RootPassword).
+		SetConfig(c.Config).
+		AddDNS(dns).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating competition: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("competition was created: ", competition)
+	return competition, nil
 }

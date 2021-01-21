@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
 	"github.com/pkg/errors"
 )
 
@@ -354,6 +356,76 @@ func (h *Host) Index(base *Laforge) error {
 		}
 	}
 	return nil
+}
+
+// CreateDiskEntry ...
+func (d *Disk) CreateDiskEntry(ctx context.Context, client *ent.Client) (*ent.Disk, error) {
+	disk, err := client.Disk.
+		Create().
+		SetSize(d.Size).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating disk: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("disk was created: ", disk)
+	return disk, nil
+}
+
+// CreateHostEntry ...
+func (h *Host) CreateHostEntry(ctx context.Context, client *ent.Client) (*ent.Host, error) {
+	disk, err := h.Disk.CreateDiskEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating host: %v", err)
+		return nil, err
+	}
+
+	user, err := h.Maintainer.CreateUserEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating host: %v", err)
+		return nil, err
+	}
+
+	tag, err := CreateTagEntry(h.ID, h.Tags, ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating host: %v", err)
+		return nil, err
+	}
+
+	host, err := client.Host.
+		Create().
+		SetHostname(h.Hostname).
+		SetDescription(h.Description).
+		SetOS(h.OS).
+		SetLastOctet(h.LastOctet).
+		SetAllowMACChanges(h.AllowMACChanges).
+		SetExposedTCPPorts(h.ExposedTCPPorts).
+		SetExposedUDPPorts(h.ExposedUDPPorts).
+		SetOverridePassword(h.OverridePassword).
+		SetVars(h.Vars).
+		SetUserGroups(h.UserGroups).
+		// SetDependsOn(h.DependsOn). // Not in the Laforge Host Struct
+		// SetScripts(h.Scripts).
+		// SetCommands(h.Commands).
+		// SetRemoteFiles(h.RemoteFiles).
+		// SetDnsRecords(h.DNSRecords).
+		AddDisk(disk).
+		AddMaintainer(user).
+		AddTag(tag).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating host: %v", err)
+		return nil, err
+	}
+
+	cli.Logger.Debugf("host was created: ", host)
+	return host, nil
 }
 
 // Fullpath implements the Pather interface

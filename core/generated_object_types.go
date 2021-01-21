@@ -531,7 +531,7 @@ var _ObjectTypePaths = map[ObjectType]string{
 	ObjectTypeIncluded:           `github.com.gen0cide.laforge.core.object_type_included`,
 }
 
-// Source returns an import path directly to the type.
+// Path returns an import path directly to the type.
 func (x ObjectType) Path() string {
 	if str, ok := _ObjectTypePaths[x]; ok {
 		return str

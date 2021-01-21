@@ -1,11 +1,15 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"path/filepath"
 
 	"github.com/cespare/xxhash"
+	"github.com/gen0cide/laforge/core/cli"
+	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/pkg/errors"
 )
 
@@ -233,4 +237,75 @@ func (p *ProvisionedHost) Gather(g *Snapshot) error {
 	// }
 
 	return nil
+}
+
+// CreateProvisionedHostEntry ...
+func (p *ProvisionedHost) CreateProvisionedHostEntry(ctx context.Context, pn *ent.ProvisionedNetwork, client *ent.Client) (*ent.ProvisionedHost, error) {
+	status, err := p.Status.CreateStatusEntry(ctx, client)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	ph, err := client.ProvisionedHost.
+		Create().
+		SetSubnetIP(p.SubnetIP).
+		AddStatus(status).
+		AddProvisionedNetwork(pn).
+		Save(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	statusExist, err := client.Host.Query().Where(host.HostnameEQ(p.Host.Hostname)).Exist(ctx)
+
+	if err != nil {
+		cli.Logger.Debugf("failed creating provisioned host: %v", err)
+		return nil, err
+	}
+
+	if statusExist {
+		host, err := client.Host.Query().Where(host.HostnameEQ(p.Host.Hostname)).Only(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+
+		ph, err = ph.Update().AddHost(host).Save(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+	} else {
+		host, err := p.Host.CreateHostEntry(ctx, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+
+		ph, err = ph.Update().AddHost(host).Save(ctx)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+	}
+
+	for _, v := range p.ProvisioningSteps {
+		_, err := v.CreateProvisioningStepEntry(ctx, ph, client)
+
+		if err != nil {
+			cli.Logger.Debugf("failed creating provisioned host: %v", err)
+			return nil, err
+		}
+	}
+
+	cli.Logger.Debugf("provisioned host was created: ", ph)
+	return ph, nil
 }
