@@ -1,6 +1,0 @@
-{{ range $tid, $team := $.Build.Teams }}
-module "team-{{ $tid }}" {
-  source = "./teams/{{ $tid }}"
-}
-
-{{ end }}
