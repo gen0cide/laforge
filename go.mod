@@ -39,6 +39,7 @@ require (
 	github.com/gruntwork-io/terragrunt v0.23.3
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl v1.0.0
+	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/terraform v0.12.8
 	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a
