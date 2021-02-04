@@ -41,20 +41,28 @@
 
     <!--begin::Toolbar-->
     <div class="d-flex align-items-center">
-      <!-- HIDE FOR FINALS...
-      <mat-form-field appearance="fill">
-        <mat-label>Git Branch</mat-label>
+      <i class="fa fa-spinner fa-spin" *ngIf="envIsLoading | async"></i>
+      <mat-form-field appearance="fill" *ngIf="this.envService.getEnvironments() | async as _environments">
+        <mat-label>Environments</mat-label>
+        <mat-select (selectionChange)="selectEnvironment($event)">
+          <mat-option *ngFor="let env of _environments" [value]="env.id">
+            <b>{{ env.Name }} | </b><em>{{ env.CompetitionID }}</em>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <!-- <mat-form-field appearance="fill">
+        <mat-label>Environment</mat-label>
         <mat-select (selectionChange)="onBranchSelect($event)">
           <mat-option *ngFor="let branch of branches" [value]="branch.hash">
             {{ branch.name }}
           </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
 
-      <button class="btn btn-success btn-icon font-weight-bold cursor-pointer" title="Clear plan">
+      <!-- <button class="btn btn-success btn-icon font-weight-bold cursor-pointer" title="Clear plan">
         <span [inlineSVG]="'./assets/media/svg/icons/Files/File-minus.svg'" cacheSVG="true" class="svg-icon svg-icon-lg"></span>
-      </button>
-      -->
+      </button> -->
+
       <!--begin::Button-->
       <!-- <a
         class="btn btn-fixed-height btn-default btn-hover-primary font-weight-bold px-2 px-lg-5 mr-2 cursor-pointer"

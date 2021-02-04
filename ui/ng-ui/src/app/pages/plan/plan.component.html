@@ -1,28 +1,31 @@
 <mat-card class="laforge-card">
   <mat-card-header *ngIf="!envIsSelected()">
-    <mat-card-title>Select an Environment to Monitor</mat-card-title>
-    <mat-form-field appearance="fill" *ngIf="envs != null">
+    <mat-card-title>Select an Environment using the dropdown above</mat-card-title>
+    <!-- <mat-form-field appearance="fill" *ngIf="this.envService.getEnvironments().length > 0">
       <mat-label>Environments</mat-label>
       <mat-select (selectionChange)="grabEnvironmentTree($event)">
-        <mat-option *ngFor="let env of envs" [value]="env.id">
+        <mat-option *ngFor="let env of this.envService.getEnvironments()" [value]="env.id">
           <b>{{ env.Name }} | </b><em>{{ env.CompetitionID }}</em>
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-card-subtitle *ngIf="envs == null">Loading Environments...</mat-card-subtitle>
-    <mat-card-subtitle *ngIf="apolloError.message" class="text-danger">Something went wrong, please refresh the page.</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="this.envService.getEnvironments().length === 0">Loading Environments...</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="apolloError.message" class="text-danger">Something went wrong, please refresh the page.</mat-card-subtitle> -->
     <!-- <mat-card-subtitle *ngIf="apolloError.message" class="text-danger">{{apolloError.message}}</mat-card-subtitle> -->
   </mat-card-header>
-  <mat-card-header *ngIf="envIsSelected()">
+  <mat-card-content *ngIf="envIsSelected() && environment == null">Loading Environments...</mat-card-content>
+  <mat-card-header *ngIf="environment | async as _environment">
     <mat-card-title-group>
       <mat-card-title>Plan</mat-card-title>
       <mat-card-subtitle>Construct a plan for a LaForge environment from your git branch</mat-card-subtitle>
-      <mat-card-subtitle><b>Name:</b> {{ environment.Name }}</mat-card-subtitle>
-      <mat-card-subtitle><b>Description:</b> {{ environment.Description }}</mat-card-subtitle>
-      <mat-card-subtitle><b>Maintainer:</b> {{ environment.maintainer.name }} &lt;{{ environment.maintainer.email }}&gt;</mat-card-subtitle>
+      <mat-card-subtitle><b>Name:</b> {{ _environment.Name }}</mat-card-subtitle>
+      <mat-card-subtitle><b>Description:</b> {{ _environment.Description }}</mat-card-subtitle>
+      <mat-card-subtitle
+        ><b>Maintainer:</b> {{ _environment.maintainer.name }} &lt;{{ _environment.maintainer.email }}&gt;</mat-card-subtitle
+      >
     </mat-card-title-group>
   </mat-card-header>
-  <mat-card-content *ngIf="envIsSelected()">
-    <app-team *ngFor="let team of environment.build.teams" [team]="team" [style]="'expanded'" [mode]="'plan'"></app-team>
+  <mat-card-content *ngIf="environment | async as _environment">
+    <app-team *ngFor="let team of _environment.build.teams" [team]="team" [style]="'expanded'" [mode]="'plan'"></app-team>
   </mat-card-content>
 </mat-card>
