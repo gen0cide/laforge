@@ -45,7 +45,7 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'monitor',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       },
       {

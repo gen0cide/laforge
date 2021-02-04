@@ -117,7 +117,8 @@
               "browserTarget": "laforge:build:production"
             },
             "dev": {
-              "browserTarget": "laforge:build:dev"
+              "browserTarget": "laforge:build:dev",
+              "disableHostCheck": true
             }
           }
         },

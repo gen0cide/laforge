@@ -99,7 +99,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearInterval(this.agentPollingInterval);
-    this.agentStatusSubscription.unsubscribe();
+    if (!environment.isMockApi) this.agentStatusSubscription.unsubscribe();
   }
 
   initAgentStatusPolling(): void {

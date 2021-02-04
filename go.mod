@@ -26,7 +26,7 @@ require (
 	github.com/gen0cide/gscript v0.1.1
 	github.com/gen0cide/utils v0.0.0-20181012043315-207bbefab091
 	github.com/gen0cide/winrmcp v0.0.0-20181025022149-44c9dbdf72ab
-	github.com/gin-contrib/cors v1.3.1 // indirect
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/contrib v0.0.0-20200810162008-6dee08bf958e
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-chi/chi v4.1.2+incompatible

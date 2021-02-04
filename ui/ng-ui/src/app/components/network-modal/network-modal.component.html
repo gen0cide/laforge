@@ -35,7 +35,7 @@
 <div class="row">
   <div class="col-12">
     <p class="detail-title"><b>Vars</b></p>
-    <mat-table [dataSource]="data.provisionedNetwork.vars" class="bg-gray-100">
+    <mat-table [dataSource]="data.provisionedNetwork.network.vars" class="bg-gray-100">
       <ng-container matColumnDef="key">
         <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
         <mat-cell *matCellDef="let varMap"> {{ varMap.key }} </mat-cell>
@@ -50,7 +50,7 @@
   </div>
   <div class="col-12">
     <p class="detail-title"><b>Tags</b></p>
-    <mat-table [dataSource]="data.provisionedNetwork.tags" class="bg-gray-100">
+    <mat-table [dataSource]="data.provisionedNetwork.network.tags" class="bg-gray-100">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
         <mat-cell *matCellDef="let tag"> {{ tag.name }} </mat-cell>

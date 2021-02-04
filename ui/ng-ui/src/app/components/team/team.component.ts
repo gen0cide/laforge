@@ -12,10 +12,12 @@ export class TeamComponent implements OnInit {
   @Input() team: Team;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
+  @Input() mode: 'plan' | 'build' | 'manage';
   isSelected = false;
 
   constructor(private rebuild: RebuildService) {
     if (!this.style) this.style = 'compact';
+    if (!this.mode) this.mode = 'manage';
     if (!this.selectable) this.selectable = false;
   }
 
