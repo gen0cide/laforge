@@ -1,1 +1,15 @@
-<p>build works!</p>
+<mat-card class="laforge-card">
+  <mat-card-header *ngIf="!envIsSelected()">
+    <mat-card-title>Select an Environment using the dropdown above</mat-card-title>
+  </mat-card-header>
+  <mat-card-content *ngIf="envIsSelected() && environment == null">Loading Environment...</mat-card-content>
+  <mat-card-header *ngIf="environment | async as _environment">
+    <div class="w-25 d-flex align-items-center justify-content-evenly">
+      <mat-card-title>{{ _environment.Name }}</mat-card-title>
+      <mat-card-subtitle>{{ _environment.Description }}</mat-card-subtitle>
+    </div>
+  </mat-card-header>
+  <mat-card-content *ngIf="environment | async as _environment">
+    <app-team *ngFor="let team of _environment.build.teams" [team]="team" [mode]="'build'"></app-team>
+  </mat-card-content>
+</mat-card>
