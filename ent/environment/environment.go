@@ -25,6 +25,8 @@ const (
 	FieldExposedVdiPorts = "exposed_vdi_ports"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeEnvironmentToTag holds the string denoting the environmenttotag edge name in mutations.
 	EdgeEnvironmentToTag = "EnvironmentToTag"
@@ -101,6 +103,7 @@ var Columns = []string{
 	FieldAdminCidrs,
 	FieldExposedVdiPorts,
 	FieldConfig,
+	FieldTags,
 }
 
 var (

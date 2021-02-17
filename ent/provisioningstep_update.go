@@ -11,10 +11,12 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
+	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -142,19 +144,49 @@ func (psu *ProvisioningStepUpdate) AddProvisioningStepToDNSRecord(d ...*DNSRecor
 	return psu.AddProvisioningStepToDNSRecordIDs(ids...)
 }
 
-// AddProvisioningStepToRemoteFileIDs adds the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToRemoteFileIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToRemoteFileIDs(ids...)
+// AddProvisioningStepToFileDeleteIDs adds the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.AddProvisioningStepToFileDeleteIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToRemoteFile adds the ProvisioningStepToRemoteFile edges to RemoteFile.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToRemoteFile(r ...*RemoteFile) *ProvisioningStepUpdate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// AddProvisioningStepToFileDelete adds the ProvisioningStepToFileDelete edges to FileDelete.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
 	}
-	return psu.AddProvisioningStepToRemoteFileIDs(ids...)
+	return psu.AddProvisioningStepToFileDeleteIDs(ids...)
+}
+
+// AddProvisioningStepToFileDownloadIDs adds the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.AddProvisioningStepToFileDownloadIDs(ids...)
+	return psu
+}
+
+// AddProvisioningStepToFileDownload adds the ProvisioningStepToFileDownload edges to FileDownload.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psu.AddProvisioningStepToFileDownloadIDs(ids...)
+}
+
+// AddProvisioningStepToFileExtractIDs adds the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.AddProvisioningStepToFileExtractIDs(ids...)
+	return psu
+}
+
+// AddProvisioningStepToFileExtract adds the ProvisioningStepToFileExtract edges to FileExtract.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psu.AddProvisioningStepToFileExtractIDs(ids...)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -288,25 +320,67 @@ func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToDNSRecord(d ...*DNSRe
 	return psu.RemoveProvisioningStepToDNSRecordIDs(ids...)
 }
 
-// ClearProvisioningStepToRemoteFile clears all "ProvisioningStepToRemoteFile" edges to type RemoteFile.
-func (psu *ProvisioningStepUpdate) ClearProvisioningStepToRemoteFile() *ProvisioningStepUpdate {
-	psu.mutation.ClearProvisioningStepToRemoteFile()
+// ClearProvisioningStepToFileDelete clears all "ProvisioningStepToFileDelete" edges to type FileDelete.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileDelete() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToFileDelete()
 	return psu
 }
 
-// RemoveProvisioningStepToRemoteFileIDs removes the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToRemoteFileIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToRemoteFileIDs(ids...)
+// RemoveProvisioningStepToFileDeleteIDs removes the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.RemoveProvisioningStepToFileDeleteIDs(ids...)
 	return psu
 }
 
-// RemoveProvisioningStepToRemoteFile removes ProvisioningStepToRemoteFile edges to RemoteFile.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToRemoteFile(r ...*RemoteFile) *ProvisioningStepUpdate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// RemoveProvisioningStepToFileDelete removes ProvisioningStepToFileDelete edges to FileDelete.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
 	}
-	return psu.RemoveProvisioningStepToRemoteFileIDs(ids...)
+	return psu.RemoveProvisioningStepToFileDeleteIDs(ids...)
+}
+
+// ClearProvisioningStepToFileDownload clears all "ProvisioningStepToFileDownload" edges to type FileDownload.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileDownload() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToFileDownload()
+	return psu
+}
+
+// RemoveProvisioningStepToFileDownloadIDs removes the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.RemoveProvisioningStepToFileDownloadIDs(ids...)
+	return psu
+}
+
+// RemoveProvisioningStepToFileDownload removes ProvisioningStepToFileDownload edges to FileDownload.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psu.RemoveProvisioningStepToFileDownloadIDs(ids...)
+}
+
+// ClearProvisioningStepToFileExtract clears all "ProvisioningStepToFileExtract" edges to type FileExtract.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileExtract() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToFileExtract()
+	return psu
+}
+
+// RemoveProvisioningStepToFileExtractIDs removes the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.RemoveProvisioningStepToFileExtractIDs(ids...)
+	return psu
+}
+
+// RemoveProvisioningStepToFileExtract removes ProvisioningStepToFileExtract edges to FileExtract.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psu.RemoveProvisioningStepToFileExtractIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -723,33 +797,33 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if psu.mutation.ProvisioningStepToRemoteFileCleared() {
+	if psu.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := psu.mutation.RemovedProvisioningStepToRemoteFileIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToRemoteFileCleared() {
+	if nodes := psu.mutation.RemovedProvisioningStepToFileDeleteIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
 				},
 			},
 		}
@@ -758,17 +832,125 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := psu.mutation.ProvisioningStepToRemoteFileIDs(); len(nodes) > 0 {
+	if nodes := psu.mutation.ProvisioningStepToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psu.mutation.ProvisioningStepToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.RemovedProvisioningStepToFileDownloadIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.ProvisioningStepToFileDownloadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psu.mutation.ProvisioningStepToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.RemovedProvisioningStepToFileExtractIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.ProvisioningStepToFileExtractIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
 				},
 			},
 		}
@@ -904,19 +1086,49 @@ func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToDNSRecord(d ...*DNSR
 	return psuo.AddProvisioningStepToDNSRecordIDs(ids...)
 }
 
-// AddProvisioningStepToRemoteFileIDs adds the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToRemoteFileIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToRemoteFileIDs(ids...)
+// AddProvisioningStepToFileDeleteIDs adds the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.AddProvisioningStepToFileDeleteIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToRemoteFile adds the ProvisioningStepToRemoteFile edges to RemoteFile.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToRemoteFile(r ...*RemoteFile) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// AddProvisioningStepToFileDelete adds the ProvisioningStepToFileDelete edges to FileDelete.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
 	}
-	return psuo.AddProvisioningStepToRemoteFileIDs(ids...)
+	return psuo.AddProvisioningStepToFileDeleteIDs(ids...)
+}
+
+// AddProvisioningStepToFileDownloadIDs adds the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.AddProvisioningStepToFileDownloadIDs(ids...)
+	return psuo
+}
+
+// AddProvisioningStepToFileDownload adds the ProvisioningStepToFileDownload edges to FileDownload.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psuo.AddProvisioningStepToFileDownloadIDs(ids...)
+}
+
+// AddProvisioningStepToFileExtractIDs adds the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.AddProvisioningStepToFileExtractIDs(ids...)
+	return psuo
+}
+
+// AddProvisioningStepToFileExtract adds the ProvisioningStepToFileExtract edges to FileExtract.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psuo.AddProvisioningStepToFileExtractIDs(ids...)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -1050,25 +1262,67 @@ func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToDNSRecord(d ...*D
 	return psuo.RemoveProvisioningStepToDNSRecordIDs(ids...)
 }
 
-// ClearProvisioningStepToRemoteFile clears all "ProvisioningStepToRemoteFile" edges to type RemoteFile.
-func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToRemoteFile() *ProvisioningStepUpdateOne {
-	psuo.mutation.ClearProvisioningStepToRemoteFile()
+// ClearProvisioningStepToFileDelete clears all "ProvisioningStepToFileDelete" edges to type FileDelete.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileDelete() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToFileDelete()
 	return psuo
 }
 
-// RemoveProvisioningStepToRemoteFileIDs removes the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToRemoteFileIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToRemoteFileIDs(ids...)
+// RemoveProvisioningStepToFileDeleteIDs removes the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.RemoveProvisioningStepToFileDeleteIDs(ids...)
 	return psuo
 }
 
-// RemoveProvisioningStepToRemoteFile removes ProvisioningStepToRemoteFile edges to RemoteFile.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToRemoteFile(r ...*RemoteFile) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// RemoveProvisioningStepToFileDelete removes ProvisioningStepToFileDelete edges to FileDelete.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
 	}
-	return psuo.RemoveProvisioningStepToRemoteFileIDs(ids...)
+	return psuo.RemoveProvisioningStepToFileDeleteIDs(ids...)
+}
+
+// ClearProvisioningStepToFileDownload clears all "ProvisioningStepToFileDownload" edges to type FileDownload.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileDownload() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToFileDownload()
+	return psuo
+}
+
+// RemoveProvisioningStepToFileDownloadIDs removes the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.RemoveProvisioningStepToFileDownloadIDs(ids...)
+	return psuo
+}
+
+// RemoveProvisioningStepToFileDownload removes ProvisioningStepToFileDownload edges to FileDownload.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psuo.RemoveProvisioningStepToFileDownloadIDs(ids...)
+}
+
+// ClearProvisioningStepToFileExtract clears all "ProvisioningStepToFileExtract" edges to type FileExtract.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileExtract() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToFileExtract()
+	return psuo
+}
+
+// RemoveProvisioningStepToFileExtractIDs removes the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.RemoveProvisioningStepToFileExtractIDs(ids...)
+	return psuo
+}
+
+// RemoveProvisioningStepToFileExtract removes ProvisioningStepToFileExtract edges to FileExtract.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return psuo.RemoveProvisioningStepToFileExtractIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -1483,33 +1737,33 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if psuo.mutation.ProvisioningStepToRemoteFileCleared() {
+	if psuo.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToRemoteFileIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToRemoteFileCleared() {
+	if nodes := psuo.mutation.RemovedProvisioningStepToFileDeleteIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
 				},
 			},
 		}
@@ -1518,17 +1772,125 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := psuo.mutation.ProvisioningStepToRemoteFileIDs(); len(nodes) > 0 {
+	if nodes := psuo.mutation.ProvisioningStepToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToRemoteFileTable,
-			Columns: []string{provisioningstep.ProvisioningStepToRemoteFileColumn},
+			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: remotefile.FieldID,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psuo.mutation.ProvisioningStepToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.RemovedProvisioningStepToFileDownloadIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.ProvisioningStepToFileDownloadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psuo.mutation.ProvisioningStepToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.RemovedProvisioningStepToFileExtractIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.ProvisioningStepToFileExtractIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
+			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
 				},
 			},
 		}

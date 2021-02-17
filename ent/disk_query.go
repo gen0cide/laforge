@@ -277,7 +277,7 @@ func (dq *DiskQuery) WithDiskToTag(opts ...func(*TagQuery)) *DiskQuery {
 // Example:
 //
 //	var v []struct {
-//		Size int `json:"size,omitempty"`
+//		Size int `json:"size,omitempty" hcl:"size,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -303,7 +303,7 @@ func (dq *DiskQuery) GroupBy(field string, fields ...string) *DiskGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Size int `json:"size,omitempty"`
+//		Size int `json:"size,omitempty" hcl:"size,attr"`
 //	}
 //
 //	client.Disk.Query().

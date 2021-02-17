@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -12,14 +13,17 @@ import (
 
 // FileDelete is the model entity for the FileDelete schema.
 type FileDelete struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Path holds the value of the "path" field.
-	Path string `json:"path,omitempty"`
+	Path string `json:"path,omitempty" hcl:"path,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDeleteQuery when eager-loading is set.
-	Edges FileDeleteEdges `json:"edges"`
+	Edges                                              FileDeleteEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_file_delete *int
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
@@ -45,6 +49,14 @@ func (*FileDelete) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // path
+		&[]byte{},         // tags
+	}
+}
+
+// fkValues returns the types for scanning foreign-keys values from sql.Rows.
+func (*FileDelete) fkValues() []interface{} {
+	return []interface{}{
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_file_delete
 	}
 }
 
@@ -64,6 +76,23 @@ func (fd *FileDelete) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field path", values[0])
 	} else if value.Valid {
 		fd.Path = value.String
+	}
+
+	if value, ok := values[1].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[1])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &fd.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[2:]
+	if len(values) == len(filedelete.ForeignKeys) {
+		if value, ok := values[0].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_delete", value)
+		} else if value.Valid {
+			fd.provisioning_step_provisioning_step_to_file_delete = new(int)
+			*fd.provisioning_step_provisioning_step_to_file_delete = int(value.Int64)
+		}
 	}
 	return nil
 }
@@ -98,6 +127,8 @@ func (fd *FileDelete) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", fd.ID))
 	builder.WriteString(", path=")
 	builder.WriteString(fd.Path)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", fd.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

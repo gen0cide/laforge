@@ -19,6 +19,8 @@ const (
 	FieldVars = "vars"
 	// FieldDisabled holds the string denoting the disabled field in the database.
 	FieldDisabled = "disabled"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeDNSRecordToTag holds the string denoting the dnsrecordtotag edge name in mutations.
 	EdgeDNSRecordToTag = "DNSRecordToTag"
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldZone,
 	FieldVars,
 	FieldDisabled,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.

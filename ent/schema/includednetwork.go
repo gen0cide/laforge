@@ -14,8 +14,10 @@ type IncludedNetwork struct {
 // Fields of the IncludedNetwork.
 func (IncludedNetwork) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.JSON("hosts", []string{}),
+		field.String("name").
+			StructTag(`hcl:"name,label"`),
+		field.JSON("hosts", []string{}).
+			StructTag(`hcl:"included_hosts,attr"`),
 	}
 }
 

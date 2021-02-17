@@ -14,11 +14,16 @@ type DNS struct {
 // Fields of the DNS.
 func (DNS) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("type"),
-		field.String("root_domain"),
-		field.JSON("dns_servers", []string{}),
-		field.JSON("ntp_servers", []string{}),
-		field.JSON("config", map[string]string{}),
+		field.String("type").
+			StructTag(`hcl:"type,attr"`),
+		field.String("root_domain").
+			StructTag(`hcl:"root_domain,attr" `),
+		field.JSON("dns_servers", []string{}).
+			StructTag(`hcl:"dns_servers,attr"`),
+		field.JSON("ntp_servers", []string{}).
+			StructTag(`hcl:"ntp_servers,optional"`),
+		field.JSON("config", map[string]string{}).
+			StructTag(`hcl:"config,optional"`),
 	}
 }
 

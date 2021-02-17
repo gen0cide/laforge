@@ -52,6 +52,12 @@ func (nu *NetworkUpdate) SetVars(m map[string]string) *NetworkUpdate {
 	return nu
 }
 
+// SetTags sets the tags field.
+func (nu *NetworkUpdate) SetTags(m map[string]string) *NetworkUpdate {
+	nu.mutation.SetTags(m)
+	return nu
+}
+
 // AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
 func (nu *NetworkUpdate) AddNetworkToTagIDs(ids ...int) *NetworkUpdate {
 	nu.mutation.AddNetworkToTagIDs(ids...)
@@ -226,6 +232,13 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: network.FieldVars,
 		})
 	}
+	if value, ok := nu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
+		})
+	}
 	if nu.mutation.NetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -373,6 +386,12 @@ func (nuo *NetworkUpdateOne) SetVdiVisible(b bool) *NetworkUpdateOne {
 // SetVars sets the vars field.
 func (nuo *NetworkUpdateOne) SetVars(m map[string]string) *NetworkUpdateOne {
 	nuo.mutation.SetVars(m)
+	return nuo
+}
+
+// SetTags sets the tags field.
+func (nuo *NetworkUpdateOne) SetTags(m map[string]string) *NetworkUpdateOne {
+	nuo.mutation.SetTags(m)
 	return nuo
 }
 
@@ -546,6 +565,13 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: network.FieldVars,
+		})
+	}
+	if value, ok := nuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
 		})
 	}
 	if nuo.mutation.NetworkToTagCleared() {

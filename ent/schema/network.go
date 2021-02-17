@@ -14,10 +14,16 @@ type Network struct {
 // Fields of the Network.
 func (Network) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.String("cidr"),
-		field.Bool("vdi_visible"),
-		field.JSON("vars", map[string]string{}),
+		field.String("name").
+			StructTag(`hcl:"name,attr"`),
+		field.String("cidr").
+			StructTag(`hcl:"cidr,attr"`),
+		field.Bool("vdi_visible").
+			StructTag(`hcl:"vdi_visible,optional"`),
+		field.JSON("vars", map[string]string{}).
+			StructTag(`hcl:"vars,optional"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,attr"`),
 	}
 }
 

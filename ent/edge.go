@@ -452,18 +452,26 @@ func (ps *ProvisioningStep) ProvisioningStepToDNSRecord(ctx context.Context) ([]
 	return result, err
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToRemoteFile(ctx context.Context) ([]*RemoteFile, error) {
-	result, err := ps.Edges.ProvisioningStepToRemoteFileOrErr()
+func (ps *ProvisioningStep) ProvisioningStepToFileDelete(ctx context.Context) ([]*FileDelete, error) {
+	result, err := ps.Edges.ProvisioningStepToFileDeleteOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToRemoteFile().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDelete().All(ctx)
 	}
 	return result, err
 }
 
-func (rf *RemoteFile) RemoteFileToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := rf.Edges.RemoteFileToTagOrErr()
+func (ps *ProvisioningStep) ProvisioningStepToFileDownload(ctx context.Context) ([]*FileDownload, error) {
+	result, err := ps.Edges.ProvisioningStepToFileDownloadOrErr()
 	if IsNotLoaded(err) {
-		result, err = rf.QueryRemoteFileToTag().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDownload().All(ctx)
+	}
+	return result, err
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) ([]*FileExtract, error) {
+	result, err := ps.Edges.ProvisioningStepToFileExtractOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToFileExtract().All(ctx)
 	}
 	return result, err
 }

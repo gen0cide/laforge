@@ -47,6 +47,12 @@ func (fc *FindingCreate) SetDifficulty(f finding.Difficulty) *FindingCreate {
 	return fc
 }
 
+// SetTags sets the tags field.
+func (fc *FindingCreate) SetTags(m map[string]string) *FindingCreate {
+	fc.mutation.SetTags(m)
+	return fc
+}
+
 // AddFindingToUserIDs adds the FindingToUser edge to User by ids.
 func (fc *FindingCreate) AddFindingToUserIDs(ids ...int) *FindingCreate {
 	fc.mutation.AddFindingToUserIDs(ids...)
@@ -180,6 +186,9 @@ func (fc *FindingCreate) check() error {
 			return &ValidationError{Name: "difficulty", err: fmt.Errorf("ent: validator failed for field \"difficulty\": %w", err)}
 		}
 	}
+	if _, ok := fc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -238,6 +247,14 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 			Column: finding.FieldDifficulty,
 		})
 		_node.Difficulty = value
+	}
+	if value, ok := fc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: finding.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := fc.mutation.FindingToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

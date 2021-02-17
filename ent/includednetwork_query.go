@@ -312,7 +312,7 @@ func (inq *IncludedNetworkQuery) WithIncludedNetworkToEnvironment(opts ...func(*
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -338,7 +338,7 @@ func (inq *IncludedNetworkQuery) GroupBy(field string, fields ...string) *Includ
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,label"`
 //	}
 //
 //	client.IncludedNetwork.Query().

@@ -384,7 +384,7 @@ func (fq *FindingQuery) WithFindingToScript(opts ...func(*ScriptQuery)) *Finding
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -410,7 +410,7 @@ func (fq *FindingQuery) GroupBy(field string, fields ...string) *FindingGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Finding.Query().

@@ -14,7 +14,8 @@ type Disk struct {
 // Fields of the Disk.
 func (Disk) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("size").Positive(),
+		field.Int("size").Positive().
+			StructTag(`hcl:"size,attr"`),
 	}
 }
 

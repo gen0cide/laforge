@@ -21,6 +21,8 @@ const (
 	FieldSeverity = "severity"
 	// FieldDifficulty holds the string denoting the difficulty field in the database.
 	FieldDifficulty = "difficulty"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeFindingToUser holds the string denoting the findingtouser edge name in mutations.
 	EdgeFindingToUser = "FindingToUser"
@@ -68,6 +70,7 @@ var Columns = []string{
 	FieldDescription,
 	FieldSeverity,
 	FieldDifficulty,
+	FieldTags,
 }
 
 var (

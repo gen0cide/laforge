@@ -84,32 +84,20 @@ func (hc *HostCreate) SetUserGroups(s []string) *HostCreate {
 }
 
 // SetDependsOn sets the depends_on field.
-func (hc *HostCreate) SetDependsOn(s []string) *HostCreate {
-	hc.mutation.SetDependsOn(s)
+func (hc *HostCreate) SetDependsOn(m map[string]string) *HostCreate {
+	hc.mutation.SetDependsOn(m)
 	return hc
 }
 
-// SetScripts sets the scripts field.
-func (hc *HostCreate) SetScripts(s []string) *HostCreate {
-	hc.mutation.SetScripts(s)
+// SetProvisionSteps sets the provision_steps field.
+func (hc *HostCreate) SetProvisionSteps(s []string) *HostCreate {
+	hc.mutation.SetProvisionSteps(s)
 	return hc
 }
 
-// SetCommands sets the commands field.
-func (hc *HostCreate) SetCommands(s []string) *HostCreate {
-	hc.mutation.SetCommands(s)
-	return hc
-}
-
-// SetRemoteFiles sets the remote_files field.
-func (hc *HostCreate) SetRemoteFiles(s []string) *HostCreate {
-	hc.mutation.SetRemoteFiles(s)
-	return hc
-}
-
-// SetDNSRecords sets the dns_records field.
-func (hc *HostCreate) SetDNSRecords(s []string) *HostCreate {
-	hc.mutation.SetDNSRecords(s)
+// SetTags sets the tags field.
+func (hc *HostCreate) SetTags(m map[string]string) *HostCreate {
+	hc.mutation.SetTags(m)
 	return hc
 }
 
@@ -254,6 +242,9 @@ func (hc *HostCreate) check() error {
 	if _, ok := hc.mutation.UserGroups(); !ok {
 		return &ValidationError{Name: "user_groups", err: errors.New("ent: missing required field \"user_groups\"")}
 	}
+	if _, ok := hc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -369,37 +360,21 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		})
 		_node.DependsOn = value
 	}
-	if value, ok := hc.mutation.Scripts(); ok {
+	if value, ok := hc.mutation.ProvisionSteps(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
-		_node.Scripts = value
+		_node.ProvisionSteps = value
 	}
-	if value, ok := hc.mutation.Commands(); ok {
+	if value, ok := hc.mutation.Tags(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldCommands,
+			Column: host.FieldTags,
 		})
-		_node.Commands = value
-	}
-	if value, ok := hc.mutation.RemoteFiles(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-		_node.RemoteFiles = value
-	}
-	if value, ok := hc.mutation.DNSRecords(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-		_node.DNSRecords = value
+		_node.Tags = value
 	}
 	if nodes := hc.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -44,9 +44,9 @@ func (fdc *FileDownloadCreate) SetTemplate(b bool) *FileDownloadCreate {
 	return fdc
 }
 
-// SetMode sets the mode field.
-func (fdc *FileDownloadCreate) SetMode(s string) *FileDownloadCreate {
-	fdc.mutation.SetMode(s)
+// SetPerms sets the perms field.
+func (fdc *FileDownloadCreate) SetPerms(s string) *FileDownloadCreate {
+	fdc.mutation.SetPerms(s)
 	return fdc
 }
 
@@ -65,6 +65,12 @@ func (fdc *FileDownloadCreate) SetMd5(s string) *FileDownloadCreate {
 // SetAbsPath sets the abs_path field.
 func (fdc *FileDownloadCreate) SetAbsPath(s string) *FileDownloadCreate {
 	fdc.mutation.SetAbsPath(s)
+	return fdc
+}
+
+// SetTags sets the tags field.
+func (fdc *FileDownloadCreate) SetTags(m map[string]string) *FileDownloadCreate {
+	fdc.mutation.SetTags(m)
 	return fdc
 }
 
@@ -146,8 +152,8 @@ func (fdc *FileDownloadCreate) check() error {
 	if _, ok := fdc.mutation.Template(); !ok {
 		return &ValidationError{Name: "template", err: errors.New("ent: missing required field \"template\"")}
 	}
-	if _, ok := fdc.mutation.Mode(); !ok {
-		return &ValidationError{Name: "mode", err: errors.New("ent: missing required field \"mode\"")}
+	if _, ok := fdc.mutation.Perms(); !ok {
+		return &ValidationError{Name: "perms", err: errors.New("ent: missing required field \"perms\"")}
 	}
 	if _, ok := fdc.mutation.Disabled(); !ok {
 		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
@@ -157,6 +163,9 @@ func (fdc *FileDownloadCreate) check() error {
 	}
 	if _, ok := fdc.mutation.AbsPath(); !ok {
 		return &ValidationError{Name: "abs_path", err: errors.New("ent: missing required field \"abs_path\"")}
+	}
+	if _, ok := fdc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
 	}
 	return nil
 }
@@ -217,13 +226,13 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 		})
 		_node.Template = value
 	}
-	if value, ok := fdc.mutation.Mode(); ok {
+	if value, ok := fdc.mutation.Perms(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: filedownload.FieldMode,
+			Column: filedownload.FieldPerms,
 		})
-		_node.Mode = value
+		_node.Perms = value
 	}
 	if value, ok := fdc.mutation.Disabled(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -248,6 +257,14 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 			Column: filedownload.FieldAbsPath,
 		})
 		_node.AbsPath = value
+	}
+	if value, ok := fdc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedownload.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := fdc.mutation.FileDownloadToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

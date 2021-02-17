@@ -13,13 +13,13 @@ import (
 
 // IncludedNetwork is the model entity for the IncludedNetwork schema.
 type IncludedNetwork struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,label"`
 	// Hosts holds the value of the "hosts" field.
-	Hosts []string `json:"hosts,omitempty"`
+	Hosts []string `json:"hosts,omitempty" hcl:"included_hosts,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncludedNetworkQuery when eager-loading is set.
 	Edges IncludedNetworkEdges `json:"edges"`

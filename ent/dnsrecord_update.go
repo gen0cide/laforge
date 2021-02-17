@@ -63,6 +63,12 @@ func (dru *DNSRecordUpdate) SetDisabled(b bool) *DNSRecordUpdate {
 	return dru
 }
 
+// SetTags sets the tags field.
+func (dru *DNSRecordUpdate) SetTags(m map[string]string) *DNSRecordUpdate {
+	dru.mutation.SetTags(m)
+	return dru
+}
+
 // AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
 func (dru *DNSRecordUpdate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordUpdate {
 	dru.mutation.AddDNSRecordToTagIDs(ids...)
@@ -215,6 +221,13 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: dnsrecord.FieldDisabled,
 		})
 	}
+	if value, ok := dru.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
+		})
+	}
 	if dru.mutation.DNSRecordToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -320,6 +333,12 @@ func (druo *DNSRecordUpdateOne) SetVars(m map[string]string) *DNSRecordUpdateOne
 // SetDisabled sets the disabled field.
 func (druo *DNSRecordUpdateOne) SetDisabled(b bool) *DNSRecordUpdateOne {
 	druo.mutation.SetDisabled(b)
+	return druo
+}
+
+// SetTags sets the tags field.
+func (druo *DNSRecordUpdateOne) SetTags(m map[string]string) *DNSRecordUpdateOne {
+	druo.mutation.SetTags(m)
 	return druo
 }
 
@@ -471,6 +490,13 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: dnsrecord.FieldDisabled,
+		})
+	}
+	if value, ok := druo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
 		})
 	}
 	if druo.mutation.DNSRecordToTagCleared() {

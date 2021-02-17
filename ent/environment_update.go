@@ -102,6 +102,12 @@ func (eu *EnvironmentUpdate) SetConfig(m map[string]string) *EnvironmentUpdate {
 	return eu
 }
 
+// SetTags sets the tags field.
+func (eu *EnvironmentUpdate) SetTags(m map[string]string) *EnvironmentUpdate {
+	eu.mutation.SetTags(m)
+	return eu
+}
+
 // AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
 func (eu *EnvironmentUpdate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToTagIDs(ids...)
@@ -539,6 +545,13 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: environment.FieldConfig,
+		})
+	}
+	if value, ok := eu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: environment.FieldTags,
 		})
 	}
 	if eu.mutation.EnvironmentToTagCleared() {
@@ -1059,6 +1072,12 @@ func (euo *EnvironmentUpdateOne) SetConfig(m map[string]string) *EnvironmentUpda
 	return euo
 }
 
+// SetTags sets the tags field.
+func (euo *EnvironmentUpdateOne) SetTags(m map[string]string) *EnvironmentUpdateOne {
+	euo.mutation.SetTags(m)
+	return euo
+}
+
 // AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToTagIDs(ids...)
@@ -1494,6 +1513,13 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: environment.FieldConfig,
+		})
+	}
+	if value, ok := euo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: environment.FieldTags,
 		})
 	}
 	if euo.mutation.EnvironmentToTagCleared() {

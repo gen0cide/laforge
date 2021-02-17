@@ -11,6 +11,8 @@ const (
 	FieldRootPassword = "root_password"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeCompetitionToTag holds the string denoting the competitiontotag edge name in mutations.
 	EdgeCompetitionToTag = "CompetitionToTag"
@@ -47,6 +49,7 @@ var Columns = []string{
 	FieldID,
 	FieldRootPassword,
 	FieldConfig,
+	FieldTags,
 }
 
 var (

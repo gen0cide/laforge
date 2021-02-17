@@ -31,6 +31,8 @@ const (
 	FieldVars = "vars"
 	// FieldAbsPath holds the string denoting the abs_path field in the database.
 	FieldAbsPath = "abs_path"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeScriptToTag holds the string denoting the scripttotag edge name in mutations.
 	EdgeScriptToTag = "ScriptToTag"
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldDisabled,
 	FieldVars,
 	FieldAbsPath,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Script type.

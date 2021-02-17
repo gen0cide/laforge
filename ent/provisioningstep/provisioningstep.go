@@ -24,8 +24,12 @@ const (
 	EdgeProvisioningStepToCommand = "ProvisioningStepToCommand"
 	// EdgeProvisioningStepToDNSRecord holds the string denoting the provisioningsteptodnsrecord edge name in mutations.
 	EdgeProvisioningStepToDNSRecord = "ProvisioningStepToDNSRecord"
-	// EdgeProvisioningStepToRemoteFile holds the string denoting the provisioningsteptoremotefile edge name in mutations.
-	EdgeProvisioningStepToRemoteFile = "ProvisioningStepToRemoteFile"
+	// EdgeProvisioningStepToFileDelete holds the string denoting the provisioningsteptofiledelete edge name in mutations.
+	EdgeProvisioningStepToFileDelete = "ProvisioningStepToFileDelete"
+	// EdgeProvisioningStepToFileDownload holds the string denoting the provisioningsteptofiledownload edge name in mutations.
+	EdgeProvisioningStepToFileDownload = "ProvisioningStepToFileDownload"
+	// EdgeProvisioningStepToFileExtract holds the string denoting the provisioningsteptofileextract edge name in mutations.
+	EdgeProvisioningStepToFileExtract = "ProvisioningStepToFileExtract"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
@@ -69,13 +73,27 @@ const (
 	ProvisioningStepToDNSRecordInverseTable = "dns_records"
 	// ProvisioningStepToDNSRecordColumn is the table column denoting the ProvisioningStepToDNSRecord relation/edge.
 	ProvisioningStepToDNSRecordColumn = "provisioning_step_provisioning_step_to_dns_record"
-	// ProvisioningStepToRemoteFileTable is the table the holds the ProvisioningStepToRemoteFile relation/edge.
-	ProvisioningStepToRemoteFileTable = "remote_files"
-	// ProvisioningStepToRemoteFileInverseTable is the table name for the RemoteFile entity.
-	// It exists in this package in order to avoid circular dependency with the "remotefile" package.
-	ProvisioningStepToRemoteFileInverseTable = "remote_files"
-	// ProvisioningStepToRemoteFileColumn is the table column denoting the ProvisioningStepToRemoteFile relation/edge.
-	ProvisioningStepToRemoteFileColumn = "provisioning_step_provisioning_step_to_remote_file"
+	// ProvisioningStepToFileDeleteTable is the table the holds the ProvisioningStepToFileDelete relation/edge.
+	ProvisioningStepToFileDeleteTable = "file_deletes"
+	// ProvisioningStepToFileDeleteInverseTable is the table name for the FileDelete entity.
+	// It exists in this package in order to avoid circular dependency with the "filedelete" package.
+	ProvisioningStepToFileDeleteInverseTable = "file_deletes"
+	// ProvisioningStepToFileDeleteColumn is the table column denoting the ProvisioningStepToFileDelete relation/edge.
+	ProvisioningStepToFileDeleteColumn = "provisioning_step_provisioning_step_to_file_delete"
+	// ProvisioningStepToFileDownloadTable is the table the holds the ProvisioningStepToFileDownload relation/edge.
+	ProvisioningStepToFileDownloadTable = "file_downloads"
+	// ProvisioningStepToFileDownloadInverseTable is the table name for the FileDownload entity.
+	// It exists in this package in order to avoid circular dependency with the "filedownload" package.
+	ProvisioningStepToFileDownloadInverseTable = "file_downloads"
+	// ProvisioningStepToFileDownloadColumn is the table column denoting the ProvisioningStepToFileDownload relation/edge.
+	ProvisioningStepToFileDownloadColumn = "provisioning_step_provisioning_step_to_file_download"
+	// ProvisioningStepToFileExtractTable is the table the holds the ProvisioningStepToFileExtract relation/edge.
+	ProvisioningStepToFileExtractTable = "file_extracts"
+	// ProvisioningStepToFileExtractInverseTable is the table name for the FileExtract entity.
+	// It exists in this package in order to avoid circular dependency with the "fileextract" package.
+	ProvisioningStepToFileExtractInverseTable = "file_extracts"
+	// ProvisioningStepToFileExtractColumn is the table column denoting the ProvisioningStepToFileExtract relation/edge.
+	ProvisioningStepToFileExtractColumn = "provisioning_step_provisioning_step_to_file_extract"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.

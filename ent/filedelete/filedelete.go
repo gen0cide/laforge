@@ -9,6 +9,8 @@ const (
 	FieldID = "id"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeFileDeleteToTag holds the string denoting the filedeletetotag edge name in mutations.
 	EdgeFileDeleteToTag = "FileDeleteToTag"
@@ -28,12 +30,23 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldPath,
+	FieldTags,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the FileDelete type.
+var ForeignKeys = []string{
+	"provisioning_step_provisioning_step_to_file_delete",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

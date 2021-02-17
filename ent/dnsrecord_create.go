@@ -56,6 +56,12 @@ func (drc *DNSRecordCreate) SetDisabled(b bool) *DNSRecordCreate {
 	return drc
 }
 
+// SetTags sets the tags field.
+func (drc *DNSRecordCreate) SetTags(m map[string]string) *DNSRecordCreate {
+	drc.mutation.SetTags(m)
+	return drc
+}
+
 // AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
 func (drc *DNSRecordCreate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordCreate {
 	drc.mutation.AddDNSRecordToTagIDs(ids...)
@@ -140,6 +146,9 @@ func (drc *DNSRecordCreate) check() error {
 	if _, ok := drc.mutation.Disabled(); !ok {
 		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
 	}
+	if _, ok := drc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -214,6 +223,14 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 			Column: dnsrecord.FieldDisabled,
 		})
 		_node.Disabled = value
+	}
+	if value, ok := drc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := drc.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

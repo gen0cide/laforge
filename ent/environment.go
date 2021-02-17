@@ -13,27 +13,29 @@ import (
 
 // Environment is the model entity for the Environment schema.
 type Environment struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// CompetitionID holds the value of the "competition_id" field.
-	CompetitionID string `json:"competition_id,omitempty"`
+	CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,attr"`
 	// Builder holds the value of the "builder" field.
-	Builder string `json:"builder,omitempty"`
+	Builder string `json:"builder,omitempty" hcl:"builder,attr"`
 	// TeamCount holds the value of the "team_count" field.
-	TeamCount int `json:"team_count,omitempty"`
+	TeamCount int `json:"team_count,omitempty" hcl:"team_count,attr"`
 	// Revision holds the value of the "revision" field.
-	Revision int `json:"revision,omitempty"`
+	Revision int `json:"revision,omitempty" hcl:"revision,optional"`
 	// AdminCidrs holds the value of the "admin_cidrs" field.
-	AdminCidrs []string `json:"admin_cidrs,omitempty"`
+	AdminCidrs []string `json:"admin_cidrs,omitempty" hcl:"admin_ranges,attr"`
 	// ExposedVdiPorts holds the value of the "exposed_vdi_ports" field.
-	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty"`
+	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty" hcl:"vdi_allowed_tcp_ports"`
 	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
 	Edges EnvironmentEdges `json:"edges"`
@@ -44,7 +46,7 @@ type EnvironmentEdges struct {
 	// EnvironmentToTag holds the value of the EnvironmentToTag edge.
 	EnvironmentToTag []*Tag
 	// EnvironmentToUser holds the value of the EnvironmentToUser edge.
-	EnvironmentToUser []*User
+	EnvironmentToUser []*User `hcl:"maintainer,block"`
 	// EnvironmentToHost holds the value of the EnvironmentToHost edge.
 	EnvironmentToHost []*Host
 	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
@@ -52,7 +54,7 @@ type EnvironmentEdges struct {
 	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
 	EnvironmentToBuild []*Build
 	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
-	EnvironmentToIncludedNetwork []*IncludedNetwork
+	EnvironmentToIncludedNetwork []*IncludedNetwork `hcl:"included_network,block"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
 	EnvironmentToNetwork []*Network
 	// EnvironmentToTeam holds the value of the EnvironmentToTeam edge.
@@ -147,6 +149,7 @@ func (*Environment) scanValues() []interface{} {
 		&[]byte{},         // admin_cidrs
 		&[]byte{},         // exposed_vdi_ports
 		&[]byte{},         // config
+		&[]byte{},         // tags
 	}
 }
 
@@ -214,6 +217,14 @@ func (e *Environment) assignValues(values ...interface{}) error {
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &e.Config); err != nil {
 			return fmt.Errorf("unmarshal field config: %v", err)
+		}
+	}
+
+	if value, ok := values[9].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[9])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &e.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
 		}
 	}
 	return nil
@@ -300,6 +311,8 @@ func (e *Environment) String() string {
 	builder.WriteString(fmt.Sprintf("%v", e.ExposedVdiPorts))
 	builder.WriteString(", config=")
 	builder.WriteString(fmt.Sprintf("%v", e.Config))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", e.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

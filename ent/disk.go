@@ -12,11 +12,11 @@ import (
 
 // Disk is the model entity for the Disk schema.
 type Disk struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Size holds the value of the "size" field.
-	Size int `json:"size,omitempty"`
+	Size int `json:"size,omitempty" hcl:"size,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiskQuery when eager-loading is set.
 	Edges             DiskEdges `json:"edges"`

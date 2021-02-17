@@ -528,7 +528,7 @@ func (eq *EnvironmentQuery) WithEnvironmentToTeam(opts ...func(*TeamQuery)) *Env
 // Example:
 //
 //	var v []struct {
-//		CompetitionID string `json:"competition_id,omitempty"`
+//		CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -554,7 +554,7 @@ func (eq *EnvironmentQuery) GroupBy(field string, fields ...string) *Environment
 // Example:
 //
 //	var v []struct {
-//		CompetitionID string `json:"competition_id,omitempty"`
+//		CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 //	}
 //
 //	client.Environment.Query().

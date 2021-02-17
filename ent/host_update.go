@@ -98,8 +98,8 @@ func (hu *HostUpdate) SetUserGroups(s []string) *HostUpdate {
 }
 
 // SetDependsOn sets the depends_on field.
-func (hu *HostUpdate) SetDependsOn(s []string) *HostUpdate {
-	hu.mutation.SetDependsOn(s)
+func (hu *HostUpdate) SetDependsOn(m map[string]string) *HostUpdate {
+	hu.mutation.SetDependsOn(m)
 	return hu
 }
 
@@ -109,51 +109,21 @@ func (hu *HostUpdate) ClearDependsOn() *HostUpdate {
 	return hu
 }
 
-// SetScripts sets the scripts field.
-func (hu *HostUpdate) SetScripts(s []string) *HostUpdate {
-	hu.mutation.SetScripts(s)
+// SetProvisionSteps sets the provision_steps field.
+func (hu *HostUpdate) SetProvisionSteps(s []string) *HostUpdate {
+	hu.mutation.SetProvisionSteps(s)
 	return hu
 }
 
-// ClearScripts clears the value of scripts.
-func (hu *HostUpdate) ClearScripts() *HostUpdate {
-	hu.mutation.ClearScripts()
+// ClearProvisionSteps clears the value of provision_steps.
+func (hu *HostUpdate) ClearProvisionSteps() *HostUpdate {
+	hu.mutation.ClearProvisionSteps()
 	return hu
 }
 
-// SetCommands sets the commands field.
-func (hu *HostUpdate) SetCommands(s []string) *HostUpdate {
-	hu.mutation.SetCommands(s)
-	return hu
-}
-
-// ClearCommands clears the value of commands.
-func (hu *HostUpdate) ClearCommands() *HostUpdate {
-	hu.mutation.ClearCommands()
-	return hu
-}
-
-// SetRemoteFiles sets the remote_files field.
-func (hu *HostUpdate) SetRemoteFiles(s []string) *HostUpdate {
-	hu.mutation.SetRemoteFiles(s)
-	return hu
-}
-
-// ClearRemoteFiles clears the value of remote_files.
-func (hu *HostUpdate) ClearRemoteFiles() *HostUpdate {
-	hu.mutation.ClearRemoteFiles()
-	return hu
-}
-
-// SetDNSRecords sets the dns_records field.
-func (hu *HostUpdate) SetDNSRecords(s []string) *HostUpdate {
-	hu.mutation.SetDNSRecords(s)
-	return hu
-}
-
-// ClearDNSRecords clears the value of dns_records.
-func (hu *HostUpdate) ClearDNSRecords() *HostUpdate {
-	hu.mutation.ClearDNSRecords()
+// SetTags sets the tags field.
+func (hu *HostUpdate) SetTags(m map[string]string) *HostUpdate {
+	hu.mutation.SetTags(m)
 	return hu
 }
 
@@ -465,56 +435,24 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldDependsOn,
 		})
 	}
-	if value, ok := hu.mutation.Scripts(); ok {
+	if value, ok := hu.mutation.ProvisionSteps(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if hu.mutation.ScriptsCleared() {
+	if hu.mutation.ProvisionStepsCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if value, ok := hu.mutation.Commands(); ok {
+	if value, ok := hu.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldCommands,
-		})
-	}
-	if hu.mutation.CommandsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldCommands,
-		})
-	}
-	if value, ok := hu.mutation.RemoteFiles(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if hu.mutation.RemoteFilesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if value, ok := hu.mutation.DNSRecords(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if hu.mutation.DNSRecordsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldDNSRecords,
+			Column: host.FieldTags,
 		})
 	}
 	if hu.mutation.HostToDiskCleared() {
@@ -819,8 +757,8 @@ func (huo *HostUpdateOne) SetUserGroups(s []string) *HostUpdateOne {
 }
 
 // SetDependsOn sets the depends_on field.
-func (huo *HostUpdateOne) SetDependsOn(s []string) *HostUpdateOne {
-	huo.mutation.SetDependsOn(s)
+func (huo *HostUpdateOne) SetDependsOn(m map[string]string) *HostUpdateOne {
+	huo.mutation.SetDependsOn(m)
 	return huo
 }
 
@@ -830,51 +768,21 @@ func (huo *HostUpdateOne) ClearDependsOn() *HostUpdateOne {
 	return huo
 }
 
-// SetScripts sets the scripts field.
-func (huo *HostUpdateOne) SetScripts(s []string) *HostUpdateOne {
-	huo.mutation.SetScripts(s)
+// SetProvisionSteps sets the provision_steps field.
+func (huo *HostUpdateOne) SetProvisionSteps(s []string) *HostUpdateOne {
+	huo.mutation.SetProvisionSteps(s)
 	return huo
 }
 
-// ClearScripts clears the value of scripts.
-func (huo *HostUpdateOne) ClearScripts() *HostUpdateOne {
-	huo.mutation.ClearScripts()
+// ClearProvisionSteps clears the value of provision_steps.
+func (huo *HostUpdateOne) ClearProvisionSteps() *HostUpdateOne {
+	huo.mutation.ClearProvisionSteps()
 	return huo
 }
 
-// SetCommands sets the commands field.
-func (huo *HostUpdateOne) SetCommands(s []string) *HostUpdateOne {
-	huo.mutation.SetCommands(s)
-	return huo
-}
-
-// ClearCommands clears the value of commands.
-func (huo *HostUpdateOne) ClearCommands() *HostUpdateOne {
-	huo.mutation.ClearCommands()
-	return huo
-}
-
-// SetRemoteFiles sets the remote_files field.
-func (huo *HostUpdateOne) SetRemoteFiles(s []string) *HostUpdateOne {
-	huo.mutation.SetRemoteFiles(s)
-	return huo
-}
-
-// ClearRemoteFiles clears the value of remote_files.
-func (huo *HostUpdateOne) ClearRemoteFiles() *HostUpdateOne {
-	huo.mutation.ClearRemoteFiles()
-	return huo
-}
-
-// SetDNSRecords sets the dns_records field.
-func (huo *HostUpdateOne) SetDNSRecords(s []string) *HostUpdateOne {
-	huo.mutation.SetDNSRecords(s)
-	return huo
-}
-
-// ClearDNSRecords clears the value of dns_records.
-func (huo *HostUpdateOne) ClearDNSRecords() *HostUpdateOne {
-	huo.mutation.ClearDNSRecords()
+// SetTags sets the tags field.
+func (huo *HostUpdateOne) SetTags(m map[string]string) *HostUpdateOne {
+	huo.mutation.SetTags(m)
 	return huo
 }
 
@@ -1184,56 +1092,24 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldDependsOn,
 		})
 	}
-	if value, ok := huo.mutation.Scripts(); ok {
+	if value, ok := huo.mutation.ProvisionSteps(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if huo.mutation.ScriptsCleared() {
+	if huo.mutation.ProvisionStepsCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if value, ok := huo.mutation.Commands(); ok {
+	if value, ok := huo.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldCommands,
-		})
-	}
-	if huo.mutation.CommandsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldCommands,
-		})
-	}
-	if value, ok := huo.mutation.RemoteFiles(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if huo.mutation.RemoteFilesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if value, ok := huo.mutation.DNSRecords(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if huo.mutation.DNSRecordsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldDNSRecords,
+			Column: host.FieldTags,
 		})
 	}
 	if huo.mutation.HostToDiskCleared() {

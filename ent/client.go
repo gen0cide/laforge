@@ -27,7 +27,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -80,8 +79,6 @@ type Client struct {
 	ProvisionedNetwork *ProvisionedNetworkClient
 	// ProvisioningStep is the client for interacting with the ProvisioningStep builders.
 	ProvisioningStep *ProvisioningStepClient
-	// RemoteFile is the client for interacting with the RemoteFile builders.
-	RemoteFile *RemoteFileClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
 	// Status is the client for interacting with the Status builders.
@@ -125,7 +122,6 @@ func (c *Client) init() {
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
 	c.ProvisionedNetwork = NewProvisionedNetworkClient(c.config)
 	c.ProvisioningStep = NewProvisioningStepClient(c.config)
-	c.RemoteFile = NewRemoteFileClient(c.config)
 	c.Script = NewScriptClient(c.config)
 	c.Status = NewStatusClient(c.config)
 	c.Tag = NewTagClient(c.config)
@@ -181,7 +177,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
-		RemoteFile:         NewRemoteFileClient(cfg),
 		Script:             NewScriptClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
@@ -220,7 +215,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
-		RemoteFile:         NewRemoteFileClient(cfg),
 		Script:             NewScriptClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
@@ -272,7 +266,6 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProvisionedHost.Use(hooks...)
 	c.ProvisionedNetwork.Use(hooks...)
 	c.ProvisioningStep.Use(hooks...)
-	c.RemoteFile.Use(hooks...)
 	c.Script.Use(hooks...)
 	c.Status.Use(hooks...)
 	c.Tag.Use(hooks...)
@@ -2755,15 +2748,47 @@ func (c *ProvisioningStepClient) QueryProvisioningStepToDNSRecord(ps *Provisioni
 	return query
 }
 
-// QueryProvisioningStepToRemoteFile queries the ProvisioningStepToRemoteFile edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryProvisioningStepToRemoteFile(ps *ProvisioningStep) *RemoteFileQuery {
-	query := &RemoteFileQuery{config: c.config}
+// QueryProvisioningStepToFileDelete queries the ProvisioningStepToFileDelete edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileDelete(ps *ProvisioningStep) *FileDeleteQuery {
+	query := &FileDeleteQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(remotefile.Table, remotefile.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToRemoteFileTable, provisioningstep.ProvisioningStepToRemoteFileColumn),
+			sqlgraph.To(filedelete.Table, filedelete.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileDeleteTable, provisioningstep.ProvisioningStepToFileDeleteColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToFileDownload queries the ProvisioningStepToFileDownload edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileDownload(ps *ProvisioningStep) *FileDownloadQuery {
+	query := &FileDownloadQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(filedownload.Table, filedownload.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileDownloadTable, provisioningstep.ProvisioningStepToFileDownloadColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToFileExtract queries the ProvisioningStepToFileExtract edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileExtract(ps *ProvisioningStep) *FileExtractQuery {
+	query := &FileExtractQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(fileextract.Table, fileextract.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileExtractTable, provisioningstep.ProvisioningStepToFileExtractColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2774,110 +2799,6 @@ func (c *ProvisioningStepClient) QueryProvisioningStepToRemoteFile(ps *Provision
 // Hooks returns the client hooks.
 func (c *ProvisioningStepClient) Hooks() []Hook {
 	return c.hooks.ProvisioningStep
-}
-
-// RemoteFileClient is a client for the RemoteFile schema.
-type RemoteFileClient struct {
-	config
-}
-
-// NewRemoteFileClient returns a client for the RemoteFile from the given config.
-func NewRemoteFileClient(c config) *RemoteFileClient {
-	return &RemoteFileClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `remotefile.Hooks(f(g(h())))`.
-func (c *RemoteFileClient) Use(hooks ...Hook) {
-	c.hooks.RemoteFile = append(c.hooks.RemoteFile, hooks...)
-}
-
-// Create returns a create builder for RemoteFile.
-func (c *RemoteFileClient) Create() *RemoteFileCreate {
-	mutation := newRemoteFileMutation(c.config, OpCreate)
-	return &RemoteFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of RemoteFile entities.
-func (c *RemoteFileClient) CreateBulk(builders ...*RemoteFileCreate) *RemoteFileCreateBulk {
-	return &RemoteFileCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for RemoteFile.
-func (c *RemoteFileClient) Update() *RemoteFileUpdate {
-	mutation := newRemoteFileMutation(c.config, OpUpdate)
-	return &RemoteFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RemoteFileClient) UpdateOne(rf *RemoteFile) *RemoteFileUpdateOne {
-	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFile(rf))
-	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RemoteFileClient) UpdateOneID(id int) *RemoteFileUpdateOne {
-	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFileID(id))
-	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for RemoteFile.
-func (c *RemoteFileClient) Delete() *RemoteFileDelete {
-	mutation := newRemoteFileMutation(c.config, OpDelete)
-	return &RemoteFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *RemoteFileClient) DeleteOne(rf *RemoteFile) *RemoteFileDeleteOne {
-	return c.DeleteOneID(rf.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *RemoteFileClient) DeleteOneID(id int) *RemoteFileDeleteOne {
-	builder := c.Delete().Where(remotefile.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RemoteFileDeleteOne{builder}
-}
-
-// Query returns a query builder for RemoteFile.
-func (c *RemoteFileClient) Query() *RemoteFileQuery {
-	return &RemoteFileQuery{config: c.config}
-}
-
-// Get returns a RemoteFile entity by its id.
-func (c *RemoteFileClient) Get(ctx context.Context, id int) (*RemoteFile, error) {
-	return c.Query().Where(remotefile.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RemoteFileClient) GetX(ctx context.Context, id int) *RemoteFile {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryRemoteFileToTag queries the RemoteFileToTag edge of a RemoteFile.
-func (c *RemoteFileClient) QueryRemoteFileToTag(rf *RemoteFile) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := rf.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(remotefile.Table, remotefile.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, remotefile.RemoteFileToTagTable, remotefile.RemoteFileToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(rf.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RemoteFileClient) Hooks() []Hook {
-	return c.hooks.RemoteFile
 }
 
 // ScriptClient is a client for the Script schema.

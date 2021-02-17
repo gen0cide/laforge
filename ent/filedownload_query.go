@@ -26,6 +26,7 @@ type FileDownloadQuery struct {
 	predicates []predicate.FileDownload
 	// eager-loading edges.
 	withFileDownloadToTag *TagQuery
+	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -276,7 +277,7 @@ func (fdq *FileDownloadQuery) WithFileDownloadToTag(opts ...func(*TagQuery)) *Fi
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty"`
+//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -302,7 +303,7 @@ func (fdq *FileDownloadQuery) GroupBy(field string, fields ...string) *FileDownl
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty"`
+//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 //	}
 //
 //	client.FileDownload.Query().
@@ -335,15 +336,22 @@ func (fdq *FileDownloadQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, error) {
 	var (
 		nodes       = []*FileDownload{}
+		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
 			fdq.withFileDownloadToTag != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &FileDownload{config: fdq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {

@@ -15,14 +15,16 @@ const (
 	FieldDestination = "destination"
 	// FieldTemplate holds the string denoting the template field in the database.
 	FieldTemplate = "template"
-	// FieldMode holds the string denoting the mode field in the database.
-	FieldMode = "mode"
+	// FieldPerms holds the string denoting the perms field in the database.
+	FieldPerms = "perms"
 	// FieldDisabled holds the string denoting the disabled field in the database.
 	FieldDisabled = "disabled"
 	// FieldMd5 holds the string denoting the md5 field in the database.
 	FieldMd5 = "md5"
 	// FieldAbsPath holds the string denoting the abs_path field in the database.
 	FieldAbsPath = "abs_path"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeFileDownloadToTag holds the string denoting the filedownloadtotag edge name in mutations.
 	EdgeFileDownloadToTag = "FileDownloadToTag"
@@ -45,16 +47,27 @@ var Columns = []string{
 	FieldSource,
 	FieldDestination,
 	FieldTemplate,
-	FieldMode,
+	FieldPerms,
 	FieldDisabled,
 	FieldMd5,
 	FieldAbsPath,
+	FieldTags,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the FileDownload type.
+var ForeignKeys = []string{
+	"provisioning_step_provisioning_step_to_file_download",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

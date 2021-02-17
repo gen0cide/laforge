@@ -32,7 +32,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -404,7 +403,7 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     c.ID,
 		Type:   "Competition",
-		Fields: make([]*Field, 2),
+		Fields: make([]*Field, 3),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -422,6 +421,14 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[1] = &Field{
 		Type:  "map[string]string",
 		Name:  "config",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -522,7 +529,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     dr.ID,
 		Type:   "DNSRecord",
-		Fields: make([]*Field, 6),
+		Fields: make([]*Field, 7),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -574,6 +581,14 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "disabled",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(dr.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "Tag",
 		Name: "DNSRecordToTag",
@@ -620,7 +635,7 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     e.ID,
 		Type:   "Environment",
-		Fields: make([]*Field, 9),
+		Fields: make([]*Field, 10),
 		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
@@ -694,6 +709,14 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[8] = &Field{
 		Type:  "map[string]string",
 		Name:  "config",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(e.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -783,7 +806,7 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fd.ID,
 		Type:   "FileDelete",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -793,6 +816,14 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "string",
 		Name:  "path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(fd.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -812,7 +843,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fd.ID,
 		Type:   "FileDownload",
-		Fields: make([]*Field, 8),
+		Fields: make([]*Field, 9),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -848,12 +879,12 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "template",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(fd.Mode); err != nil {
+	if buf, err = json.Marshal(fd.Perms); err != nil {
 		return nil, err
 	}
 	node.Fields[4] = &Field{
 		Type:  "string",
-		Name:  "mode",
+		Name:  "perms",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(fd.Disabled); err != nil {
@@ -880,6 +911,14 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "abs_path",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(fd.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "Tag",
 		Name: "FileDownloadToTag",
@@ -897,7 +936,7 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fe.ID,
 		Type:   "FileExtract",
-		Fields: make([]*Field, 3),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -925,6 +964,14 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "type",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(fe.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "Tag",
 		Name: "FileExtractToTag",
@@ -942,7 +989,7 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     f.ID,
 		Type:   "Finding",
-		Fields: make([]*Field, 4),
+		Fields: make([]*Field, 5),
 		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
@@ -976,6 +1023,14 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[3] = &Field{
 		Type:  "finding.Difficulty",
 		Name:  "difficulty",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(f.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1025,7 +1080,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     h.ID,
 		Type:   "Host",
-		Fields: make([]*Field, 15),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
@@ -1113,40 +1168,24 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[10] = &Field{
-		Type:  "[]string",
+		Type:  "map[string]string",
 		Name:  "depends_on",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(h.Scripts); err != nil {
+	if buf, err = json.Marshal(h.ProvisionSteps); err != nil {
 		return nil, err
 	}
 	node.Fields[11] = &Field{
 		Type:  "[]string",
-		Name:  "scripts",
+		Name:  "provision_steps",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(h.Commands); err != nil {
+	if buf, err = json.Marshal(h.Tags); err != nil {
 		return nil, err
 	}
 	node.Fields[12] = &Field{
-		Type:  "[]string",
-		Name:  "commands",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(h.RemoteFiles); err != nil {
-		return nil, err
-	}
-	node.Fields[13] = &Field{
-		Type:  "[]string",
-		Name:  "remote_files",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(h.DNSRecords); err != nil {
-		return nil, err
-	}
-	node.Fields[14] = &Field{
-		Type:  "[]string",
-		Name:  "dns_records",
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1243,7 +1282,7 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     n.ID,
 		Type:   "Network",
-		Fields: make([]*Field, 4),
+		Fields: make([]*Field, 5),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -1277,6 +1316,14 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[3] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(n.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -1473,7 +1520,7 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ps.ID,
 		Type:   "ProvisioningStep",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ps.ProvisionerType); err != nil {
@@ -1553,112 +1600,31 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
-		Type: "RemoteFile",
-		Name: "ProvisioningStepToRemoteFile",
+		Type: "FileDelete",
+		Name: "ProvisioningStepToFileDelete",
 	}
-	node.Edges[6].IDs, err = ps.QueryProvisioningStepToRemoteFile().
-		Select(remotefile.FieldID).
+	node.Edges[6].IDs, err = ps.QueryProvisioningStepToFileDelete().
+		Select(filedelete.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return node, nil
-}
-
-func (rf *RemoteFile) Node(ctx context.Context) (node *Node, err error) {
-	node = &Node{
-		ID:     rf.ID,
-		Type:   "RemoteFile",
-		Fields: make([]*Field, 10),
-		Edges:  make([]*Edge, 1),
+	node.Edges[7] = &Edge{
+		Type: "FileDownload",
+		Name: "ProvisioningStepToFileDownload",
 	}
-	var buf []byte
-	if buf, err = json.Marshal(rf.SourceType); err != nil {
+	node.Edges[7].IDs, err = ps.QueryProvisioningStepToFileDownload().
+		Select(filedownload.FieldID).
+		Ints(ctx)
+	if err != nil {
 		return nil, err
 	}
-	node.Fields[0] = &Field{
-		Type:  "string",
-		Name:  "source_type",
-		Value: string(buf),
+	node.Edges[8] = &Edge{
+		Type: "FileExtract",
+		Name: "ProvisioningStepToFileExtract",
 	}
-	if buf, err = json.Marshal(rf.Source); err != nil {
-		return nil, err
-	}
-	node.Fields[1] = &Field{
-		Type:  "string",
-		Name:  "source",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Destination); err != nil {
-		return nil, err
-	}
-	node.Fields[2] = &Field{
-		Type:  "string",
-		Name:  "destination",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Vars); err != nil {
-		return nil, err
-	}
-	node.Fields[3] = &Field{
-		Type:  "map[string]string",
-		Name:  "vars",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Template); err != nil {
-		return nil, err
-	}
-	node.Fields[4] = &Field{
-		Type:  "bool",
-		Name:  "template",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Perms); err != nil {
-		return nil, err
-	}
-	node.Fields[5] = &Field{
-		Type:  "string",
-		Name:  "perms",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Disabled); err != nil {
-		return nil, err
-	}
-	node.Fields[6] = &Field{
-		Type:  "bool",
-		Name:  "disabled",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Md5); err != nil {
-		return nil, err
-	}
-	node.Fields[7] = &Field{
-		Type:  "string",
-		Name:  "md5",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.AbsPath); err != nil {
-		return nil, err
-	}
-	node.Fields[8] = &Field{
-		Type:  "string",
-		Name:  "abs_path",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(rf.Ext); err != nil {
-		return nil, err
-	}
-	node.Fields[9] = &Field{
-		Type:  "string",
-		Name:  "ext",
-		Value: string(buf),
-	}
-	node.Edges[0] = &Edge{
-		Type: "Tag",
-		Name: "RemoteFileToTag",
-	}
-	node.Edges[0].IDs, err = rf.QueryRemoteFileToTag().
-		Select(tag.FieldID).
+	node.Edges[8].IDs, err = ps.QueryProvisioningStepToFileExtract().
+		Select(fileextract.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -1670,7 +1636,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
 		Type:   "Script",
-		Fields: make([]*Field, 12),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -1768,6 +1734,14 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[11] = &Field{
 		Type:  "string",
 		Name:  "abs_path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[12] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -2276,15 +2250,6 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case remotefile.Table:
-		n, err := c.RemoteFile.Query().
-			Where(remotefile.ID(id)).
-			CollectFields(ctx, "RemoteFile").
-			Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
 	case script.Table:
 		n, err := c.Script.Query().
 			Where(script.ID(id)).
@@ -2626,19 +2591,6 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.ProvisioningStep.Query().
 			Where(provisioningstep.IDIn(ids...)).
 			CollectFields(ctx, "ProvisioningStep").
-			All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, node := range nodes {
-			for _, noder := range idmap[node.ID] {
-				*noder = node
-			}
-		}
-	case remotefile.Table:
-		nodes, err := c.RemoteFile.Query().
-			Where(remotefile.IDIn(ids...)).
-			CollectFields(ctx, "RemoteFile").
 			All(ctx)
 		if err != nil {
 			return nil, err

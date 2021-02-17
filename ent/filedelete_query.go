@@ -26,6 +26,7 @@ type FileDeleteQuery struct {
 	predicates []predicate.FileDelete
 	// eager-loading edges.
 	withFileDeleteToTag *TagQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -276,7 +277,7 @@ func (fdq *FileDeleteQuery) WithFileDeleteToTag(opts ...func(*TagQuery)) *FileDe
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Path string `json:"path,omitempty" hcl:"path,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -302,7 +303,7 @@ func (fdq *FileDeleteQuery) GroupBy(field string, fields ...string) *FileDeleteG
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Path string `json:"path,omitempty" hcl:"path,attr"`
 //	}
 //
 //	client.FileDelete.Query().
@@ -335,15 +336,22 @@ func (fdq *FileDeleteQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 	var (
 		nodes       = []*FileDelete{}
+		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
 			fdq.withFileDeleteToTag != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, filedelete.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &FileDelete{config: fdq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {

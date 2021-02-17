@@ -81,6 +81,12 @@ func (ec *EnvironmentCreate) SetConfig(m map[string]string) *EnvironmentCreate {
 	return ec
 }
 
+// SetTags sets the tags field.
+func (ec *EnvironmentCreate) SetTags(m map[string]string) *EnvironmentCreate {
+	ec.mutation.SetTags(m)
+	return ec
+}
+
 // AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
 func (ec *EnvironmentCreate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToTagIDs(ids...)
@@ -279,6 +285,9 @@ func (ec *EnvironmentCreate) check() error {
 	if _, ok := ec.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
 	}
+	if _, ok := ec.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -377,6 +386,14 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Column: environment.FieldConfig,
 		})
 		_node.Config = value
+	}
+	if value, ok := ec.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: environment.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := ec.mutation.EnvironmentToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -12,17 +13,19 @@ import (
 
 // Finding is the model entity for the Finding schema.
 type Finding struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional"`
 	// Severity holds the value of the "severity" field.
-	Severity finding.Severity `json:"severity,omitempty"`
+	Severity finding.Severity `json:"severity,omitempty" hcl:"severity,attr"`
 	// Difficulty holds the value of the "difficulty" field.
-	Difficulty finding.Difficulty `json:"difficulty,omitempty"`
+	Difficulty finding.Difficulty `json:"difficulty,omitempty" hcl:"difficulty,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FindingQuery when eager-loading is set.
 	Edges FindingEdges `json:"edges"`
@@ -31,7 +34,7 @@ type Finding struct {
 // FindingEdges holds the relations/edges for other nodes in the graph.
 type FindingEdges struct {
 	// FindingToUser holds the value of the FindingToUser edge.
-	FindingToUser []*User
+	FindingToUser []*User `hcl:"maintainer,block"`
 	// FindingToTag holds the value of the FindingToTag edge.
 	FindingToTag []*Tag
 	// FindingToHost holds the value of the FindingToHost edge.
@@ -87,6 +90,7 @@ func (*Finding) scanValues() []interface{} {
 		&sql.NullString{}, // description
 		&sql.NullString{}, // severity
 		&sql.NullString{}, // difficulty
+		&[]byte{},         // tags
 	}
 }
 
@@ -121,6 +125,14 @@ func (f *Finding) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field difficulty", values[3])
 	} else if value.Valid {
 		f.Difficulty = finding.Difficulty(value.String)
+	}
+
+	if value, ok := values[4].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[4])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &f.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
 	}
 	return nil
 }
@@ -176,6 +188,8 @@ func (f *Finding) String() string {
 	builder.WriteString(fmt.Sprintf("%v", f.Severity))
 	builder.WriteString(", difficulty=")
 	builder.WriteString(fmt.Sprintf("%v", f.Difficulty))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", f.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

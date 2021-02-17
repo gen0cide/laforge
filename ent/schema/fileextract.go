@@ -14,9 +14,14 @@ type FileExtract struct {
 // Fields of the FileExtract.
 func (FileExtract) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("source"),
-		field.String("destination"),
-		field.String("type"),
+		field.String("source").
+			StructTag(`hcl:"source,attr"`),
+		field.String("destination").
+			StructTag(`hcl:"destination,attr"`),
+		field.String("type").
+			StructTag(`hcl:"type,attr"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,attr"`),
 	}
 }
 

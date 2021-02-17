@@ -81,6 +81,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "root_password", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// CompetitionsTable holds the schema information for the "competitions" table.
 	CompetitionsTable = &schema.Table{
@@ -123,6 +124,7 @@ var (
 		{Name: "zone", Type: field.TypeString},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "disabled", Type: field.TypeBool},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeInt, Nullable: true},
 	}
 	// DNSRecordsTable holds the schema information for the "dns_records" table.
@@ -133,7 +135,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "dns_records_provisioning_steps_ProvisioningStepToDNSRecord",
-				Columns: []*schema.Column{DNSRecordsColumns[7]},
+				Columns: []*schema.Column{DNSRecordsColumns[8]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -173,6 +175,7 @@ var (
 		{Name: "admin_cidrs", Type: field.TypeJSON},
 		{Name: "exposed_vdi_ports", Type: field.TypeJSON},
 		{Name: "config", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// EnvironmentsTable holds the schema information for the "environments" table.
 	EnvironmentsTable = &schema.Table{
@@ -185,13 +188,23 @@ var (
 	FileDeletesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "path", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDeletesTable holds the schema information for the "file_deletes" table.
 	FileDeletesTable = &schema.Table{
-		Name:        "file_deletes",
-		Columns:     FileDeletesColumns,
-		PrimaryKey:  []*schema.Column{FileDeletesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_deletes",
+		Columns:    FileDeletesColumns,
+		PrimaryKey: []*schema.Column{FileDeletesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_deletes_provisioning_steps_ProvisioningStepToFileDelete",
+				Columns: []*schema.Column{FileDeletesColumns[3]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileDownloadsColumns holds the columns for the "file_downloads" table.
 	FileDownloadsColumns = []*schema.Column{
@@ -200,17 +213,27 @@ var (
 		{Name: "source", Type: field.TypeString},
 		{Name: "destination", Type: field.TypeString},
 		{Name: "template", Type: field.TypeBool},
-		{Name: "mode", Type: field.TypeString},
+		{Name: "perms", Type: field.TypeString},
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "md5", Type: field.TypeString},
 		{Name: "abs_path", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDownloadsTable holds the schema information for the "file_downloads" table.
 	FileDownloadsTable = &schema.Table{
-		Name:        "file_downloads",
-		Columns:     FileDownloadsColumns,
-		PrimaryKey:  []*schema.Column{FileDownloadsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_downloads",
+		Columns:    FileDownloadsColumns,
+		PrimaryKey: []*schema.Column{FileDownloadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_downloads_provisioning_steps_ProvisioningStepToFileDownload",
+				Columns: []*schema.Column{FileDownloadsColumns[10]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileExtractsColumns holds the columns for the "file_extracts" table.
 	FileExtractsColumns = []*schema.Column{
@@ -218,13 +241,23 @@ var (
 		{Name: "source", Type: field.TypeString},
 		{Name: "destination", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeInt, Nullable: true},
 	}
 	// FileExtractsTable holds the schema information for the "file_extracts" table.
 	FileExtractsTable = &schema.Table{
-		Name:        "file_extracts",
-		Columns:     FileExtractsColumns,
-		PrimaryKey:  []*schema.Column{FileExtractsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_extracts",
+		Columns:    FileExtractsColumns,
+		PrimaryKey: []*schema.Column{FileExtractsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_extracts_provisioning_steps_ProvisioningStepToFileExtract",
+				Columns: []*schema.Column{FileExtractsColumns[5]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FindingsColumns holds the columns for the "findings" table.
 	FindingsColumns = []*schema.Column{
@@ -233,6 +266,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "severity", Type: field.TypeEnum, Enums: []string{"ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity"}},
 		{Name: "difficulty", Type: field.TypeEnum, Enums: []string{"ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty"}},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// FindingsTable holds the schema information for the "findings" table.
 	FindingsTable = &schema.Table{
@@ -255,10 +289,8 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "user_groups", Type: field.TypeJSON},
 		{Name: "depends_on", Type: field.TypeJSON, Nullable: true},
-		{Name: "scripts", Type: field.TypeJSON, Nullable: true},
-		{Name: "commands", Type: field.TypeJSON, Nullable: true},
-		{Name: "remote_files", Type: field.TypeJSON, Nullable: true},
-		{Name: "dns_records", Type: field.TypeJSON, Nullable: true},
+		{Name: "provision_steps", Type: field.TypeJSON, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "finding_finding_to_host", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeInt, Nullable: true},
 	}
@@ -270,14 +302,14 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "hosts_findings_FindingToHost",
-				Columns: []*schema.Column{HostsColumns[16]},
+				Columns: []*schema.Column{HostsColumns[14]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "hosts_provisioned_hosts_ProvisionedHostToHost",
-				Columns: []*schema.Column{HostsColumns[17]},
+				Columns: []*schema.Column{HostsColumns[15]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -304,6 +336,7 @@ var (
 		{Name: "cidr", Type: field.TypeString},
 		{Name: "vdi_visible", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeInt, Nullable: true},
 	}
 	// NetworksTable holds the schema information for the "networks" table.
@@ -314,7 +347,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "networks_provisioned_networks_ProvisionedNetworkToNetwork",
-				Columns: []*schema.Column{NetworksColumns[5]},
+				Columns: []*schema.Column{NetworksColumns[6]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -359,36 +392,6 @@ var (
 		PrimaryKey:  []*schema.Column{ProvisioningStepsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
-	// RemoteFilesColumns holds the columns for the "remote_files" table.
-	RemoteFilesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "source_type", Type: field.TypeString},
-		{Name: "source", Type: field.TypeString},
-		{Name: "destination", Type: field.TypeString},
-		{Name: "vars", Type: field.TypeJSON},
-		{Name: "template", Type: field.TypeBool},
-		{Name: "perms", Type: field.TypeString},
-		{Name: "disabled", Type: field.TypeBool},
-		{Name: "md5", Type: field.TypeString},
-		{Name: "abs_path", Type: field.TypeString},
-		{Name: "ext", Type: field.TypeString},
-		{Name: "provisioning_step_provisioning_step_to_remote_file", Type: field.TypeInt, Nullable: true},
-	}
-	// RemoteFilesTable holds the schema information for the "remote_files" table.
-	RemoteFilesTable = &schema.Table{
-		Name:       "remote_files",
-		Columns:    RemoteFilesColumns,
-		PrimaryKey: []*schema.Column{RemoteFilesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "remote_files_provisioning_steps_ProvisioningStepToRemoteFile",
-				Columns: []*schema.Column{RemoteFilesColumns[11]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -404,6 +407,7 @@ var (
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "abs_path", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeInt, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
@@ -414,7 +418,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "scripts_provisioning_steps_ProvisioningStepToScript",
-				Columns: []*schema.Column{ScriptsColumns[13]},
+				Columns: []*schema.Column{ScriptsColumns[14]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -487,7 +491,6 @@ var (
 		{Name: "provisioned_host_provisioned_host_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_network_provisioned_network_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioning_step_provisioning_step_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "remote_file_remote_file_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "script_script_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "status_status_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "team_team_to_tag", Type: field.TypeInt, Nullable: true},
@@ -626,36 +629,29 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_remote_files_RemoteFileToTag",
-				Columns: []*schema.Column{TagsColumns[22]},
-
-				RefColumns: []*schema.Column{RemoteFilesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_scripts_ScriptToTag",
-				Columns: []*schema.Column{TagsColumns[23]},
+				Columns: []*schema.Column{TagsColumns[22]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_status_StatusToTag",
-				Columns: []*schema.Column{TagsColumns[24]},
+				Columns: []*schema.Column{TagsColumns[23]},
 
 				RefColumns: []*schema.Column{StatusColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_teams_TeamToTag",
-				Columns: []*schema.Column{TagsColumns[25]},
+				Columns: []*schema.Column{TagsColumns[24]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_users_UserToTag",
-				Columns: []*schema.Column{TagsColumns[26]},
+				Columns: []*schema.Column{TagsColumns[25]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -1137,7 +1133,6 @@ var (
 		ProvisionedHostsTable,
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
-		RemoteFilesTable,
 		ScriptsTable,
 		StatusTable,
 		TagsTable,
@@ -1165,10 +1160,12 @@ func init() {
 	DnSsTable.ForeignKeys[0].RefTable = CompetitionsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	DisksTable.ForeignKeys[0].RefTable = HostsTable
+	FileDeletesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	FileDownloadsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	FileExtractsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	HostsTable.ForeignKeys[0].RefTable = FindingsTable
 	HostsTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
-	RemoteFilesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
@@ -1191,11 +1188,10 @@ func init() {
 	TagsTable.ForeignKeys[15].RefTable = ProvisionedHostsTable
 	TagsTable.ForeignKeys[16].RefTable = ProvisionedNetworksTable
 	TagsTable.ForeignKeys[17].RefTable = ProvisioningStepsTable
-	TagsTable.ForeignKeys[18].RefTable = RemoteFilesTable
-	TagsTable.ForeignKeys[19].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[20].RefTable = StatusTable
-	TagsTable.ForeignKeys[21].RefTable = TeamsTable
-	TagsTable.ForeignKeys[22].RefTable = UsersTable
+	TagsTable.ForeignKeys[18].RefTable = ScriptsTable
+	TagsTable.ForeignKeys[19].RefTable = StatusTable
+	TagsTable.ForeignKeys[20].RefTable = TeamsTable
+	TagsTable.ForeignKeys[21].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = BuildsTable
 	UsersTable.ForeignKeys[1].RefTable = CommandsTable
 	UsersTable.ForeignKeys[2].RefTable = FindingsTable

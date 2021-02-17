@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -12,28 +13,31 @@ import (
 
 // FileDownload is the model entity for the FileDownload schema.
 type FileDownload struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// SourceType holds the value of the "source_type" field.
-	SourceType string `json:"source_type,omitempty"`
+	SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
+	Source string `json:"source,omitempty" hcl:"source,attr"`
 	// Destination holds the value of the "destination" field.
-	Destination string `json:"destination,omitempty"`
+	Destination string `json:"destination,omitempty" hcl:"destination,attr"`
 	// Template holds the value of the "template" field.
-	Template bool `json:"template,omitempty"`
-	// Mode holds the value of the "mode" field.
-	Mode string `json:"mode,omitempty"`
+	Template bool `json:"template,omitempty" hcl:"template,optional"`
+	// Perms holds the value of the "perms" field.
+	Perms string `json:"perms,omitempty" hcl:"perms,optional"`
 	// Disabled holds the value of the "disabled" field.
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty" hcl:"disabled,optional"`
 	// Md5 holds the value of the "md5" field.
-	Md5 string `json:"md5,omitempty"`
+	Md5 string `json:"md5,omitempty" hcl:"md5,optional"`
 	// AbsPath holds the value of the "abs_path" field.
-	AbsPath string `json:"abs_path,omitempty"`
+	AbsPath string `json:"abs_path,omitempty" hcl:"abs_path,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDownloadQuery when eager-loading is set.
-	Edges FileDownloadEdges `json:"edges"`
+	Edges                                                FileDownloadEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_file_download *int
 }
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
@@ -62,10 +66,18 @@ func (*FileDownload) scanValues() []interface{} {
 		&sql.NullString{}, // source
 		&sql.NullString{}, // destination
 		&sql.NullBool{},   // template
-		&sql.NullString{}, // mode
+		&sql.NullString{}, // perms
 		&sql.NullBool{},   // disabled
 		&sql.NullString{}, // md5
 		&sql.NullString{}, // abs_path
+		&[]byte{},         // tags
+	}
+}
+
+// fkValues returns the types for scanning foreign-keys values from sql.Rows.
+func (*FileDownload) fkValues() []interface{} {
+	return []interface{}{
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_file_download
 	}
 }
 
@@ -102,9 +114,9 @@ func (fd *FileDownload) assignValues(values ...interface{}) error {
 		fd.Template = value.Bool
 	}
 	if value, ok := values[4].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field mode", values[4])
+		return fmt.Errorf("unexpected type %T for field perms", values[4])
 	} else if value.Valid {
-		fd.Mode = value.String
+		fd.Perms = value.String
 	}
 	if value, ok := values[5].(*sql.NullBool); !ok {
 		return fmt.Errorf("unexpected type %T for field disabled", values[5])
@@ -120,6 +132,23 @@ func (fd *FileDownload) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field abs_path", values[7])
 	} else if value.Valid {
 		fd.AbsPath = value.String
+	}
+
+	if value, ok := values[8].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[8])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &fd.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[9:]
+	if len(values) == len(filedownload.ForeignKeys) {
+		if value, ok := values[0].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_download", value)
+		} else if value.Valid {
+			fd.provisioning_step_provisioning_step_to_file_download = new(int)
+			*fd.provisioning_step_provisioning_step_to_file_download = int(value.Int64)
+		}
 	}
 	return nil
 }
@@ -160,14 +189,16 @@ func (fd *FileDownload) String() string {
 	builder.WriteString(fd.Destination)
 	builder.WriteString(", template=")
 	builder.WriteString(fmt.Sprintf("%v", fd.Template))
-	builder.WriteString(", mode=")
-	builder.WriteString(fd.Mode)
+	builder.WriteString(", perms=")
+	builder.WriteString(fd.Perms)
 	builder.WriteString(", disabled=")
 	builder.WriteString(fmt.Sprintf("%v", fd.Disabled))
 	builder.WriteString(", md5=")
 	builder.WriteString(fd.Md5)
 	builder.WriteString(", abs_path=")
 	builder.WriteString(fd.AbsPath)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", fd.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

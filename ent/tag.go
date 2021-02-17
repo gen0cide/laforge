@@ -41,7 +41,6 @@ type Tag struct {
 	provisioned_host_provisioned_host_to_tag       *int
 	provisioned_network_provisioned_network_to_tag *int
 	provisioning_step_provisioning_step_to_tag     *int
-	remote_file_remote_file_to_tag                 *int
 	script_script_to_tag                           *int
 	status_status_to_tag                           *int
 	team_team_to_tag                               *int
@@ -79,7 +78,6 @@ func (*Tag) fkValues() []interface{} {
 		&sql.NullInt64{}, // provisioned_host_provisioned_host_to_tag
 		&sql.NullInt64{}, // provisioned_network_provisioned_network_to_tag
 		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_tag
-		&sql.NullInt64{}, // remote_file_remote_file_to_tag
 		&sql.NullInt64{}, // script_script_to_tag
 		&sql.NullInt64{}, // status_status_to_tag
 		&sql.NullInt64{}, // team_team_to_tag
@@ -228,30 +226,24 @@ func (t *Tag) assignValues(values ...interface{}) error {
 			*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
 		}
 		if value, ok := values[18].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field remote_file_remote_file_to_tag", value)
-		} else if value.Valid {
-			t.remote_file_remote_file_to_tag = new(int)
-			*t.remote_file_remote_file_to_tag = int(value.Int64)
-		}
-		if value, ok := values[19].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
 		} else if value.Valid {
 			t.script_script_to_tag = new(int)
 			*t.script_script_to_tag = int(value.Int64)
 		}
-		if value, ok := values[20].(*sql.NullInt64); !ok {
+		if value, ok := values[19].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field status_status_to_tag", value)
 		} else if value.Valid {
 			t.status_status_to_tag = new(int)
 			*t.status_status_to_tag = int(value.Int64)
 		}
-		if value, ok := values[21].(*sql.NullInt64); !ok {
+		if value, ok := values[20].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field team_team_to_tag", value)
 		} else if value.Valid {
 			t.team_team_to_tag = new(int)
 			*t.team_team_to_tag = int(value.Int64)
 		}
-		if value, ok := values[22].(*sql.NullInt64); !ok {
+		if value, ok := values[21].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
 		} else if value.Valid {
 			t.user_user_to_tag = new(int)

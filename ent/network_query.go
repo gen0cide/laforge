@@ -313,7 +313,7 @@ func (nq *NetworkQuery) WithNetworkToEnvironment(opts ...func(*EnvironmentQuery)
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -339,7 +339,7 @@ func (nq *NetworkQuery) GroupBy(field string, fields ...string) *NetworkGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Network.Query().

@@ -277,7 +277,7 @@ func (drq *DNSRecordQuery) WithDNSRecordToTag(opts ...func(*TagQuery)) *DNSRecor
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -303,7 +303,7 @@ func (drq *DNSRecordQuery) GroupBy(field string, fields ...string) *DNSRecordGro
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.DNSRecord.Query().

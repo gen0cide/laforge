@@ -14,8 +14,12 @@ type Competition struct {
 // Fields of the Competition.
 func (Competition) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("root_password"),
-		field.JSON("config", map[string]string{}),
+		field.String("root_password").
+			StructTag(`hcl:"root_password,attr"`),
+		field.JSON("config", map[string]string{}).
+			StructTag(`hcl:"config,optional"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,attr"`),
 	}
 }
 
@@ -23,7 +27,9 @@ func (Competition) Fields() []ent.Field {
 func (Competition) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("CompetitionToTag", Tag.Type),
-		edge.To("CompetitionToDNS", DNS.Type),
-		edge.From("CompetitionToEnvironment", Environment.Type).Ref("EnvironmentToCompetition"),
+		edge.To("CompetitionToDNS", DNS.Type).
+			StructTag(`hcl:"dns,block"`),
+		edge.From("CompetitionToEnvironment", Environment.Type).Ref("EnvironmentToCompetition").
+			StructTag(``),
 	}
 }

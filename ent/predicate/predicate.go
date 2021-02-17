@@ -60,9 +60,6 @@ type ProvisionedNetwork func(*sql.Selector)
 // ProvisioningStep is the predicate function for provisioningstep builders.
 type ProvisioningStep func(*sql.Selector)
 
-// RemoteFile is the predicate function for remotefile builders.
-type RemoteFile func(*sql.Selector)
-
 // Script is the predicate function for script builders.
 type Script func(*sql.Selector)
 

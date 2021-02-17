@@ -45,6 +45,12 @@ func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
 	return nc
 }
 
+// SetTags sets the tags field.
+func (nc *NetworkCreate) SetTags(m map[string]string) *NetworkCreate {
+	nc.mutation.SetTags(m)
+	return nc
+}
+
 // AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
 func (nc *NetworkCreate) AddNetworkToTagIDs(ids ...int) *NetworkCreate {
 	nc.mutation.AddNetworkToTagIDs(ids...)
@@ -138,6 +144,9 @@ func (nc *NetworkCreate) check() error {
 	if _, ok := nc.mutation.Vars(); !ok {
 		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
 	}
+	if _, ok := nc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -196,6 +205,14 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 			Column: network.FieldVars,
 		})
 		_node.Vars = value
+	}
+	if value, ok := nc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := nc.mutation.NetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

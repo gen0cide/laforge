@@ -13,19 +13,19 @@ import (
 
 // DNS is the model entity for the DNS schema.
 type DNS struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
-	Type string `json:"type,omitempty"`
+	Type string `json:"type,omitempty" hcl:"type,attr"`
 	// RootDomain holds the value of the "root_domain" field.
-	RootDomain string `json:"root_domain,omitempty"`
+	RootDomain string `json:"root_domain,omitempty" hcl:"root_domain,attr" `
 	// DNSServers holds the value of the "dns_servers" field.
-	DNSServers []string `json:"dns_servers,omitempty"`
+	DNSServers []string `json:"dns_servers,omitempty" hcl:"dns_servers,attr"`
 	// NtpServers holds the value of the "ntp_servers" field.
-	NtpServers []string `json:"ntp_servers,omitempty"`
+	NtpServers []string `json:"ntp_servers,omitempty" hcl:"ntp_servers,optional"`
 	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSQuery when eager-loading is set.
 	Edges                          DNSEdges `json:"edges"`

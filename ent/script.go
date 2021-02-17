@@ -13,33 +13,35 @@ import (
 
 // Script is the model entity for the Script schema.
 type Script struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Language holds the value of the "language" field.
-	Language string `json:"language,omitempty"`
+	Language string `json:"language,omitempty" hcl:"language,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional"`
 	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
+	Source string `json:"source,omitempty" hcl:"source,attr"`
 	// SourceType holds the value of the "source_type" field.
-	SourceType string `json:"source_type,omitempty"`
+	SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 	// Cooldown holds the value of the "cooldown" field.
-	Cooldown int `json:"cooldown,omitempty"`
+	Cooldown int `json:"cooldown,omitempty" hcl:"cooldown,optional"`
 	// Timeout holds the value of the "timeout" field.
-	Timeout int `json:"timeout,omitempty"`
+	Timeout int `json:"timeout,omitempty" hcl:"timeout,optional"`
 	// IgnoreErrors holds the value of the "ignore_errors" field.
-	IgnoreErrors bool `json:"ignore_errors,omitempty"`
+	IgnoreErrors bool `json:"ignore_errors,omitempty" hcl:"ignore_errors,optional"`
 	// Args holds the value of the "args" field.
-	Args []string `json:"args,omitempty"`
+	Args []string `json:"args,omitempty" hcl:"args,optional"`
 	// Disabled holds the value of the "disabled" field.
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty" hcl:"disabled,optional" `
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// AbsPath holds the value of the "abs_path" field.
-	AbsPath string `json:"abs_path,omitempty"`
+	AbsPath string `json:"abs_path,omitempty" hcl:"abs_path,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScriptQuery when eager-loading is set.
 	Edges                                         ScriptEdges `json:"edges"`
@@ -51,9 +53,9 @@ type ScriptEdges struct {
 	// ScriptToTag holds the value of the ScriptToTag edge.
 	ScriptToTag []*Tag
 	// ScriptToUser holds the value of the ScriptToUser edge.
-	ScriptToUser []*User
+	ScriptToUser []*User `hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
-	ScriptToFinding []*Finding
+	ScriptToFinding []*Finding `hcl:"finding,block"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -102,6 +104,7 @@ func (*Script) scanValues() []interface{} {
 		&sql.NullBool{},   // disabled
 		&[]byte{},         // vars
 		&sql.NullString{}, // abs_path
+		&[]byte{},         // tags
 	}
 }
 
@@ -190,7 +193,15 @@ func (s *Script) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		s.AbsPath = value.String
 	}
-	values = values[12:]
+
+	if value, ok := values[12].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[12])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &s.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[13:]
 	if len(values) == len(script.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_script", value)
@@ -264,6 +275,8 @@ func (s *Script) String() string {
 	builder.WriteString(fmt.Sprintf("%v", s.Vars))
 	builder.WriteString(", abs_path=")
 	builder.WriteString(s.AbsPath)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", s.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

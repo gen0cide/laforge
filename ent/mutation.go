@@ -27,7 +27,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/remotefile"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -65,7 +64,6 @@ const (
 	TypeProvisionedHost    = "ProvisionedHost"
 	TypeProvisionedNetwork = "ProvisionedNetwork"
 	TypeProvisioningStep   = "ProvisioningStep"
-	TypeRemoteFile         = "RemoteFile"
 	TypeScript             = "Script"
 	TypeStatus             = "Status"
 	TypeTag                = "Tag"
@@ -3435,6 +3433,7 @@ type CompetitionMutation struct {
 	id                               *int
 	root_password                    *string
 	_config                          *map[string]string
+	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
 	_CompetitionToTag                map[int]struct{}
 	removed_CompetitionToTag         map[int]struct{}
@@ -3601,6 +3600,43 @@ func (m *CompetitionMutation) OldConfig(ctx context.Context) (v map[string]strin
 // ResetConfig reset all changes of the "config" field.
 func (m *CompetitionMutation) ResetConfig() {
 	m._config = nil
+}
+
+// SetTags sets the tags field.
+func (m *CompetitionMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *CompetitionMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Competition.
+// If the Competition object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CompetitionMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *CompetitionMutation) ResetTags() {
+	m.tags = nil
 }
 
 // AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
@@ -3776,12 +3812,15 @@ func (m *CompetitionMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *CompetitionMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.root_password != nil {
 		fields = append(fields, competition.FieldRootPassword)
 	}
 	if m._config != nil {
 		fields = append(fields, competition.FieldConfig)
+	}
+	if m.tags != nil {
+		fields = append(fields, competition.FieldTags)
 	}
 	return fields
 }
@@ -3795,6 +3834,8 @@ func (m *CompetitionMutation) Field(name string) (ent.Value, bool) {
 		return m.RootPassword()
 	case competition.FieldConfig:
 		return m.Config()
+	case competition.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -3808,6 +3849,8 @@ func (m *CompetitionMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldRootPassword(ctx)
 	case competition.FieldConfig:
 		return m.OldConfig(ctx)
+	case competition.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Competition field %s", name)
 }
@@ -3830,6 +3873,13 @@ func (m *CompetitionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
+		return nil
+	case competition.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Competition field %s", name)
@@ -3886,6 +3936,9 @@ func (m *CompetitionMutation) ResetField(name string) error {
 		return nil
 	case competition.FieldConfig:
 		m.ResetConfig()
+		return nil
+	case competition.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Competition field %s", name)
@@ -4650,6 +4703,7 @@ type DNSRecordMutation struct {
 	zone                   *string
 	vars                   *map[string]string
 	disabled               *bool
+	tags                   *map[string]string
 	clearedFields          map[string]struct{}
 	_DNSRecordToTag        map[int]struct{}
 	removed_DNSRecordToTag map[int]struct{}
@@ -4960,6 +5014,43 @@ func (m *DNSRecordMutation) ResetDisabled() {
 	m.disabled = nil
 }
 
+// SetTags sets the tags field.
+func (m *DNSRecordMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *DNSRecordMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the DNSRecord.
+// If the DNSRecord object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *DNSRecordMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *DNSRecordMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
 func (m *DNSRecordMutation) AddDNSRecordToTagIDs(ids ...int) {
 	if m._DNSRecordToTag == nil {
@@ -5027,7 +5118,7 @@ func (m *DNSRecordMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *DNSRecordMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, dnsrecord.FieldName)
 	}
@@ -5045,6 +5136,9 @@ func (m *DNSRecordMutation) Fields() []string {
 	}
 	if m.disabled != nil {
 		fields = append(fields, dnsrecord.FieldDisabled)
+	}
+	if m.tags != nil {
+		fields = append(fields, dnsrecord.FieldTags)
 	}
 	return fields
 }
@@ -5066,6 +5160,8 @@ func (m *DNSRecordMutation) Field(name string) (ent.Value, bool) {
 		return m.Vars()
 	case dnsrecord.FieldDisabled:
 		return m.Disabled()
+	case dnsrecord.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -5087,6 +5183,8 @@ func (m *DNSRecordMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldVars(ctx)
 	case dnsrecord.FieldDisabled:
 		return m.OldDisabled(ctx)
+	case dnsrecord.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown DNSRecord field %s", name)
 }
@@ -5137,6 +5235,13 @@ func (m *DNSRecordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisabled(v)
+		return nil
+	case dnsrecord.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DNSRecord field %s", name)
@@ -5205,6 +5310,9 @@ func (m *DNSRecordMutation) ResetField(name string) error {
 		return nil
 	case dnsrecord.FieldDisabled:
 		m.ResetDisabled()
+		return nil
+	case dnsrecord.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown DNSRecord field %s", name)
@@ -5738,6 +5846,7 @@ type EnvironmentMutation struct {
 	admin_cidrs                          *[]string
 	exposed_vdi_ports                    *[]string
 	_config                              *map[string]string
+	tags                                 *map[string]string
 	clearedFields                        map[string]struct{}
 	_EnvironmentToTag                    map[int]struct{}
 	removed_EnvironmentToTag             map[int]struct{}
@@ -6220,6 +6329,43 @@ func (m *EnvironmentMutation) ResetConfig() {
 	m._config = nil
 }
 
+// SetTags sets the tags field.
+func (m *EnvironmentMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *EnvironmentMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Environment.
+// If the Environment object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *EnvironmentMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *EnvironmentMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
 func (m *EnvironmentMutation) AddEnvironmentToTagIDs(ids ...int) {
 	if m._EnvironmentToTag == nil {
@@ -6658,7 +6804,7 @@ func (m *EnvironmentMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *EnvironmentMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.competition_id != nil {
 		fields = append(fields, environment.FieldCompetitionID)
 	}
@@ -6686,6 +6832,9 @@ func (m *EnvironmentMutation) Fields() []string {
 	if m._config != nil {
 		fields = append(fields, environment.FieldConfig)
 	}
+	if m.tags != nil {
+		fields = append(fields, environment.FieldTags)
+	}
 	return fields
 }
 
@@ -6712,6 +6861,8 @@ func (m *EnvironmentMutation) Field(name string) (ent.Value, bool) {
 		return m.ExposedVdiPorts()
 	case environment.FieldConfig:
 		return m.Config()
+	case environment.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -6739,6 +6890,8 @@ func (m *EnvironmentMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldExposedVdiPorts(ctx)
 	case environment.FieldConfig:
 		return m.OldConfig(ctx)
+	case environment.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Environment field %s", name)
 }
@@ -6810,6 +6963,13 @@ func (m *EnvironmentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
+		return nil
+	case environment.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Environment field %s", name)
@@ -6914,6 +7074,9 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 		return nil
 	case environment.FieldConfig:
 		m.ResetConfig()
+		return nil
+	case environment.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Environment field %s", name)
@@ -7197,6 +7360,7 @@ type FileDeleteMutation struct {
 	typ                     string
 	id                      *int
 	_path                   *string
+	tags                    *map[string]string
 	clearedFields           map[string]struct{}
 	_FileDeleteToTag        map[int]struct{}
 	removed_FileDeleteToTag map[int]struct{}
@@ -7322,6 +7486,43 @@ func (m *FileDeleteMutation) ResetPath() {
 	m._path = nil
 }
 
+// SetTags sets the tags field.
+func (m *FileDeleteMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *FileDeleteMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the FileDelete.
+// If the FileDelete object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FileDeleteMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *FileDeleteMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
 func (m *FileDeleteMutation) AddFileDeleteToTagIDs(ids ...int) {
 	if m._FileDeleteToTag == nil {
@@ -7389,9 +7590,12 @@ func (m *FileDeleteMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *FileDeleteMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m._path != nil {
 		fields = append(fields, filedelete.FieldPath)
+	}
+	if m.tags != nil {
+		fields = append(fields, filedelete.FieldTags)
 	}
 	return fields
 }
@@ -7403,6 +7607,8 @@ func (m *FileDeleteMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case filedelete.FieldPath:
 		return m.Path()
+	case filedelete.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -7414,6 +7620,8 @@ func (m *FileDeleteMutation) OldField(ctx context.Context, name string) (ent.Val
 	switch name {
 	case filedelete.FieldPath:
 		return m.OldPath(ctx)
+	case filedelete.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown FileDelete field %s", name)
 }
@@ -7429,6 +7637,13 @@ func (m *FileDeleteMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPath(v)
+		return nil
+	case filedelete.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown FileDelete field %s", name)
@@ -7482,6 +7697,9 @@ func (m *FileDeleteMutation) ResetField(name string) error {
 	switch name {
 	case filedelete.FieldPath:
 		m.ResetPath()
+		return nil
+	case filedelete.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown FileDelete field %s", name)
@@ -7586,10 +7804,11 @@ type FileDownloadMutation struct {
 	source                    *string
 	destination               *string
 	template                  *bool
-	mode                      *string
+	perms                     *string
 	disabled                  *bool
 	md5                       *string
 	abs_path                  *string
+	tags                      *map[string]string
 	clearedFields             map[string]struct{}
 	_FileDownloadToTag        map[int]struct{}
 	removed_FileDownloadToTag map[int]struct{}
@@ -7826,41 +8045,41 @@ func (m *FileDownloadMutation) ResetTemplate() {
 	m.template = nil
 }
 
-// SetMode sets the mode field.
-func (m *FileDownloadMutation) SetMode(s string) {
-	m.mode = &s
+// SetPerms sets the perms field.
+func (m *FileDownloadMutation) SetPerms(s string) {
+	m.perms = &s
 }
 
-// Mode returns the mode value in the mutation.
-func (m *FileDownloadMutation) Mode() (r string, exists bool) {
-	v := m.mode
+// Perms returns the perms value in the mutation.
+func (m *FileDownloadMutation) Perms() (r string, exists bool) {
+	v := m.perms
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldMode returns the old mode value of the FileDownload.
+// OldPerms returns the old perms value of the FileDownload.
 // If the FileDownload object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *FileDownloadMutation) OldMode(ctx context.Context) (v string, err error) {
+func (m *FileDownloadMutation) OldPerms(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMode is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldPerms is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMode requires an ID field in the mutation")
+		return v, fmt.Errorf("OldPerms requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMode: %w", err)
+		return v, fmt.Errorf("querying old value for OldPerms: %w", err)
 	}
-	return oldValue.Mode, nil
+	return oldValue.Perms, nil
 }
 
-// ResetMode reset all changes of the "mode" field.
-func (m *FileDownloadMutation) ResetMode() {
-	m.mode = nil
+// ResetPerms reset all changes of the "perms" field.
+func (m *FileDownloadMutation) ResetPerms() {
+	m.perms = nil
 }
 
 // SetDisabled sets the disabled field.
@@ -7974,6 +8193,43 @@ func (m *FileDownloadMutation) ResetAbsPath() {
 	m.abs_path = nil
 }
 
+// SetTags sets the tags field.
+func (m *FileDownloadMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *FileDownloadMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the FileDownload.
+// If the FileDownload object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FileDownloadMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *FileDownloadMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
 func (m *FileDownloadMutation) AddFileDownloadToTagIDs(ids ...int) {
 	if m._FileDownloadToTag == nil {
@@ -8041,7 +8297,7 @@ func (m *FileDownloadMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *FileDownloadMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.source_type != nil {
 		fields = append(fields, filedownload.FieldSourceType)
 	}
@@ -8054,8 +8310,8 @@ func (m *FileDownloadMutation) Fields() []string {
 	if m.template != nil {
 		fields = append(fields, filedownload.FieldTemplate)
 	}
-	if m.mode != nil {
-		fields = append(fields, filedownload.FieldMode)
+	if m.perms != nil {
+		fields = append(fields, filedownload.FieldPerms)
 	}
 	if m.disabled != nil {
 		fields = append(fields, filedownload.FieldDisabled)
@@ -8065,6 +8321,9 @@ func (m *FileDownloadMutation) Fields() []string {
 	}
 	if m.abs_path != nil {
 		fields = append(fields, filedownload.FieldAbsPath)
+	}
+	if m.tags != nil {
+		fields = append(fields, filedownload.FieldTags)
 	}
 	return fields
 }
@@ -8082,14 +8341,16 @@ func (m *FileDownloadMutation) Field(name string) (ent.Value, bool) {
 		return m.Destination()
 	case filedownload.FieldTemplate:
 		return m.Template()
-	case filedownload.FieldMode:
-		return m.Mode()
+	case filedownload.FieldPerms:
+		return m.Perms()
 	case filedownload.FieldDisabled:
 		return m.Disabled()
 	case filedownload.FieldMd5:
 		return m.Md5()
 	case filedownload.FieldAbsPath:
 		return m.AbsPath()
+	case filedownload.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -8107,14 +8368,16 @@ func (m *FileDownloadMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldDestination(ctx)
 	case filedownload.FieldTemplate:
 		return m.OldTemplate(ctx)
-	case filedownload.FieldMode:
-		return m.OldMode(ctx)
+	case filedownload.FieldPerms:
+		return m.OldPerms(ctx)
 	case filedownload.FieldDisabled:
 		return m.OldDisabled(ctx)
 	case filedownload.FieldMd5:
 		return m.OldMd5(ctx)
 	case filedownload.FieldAbsPath:
 		return m.OldAbsPath(ctx)
+	case filedownload.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown FileDownload field %s", name)
 }
@@ -8152,12 +8415,12 @@ func (m *FileDownloadMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTemplate(v)
 		return nil
-	case filedownload.FieldMode:
+	case filedownload.FieldPerms:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetMode(v)
+		m.SetPerms(v)
 		return nil
 	case filedownload.FieldDisabled:
 		v, ok := value.(bool)
@@ -8179,6 +8442,13 @@ func (m *FileDownloadMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAbsPath(v)
+		return nil
+	case filedownload.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown FileDownload field %s", name)
@@ -8242,8 +8512,8 @@ func (m *FileDownloadMutation) ResetField(name string) error {
 	case filedownload.FieldTemplate:
 		m.ResetTemplate()
 		return nil
-	case filedownload.FieldMode:
-		m.ResetMode()
+	case filedownload.FieldPerms:
+		m.ResetPerms()
 		return nil
 	case filedownload.FieldDisabled:
 		m.ResetDisabled()
@@ -8253,6 +8523,9 @@ func (m *FileDownloadMutation) ResetField(name string) error {
 		return nil
 	case filedownload.FieldAbsPath:
 		m.ResetAbsPath()
+		return nil
+	case filedownload.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown FileDownload field %s", name)
@@ -8356,6 +8629,7 @@ type FileExtractMutation struct {
 	source                   *string
 	destination              *string
 	_type                    *string
+	tags                     *map[string]string
 	clearedFields            map[string]struct{}
 	_FileExtractToTag        map[int]struct{}
 	removed_FileExtractToTag map[int]struct{}
@@ -8555,6 +8829,43 @@ func (m *FileExtractMutation) ResetType() {
 	m._type = nil
 }
 
+// SetTags sets the tags field.
+func (m *FileExtractMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *FileExtractMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the FileExtract.
+// If the FileExtract object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FileExtractMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *FileExtractMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
 func (m *FileExtractMutation) AddFileExtractToTagIDs(ids ...int) {
 	if m._FileExtractToTag == nil {
@@ -8622,7 +8933,7 @@ func (m *FileExtractMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *FileExtractMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.source != nil {
 		fields = append(fields, fileextract.FieldSource)
 	}
@@ -8631,6 +8942,9 @@ func (m *FileExtractMutation) Fields() []string {
 	}
 	if m._type != nil {
 		fields = append(fields, fileextract.FieldType)
+	}
+	if m.tags != nil {
+		fields = append(fields, fileextract.FieldTags)
 	}
 	return fields
 }
@@ -8646,6 +8960,8 @@ func (m *FileExtractMutation) Field(name string) (ent.Value, bool) {
 		return m.Destination()
 	case fileextract.FieldType:
 		return m.GetType()
+	case fileextract.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -8661,6 +8977,8 @@ func (m *FileExtractMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldDestination(ctx)
 	case fileextract.FieldType:
 		return m.OldType(ctx)
+	case fileextract.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown FileExtract field %s", name)
 }
@@ -8690,6 +9008,13 @@ func (m *FileExtractMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetType(v)
+		return nil
+	case fileextract.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown FileExtract field %s", name)
@@ -8749,6 +9074,9 @@ func (m *FileExtractMutation) ResetField(name string) error {
 		return nil
 	case fileextract.FieldType:
 		m.ResetType()
+		return nil
+	case fileextract.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown FileExtract field %s", name)
@@ -8853,6 +9181,7 @@ type FindingMutation struct {
 	description             *string
 	severity                *finding.Severity
 	difficulty              *finding.Difficulty
+	tags                    *map[string]string
 	clearedFields           map[string]struct{}
 	_FindingToUser          map[int]struct{}
 	removed_FindingToUser   map[int]struct{}
@@ -9098,6 +9427,43 @@ func (m *FindingMutation) ResetDifficulty() {
 	m.difficulty = nil
 }
 
+// SetTags sets the tags field.
+func (m *FindingMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *FindingMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Finding.
+// If the Finding object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FindingMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *FindingMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddFindingToUserIDs adds the FindingToUser edge to User by ids.
 func (m *FindingMutation) AddFindingToUserIDs(ids ...int) {
 	if m._FindingToUser == nil {
@@ -9324,7 +9690,7 @@ func (m *FindingMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *FindingMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, finding.FieldName)
 	}
@@ -9336,6 +9702,9 @@ func (m *FindingMutation) Fields() []string {
 	}
 	if m.difficulty != nil {
 		fields = append(fields, finding.FieldDifficulty)
+	}
+	if m.tags != nil {
+		fields = append(fields, finding.FieldTags)
 	}
 	return fields
 }
@@ -9353,6 +9722,8 @@ func (m *FindingMutation) Field(name string) (ent.Value, bool) {
 		return m.Severity()
 	case finding.FieldDifficulty:
 		return m.Difficulty()
+	case finding.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -9370,6 +9741,8 @@ func (m *FindingMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldSeverity(ctx)
 	case finding.FieldDifficulty:
 		return m.OldDifficulty(ctx)
+	case finding.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Finding field %s", name)
 }
@@ -9406,6 +9779,13 @@ func (m *FindingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDifficulty(v)
+		return nil
+	case finding.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Finding field %s", name)
@@ -9468,6 +9848,9 @@ func (m *FindingMutation) ResetField(name string) error {
 		return nil
 	case finding.FieldDifficulty:
 		m.ResetDifficulty()
+		return nil
+	case finding.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Finding field %s", name)
@@ -9657,11 +10040,9 @@ type HostMutation struct {
 	override_password         *string
 	vars                      *map[string]string
 	user_groups               *[]string
-	depends_on                *[]string
-	scripts                   *[]string
-	commands                  *[]string
-	remote_files              *[]string
-	dns_records               *[]string
+	depends_on                *map[string]string
+	provision_steps           *[]string
+	tags                      *map[string]string
 	clearedFields             map[string]struct{}
 	_HostToDisk               map[int]struct{}
 	removed_HostToDisk        map[int]struct{}
@@ -10150,12 +10531,12 @@ func (m *HostMutation) ResetUserGroups() {
 }
 
 // SetDependsOn sets the depends_on field.
-func (m *HostMutation) SetDependsOn(s []string) {
-	m.depends_on = &s
+func (m *HostMutation) SetDependsOn(value map[string]string) {
+	m.depends_on = &value
 }
 
 // DependsOn returns the depends_on value in the mutation.
-func (m *HostMutation) DependsOn() (r []string, exists bool) {
+func (m *HostMutation) DependsOn() (r map[string]string, exists bool) {
 	v := m.depends_on
 	if v == nil {
 		return
@@ -10167,7 +10548,7 @@ func (m *HostMutation) DependsOn() (r []string, exists bool) {
 // If the Host object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldDependsOn(ctx context.Context) (v []string, err error) {
+func (m *HostMutation) OldDependsOn(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldDependsOn is allowed only on UpdateOne operations")
 	}
@@ -10199,204 +10580,91 @@ func (m *HostMutation) ResetDependsOn() {
 	delete(m.clearedFields, host.FieldDependsOn)
 }
 
-// SetScripts sets the scripts field.
-func (m *HostMutation) SetScripts(s []string) {
-	m.scripts = &s
+// SetProvisionSteps sets the provision_steps field.
+func (m *HostMutation) SetProvisionSteps(s []string) {
+	m.provision_steps = &s
 }
 
-// Scripts returns the scripts value in the mutation.
-func (m *HostMutation) Scripts() (r []string, exists bool) {
-	v := m.scripts
+// ProvisionSteps returns the provision_steps value in the mutation.
+func (m *HostMutation) ProvisionSteps() (r []string, exists bool) {
+	v := m.provision_steps
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldScripts returns the old scripts value of the Host.
+// OldProvisionSteps returns the old provision_steps value of the Host.
 // If the Host object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldScripts(ctx context.Context) (v []string, err error) {
+func (m *HostMutation) OldProvisionSteps(ctx context.Context) (v []string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldScripts is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldProvisionSteps is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldScripts requires an ID field in the mutation")
+		return v, fmt.Errorf("OldProvisionSteps requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScripts: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvisionSteps: %w", err)
 	}
-	return oldValue.Scripts, nil
+	return oldValue.ProvisionSteps, nil
 }
 
-// ClearScripts clears the value of scripts.
-func (m *HostMutation) ClearScripts() {
-	m.scripts = nil
-	m.clearedFields[host.FieldScripts] = struct{}{}
+// ClearProvisionSteps clears the value of provision_steps.
+func (m *HostMutation) ClearProvisionSteps() {
+	m.provision_steps = nil
+	m.clearedFields[host.FieldProvisionSteps] = struct{}{}
 }
 
-// ScriptsCleared returns if the field scripts was cleared in this mutation.
-func (m *HostMutation) ScriptsCleared() bool {
-	_, ok := m.clearedFields[host.FieldScripts]
+// ProvisionStepsCleared returns if the field provision_steps was cleared in this mutation.
+func (m *HostMutation) ProvisionStepsCleared() bool {
+	_, ok := m.clearedFields[host.FieldProvisionSteps]
 	return ok
 }
 
-// ResetScripts reset all changes of the "scripts" field.
-func (m *HostMutation) ResetScripts() {
-	m.scripts = nil
-	delete(m.clearedFields, host.FieldScripts)
+// ResetProvisionSteps reset all changes of the "provision_steps" field.
+func (m *HostMutation) ResetProvisionSteps() {
+	m.provision_steps = nil
+	delete(m.clearedFields, host.FieldProvisionSteps)
 }
 
-// SetCommands sets the commands field.
-func (m *HostMutation) SetCommands(s []string) {
-	m.commands = &s
+// SetTags sets the tags field.
+func (m *HostMutation) SetTags(value map[string]string) {
+	m.tags = &value
 }
 
-// Commands returns the commands value in the mutation.
-func (m *HostMutation) Commands() (r []string, exists bool) {
-	v := m.commands
+// Tags returns the tags value in the mutation.
+func (m *HostMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCommands returns the old commands value of the Host.
+// OldTags returns the old tags value of the Host.
 // If the Host object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldCommands(ctx context.Context) (v []string, err error) {
+func (m *HostMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCommands is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCommands requires an ID field in the mutation")
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCommands: %w", err)
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
 	}
-	return oldValue.Commands, nil
+	return oldValue.Tags, nil
 }
 
-// ClearCommands clears the value of commands.
-func (m *HostMutation) ClearCommands() {
-	m.commands = nil
-	m.clearedFields[host.FieldCommands] = struct{}{}
-}
-
-// CommandsCleared returns if the field commands was cleared in this mutation.
-func (m *HostMutation) CommandsCleared() bool {
-	_, ok := m.clearedFields[host.FieldCommands]
-	return ok
-}
-
-// ResetCommands reset all changes of the "commands" field.
-func (m *HostMutation) ResetCommands() {
-	m.commands = nil
-	delete(m.clearedFields, host.FieldCommands)
-}
-
-// SetRemoteFiles sets the remote_files field.
-func (m *HostMutation) SetRemoteFiles(s []string) {
-	m.remote_files = &s
-}
-
-// RemoteFiles returns the remote_files value in the mutation.
-func (m *HostMutation) RemoteFiles() (r []string, exists bool) {
-	v := m.remote_files
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRemoteFiles returns the old remote_files value of the Host.
-// If the Host object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldRemoteFiles(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldRemoteFiles is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldRemoteFiles requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRemoteFiles: %w", err)
-	}
-	return oldValue.RemoteFiles, nil
-}
-
-// ClearRemoteFiles clears the value of remote_files.
-func (m *HostMutation) ClearRemoteFiles() {
-	m.remote_files = nil
-	m.clearedFields[host.FieldRemoteFiles] = struct{}{}
-}
-
-// RemoteFilesCleared returns if the field remote_files was cleared in this mutation.
-func (m *HostMutation) RemoteFilesCleared() bool {
-	_, ok := m.clearedFields[host.FieldRemoteFiles]
-	return ok
-}
-
-// ResetRemoteFiles reset all changes of the "remote_files" field.
-func (m *HostMutation) ResetRemoteFiles() {
-	m.remote_files = nil
-	delete(m.clearedFields, host.FieldRemoteFiles)
-}
-
-// SetDNSRecords sets the dns_records field.
-func (m *HostMutation) SetDNSRecords(s []string) {
-	m.dns_records = &s
-}
-
-// DNSRecords returns the dns_records value in the mutation.
-func (m *HostMutation) DNSRecords() (r []string, exists bool) {
-	v := m.dns_records
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDNSRecords returns the old dns_records value of the Host.
-// If the Host object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *HostMutation) OldDNSRecords(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldDNSRecords is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldDNSRecords requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDNSRecords: %w", err)
-	}
-	return oldValue.DNSRecords, nil
-}
-
-// ClearDNSRecords clears the value of dns_records.
-func (m *HostMutation) ClearDNSRecords() {
-	m.dns_records = nil
-	m.clearedFields[host.FieldDNSRecords] = struct{}{}
-}
-
-// DNSRecordsCleared returns if the field dns_records was cleared in this mutation.
-func (m *HostMutation) DNSRecordsCleared() bool {
-	_, ok := m.clearedFields[host.FieldDNSRecords]
-	return ok
-}
-
-// ResetDNSRecords reset all changes of the "dns_records" field.
-func (m *HostMutation) ResetDNSRecords() {
-	m.dns_records = nil
-	delete(m.clearedFields, host.FieldDNSRecords)
+// ResetTags reset all changes of the "tags" field.
+func (m *HostMutation) ResetTags() {
+	m.tags = nil
 }
 
 // AddHostToDiskIDs adds the HostToDisk edge to Disk by ids.
@@ -10625,7 +10893,7 @@ func (m *HostMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *HostMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 13)
 	if m.hostname != nil {
 		fields = append(fields, host.FieldHostname)
 	}
@@ -10659,17 +10927,11 @@ func (m *HostMutation) Fields() []string {
 	if m.depends_on != nil {
 		fields = append(fields, host.FieldDependsOn)
 	}
-	if m.scripts != nil {
-		fields = append(fields, host.FieldScripts)
+	if m.provision_steps != nil {
+		fields = append(fields, host.FieldProvisionSteps)
 	}
-	if m.commands != nil {
-		fields = append(fields, host.FieldCommands)
-	}
-	if m.remote_files != nil {
-		fields = append(fields, host.FieldRemoteFiles)
-	}
-	if m.dns_records != nil {
-		fields = append(fields, host.FieldDNSRecords)
+	if m.tags != nil {
+		fields = append(fields, host.FieldTags)
 	}
 	return fields
 }
@@ -10701,14 +10963,10 @@ func (m *HostMutation) Field(name string) (ent.Value, bool) {
 		return m.UserGroups()
 	case host.FieldDependsOn:
 		return m.DependsOn()
-	case host.FieldScripts:
-		return m.Scripts()
-	case host.FieldCommands:
-		return m.Commands()
-	case host.FieldRemoteFiles:
-		return m.RemoteFiles()
-	case host.FieldDNSRecords:
-		return m.DNSRecords()
+	case host.FieldProvisionSteps:
+		return m.ProvisionSteps()
+	case host.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -10740,14 +10998,10 @@ func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUserGroups(ctx)
 	case host.FieldDependsOn:
 		return m.OldDependsOn(ctx)
-	case host.FieldScripts:
-		return m.OldScripts(ctx)
-	case host.FieldCommands:
-		return m.OldCommands(ctx)
-	case host.FieldRemoteFiles:
-		return m.OldRemoteFiles(ctx)
-	case host.FieldDNSRecords:
-		return m.OldDNSRecords(ctx)
+	case host.FieldProvisionSteps:
+		return m.OldProvisionSteps(ctx)
+	case host.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Host field %s", name)
 }
@@ -10828,39 +11082,25 @@ func (m *HostMutation) SetField(name string, value ent.Value) error {
 		m.SetUserGroups(v)
 		return nil
 	case host.FieldDependsOn:
-		v, ok := value.([]string)
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDependsOn(v)
 		return nil
-	case host.FieldScripts:
+	case host.FieldProvisionSteps:
 		v, ok := value.([]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetScripts(v)
+		m.SetProvisionSteps(v)
 		return nil
-	case host.FieldCommands:
-		v, ok := value.([]string)
+	case host.FieldTags:
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCommands(v)
-		return nil
-	case host.FieldRemoteFiles:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRemoteFiles(v)
-		return nil
-	case host.FieldDNSRecords:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDNSRecords(v)
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Host field %s", name)
@@ -10910,17 +11150,8 @@ func (m *HostMutation) ClearedFields() []string {
 	if m.FieldCleared(host.FieldDependsOn) {
 		fields = append(fields, host.FieldDependsOn)
 	}
-	if m.FieldCleared(host.FieldScripts) {
-		fields = append(fields, host.FieldScripts)
-	}
-	if m.FieldCleared(host.FieldCommands) {
-		fields = append(fields, host.FieldCommands)
-	}
-	if m.FieldCleared(host.FieldRemoteFiles) {
-		fields = append(fields, host.FieldRemoteFiles)
-	}
-	if m.FieldCleared(host.FieldDNSRecords) {
-		fields = append(fields, host.FieldDNSRecords)
+	if m.FieldCleared(host.FieldProvisionSteps) {
+		fields = append(fields, host.FieldProvisionSteps)
 	}
 	return fields
 }
@@ -10939,17 +11170,8 @@ func (m *HostMutation) ClearField(name string) error {
 	case host.FieldDependsOn:
 		m.ClearDependsOn()
 		return nil
-	case host.FieldScripts:
-		m.ClearScripts()
-		return nil
-	case host.FieldCommands:
-		m.ClearCommands()
-		return nil
-	case host.FieldRemoteFiles:
-		m.ClearRemoteFiles()
-		return nil
-	case host.FieldDNSRecords:
-		m.ClearDNSRecords()
+	case host.FieldProvisionSteps:
+		m.ClearProvisionSteps()
 		return nil
 	}
 	return fmt.Errorf("unknown Host nullable field %s", name)
@@ -10993,17 +11215,11 @@ func (m *HostMutation) ResetField(name string) error {
 	case host.FieldDependsOn:
 		m.ResetDependsOn()
 		return nil
-	case host.FieldScripts:
-		m.ResetScripts()
+	case host.FieldProvisionSteps:
+		m.ResetProvisionSteps()
 		return nil
-	case host.FieldCommands:
-		m.ResetCommands()
-		return nil
-	case host.FieldRemoteFiles:
-		m.ResetRemoteFiles()
-		return nil
-	case host.FieldDNSRecords:
-		m.ResetDNSRecords()
+	case host.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Host field %s", name)
@@ -11709,6 +11925,7 @@ type NetworkMutation struct {
 	cidr                         *string
 	vdi_visible                  *bool
 	vars                         *map[string]string
+	tags                         *map[string]string
 	clearedFields                map[string]struct{}
 	_NetworkToTag                map[int]struct{}
 	removed_NetworkToTag         map[int]struct{}
@@ -11948,6 +12165,43 @@ func (m *NetworkMutation) ResetVars() {
 	m.vars = nil
 }
 
+// SetTags sets the tags field.
+func (m *NetworkMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *NetworkMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Network.
+// If the Network object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *NetworkMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *NetworkMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
 func (m *NetworkMutation) AddNetworkToTagIDs(ids ...int) {
 	if m._NetworkToTag == nil {
@@ -12068,7 +12322,7 @@ func (m *NetworkMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *NetworkMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, network.FieldName)
 	}
@@ -12080,6 +12334,9 @@ func (m *NetworkMutation) Fields() []string {
 	}
 	if m.vars != nil {
 		fields = append(fields, network.FieldVars)
+	}
+	if m.tags != nil {
+		fields = append(fields, network.FieldTags)
 	}
 	return fields
 }
@@ -12097,6 +12354,8 @@ func (m *NetworkMutation) Field(name string) (ent.Value, bool) {
 		return m.VdiVisible()
 	case network.FieldVars:
 		return m.Vars()
+	case network.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -12114,6 +12373,8 @@ func (m *NetworkMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldVdiVisible(ctx)
 	case network.FieldVars:
 		return m.OldVars(ctx)
+	case network.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Network field %s", name)
 }
@@ -12150,6 +12411,13 @@ func (m *NetworkMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVars(v)
+		return nil
+	case network.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Network field %s", name)
@@ -12212,6 +12480,9 @@ func (m *NetworkMutation) ResetField(name string) error {
 		return nil
 	case network.FieldVars:
 		m.ResetVars()
+		return nil
+	case network.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Network field %s", name)
@@ -14007,9 +14278,15 @@ type ProvisioningStepMutation struct {
 	_ProvisioningStepToDNSRecord              map[int]struct{}
 	removed_ProvisioningStepToDNSRecord       map[int]struct{}
 	cleared_ProvisioningStepToDNSRecord       bool
-	_ProvisioningStepToRemoteFile             map[int]struct{}
-	removed_ProvisioningStepToRemoteFile      map[int]struct{}
-	cleared_ProvisioningStepToRemoteFile      bool
+	_ProvisioningStepToFileDelete             map[int]struct{}
+	removed_ProvisioningStepToFileDelete      map[int]struct{}
+	cleared_ProvisioningStepToFileDelete      bool
+	_ProvisioningStepToFileDownload           map[int]struct{}
+	removed_ProvisioningStepToFileDownload    map[int]struct{}
+	cleared_ProvisioningStepToFileDownload    bool
+	_ProvisioningStepToFileExtract            map[int]struct{}
+	removed_ProvisioningStepToFileExtract     map[int]struct{}
+	cleared_ProvisioningStepToFileExtract     bool
 	done                                      bool
 	oldValue                                  func(context.Context) (*ProvisioningStep, error)
 	predicates                                []predicate.ProvisioningStep
@@ -14506,57 +14783,163 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToDNSRecord() {
 	m.removed_ProvisioningStepToDNSRecord = nil
 }
 
-// AddProvisioningStepToRemoteFileIDs adds the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToRemoteFileIDs(ids ...int) {
-	if m._ProvisioningStepToRemoteFile == nil {
-		m._ProvisioningStepToRemoteFile = make(map[int]struct{})
+// AddProvisioningStepToFileDeleteIDs adds the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToFileDeleteIDs(ids ...int) {
+	if m._ProvisioningStepToFileDelete == nil {
+		m._ProvisioningStepToFileDelete = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._ProvisioningStepToRemoteFile[ids[i]] = struct{}{}
+		m._ProvisioningStepToFileDelete[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisioningStepToRemoteFile clears the ProvisioningStepToRemoteFile edge to RemoteFile.
-func (m *ProvisioningStepMutation) ClearProvisioningStepToRemoteFile() {
-	m.cleared_ProvisioningStepToRemoteFile = true
+// ClearProvisioningStepToFileDelete clears the ProvisioningStepToFileDelete edge to FileDelete.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToFileDelete() {
+	m.cleared_ProvisioningStepToFileDelete = true
 }
 
-// ProvisioningStepToRemoteFileCleared returns if the edge ProvisioningStepToRemoteFile was cleared.
-func (m *ProvisioningStepMutation) ProvisioningStepToRemoteFileCleared() bool {
-	return m.cleared_ProvisioningStepToRemoteFile
+// ProvisioningStepToFileDeleteCleared returns if the edge ProvisioningStepToFileDelete was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteCleared() bool {
+	return m.cleared_ProvisioningStepToFileDelete
 }
 
-// RemoveProvisioningStepToRemoteFileIDs removes the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToRemoteFileIDs(ids ...int) {
-	if m.removed_ProvisioningStepToRemoteFile == nil {
-		m.removed_ProvisioningStepToRemoteFile = make(map[int]struct{})
+// RemoveProvisioningStepToFileDeleteIDs removes the ProvisioningStepToFileDelete edge to FileDelete by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDeleteIDs(ids ...int) {
+	if m.removed_ProvisioningStepToFileDelete == nil {
+		m.removed_ProvisioningStepToFileDelete = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removed_ProvisioningStepToRemoteFile[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToFileDelete[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProvisioningStepToRemoteFile returns the removed ids of ProvisioningStepToRemoteFile.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToRemoteFileIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToRemoteFile {
+// RemovedProvisioningStepToFileDelete returns the removed ids of ProvisioningStepToFileDelete.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDeleteIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToFileDelete {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProvisioningStepToRemoteFileIDs returns the ProvisioningStepToRemoteFile ids in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToRemoteFileIDs() (ids []int) {
-	for id := range m._ProvisioningStepToRemoteFile {
+// ProvisioningStepToFileDeleteIDs returns the ProvisioningStepToFileDelete ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int) {
+	for id := range m._ProvisioningStepToFileDelete {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProvisioningStepToRemoteFile reset all changes of the "ProvisioningStepToRemoteFile" edge.
-func (m *ProvisioningStepMutation) ResetProvisioningStepToRemoteFile() {
-	m._ProvisioningStepToRemoteFile = nil
-	m.cleared_ProvisioningStepToRemoteFile = false
-	m.removed_ProvisioningStepToRemoteFile = nil
+// ResetProvisioningStepToFileDelete reset all changes of the "ProvisioningStepToFileDelete" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDelete() {
+	m._ProvisioningStepToFileDelete = nil
+	m.cleared_ProvisioningStepToFileDelete = false
+	m.removed_ProvisioningStepToFileDelete = nil
+}
+
+// AddProvisioningStepToFileDownloadIDs adds the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToFileDownloadIDs(ids ...int) {
+	if m._ProvisioningStepToFileDownload == nil {
+		m._ProvisioningStepToFileDownload = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisioningStepToFileDownload[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisioningStepToFileDownload clears the ProvisioningStepToFileDownload edge to FileDownload.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToFileDownload() {
+	m.cleared_ProvisioningStepToFileDownload = true
+}
+
+// ProvisioningStepToFileDownloadCleared returns if the edge ProvisioningStepToFileDownload was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadCleared() bool {
+	return m.cleared_ProvisioningStepToFileDownload
+}
+
+// RemoveProvisioningStepToFileDownloadIDs removes the ProvisioningStepToFileDownload edge to FileDownload by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDownloadIDs(ids ...int) {
+	if m.removed_ProvisioningStepToFileDownload == nil {
+		m.removed_ProvisioningStepToFileDownload = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToFileDownload[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToFileDownload returns the removed ids of ProvisioningStepToFileDownload.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDownloadIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToFileDownload {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisioningStepToFileDownloadIDs returns the ProvisioningStepToFileDownload ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []int) {
+	for id := range m._ProvisioningStepToFileDownload {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisioningStepToFileDownload reset all changes of the "ProvisioningStepToFileDownload" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDownload() {
+	m._ProvisioningStepToFileDownload = nil
+	m.cleared_ProvisioningStepToFileDownload = false
+	m.removed_ProvisioningStepToFileDownload = nil
+}
+
+// AddProvisioningStepToFileExtractIDs adds the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToFileExtractIDs(ids ...int) {
+	if m._ProvisioningStepToFileExtract == nil {
+		m._ProvisioningStepToFileExtract = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisioningStepToFileExtract[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisioningStepToFileExtract clears the ProvisioningStepToFileExtract edge to FileExtract.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToFileExtract() {
+	m.cleared_ProvisioningStepToFileExtract = true
+}
+
+// ProvisioningStepToFileExtractCleared returns if the edge ProvisioningStepToFileExtract was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractCleared() bool {
+	return m.cleared_ProvisioningStepToFileExtract
+}
+
+// RemoveProvisioningStepToFileExtractIDs removes the ProvisioningStepToFileExtract edge to FileExtract by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileExtractIDs(ids ...int) {
+	if m.removed_ProvisioningStepToFileExtract == nil {
+		m.removed_ProvisioningStepToFileExtract = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToFileExtract[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToFileExtract returns the removed ids of ProvisioningStepToFileExtract.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileExtractIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToFileExtract {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisioningStepToFileExtractIDs returns the ProvisioningStepToFileExtract ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int) {
+	for id := range m._ProvisioningStepToFileExtract {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisioningStepToFileExtract reset all changes of the "ProvisioningStepToFileExtract" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToFileExtract() {
+	m._ProvisioningStepToFileExtract = nil
+	m.cleared_ProvisioningStepToFileExtract = false
+	m.removed_ProvisioningStepToFileExtract = nil
 }
 
 // Op returns the operation name.
@@ -14706,7 +15089,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m._ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -14725,8 +15108,14 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	if m._ProvisioningStepToDNSRecord != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
 	}
-	if m._ProvisioningStepToRemoteFile != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
+	if m._ProvisioningStepToFileDelete != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDelete)
+	}
+	if m._ProvisioningStepToFileDownload != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDownload)
+	}
+	if m._ProvisioningStepToFileExtract != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
 	return edges
 }
@@ -14771,9 +15160,21 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeProvisioningStepToRemoteFile:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToRemoteFile))
-		for id := range m._ProvisioningStepToRemoteFile {
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDelete))
+		for id := range m._ProvisioningStepToFileDelete {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDownload))
+		for id := range m._ProvisioningStepToFileDownload {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileExtract))
+		for id := range m._ProvisioningStepToFileExtract {
 			ids = append(ids, id)
 		}
 		return ids
@@ -14784,7 +15185,7 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.removed_ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -14803,8 +15204,14 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 	if m.removed_ProvisioningStepToDNSRecord != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
 	}
-	if m.removed_ProvisioningStepToRemoteFile != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
+	if m.removed_ProvisioningStepToFileDelete != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDelete)
+	}
+	if m.removed_ProvisioningStepToFileDownload != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDownload)
+	}
+	if m.removed_ProvisioningStepToFileExtract != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
 	return edges
 }
@@ -14849,9 +15256,21 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeProvisioningStepToRemoteFile:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToRemoteFile))
-		for id := range m.removed_ProvisioningStepToRemoteFile {
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDelete))
+		for id := range m.removed_ProvisioningStepToFileDelete {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDownload))
+		for id := range m.removed_ProvisioningStepToFileDownload {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileExtract))
+		for id := range m.removed_ProvisioningStepToFileExtract {
 			ids = append(ids, id)
 		}
 		return ids
@@ -14862,7 +15281,7 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.cleared_ProvisioningStepToTag {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -14881,8 +15300,14 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	if m.cleared_ProvisioningStepToDNSRecord {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
 	}
-	if m.cleared_ProvisioningStepToRemoteFile {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
+	if m.cleared_ProvisioningStepToFileDelete {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDelete)
+	}
+	if m.cleared_ProvisioningStepToFileDownload {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDownload)
+	}
+	if m.cleared_ProvisioningStepToFileExtract {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
 	return edges
 }
@@ -14903,8 +15328,12 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisioningStepToCommand
 	case provisioningstep.EdgeProvisioningStepToDNSRecord:
 		return m.cleared_ProvisioningStepToDNSRecord
-	case provisioningstep.EdgeProvisioningStepToRemoteFile:
-		return m.cleared_ProvisioningStepToRemoteFile
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		return m.cleared_ProvisioningStepToFileDelete
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		return m.cleared_ProvisioningStepToFileDownload
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		return m.cleared_ProvisioningStepToFileExtract
 	}
 	return false
 }
@@ -14940,892 +15369,17 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	case provisioningstep.EdgeProvisioningStepToDNSRecord:
 		m.ResetProvisioningStepToDNSRecord()
 		return nil
-	case provisioningstep.EdgeProvisioningStepToRemoteFile:
-		m.ResetProvisioningStepToRemoteFile()
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		m.ResetProvisioningStepToFileDelete()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		m.ResetProvisioningStepToFileDownload()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		m.ResetProvisioningStepToFileExtract()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
-}
-
-// RemoteFileMutation represents an operation that mutate the RemoteFiles
-// nodes in the graph.
-type RemoteFileMutation struct {
-	config
-	op                      Op
-	typ                     string
-	id                      *int
-	source_type             *string
-	source                  *string
-	destination             *string
-	vars                    *map[string]string
-	template                *bool
-	perms                   *string
-	disabled                *bool
-	md5                     *string
-	abs_path                *string
-	ext                     *string
-	clearedFields           map[string]struct{}
-	_RemoteFileToTag        map[int]struct{}
-	removed_RemoteFileToTag map[int]struct{}
-	cleared_RemoteFileToTag bool
-	done                    bool
-	oldValue                func(context.Context) (*RemoteFile, error)
-	predicates              []predicate.RemoteFile
-}
-
-var _ ent.Mutation = (*RemoteFileMutation)(nil)
-
-// remotefileOption allows to manage the mutation configuration using functional options.
-type remotefileOption func(*RemoteFileMutation)
-
-// newRemoteFileMutation creates new mutation for RemoteFile.
-func newRemoteFileMutation(c config, op Op, opts ...remotefileOption) *RemoteFileMutation {
-	m := &RemoteFileMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeRemoteFile,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withRemoteFileID sets the id field of the mutation.
-func withRemoteFileID(id int) remotefileOption {
-	return func(m *RemoteFileMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *RemoteFile
-		)
-		m.oldValue = func(ctx context.Context) (*RemoteFile, error) {
-			once.Do(func() {
-				if m.done {
-					err = fmt.Errorf("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().RemoteFile.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withRemoteFile sets the old RemoteFile of the mutation.
-func withRemoteFile(node *RemoteFile) remotefileOption {
-	return func(m *RemoteFileMutation) {
-		m.oldValue = func(context.Context) (*RemoteFile, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m RemoteFileMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m RemoteFileMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the id value in the mutation. Note that, the id
-// is available only if it was provided to the builder.
-func (m *RemoteFileMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// SetSourceType sets the source_type field.
-func (m *RemoteFileMutation) SetSourceType(s string) {
-	m.source_type = &s
-}
-
-// SourceType returns the source_type value in the mutation.
-func (m *RemoteFileMutation) SourceType() (r string, exists bool) {
-	v := m.source_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSourceType returns the old source_type value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldSourceType(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSourceType is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSourceType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceType: %w", err)
-	}
-	return oldValue.SourceType, nil
-}
-
-// ResetSourceType reset all changes of the "source_type" field.
-func (m *RemoteFileMutation) ResetSourceType() {
-	m.source_type = nil
-}
-
-// SetSource sets the source field.
-func (m *RemoteFileMutation) SetSource(s string) {
-	m.source = &s
-}
-
-// Source returns the source value in the mutation.
-func (m *RemoteFileMutation) Source() (r string, exists bool) {
-	v := m.source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSource returns the old source value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSource is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
-	}
-	return oldValue.Source, nil
-}
-
-// ResetSource reset all changes of the "source" field.
-func (m *RemoteFileMutation) ResetSource() {
-	m.source = nil
-}
-
-// SetDestination sets the destination field.
-func (m *RemoteFileMutation) SetDestination(s string) {
-	m.destination = &s
-}
-
-// Destination returns the destination value in the mutation.
-func (m *RemoteFileMutation) Destination() (r string, exists bool) {
-	v := m.destination
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDestination returns the old destination value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldDestination(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldDestination is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldDestination requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDestination: %w", err)
-	}
-	return oldValue.Destination, nil
-}
-
-// ResetDestination reset all changes of the "destination" field.
-func (m *RemoteFileMutation) ResetDestination() {
-	m.destination = nil
-}
-
-// SetVars sets the vars field.
-func (m *RemoteFileMutation) SetVars(value map[string]string) {
-	m.vars = &value
-}
-
-// Vars returns the vars value in the mutation.
-func (m *RemoteFileMutation) Vars() (r map[string]string, exists bool) {
-	v := m.vars
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVars returns the old vars value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldVars is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldVars requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVars: %w", err)
-	}
-	return oldValue.Vars, nil
-}
-
-// ResetVars reset all changes of the "vars" field.
-func (m *RemoteFileMutation) ResetVars() {
-	m.vars = nil
-}
-
-// SetTemplate sets the template field.
-func (m *RemoteFileMutation) SetTemplate(b bool) {
-	m.template = &b
-}
-
-// Template returns the template value in the mutation.
-func (m *RemoteFileMutation) Template() (r bool, exists bool) {
-	v := m.template
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTemplate returns the old template value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldTemplate(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldTemplate is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldTemplate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTemplate: %w", err)
-	}
-	return oldValue.Template, nil
-}
-
-// ResetTemplate reset all changes of the "template" field.
-func (m *RemoteFileMutation) ResetTemplate() {
-	m.template = nil
-}
-
-// SetPerms sets the perms field.
-func (m *RemoteFileMutation) SetPerms(s string) {
-	m.perms = &s
-}
-
-// Perms returns the perms value in the mutation.
-func (m *RemoteFileMutation) Perms() (r string, exists bool) {
-	v := m.perms
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPerms returns the old perms value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldPerms(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldPerms is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldPerms requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPerms: %w", err)
-	}
-	return oldValue.Perms, nil
-}
-
-// ResetPerms reset all changes of the "perms" field.
-func (m *RemoteFileMutation) ResetPerms() {
-	m.perms = nil
-}
-
-// SetDisabled sets the disabled field.
-func (m *RemoteFileMutation) SetDisabled(b bool) {
-	m.disabled = &b
-}
-
-// Disabled returns the disabled value in the mutation.
-func (m *RemoteFileMutation) Disabled() (r bool, exists bool) {
-	v := m.disabled
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDisabled returns the old disabled value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldDisabled(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldDisabled is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldDisabled requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDisabled: %w", err)
-	}
-	return oldValue.Disabled, nil
-}
-
-// ResetDisabled reset all changes of the "disabled" field.
-func (m *RemoteFileMutation) ResetDisabled() {
-	m.disabled = nil
-}
-
-// SetMd5 sets the md5 field.
-func (m *RemoteFileMutation) SetMd5(s string) {
-	m.md5 = &s
-}
-
-// Md5 returns the md5 value in the mutation.
-func (m *RemoteFileMutation) Md5() (r string, exists bool) {
-	v := m.md5
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMd5 returns the old md5 value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldMd5(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMd5 is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMd5 requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMd5: %w", err)
-	}
-	return oldValue.Md5, nil
-}
-
-// ResetMd5 reset all changes of the "md5" field.
-func (m *RemoteFileMutation) ResetMd5() {
-	m.md5 = nil
-}
-
-// SetAbsPath sets the abs_path field.
-func (m *RemoteFileMutation) SetAbsPath(s string) {
-	m.abs_path = &s
-}
-
-// AbsPath returns the abs_path value in the mutation.
-func (m *RemoteFileMutation) AbsPath() (r string, exists bool) {
-	v := m.abs_path
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAbsPath returns the old abs_path value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldAbsPath(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldAbsPath is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldAbsPath requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAbsPath: %w", err)
-	}
-	return oldValue.AbsPath, nil
-}
-
-// ResetAbsPath reset all changes of the "abs_path" field.
-func (m *RemoteFileMutation) ResetAbsPath() {
-	m.abs_path = nil
-}
-
-// SetExt sets the ext field.
-func (m *RemoteFileMutation) SetExt(s string) {
-	m.ext = &s
-}
-
-// Ext returns the ext value in the mutation.
-func (m *RemoteFileMutation) Ext() (r string, exists bool) {
-	v := m.ext
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExt returns the old ext value of the RemoteFile.
-// If the RemoteFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *RemoteFileMutation) OldExt(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldExt is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldExt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExt: %w", err)
-	}
-	return oldValue.Ext, nil
-}
-
-// ResetExt reset all changes of the "ext" field.
-func (m *RemoteFileMutation) ResetExt() {
-	m.ext = nil
-}
-
-// AddRemoteFileToTagIDs adds the RemoteFileToTag edge to Tag by ids.
-func (m *RemoteFileMutation) AddRemoteFileToTagIDs(ids ...int) {
-	if m._RemoteFileToTag == nil {
-		m._RemoteFileToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._RemoteFileToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRemoteFileToTag clears the RemoteFileToTag edge to Tag.
-func (m *RemoteFileMutation) ClearRemoteFileToTag() {
-	m.cleared_RemoteFileToTag = true
-}
-
-// RemoteFileToTagCleared returns if the edge RemoteFileToTag was cleared.
-func (m *RemoteFileMutation) RemoteFileToTagCleared() bool {
-	return m.cleared_RemoteFileToTag
-}
-
-// RemoveRemoteFileToTagIDs removes the RemoteFileToTag edge to Tag by ids.
-func (m *RemoteFileMutation) RemoveRemoteFileToTagIDs(ids ...int) {
-	if m.removed_RemoteFileToTag == nil {
-		m.removed_RemoteFileToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_RemoteFileToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRemoteFileToTag returns the removed ids of RemoteFileToTag.
-func (m *RemoteFileMutation) RemovedRemoteFileToTagIDs() (ids []int) {
-	for id := range m.removed_RemoteFileToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RemoteFileToTagIDs returns the RemoteFileToTag ids in the mutation.
-func (m *RemoteFileMutation) RemoteFileToTagIDs() (ids []int) {
-	for id := range m._RemoteFileToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRemoteFileToTag reset all changes of the "RemoteFileToTag" edge.
-func (m *RemoteFileMutation) ResetRemoteFileToTag() {
-	m._RemoteFileToTag = nil
-	m.cleared_RemoteFileToTag = false
-	m.removed_RemoteFileToTag = nil
-}
-
-// Op returns the operation name.
-func (m *RemoteFileMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (RemoteFile).
-func (m *RemoteFileMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during
-// this mutation. Note that, in order to get all numeric
-// fields that were in/decremented, call AddedFields().
-func (m *RemoteFileMutation) Fields() []string {
-	fields := make([]string, 0, 10)
-	if m.source_type != nil {
-		fields = append(fields, remotefile.FieldSourceType)
-	}
-	if m.source != nil {
-		fields = append(fields, remotefile.FieldSource)
-	}
-	if m.destination != nil {
-		fields = append(fields, remotefile.FieldDestination)
-	}
-	if m.vars != nil {
-		fields = append(fields, remotefile.FieldVars)
-	}
-	if m.template != nil {
-		fields = append(fields, remotefile.FieldTemplate)
-	}
-	if m.perms != nil {
-		fields = append(fields, remotefile.FieldPerms)
-	}
-	if m.disabled != nil {
-		fields = append(fields, remotefile.FieldDisabled)
-	}
-	if m.md5 != nil {
-		fields = append(fields, remotefile.FieldMd5)
-	}
-	if m.abs_path != nil {
-		fields = append(fields, remotefile.FieldAbsPath)
-	}
-	if m.ext != nil {
-		fields = append(fields, remotefile.FieldExt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name.
-// The second boolean value indicates that this field was
-// not set, or was not define in the schema.
-func (m *RemoteFileMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case remotefile.FieldSourceType:
-		return m.SourceType()
-	case remotefile.FieldSource:
-		return m.Source()
-	case remotefile.FieldDestination:
-		return m.Destination()
-	case remotefile.FieldVars:
-		return m.Vars()
-	case remotefile.FieldTemplate:
-		return m.Template()
-	case remotefile.FieldPerms:
-		return m.Perms()
-	case remotefile.FieldDisabled:
-		return m.Disabled()
-	case remotefile.FieldMd5:
-		return m.Md5()
-	case remotefile.FieldAbsPath:
-		return m.AbsPath()
-	case remotefile.FieldExt:
-		return m.Ext()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database.
-// An error is returned if the mutation operation is not UpdateOne,
-// or the query to the database was failed.
-func (m *RemoteFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case remotefile.FieldSourceType:
-		return m.OldSourceType(ctx)
-	case remotefile.FieldSource:
-		return m.OldSource(ctx)
-	case remotefile.FieldDestination:
-		return m.OldDestination(ctx)
-	case remotefile.FieldVars:
-		return m.OldVars(ctx)
-	case remotefile.FieldTemplate:
-		return m.OldTemplate(ctx)
-	case remotefile.FieldPerms:
-		return m.OldPerms(ctx)
-	case remotefile.FieldDisabled:
-		return m.OldDisabled(ctx)
-	case remotefile.FieldMd5:
-		return m.OldMd5(ctx)
-	case remotefile.FieldAbsPath:
-		return m.OldAbsPath(ctx)
-	case remotefile.FieldExt:
-		return m.OldExt(ctx)
-	}
-	return nil, fmt.Errorf("unknown RemoteFile field %s", name)
-}
-
-// SetField sets the value for the given name. It returns an
-// error if the field is not defined in the schema, or if the
-// type mismatch the field type.
-func (m *RemoteFileMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case remotefile.FieldSourceType:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSourceType(v)
-		return nil
-	case remotefile.FieldSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSource(v)
-		return nil
-	case remotefile.FieldDestination:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDestination(v)
-		return nil
-	case remotefile.FieldVars:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVars(v)
-		return nil
-	case remotefile.FieldTemplate:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTemplate(v)
-		return nil
-	case remotefile.FieldPerms:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPerms(v)
-		return nil
-	case remotefile.FieldDisabled:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDisabled(v)
-		return nil
-	case remotefile.FieldMd5:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMd5(v)
-		return nil
-	case remotefile.FieldAbsPath:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAbsPath(v)
-		return nil
-	case remotefile.FieldExt:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown RemoteFile field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented
-// or decremented during this mutation.
-func (m *RemoteFileMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was in/decremented
-// from a field with the given name. The second value indicates
-// that this field was not set, or was not define in the schema.
-func (m *RemoteFileMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value for the given name. It returns an
-// error if the field is not defined in the schema, or if the
-// type mismatch the field type.
-func (m *RemoteFileMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown RemoteFile numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared
-// during this mutation.
-func (m *RemoteFileMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicates if this field was
-// cleared in this mutation.
-func (m *RemoteFileMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value for the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *RemoteFileMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown RemoteFile nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation regarding the
-// given field name. It returns an error if the field is not
-// defined in the schema.
-func (m *RemoteFileMutation) ResetField(name string) error {
-	switch name {
-	case remotefile.FieldSourceType:
-		m.ResetSourceType()
-		return nil
-	case remotefile.FieldSource:
-		m.ResetSource()
-		return nil
-	case remotefile.FieldDestination:
-		m.ResetDestination()
-		return nil
-	case remotefile.FieldVars:
-		m.ResetVars()
-		return nil
-	case remotefile.FieldTemplate:
-		m.ResetTemplate()
-		return nil
-	case remotefile.FieldPerms:
-		m.ResetPerms()
-		return nil
-	case remotefile.FieldDisabled:
-		m.ResetDisabled()
-		return nil
-	case remotefile.FieldMd5:
-		m.ResetMd5()
-		return nil
-	case remotefile.FieldAbsPath:
-		m.ResetAbsPath()
-		return nil
-	case remotefile.FieldExt:
-		m.ResetExt()
-		return nil
-	}
-	return fmt.Errorf("unknown RemoteFile field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this
-// mutation.
-func (m *RemoteFileMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m._RemoteFileToTag != nil {
-		edges = append(edges, remotefile.EdgeRemoteFileToTag)
-	}
-	return edges
-}
-
-// AddedIDs returns all ids (to other nodes) that were added for
-// the given edge name.
-func (m *RemoteFileMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case remotefile.EdgeRemoteFileToTag:
-		ids := make([]ent.Value, 0, len(m._RemoteFileToTag))
-		for id := range m._RemoteFileToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this
-// mutation.
-func (m *RemoteFileMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removed_RemoteFileToTag != nil {
-		edges = append(edges, remotefile.EdgeRemoteFileToTag)
-	}
-	return edges
-}
-
-// RemovedIDs returns all ids (to other nodes) that were removed for
-// the given edge name.
-func (m *RemoteFileMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case remotefile.EdgeRemoteFileToTag:
-		ids := make([]ent.Value, 0, len(m.removed_RemoteFileToTag))
-		for id := range m.removed_RemoteFileToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this
-// mutation.
-func (m *RemoteFileMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.cleared_RemoteFileToTag {
-		edges = append(edges, remotefile.EdgeRemoteFileToTag)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean indicates if this edge was
-// cleared in this mutation.
-func (m *RemoteFileMutation) EdgeCleared(name string) bool {
-	switch name {
-	case remotefile.EdgeRemoteFileToTag:
-		return m.cleared_RemoteFileToTag
-	}
-	return false
-}
-
-// ClearEdge clears the value for the given name. It returns an
-// error if the edge name is not defined in the schema.
-func (m *RemoteFileMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown RemoteFile unique edge %s", name)
-}
-
-// ResetEdge resets all changes in the mutation regarding the
-// given edge name. It returns an error if the edge is not
-// defined in the schema.
-func (m *RemoteFileMutation) ResetEdge(name string) error {
-	switch name {
-	case remotefile.EdgeRemoteFileToTag:
-		m.ResetRemoteFileToTag()
-		return nil
-	}
-	return fmt.Errorf("unknown RemoteFile edge %s", name)
 }
 
 // ScriptMutation represents an operation that mutate the Scripts
@@ -15849,6 +15403,7 @@ type ScriptMutation struct {
 	disabled                *bool
 	vars                    *map[string]string
 	abs_path                *string
+	tags                    *map[string]string
 	clearedFields           map[string]struct{}
 	_ScriptToTag            map[int]struct{}
 	removed_ScriptToTag     map[int]struct{}
@@ -16427,6 +15982,43 @@ func (m *ScriptMutation) ResetAbsPath() {
 	m.abs_path = nil
 }
 
+// SetTags sets the tags field.
+func (m *ScriptMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *ScriptMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Script.
+// If the Script object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ScriptMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *ScriptMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
 func (m *ScriptMutation) AddScriptToTagIDs(ids ...int) {
 	if m._ScriptToTag == nil {
@@ -16600,7 +16192,7 @@ func (m *ScriptMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ScriptMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.name != nil {
 		fields = append(fields, script.FieldName)
 	}
@@ -16637,6 +16229,9 @@ func (m *ScriptMutation) Fields() []string {
 	if m.abs_path != nil {
 		fields = append(fields, script.FieldAbsPath)
 	}
+	if m.tags != nil {
+		fields = append(fields, script.FieldTags)
+	}
 	return fields
 }
 
@@ -16669,6 +16264,8 @@ func (m *ScriptMutation) Field(name string) (ent.Value, bool) {
 		return m.Vars()
 	case script.FieldAbsPath:
 		return m.AbsPath()
+	case script.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -16702,6 +16299,8 @@ func (m *ScriptMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldVars(ctx)
 	case script.FieldAbsPath:
 		return m.OldAbsPath(ctx)
+	case script.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Script field %s", name)
 }
@@ -16794,6 +16393,13 @@ func (m *ScriptMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAbsPath(v)
+		return nil
+	case script.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Script field %s", name)
@@ -16907,6 +16513,9 @@ func (m *ScriptMutation) ResetField(name string) error {
 		return nil
 	case script.FieldAbsPath:
 		m.ResetAbsPath()
+		return nil
+	case script.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Script field %s", name)

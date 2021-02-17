@@ -94,6 +94,12 @@ func (sc *ScriptCreate) SetAbsPath(s string) *ScriptCreate {
 	return sc
 }
 
+// SetTags sets the tags field.
+func (sc *ScriptCreate) SetTags(m map[string]string) *ScriptCreate {
+	sc.mutation.SetTags(m)
+	return sc
+}
+
 // AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
 func (sc *ScriptCreate) AddScriptToTagIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddScriptToTagIDs(ids...)
@@ -226,6 +232,9 @@ func (sc *ScriptCreate) check() error {
 	if _, ok := sc.mutation.AbsPath(); !ok {
 		return &ValidationError{Name: "abs_path", err: errors.New("ent: missing required field \"abs_path\"")}
 	}
+	if _, ok := sc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -348,6 +357,14 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 			Column: script.FieldAbsPath,
 		})
 		_node.AbsPath = value
+	}
+	if value, ok := sc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := sc.mutation.ScriptToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

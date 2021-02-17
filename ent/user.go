@@ -12,15 +12,15 @@ import (
 
 // User is the model entity for the User schema.
 type User struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// UUID holds the value of the "uuid" field.
-	UUID string `json:"uuid,omitempty"`
+	UUID string `json:"uuid,omitempty" hcl:"uuid,optional"`
 	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
+	Email string `json:"email,omitempty" hcl:"email,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges                   UserEdges `json:"edges"`

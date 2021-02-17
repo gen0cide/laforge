@@ -115,6 +115,12 @@ func (su *ScriptUpdate) SetAbsPath(s string) *ScriptUpdate {
 	return su
 }
 
+// SetTags sets the tags field.
+func (su *ScriptUpdate) SetTags(m map[string]string) *ScriptUpdate {
+	su.mutation.SetTags(m)
+	return su
+}
+
 // AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
 func (su *ScriptUpdate) AddScriptToTagIDs(ids ...int) *ScriptUpdate {
 	su.mutation.AddScriptToTagIDs(ids...)
@@ -395,6 +401,13 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: script.FieldAbsPath,
 		})
 	}
+	if value, ok := su.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
+		})
+	}
 	if su.mutation.ScriptToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -658,6 +671,12 @@ func (suo *ScriptUpdateOne) SetVars(m map[string]string) *ScriptUpdateOne {
 // SetAbsPath sets the abs_path field.
 func (suo *ScriptUpdateOne) SetAbsPath(s string) *ScriptUpdateOne {
 	suo.mutation.SetAbsPath(s)
+	return suo
+}
+
+// SetTags sets the tags field.
+func (suo *ScriptUpdateOne) SetTags(m map[string]string) *ScriptUpdateOne {
+	suo.mutation.SetTags(m)
 	return suo
 }
 
@@ -937,6 +956,13 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Type:   field.TypeString,
 			Value:  value,
 			Column: script.FieldAbsPath,
+		})
+	}
+	if value, ok := suo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
 		})
 	}
 	if suo.mutation.ScriptToTagCleared() {

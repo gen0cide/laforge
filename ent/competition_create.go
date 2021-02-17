@@ -34,6 +34,12 @@ func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
 	return cc
 }
 
+// SetTags sets the tags field.
+func (cc *CompetitionCreate) SetTags(m map[string]string) *CompetitionCreate {
+	cc.mutation.SetTags(m)
+	return cc
+}
+
 // AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
 func (cc *CompetitionCreate) AddCompetitionToTagIDs(ids ...int) *CompetitionCreate {
 	cc.mutation.AddCompetitionToTagIDs(ids...)
@@ -136,6 +142,9 @@ func (cc *CompetitionCreate) check() error {
 	if _, ok := cc.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
 	}
+	if _, ok := cc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -178,6 +187,14 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 			Column: competition.FieldConfig,
 		})
 		_node.Config = value
+	}
+	if value, ok := cc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: competition.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := cc.mutation.CompetitionToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

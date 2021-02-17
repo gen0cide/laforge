@@ -13,21 +13,23 @@ import (
 
 // DNSRecord is the model entity for the DNSRecord schema.
 type DNSRecord struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Values holds the value of the "values" field.
-	Values []string `json:"values,omitempty"`
+	Values []string `json:"values,omitempty" hcl:"values,optional"`
 	// Type holds the value of the "type" field.
-	Type string `json:"type,omitempty"`
+	Type string `json:"type,omitempty" hcl:"type,attr"`
 	// Zone holds the value of the "zone" field.
-	Zone string `json:"zone,omitempty"`
+	Zone string `json:"zone,omitempty" hcl:"zone,attr" `
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// Disabled holds the value of the "disabled" field.
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty" hcl:"disabled,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSRecordQuery when eager-loading is set.
 	Edges                                             DNSRecordEdges `json:"edges"`
@@ -62,6 +64,7 @@ func (*DNSRecord) scanValues() []interface{} {
 		&sql.NullString{}, // zone
 		&[]byte{},         // vars
 		&sql.NullBool{},   // disabled
+		&[]byte{},         // tags
 	}
 }
 
@@ -120,7 +123,15 @@ func (dr *DNSRecord) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		dr.Disabled = value.Bool
 	}
-	values = values[6:]
+
+	if value, ok := values[6].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[6])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &dr.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[7:]
 	if len(values) == len(dnsrecord.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_dns_record", value)
@@ -172,6 +183,8 @@ func (dr *DNSRecord) String() string {
 	builder.WriteString(fmt.Sprintf("%v", dr.Vars))
 	builder.WriteString(", disabled=")
 	builder.WriteString(fmt.Sprintf("%v", dr.Disabled))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", dr.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

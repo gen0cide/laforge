@@ -14,7 +14,10 @@ type FileDelete struct {
 // Fields of the FileDelete.
 func (FileDelete) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("path"),
+		field.String("path").
+			StructTag(`hcl:"path,attr"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,attr"`),
 	}
 }
 

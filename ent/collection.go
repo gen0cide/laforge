@@ -225,18 +225,6 @@ func (ps *ProvisioningStepQuery) collectField(ctx *graphql.OperationContext, fie
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (rf *RemoteFileQuery) CollectFields(ctx context.Context, satisfies ...string) *RemoteFileQuery {
-	if fc := graphql.GetFieldContext(ctx); fc != nil {
-		rf = rf.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
-	}
-	return rf
-}
-
-func (rf *RemoteFileQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *RemoteFileQuery {
-	return rf
-}
-
-// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (s *ScriptQuery) CollectFields(ctx context.Context, satisfies ...string) *ScriptQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		s = s.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

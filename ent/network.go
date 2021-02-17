@@ -13,17 +13,19 @@ import (
 
 // Network is the model entity for the Network schema.
 type Network struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Cidr holds the value of the "cidr" field.
-	Cidr string `json:"cidr,omitempty"`
+	Cidr string `json:"cidr,omitempty" hcl:"cidr,attr"`
 	// VdiVisible holds the value of the "vdi_visible" field.
-	VdiVisible bool `json:"vdi_visible,omitempty"`
+	VdiVisible bool `json:"vdi_visible,omitempty" hcl:"vdi_visible,optional"`
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NetworkQuery when eager-loading is set.
 	Edges                                              NetworkEdges `json:"edges"`
@@ -67,6 +69,7 @@ func (*Network) scanValues() []interface{} {
 		&sql.NullString{}, // cidr
 		&sql.NullBool{},   // vdi_visible
 		&[]byte{},         // vars
+		&[]byte{},         // tags
 	}
 }
 
@@ -112,7 +115,15 @@ func (n *Network) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field vars: %v", err)
 		}
 	}
-	values = values[4:]
+
+	if value, ok := values[4].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[4])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &n.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[5:]
 	if len(values) == len(network.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
@@ -165,6 +176,8 @@ func (n *Network) String() string {
 	builder.WriteString(fmt.Sprintf("%v", n.VdiVisible))
 	builder.WriteString(", vars=")
 	builder.WriteString(fmt.Sprintf("%v", n.Vars))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", n.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

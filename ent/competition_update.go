@@ -41,6 +41,12 @@ func (cu *CompetitionUpdate) SetConfig(m map[string]string) *CompetitionUpdate {
 	return cu
 }
 
+// SetTags sets the tags field.
+func (cu *CompetitionUpdate) SetTags(m map[string]string) *CompetitionUpdate {
+	cu.mutation.SetTags(m)
+	return cu
+}
+
 // AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
 func (cu *CompetitionUpdate) AddCompetitionToTagIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.AddCompetitionToTagIDs(ids...)
@@ -237,6 +243,13 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: competition.FieldConfig,
 		})
 	}
+	if value, ok := cu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: competition.FieldTags,
+		})
+	}
 	if cu.mutation.CompetitionToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -426,6 +439,12 @@ func (cuo *CompetitionUpdateOne) SetRootPassword(s string) *CompetitionUpdateOne
 // SetConfig sets the config field.
 func (cuo *CompetitionUpdateOne) SetConfig(m map[string]string) *CompetitionUpdateOne {
 	cuo.mutation.SetConfig(m)
+	return cuo
+}
+
+// SetTags sets the tags field.
+func (cuo *CompetitionUpdateOne) SetTags(m map[string]string) *CompetitionUpdateOne {
+	cuo.mutation.SetTags(m)
 	return cuo
 }
 
@@ -621,6 +640,13 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: competition.FieldConfig,
+		})
+	}
+	if value, ok := cuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: competition.FieldTags,
 		})
 	}
 	if cuo.mutation.CompetitionToTagCleared() {

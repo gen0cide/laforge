@@ -13,13 +13,15 @@ import (
 
 // Competition is the model entity for the Competition schema.
 type Competition struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// RootPassword holds the value of the "root_password" field.
-	RootPassword string `json:"root_password,omitempty"`
+	RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
 	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
 	Edges CompetitionEdges `json:"edges"`
@@ -30,7 +32,7 @@ type CompetitionEdges struct {
 	// CompetitionToTag holds the value of the CompetitionToTag edge.
 	CompetitionToTag []*Tag
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
-	CompetitionToDNS []*DNS
+	CompetitionToDNS []*DNS `hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
 	CompetitionToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
@@ -71,6 +73,7 @@ func (*Competition) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // root_password
 		&[]byte{},         // config
+		&[]byte{},         // tags
 	}
 }
 
@@ -97,6 +100,14 @@ func (c *Competition) assignValues(values ...interface{}) error {
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &c.Config); err != nil {
 			return fmt.Errorf("unmarshal field config: %v", err)
+		}
+	}
+
+	if value, ok := values[2].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[2])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &c.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
 		}
 	}
 	return nil
@@ -144,6 +155,8 @@ func (c *Competition) String() string {
 	builder.WriteString(c.RootPassword)
 	builder.WriteString(", config=")
 	builder.WriteString(fmt.Sprintf("%v", c.Config))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", c.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -51,9 +51,9 @@ func (fdu *FileDownloadUpdate) SetTemplate(b bool) *FileDownloadUpdate {
 	return fdu
 }
 
-// SetMode sets the mode field.
-func (fdu *FileDownloadUpdate) SetMode(s string) *FileDownloadUpdate {
-	fdu.mutation.SetMode(s)
+// SetPerms sets the perms field.
+func (fdu *FileDownloadUpdate) SetPerms(s string) *FileDownloadUpdate {
+	fdu.mutation.SetPerms(s)
 	return fdu
 }
 
@@ -72,6 +72,12 @@ func (fdu *FileDownloadUpdate) SetMd5(s string) *FileDownloadUpdate {
 // SetAbsPath sets the abs_path field.
 func (fdu *FileDownloadUpdate) SetAbsPath(s string) *FileDownloadUpdate {
 	fdu.mutation.SetAbsPath(s)
+	return fdu
+}
+
+// SetTags sets the tags field.
+func (fdu *FileDownloadUpdate) SetTags(m map[string]string) *FileDownloadUpdate {
+	fdu.mutation.SetTags(m)
 	return fdu
 }
 
@@ -213,11 +219,11 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedownload.FieldTemplate,
 		})
 	}
-	if value, ok := fdu.mutation.Mode(); ok {
+	if value, ok := fdu.mutation.Perms(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: filedownload.FieldMode,
+			Column: filedownload.FieldPerms,
 		})
 	}
 	if value, ok := fdu.mutation.Disabled(); ok {
@@ -239,6 +245,13 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: filedownload.FieldAbsPath,
+		})
+	}
+	if value, ok := fdu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedownload.FieldTags,
 		})
 	}
 	if fdu.mutation.FileDownloadToTagCleared() {
@@ -337,9 +350,9 @@ func (fduo *FileDownloadUpdateOne) SetTemplate(b bool) *FileDownloadUpdateOne {
 	return fduo
 }
 
-// SetMode sets the mode field.
-func (fduo *FileDownloadUpdateOne) SetMode(s string) *FileDownloadUpdateOne {
-	fduo.mutation.SetMode(s)
+// SetPerms sets the perms field.
+func (fduo *FileDownloadUpdateOne) SetPerms(s string) *FileDownloadUpdateOne {
+	fduo.mutation.SetPerms(s)
 	return fduo
 }
 
@@ -358,6 +371,12 @@ func (fduo *FileDownloadUpdateOne) SetMd5(s string) *FileDownloadUpdateOne {
 // SetAbsPath sets the abs_path field.
 func (fduo *FileDownloadUpdateOne) SetAbsPath(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetAbsPath(s)
+	return fduo
+}
+
+// SetTags sets the tags field.
+func (fduo *FileDownloadUpdateOne) SetTags(m map[string]string) *FileDownloadUpdateOne {
+	fduo.mutation.SetTags(m)
 	return fduo
 }
 
@@ -497,11 +516,11 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Column: filedownload.FieldTemplate,
 		})
 	}
-	if value, ok := fduo.mutation.Mode(); ok {
+	if value, ok := fduo.mutation.Perms(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: filedownload.FieldMode,
+			Column: filedownload.FieldPerms,
 		})
 	}
 	if value, ok := fduo.mutation.Disabled(); ok {
@@ -523,6 +542,13 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Type:   field.TypeString,
 			Value:  value,
 			Column: filedownload.FieldAbsPath,
+		})
+	}
+	if value, ok := fduo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedownload.FieldTags,
 		})
 	}
 	if fduo.mutation.FileDownloadToTagCleared() {

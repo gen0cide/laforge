@@ -29,14 +29,10 @@ const (
 	FieldUserGroups = "user_groups"
 	// FieldDependsOn holds the string denoting the depends_on field in the database.
 	FieldDependsOn = "depends_on"
-	// FieldScripts holds the string denoting the scripts field in the database.
-	FieldScripts = "scripts"
-	// FieldCommands holds the string denoting the commands field in the database.
-	FieldCommands = "commands"
-	// FieldRemoteFiles holds the string denoting the remote_files field in the database.
-	FieldRemoteFiles = "remote_files"
-	// FieldDNSRecords holds the string denoting the dns_records field in the database.
-	FieldDNSRecords = "dns_records"
+	// FieldProvisionSteps holds the string denoting the provision_steps field in the database.
+	FieldProvisionSteps = "provision_steps"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeHostToDisk holds the string denoting the hosttodisk edge name in mutations.
 	EdgeHostToDisk = "HostToDisk"
@@ -91,10 +87,8 @@ var Columns = []string{
 	FieldVars,
 	FieldUserGroups,
 	FieldDependsOn,
-	FieldScripts,
-	FieldCommands,
-	FieldRemoteFiles,
-	FieldDNSRecords,
+	FieldProvisionSteps,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Host type.

@@ -33,6 +33,12 @@ func (fdu *FileDeleteUpdate) SetPath(s string) *FileDeleteUpdate {
 	return fdu
 }
 
+// SetTags sets the tags field.
+func (fdu *FileDeleteUpdate) SetTags(m map[string]string) *FileDeleteUpdate {
+	fdu.mutation.SetTags(m)
+	return fdu
+}
+
 // AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
 func (fdu *FileDeleteUpdate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteUpdate {
 	fdu.mutation.AddFileDeleteToTagIDs(ids...)
@@ -150,6 +156,13 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedelete.FieldPath,
 		})
 	}
+	if value, ok := fdu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedelete.FieldTags,
+		})
+	}
 	if fdu.mutation.FileDeleteToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -225,6 +238,12 @@ type FileDeleteUpdateOne struct {
 // SetPath sets the path field.
 func (fduo *FileDeleteUpdateOne) SetPath(s string) *FileDeleteUpdateOne {
 	fduo.mutation.SetPath(s)
+	return fduo
+}
+
+// SetTags sets the tags field.
+func (fduo *FileDeleteUpdateOne) SetTags(m map[string]string) *FileDeleteUpdateOne {
+	fduo.mutation.SetTags(m)
 	return fduo
 }
 
@@ -341,6 +360,13 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 			Type:   field.TypeString,
 			Value:  value,
 			Column: filedelete.FieldPath,
+		})
+	}
+	if value, ok := fduo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedelete.FieldTags,
 		})
 	}
 	if fduo.mutation.FileDeleteToTagCleared() {

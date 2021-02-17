@@ -13,39 +13,35 @@ import (
 
 // Host is the model entity for the Host schema.
 type Host struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Hostname holds the value of the "hostname" field.
-	Hostname string `json:"hostname,omitempty"`
+	Hostname string `json:"hostname,omitempty" hcl:"hostname,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional" `
 	// OS holds the value of the "OS" field.
-	OS string `json:"OS,omitempty"`
+	OS string `json:"OS,omitempty" hcl:"os,attr"`
 	// LastOctet holds the value of the "last_octet" field.
-	LastOctet int `json:"last_octet,omitempty"`
+	LastOctet int `json:"last_octet,omitempty" hcl:"last_octet,attr"`
 	// AllowMACChanges holds the value of the "allow_mac_changes" field.
-	AllowMACChanges bool `json:"allow_mac_changes,omitempty"`
+	AllowMACChanges bool `json:"allow_mac_changes,omitempty" hcl:"allow_mac_changes,optional"`
 	// ExposedTCPPorts holds the value of the "exposed_tcp_ports" field.
-	ExposedTCPPorts []string `json:"exposed_tcp_ports,omitempty"`
+	ExposedTCPPorts []string `json:"exposed_tcp_ports,omitempty" hcl:"exposed_tcp_ports,optional"`
 	// ExposedUDPPorts holds the value of the "exposed_udp_ports" field.
-	ExposedUDPPorts []string `json:"exposed_udp_ports,omitempty"`
+	ExposedUDPPorts []string `json:"exposed_udp_ports,omitempty" hcl:"exposed_udp_ports,optional"`
 	// OverridePassword holds the value of the "override_password" field.
-	OverridePassword string `json:"override_password,omitempty"`
+	OverridePassword string `json:"override_password,omitempty" hcl:"override_password,optional"`
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// UserGroups holds the value of the "user_groups" field.
-	UserGroups []string `json:"user_groups,omitempty"`
+	UserGroups []string `json:"user_groups,omitempty" hcl:"user_groups,optional"`
 	// DependsOn holds the value of the "depends_on" field.
-	DependsOn []string `json:"depends_on,omitempty"`
-	// Scripts holds the value of the "scripts" field.
-	Scripts []string `json:"scripts,omitempty"`
-	// Commands holds the value of the "commands" field.
-	Commands []string `json:"commands,omitempty"`
-	// RemoteFiles holds the value of the "remote_files" field.
-	RemoteFiles []string `json:"remote_files,omitempty"`
-	// DNSRecords holds the value of the "dns_records" field.
-	DNSRecords []string `json:"dns_records,omitempty"`
+	DependsOn map[string]string `json:"depends_on,omitempty" hcl:"depends_on,optional"`
+	// ProvisionSteps holds the value of the "provision_steps" field.
+	ProvisionSteps []string `json:"provision_steps,omitempty" hcl:"provision_steps,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HostQuery when eager-loading is set.
 	Edges                                     HostEdges `json:"edges"`
@@ -56,9 +52,9 @@ type Host struct {
 // HostEdges holds the relations/edges for other nodes in the graph.
 type HostEdges struct {
 	// HostToDisk holds the value of the HostToDisk edge.
-	HostToDisk []*Disk
+	HostToDisk []*Disk `hcl:"disk,block"`
 	// HostToUser holds the value of the HostToUser edge.
-	HostToUser []*User
+	HostToUser []*User `hcl:"maintainer,block"`
 	// HostToTag holds the value of the HostToTag edge.
 	HostToTag []*Tag
 	// HostToEnvironment holds the value of the HostToEnvironment edge.
@@ -119,10 +115,8 @@ func (*Host) scanValues() []interface{} {
 		&[]byte{},         // vars
 		&[]byte{},         // user_groups
 		&[]byte{},         // depends_on
-		&[]byte{},         // scripts
-		&[]byte{},         // commands
-		&[]byte{},         // remote_files
-		&[]byte{},         // dns_records
+		&[]byte{},         // provision_steps
+		&[]byte{},         // tags
 	}
 }
 
@@ -218,37 +212,21 @@ func (h *Host) assignValues(values ...interface{}) error {
 	}
 
 	if value, ok := values[11].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field scripts", values[11])
+		return fmt.Errorf("unexpected type %T for field provision_steps", values[11])
 	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.Scripts); err != nil {
-			return fmt.Errorf("unmarshal field scripts: %v", err)
+		if err := json.Unmarshal(*value, &h.ProvisionSteps); err != nil {
+			return fmt.Errorf("unmarshal field provision_steps: %v", err)
 		}
 	}
 
 	if value, ok := values[12].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field commands", values[12])
+		return fmt.Errorf("unexpected type %T for field tags", values[12])
 	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.Commands); err != nil {
-			return fmt.Errorf("unmarshal field commands: %v", err)
+		if err := json.Unmarshal(*value, &h.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
 		}
 	}
-
-	if value, ok := values[13].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field remote_files", values[13])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.RemoteFiles); err != nil {
-			return fmt.Errorf("unmarshal field remote_files: %v", err)
-		}
-	}
-
-	if value, ok := values[14].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field dns_records", values[14])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.DNSRecords); err != nil {
-			return fmt.Errorf("unmarshal field dns_records: %v", err)
-		}
-	}
-	values = values[15:]
+	values = values[13:]
 	if len(values) == len(host.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_host", value)
@@ -331,14 +309,10 @@ func (h *Host) String() string {
 	builder.WriteString(fmt.Sprintf("%v", h.UserGroups))
 	builder.WriteString(", depends_on=")
 	builder.WriteString(fmt.Sprintf("%v", h.DependsOn))
-	builder.WriteString(", scripts=")
-	builder.WriteString(fmt.Sprintf("%v", h.Scripts))
-	builder.WriteString(", commands=")
-	builder.WriteString(fmt.Sprintf("%v", h.Commands))
-	builder.WriteString(", remote_files=")
-	builder.WriteString(fmt.Sprintf("%v", h.RemoteFiles))
-	builder.WriteString(", dns_records=")
-	builder.WriteString(fmt.Sprintf("%v", h.DNSRecords))
+	builder.WriteString(", provision_steps=")
+	builder.WriteString(fmt.Sprintf("%v", h.ProvisionSteps))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", h.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

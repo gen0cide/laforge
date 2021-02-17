@@ -385,7 +385,7 @@ func (hq *HostQuery) WithHostToEnvironment(opts ...func(*EnvironmentQuery)) *Hos
 // Example:
 //
 //	var v []struct {
-//		Hostname string `json:"hostname,omitempty"`
+//		Hostname string `json:"hostname,omitempty" hcl:"hostname,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -411,7 +411,7 @@ func (hq *HostQuery) GroupBy(field string, fields ...string) *HostGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Hostname string `json:"hostname,omitempty"`
+//		Hostname string `json:"hostname,omitempty" hcl:"hostname,attr"`
 //	}
 //
 //	client.Host.Query().

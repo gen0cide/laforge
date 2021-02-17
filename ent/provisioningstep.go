@@ -38,11 +38,15 @@ type ProvisioningStepEdges struct {
 	ProvisioningStepToCommand []*Command
 	// ProvisioningStepToDNSRecord holds the value of the ProvisioningStepToDNSRecord edge.
 	ProvisioningStepToDNSRecord []*DNSRecord
-	// ProvisioningStepToRemoteFile holds the value of the ProvisioningStepToRemoteFile edge.
-	ProvisioningStepToRemoteFile []*RemoteFile
+	// ProvisioningStepToFileDelete holds the value of the ProvisioningStepToFileDelete edge.
+	ProvisioningStepToFileDelete []*FileDelete
+	// ProvisioningStepToFileDownload holds the value of the ProvisioningStepToFileDownload edge.
+	ProvisioningStepToFileDownload []*FileDownload
+	// ProvisioningStepToFileExtract holds the value of the ProvisioningStepToFileExtract edge.
+	ProvisioningStepToFileExtract []*FileExtract
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [9]bool
 }
 
 // ProvisioningStepToTagOrErr returns the ProvisioningStepToTag value or an error if the edge
@@ -99,13 +103,31 @@ func (e ProvisioningStepEdges) ProvisioningStepToDNSRecordOrErr() ([]*DNSRecord,
 	return nil, &NotLoadedError{edge: "ProvisioningStepToDNSRecord"}
 }
 
-// ProvisioningStepToRemoteFileOrErr returns the ProvisioningStepToRemoteFile value or an error if the edge
+// ProvisioningStepToFileDeleteOrErr returns the ProvisioningStepToFileDelete value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) ProvisioningStepToRemoteFileOrErr() ([]*RemoteFile, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToFileDeleteOrErr() ([]*FileDelete, error) {
 	if e.loadedTypes[6] {
-		return e.ProvisioningStepToRemoteFile, nil
+		return e.ProvisioningStepToFileDelete, nil
 	}
-	return nil, &NotLoadedError{edge: "ProvisioningStepToRemoteFile"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToFileDelete"}
+}
+
+// ProvisioningStepToFileDownloadOrErr returns the ProvisioningStepToFileDownload value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisioningStepEdges) ProvisioningStepToFileDownloadOrErr() ([]*FileDownload, error) {
+	if e.loadedTypes[7] {
+		return e.ProvisioningStepToFileDownload, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToFileDownload"}
+}
+
+// ProvisioningStepToFileExtractOrErr returns the ProvisioningStepToFileExtract value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisioningStepEdges) ProvisioningStepToFileExtractOrErr() ([]*FileExtract, error) {
+	if e.loadedTypes[8] {
+		return e.ProvisioningStepToFileExtract, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToFileExtract"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -172,9 +194,19 @@ func (ps *ProvisioningStep) QueryProvisioningStepToDNSRecord() *DNSRecordQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToDNSRecord(ps)
 }
 
-// QueryProvisioningStepToRemoteFile queries the ProvisioningStepToRemoteFile edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryProvisioningStepToRemoteFile() *RemoteFileQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToRemoteFile(ps)
+// QueryProvisioningStepToFileDelete queries the ProvisioningStepToFileDelete edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToFileDelete() *FileDeleteQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToFileDelete(ps)
+}
+
+// QueryProvisioningStepToFileDownload queries the ProvisioningStepToFileDownload edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToFileDownload() *FileDownloadQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToFileDownload(ps)
+}
+
+// QueryProvisioningStepToFileExtract queries the ProvisioningStepToFileExtract edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToFileExtract() *FileExtractQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToFileExtract(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.

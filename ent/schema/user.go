@@ -14,9 +14,12 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.String("uuid"),
-		field.String("email"),
+		field.String("name").
+			StructTag(`hcl:"name,attr"`),
+		field.String("uuid").
+			StructTag(`hcl:"uuid,optional"`),
+		field.String("email").
+			StructTag(`hcl:"email,attr"`),
 	}
 }
 

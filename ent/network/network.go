@@ -15,6 +15,8 @@ const (
 	FieldVdiVisible = "vdi_visible"
 	// FieldVars holds the string denoting the vars field in the database.
 	FieldVars = "vars"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeNetworkToTag holds the string denoting the networktotag edge name in mutations.
 	EdgeNetworkToTag = "NetworkToTag"
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldCidr,
 	FieldVdiVisible,
 	FieldVars,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Network type.

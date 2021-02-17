@@ -13,6 +13,8 @@ const (
 	FieldDestination = "destination"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
 	// EdgeFileExtractToTag holds the string denoting the fileextracttotag edge name in mutations.
 	EdgeFileExtractToTag = "FileExtractToTag"
@@ -34,12 +36,23 @@ var Columns = []string{
 	FieldSource,
 	FieldDestination,
 	FieldType,
+	FieldTags,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the FileExtract type.
+var ForeignKeys = []string{
+	"provisioning_step_provisioning_step_to_file_extract",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

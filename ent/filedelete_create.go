@@ -26,6 +26,12 @@ func (fdc *FileDeleteCreate) SetPath(s string) *FileDeleteCreate {
 	return fdc
 }
 
+// SetTags sets the tags field.
+func (fdc *FileDeleteCreate) SetTags(m map[string]string) *FileDeleteCreate {
+	fdc.mutation.SetTags(m)
+	return fdc
+}
+
 // AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
 func (fdc *FileDeleteCreate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteCreate {
 	fdc.mutation.AddFileDeleteToTagIDs(ids...)
@@ -95,6 +101,9 @@ func (fdc *FileDeleteCreate) check() error {
 	if _, ok := fdc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
 	}
+	if _, ok := fdc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -129,6 +138,14 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 			Column: filedelete.FieldPath,
 		})
 		_node.Path = value
+	}
+	if value, ok := fdc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedelete.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := fdc.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

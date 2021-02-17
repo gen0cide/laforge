@@ -681,59 +681,17 @@ func DependsOnNotNil() predicate.Host {
 	})
 }
 
-// ScriptsIsNil applies the IsNil predicate on the "scripts" field.
-func ScriptsIsNil() predicate.Host {
+// ProvisionStepsIsNil applies the IsNil predicate on the "provision_steps" field.
+func ProvisionStepsIsNil() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldScripts)))
+		s.Where(sql.IsNull(s.C(FieldProvisionSteps)))
 	})
 }
 
-// ScriptsNotNil applies the NotNil predicate on the "scripts" field.
-func ScriptsNotNil() predicate.Host {
+// ProvisionStepsNotNil applies the NotNil predicate on the "provision_steps" field.
+func ProvisionStepsNotNil() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldScripts)))
-	})
-}
-
-// CommandsIsNil applies the IsNil predicate on the "commands" field.
-func CommandsIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldCommands)))
-	})
-}
-
-// CommandsNotNil applies the NotNil predicate on the "commands" field.
-func CommandsNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldCommands)))
-	})
-}
-
-// RemoteFilesIsNil applies the IsNil predicate on the "remote_files" field.
-func RemoteFilesIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldRemoteFiles)))
-	})
-}
-
-// RemoteFilesNotNil applies the NotNil predicate on the "remote_files" field.
-func RemoteFilesNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldRemoteFiles)))
-	})
-}
-
-// DNSRecordsIsNil applies the IsNil predicate on the "dns_records" field.
-func DNSRecordsIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldDNSRecords)))
-	})
-}
-
-// DNSRecordsNotNil applies the NotNil predicate on the "dns_records" field.
-func DNSRecordsNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldDNSRecords)))
+		s.Where(sql.NotNull(s.C(FieldProvisionSteps)))
 	})
 }
 

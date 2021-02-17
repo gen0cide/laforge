@@ -45,6 +45,12 @@ func (feu *FileExtractUpdate) SetType(s string) *FileExtractUpdate {
 	return feu
 }
 
+// SetTags sets the tags field.
+func (feu *FileExtractUpdate) SetTags(m map[string]string) *FileExtractUpdate {
+	feu.mutation.SetTags(m)
+	return feu
+}
+
 // AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
 func (feu *FileExtractUpdate) AddFileExtractToTagIDs(ids ...int) *FileExtractUpdate {
 	feu.mutation.AddFileExtractToTagIDs(ids...)
@@ -176,6 +182,13 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: fileextract.FieldType,
 		})
 	}
+	if value, ok := feu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+	}
 	if feu.mutation.FileExtractToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -263,6 +276,12 @@ func (feuo *FileExtractUpdateOne) SetDestination(s string) *FileExtractUpdateOne
 // SetType sets the type field.
 func (feuo *FileExtractUpdateOne) SetType(s string) *FileExtractUpdateOne {
 	feuo.mutation.SetType(s)
+	return feuo
+}
+
+// SetTags sets the tags field.
+func (feuo *FileExtractUpdateOne) SetTags(m map[string]string) *FileExtractUpdateOne {
+	feuo.mutation.SetTags(m)
 	return feuo
 }
 
@@ -393,6 +412,13 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Type:   field.TypeString,
 			Value:  value,
 			Column: fileextract.FieldType,
+		})
+	}
+	if value, ok := feuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
 		})
 	}
 	if feuo.mutation.FileExtractToTagCleared() {

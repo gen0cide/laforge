@@ -38,6 +38,12 @@ func (fec *FileExtractCreate) SetType(s string) *FileExtractCreate {
 	return fec
 }
 
+// SetTags sets the tags field.
+func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
+	fec.mutation.SetTags(m)
+	return fec
+}
+
 // AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
 func (fec *FileExtractCreate) AddFileExtractToTagIDs(ids ...int) *FileExtractCreate {
 	fec.mutation.AddFileExtractToTagIDs(ids...)
@@ -113,6 +119,9 @@ func (fec *FileExtractCreate) check() error {
 	if _, ok := fec.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
 	}
+	if _, ok := fec.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -163,6 +172,14 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 			Column: fileextract.FieldType,
 		})
 		_node.Type = value
+	}
+	if value, ok := fec.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+		_node.Tags = value
 	}
 	if nodes := fec.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

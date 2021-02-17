@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -12,18 +13,21 @@ import (
 
 // FileExtract is the model entity for the FileExtract schema.
 type FileExtract struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
+	Source string `json:"source,omitempty" hcl:"source,attr"`
 	// Destination holds the value of the "destination" field.
-	Destination string `json:"destination,omitempty"`
+	Destination string `json:"destination,omitempty" hcl:"destination,attr"`
 	// Type holds the value of the "type" field.
-	Type string `json:"type,omitempty"`
+	Type string `json:"type,omitempty" hcl:"type,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileExtractQuery when eager-loading is set.
-	Edges FileExtractEdges `json:"edges"`
+	Edges                                               FileExtractEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_file_extract *int
 }
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
@@ -51,6 +55,14 @@ func (*FileExtract) scanValues() []interface{} {
 		&sql.NullString{}, // source
 		&sql.NullString{}, // destination
 		&sql.NullString{}, // type
+		&[]byte{},         // tags
+	}
+}
+
+// fkValues returns the types for scanning foreign-keys values from sql.Rows.
+func (*FileExtract) fkValues() []interface{} {
+	return []interface{}{
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_file_extract
 	}
 }
 
@@ -80,6 +92,23 @@ func (fe *FileExtract) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field type", values[2])
 	} else if value.Valid {
 		fe.Type = value.String
+	}
+
+	if value, ok := values[3].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[3])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &fe.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[4:]
+	if len(values) == len(fileextract.ForeignKeys) {
+		if value, ok := values[0].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_extract", value)
+		} else if value.Valid {
+			fe.provisioning_step_provisioning_step_to_file_extract = new(int)
+			*fe.provisioning_step_provisioning_step_to_file_extract = int(value.Int64)
+		}
 	}
 	return nil
 }
@@ -118,6 +147,8 @@ func (fe *FileExtract) String() string {
 	builder.WriteString(fe.Destination)
 	builder.WriteString(", type=")
 	builder.WriteString(fe.Type)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", fe.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

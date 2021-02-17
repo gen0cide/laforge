@@ -348,7 +348,7 @@ func (cq *CompetitionQuery) WithCompetitionToEnvironment(opts ...func(*Environme
 // Example:
 //
 //	var v []struct {
-//		RootPassword string `json:"root_password,omitempty"`
+//		RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -374,7 +374,7 @@ func (cq *CompetitionQuery) GroupBy(field string, fields ...string) *Competition
 // Example:
 //
 //	var v []struct {
-//		RootPassword string `json:"root_password,omitempty"`
+//		RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
 //	}
 //
 //	client.Competition.Query().

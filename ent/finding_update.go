@@ -54,6 +54,12 @@ func (fu *FindingUpdate) SetDifficulty(f finding.Difficulty) *FindingUpdate {
 	return fu
 }
 
+// SetTags sets the tags field.
+func (fu *FindingUpdate) SetTags(m map[string]string) *FindingUpdate {
+	fu.mutation.SetTags(m)
+	return fu
+}
+
 // AddFindingToUserIDs adds the FindingToUser edge to User by ids.
 func (fu *FindingUpdate) AddFindingToUserIDs(ids ...int) *FindingUpdate {
 	fu.mutation.AddFindingToUserIDs(ids...)
@@ -321,6 +327,13 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: finding.FieldDifficulty,
 		})
 	}
+	if value, ok := fu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: finding.FieldTags,
+		})
+	}
 	if fu.mutation.FindingToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -576,6 +589,12 @@ func (fuo *FindingUpdateOne) SetSeverity(f finding.Severity) *FindingUpdateOne {
 // SetDifficulty sets the difficulty field.
 func (fuo *FindingUpdateOne) SetDifficulty(f finding.Difficulty) *FindingUpdateOne {
 	fuo.mutation.SetDifficulty(f)
+	return fuo
+}
+
+// SetTags sets the tags field.
+func (fuo *FindingUpdateOne) SetTags(m map[string]string) *FindingUpdateOne {
+	fuo.mutation.SetTags(m)
 	return fuo
 }
 
@@ -842,6 +861,13 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Type:   field.TypeEnum,
 			Value:  value,
 			Column: finding.FieldDifficulty,
+		})
+	}
+	if value, ok := fuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: finding.FieldTags,
 		})
 	}
 	if fuo.mutation.FindingToUserCleared() {
