@@ -151,7 +151,6 @@ export class ApiService {
       })
       .toPromise()
       .then((result: ApolloQueryResult<AgentStatusQueryResult>) => result.data);
-    console.log('test 2');
     return res;
   }
 }

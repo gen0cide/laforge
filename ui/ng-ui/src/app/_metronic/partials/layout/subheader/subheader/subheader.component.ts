@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BreadcrumbItemModel } from '../_models/breadcrumb-item.model';
 import { LayoutService } from '../../../../core';
@@ -6,6 +6,7 @@ import { SubheaderService } from '../_services/subheader.service';
 
 import { PlanService } from '../../../../../plan.service';
 import { MatSelectChange } from '@angular/material/select';
+import { EnvironmentService } from 'src/app/services/environment/environment.service';
 
 interface Branch {
   name: string;
@@ -30,11 +31,18 @@ export class SubheaderComponent implements OnInit {
     { name: 'Bradley', hash: '98y3if' },
     { name: 'Lucas', hash: '32a7fh' }
   ];
+  envIsLoading: Observable<boolean>;
 
-  constructor(private layout: LayoutService, private subheader: SubheaderService, private planService: PlanService) {
+  constructor(private layout: LayoutService, private subheader: SubheaderService, private planService: PlanService, public envService: EnvironmentService, private cdRef: ChangeDetectorRef) {
     this.title$ = this.subheader.titleSubject.asObservable();
     this.breadcrumbs$ = this.subheader.breadCrumbsSubject.asObservable();
     this.description$ = this.subheader.descriptionSubject.asObservable();
+
+    this.envService.getEnvironments().subscribe(() => {
+      this.cdRef.markForCheck();
+    })
+
+    this.envIsLoading = this.envService.envIsLoading.asObservable();
   }
 
   ngOnInit() {
@@ -48,5 +56,10 @@ export class SubheaderComponent implements OnInit {
   onBranchSelect(changeEvent: MatSelectChange) {
     // console.log(changeEvent);
     this.planService.getPlan(changeEvent.value);
+  }
+
+  selectEnvironment(event: MatSelectChange) {
+    this.envService.setCurrentEnv(event.value);
+    this.cdRef.detectChanges();
   }
 }

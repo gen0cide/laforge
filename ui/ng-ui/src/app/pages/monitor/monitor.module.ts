@@ -26,7 +26,7 @@ const routes: Routes = [
     ViewComponentsModule,
     MatTableModule,
     MatButtonModule,
-    MatSelectModule,
+    MatSelectModule
   ]
 })
 export class MonitorModule {}

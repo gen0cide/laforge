@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
+import { MatSelectModule } from '@angular/material/select';
 
 const routes: Routes = [
   {
@@ -17,6 +18,14 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [ManageComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule, MatTableModule, MatButtonModule]
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    ViewComponentsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatSelectModule
+  ]
 })
 export class ManageModule {}

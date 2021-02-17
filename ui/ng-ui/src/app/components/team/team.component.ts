@@ -1,3 +1,4 @@
+import { PortalInjector } from '@angular/cdk/portal';
 import { Component, Input, OnInit } from '@angular/core';
 import { ProvisionStatus, Team } from 'src/app/models/common.model';
 import { RebuildService } from '../../services/rebuild/rebuild.service';
@@ -12,14 +13,41 @@ export class TeamComponent implements OnInit {
   @Input() team: Team;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
+  @Input() mode: 'plan' | 'build' | 'manage';
   isSelected = false;
 
-  constructor(private rebuild: RebuildService) {
-    if (!this.style) this.style = 'compact';
+  constructor(private rebuild: RebuildService) {}
+
+  ngOnInit(): void {
+    if (!this.mode) this.mode = 'manage';
+    if (!this.style) {
+      switch (this.mode) {
+        case 'plan':
+          this.style = 'expanded';
+          break;
+        case 'build':
+          // this.style = 'expanded'
+          if (this.team) {
+            switch (this.getStatus()) {
+              case ProvisionStatus.ProvStatusComplete:
+                this.style = 'collapsed';
+                break;
+              default:
+                this.style = 'expanded';
+                break;
+            }
+          }
+          break;
+        case 'manage':
+          this.style = 'compact';
+          break;
+        default:
+          this.style = 'compact';
+          break;
+      }
+    }
     if (!this.selectable) this.selectable = false;
   }
-
-  ngOnInit(): void {}
 
   getStatus(): ProvisionStatus {
     // let status: ProvisionStatus = ProvisionStatus.ProvStatusUndefined;
