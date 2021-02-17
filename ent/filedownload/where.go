@@ -841,25 +841,25 @@ func AbsPathContainsFold(v string) predicate.FileDownload {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.FileDownload {
+// HasFileDownloadToTag applies the HasEdge predicate on the "FileDownloadToTag" edge.
+func HasFileDownloadToTag() predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDownloadToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadToTagTable, FileDownloadToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.FileDownload {
+// HasFileDownloadToTagWith applies the HasEdge predicate on the "FileDownloadToTag" edge with a given conditions (other predicates).
+func HasFileDownloadToTagWith(preds ...predicate.Tag) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDownloadToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadToTagTable, FileDownloadToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

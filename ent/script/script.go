@@ -32,34 +32,34 @@ const (
 	// FieldAbsPath holds the string denoting the abs_path field in the database.
 	FieldAbsPath = "abs_path"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
-	EdgeMaintainer = "maintainer"
-	// EdgeFinding holds the string denoting the finding edge name in mutations.
-	EdgeFinding = "finding"
+	// EdgeScriptToTag holds the string denoting the scripttotag edge name in mutations.
+	EdgeScriptToTag = "ScriptToTag"
+	// EdgeScriptToUser holds the string denoting the scripttouser edge name in mutations.
+	EdgeScriptToUser = "ScriptToUser"
+	// EdgeScriptToFinding holds the string denoting the scripttofinding edge name in mutations.
+	EdgeScriptToFinding = "ScriptToFinding"
 
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// ScriptToTagTable is the table the holds the ScriptToTag relation/edge.
+	ScriptToTagTable = "tags"
+	// ScriptToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "script_tag"
-	// MaintainerTable is the table the holds the maintainer relation/edge.
-	MaintainerTable = "users"
-	// MaintainerInverseTable is the table name for the User entity.
+	ScriptToTagInverseTable = "tags"
+	// ScriptToTagColumn is the table column denoting the ScriptToTag relation/edge.
+	ScriptToTagColumn = "script_script_to_tag"
+	// ScriptToUserTable is the table the holds the ScriptToUser relation/edge.
+	ScriptToUserTable = "users"
+	// ScriptToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	MaintainerInverseTable = "users"
-	// MaintainerColumn is the table column denoting the maintainer relation/edge.
-	MaintainerColumn = "script_maintainer"
-	// FindingTable is the table the holds the finding relation/edge. The primary key declared below.
-	FindingTable = "finding_script"
-	// FindingInverseTable is the table name for the Finding entity.
+	ScriptToUserInverseTable = "users"
+	// ScriptToUserColumn is the table column denoting the ScriptToUser relation/edge.
+	ScriptToUserColumn = "script_script_to_user"
+	// ScriptToFindingTable is the table the holds the ScriptToFinding relation/edge. The primary key declared below.
+	ScriptToFindingTable = "finding_FindingToScript"
+	// ScriptToFindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
-	FindingInverseTable = "findings"
+	ScriptToFindingInverseTable = "findings"
 )
 
 // Columns holds all SQL columns for script fields.
@@ -81,13 +81,13 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Script type.
 var ForeignKeys = []string{
-	"provisioning_step_script",
+	"provisioning_step_provisioning_step_to_script",
 }
 
 var (
-	// FindingPrimaryKey and FindingColumn2 are the table columns denoting the
-	// primary key for the finding relation (M2M).
-	FindingPrimaryKey = []string{"finding_id", "script_id"}
+	// ScriptToFindingPrimaryKey and ScriptToFindingColumn2 are the table columns denoting the
+	// primary key for the ScriptToFinding relation (M2M).
+	ScriptToFindingPrimaryKey = []string{"finding_id", "script_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

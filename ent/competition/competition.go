@@ -12,18 +12,34 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeDNS holds the string denoting the dns edge name in mutations.
-	EdgeDNS = "dns"
+	// EdgeCompetitionToTag holds the string denoting the competitiontotag edge name in mutations.
+	EdgeCompetitionToTag = "CompetitionToTag"
+	// EdgeCompetitionToDNS holds the string denoting the competitiontodns edge name in mutations.
+	EdgeCompetitionToDNS = "CompetitionToDNS"
+	// EdgeCompetitionToEnvironment holds the string denoting the competitiontoenvironment edge name in mutations.
+	EdgeCompetitionToEnvironment = "CompetitionToEnvironment"
 
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
-	// DNSTable is the table the holds the dns relation/edge.
-	DNSTable = "dn_ss"
-	// DNSInverseTable is the table name for the DNS entity.
+	// CompetitionToTagTable is the table the holds the CompetitionToTag relation/edge.
+	CompetitionToTagTable = "tags"
+	// CompetitionToTagInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	CompetitionToTagInverseTable = "tags"
+	// CompetitionToTagColumn is the table column denoting the CompetitionToTag relation/edge.
+	CompetitionToTagColumn = "competition_competition_to_tag"
+	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge.
+	CompetitionToDNSTable = "dn_ss"
+	// CompetitionToDNSInverseTable is the table name for the DNS entity.
 	// It exists in this package in order to avoid circular dependency with the "dns" package.
-	DNSInverseTable = "dn_ss"
-	// DNSColumn is the table column denoting the dns relation/edge.
-	DNSColumn = "competition_dns"
+	CompetitionToDNSInverseTable = "dn_ss"
+	// CompetitionToDNSColumn is the table column denoting the CompetitionToDNS relation/edge.
+	CompetitionToDNSColumn = "competition_competition_to_dns"
+	// CompetitionToEnvironmentTable is the table the holds the CompetitionToEnvironment relation/edge. The primary key declared below.
+	CompetitionToEnvironmentTable = "environment_EnvironmentToCompetition"
+	// CompetitionToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	CompetitionToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for competition fields.
@@ -33,20 +49,16 @@ var Columns = []string{
 	FieldConfig,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Competition type.
-var ForeignKeys = []string{
-	"environment_competition",
-}
+var (
+	// CompetitionToEnvironmentPrimaryKey and CompetitionToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the CompetitionToEnvironment relation (M2M).
+	CompetitionToEnvironmentPrimaryKey = []string{"environment_id", "competition_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

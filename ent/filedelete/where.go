@@ -209,25 +209,25 @@ func PathContainsFold(v string) predicate.FileDelete {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.FileDelete {
+// HasFileDeleteToTag applies the HasEdge predicate on the "FileDeleteToTag" edge.
+func HasFileDeleteToTag() predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDeleteToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.FileDelete {
+// HasFileDeleteToTagWith applies the HasEdge predicate on the "FileDeleteToTag" edge with a given conditions (other predicates).
+func HasFileDeleteToTagWith(preds ...predicate.Tag) predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDeleteToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -22,59 +22,69 @@ type Build struct {
 	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BuildQuery when eager-loading is set.
-	Edges             BuildEdges `json:"edges"`
-	environment_build *int
+	Edges BuildEdges `json:"edges"`
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
 type BuildEdges struct {
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// Team holds the value of the team edge.
-	Team []*Team
-	// ProvisionedNetworkToBuild holds the value of the ProvisionedNetworkToBuild edge.
-	ProvisionedNetworkToBuild []*ProvisionedNetwork
+	// BuildToUser holds the value of the BuildToUser edge.
+	BuildToUser []*User
+	// BuildToTag holds the value of the BuildToTag edge.
+	BuildToTag []*Tag
+	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
+	BuildToProvisionedNetwork []*ProvisionedNetwork
+	// BuildToTeam holds the value of the BuildToTeam edge.
+	BuildToTeam []*Team
+	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
+	BuildToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// BuildToUserOrErr returns the BuildToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) MaintainerOrErr() ([]*User, error) {
+func (e BuildEdges) BuildToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.Maintainer, nil
+		return e.BuildToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "BuildToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// BuildToTagOrErr returns the BuildToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) TagOrErr() ([]*Tag, error) {
+func (e BuildEdges) BuildToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[1] {
-		return e.Tag, nil
+		return e.BuildToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "BuildToTag"}
 }
 
-// TeamOrErr returns the Team value or an error if the edge
+// BuildToProvisionedNetworkOrErr returns the BuildToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) TeamOrErr() ([]*Team, error) {
+func (e BuildEdges) BuildToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
 	if e.loadedTypes[2] {
-		return e.Team, nil
+		return e.BuildToProvisionedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "team"}
+	return nil, &NotLoadedError{edge: "BuildToProvisionedNetwork"}
 }
 
-// ProvisionedNetworkToBuildOrErr returns the ProvisionedNetworkToBuild value or an error if the edge
+// BuildToTeamOrErr returns the BuildToTeam value or an error if the edge
 // was not loaded in eager-loading.
-func (e BuildEdges) ProvisionedNetworkToBuildOrErr() ([]*ProvisionedNetwork, error) {
+func (e BuildEdges) BuildToTeamOrErr() ([]*Team, error) {
 	if e.loadedTypes[3] {
-		return e.ProvisionedNetworkToBuild, nil
+		return e.BuildToTeam, nil
 	}
-	return nil, &NotLoadedError{edge: "ProvisionedNetworkToBuild"}
+	return nil, &NotLoadedError{edge: "BuildToTeam"}
+}
+
+// BuildToEnvironmentOrErr returns the BuildToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e BuildEdges) BuildToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[4] {
+		return e.BuildToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -83,13 +93,6 @@ func (*Build) scanValues() []interface{} {
 		&sql.NullInt64{}, // id
 		&sql.NullInt64{}, // revision
 		&[]byte{},        // config
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Build) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // environment_build
 	}
 }
 
@@ -118,36 +121,32 @@ func (b *Build) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field config: %v", err)
 		}
 	}
-	values = values[2:]
-	if len(values) == len(build.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_build", value)
-		} else if value.Valid {
-			b.environment_build = new(int)
-			*b.environment_build = int(value.Int64)
-		}
-	}
 	return nil
 }
 
-// QueryMaintainer queries the maintainer edge of the Build.
-func (b *Build) QueryMaintainer() *UserQuery {
-	return (&BuildClient{config: b.config}).QueryMaintainer(b)
+// QueryBuildToUser queries the BuildToUser edge of the Build.
+func (b *Build) QueryBuildToUser() *UserQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToUser(b)
 }
 
-// QueryTag queries the tag edge of the Build.
-func (b *Build) QueryTag() *TagQuery {
-	return (&BuildClient{config: b.config}).QueryTag(b)
+// QueryBuildToTag queries the BuildToTag edge of the Build.
+func (b *Build) QueryBuildToTag() *TagQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToTag(b)
 }
 
-// QueryTeam queries the team edge of the Build.
-func (b *Build) QueryTeam() *TeamQuery {
-	return (&BuildClient{config: b.config}).QueryTeam(b)
+// QueryBuildToProvisionedNetwork queries the BuildToProvisionedNetwork edge of the Build.
+func (b *Build) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToProvisionedNetwork(b)
 }
 
-// QueryProvisionedNetworkToBuild queries the ProvisionedNetworkToBuild edge of the Build.
-func (b *Build) QueryProvisionedNetworkToBuild() *ProvisionedNetworkQuery {
-	return (&BuildClient{config: b.config}).QueryProvisionedNetworkToBuild(b)
+// QueryBuildToTeam queries the BuildToTeam edge of the Build.
+func (b *Build) QueryBuildToTeam() *TeamQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToTeam(b)
+}
+
+// QueryBuildToEnvironment queries the BuildToEnvironment edge of the Build.
+func (b *Build) QueryBuildToEnvironment() *EnvironmentQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToEnvironment(b)
 }
 
 // Update returns a builder for updating this Build.

@@ -28,18 +28,18 @@ const (
 	// FieldExt holds the string denoting the ext field in the database.
 	FieldExt = "ext"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeRemoteFileToTag holds the string denoting the remotefiletotag edge name in mutations.
+	EdgeRemoteFileToTag = "RemoteFileToTag"
 
 	// Table holds the table name of the remotefile in the database.
 	Table = "remote_files"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// RemoteFileToTagTable is the table the holds the RemoteFileToTag relation/edge.
+	RemoteFileToTagTable = "tags"
+	// RemoteFileToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "remote_file_tag"
+	RemoteFileToTagInverseTable = "tags"
+	// RemoteFileToTagColumn is the table column denoting the RemoteFileToTag relation/edge.
+	RemoteFileToTagColumn = "remote_file_remote_file_to_tag"
 )
 
 // Columns holds all SQL columns for remotefile fields.
@@ -59,7 +59,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the RemoteFile type.
 var ForeignKeys = []string{
-	"provisioning_step_remote_file",
+	"provisioning_step_provisioning_step_to_remote_file",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

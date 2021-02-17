@@ -467,25 +467,25 @@ func ErrorContainsFold(v string) predicate.Status {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Status {
+// HasStatusToTag applies the HasEdge predicate on the "StatusToTag" edge.
+func HasStatusToTag() predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(StatusToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StatusToTagTable, StatusToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Status {
+// HasStatusToTagWith applies the HasEdge predicate on the "StatusToTag" edge with a given conditions (other predicates).
+func HasStatusToTagWith(preds ...predicate.Tag) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(StatusToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StatusToTagTable, StatusToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

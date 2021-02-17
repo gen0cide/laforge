@@ -50,20 +50,31 @@ type AgentStatus struct {
 
 // AgentStatusEdges holds the relations/edges for other nodes in the graph.
 type AgentStatusEdges struct {
-	// Host holds the value of the host edge.
-	Host []*ProvisionedHost
+	// AgentStatusToTag holds the value of the AgentStatusToTag edge.
+	AgentStatusToTag []*Tag
+	// AgentStatusToProvisionedHost holds the value of the AgentStatusToProvisionedHost edge.
+	AgentStatusToProvisionedHost []*ProvisionedHost
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// AgentStatusToTagOrErr returns the AgentStatusToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentStatusEdges) HostOrErr() ([]*ProvisionedHost, error) {
+func (e AgentStatusEdges) AgentStatusToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Host, nil
+		return e.AgentStatusToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "AgentStatusToTag"}
+}
+
+// AgentStatusToProvisionedHostOrErr returns the AgentStatusToProvisionedHost value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentStatusEdges) AgentStatusToProvisionedHostOrErr() ([]*ProvisionedHost, error) {
+	if e.loadedTypes[1] {
+		return e.AgentStatusToProvisionedHost, nil
+	}
+	return nil, &NotLoadedError{edge: "AgentStatusToProvisionedHost"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -172,9 +183,14 @@ func (as *AgentStatus) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryHost queries the host edge of the AgentStatus.
-func (as *AgentStatus) QueryHost() *ProvisionedHostQuery {
-	return (&AgentStatusClient{config: as.config}).QueryHost(as)
+// QueryAgentStatusToTag queries the AgentStatusToTag edge of the AgentStatus.
+func (as *AgentStatus) QueryAgentStatusToTag() *TagQuery {
+	return (&AgentStatusClient{config: as.config}).QueryAgentStatusToTag(as)
+}
+
+// QueryAgentStatusToProvisionedHost queries the AgentStatusToProvisionedHost edge of the AgentStatus.
+func (as *AgentStatus) QueryAgentStatusToProvisionedHost() *ProvisionedHostQuery {
+	return (&AgentStatusClient{config: as.config}).QueryAgentStatusToProvisionedHost(as)
 }
 
 // Update returns a builder for updating this AgentStatus.

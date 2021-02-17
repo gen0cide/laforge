@@ -445,25 +445,25 @@ func TypeContainsFold(v string) predicate.FileExtract {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.FileExtract {
+// HasFileExtractToTag applies the HasEdge predicate on the "FileExtractToTag" edge.
+func HasFileExtractToTag() predicate.FileExtract {
 	return predicate.FileExtract(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileExtractToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractToTagTable, FileExtractToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.FileExtract {
+// HasFileExtractToTagWith applies the HasEdge predicate on the "FileExtractToTag" edge with a given conditions (other predicates).
+func HasFileExtractToTagWith(preds ...predicate.Tag) predicate.FileExtract {
 	return predicate.FileExtract(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileExtractToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractToTagTable, FileExtractToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

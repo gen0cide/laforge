@@ -33,19 +33,19 @@ func (inc *IncludedNetworkCreate) SetHosts(s []string) *IncludedNetworkCreate {
 	return inc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (inc *IncludedNetworkCreate) AddTagIDs(ids ...int) *IncludedNetworkCreate {
-	inc.mutation.AddTagIDs(ids...)
+// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkCreate {
+	inc.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inc
 }
 
-// AddTag adds the tag edges to Tag.
-func (inc *IncludedNetworkCreate) AddTag(t ...*Tag) *IncludedNetworkCreate {
+// AddIncludedNetworkToTag adds the IncludedNetworkToTag edges to Tag.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inc.AddTagIDs(ids...)
+	return inc.AddIncludedNetworkToTagIDs(ids...)
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
@@ -163,12 +163,12 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 		})
 		_node.Hosts = value
 	}
-	if nodes := inc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := inc.mutation.IncludedNetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

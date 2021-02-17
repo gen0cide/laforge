@@ -68,19 +68,19 @@ func (fdc *FileDownloadCreate) SetAbsPath(s string) *FileDownloadCreate {
 	return fdc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdc *FileDownloadCreate) AddTagIDs(ids ...int) *FileDownloadCreate {
-	fdc.mutation.AddTagIDs(ids...)
+// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+func (fdc *FileDownloadCreate) AddFileDownloadToTagIDs(ids ...int) *FileDownloadCreate {
+	fdc.mutation.AddFileDownloadToTagIDs(ids...)
 	return fdc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdc *FileDownloadCreate) AddTag(t ...*Tag) *FileDownloadCreate {
+// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+func (fdc *FileDownloadCreate) AddFileDownloadToTag(t ...*Tag) *FileDownloadCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fdc.AddTagIDs(ids...)
+	return fdc.AddFileDownloadToTagIDs(ids...)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -249,12 +249,12 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 		})
 		_node.AbsPath = value
 	}
-	if nodes := fdc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fdc.mutation.FileDownloadToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

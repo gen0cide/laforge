@@ -26,7 +26,7 @@ type NetworkQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Network
 	// eager-loading edges.
-	withTag                  *TagQuery
+	withNetworkToTag         *TagQuery
 	withNetworkToEnvironment *EnvironmentQuery
 	withFKs                  bool
 	// intermediate query (i.e. traversal path).
@@ -58,8 +58,8 @@ func (nq *NetworkQuery) Order(o ...OrderFunc) *NetworkQuery {
 	return nq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (nq *NetworkQuery) QueryTag() *TagQuery {
+// QueryNetworkToTag chains the current query on the NetworkToTag edge.
+func (nq *NetworkQuery) QueryNetworkToTag() *TagQuery {
 	query := &TagQuery{config: nq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
@@ -72,7 +72,7 @@ func (nq *NetworkQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, network.TagTable, network.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, network.NetworkToTagTable, network.NetworkToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -277,7 +277,7 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 		offset:                   nq.offset,
 		order:                    append([]OrderFunc{}, nq.order...),
 		predicates:               append([]predicate.Network{}, nq.predicates...),
-		withTag:                  nq.withTag.Clone(),
+		withNetworkToTag:         nq.withNetworkToTag.Clone(),
 		withNetworkToEnvironment: nq.withNetworkToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  nq.sql.Clone(),
@@ -285,14 +285,14 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (nq *NetworkQuery) WithTag(opts ...func(*TagQuery)) *NetworkQuery {
+//  WithNetworkToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "NetworkToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (nq *NetworkQuery) WithNetworkToTag(opts ...func(*TagQuery)) *NetworkQuery {
 	query := &TagQuery{config: nq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	nq.withTag = query
+	nq.withNetworkToTag = query
 	return nq
 }
 
@@ -375,7 +375,7 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
 		loadedTypes = [2]bool{
-			nq.withTag != nil,
+			nq.withNetworkToTag != nil,
 			nq.withNetworkToEnvironment != nil,
 		}
 	)
@@ -406,32 +406,32 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		return nodes, nil
 	}
 
-	if query := nq.withTag; query != nil {
+	if query := nq.withNetworkToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Network)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.NetworkToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(network.TagColumn, fks...))
+			s.Where(sql.InValues(network.NetworkToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.network_tag
+			fk := n.network_network_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "network_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "network_network_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "network_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "network_network_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.NetworkToTag = append(node.Edges.NetworkToTag, n)
 		}
 	}
 

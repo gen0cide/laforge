@@ -42,48 +42,48 @@ type Script struct {
 	AbsPath string `json:"abs_path,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScriptQuery when eager-loading is set.
-	Edges                    ScriptEdges `json:"edges"`
-	provisioning_step_script *int
+	Edges                                         ScriptEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_script *int
 }
 
 // ScriptEdges holds the relations/edges for other nodes in the graph.
 type ScriptEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Finding holds the value of the finding edge.
-	Finding []*Finding
+	// ScriptToTag holds the value of the ScriptToTag edge.
+	ScriptToTag []*Tag
+	// ScriptToUser holds the value of the ScriptToUser edge.
+	ScriptToUser []*User
+	// ScriptToFinding holds the value of the ScriptToFinding edge.
+	ScriptToFinding []*Finding
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// ScriptToTagOrErr returns the ScriptToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) TagOrErr() ([]*Tag, error) {
+func (e ScriptEdges) ScriptToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.ScriptToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "ScriptToTag"}
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// ScriptToUserOrErr returns the ScriptToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) MaintainerOrErr() ([]*User, error) {
+func (e ScriptEdges) ScriptToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[1] {
-		return e.Maintainer, nil
+		return e.ScriptToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "ScriptToUser"}
 }
 
-// FindingOrErr returns the Finding value or an error if the edge
+// ScriptToFindingOrErr returns the ScriptToFinding value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) FindingOrErr() ([]*Finding, error) {
+func (e ScriptEdges) ScriptToFindingOrErr() ([]*Finding, error) {
 	if e.loadedTypes[2] {
-		return e.Finding, nil
+		return e.ScriptToFinding, nil
 	}
-	return nil, &NotLoadedError{edge: "finding"}
+	return nil, &NotLoadedError{edge: "ScriptToFinding"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -108,7 +108,7 @@ func (*Script) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Script) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_script
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_script
 	}
 }
 
@@ -193,28 +193,28 @@ func (s *Script) assignValues(values ...interface{}) error {
 	values = values[12:]
 	if len(values) == len(script.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_script", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_script", value)
 		} else if value.Valid {
-			s.provisioning_step_script = new(int)
-			*s.provisioning_step_script = int(value.Int64)
+			s.provisioning_step_provisioning_step_to_script = new(int)
+			*s.provisioning_step_provisioning_step_to_script = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Script.
-func (s *Script) QueryTag() *TagQuery {
-	return (&ScriptClient{config: s.config}).QueryTag(s)
+// QueryScriptToTag queries the ScriptToTag edge of the Script.
+func (s *Script) QueryScriptToTag() *TagQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToTag(s)
 }
 
-// QueryMaintainer queries the maintainer edge of the Script.
-func (s *Script) QueryMaintainer() *UserQuery {
-	return (&ScriptClient{config: s.config}).QueryMaintainer(s)
+// QueryScriptToUser queries the ScriptToUser edge of the Script.
+func (s *Script) QueryScriptToUser() *UserQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToUser(s)
 }
 
-// QueryFinding queries the finding edge of the Script.
-func (s *Script) QueryFinding() *FindingQuery {
-	return (&ScriptClient{config: s.config}).QueryFinding(s)
+// QueryScriptToFinding queries the ScriptToFinding edge of the Script.
+func (s *Script) QueryScriptToFinding() *FindingQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToFinding(s)
 }
 
 // Update returns a builder for updating this Script.

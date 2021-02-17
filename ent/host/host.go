@@ -38,36 +38,43 @@ const (
 	// FieldDNSRecords holds the string denoting the dns_records field in the database.
 	FieldDNSRecords = "dns_records"
 
-	// EdgeDisk holds the string denoting the disk edge name in mutations.
-	EdgeDisk = "disk"
-	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
-	EdgeMaintainer = "maintainer"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeHostToDisk holds the string denoting the hosttodisk edge name in mutations.
+	EdgeHostToDisk = "HostToDisk"
+	// EdgeHostToUser holds the string denoting the hosttouser edge name in mutations.
+	EdgeHostToUser = "HostToUser"
+	// EdgeHostToTag holds the string denoting the hosttotag edge name in mutations.
+	EdgeHostToTag = "HostToTag"
+	// EdgeHostToEnvironment holds the string denoting the hosttoenvironment edge name in mutations.
+	EdgeHostToEnvironment = "HostToEnvironment"
 
 	// Table holds the table name of the host in the database.
 	Table = "hosts"
-	// DiskTable is the table the holds the disk relation/edge.
-	DiskTable = "disks"
-	// DiskInverseTable is the table name for the Disk entity.
+	// HostToDiskTable is the table the holds the HostToDisk relation/edge.
+	HostToDiskTable = "disks"
+	// HostToDiskInverseTable is the table name for the Disk entity.
 	// It exists in this package in order to avoid circular dependency with the "disk" package.
-	DiskInverseTable = "disks"
-	// DiskColumn is the table column denoting the disk relation/edge.
-	DiskColumn = "host_disk"
-	// MaintainerTable is the table the holds the maintainer relation/edge.
-	MaintainerTable = "users"
-	// MaintainerInverseTable is the table name for the User entity.
+	HostToDiskInverseTable = "disks"
+	// HostToDiskColumn is the table column denoting the HostToDisk relation/edge.
+	HostToDiskColumn = "host_host_to_disk"
+	// HostToUserTable is the table the holds the HostToUser relation/edge.
+	HostToUserTable = "users"
+	// HostToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	MaintainerInverseTable = "users"
-	// MaintainerColumn is the table column denoting the maintainer relation/edge.
-	MaintainerColumn = "host_maintainer"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	HostToUserInverseTable = "users"
+	// HostToUserColumn is the table column denoting the HostToUser relation/edge.
+	HostToUserColumn = "host_host_to_user"
+	// HostToTagTable is the table the holds the HostToTag relation/edge.
+	HostToTagTable = "tags"
+	// HostToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "host_tag"
+	HostToTagInverseTable = "tags"
+	// HostToTagColumn is the table column denoting the HostToTag relation/edge.
+	HostToTagColumn = "host_host_to_tag"
+	// HostToEnvironmentTable is the table the holds the HostToEnvironment relation/edge. The primary key declared below.
+	HostToEnvironmentTable = "environment_EnvironmentToHost"
+	// HostToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	HostToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for host fields.
@@ -92,10 +99,15 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Host type.
 var ForeignKeys = []string{
-	"environment_host",
-	"finding_host",
-	"provisioned_host_host",
+	"finding_finding_to_host",
+	"provisioned_host_provisioned_host_to_host",
 }
+
+var (
+	// HostToEnvironmentPrimaryKey and HostToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the HostToEnvironment relation (M2M).
+	HostToEnvironmentPrimaryKey = []string{"environment_id", "host_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

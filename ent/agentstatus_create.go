@@ -11,6 +11,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // AgentStatusCreate is the builder for creating a AgentStatus entity.
@@ -104,19 +105,34 @@ func (asc *AgentStatusCreate) SetTimestamp(i int64) *AgentStatusCreate {
 	return asc
 }
 
-// AddHostIDs adds the host edge to ProvisionedHost by ids.
-func (asc *AgentStatusCreate) AddHostIDs(ids ...int) *AgentStatusCreate {
-	asc.mutation.AddHostIDs(ids...)
+// AddAgentStatusToTagIDs adds the AgentStatusToTag edge to Tag by ids.
+func (asc *AgentStatusCreate) AddAgentStatusToTagIDs(ids ...int) *AgentStatusCreate {
+	asc.mutation.AddAgentStatusToTagIDs(ids...)
 	return asc
 }
 
-// AddHost adds the host edges to ProvisionedHost.
-func (asc *AgentStatusCreate) AddHost(p ...*ProvisionedHost) *AgentStatusCreate {
+// AddAgentStatusToTag adds the AgentStatusToTag edges to Tag.
+func (asc *AgentStatusCreate) AddAgentStatusToTag(t ...*Tag) *AgentStatusCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return asc.AddAgentStatusToTagIDs(ids...)
+}
+
+// AddAgentStatusToProvisionedHostIDs adds the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusCreate {
+	asc.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
+	return asc
+}
+
+// AddAgentStatusToProvisionedHost adds the AgentStatusToProvisionedHost edges to ProvisionedHost.
+func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return asc.AddHostIDs(ids...)
+	return asc.AddAgentStatusToProvisionedHostIDs(ids...)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -351,12 +367,31 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 		})
 		_node.Timestamp = value
 	}
-	if nodes := asc.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := asc.mutation.AgentStatusToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToTagTable,
+			Columns: []string{agentstatus.AgentStatusToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := asc.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   agentstatus.HostTable,
-			Columns: agentstatus.HostPrimaryKey,
+			Table:   agentstatus.AgentStatusToProvisionedHostTable,
+			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

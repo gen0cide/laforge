@@ -13,6 +13,7 @@ import (
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -27,10 +28,11 @@ type HostQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Host
 	// eager-loading edges.
-	withDisk       *DiskQuery
-	withMaintainer *UserQuery
-	withTag        *TagQuery
-	withFKs        bool
+	withHostToDisk        *DiskQuery
+	withHostToUser        *UserQuery
+	withHostToTag         *TagQuery
+	withHostToEnvironment *EnvironmentQuery
+	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,8 +62,8 @@ func (hq *HostQuery) Order(o ...OrderFunc) *HostQuery {
 	return hq
 }
 
-// QueryDisk chains the current query on the disk edge.
-func (hq *HostQuery) QueryDisk() *DiskQuery {
+// QueryHostToDisk chains the current query on the HostToDisk edge.
+func (hq *HostQuery) QueryHostToDisk() *DiskQuery {
 	query := &DiskQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
@@ -74,7 +76,7 @@ func (hq *HostQuery) QueryDisk() *DiskQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, selector),
 			sqlgraph.To(disk.Table, disk.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.DiskTable, host.DiskColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToDiskTable, host.HostToDiskColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
 		return fromU, nil
@@ -82,8 +84,8 @@ func (hq *HostQuery) QueryDisk() *DiskQuery {
 	return query
 }
 
-// QueryMaintainer chains the current query on the maintainer edge.
-func (hq *HostQuery) QueryMaintainer() *UserQuery {
+// QueryHostToUser chains the current query on the HostToUser edge.
+func (hq *HostQuery) QueryHostToUser() *UserQuery {
 	query := &UserQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
@@ -96,7 +98,7 @@ func (hq *HostQuery) QueryMaintainer() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.MaintainerTable, host.MaintainerColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToUserTable, host.HostToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
 		return fromU, nil
@@ -104,8 +106,8 @@ func (hq *HostQuery) QueryMaintainer() *UserQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (hq *HostQuery) QueryTag() *TagQuery {
+// QueryHostToTag chains the current query on the HostToTag edge.
+func (hq *HostQuery) QueryHostToTag() *TagQuery {
 	query := &TagQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
@@ -118,7 +120,29 @@ func (hq *HostQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.TagTable, host.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToTagTable, host.HostToTagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHostToEnvironment chains the current query on the HostToEnvironment edge.
+func (hq *HostQuery) QueryHostToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: hq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := hq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := hq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToEnvironmentTable, host.HostToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
 		return fromU, nil
@@ -296,50 +320,62 @@ func (hq *HostQuery) Clone() *HostQuery {
 		return nil
 	}
 	return &HostQuery{
-		config:         hq.config,
-		limit:          hq.limit,
-		offset:         hq.offset,
-		order:          append([]OrderFunc{}, hq.order...),
-		predicates:     append([]predicate.Host{}, hq.predicates...),
-		withDisk:       hq.withDisk.Clone(),
-		withMaintainer: hq.withMaintainer.Clone(),
-		withTag:        hq.withTag.Clone(),
+		config:                hq.config,
+		limit:                 hq.limit,
+		offset:                hq.offset,
+		order:                 append([]OrderFunc{}, hq.order...),
+		predicates:            append([]predicate.Host{}, hq.predicates...),
+		withHostToDisk:        hq.withHostToDisk.Clone(),
+		withHostToUser:        hq.withHostToUser.Clone(),
+		withHostToTag:         hq.withHostToTag.Clone(),
+		withHostToEnvironment: hq.withHostToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  hq.sql.Clone(),
 		path: hq.path,
 	}
 }
 
-//  WithDisk tells the query-builder to eager-loads the nodes that are connected to
-// the "disk" edge. The optional arguments used to configure the query builder of the edge.
-func (hq *HostQuery) WithDisk(opts ...func(*DiskQuery)) *HostQuery {
+//  WithHostToDisk tells the query-builder to eager-loads the nodes that are connected to
+// the "HostToDisk" edge. The optional arguments used to configure the query builder of the edge.
+func (hq *HostQuery) WithHostToDisk(opts ...func(*DiskQuery)) *HostQuery {
 	query := &DiskQuery{config: hq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	hq.withDisk = query
+	hq.withHostToDisk = query
 	return hq
 }
 
-//  WithMaintainer tells the query-builder to eager-loads the nodes that are connected to
-// the "maintainer" edge. The optional arguments used to configure the query builder of the edge.
-func (hq *HostQuery) WithMaintainer(opts ...func(*UserQuery)) *HostQuery {
+//  WithHostToUser tells the query-builder to eager-loads the nodes that are connected to
+// the "HostToUser" edge. The optional arguments used to configure the query builder of the edge.
+func (hq *HostQuery) WithHostToUser(opts ...func(*UserQuery)) *HostQuery {
 	query := &UserQuery{config: hq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	hq.withMaintainer = query
+	hq.withHostToUser = query
 	return hq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (hq *HostQuery) WithTag(opts ...func(*TagQuery)) *HostQuery {
+//  WithHostToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "HostToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (hq *HostQuery) WithHostToTag(opts ...func(*TagQuery)) *HostQuery {
 	query := &TagQuery{config: hq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	hq.withTag = query
+	hq.withHostToTag = query
+	return hq
+}
+
+//  WithHostToEnvironment tells the query-builder to eager-loads the nodes that are connected to
+// the "HostToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+func (hq *HostQuery) WithHostToEnvironment(opts ...func(*EnvironmentQuery)) *HostQuery {
+	query := &EnvironmentQuery{config: hq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	hq.withHostToEnvironment = query
 	return hq
 }
 
@@ -410,10 +446,11 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 		nodes       = []*Host{}
 		withFKs     = hq.withFKs
 		_spec       = hq.querySpec()
-		loadedTypes = [3]bool{
-			hq.withDisk != nil,
-			hq.withMaintainer != nil,
-			hq.withTag != nil,
+		loadedTypes = [4]bool{
+			hq.withHostToDisk != nil,
+			hq.withHostToUser != nil,
+			hq.withHostToTag != nil,
+			hq.withHostToEnvironment != nil,
 		}
 	)
 	if withFKs {
@@ -443,90 +480,154 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 		return nodes, nil
 	}
 
-	if query := hq.withDisk; query != nil {
+	if query := hq.withHostToDisk; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Disk = []*Disk{}
+			nodes[i].Edges.HostToDisk = []*Disk{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Disk(func(s *sql.Selector) {
-			s.Where(sql.InValues(host.DiskColumn, fks...))
+			s.Where(sql.InValues(host.HostToDiskColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.host_disk
+			fk := n.host_host_to_disk
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "host_disk" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "host_host_to_disk" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "host_disk" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_host_to_disk" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Disk = append(node.Edges.Disk, n)
+			node.Edges.HostToDisk = append(node.Edges.HostToDisk, n)
 		}
 	}
 
-	if query := hq.withMaintainer; query != nil {
+	if query := hq.withHostToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Maintainer = []*User{}
+			nodes[i].Edges.HostToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(host.MaintainerColumn, fks...))
+			s.Where(sql.InValues(host.HostToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.host_maintainer
+			fk := n.host_host_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "host_maintainer" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "host_host_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "host_maintainer" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_host_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Maintainer = append(node.Edges.Maintainer, n)
+			node.Edges.HostToUser = append(node.Edges.HostToUser, n)
 		}
 	}
 
-	if query := hq.withTag; query != nil {
+	if query := hq.withHostToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.HostToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(host.TagColumn, fks...))
+			s.Where(sql.InValues(host.HostToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.host_tag
+			fk := n.host_host_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "host_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "host_host_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "host_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_host_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.HostToTag = append(node.Edges.HostToTag, n)
+		}
+	}
+
+	if query := hq.withHostToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Host, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.HostToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Host)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   host.HostToEnvironmentTable,
+				Columns: host.HostToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(host.HostToEnvironmentPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, hq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "HostToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "HostToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.HostToEnvironment = append(nodes[i].Edges.HostToEnvironment, n)
+			}
 		}
 	}
 

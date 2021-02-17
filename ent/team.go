@@ -29,37 +29,37 @@ type Team struct {
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
 type TeamEdges struct {
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Build holds the value of the build edge.
-	Build []*Build
+	// TeamToUser holds the value of the TeamToUser edge.
+	TeamToUser []*User
+	// TeamToBuild holds the value of the TeamToBuild edge.
+	TeamToBuild []*Build
 	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
 	TeamToEnvironment []*Environment
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// ProvisionedNetworks holds the value of the provisioned_networks edge.
-	ProvisionedNetworks []*ProvisionedNetwork
+	// TeamToTag holds the value of the TeamToTag edge.
+	TeamToTag []*Tag
+	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
+	TeamToProvisionedNetwork []*ProvisionedNetwork
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// TeamToUserOrErr returns the TeamToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) MaintainerOrErr() ([]*User, error) {
+func (e TeamEdges) TeamToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.Maintainer, nil
+		return e.TeamToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "TeamToUser"}
 }
 
-// BuildOrErr returns the Build value or an error if the edge
+// TeamToBuildOrErr returns the TeamToBuild value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) BuildOrErr() ([]*Build, error) {
+func (e TeamEdges) TeamToBuildOrErr() ([]*Build, error) {
 	if e.loadedTypes[1] {
-		return e.Build, nil
+		return e.TeamToBuild, nil
 	}
-	return nil, &NotLoadedError{edge: "build"}
+	return nil, &NotLoadedError{edge: "TeamToBuild"}
 }
 
 // TeamToEnvironmentOrErr returns the TeamToEnvironment value or an error if the edge
@@ -71,22 +71,22 @@ func (e TeamEdges) TeamToEnvironmentOrErr() ([]*Environment, error) {
 	return nil, &NotLoadedError{edge: "TeamToEnvironment"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// TeamToTagOrErr returns the TeamToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) TagOrErr() ([]*Tag, error) {
+func (e TeamEdges) TeamToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[3] {
-		return e.Tag, nil
+		return e.TeamToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "TeamToTag"}
 }
 
-// ProvisionedNetworksOrErr returns the ProvisionedNetworks value or an error if the edge
+// TeamToProvisionedNetworkOrErr returns the TeamToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) ProvisionedNetworksOrErr() ([]*ProvisionedNetwork, error) {
+func (e TeamEdges) TeamToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
 	if e.loadedTypes[4] {
-		return e.ProvisionedNetworks, nil
+		return e.TeamToProvisionedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_networks"}
+	return nil, &NotLoadedError{edge: "TeamToProvisionedNetwork"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -132,14 +132,14 @@ func (t *Team) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryMaintainer queries the maintainer edge of the Team.
-func (t *Team) QueryMaintainer() *UserQuery {
-	return (&TeamClient{config: t.config}).QueryMaintainer(t)
+// QueryTeamToUser queries the TeamToUser edge of the Team.
+func (t *Team) QueryTeamToUser() *UserQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToUser(t)
 }
 
-// QueryBuild queries the build edge of the Team.
-func (t *Team) QueryBuild() *BuildQuery {
-	return (&TeamClient{config: t.config}).QueryBuild(t)
+// QueryTeamToBuild queries the TeamToBuild edge of the Team.
+func (t *Team) QueryTeamToBuild() *BuildQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToBuild(t)
 }
 
 // QueryTeamToEnvironment queries the TeamToEnvironment edge of the Team.
@@ -147,14 +147,14 @@ func (t *Team) QueryTeamToEnvironment() *EnvironmentQuery {
 	return (&TeamClient{config: t.config}).QueryTeamToEnvironment(t)
 }
 
-// QueryTag queries the tag edge of the Team.
-func (t *Team) QueryTag() *TagQuery {
-	return (&TeamClient{config: t.config}).QueryTag(t)
+// QueryTeamToTag queries the TeamToTag edge of the Team.
+func (t *Team) QueryTeamToTag() *TagQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToTag(t)
 }
 
-// QueryProvisionedNetworks queries the provisioned_networks edge of the Team.
-func (t *Team) QueryProvisionedNetworks() *ProvisionedNetworkQuery {
-	return (&TeamClient{config: t.config}).QueryProvisionedNetworks(t)
+// QueryTeamToProvisionedNetwork queries the TeamToProvisionedNetwork edge of the Team.
+func (t *Team) QueryTeamToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToProvisionedNetwork(t)
 }
 
 // Update returns a builder for updating this Team.

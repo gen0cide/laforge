@@ -26,75 +26,67 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
-	// EdgeHost holds the string denoting the host edge name in mutations.
-	EdgeHost = "host"
-	// EdgeCompetition holds the string denoting the competition edge name in mutations.
-	EdgeCompetition = "competition"
-	// EdgeBuild holds the string denoting the build edge name in mutations.
-	EdgeBuild = "build"
-	// EdgeIncludedNetwork holds the string denoting the included_network edge name in mutations.
-	EdgeIncludedNetwork = "included_network"
-	// EdgeNetwork holds the string denoting the network edge name in mutations.
-	EdgeNetwork = "network"
-	// EdgeTeam holds the string denoting the team edge name in mutations.
-	EdgeTeam = "team"
+	// EdgeEnvironmentToTag holds the string denoting the environmenttotag edge name in mutations.
+	EdgeEnvironmentToTag = "EnvironmentToTag"
+	// EdgeEnvironmentToUser holds the string denoting the environmenttouser edge name in mutations.
+	EdgeEnvironmentToUser = "EnvironmentToUser"
+	// EdgeEnvironmentToHost holds the string denoting the environmenttohost edge name in mutations.
+	EdgeEnvironmentToHost = "EnvironmentToHost"
+	// EdgeEnvironmentToCompetition holds the string denoting the environmenttocompetition edge name in mutations.
+	EdgeEnvironmentToCompetition = "EnvironmentToCompetition"
+	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
+	EdgeEnvironmentToBuild = "EnvironmentToBuild"
+	// EdgeEnvironmentToIncludedNetwork holds the string denoting the environmenttoincludednetwork edge name in mutations.
+	EdgeEnvironmentToIncludedNetwork = "EnvironmentToIncludedNetwork"
+	// EdgeEnvironmentToNetwork holds the string denoting the environmenttonetwork edge name in mutations.
+	EdgeEnvironmentToNetwork = "EnvironmentToNetwork"
+	// EdgeEnvironmentToTeam holds the string denoting the environmenttoteam edge name in mutations.
+	EdgeEnvironmentToTeam = "EnvironmentToTeam"
 
 	// Table holds the table name of the environment in the database.
 	Table = "environments"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// EnvironmentToTagTable is the table the holds the EnvironmentToTag relation/edge.
+	EnvironmentToTagTable = "tags"
+	// EnvironmentToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "environment_tag"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	EnvironmentToTagInverseTable = "tags"
+	// EnvironmentToTagColumn is the table column denoting the EnvironmentToTag relation/edge.
+	EnvironmentToTagColumn = "environment_environment_to_tag"
+	// EnvironmentToUserTable is the table the holds the EnvironmentToUser relation/edge. The primary key declared below.
+	EnvironmentToUserTable = "environment_EnvironmentToUser"
+	// EnvironmentToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "environment_user"
-	// HostTable is the table the holds the host relation/edge.
-	HostTable = "hosts"
-	// HostInverseTable is the table name for the Host entity.
+	EnvironmentToUserInverseTable = "users"
+	// EnvironmentToHostTable is the table the holds the EnvironmentToHost relation/edge. The primary key declared below.
+	EnvironmentToHostTable = "environment_EnvironmentToHost"
+	// EnvironmentToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
-	HostInverseTable = "hosts"
-	// HostColumn is the table column denoting the host relation/edge.
-	HostColumn = "environment_host"
-	// CompetitionTable is the table the holds the competition relation/edge.
-	CompetitionTable = "competitions"
-	// CompetitionInverseTable is the table name for the Competition entity.
+	EnvironmentToHostInverseTable = "hosts"
+	// EnvironmentToCompetitionTable is the table the holds the EnvironmentToCompetition relation/edge. The primary key declared below.
+	EnvironmentToCompetitionTable = "environment_EnvironmentToCompetition"
+	// EnvironmentToCompetitionInverseTable is the table name for the Competition entity.
 	// It exists in this package in order to avoid circular dependency with the "competition" package.
-	CompetitionInverseTable = "competitions"
-	// CompetitionColumn is the table column denoting the competition relation/edge.
-	CompetitionColumn = "environment_competition"
-	// BuildTable is the table the holds the build relation/edge.
-	BuildTable = "builds"
-	// BuildInverseTable is the table name for the Build entity.
+	EnvironmentToCompetitionInverseTable = "competitions"
+	// EnvironmentToBuildTable is the table the holds the EnvironmentToBuild relation/edge. The primary key declared below.
+	EnvironmentToBuildTable = "environment_EnvironmentToBuild"
+	// EnvironmentToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
-	BuildInverseTable = "builds"
-	// BuildColumn is the table column denoting the build relation/edge.
-	BuildColumn = "environment_build"
-	// IncludedNetworkTable is the table the holds the included_network relation/edge. The primary key declared below.
-	IncludedNetworkTable = "included_network_IncludedNetworkToEnvironment"
-	// IncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
+	EnvironmentToBuildInverseTable = "builds"
+	// EnvironmentToIncludedNetworkTable is the table the holds the EnvironmentToIncludedNetwork relation/edge. The primary key declared below.
+	EnvironmentToIncludedNetworkTable = "included_network_IncludedNetworkToEnvironment"
+	// EnvironmentToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
-	IncludedNetworkInverseTable = "included_networks"
-	// NetworkTable is the table the holds the network relation/edge. The primary key declared below.
-	NetworkTable = "network_NetworkToEnvironment"
-	// NetworkInverseTable is the table name for the Network entity.
+	EnvironmentToIncludedNetworkInverseTable = "included_networks"
+	// EnvironmentToNetworkTable is the table the holds the EnvironmentToNetwork relation/edge. The primary key declared below.
+	EnvironmentToNetworkTable = "network_NetworkToEnvironment"
+	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
-	NetworkInverseTable = "networks"
-	// TeamTable is the table the holds the team relation/edge. The primary key declared below.
-	TeamTable = "team_TeamToEnvironment"
-	// TeamInverseTable is the table name for the Team entity.
+	EnvironmentToNetworkInverseTable = "networks"
+	// EnvironmentToTeamTable is the table the holds the EnvironmentToTeam relation/edge. The primary key declared below.
+	EnvironmentToTeamTable = "team_TeamToEnvironment"
+	// EnvironmentToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
-	TeamInverseTable = "teams"
+	EnvironmentToTeamInverseTable = "teams"
 )
 
 // Columns holds all SQL columns for environment fields.
@@ -112,15 +104,27 @@ var Columns = []string{
 }
 
 var (
-	// IncludedNetworkPrimaryKey and IncludedNetworkColumn2 are the table columns denoting the
-	// primary key for the included_network relation (M2M).
-	IncludedNetworkPrimaryKey = []string{"included_network_id", "environment_id"}
-	// NetworkPrimaryKey and NetworkColumn2 are the table columns denoting the
-	// primary key for the network relation (M2M).
-	NetworkPrimaryKey = []string{"network_id", "environment_id"}
-	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
-	// primary key for the team relation (M2M).
-	TeamPrimaryKey = []string{"team_id", "environment_id"}
+	// EnvironmentToUserPrimaryKey and EnvironmentToUserColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToUser relation (M2M).
+	EnvironmentToUserPrimaryKey = []string{"environment_id", "user_id"}
+	// EnvironmentToHostPrimaryKey and EnvironmentToHostColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToHost relation (M2M).
+	EnvironmentToHostPrimaryKey = []string{"environment_id", "host_id"}
+	// EnvironmentToCompetitionPrimaryKey and EnvironmentToCompetitionColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToCompetition relation (M2M).
+	EnvironmentToCompetitionPrimaryKey = []string{"environment_id", "competition_id"}
+	// EnvironmentToBuildPrimaryKey and EnvironmentToBuildColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToBuild relation (M2M).
+	EnvironmentToBuildPrimaryKey = []string{"environment_id", "build_id"}
+	// EnvironmentToIncludedNetworkPrimaryKey and EnvironmentToIncludedNetworkColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToIncludedNetwork relation (M2M).
+	EnvironmentToIncludedNetworkPrimaryKey = []string{"included_network_id", "environment_id"}
+	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToNetwork relation (M2M).
+	EnvironmentToNetworkPrimaryKey = []string{"network_id", "environment_id"}
+	// EnvironmentToTeamPrimaryKey and EnvironmentToTeamColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToTeam relation (M2M).
+	EnvironmentToTeamPrimaryKey = []string{"team_id", "environment_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

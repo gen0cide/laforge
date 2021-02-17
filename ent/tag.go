@@ -22,24 +22,30 @@ type Tag struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description          map[string]string `json:"description,omitempty"`
-	build_tag            *int
-	command_tag          *int
-	dns_record_tag       *int
-	disk_tag             *int
-	environment_tag      *int
-	file_delete_tag      *int
-	file_download_tag    *int
-	file_extract_tag     *int
-	finding_tag          *int
-	host_tag             *int
-	included_network_tag *int
-	network_tag          *int
-	remote_file_tag      *int
-	script_tag           *int
-	status_tag           *int
-	team_tag             *int
-	user_tag             *int
+	Description                                    map[string]string `json:"description,omitempty"`
+	agent_status_agent_status_to_tag               *int
+	build_build_to_tag                             *int
+	command_command_to_tag                         *int
+	competition_competition_to_tag                 *int
+	dns_dns_to_tag                                 *int
+	dns_record_dns_record_to_tag                   *int
+	disk_disk_to_tag                               *int
+	environment_environment_to_tag                 *int
+	file_delete_file_delete_to_tag                 *int
+	file_download_file_download_to_tag             *int
+	file_extract_file_extract_to_tag               *int
+	finding_finding_to_tag                         *int
+	host_host_to_tag                               *int
+	included_network_included_network_to_tag       *int
+	network_network_to_tag                         *int
+	provisioned_host_provisioned_host_to_tag       *int
+	provisioned_network_provisioned_network_to_tag *int
+	provisioning_step_provisioning_step_to_tag     *int
+	remote_file_remote_file_to_tag                 *int
+	script_script_to_tag                           *int
+	status_status_to_tag                           *int
+	team_team_to_tag                               *int
+	user_user_to_tag                               *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -55,23 +61,29 @@ func (*Tag) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Tag) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // build_tag
-		&sql.NullInt64{}, // command_tag
-		&sql.NullInt64{}, // dns_record_tag
-		&sql.NullInt64{}, // disk_tag
-		&sql.NullInt64{}, // environment_tag
-		&sql.NullInt64{}, // file_delete_tag
-		&sql.NullInt64{}, // file_download_tag
-		&sql.NullInt64{}, // file_extract_tag
-		&sql.NullInt64{}, // finding_tag
-		&sql.NullInt64{}, // host_tag
-		&sql.NullInt64{}, // included_network_tag
-		&sql.NullInt64{}, // network_tag
-		&sql.NullInt64{}, // remote_file_tag
-		&sql.NullInt64{}, // script_tag
-		&sql.NullInt64{}, // status_tag
-		&sql.NullInt64{}, // team_tag
-		&sql.NullInt64{}, // user_tag
+		&sql.NullInt64{}, // agent_status_agent_status_to_tag
+		&sql.NullInt64{}, // build_build_to_tag
+		&sql.NullInt64{}, // command_command_to_tag
+		&sql.NullInt64{}, // competition_competition_to_tag
+		&sql.NullInt64{}, // dns_dns_to_tag
+		&sql.NullInt64{}, // dns_record_dns_record_to_tag
+		&sql.NullInt64{}, // disk_disk_to_tag
+		&sql.NullInt64{}, // environment_environment_to_tag
+		&sql.NullInt64{}, // file_delete_file_delete_to_tag
+		&sql.NullInt64{}, // file_download_file_download_to_tag
+		&sql.NullInt64{}, // file_extract_file_extract_to_tag
+		&sql.NullInt64{}, // finding_finding_to_tag
+		&sql.NullInt64{}, // host_host_to_tag
+		&sql.NullInt64{}, // included_network_included_network_to_tag
+		&sql.NullInt64{}, // network_network_to_tag
+		&sql.NullInt64{}, // provisioned_host_provisioned_host_to_tag
+		&sql.NullInt64{}, // provisioned_network_provisioned_network_to_tag
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_tag
+		&sql.NullInt64{}, // remote_file_remote_file_to_tag
+		&sql.NullInt64{}, // script_script_to_tag
+		&sql.NullInt64{}, // status_status_to_tag
+		&sql.NullInt64{}, // team_team_to_tag
+		&sql.NullInt64{}, // user_user_to_tag
 	}
 }
 
@@ -108,106 +120,142 @@ func (t *Tag) assignValues(values ...interface{}) error {
 	values = values[3:]
 	if len(values) == len(tag.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field agent_status_agent_status_to_tag", value)
 		} else if value.Valid {
-			t.build_tag = new(int)
-			*t.build_tag = int(value.Int64)
+			t.agent_status_agent_status_to_tag = new(int)
+			*t.agent_status_agent_status_to_tag = int(value.Int64)
 		}
 		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field command_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field build_build_to_tag", value)
 		} else if value.Valid {
-			t.command_tag = new(int)
-			*t.command_tag = int(value.Int64)
+			t.build_build_to_tag = new(int)
+			*t.build_build_to_tag = int(value.Int64)
 		}
 		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field dns_record_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field command_command_to_tag", value)
 		} else if value.Valid {
-			t.dns_record_tag = new(int)
-			*t.dns_record_tag = int(value.Int64)
+			t.command_command_to_tag = new(int)
+			*t.command_command_to_tag = int(value.Int64)
 		}
 		if value, ok := values[3].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field disk_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field competition_competition_to_tag", value)
 		} else if value.Valid {
-			t.disk_tag = new(int)
-			*t.disk_tag = int(value.Int64)
+			t.competition_competition_to_tag = new(int)
+			*t.competition_competition_to_tag = int(value.Int64)
 		}
 		if value, ok := values[4].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field dns_dns_to_tag", value)
 		} else if value.Valid {
-			t.environment_tag = new(int)
-			*t.environment_tag = int(value.Int64)
+			t.dns_dns_to_tag = new(int)
+			*t.dns_dns_to_tag = int(value.Int64)
 		}
 		if value, ok := values[5].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_delete_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field dns_record_dns_record_to_tag", value)
 		} else if value.Valid {
-			t.file_delete_tag = new(int)
-			*t.file_delete_tag = int(value.Int64)
+			t.dns_record_dns_record_to_tag = new(int)
+			*t.dns_record_dns_record_to_tag = int(value.Int64)
 		}
 		if value, ok := values[6].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_download_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field disk_disk_to_tag", value)
 		} else if value.Valid {
-			t.file_download_tag = new(int)
-			*t.file_download_tag = int(value.Int64)
+			t.disk_disk_to_tag = new(int)
+			*t.disk_disk_to_tag = int(value.Int64)
 		}
 		if value, ok := values[7].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_extract_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_tag", value)
 		} else if value.Valid {
-			t.file_extract_tag = new(int)
-			*t.file_extract_tag = int(value.Int64)
+			t.environment_environment_to_tag = new(int)
+			*t.environment_environment_to_tag = int(value.Int64)
 		}
 		if value, ok := values[8].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field file_delete_file_delete_to_tag", value)
 		} else if value.Valid {
-			t.finding_tag = new(int)
-			*t.finding_tag = int(value.Int64)
+			t.file_delete_file_delete_to_tag = new(int)
+			*t.file_delete_file_delete_to_tag = int(value.Int64)
 		}
 		if value, ok := values[9].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field file_download_file_download_to_tag", value)
 		} else if value.Valid {
-			t.host_tag = new(int)
-			*t.host_tag = int(value.Int64)
+			t.file_download_file_download_to_tag = new(int)
+			*t.file_download_file_download_to_tag = int(value.Int64)
 		}
 		if value, ok := values[10].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field included_network_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field file_extract_file_extract_to_tag", value)
 		} else if value.Valid {
-			t.included_network_tag = new(int)
-			*t.included_network_tag = int(value.Int64)
+			t.file_extract_file_extract_to_tag = new(int)
+			*t.file_extract_file_extract_to_tag = int(value.Int64)
 		}
 		if value, ok := values[11].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field network_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_tag", value)
 		} else if value.Valid {
-			t.network_tag = new(int)
-			*t.network_tag = int(value.Int64)
+			t.finding_finding_to_tag = new(int)
+			*t.finding_finding_to_tag = int(value.Int64)
 		}
 		if value, ok := values[12].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field remote_file_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field host_host_to_tag", value)
 		} else if value.Valid {
-			t.remote_file_tag = new(int)
-			*t.remote_file_tag = int(value.Int64)
+			t.host_host_to_tag = new(int)
+			*t.host_host_to_tag = int(value.Int64)
 		}
 		if value, ok := values[13].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field script_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field included_network_included_network_to_tag", value)
 		} else if value.Valid {
-			t.script_tag = new(int)
-			*t.script_tag = int(value.Int64)
+			t.included_network_included_network_to_tag = new(int)
+			*t.included_network_included_network_to_tag = int(value.Int64)
 		}
 		if value, ok := values[14].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field status_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field network_network_to_tag", value)
 		} else if value.Valid {
-			t.status_tag = new(int)
-			*t.status_tag = int(value.Int64)
+			t.network_network_to_tag = new(int)
+			*t.network_network_to_tag = int(value.Int64)
 		}
 		if value, ok := values[15].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_tag", value)
 		} else if value.Valid {
-			t.team_tag = new(int)
-			*t.team_tag = int(value.Int64)
+			t.provisioned_host_provisioned_host_to_tag = new(int)
+			*t.provisioned_host_provisioned_host_to_tag = int(value.Int64)
 		}
 		if value, ok := values[16].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field user_tag", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_tag", value)
 		} else if value.Valid {
-			t.user_tag = new(int)
-			*t.user_tag = int(value.Int64)
+			t.provisioned_network_provisioned_network_to_tag = new(int)
+			*t.provisioned_network_provisioned_network_to_tag = int(value.Int64)
+		}
+		if value, ok := values[17].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_tag", value)
+		} else if value.Valid {
+			t.provisioning_step_provisioning_step_to_tag = new(int)
+			*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
+		}
+		if value, ok := values[18].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field remote_file_remote_file_to_tag", value)
+		} else if value.Valid {
+			t.remote_file_remote_file_to_tag = new(int)
+			*t.remote_file_remote_file_to_tag = int(value.Int64)
+		}
+		if value, ok := values[19].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
+		} else if value.Valid {
+			t.script_script_to_tag = new(int)
+			*t.script_script_to_tag = int(value.Int64)
+		}
+		if value, ok := values[20].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field status_status_to_tag", value)
+		} else if value.Valid {
+			t.status_status_to_tag = new(int)
+			*t.status_status_to_tag = int(value.Int64)
+		}
+		if value, ok := values[21].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field team_team_to_tag", value)
+		} else if value.Valid {
+			t.team_team_to_tag = new(int)
+			*t.team_team_to_tag = int(value.Int64)
+		}
+		if value, ok := values[22].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
+		} else if value.Valid {
+			t.user_user_to_tag = new(int)
+			*t.user_user_to_tag = int(value.Int64)
 		}
 	}
 	return nil

@@ -25,7 +25,7 @@ type FileExtractQuery struct {
 	order      []OrderFunc
 	predicates []predicate.FileExtract
 	// eager-loading edges.
-	withTag *TagQuery
+	withFileExtractToTag *TagQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,8 +55,8 @@ func (feq *FileExtractQuery) Order(o ...OrderFunc) *FileExtractQuery {
 	return feq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (feq *FileExtractQuery) QueryTag() *TagQuery {
+// QueryFileExtractToTag chains the current query on the FileExtractToTag edge.
+func (feq *FileExtractQuery) QueryFileExtractToTag() *TagQuery {
 	query := &TagQuery{config: feq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := feq.prepareQuery(ctx); err != nil {
@@ -69,7 +69,7 @@ func (feq *FileExtractQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fileextract.Table, fileextract.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.TagTable, fileextract.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.FileExtractToTagTable, fileextract.FileExtractToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(feq.driver.Dialect(), step)
 		return fromU, nil
@@ -247,26 +247,26 @@ func (feq *FileExtractQuery) Clone() *FileExtractQuery {
 		return nil
 	}
 	return &FileExtractQuery{
-		config:     feq.config,
-		limit:      feq.limit,
-		offset:     feq.offset,
-		order:      append([]OrderFunc{}, feq.order...),
-		predicates: append([]predicate.FileExtract{}, feq.predicates...),
-		withTag:    feq.withTag.Clone(),
+		config:               feq.config,
+		limit:                feq.limit,
+		offset:               feq.offset,
+		order:                append([]OrderFunc{}, feq.order...),
+		predicates:           append([]predicate.FileExtract{}, feq.predicates...),
+		withFileExtractToTag: feq.withFileExtractToTag.Clone(),
 		// clone intermediate query.
 		sql:  feq.sql.Clone(),
 		path: feq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (feq *FileExtractQuery) WithTag(opts ...func(*TagQuery)) *FileExtractQuery {
+//  WithFileExtractToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "FileExtractToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (feq *FileExtractQuery) WithFileExtractToTag(opts ...func(*TagQuery)) *FileExtractQuery {
 	query := &TagQuery{config: feq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	feq.withTag = query
+	feq.withFileExtractToTag = query
 	return feq
 }
 
@@ -337,7 +337,7 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 		nodes       = []*FileExtract{}
 		_spec       = feq.querySpec()
 		loadedTypes = [1]bool{
-			feq.withTag != nil,
+			feq.withFileExtractToTag != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -361,32 +361,32 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 		return nodes, nil
 	}
 
-	if query := feq.withTag; query != nil {
+	if query := feq.withFileExtractToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*FileExtract)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FileExtractToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(fileextract.TagColumn, fks...))
+			s.Where(sql.InValues(fileextract.FileExtractToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.file_extract_tag
+			fk := n.file_extract_file_extract_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_extract_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "file_extract_file_extract_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_extract_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "file_extract_file_extract_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FileExtractToTag = append(node.Edges.FileExtractToTag, n)
 		}
 	}
 

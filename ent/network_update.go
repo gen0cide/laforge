@@ -52,19 +52,19 @@ func (nu *NetworkUpdate) SetVars(m map[string]string) *NetworkUpdate {
 	return nu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nu *NetworkUpdate) AddTagIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.AddTagIDs(ids...)
+// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+func (nu *NetworkUpdate) AddNetworkToTagIDs(ids ...int) *NetworkUpdate {
+	nu.mutation.AddNetworkToTagIDs(ids...)
 	return nu
 }
 
-// AddTag adds the tag edges to Tag.
-func (nu *NetworkUpdate) AddTag(t ...*Tag) *NetworkUpdate {
+// AddNetworkToTag adds the NetworkToTag edges to Tag.
+func (nu *NetworkUpdate) AddNetworkToTag(t ...*Tag) *NetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nu.AddTagIDs(ids...)
+	return nu.AddNetworkToTagIDs(ids...)
 }
 
 // AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
@@ -87,25 +87,25 @@ func (nu *NetworkUpdate) Mutation() *NetworkMutation {
 	return nu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (nu *NetworkUpdate) ClearTag() *NetworkUpdate {
-	nu.mutation.ClearTag()
+// ClearNetworkToTag clears all "NetworkToTag" edges to type Tag.
+func (nu *NetworkUpdate) ClearNetworkToTag() *NetworkUpdate {
+	nu.mutation.ClearNetworkToTag()
 	return nu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (nu *NetworkUpdate) RemoveTagIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.RemoveTagIDs(ids...)
+// RemoveNetworkToTagIDs removes the NetworkToTag edge to Tag by ids.
+func (nu *NetworkUpdate) RemoveNetworkToTagIDs(ids ...int) *NetworkUpdate {
+	nu.mutation.RemoveNetworkToTagIDs(ids...)
 	return nu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (nu *NetworkUpdate) RemoveTag(t ...*Tag) *NetworkUpdate {
+// RemoveNetworkToTag removes NetworkToTag edges to Tag.
+func (nu *NetworkUpdate) RemoveNetworkToTag(t ...*Tag) *NetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nu.RemoveTagIDs(ids...)
+	return nu.RemoveNetworkToTagIDs(ids...)
 }
 
 // ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
@@ -226,12 +226,12 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: network.FieldVars,
 		})
 	}
-	if nu.mutation.TagCleared() {
+	if nu.mutation.NetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -242,12 +242,12 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.RemovedTagIDs(); len(nodes) > 0 && !nu.mutation.TagCleared() {
+	if nodes := nu.mutation.RemovedNetworkToTagIDs(); len(nodes) > 0 && !nu.mutation.NetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -261,12 +261,12 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := nu.mutation.NetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -376,19 +376,19 @@ func (nuo *NetworkUpdateOne) SetVars(m map[string]string) *NetworkUpdateOne {
 	return nuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nuo *NetworkUpdateOne) AddTagIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.AddTagIDs(ids...)
+// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+func (nuo *NetworkUpdateOne) AddNetworkToTagIDs(ids ...int) *NetworkUpdateOne {
+	nuo.mutation.AddNetworkToTagIDs(ids...)
 	return nuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (nuo *NetworkUpdateOne) AddTag(t ...*Tag) *NetworkUpdateOne {
+// AddNetworkToTag adds the NetworkToTag edges to Tag.
+func (nuo *NetworkUpdateOne) AddNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nuo.AddTagIDs(ids...)
+	return nuo.AddNetworkToTagIDs(ids...)
 }
 
 // AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
@@ -411,25 +411,25 @@ func (nuo *NetworkUpdateOne) Mutation() *NetworkMutation {
 	return nuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (nuo *NetworkUpdateOne) ClearTag() *NetworkUpdateOne {
-	nuo.mutation.ClearTag()
+// ClearNetworkToTag clears all "NetworkToTag" edges to type Tag.
+func (nuo *NetworkUpdateOne) ClearNetworkToTag() *NetworkUpdateOne {
+	nuo.mutation.ClearNetworkToTag()
 	return nuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (nuo *NetworkUpdateOne) RemoveTagIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.RemoveTagIDs(ids...)
+// RemoveNetworkToTagIDs removes the NetworkToTag edge to Tag by ids.
+func (nuo *NetworkUpdateOne) RemoveNetworkToTagIDs(ids ...int) *NetworkUpdateOne {
+	nuo.mutation.RemoveNetworkToTagIDs(ids...)
 	return nuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (nuo *NetworkUpdateOne) RemoveTag(t ...*Tag) *NetworkUpdateOne {
+// RemoveNetworkToTag removes NetworkToTag edges to Tag.
+func (nuo *NetworkUpdateOne) RemoveNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nuo.RemoveTagIDs(ids...)
+	return nuo.RemoveNetworkToTagIDs(ids...)
 }
 
 // ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
@@ -548,12 +548,12 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 			Column: network.FieldVars,
 		})
 	}
-	if nuo.mutation.TagCleared() {
+	if nuo.mutation.NetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -564,12 +564,12 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !nuo.mutation.TagCleared() {
+	if nodes := nuo.mutation.RemovedNetworkToTagIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -583,12 +583,12 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := nuo.mutation.NetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -40,19 +40,19 @@ func (inu *IncludedNetworkUpdate) SetHosts(s []string) *IncludedNetworkUpdate {
 	return inu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (inu *IncludedNetworkUpdate) AddTagIDs(ids ...int) *IncludedNetworkUpdate {
-	inu.mutation.AddTagIDs(ids...)
+// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
+	inu.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
-// AddTag adds the tag edges to Tag.
-func (inu *IncludedNetworkUpdate) AddTag(t ...*Tag) *IncludedNetworkUpdate {
+// AddIncludedNetworkToTag adds the IncludedNetworkToTag edges to Tag.
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inu.AddTagIDs(ids...)
+	return inu.AddIncludedNetworkToTagIDs(ids...)
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
@@ -75,25 +75,25 @@ func (inu *IncludedNetworkUpdate) Mutation() *IncludedNetworkMutation {
 	return inu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (inu *IncludedNetworkUpdate) ClearTag() *IncludedNetworkUpdate {
-	inu.mutation.ClearTag()
+// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to type Tag.
+func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToTag() *IncludedNetworkUpdate {
+	inu.mutation.ClearIncludedNetworkToTag()
 	return inu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (inu *IncludedNetworkUpdate) RemoveTagIDs(ids ...int) *IncludedNetworkUpdate {
-	inu.mutation.RemoveTagIDs(ids...)
+// RemoveIncludedNetworkToTagIDs removes the IncludedNetworkToTag edge to Tag by ids.
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
+	inu.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (inu *IncludedNetworkUpdate) RemoveTag(t ...*Tag) *IncludedNetworkUpdate {
+// RemoveIncludedNetworkToTag removes IncludedNetworkToTag edges to Tag.
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inu.RemoveTagIDs(ids...)
+	return inu.RemoveIncludedNetworkToTagIDs(ids...)
 }
 
 // ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to type Environment.
@@ -200,12 +200,12 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Column: includednetwork.FieldHosts,
 		})
 	}
-	if inu.mutation.TagCleared() {
+	if inu.mutation.IncludedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -216,12 +216,12 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := inu.mutation.RemovedTagIDs(); len(nodes) > 0 && !inu.mutation.TagCleared() {
+	if nodes := inu.mutation.RemovedIncludedNetworkToTagIDs(); len(nodes) > 0 && !inu.mutation.IncludedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -235,12 +235,12 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := inu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := inu.mutation.IncludedNetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -338,19 +338,19 @@ func (inuo *IncludedNetworkUpdateOne) SetHosts(s []string) *IncludedNetworkUpdat
 	return inuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (inuo *IncludedNetworkUpdateOne) AddTagIDs(ids ...int) *IncludedNetworkUpdateOne {
-	inuo.mutation.AddTagIDs(ids...)
+// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
+	inuo.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (inuo *IncludedNetworkUpdateOne) AddTag(t ...*Tag) *IncludedNetworkUpdateOne {
+// AddIncludedNetworkToTag adds the IncludedNetworkToTag edges to Tag.
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inuo.AddTagIDs(ids...)
+	return inuo.AddIncludedNetworkToTagIDs(ids...)
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
@@ -373,25 +373,25 @@ func (inuo *IncludedNetworkUpdateOne) Mutation() *IncludedNetworkMutation {
 	return inuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (inuo *IncludedNetworkUpdateOne) ClearTag() *IncludedNetworkUpdateOne {
-	inuo.mutation.ClearTag()
+// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to type Tag.
+func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToTag() *IncludedNetworkUpdateOne {
+	inuo.mutation.ClearIncludedNetworkToTag()
 	return inuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (inuo *IncludedNetworkUpdateOne) RemoveTagIDs(ids ...int) *IncludedNetworkUpdateOne {
-	inuo.mutation.RemoveTagIDs(ids...)
+// RemoveIncludedNetworkToTagIDs removes the IncludedNetworkToTag edge to Tag by ids.
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
+	inuo.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (inuo *IncludedNetworkUpdateOne) RemoveTag(t ...*Tag) *IncludedNetworkUpdateOne {
+// RemoveIncludedNetworkToTag removes IncludedNetworkToTag edges to Tag.
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inuo.RemoveTagIDs(ids...)
+	return inuo.RemoveIncludedNetworkToTagIDs(ids...)
 }
 
 // ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to type Environment.
@@ -496,12 +496,12 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Column: includednetwork.FieldHosts,
 		})
 	}
-	if inuo.mutation.TagCleared() {
+	if inuo.mutation.IncludedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -512,12 +512,12 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := inuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !inuo.mutation.TagCleared() {
+	if nodes := inuo.mutation.RemovedIncludedNetworkToTagIDs(); len(nodes) > 0 && !inuo.mutation.IncludedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -531,12 +531,12 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := inuo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := inuo.mutation.IncludedNetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

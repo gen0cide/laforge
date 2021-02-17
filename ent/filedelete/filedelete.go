@@ -10,18 +10,18 @@ const (
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeFileDeleteToTag holds the string denoting the filedeletetotag edge name in mutations.
+	EdgeFileDeleteToTag = "FileDeleteToTag"
 
 	// Table holds the table name of the filedelete in the database.
 	Table = "file_deletes"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// FileDeleteToTagTable is the table the holds the FileDeleteToTag relation/edge.
+	FileDeleteToTagTable = "tags"
+	// FileDeleteToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "file_delete_tag"
+	FileDeleteToTagInverseTable = "tags"
+	// FileDeleteToTagColumn is the table column denoting the FileDeleteToTag relation/edge.
+	FileDeleteToTagColumn = "file_delete_file_delete_to_tag"
 )
 
 // Columns holds all SQL columns for filedelete fields.

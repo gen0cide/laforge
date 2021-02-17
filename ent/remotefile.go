@@ -38,26 +38,26 @@ type RemoteFile struct {
 	Ext string `json:"ext,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RemoteFileQuery when eager-loading is set.
-	Edges                         RemoteFileEdges `json:"edges"`
-	provisioning_step_remote_file *int
+	Edges                                              RemoteFileEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_remote_file *int
 }
 
 // RemoteFileEdges holds the relations/edges for other nodes in the graph.
 type RemoteFileEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// RemoteFileToTag holds the value of the RemoteFileToTag edge.
+	RemoteFileToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// RemoteFileToTagOrErr returns the RemoteFileToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e RemoteFileEdges) TagOrErr() ([]*Tag, error) {
+func (e RemoteFileEdges) RemoteFileToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.RemoteFileToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "RemoteFileToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -80,7 +80,7 @@ func (*RemoteFile) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*RemoteFile) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_remote_file
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_remote_file
 	}
 }
 
@@ -152,18 +152,18 @@ func (rf *RemoteFile) assignValues(values ...interface{}) error {
 	values = values[10:]
 	if len(values) == len(remotefile.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_remote_file", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_remote_file", value)
 		} else if value.Valid {
-			rf.provisioning_step_remote_file = new(int)
-			*rf.provisioning_step_remote_file = int(value.Int64)
+			rf.provisioning_step_provisioning_step_to_remote_file = new(int)
+			*rf.provisioning_step_provisioning_step_to_remote_file = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the RemoteFile.
-func (rf *RemoteFile) QueryTag() *TagQuery {
-	return (&RemoteFileClient{config: rf.config}).QueryTag(rf)
+// QueryRemoteFileToTag queries the RemoteFileToTag edge of the RemoteFile.
+func (rf *RemoteFile) QueryRemoteFileToTag() *TagQuery {
+	return (&RemoteFileClient{config: rf.config}).QueryRemoteFileToTag(rf)
 }
 
 // Update returns a builder for updating this RemoteFile.

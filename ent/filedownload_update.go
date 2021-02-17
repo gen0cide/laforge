@@ -75,19 +75,19 @@ func (fdu *FileDownloadUpdate) SetAbsPath(s string) *FileDownloadUpdate {
 	return fdu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdu *FileDownloadUpdate) AddTagIDs(ids ...int) *FileDownloadUpdate {
-	fdu.mutation.AddTagIDs(ids...)
+// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+func (fdu *FileDownloadUpdate) AddFileDownloadToTagIDs(ids ...int) *FileDownloadUpdate {
+	fdu.mutation.AddFileDownloadToTagIDs(ids...)
 	return fdu
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdu *FileDownloadUpdate) AddTag(t ...*Tag) *FileDownloadUpdate {
+// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+func (fdu *FileDownloadUpdate) AddFileDownloadToTag(t ...*Tag) *FileDownloadUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fdu.AddTagIDs(ids...)
+	return fdu.AddFileDownloadToTagIDs(ids...)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -95,25 +95,25 @@ func (fdu *FileDownloadUpdate) Mutation() *FileDownloadMutation {
 	return fdu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (fdu *FileDownloadUpdate) ClearTag() *FileDownloadUpdate {
-	fdu.mutation.ClearTag()
+// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to type Tag.
+func (fdu *FileDownloadUpdate) ClearFileDownloadToTag() *FileDownloadUpdate {
+	fdu.mutation.ClearFileDownloadToTag()
 	return fdu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (fdu *FileDownloadUpdate) RemoveTagIDs(ids ...int) *FileDownloadUpdate {
-	fdu.mutation.RemoveTagIDs(ids...)
+// RemoveFileDownloadToTagIDs removes the FileDownloadToTag edge to Tag by ids.
+func (fdu *FileDownloadUpdate) RemoveFileDownloadToTagIDs(ids ...int) *FileDownloadUpdate {
+	fdu.mutation.RemoveFileDownloadToTagIDs(ids...)
 	return fdu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (fdu *FileDownloadUpdate) RemoveTag(t ...*Tag) *FileDownloadUpdate {
+// RemoveFileDownloadToTag removes FileDownloadToTag edges to Tag.
+func (fdu *FileDownloadUpdate) RemoveFileDownloadToTag(t ...*Tag) *FileDownloadUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fdu.RemoveTagIDs(ids...)
+	return fdu.RemoveFileDownloadToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -241,12 +241,12 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedownload.FieldAbsPath,
 		})
 	}
-	if fdu.mutation.TagCleared() {
+	if fdu.mutation.FileDownloadToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -257,12 +257,12 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fdu.mutation.RemovedTagIDs(); len(nodes) > 0 && !fdu.mutation.TagCleared() {
+	if nodes := fdu.mutation.RemovedFileDownloadToTagIDs(); len(nodes) > 0 && !fdu.mutation.FileDownloadToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -276,12 +276,12 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fdu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fdu.mutation.FileDownloadToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -361,19 +361,19 @@ func (fduo *FileDownloadUpdateOne) SetAbsPath(s string) *FileDownloadUpdateOne {
 	return fduo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fduo *FileDownloadUpdateOne) AddTagIDs(ids ...int) *FileDownloadUpdateOne {
-	fduo.mutation.AddTagIDs(ids...)
+// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+func (fduo *FileDownloadUpdateOne) AddFileDownloadToTagIDs(ids ...int) *FileDownloadUpdateOne {
+	fduo.mutation.AddFileDownloadToTagIDs(ids...)
 	return fduo
 }
 
-// AddTag adds the tag edges to Tag.
-func (fduo *FileDownloadUpdateOne) AddTag(t ...*Tag) *FileDownloadUpdateOne {
+// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+func (fduo *FileDownloadUpdateOne) AddFileDownloadToTag(t ...*Tag) *FileDownloadUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fduo.AddTagIDs(ids...)
+	return fduo.AddFileDownloadToTagIDs(ids...)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -381,25 +381,25 @@ func (fduo *FileDownloadUpdateOne) Mutation() *FileDownloadMutation {
 	return fduo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (fduo *FileDownloadUpdateOne) ClearTag() *FileDownloadUpdateOne {
-	fduo.mutation.ClearTag()
+// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to type Tag.
+func (fduo *FileDownloadUpdateOne) ClearFileDownloadToTag() *FileDownloadUpdateOne {
+	fduo.mutation.ClearFileDownloadToTag()
 	return fduo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (fduo *FileDownloadUpdateOne) RemoveTagIDs(ids ...int) *FileDownloadUpdateOne {
-	fduo.mutation.RemoveTagIDs(ids...)
+// RemoveFileDownloadToTagIDs removes the FileDownloadToTag edge to Tag by ids.
+func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTagIDs(ids ...int) *FileDownloadUpdateOne {
+	fduo.mutation.RemoveFileDownloadToTagIDs(ids...)
 	return fduo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (fduo *FileDownloadUpdateOne) RemoveTag(t ...*Tag) *FileDownloadUpdateOne {
+// RemoveFileDownloadToTag removes FileDownloadToTag edges to Tag.
+func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTag(t ...*Tag) *FileDownloadUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fduo.RemoveTagIDs(ids...)
+	return fduo.RemoveFileDownloadToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -525,12 +525,12 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Column: filedownload.FieldAbsPath,
 		})
 	}
-	if fduo.mutation.TagCleared() {
+	if fduo.mutation.FileDownloadToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -541,12 +541,12 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fduo.mutation.RemovedTagIDs(); len(nodes) > 0 && !fduo.mutation.TagCleared() {
+	if nodes := fduo.mutation.RemovedFileDownloadToTagIDs(); len(nodes) > 0 && !fduo.mutation.FileDownloadToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -560,12 +560,12 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fduo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fduo.mutation.FileDownloadToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Table:   filedownload.FileDownloadToTagTable,
+			Columns: []string{filedownload.FileDownloadToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

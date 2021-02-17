@@ -48,50 +48,60 @@ type Host struct {
 	DNSRecords []string `json:"dns_records,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HostQuery when eager-loading is set.
-	Edges                 HostEdges `json:"edges"`
-	environment_host      *int
-	finding_host          *int
-	provisioned_host_host *int
+	Edges                                     HostEdges `json:"edges"`
+	finding_finding_to_host                   *int
+	provisioned_host_provisioned_host_to_host *int
 }
 
 // HostEdges holds the relations/edges for other nodes in the graph.
 type HostEdges struct {
-	// Disk holds the value of the disk edge.
-	Disk []*Disk
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// HostToDisk holds the value of the HostToDisk edge.
+	HostToDisk []*Disk
+	// HostToUser holds the value of the HostToUser edge.
+	HostToUser []*User
+	// HostToTag holds the value of the HostToTag edge.
+	HostToTag []*Tag
+	// HostToEnvironment holds the value of the HostToEnvironment edge.
+	HostToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
-// DiskOrErr returns the Disk value or an error if the edge
+// HostToDiskOrErr returns the HostToDisk value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) DiskOrErr() ([]*Disk, error) {
+func (e HostEdges) HostToDiskOrErr() ([]*Disk, error) {
 	if e.loadedTypes[0] {
-		return e.Disk, nil
+		return e.HostToDisk, nil
 	}
-	return nil, &NotLoadedError{edge: "disk"}
+	return nil, &NotLoadedError{edge: "HostToDisk"}
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// HostToUserOrErr returns the HostToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) MaintainerOrErr() ([]*User, error) {
+func (e HostEdges) HostToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[1] {
-		return e.Maintainer, nil
+		return e.HostToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "HostToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// HostToTagOrErr returns the HostToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) TagOrErr() ([]*Tag, error) {
+func (e HostEdges) HostToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[2] {
-		return e.Tag, nil
+		return e.HostToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "HostToTag"}
+}
+
+// HostToEnvironmentOrErr returns the HostToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e HostEdges) HostToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[3] {
+		return e.HostToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "HostToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -119,9 +129,8 @@ func (*Host) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Host) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // environment_host
-		&sql.NullInt64{}, // finding_host
-		&sql.NullInt64{}, // provisioned_host_host
+		&sql.NullInt64{}, // finding_finding_to_host
+		&sql.NullInt64{}, // provisioned_host_provisioned_host_to_host
 	}
 }
 
@@ -242,40 +251,39 @@ func (h *Host) assignValues(values ...interface{}) error {
 	values = values[15:]
 	if len(values) == len(host.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_host", value)
+			return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_host", value)
 		} else if value.Valid {
-			h.environment_host = new(int)
-			*h.environment_host = int(value.Int64)
+			h.finding_finding_to_host = new(int)
+			*h.finding_finding_to_host = int(value.Int64)
 		}
 		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_host", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_host", value)
 		} else if value.Valid {
-			h.finding_host = new(int)
-			*h.finding_host = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_host", value)
-		} else if value.Valid {
-			h.provisioned_host_host = new(int)
-			*h.provisioned_host_host = int(value.Int64)
+			h.provisioned_host_provisioned_host_to_host = new(int)
+			*h.provisioned_host_provisioned_host_to_host = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryDisk queries the disk edge of the Host.
-func (h *Host) QueryDisk() *DiskQuery {
-	return (&HostClient{config: h.config}).QueryDisk(h)
+// QueryHostToDisk queries the HostToDisk edge of the Host.
+func (h *Host) QueryHostToDisk() *DiskQuery {
+	return (&HostClient{config: h.config}).QueryHostToDisk(h)
 }
 
-// QueryMaintainer queries the maintainer edge of the Host.
-func (h *Host) QueryMaintainer() *UserQuery {
-	return (&HostClient{config: h.config}).QueryMaintainer(h)
+// QueryHostToUser queries the HostToUser edge of the Host.
+func (h *Host) QueryHostToUser() *UserQuery {
+	return (&HostClient{config: h.config}).QueryHostToUser(h)
 }
 
-// QueryTag queries the tag edge of the Host.
-func (h *Host) QueryTag() *TagQuery {
-	return (&HostClient{config: h.config}).QueryTag(h)
+// QueryHostToTag queries the HostToTag edge of the Host.
+func (h *Host) QueryHostToTag() *TagQuery {
+	return (&HostClient{config: h.config}).QueryHostToTag(h)
+}
+
+// QueryHostToEnvironment queries the HostToEnvironment edge of the Host.
+func (h *Host) QueryHostToEnvironment() *EnvironmentQuery {
+	return (&HostClient{config: h.config}).QueryHostToEnvironment(h)
 }
 
 // Update returns a builder for updating this Host.

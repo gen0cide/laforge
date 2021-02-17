@@ -13,60 +13,62 @@ import (
 
 // Command is the model entity for the Command schema.
 type Command struct {
-	config `json:"-"`
+	config `hcl:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,attr"`
 	// Program holds the value of the "program" field.
-	Program string `json:"program,omitempty"`
+	Program string `json:"program,omitempty" hcl:"program,attr"`
 	// Args holds the value of the "args" field.
-	Args []string `json:"args,omitempty"`
+	Args []string `json:"args,omitempty" hcl:"args,attr"`
 	// IgnoreErrors holds the value of the "ignore_errors" field.
-	IgnoreErrors bool `json:"ignore_errors,omitempty"`
+	IgnoreErrors bool `json:"ignore_errors,omitempty" hcl:"ignore_errors,attr"`
 	// Disabled holds the value of the "disabled" field.
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty" hcl:"disabled,attr"`
 	// Cooldown holds the value of the "cooldown" field.
-	Cooldown int `json:"cooldown,omitempty"`
+	Cooldown int `json:"cooldown,omitempty" hcl:"cooldown,attr"`
 	// Timeout holds the value of the "timeout" field.
-	Timeout int `json:"timeout,omitempty"`
+	Timeout int `json:"timeout,omitempty" hcl:"timeout,attr" `
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CommandQuery when eager-loading is set.
-	Edges                     CommandEdges `json:"edges"`
-	provisioning_step_command *int
+	Edges                                          CommandEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_command *int
 }
 
 // CommandEdges holds the relations/edges for other nodes in the graph.
 type CommandEdges struct {
-	// User holds the value of the user edge.
-	User []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// CommandToUser holds the value of the CommandToUser edge.
+	CommandToUser []*User `hcl:"maintainer,block"`
+	// CommandToTag holds the value of the CommandToTag edge.
+	CommandToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// UserOrErr returns the User value or an error if the edge
+// CommandToUserOrErr returns the CommandToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e CommandEdges) UserOrErr() ([]*User, error) {
+func (e CommandEdges) CommandToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.User, nil
+		return e.CommandToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "CommandToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// CommandToTagOrErr returns the CommandToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e CommandEdges) TagOrErr() ([]*Tag, error) {
+func (e CommandEdges) CommandToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[1] {
-		return e.Tag, nil
+		return e.CommandToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "CommandToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -82,13 +84,14 @@ func (*Command) scanValues() []interface{} {
 		&sql.NullInt64{},  // cooldown
 		&sql.NullInt64{},  // timeout
 		&[]byte{},         // vars
+		&[]byte{},         // tags
 	}
 }
 
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Command) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_command
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_command
 	}
 }
 
@@ -155,26 +158,34 @@ func (c *Command) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field vars: %v", err)
 		}
 	}
-	values = values[9:]
+
+	if value, ok := values[9].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[9])
+	} else if value != nil && len(*value) > 0 {
+		if err := json.Unmarshal(*value, &c.Tags); err != nil {
+			return fmt.Errorf("unmarshal field tags: %v", err)
+		}
+	}
+	values = values[10:]
 	if len(values) == len(command.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_command", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_command", value)
 		} else if value.Valid {
-			c.provisioning_step_command = new(int)
-			*c.provisioning_step_command = int(value.Int64)
+			c.provisioning_step_provisioning_step_to_command = new(int)
+			*c.provisioning_step_provisioning_step_to_command = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryUser queries the user edge of the Command.
-func (c *Command) QueryUser() *UserQuery {
-	return (&CommandClient{config: c.config}).QueryUser(c)
+// QueryCommandToUser queries the CommandToUser edge of the Command.
+func (c *Command) QueryCommandToUser() *UserQuery {
+	return (&CommandClient{config: c.config}).QueryCommandToUser(c)
 }
 
-// QueryTag queries the tag edge of the Command.
-func (c *Command) QueryTag() *TagQuery {
-	return (&CommandClient{config: c.config}).QueryTag(c)
+// QueryCommandToTag queries the CommandToTag edge of the Command.
+func (c *Command) QueryCommandToTag() *TagQuery {
+	return (&CommandClient{config: c.config}).QueryCommandToTag(c)
 }
 
 // Update returns a builder for updating this Command.
@@ -218,6 +229,8 @@ func (c *Command) String() string {
 	builder.WriteString(fmt.Sprintf("%v", c.Timeout))
 	builder.WriteString(", vars=")
 	builder.WriteString(fmt.Sprintf("%v", c.Vars))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", c.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

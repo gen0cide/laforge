@@ -94,49 +94,49 @@ func (sc *ScriptCreate) SetAbsPath(s string) *ScriptCreate {
 	return sc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (sc *ScriptCreate) AddTagIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddTagIDs(ids...)
+// AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
+func (sc *ScriptCreate) AddScriptToTagIDs(ids ...int) *ScriptCreate {
+	sc.mutation.AddScriptToTagIDs(ids...)
 	return sc
 }
 
-// AddTag adds the tag edges to Tag.
-func (sc *ScriptCreate) AddTag(t ...*Tag) *ScriptCreate {
+// AddScriptToTag adds the ScriptToTag edges to Tag.
+func (sc *ScriptCreate) AddScriptToTag(t ...*Tag) *ScriptCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return sc.AddTagIDs(ids...)
+	return sc.AddScriptToTagIDs(ids...)
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (sc *ScriptCreate) AddMaintainerIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddMaintainerIDs(ids...)
+// AddScriptToUserIDs adds the ScriptToUser edge to User by ids.
+func (sc *ScriptCreate) AddScriptToUserIDs(ids ...int) *ScriptCreate {
+	sc.mutation.AddScriptToUserIDs(ids...)
 	return sc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (sc *ScriptCreate) AddMaintainer(u ...*User) *ScriptCreate {
+// AddScriptToUser adds the ScriptToUser edges to User.
+func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return sc.AddMaintainerIDs(ids...)
+	return sc.AddScriptToUserIDs(ids...)
 }
 
-// AddFindingIDs adds the finding edge to Finding by ids.
-func (sc *ScriptCreate) AddFindingIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddFindingIDs(ids...)
+// AddScriptToFindingIDs adds the ScriptToFinding edge to Finding by ids.
+func (sc *ScriptCreate) AddScriptToFindingIDs(ids ...int) *ScriptCreate {
+	sc.mutation.AddScriptToFindingIDs(ids...)
 	return sc
 }
 
-// AddFinding adds the finding edges to Finding.
-func (sc *ScriptCreate) AddFinding(f ...*Finding) *ScriptCreate {
+// AddScriptToFinding adds the ScriptToFinding edges to Finding.
+func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return sc.AddFindingIDs(ids...)
+	return sc.AddScriptToFindingIDs(ids...)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -349,12 +349,12 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		})
 		_node.AbsPath = value
 	}
-	if nodes := sc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScriptToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
+			Table:   script.ScriptToTagTable,
+			Columns: []string{script.ScriptToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -368,12 +368,12 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScriptToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -387,12 +387,12 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.FindingIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Table:   script.ScriptToFindingTable,
+			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

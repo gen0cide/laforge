@@ -25,8 +25,29 @@ type DNS struct {
 	// NtpServers holds the value of the "ntp_servers" field.
 	NtpServers []string `json:"ntp_servers,omitempty"`
 	// Config holds the value of the "config" field.
-	Config          map[string]string `json:"config,omitempty"`
-	competition_dns *int
+	Config map[string]string `json:"config,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DNSQuery when eager-loading is set.
+	Edges                          DNSEdges `json:"edges"`
+	competition_competition_to_dns *int
+}
+
+// DNSEdges holds the relations/edges for other nodes in the graph.
+type DNSEdges struct {
+	// DNSToTag holds the value of the DNSToTag edge.
+	DNSToTag []*Tag
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// DNSToTagOrErr returns the DNSToTag value or an error if the edge
+// was not loaded in eager-loading.
+func (e DNSEdges) DNSToTagOrErr() ([]*Tag, error) {
+	if e.loadedTypes[0] {
+		return e.DNSToTag, nil
+	}
+	return nil, &NotLoadedError{edge: "DNSToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -44,7 +65,7 @@ func (*DNS) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*DNS) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // competition_dns
+		&sql.NullInt64{}, // competition_competition_to_dns
 	}
 }
 
@@ -97,13 +118,18 @@ func (d *DNS) assignValues(values ...interface{}) error {
 	values = values[5:]
 	if len(values) == len(dns.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field competition_dns", value)
+			return fmt.Errorf("unexpected type %T for edge-field competition_competition_to_dns", value)
 		} else if value.Valid {
-			d.competition_dns = new(int)
-			*d.competition_dns = int(value.Int64)
+			d.competition_competition_to_dns = new(int)
+			*d.competition_competition_to_dns = int(value.Int64)
 		}
 	}
 	return nil
+}
+
+// QueryDNSToTag queries the DNSToTag edge of the DNS.
+func (d *DNS) QueryDNSToTag() *TagQuery {
+	return (&DNSClient{config: d.config}).QueryDNSToTag(d)
 }
 
 // Update returns a builder for updating this DNS.

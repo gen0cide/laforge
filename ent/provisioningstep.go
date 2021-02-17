@@ -26,75 +26,86 @@ type ProvisioningStep struct {
 
 // ProvisioningStepEdges holds the relations/edges for other nodes in the graph.
 type ProvisioningStepEdges struct {
-	// Status holds the value of the status edge.
-	Status []*Status
-	// ProvisionedHost holds the value of the provisioned_host edge.
-	ProvisionedHost []*ProvisionedHost
-	// Script holds the value of the script edge.
-	Script []*Script
-	// Command holds the value of the command edge.
-	Command []*Command
-	// DNSRecord holds the value of the dns_record edge.
-	DNSRecord []*DNSRecord
-	// RemoteFile holds the value of the remote_file edge.
-	RemoteFile []*RemoteFile
+	// ProvisioningStepToTag holds the value of the ProvisioningStepToTag edge.
+	ProvisioningStepToTag []*Tag
+	// ProvisioningStepToStatus holds the value of the ProvisioningStepToStatus edge.
+	ProvisioningStepToStatus []*Status
+	// ProvisioningStepToProvisionedHost holds the value of the ProvisioningStepToProvisionedHost edge.
+	ProvisioningStepToProvisionedHost []*ProvisionedHost
+	// ProvisioningStepToScript holds the value of the ProvisioningStepToScript edge.
+	ProvisioningStepToScript []*Script
+	// ProvisioningStepToCommand holds the value of the ProvisioningStepToCommand edge.
+	ProvisioningStepToCommand []*Command
+	// ProvisioningStepToDNSRecord holds the value of the ProvisioningStepToDNSRecord edge.
+	ProvisioningStepToDNSRecord []*DNSRecord
+	// ProvisioningStepToRemoteFile holds the value of the ProvisioningStepToRemoteFile edge.
+	ProvisioningStepToRemoteFile []*RemoteFile
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
-// StatusOrErr returns the Status value or an error if the edge
+// ProvisioningStepToTagOrErr returns the ProvisioningStepToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) StatusOrErr() ([]*Status, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Status, nil
+		return e.ProvisioningStepToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "status"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToTag"}
 }
 
-// ProvisionedHostOrErr returns the ProvisionedHost value or an error if the edge
+// ProvisioningStepToStatusOrErr returns the ProvisioningStepToStatus value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) ProvisionedHostOrErr() ([]*ProvisionedHost, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToStatusOrErr() ([]*Status, error) {
 	if e.loadedTypes[1] {
-		return e.ProvisionedHost, nil
+		return e.ProvisioningStepToStatus, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_host"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToStatus"}
 }
 
-// ScriptOrErr returns the Script value or an error if the edge
+// ProvisioningStepToProvisionedHostOrErr returns the ProvisioningStepToProvisionedHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) ScriptOrErr() ([]*Script, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToProvisionedHostOrErr() ([]*ProvisionedHost, error) {
 	if e.loadedTypes[2] {
-		return e.Script, nil
+		return e.ProvisioningStepToProvisionedHost, nil
 	}
-	return nil, &NotLoadedError{edge: "script"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToProvisionedHost"}
 }
 
-// CommandOrErr returns the Command value or an error if the edge
+// ProvisioningStepToScriptOrErr returns the ProvisioningStepToScript value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) CommandOrErr() ([]*Command, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToScriptOrErr() ([]*Script, error) {
 	if e.loadedTypes[3] {
-		return e.Command, nil
+		return e.ProvisioningStepToScript, nil
 	}
-	return nil, &NotLoadedError{edge: "command"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToScript"}
 }
 
-// DNSRecordOrErr returns the DNSRecord value or an error if the edge
+// ProvisioningStepToCommandOrErr returns the ProvisioningStepToCommand value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) DNSRecordOrErr() ([]*DNSRecord, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToCommandOrErr() ([]*Command, error) {
 	if e.loadedTypes[4] {
-		return e.DNSRecord, nil
+		return e.ProvisioningStepToCommand, nil
 	}
-	return nil, &NotLoadedError{edge: "dns_record"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToCommand"}
 }
 
-// RemoteFileOrErr returns the RemoteFile value or an error if the edge
+// ProvisioningStepToDNSRecordOrErr returns the ProvisioningStepToDNSRecord value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisioningStepEdges) RemoteFileOrErr() ([]*RemoteFile, error) {
+func (e ProvisioningStepEdges) ProvisioningStepToDNSRecordOrErr() ([]*DNSRecord, error) {
 	if e.loadedTypes[5] {
-		return e.RemoteFile, nil
+		return e.ProvisioningStepToDNSRecord, nil
 	}
-	return nil, &NotLoadedError{edge: "remote_file"}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToDNSRecord"}
+}
+
+// ProvisioningStepToRemoteFileOrErr returns the ProvisioningStepToRemoteFile value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisioningStepEdges) ProvisioningStepToRemoteFileOrErr() ([]*RemoteFile, error) {
+	if e.loadedTypes[6] {
+		return e.ProvisioningStepToRemoteFile, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToRemoteFile"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -131,34 +142,39 @@ func (ps *ProvisioningStep) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryStatus queries the status edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryStatus() *StatusQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryStatus(ps)
+// QueryProvisioningStepToTag queries the ProvisioningStepToTag edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToTag() *TagQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToTag(ps)
 }
 
-// QueryProvisionedHost queries the provisioned_host edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryProvisionedHost() *ProvisionedHostQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryProvisionedHost(ps)
+// QueryProvisioningStepToStatus queries the ProvisioningStepToStatus edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToStatus() *StatusQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToStatus(ps)
 }
 
-// QueryScript queries the script edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryScript() *ScriptQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryScript(ps)
+// QueryProvisioningStepToProvisionedHost queries the ProvisioningStepToProvisionedHost edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToProvisionedHost() *ProvisionedHostQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToProvisionedHost(ps)
 }
 
-// QueryCommand queries the command edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryCommand() *CommandQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryCommand(ps)
+// QueryProvisioningStepToScript queries the ProvisioningStepToScript edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToScript() *ScriptQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToScript(ps)
 }
 
-// QueryDNSRecord queries the dns_record edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryDNSRecord() *DNSRecordQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryDNSRecord(ps)
+// QueryProvisioningStepToCommand queries the ProvisioningStepToCommand edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToCommand() *CommandQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToCommand(ps)
 }
 
-// QueryRemoteFile queries the remote_file edge of the ProvisioningStep.
-func (ps *ProvisioningStep) QueryRemoteFile() *RemoteFileQuery {
-	return (&ProvisioningStepClient{config: ps.config}).QueryRemoteFile(ps)
+// QueryProvisioningStepToDNSRecord queries the ProvisioningStepToDNSRecord edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToDNSRecord() *DNSRecordQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToDNSRecord(ps)
+}
+
+// QueryProvisioningStepToRemoteFile queries the ProvisioningStepToRemoteFile edge of the ProvisioningStep.
+func (ps *ProvisioningStep) QueryProvisioningStepToRemoteFile() *RemoteFileQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToRemoteFile(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.

@@ -174,25 +174,25 @@ func SizeLTE(v int) predicate.Disk {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Disk {
+// HasDiskToTag applies the HasEdge predicate on the "DiskToTag" edge.
+func HasDiskToTag() predicate.Disk {
 	return predicate.Disk(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DiskToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DiskToTagTable, DiskToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Disk {
+// HasDiskToTagWith applies the HasEdge predicate on the "DiskToTag" edge with a given conditions (other predicates).
+func HasDiskToTagWith(preds ...predicate.Tag) predicate.Disk {
 	return predicate.Disk(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DiskToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DiskToTagTable, DiskToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -25,7 +25,7 @@ type FileDownloadQuery struct {
 	order      []OrderFunc
 	predicates []predicate.FileDownload
 	// eager-loading edges.
-	withTag *TagQuery
+	withFileDownloadToTag *TagQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,8 +55,8 @@ func (fdq *FileDownloadQuery) Order(o ...OrderFunc) *FileDownloadQuery {
 	return fdq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fdq *FileDownloadQuery) QueryTag() *TagQuery {
+// QueryFileDownloadToTag chains the current query on the FileDownloadToTag edge.
+func (fdq *FileDownloadQuery) QueryFileDownloadToTag() *TagQuery {
 	query := &TagQuery{config: fdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fdq.prepareQuery(ctx); err != nil {
@@ -69,7 +69,7 @@ func (fdq *FileDownloadQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedownload.Table, filedownload.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.TagTable, filedownload.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.FileDownloadToTagTable, filedownload.FileDownloadToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -247,26 +247,26 @@ func (fdq *FileDownloadQuery) Clone() *FileDownloadQuery {
 		return nil
 	}
 	return &FileDownloadQuery{
-		config:     fdq.config,
-		limit:      fdq.limit,
-		offset:     fdq.offset,
-		order:      append([]OrderFunc{}, fdq.order...),
-		predicates: append([]predicate.FileDownload{}, fdq.predicates...),
-		withTag:    fdq.withTag.Clone(),
+		config:                fdq.config,
+		limit:                 fdq.limit,
+		offset:                fdq.offset,
+		order:                 append([]OrderFunc{}, fdq.order...),
+		predicates:            append([]predicate.FileDownload{}, fdq.predicates...),
+		withFileDownloadToTag: fdq.withFileDownloadToTag.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fdq *FileDownloadQuery) WithTag(opts ...func(*TagQuery)) *FileDownloadQuery {
+//  WithFileDownloadToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "FileDownloadToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (fdq *FileDownloadQuery) WithFileDownloadToTag(opts ...func(*TagQuery)) *FileDownloadQuery {
 	query := &TagQuery{config: fdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fdq.withTag = query
+	fdq.withFileDownloadToTag = query
 	return fdq
 }
 
@@ -337,7 +337,7 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 		nodes       = []*FileDownload{}
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
-			fdq.withTag != nil,
+			fdq.withFileDownloadToTag != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -361,32 +361,32 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 		return nodes, nil
 	}
 
-	if query := fdq.withTag; query != nil {
+	if query := fdq.withFileDownloadToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*FileDownload)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FileDownloadToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(filedownload.TagColumn, fks...))
+			s.Where(sql.InValues(filedownload.FileDownloadToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.file_download_tag
+			fk := n.file_download_file_download_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_download_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "file_download_file_download_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_download_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "file_download_file_download_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FileDownloadToTag = append(node.Edges.FileDownloadToTag, n)
 		}
 	}
 

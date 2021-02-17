@@ -10,6 +10,7 @@ import (
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
@@ -112,49 +113,64 @@ func (hc *HostCreate) SetDNSRecords(s []string) *HostCreate {
 	return hc
 }
 
-// AddDiskIDs adds the disk edge to Disk by ids.
-func (hc *HostCreate) AddDiskIDs(ids ...int) *HostCreate {
-	hc.mutation.AddDiskIDs(ids...)
+// AddHostToDiskIDs adds the HostToDisk edge to Disk by ids.
+func (hc *HostCreate) AddHostToDiskIDs(ids ...int) *HostCreate {
+	hc.mutation.AddHostToDiskIDs(ids...)
 	return hc
 }
 
-// AddDisk adds the disk edges to Disk.
-func (hc *HostCreate) AddDisk(d ...*Disk) *HostCreate {
+// AddHostToDisk adds the HostToDisk edges to Disk.
+func (hc *HostCreate) AddHostToDisk(d ...*Disk) *HostCreate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return hc.AddDiskIDs(ids...)
+	return hc.AddHostToDiskIDs(ids...)
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (hc *HostCreate) AddMaintainerIDs(ids ...int) *HostCreate {
-	hc.mutation.AddMaintainerIDs(ids...)
+// AddHostToUserIDs adds the HostToUser edge to User by ids.
+func (hc *HostCreate) AddHostToUserIDs(ids ...int) *HostCreate {
+	hc.mutation.AddHostToUserIDs(ids...)
 	return hc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (hc *HostCreate) AddMaintainer(u ...*User) *HostCreate {
+// AddHostToUser adds the HostToUser edges to User.
+func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return hc.AddMaintainerIDs(ids...)
+	return hc.AddHostToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (hc *HostCreate) AddTagIDs(ids ...int) *HostCreate {
-	hc.mutation.AddTagIDs(ids...)
+// AddHostToTagIDs adds the HostToTag edge to Tag by ids.
+func (hc *HostCreate) AddHostToTagIDs(ids ...int) *HostCreate {
+	hc.mutation.AddHostToTagIDs(ids...)
 	return hc
 }
 
-// AddTag adds the tag edges to Tag.
-func (hc *HostCreate) AddTag(t ...*Tag) *HostCreate {
+// AddHostToTag adds the HostToTag edges to Tag.
+func (hc *HostCreate) AddHostToTag(t ...*Tag) *HostCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return hc.AddTagIDs(ids...)
+	return hc.AddHostToTagIDs(ids...)
+}
+
+// AddHostToEnvironmentIDs adds the HostToEnvironment edge to Environment by ids.
+func (hc *HostCreate) AddHostToEnvironmentIDs(ids ...int) *HostCreate {
+	hc.mutation.AddHostToEnvironmentIDs(ids...)
+	return hc
+}
+
+// AddHostToEnvironment adds the HostToEnvironment edges to Environment.
+func (hc *HostCreate) AddHostToEnvironment(e ...*Environment) *HostCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return hc.AddHostToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the HostMutation object of the builder.
@@ -385,12 +401,12 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		})
 		_node.DNSRecords = value
 	}
-	if nodes := hc.mutation.DiskIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -404,12 +420,12 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -423,17 +439,36 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hc.mutation.HostToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

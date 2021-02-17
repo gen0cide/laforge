@@ -10,6 +10,7 @@ import (
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -35,64 +36,79 @@ func (bc *BuildCreate) SetConfig(m map[string]string) *BuildCreate {
 	return bc
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (bc *BuildCreate) AddMaintainerIDs(ids ...int) *BuildCreate {
-	bc.mutation.AddMaintainerIDs(ids...)
+// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+func (bc *BuildCreate) AddBuildToUserIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToUserIDs(ids...)
 	return bc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (bc *BuildCreate) AddMaintainer(u ...*User) *BuildCreate {
+// AddBuildToUser adds the BuildToUser edges to User.
+func (bc *BuildCreate) AddBuildToUser(u ...*User) *BuildCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bc.AddMaintainerIDs(ids...)
+	return bc.AddBuildToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (bc *BuildCreate) AddTagIDs(ids ...int) *BuildCreate {
-	bc.mutation.AddTagIDs(ids...)
+// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+func (bc *BuildCreate) AddBuildToTagIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToTagIDs(ids...)
 	return bc
 }
 
-// AddTag adds the tag edges to Tag.
-func (bc *BuildCreate) AddTag(t ...*Tag) *BuildCreate {
+// AddBuildToTag adds the BuildToTag edges to Tag.
+func (bc *BuildCreate) AddBuildToTag(t ...*Tag) *BuildCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return bc.AddTagIDs(ids...)
+	return bc.AddBuildToTagIDs(ids...)
 }
 
-// AddTeamIDs adds the team edge to Team by ids.
-func (bc *BuildCreate) AddTeamIDs(ids ...int) *BuildCreate {
-	bc.mutation.AddTeamIDs(ids...)
+// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (bc *BuildCreate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bc
 }
 
-// AddTeam adds the team edges to Team.
-func (bc *BuildCreate) AddTeam(t ...*Team) *BuildCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return bc.AddTeamIDs(ids...)
-}
-
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (bc *BuildCreate) AddProvisionedNetworkToBuildIDs(ids ...int) *BuildCreate {
-	bc.mutation.AddProvisionedNetworkToBuildIDs(ids...)
-	return bc
-}
-
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to ProvisionedNetwork.
-func (bc *BuildCreate) AddProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildCreate {
+// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+func (bc *BuildCreate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return bc.AddProvisionedNetworkToBuildIDs(ids...)
+	return bc.AddBuildToProvisionedNetworkIDs(ids...)
+}
+
+// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+func (bc *BuildCreate) AddBuildToTeamIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToTeamIDs(ids...)
+	return bc
+}
+
+// AddBuildToTeam adds the BuildToTeam edges to Team.
+func (bc *BuildCreate) AddBuildToTeam(t ...*Team) *BuildCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return bc.AddBuildToTeamIDs(ids...)
+}
+
+// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+func (bc *BuildCreate) AddBuildToEnvironmentIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToEnvironmentIDs(ids...)
+	return bc
+}
+
+// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+func (bc *BuildCreate) AddBuildToEnvironment(e ...*Environment) *BuildCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return bc.AddBuildToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the BuildMutation object of the builder.
@@ -195,12 +211,12 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
-	if nodes := bc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -214,12 +230,12 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := bc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -233,12 +249,31 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := bc.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BuildToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -252,17 +287,17 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := bc.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}

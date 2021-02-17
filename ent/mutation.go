@@ -77,40 +77,43 @@ const (
 // nodes in the graph.
 type AgentStatusMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	_ClientID     *string
-	_Hostname     *string
-	_UpTime       *int64
-	add_UpTime    *int64
-	_BootTime     *int64
-	add_BootTime  *int64
-	_NumProcs     *int64
-	add_NumProcs  *int64
-	_Os           *string
-	_HostID       *string
-	_Load1        *float64
-	add_Load1     *float64
-	_Load5        *float64
-	add_Load5     *float64
-	_Load15       *float64
-	add_Load15    *float64
-	_TotalMem     *int64
-	add_TotalMem  *int64
-	_FreeMem      *int64
-	add_FreeMem   *int64
-	_UsedMem      *int64
-	add_UsedMem   *int64
-	_Timestamp    *int64
-	add_Timestamp *int64
-	clearedFields map[string]struct{}
-	host          map[int]struct{}
-	removedhost   map[int]struct{}
-	clearedhost   bool
-	done          bool
-	oldValue      func(context.Context) (*AgentStatus, error)
-	predicates    []predicate.AgentStatus
+	op                                   Op
+	typ                                  string
+	id                                   *int
+	_ClientID                            *string
+	_Hostname                            *string
+	_UpTime                              *int64
+	add_UpTime                           *int64
+	_BootTime                            *int64
+	add_BootTime                         *int64
+	_NumProcs                            *int64
+	add_NumProcs                         *int64
+	_Os                                  *string
+	_HostID                              *string
+	_Load1                               *float64
+	add_Load1                            *float64
+	_Load5                               *float64
+	add_Load5                            *float64
+	_Load15                              *float64
+	add_Load15                           *float64
+	_TotalMem                            *int64
+	add_TotalMem                         *int64
+	_FreeMem                             *int64
+	add_FreeMem                          *int64
+	_UsedMem                             *int64
+	add_UsedMem                          *int64
+	_Timestamp                           *int64
+	add_Timestamp                        *int64
+	clearedFields                        map[string]struct{}
+	_AgentStatusToTag                    map[int]struct{}
+	removed_AgentStatusToTag             map[int]struct{}
+	cleared_AgentStatusToTag             bool
+	_AgentStatusToProvisionedHost        map[int]struct{}
+	removed_AgentStatusToProvisionedHost map[int]struct{}
+	cleared_AgentStatusToProvisionedHost bool
+	done                                 bool
+	oldValue                             func(context.Context) (*AgentStatus, error)
+	predicates                           []predicate.AgentStatus
 }
 
 var _ ent.Mutation = (*AgentStatusMutation)(nil)
@@ -910,57 +913,110 @@ func (m *AgentStatusMutation) ResetTimestamp() {
 	m.add_Timestamp = nil
 }
 
-// AddHostIDs adds the host edge to ProvisionedHost by ids.
-func (m *AgentStatusMutation) AddHostIDs(ids ...int) {
-	if m.host == nil {
-		m.host = make(map[int]struct{})
+// AddAgentStatusToTagIDs adds the AgentStatusToTag edge to Tag by ids.
+func (m *AgentStatusMutation) AddAgentStatusToTagIDs(ids ...int) {
+	if m._AgentStatusToTag == nil {
+		m._AgentStatusToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.host[ids[i]] = struct{}{}
+		m._AgentStatusToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearHost clears the host edge to ProvisionedHost.
-func (m *AgentStatusMutation) ClearHost() {
-	m.clearedhost = true
+// ClearAgentStatusToTag clears the AgentStatusToTag edge to Tag.
+func (m *AgentStatusMutation) ClearAgentStatusToTag() {
+	m.cleared_AgentStatusToTag = true
 }
 
-// HostCleared returns if the edge host was cleared.
-func (m *AgentStatusMutation) HostCleared() bool {
-	return m.clearedhost
+// AgentStatusToTagCleared returns if the edge AgentStatusToTag was cleared.
+func (m *AgentStatusMutation) AgentStatusToTagCleared() bool {
+	return m.cleared_AgentStatusToTag
 }
 
-// RemoveHostIDs removes the host edge to ProvisionedHost by ids.
-func (m *AgentStatusMutation) RemoveHostIDs(ids ...int) {
-	if m.removedhost == nil {
-		m.removedhost = make(map[int]struct{})
+// RemoveAgentStatusToTagIDs removes the AgentStatusToTag edge to Tag by ids.
+func (m *AgentStatusMutation) RemoveAgentStatusToTagIDs(ids ...int) {
+	if m.removed_AgentStatusToTag == nil {
+		m.removed_AgentStatusToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedhost[ids[i]] = struct{}{}
+		m.removed_AgentStatusToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedHost returns the removed ids of host.
-func (m *AgentStatusMutation) RemovedHostIDs() (ids []int) {
-	for id := range m.removedhost {
+// RemovedAgentStatusToTag returns the removed ids of AgentStatusToTag.
+func (m *AgentStatusMutation) RemovedAgentStatusToTagIDs() (ids []int) {
+	for id := range m.removed_AgentStatusToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// HostIDs returns the host ids in the mutation.
-func (m *AgentStatusMutation) HostIDs() (ids []int) {
-	for id := range m.host {
+// AgentStatusToTagIDs returns the AgentStatusToTag ids in the mutation.
+func (m *AgentStatusMutation) AgentStatusToTagIDs() (ids []int) {
+	for id := range m._AgentStatusToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetHost reset all changes of the "host" edge.
-func (m *AgentStatusMutation) ResetHost() {
-	m.host = nil
-	m.clearedhost = false
-	m.removedhost = nil
+// ResetAgentStatusToTag reset all changes of the "AgentStatusToTag" edge.
+func (m *AgentStatusMutation) ResetAgentStatusToTag() {
+	m._AgentStatusToTag = nil
+	m.cleared_AgentStatusToTag = false
+	m.removed_AgentStatusToTag = nil
+}
+
+// AddAgentStatusToProvisionedHostIDs adds the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+func (m *AgentStatusMutation) AddAgentStatusToProvisionedHostIDs(ids ...int) {
+	if m._AgentStatusToProvisionedHost == nil {
+		m._AgentStatusToProvisionedHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._AgentStatusToProvisionedHost[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAgentStatusToProvisionedHost clears the AgentStatusToProvisionedHost edge to ProvisionedHost.
+func (m *AgentStatusMutation) ClearAgentStatusToProvisionedHost() {
+	m.cleared_AgentStatusToProvisionedHost = true
+}
+
+// AgentStatusToProvisionedHostCleared returns if the edge AgentStatusToProvisionedHost was cleared.
+func (m *AgentStatusMutation) AgentStatusToProvisionedHostCleared() bool {
+	return m.cleared_AgentStatusToProvisionedHost
+}
+
+// RemoveAgentStatusToProvisionedHostIDs removes the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+func (m *AgentStatusMutation) RemoveAgentStatusToProvisionedHostIDs(ids ...int) {
+	if m.removed_AgentStatusToProvisionedHost == nil {
+		m.removed_AgentStatusToProvisionedHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_AgentStatusToProvisionedHost[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAgentStatusToProvisionedHost returns the removed ids of AgentStatusToProvisionedHost.
+func (m *AgentStatusMutation) RemovedAgentStatusToProvisionedHostIDs() (ids []int) {
+	for id := range m.removed_AgentStatusToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AgentStatusToProvisionedHostIDs returns the AgentStatusToProvisionedHost ids in the mutation.
+func (m *AgentStatusMutation) AgentStatusToProvisionedHostIDs() (ids []int) {
+	for id := range m._AgentStatusToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAgentStatusToProvisionedHost reset all changes of the "AgentStatusToProvisionedHost" edge.
+func (m *AgentStatusMutation) ResetAgentStatusToProvisionedHost() {
+	m._AgentStatusToProvisionedHost = nil
+	m.cleared_AgentStatusToProvisionedHost = false
+	m.removed_AgentStatusToProvisionedHost = nil
 }
 
 // Op returns the operation name.
@@ -1422,9 +1478,12 @@ func (m *AgentStatusMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *AgentStatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.host != nil {
-		edges = append(edges, agentstatus.EdgeHost)
+	edges := make([]string, 0, 2)
+	if m._AgentStatusToTag != nil {
+		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
+	}
+	if m._AgentStatusToProvisionedHost != nil {
+		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
 	return edges
 }
@@ -1433,9 +1492,15 @@ func (m *AgentStatusMutation) AddedEdges() []string {
 // the given edge name.
 func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case agentstatus.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.host))
-		for id := range m.host {
+	case agentstatus.EdgeAgentStatusToTag:
+		ids := make([]ent.Value, 0, len(m._AgentStatusToTag))
+		for id := range m._AgentStatusToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case agentstatus.EdgeAgentStatusToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m._AgentStatusToProvisionedHost))
+		for id := range m._AgentStatusToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1446,9 +1511,12 @@ func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *AgentStatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedhost != nil {
-		edges = append(edges, agentstatus.EdgeHost)
+	edges := make([]string, 0, 2)
+	if m.removed_AgentStatusToTag != nil {
+		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
+	}
+	if m.removed_AgentStatusToProvisionedHost != nil {
+		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
 	return edges
 }
@@ -1457,9 +1525,15 @@ func (m *AgentStatusMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case agentstatus.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.removedhost))
-		for id := range m.removedhost {
+	case agentstatus.EdgeAgentStatusToTag:
+		ids := make([]ent.Value, 0, len(m.removed_AgentStatusToTag))
+		for id := range m.removed_AgentStatusToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case agentstatus.EdgeAgentStatusToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m.removed_AgentStatusToProvisionedHost))
+		for id := range m.removed_AgentStatusToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1470,9 +1544,12 @@ func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *AgentStatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedhost {
-		edges = append(edges, agentstatus.EdgeHost)
+	edges := make([]string, 0, 2)
+	if m.cleared_AgentStatusToTag {
+		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
+	}
+	if m.cleared_AgentStatusToProvisionedHost {
+		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
 	return edges
 }
@@ -1481,8 +1558,10 @@ func (m *AgentStatusMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *AgentStatusMutation) EdgeCleared(name string) bool {
 	switch name {
-	case agentstatus.EdgeHost:
-		return m.clearedhost
+	case agentstatus.EdgeAgentStatusToTag:
+		return m.cleared_AgentStatusToTag
+	case agentstatus.EdgeAgentStatusToProvisionedHost:
+		return m.cleared_AgentStatusToProvisionedHost
 	}
 	return false
 }
@@ -1500,8 +1579,11 @@ func (m *AgentStatusMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *AgentStatusMutation) ResetEdge(name string) error {
 	switch name {
-	case agentstatus.EdgeHost:
-		m.ResetHost()
+	case agentstatus.EdgeAgentStatusToTag:
+		m.ResetAgentStatusToTag()
+		return nil
+	case agentstatus.EdgeAgentStatusToProvisionedHost:
+		m.ResetAgentStatusToProvisionedHost()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus edge %s", name)
@@ -1518,18 +1600,21 @@ type BuildMutation struct {
 	addrevision                       *int
 	_config                           *map[string]string
 	clearedFields                     map[string]struct{}
-	maintainer                        map[int]struct{}
-	removedmaintainer                 map[int]struct{}
-	clearedmaintainer                 bool
-	tag                               map[int]struct{}
-	removedtag                        map[int]struct{}
-	clearedtag                        bool
-	team                              map[int]struct{}
-	removedteam                       map[int]struct{}
-	clearedteam                       bool
-	_ProvisionedNetworkToBuild        map[int]struct{}
-	removed_ProvisionedNetworkToBuild map[int]struct{}
-	cleared_ProvisionedNetworkToBuild bool
+	_BuildToUser                      map[int]struct{}
+	removed_BuildToUser               map[int]struct{}
+	cleared_BuildToUser               bool
+	_BuildToTag                       map[int]struct{}
+	removed_BuildToTag                map[int]struct{}
+	cleared_BuildToTag                bool
+	_BuildToProvisionedNetwork        map[int]struct{}
+	removed_BuildToProvisionedNetwork map[int]struct{}
+	cleared_BuildToProvisionedNetwork bool
+	_BuildToTeam                      map[int]struct{}
+	removed_BuildToTeam               map[int]struct{}
+	cleared_BuildToTeam               bool
+	_BuildToEnvironment               map[int]struct{}
+	removed_BuildToEnvironment        map[int]struct{}
+	cleared_BuildToEnvironment        bool
 	done                              bool
 	oldValue                          func(context.Context) (*Build, error)
 	predicates                        []predicate.Build
@@ -1708,216 +1793,269 @@ func (m *BuildMutation) ResetConfig() {
 	m._config = nil
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (m *BuildMutation) AddMaintainerIDs(ids ...int) {
-	if m.maintainer == nil {
-		m.maintainer = make(map[int]struct{})
+// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+func (m *BuildMutation) AddBuildToUserIDs(ids ...int) {
+	if m._BuildToUser == nil {
+		m._BuildToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.maintainer[ids[i]] = struct{}{}
+		m._BuildToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearMaintainer clears the maintainer edge to User.
-func (m *BuildMutation) ClearMaintainer() {
-	m.clearedmaintainer = true
+// ClearBuildToUser clears the BuildToUser edge to User.
+func (m *BuildMutation) ClearBuildToUser() {
+	m.cleared_BuildToUser = true
 }
 
-// MaintainerCleared returns if the edge maintainer was cleared.
-func (m *BuildMutation) MaintainerCleared() bool {
-	return m.clearedmaintainer
+// BuildToUserCleared returns if the edge BuildToUser was cleared.
+func (m *BuildMutation) BuildToUserCleared() bool {
+	return m.cleared_BuildToUser
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (m *BuildMutation) RemoveMaintainerIDs(ids ...int) {
-	if m.removedmaintainer == nil {
-		m.removedmaintainer = make(map[int]struct{})
+// RemoveBuildToUserIDs removes the BuildToUser edge to User by ids.
+func (m *BuildMutation) RemoveBuildToUserIDs(ids ...int) {
+	if m.removed_BuildToUser == nil {
+		m.removed_BuildToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedmaintainer[ids[i]] = struct{}{}
+		m.removed_BuildToUser[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedMaintainer returns the removed ids of maintainer.
-func (m *BuildMutation) RemovedMaintainerIDs() (ids []int) {
-	for id := range m.removedmaintainer {
+// RemovedBuildToUser returns the removed ids of BuildToUser.
+func (m *BuildMutation) RemovedBuildToUserIDs() (ids []int) {
+	for id := range m.removed_BuildToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// MaintainerIDs returns the maintainer ids in the mutation.
-func (m *BuildMutation) MaintainerIDs() (ids []int) {
-	for id := range m.maintainer {
+// BuildToUserIDs returns the BuildToUser ids in the mutation.
+func (m *BuildMutation) BuildToUserIDs() (ids []int) {
+	for id := range m._BuildToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetMaintainer reset all changes of the "maintainer" edge.
-func (m *BuildMutation) ResetMaintainer() {
-	m.maintainer = nil
-	m.clearedmaintainer = false
-	m.removedmaintainer = nil
+// ResetBuildToUser reset all changes of the "BuildToUser" edge.
+func (m *BuildMutation) ResetBuildToUser() {
+	m._BuildToUser = nil
+	m.cleared_BuildToUser = false
+	m.removed_BuildToUser = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *BuildMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+func (m *BuildMutation) AddBuildToTagIDs(ids ...int) {
+	if m._BuildToTag == nil {
+		m._BuildToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._BuildToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *BuildMutation) ClearTag() {
-	m.clearedtag = true
+// ClearBuildToTag clears the BuildToTag edge to Tag.
+func (m *BuildMutation) ClearBuildToTag() {
+	m.cleared_BuildToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *BuildMutation) TagCleared() bool {
-	return m.clearedtag
+// BuildToTagCleared returns if the edge BuildToTag was cleared.
+func (m *BuildMutation) BuildToTagCleared() bool {
+	return m.cleared_BuildToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *BuildMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed ids of tag.
-func (m *BuildMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the tag ids in the mutation.
-func (m *BuildMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag reset all changes of the "tag" edge.
-func (m *BuildMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
-}
-
-// AddTeamIDs adds the team edge to Team by ids.
-func (m *BuildMutation) AddTeamIDs(ids ...int) {
-	if m.team == nil {
-		m.team = make(map[int]struct{})
+// RemoveBuildToTagIDs removes the BuildToTag edge to Tag by ids.
+func (m *BuildMutation) RemoveBuildToTagIDs(ids ...int) {
+	if m.removed_BuildToTag == nil {
+		m.removed_BuildToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.team[ids[i]] = struct{}{}
+		m.removed_BuildToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTeam clears the team edge to Team.
-func (m *BuildMutation) ClearTeam() {
-	m.clearedteam = true
+// RemovedBuildToTag returns the removed ids of BuildToTag.
+func (m *BuildMutation) RemovedBuildToTagIDs() (ids []int) {
+	for id := range m.removed_BuildToTag {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// TeamCleared returns if the edge team was cleared.
-func (m *BuildMutation) TeamCleared() bool {
-	return m.clearedteam
+// BuildToTagIDs returns the BuildToTag ids in the mutation.
+func (m *BuildMutation) BuildToTagIDs() (ids []int) {
+	for id := range m._BuildToTag {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveTeamIDs removes the team edge to Team by ids.
-func (m *BuildMutation) RemoveTeamIDs(ids ...int) {
-	if m.removedteam == nil {
-		m.removedteam = make(map[int]struct{})
+// ResetBuildToTag reset all changes of the "BuildToTag" edge.
+func (m *BuildMutation) ResetBuildToTag() {
+	m._BuildToTag = nil
+	m.cleared_BuildToTag = false
+	m.removed_BuildToTag = nil
+}
+
+// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *BuildMutation) AddBuildToProvisionedNetworkIDs(ids ...int) {
+	if m._BuildToProvisionedNetwork == nil {
+		m._BuildToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedteam[ids[i]] = struct{}{}
+		m._BuildToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTeam returns the removed ids of team.
-func (m *BuildMutation) RemovedTeamIDs() (ids []int) {
-	for id := range m.removedteam {
-		ids = append(ids, id)
-	}
-	return
+// ClearBuildToProvisionedNetwork clears the BuildToProvisionedNetwork edge to ProvisionedNetwork.
+func (m *BuildMutation) ClearBuildToProvisionedNetwork() {
+	m.cleared_BuildToProvisionedNetwork = true
 }
 
-// TeamIDs returns the team ids in the mutation.
-func (m *BuildMutation) TeamIDs() (ids []int) {
-	for id := range m.team {
-		ids = append(ids, id)
-	}
-	return
+// BuildToProvisionedNetworkCleared returns if the edge BuildToProvisionedNetwork was cleared.
+func (m *BuildMutation) BuildToProvisionedNetworkCleared() bool {
+	return m.cleared_BuildToProvisionedNetwork
 }
 
-// ResetTeam reset all changes of the "team" edge.
-func (m *BuildMutation) ResetTeam() {
-	m.team = nil
-	m.clearedteam = false
-	m.removedteam = nil
-}
-
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (m *BuildMutation) AddProvisionedNetworkToBuildIDs(ids ...int) {
-	if m._ProvisionedNetworkToBuild == nil {
-		m._ProvisionedNetworkToBuild = make(map[int]struct{})
+// RemoveBuildToProvisionedNetworkIDs removes the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *BuildMutation) RemoveBuildToProvisionedNetworkIDs(ids ...int) {
+	if m.removed_BuildToProvisionedNetwork == nil {
+		m.removed_BuildToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+		m.removed_BuildToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedNetworkToBuild clears the ProvisionedNetworkToBuild edge to ProvisionedNetwork.
-func (m *BuildMutation) ClearProvisionedNetworkToBuild() {
-	m.cleared_ProvisionedNetworkToBuild = true
+// RemovedBuildToProvisionedNetwork returns the removed ids of BuildToProvisionedNetwork.
+func (m *BuildMutation) RemovedBuildToProvisionedNetworkIDs() (ids []int) {
+	for id := range m.removed_BuildToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// ProvisionedNetworkToBuildCleared returns if the edge ProvisionedNetworkToBuild was cleared.
-func (m *BuildMutation) ProvisionedNetworkToBuildCleared() bool {
-	return m.cleared_ProvisionedNetworkToBuild
+// BuildToProvisionedNetworkIDs returns the BuildToProvisionedNetwork ids in the mutation.
+func (m *BuildMutation) BuildToProvisionedNetworkIDs() (ids []int) {
+	for id := range m._BuildToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (m *BuildMutation) RemoveProvisionedNetworkToBuildIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToBuild == nil {
-		m.removed_ProvisionedNetworkToBuild = make(map[int]struct{})
+// ResetBuildToProvisionedNetwork reset all changes of the "BuildToProvisionedNetwork" edge.
+func (m *BuildMutation) ResetBuildToProvisionedNetwork() {
+	m._BuildToProvisionedNetwork = nil
+	m.cleared_BuildToProvisionedNetwork = false
+	m.removed_BuildToProvisionedNetwork = nil
+}
+
+// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+func (m *BuildMutation) AddBuildToTeamIDs(ids ...int) {
+	if m._BuildToTeam == nil {
+		m._BuildToTeam = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removed_ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+		m._BuildToTeam[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProvisionedNetworkToBuild returns the removed ids of ProvisionedNetworkToBuild.
-func (m *BuildMutation) RemovedProvisionedNetworkToBuildIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToBuild {
+// ClearBuildToTeam clears the BuildToTeam edge to Team.
+func (m *BuildMutation) ClearBuildToTeam() {
+	m.cleared_BuildToTeam = true
+}
+
+// BuildToTeamCleared returns if the edge BuildToTeam was cleared.
+func (m *BuildMutation) BuildToTeamCleared() bool {
+	return m.cleared_BuildToTeam
+}
+
+// RemoveBuildToTeamIDs removes the BuildToTeam edge to Team by ids.
+func (m *BuildMutation) RemoveBuildToTeamIDs(ids ...int) {
+	if m.removed_BuildToTeam == nil {
+		m.removed_BuildToTeam = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_BuildToTeam[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildToTeam returns the removed ids of BuildToTeam.
+func (m *BuildMutation) RemovedBuildToTeamIDs() (ids []int) {
+	for id := range m.removed_BuildToTeam {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProvisionedNetworkToBuildIDs returns the ProvisionedNetworkToBuild ids in the mutation.
-func (m *BuildMutation) ProvisionedNetworkToBuildIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToBuild {
+// BuildToTeamIDs returns the BuildToTeam ids in the mutation.
+func (m *BuildMutation) BuildToTeamIDs() (ids []int) {
+	for id := range m._BuildToTeam {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProvisionedNetworkToBuild reset all changes of the "ProvisionedNetworkToBuild" edge.
-func (m *BuildMutation) ResetProvisionedNetworkToBuild() {
-	m._ProvisionedNetworkToBuild = nil
-	m.cleared_ProvisionedNetworkToBuild = false
-	m.removed_ProvisionedNetworkToBuild = nil
+// ResetBuildToTeam reset all changes of the "BuildToTeam" edge.
+func (m *BuildMutation) ResetBuildToTeam() {
+	m._BuildToTeam = nil
+	m.cleared_BuildToTeam = false
+	m.removed_BuildToTeam = nil
+}
+
+// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+func (m *BuildMutation) AddBuildToEnvironmentIDs(ids ...int) {
+	if m._BuildToEnvironment == nil {
+		m._BuildToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._BuildToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBuildToEnvironment clears the BuildToEnvironment edge to Environment.
+func (m *BuildMutation) ClearBuildToEnvironment() {
+	m.cleared_BuildToEnvironment = true
+}
+
+// BuildToEnvironmentCleared returns if the edge BuildToEnvironment was cleared.
+func (m *BuildMutation) BuildToEnvironmentCleared() bool {
+	return m.cleared_BuildToEnvironment
+}
+
+// RemoveBuildToEnvironmentIDs removes the BuildToEnvironment edge to Environment by ids.
+func (m *BuildMutation) RemoveBuildToEnvironmentIDs(ids ...int) {
+	if m.removed_BuildToEnvironment == nil {
+		m.removed_BuildToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_BuildToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildToEnvironment returns the removed ids of BuildToEnvironment.
+func (m *BuildMutation) RemovedBuildToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_BuildToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BuildToEnvironmentIDs returns the BuildToEnvironment ids in the mutation.
+func (m *BuildMutation) BuildToEnvironmentIDs() (ids []int) {
+	for id := range m._BuildToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBuildToEnvironment reset all changes of the "BuildToEnvironment" edge.
+func (m *BuildMutation) ResetBuildToEnvironment() {
+	m._BuildToEnvironment = nil
+	m.cleared_BuildToEnvironment = false
+	m.removed_BuildToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -2067,18 +2205,21 @@ func (m *BuildMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *BuildMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.maintainer != nil {
-		edges = append(edges, build.EdgeMaintainer)
+	edges := make([]string, 0, 5)
+	if m._BuildToUser != nil {
+		edges = append(edges, build.EdgeBuildToUser)
 	}
-	if m.tag != nil {
-		edges = append(edges, build.EdgeTag)
+	if m._BuildToTag != nil {
+		edges = append(edges, build.EdgeBuildToTag)
 	}
-	if m.team != nil {
-		edges = append(edges, build.EdgeTeam)
+	if m._BuildToProvisionedNetwork != nil {
+		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
 	}
-	if m._ProvisionedNetworkToBuild != nil {
-		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
+	if m._BuildToTeam != nil {
+		edges = append(edges, build.EdgeBuildToTeam)
+	}
+	if m._BuildToEnvironment != nil {
+		edges = append(edges, build.EdgeBuildToEnvironment)
 	}
 	return edges
 }
@@ -2087,27 +2228,33 @@ func (m *BuildMutation) AddedEdges() []string {
 // the given edge name.
 func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.maintainer))
-		for id := range m.maintainer {
+	case build.EdgeBuildToUser:
+		ids := make([]ent.Value, 0, len(m._BuildToUser))
+		for id := range m._BuildToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case build.EdgeBuildToTag:
+		ids := make([]ent.Value, 0, len(m._BuildToTag))
+		for id := range m._BuildToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeTeam:
-		ids := make([]ent.Value, 0, len(m.team))
-		for id := range m.team {
+	case build.EdgeBuildToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m._BuildToProvisionedNetwork))
+		for id := range m._BuildToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeProvisionedNetworkToBuild:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToBuild))
-		for id := range m._ProvisionedNetworkToBuild {
+	case build.EdgeBuildToTeam:
+		ids := make([]ent.Value, 0, len(m._BuildToTeam))
+		for id := range m._BuildToTeam {
+			ids = append(ids, id)
+		}
+		return ids
+	case build.EdgeBuildToEnvironment:
+		ids := make([]ent.Value, 0, len(m._BuildToEnvironment))
+		for id := range m._BuildToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2118,18 +2265,21 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *BuildMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedmaintainer != nil {
-		edges = append(edges, build.EdgeMaintainer)
+	edges := make([]string, 0, 5)
+	if m.removed_BuildToUser != nil {
+		edges = append(edges, build.EdgeBuildToUser)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, build.EdgeTag)
+	if m.removed_BuildToTag != nil {
+		edges = append(edges, build.EdgeBuildToTag)
 	}
-	if m.removedteam != nil {
-		edges = append(edges, build.EdgeTeam)
+	if m.removed_BuildToProvisionedNetwork != nil {
+		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
 	}
-	if m.removed_ProvisionedNetworkToBuild != nil {
-		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
+	if m.removed_BuildToTeam != nil {
+		edges = append(edges, build.EdgeBuildToTeam)
+	}
+	if m.removed_BuildToEnvironment != nil {
+		edges = append(edges, build.EdgeBuildToEnvironment)
 	}
 	return edges
 }
@@ -2138,27 +2288,33 @@ func (m *BuildMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.removedmaintainer))
-		for id := range m.removedmaintainer {
+	case build.EdgeBuildToUser:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToUser))
+		for id := range m.removed_BuildToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case build.EdgeBuildToTag:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToTag))
+		for id := range m.removed_BuildToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeTeam:
-		ids := make([]ent.Value, 0, len(m.removedteam))
-		for id := range m.removedteam {
+	case build.EdgeBuildToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToProvisionedNetwork))
+		for id := range m.removed_BuildToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeProvisionedNetworkToBuild:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToBuild))
-		for id := range m.removed_ProvisionedNetworkToBuild {
+	case build.EdgeBuildToTeam:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToTeam))
+		for id := range m.removed_BuildToTeam {
+			ids = append(ids, id)
+		}
+		return ids
+	case build.EdgeBuildToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToEnvironment))
+		for id := range m.removed_BuildToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2169,18 +2325,21 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *BuildMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedmaintainer {
-		edges = append(edges, build.EdgeMaintainer)
+	edges := make([]string, 0, 5)
+	if m.cleared_BuildToUser {
+		edges = append(edges, build.EdgeBuildToUser)
 	}
-	if m.clearedtag {
-		edges = append(edges, build.EdgeTag)
+	if m.cleared_BuildToTag {
+		edges = append(edges, build.EdgeBuildToTag)
 	}
-	if m.clearedteam {
-		edges = append(edges, build.EdgeTeam)
+	if m.cleared_BuildToProvisionedNetwork {
+		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
 	}
-	if m.cleared_ProvisionedNetworkToBuild {
-		edges = append(edges, build.EdgeProvisionedNetworkToBuild)
+	if m.cleared_BuildToTeam {
+		edges = append(edges, build.EdgeBuildToTeam)
+	}
+	if m.cleared_BuildToEnvironment {
+		edges = append(edges, build.EdgeBuildToEnvironment)
 	}
 	return edges
 }
@@ -2189,14 +2348,16 @@ func (m *BuildMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *BuildMutation) EdgeCleared(name string) bool {
 	switch name {
-	case build.EdgeMaintainer:
-		return m.clearedmaintainer
-	case build.EdgeTag:
-		return m.clearedtag
-	case build.EdgeTeam:
-		return m.clearedteam
-	case build.EdgeProvisionedNetworkToBuild:
-		return m.cleared_ProvisionedNetworkToBuild
+	case build.EdgeBuildToUser:
+		return m.cleared_BuildToUser
+	case build.EdgeBuildToTag:
+		return m.cleared_BuildToTag
+	case build.EdgeBuildToProvisionedNetwork:
+		return m.cleared_BuildToProvisionedNetwork
+	case build.EdgeBuildToTeam:
+		return m.cleared_BuildToTeam
+	case build.EdgeBuildToEnvironment:
+		return m.cleared_BuildToEnvironment
 	}
 	return false
 }
@@ -2214,17 +2375,20 @@ func (m *BuildMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *BuildMutation) ResetEdge(name string) error {
 	switch name {
-	case build.EdgeMaintainer:
-		m.ResetMaintainer()
+	case build.EdgeBuildToUser:
+		m.ResetBuildToUser()
 		return nil
-	case build.EdgeTag:
-		m.ResetTag()
+	case build.EdgeBuildToTag:
+		m.ResetBuildToTag()
 		return nil
-	case build.EdgeTeam:
-		m.ResetTeam()
+	case build.EdgeBuildToProvisionedNetwork:
+		m.ResetBuildToProvisionedNetwork()
 		return nil
-	case build.EdgeProvisionedNetworkToBuild:
-		m.ResetProvisionedNetworkToBuild()
+	case build.EdgeBuildToTeam:
+		m.ResetBuildToTeam()
+		return nil
+	case build.EdgeBuildToEnvironment:
+		m.ResetBuildToEnvironment()
 		return nil
 	}
 	return fmt.Errorf("unknown Build edge %s", name)
@@ -2234,30 +2398,31 @@ func (m *BuildMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type CommandMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	description   *string
-	program       *string
-	args          *[]string
-	ignore_errors *bool
-	disabled      *bool
-	cooldown      *int
-	addcooldown   *int
-	timeout       *int
-	addtimeout    *int
-	vars          *map[string]string
-	clearedFields map[string]struct{}
-	user          map[int]struct{}
-	removeduser   map[int]struct{}
-	cleareduser   bool
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*Command, error)
-	predicates    []predicate.Command
+	op                    Op
+	typ                   string
+	id                    *int
+	name                  *string
+	description           *string
+	program               *string
+	args                  *[]string
+	ignore_errors         *bool
+	disabled              *bool
+	cooldown              *int
+	addcooldown           *int
+	timeout               *int
+	addtimeout            *int
+	vars                  *map[string]string
+	tags                  *map[string]string
+	clearedFields         map[string]struct{}
+	_CommandToUser        map[int]struct{}
+	removed_CommandToUser map[int]struct{}
+	cleared_CommandToUser bool
+	_CommandToTag         map[int]struct{}
+	removed_CommandToTag  map[int]struct{}
+	cleared_CommandToTag  bool
+	done                  bool
+	oldValue              func(context.Context) (*Command, error)
+	predicates            []predicate.Command
 }
 
 var _ ent.Mutation = (*CommandMutation)(nil)
@@ -2712,110 +2877,147 @@ func (m *CommandMutation) ResetVars() {
 	m.vars = nil
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (m *CommandMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
+// SetTags sets the tags field.
+func (m *CommandMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the tags value in the mutation.
+func (m *CommandMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Command.
+// If the Command object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CommandMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *CommandMutation) ResetTags() {
+	m.tags = nil
+}
+
+// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+func (m *CommandMutation) AddCommandToUserIDs(ids ...int) {
+	if m._CommandToUser == nil {
+		m._CommandToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.user[ids[i]] = struct{}{}
+		m._CommandToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUser clears the user edge to User.
-func (m *CommandMutation) ClearUser() {
-	m.cleareduser = true
+// ClearCommandToUser clears the CommandToUser edge to User.
+func (m *CommandMutation) ClearCommandToUser() {
+	m.cleared_CommandToUser = true
 }
 
-// UserCleared returns if the edge user was cleared.
-func (m *CommandMutation) UserCleared() bool {
-	return m.cleareduser
+// CommandToUserCleared returns if the edge CommandToUser was cleared.
+func (m *CommandMutation) CommandToUserCleared() bool {
+	return m.cleared_CommandToUser
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (m *CommandMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
+// RemoveCommandToUserIDs removes the CommandToUser edge to User by ids.
+func (m *CommandMutation) RemoveCommandToUserIDs(ids ...int) {
+	if m.removed_CommandToUser == nil {
+		m.removed_CommandToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeduser[ids[i]] = struct{}{}
+		m.removed_CommandToUser[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedUser returns the removed ids of user.
-func (m *CommandMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
+// RemovedCommandToUser returns the removed ids of CommandToUser.
+func (m *CommandMutation) RemovedCommandToUserIDs() (ids []int) {
+	for id := range m.removed_CommandToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// UserIDs returns the user ids in the mutation.
-func (m *CommandMutation) UserIDs() (ids []int) {
-	for id := range m.user {
+// CommandToUserIDs returns the CommandToUser ids in the mutation.
+func (m *CommandMutation) CommandToUserIDs() (ids []int) {
+	for id := range m._CommandToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetUser reset all changes of the "user" edge.
-func (m *CommandMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-	m.removeduser = nil
+// ResetCommandToUser reset all changes of the "CommandToUser" edge.
+func (m *CommandMutation) ResetCommandToUser() {
+	m._CommandToUser = nil
+	m.cleared_CommandToUser = false
+	m.removed_CommandToUser = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *CommandMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+func (m *CommandMutation) AddCommandToTagIDs(ids ...int) {
+	if m._CommandToTag == nil {
+		m._CommandToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._CommandToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *CommandMutation) ClearTag() {
-	m.clearedtag = true
+// ClearCommandToTag clears the CommandToTag edge to Tag.
+func (m *CommandMutation) ClearCommandToTag() {
+	m.cleared_CommandToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *CommandMutation) TagCleared() bool {
-	return m.clearedtag
+// CommandToTagCleared returns if the edge CommandToTag was cleared.
+func (m *CommandMutation) CommandToTagCleared() bool {
+	return m.cleared_CommandToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *CommandMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveCommandToTagIDs removes the CommandToTag edge to Tag by ids.
+func (m *CommandMutation) RemoveCommandToTagIDs(ids ...int) {
+	if m.removed_CommandToTag == nil {
+		m.removed_CommandToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_CommandToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *CommandMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedCommandToTag returns the removed ids of CommandToTag.
+func (m *CommandMutation) RemovedCommandToTagIDs() (ids []int) {
+	for id := range m.removed_CommandToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *CommandMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// CommandToTagIDs returns the CommandToTag ids in the mutation.
+func (m *CommandMutation) CommandToTagIDs() (ids []int) {
+	for id := range m._CommandToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *CommandMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetCommandToTag reset all changes of the "CommandToTag" edge.
+func (m *CommandMutation) ResetCommandToTag() {
+	m._CommandToTag = nil
+	m.cleared_CommandToTag = false
+	m.removed_CommandToTag = nil
 }
 
 // Op returns the operation name.
@@ -2832,7 +3034,7 @@ func (m *CommandMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *CommandMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.name != nil {
 		fields = append(fields, command.FieldName)
 	}
@@ -2860,6 +3062,9 @@ func (m *CommandMutation) Fields() []string {
 	if m.vars != nil {
 		fields = append(fields, command.FieldVars)
 	}
+	if m.tags != nil {
+		fields = append(fields, command.FieldTags)
+	}
 	return fields
 }
 
@@ -2886,6 +3091,8 @@ func (m *CommandMutation) Field(name string) (ent.Value, bool) {
 		return m.Timeout()
 	case command.FieldVars:
 		return m.Vars()
+	case command.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -2913,6 +3120,8 @@ func (m *CommandMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTimeout(ctx)
 	case command.FieldVars:
 		return m.OldVars(ctx)
+	case command.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Command field %s", name)
 }
@@ -2984,6 +3193,13 @@ func (m *CommandMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVars(v)
+		return nil
+	case command.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Command field %s", name)
@@ -3089,6 +3305,9 @@ func (m *CommandMutation) ResetField(name string) error {
 	case command.FieldVars:
 		m.ResetVars()
 		return nil
+	case command.FieldTags:
+		m.ResetTags()
+		return nil
 	}
 	return fmt.Errorf("unknown Command field %s", name)
 }
@@ -3097,11 +3316,11 @@ func (m *CommandMutation) ResetField(name string) error {
 // mutation.
 func (m *CommandMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.user != nil {
-		edges = append(edges, command.EdgeUser)
+	if m._CommandToUser != nil {
+		edges = append(edges, command.EdgeCommandToUser)
 	}
-	if m.tag != nil {
-		edges = append(edges, command.EdgeTag)
+	if m._CommandToTag != nil {
+		edges = append(edges, command.EdgeCommandToTag)
 	}
 	return edges
 }
@@ -3110,15 +3329,15 @@ func (m *CommandMutation) AddedEdges() []string {
 // the given edge name.
 func (m *CommandMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case command.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
+	case command.EdgeCommandToUser:
+		ids := make([]ent.Value, 0, len(m._CommandToUser))
+		for id := range m._CommandToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case command.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case command.EdgeCommandToTag:
+		ids := make([]ent.Value, 0, len(m._CommandToTag))
+		for id := range m._CommandToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3130,11 +3349,11 @@ func (m *CommandMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *CommandMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removeduser != nil {
-		edges = append(edges, command.EdgeUser)
+	if m.removed_CommandToUser != nil {
+		edges = append(edges, command.EdgeCommandToUser)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, command.EdgeTag)
+	if m.removed_CommandToTag != nil {
+		edges = append(edges, command.EdgeCommandToTag)
 	}
 	return edges
 }
@@ -3143,15 +3362,15 @@ func (m *CommandMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *CommandMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case command.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
+	case command.EdgeCommandToUser:
+		ids := make([]ent.Value, 0, len(m.removed_CommandToUser))
+		for id := range m.removed_CommandToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case command.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case command.EdgeCommandToTag:
+		ids := make([]ent.Value, 0, len(m.removed_CommandToTag))
+		for id := range m.removed_CommandToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3163,11 +3382,11 @@ func (m *CommandMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *CommandMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.cleareduser {
-		edges = append(edges, command.EdgeUser)
+	if m.cleared_CommandToUser {
+		edges = append(edges, command.EdgeCommandToUser)
 	}
-	if m.clearedtag {
-		edges = append(edges, command.EdgeTag)
+	if m.cleared_CommandToTag {
+		edges = append(edges, command.EdgeCommandToTag)
 	}
 	return edges
 }
@@ -3176,10 +3395,10 @@ func (m *CommandMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *CommandMutation) EdgeCleared(name string) bool {
 	switch name {
-	case command.EdgeUser:
-		return m.cleareduser
-	case command.EdgeTag:
-		return m.clearedtag
+	case command.EdgeCommandToUser:
+		return m.cleared_CommandToUser
+	case command.EdgeCommandToTag:
+		return m.cleared_CommandToTag
 	}
 	return false
 }
@@ -3197,11 +3416,11 @@ func (m *CommandMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *CommandMutation) ResetEdge(name string) error {
 	switch name {
-	case command.EdgeUser:
-		m.ResetUser()
+	case command.EdgeCommandToUser:
+		m.ResetCommandToUser()
 		return nil
-	case command.EdgeTag:
-		m.ResetTag()
+	case command.EdgeCommandToTag:
+		m.ResetCommandToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown Command edge %s", name)
@@ -3211,18 +3430,24 @@ func (m *CommandMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type CompetitionMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	root_password *string
-	_config       *map[string]string
-	clearedFields map[string]struct{}
-	dns           map[int]struct{}
-	removeddns    map[int]struct{}
-	cleareddns    bool
-	done          bool
-	oldValue      func(context.Context) (*Competition, error)
-	predicates    []predicate.Competition
+	op                               Op
+	typ                              string
+	id                               *int
+	root_password                    *string
+	_config                          *map[string]string
+	clearedFields                    map[string]struct{}
+	_CompetitionToTag                map[int]struct{}
+	removed_CompetitionToTag         map[int]struct{}
+	cleared_CompetitionToTag         bool
+	_CompetitionToDNS                map[int]struct{}
+	removed_CompetitionToDNS         map[int]struct{}
+	cleared_CompetitionToDNS         bool
+	_CompetitionToEnvironment        map[int]struct{}
+	removed_CompetitionToEnvironment map[int]struct{}
+	cleared_CompetitionToEnvironment bool
+	done                             bool
+	oldValue                         func(context.Context) (*Competition, error)
+	predicates                       []predicate.Competition
 }
 
 var _ ent.Mutation = (*CompetitionMutation)(nil)
@@ -3378,57 +3603,163 @@ func (m *CompetitionMutation) ResetConfig() {
 	m._config = nil
 }
 
-// AddDnIDs adds the dns edge to DNS by ids.
-func (m *CompetitionMutation) AddDnIDs(ids ...int) {
-	if m.dns == nil {
-		m.dns = make(map[int]struct{})
+// AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
+func (m *CompetitionMutation) AddCompetitionToTagIDs(ids ...int) {
+	if m._CompetitionToTag == nil {
+		m._CompetitionToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.dns[ids[i]] = struct{}{}
+		m._CompetitionToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDNS clears the dns edge to DNS.
-func (m *CompetitionMutation) ClearDNS() {
-	m.cleareddns = true
+// ClearCompetitionToTag clears the CompetitionToTag edge to Tag.
+func (m *CompetitionMutation) ClearCompetitionToTag() {
+	m.cleared_CompetitionToTag = true
 }
 
-// DNSCleared returns if the edge dns was cleared.
-func (m *CompetitionMutation) DNSCleared() bool {
-	return m.cleareddns
+// CompetitionToTagCleared returns if the edge CompetitionToTag was cleared.
+func (m *CompetitionMutation) CompetitionToTagCleared() bool {
+	return m.cleared_CompetitionToTag
 }
 
-// RemoveDnIDs removes the dns edge to DNS by ids.
-func (m *CompetitionMutation) RemoveDnIDs(ids ...int) {
-	if m.removeddns == nil {
-		m.removeddns = make(map[int]struct{})
+// RemoveCompetitionToTagIDs removes the CompetitionToTag edge to Tag by ids.
+func (m *CompetitionMutation) RemoveCompetitionToTagIDs(ids ...int) {
+	if m.removed_CompetitionToTag == nil {
+		m.removed_CompetitionToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeddns[ids[i]] = struct{}{}
+		m.removed_CompetitionToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDNS returns the removed ids of dns.
-func (m *CompetitionMutation) RemovedDNSIDs() (ids []int) {
-	for id := range m.removeddns {
+// RemovedCompetitionToTag returns the removed ids of CompetitionToTag.
+func (m *CompetitionMutation) RemovedCompetitionToTagIDs() (ids []int) {
+	for id := range m.removed_CompetitionToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DNSIDs returns the dns ids in the mutation.
-func (m *CompetitionMutation) DNSIDs() (ids []int) {
-	for id := range m.dns {
+// CompetitionToTagIDs returns the CompetitionToTag ids in the mutation.
+func (m *CompetitionMutation) CompetitionToTagIDs() (ids []int) {
+	for id := range m._CompetitionToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDNS reset all changes of the "dns" edge.
-func (m *CompetitionMutation) ResetDNS() {
-	m.dns = nil
-	m.cleareddns = false
-	m.removeddns = nil
+// ResetCompetitionToTag reset all changes of the "CompetitionToTag" edge.
+func (m *CompetitionMutation) ResetCompetitionToTag() {
+	m._CompetitionToTag = nil
+	m.cleared_CompetitionToTag = false
+	m.removed_CompetitionToTag = nil
+}
+
+// AddCompetitionToDNSIDs adds the CompetitionToDNS edge to DNS by ids.
+func (m *CompetitionMutation) AddCompetitionToDNSIDs(ids ...int) {
+	if m._CompetitionToDNS == nil {
+		m._CompetitionToDNS = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._CompetitionToDNS[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompetitionToDNS clears the CompetitionToDNS edge to DNS.
+func (m *CompetitionMutation) ClearCompetitionToDNS() {
+	m.cleared_CompetitionToDNS = true
+}
+
+// CompetitionToDNSCleared returns if the edge CompetitionToDNS was cleared.
+func (m *CompetitionMutation) CompetitionToDNSCleared() bool {
+	return m.cleared_CompetitionToDNS
+}
+
+// RemoveCompetitionToDNSIDs removes the CompetitionToDNS edge to DNS by ids.
+func (m *CompetitionMutation) RemoveCompetitionToDNSIDs(ids ...int) {
+	if m.removed_CompetitionToDNS == nil {
+		m.removed_CompetitionToDNS = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_CompetitionToDNS[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompetitionToDNS returns the removed ids of CompetitionToDNS.
+func (m *CompetitionMutation) RemovedCompetitionToDNSIDs() (ids []int) {
+	for id := range m.removed_CompetitionToDNS {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompetitionToDNSIDs returns the CompetitionToDNS ids in the mutation.
+func (m *CompetitionMutation) CompetitionToDNSIDs() (ids []int) {
+	for id := range m._CompetitionToDNS {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompetitionToDNS reset all changes of the "CompetitionToDNS" edge.
+func (m *CompetitionMutation) ResetCompetitionToDNS() {
+	m._CompetitionToDNS = nil
+	m.cleared_CompetitionToDNS = false
+	m.removed_CompetitionToDNS = nil
+}
+
+// AddCompetitionToEnvironmentIDs adds the CompetitionToEnvironment edge to Environment by ids.
+func (m *CompetitionMutation) AddCompetitionToEnvironmentIDs(ids ...int) {
+	if m._CompetitionToEnvironment == nil {
+		m._CompetitionToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._CompetitionToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompetitionToEnvironment clears the CompetitionToEnvironment edge to Environment.
+func (m *CompetitionMutation) ClearCompetitionToEnvironment() {
+	m.cleared_CompetitionToEnvironment = true
+}
+
+// CompetitionToEnvironmentCleared returns if the edge CompetitionToEnvironment was cleared.
+func (m *CompetitionMutation) CompetitionToEnvironmentCleared() bool {
+	return m.cleared_CompetitionToEnvironment
+}
+
+// RemoveCompetitionToEnvironmentIDs removes the CompetitionToEnvironment edge to Environment by ids.
+func (m *CompetitionMutation) RemoveCompetitionToEnvironmentIDs(ids ...int) {
+	if m.removed_CompetitionToEnvironment == nil {
+		m.removed_CompetitionToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_CompetitionToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompetitionToEnvironment returns the removed ids of CompetitionToEnvironment.
+func (m *CompetitionMutation) RemovedCompetitionToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_CompetitionToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompetitionToEnvironmentIDs returns the CompetitionToEnvironment ids in the mutation.
+func (m *CompetitionMutation) CompetitionToEnvironmentIDs() (ids []int) {
+	for id := range m._CompetitionToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompetitionToEnvironment reset all changes of the "CompetitionToEnvironment" edge.
+func (m *CompetitionMutation) ResetCompetitionToEnvironment() {
+	m._CompetitionToEnvironment = nil
+	m.cleared_CompetitionToEnvironment = false
+	m.removed_CompetitionToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -3563,9 +3894,15 @@ func (m *CompetitionMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *CompetitionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.dns != nil {
-		edges = append(edges, competition.EdgeDNS)
+	edges := make([]string, 0, 3)
+	if m._CompetitionToTag != nil {
+		edges = append(edges, competition.EdgeCompetitionToTag)
+	}
+	if m._CompetitionToDNS != nil {
+		edges = append(edges, competition.EdgeCompetitionToDNS)
+	}
+	if m._CompetitionToEnvironment != nil {
+		edges = append(edges, competition.EdgeCompetitionToEnvironment)
 	}
 	return edges
 }
@@ -3574,9 +3911,21 @@ func (m *CompetitionMutation) AddedEdges() []string {
 // the given edge name.
 func (m *CompetitionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case competition.EdgeDNS:
-		ids := make([]ent.Value, 0, len(m.dns))
-		for id := range m.dns {
+	case competition.EdgeCompetitionToTag:
+		ids := make([]ent.Value, 0, len(m._CompetitionToTag))
+		for id := range m._CompetitionToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case competition.EdgeCompetitionToDNS:
+		ids := make([]ent.Value, 0, len(m._CompetitionToDNS))
+		for id := range m._CompetitionToDNS {
+			ids = append(ids, id)
+		}
+		return ids
+	case competition.EdgeCompetitionToEnvironment:
+		ids := make([]ent.Value, 0, len(m._CompetitionToEnvironment))
+		for id := range m._CompetitionToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3587,9 +3936,15 @@ func (m *CompetitionMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *CompetitionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removeddns != nil {
-		edges = append(edges, competition.EdgeDNS)
+	edges := make([]string, 0, 3)
+	if m.removed_CompetitionToTag != nil {
+		edges = append(edges, competition.EdgeCompetitionToTag)
+	}
+	if m.removed_CompetitionToDNS != nil {
+		edges = append(edges, competition.EdgeCompetitionToDNS)
+	}
+	if m.removed_CompetitionToEnvironment != nil {
+		edges = append(edges, competition.EdgeCompetitionToEnvironment)
 	}
 	return edges
 }
@@ -3598,9 +3953,21 @@ func (m *CompetitionMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *CompetitionMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case competition.EdgeDNS:
-		ids := make([]ent.Value, 0, len(m.removeddns))
-		for id := range m.removeddns {
+	case competition.EdgeCompetitionToTag:
+		ids := make([]ent.Value, 0, len(m.removed_CompetitionToTag))
+		for id := range m.removed_CompetitionToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case competition.EdgeCompetitionToDNS:
+		ids := make([]ent.Value, 0, len(m.removed_CompetitionToDNS))
+		for id := range m.removed_CompetitionToDNS {
+			ids = append(ids, id)
+		}
+		return ids
+	case competition.EdgeCompetitionToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_CompetitionToEnvironment))
+		for id := range m.removed_CompetitionToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3611,9 +3978,15 @@ func (m *CompetitionMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *CompetitionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.cleareddns {
-		edges = append(edges, competition.EdgeDNS)
+	edges := make([]string, 0, 3)
+	if m.cleared_CompetitionToTag {
+		edges = append(edges, competition.EdgeCompetitionToTag)
+	}
+	if m.cleared_CompetitionToDNS {
+		edges = append(edges, competition.EdgeCompetitionToDNS)
+	}
+	if m.cleared_CompetitionToEnvironment {
+		edges = append(edges, competition.EdgeCompetitionToEnvironment)
 	}
 	return edges
 }
@@ -3622,8 +3995,12 @@ func (m *CompetitionMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *CompetitionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case competition.EdgeDNS:
-		return m.cleareddns
+	case competition.EdgeCompetitionToTag:
+		return m.cleared_CompetitionToTag
+	case competition.EdgeCompetitionToDNS:
+		return m.cleared_CompetitionToDNS
+	case competition.EdgeCompetitionToEnvironment:
+		return m.cleared_CompetitionToEnvironment
 	}
 	return false
 }
@@ -3641,8 +4018,14 @@ func (m *CompetitionMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *CompetitionMutation) ResetEdge(name string) error {
 	switch name {
-	case competition.EdgeDNS:
-		m.ResetDNS()
+	case competition.EdgeCompetitionToTag:
+		m.ResetCompetitionToTag()
+		return nil
+	case competition.EdgeCompetitionToDNS:
+		m.ResetCompetitionToDNS()
+		return nil
+	case competition.EdgeCompetitionToEnvironment:
+		m.ResetCompetitionToEnvironment()
 		return nil
 	}
 	return fmt.Errorf("unknown Competition edge %s", name)
@@ -3652,18 +4035,21 @@ func (m *CompetitionMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type DNSMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	_type         *string
-	root_domain   *string
-	dns_servers   *[]string
-	ntp_servers   *[]string
-	_config       *map[string]string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*DNS, error)
-	predicates    []predicate.DNS
+	op               Op
+	typ              string
+	id               *int
+	_type            *string
+	root_domain      *string
+	dns_servers      *[]string
+	ntp_servers      *[]string
+	_config          *map[string]string
+	clearedFields    map[string]struct{}
+	_DNSToTag        map[int]struct{}
+	removed_DNSToTag map[int]struct{}
+	cleared_DNSToTag bool
+	done             bool
+	oldValue         func(context.Context) (*DNS, error)
+	predicates       []predicate.DNS
 }
 
 var _ ent.Mutation = (*DNSMutation)(nil)
@@ -3930,6 +4316,59 @@ func (m *DNSMutation) ResetConfig() {
 	m._config = nil
 }
 
+// AddDNSToTagIDs adds the DNSToTag edge to Tag by ids.
+func (m *DNSMutation) AddDNSToTagIDs(ids ...int) {
+	if m._DNSToTag == nil {
+		m._DNSToTag = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._DNSToTag[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDNSToTag clears the DNSToTag edge to Tag.
+func (m *DNSMutation) ClearDNSToTag() {
+	m.cleared_DNSToTag = true
+}
+
+// DNSToTagCleared returns if the edge DNSToTag was cleared.
+func (m *DNSMutation) DNSToTagCleared() bool {
+	return m.cleared_DNSToTag
+}
+
+// RemoveDNSToTagIDs removes the DNSToTag edge to Tag by ids.
+func (m *DNSMutation) RemoveDNSToTagIDs(ids ...int) {
+	if m.removed_DNSToTag == nil {
+		m.removed_DNSToTag = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_DNSToTag[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDNSToTag returns the removed ids of DNSToTag.
+func (m *DNSMutation) RemovedDNSToTagIDs() (ids []int) {
+	for id := range m.removed_DNSToTag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DNSToTagIDs returns the DNSToTag ids in the mutation.
+func (m *DNSMutation) DNSToTagIDs() (ids []int) {
+	for id := range m._DNSToTag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDNSToTag reset all changes of the "DNSToTag" edge.
+func (m *DNSMutation) ResetDNSToTag() {
+	m._DNSToTag = nil
+	m.cleared_DNSToTag = false
+	m.removed_DNSToTag = nil
+}
+
 // Op returns the operation name.
 func (m *DNSMutation) Op() Op {
 	return m.op
@@ -4113,45 +4552,76 @@ func (m *DNSMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *DNSMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m._DNSToTag != nil {
+		edges = append(edges, dns.EdgeDNSToTag)
+	}
 	return edges
 }
 
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *DNSMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dns.EdgeDNSToTag:
+		ids := make([]ent.Value, 0, len(m._DNSToTag))
+		for id := range m._DNSToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *DNSMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removed_DNSToTag != nil {
+		edges = append(edges, dns.EdgeDNSToTag)
+	}
 	return edges
 }
 
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *DNSMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case dns.EdgeDNSToTag:
+		ids := make([]ent.Value, 0, len(m.removed_DNSToTag))
+		for id := range m.removed_DNSToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *DNSMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.cleared_DNSToTag {
+		edges = append(edges, dns.EdgeDNSToTag)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *DNSMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dns.EdgeDNSToTag:
+		return m.cleared_DNSToTag
+	}
 	return false
 }
 
 // ClearEdge clears the value for the given name. It returns an
 // error if the edge name is not defined in the schema.
 func (m *DNSMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown DNS unique edge %s", name)
 }
 
@@ -4159,6 +4629,11 @@ func (m *DNSMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *DNSMutation) ResetEdge(name string) error {
+	switch name {
+	case dns.EdgeDNSToTag:
+		m.ResetDNSToTag()
+		return nil
+	}
 	return fmt.Errorf("unknown DNS edge %s", name)
 }
 
@@ -4166,22 +4641,22 @@ func (m *DNSMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type DNSRecordMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	values        *[]string
-	_type         *string
-	zone          *string
-	vars          *map[string]string
-	disabled      *bool
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*DNSRecord, error)
-	predicates    []predicate.DNSRecord
+	op                     Op
+	typ                    string
+	id                     *int
+	name                   *string
+	values                 *[]string
+	_type                  *string
+	zone                   *string
+	vars                   *map[string]string
+	disabled               *bool
+	clearedFields          map[string]struct{}
+	_DNSRecordToTag        map[int]struct{}
+	removed_DNSRecordToTag map[int]struct{}
+	cleared_DNSRecordToTag bool
+	done                   bool
+	oldValue               func(context.Context) (*DNSRecord, error)
+	predicates             []predicate.DNSRecord
 }
 
 var _ ent.Mutation = (*DNSRecordMutation)(nil)
@@ -4485,57 +4960,57 @@ func (m *DNSRecordMutation) ResetDisabled() {
 	m.disabled = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *DNSRecordMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
+func (m *DNSRecordMutation) AddDNSRecordToTagIDs(ids ...int) {
+	if m._DNSRecordToTag == nil {
+		m._DNSRecordToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._DNSRecordToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *DNSRecordMutation) ClearTag() {
-	m.clearedtag = true
+// ClearDNSRecordToTag clears the DNSRecordToTag edge to Tag.
+func (m *DNSRecordMutation) ClearDNSRecordToTag() {
+	m.cleared_DNSRecordToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *DNSRecordMutation) TagCleared() bool {
-	return m.clearedtag
+// DNSRecordToTagCleared returns if the edge DNSRecordToTag was cleared.
+func (m *DNSRecordMutation) DNSRecordToTagCleared() bool {
+	return m.cleared_DNSRecordToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *DNSRecordMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveDNSRecordToTagIDs removes the DNSRecordToTag edge to Tag by ids.
+func (m *DNSRecordMutation) RemoveDNSRecordToTagIDs(ids ...int) {
+	if m.removed_DNSRecordToTag == nil {
+		m.removed_DNSRecordToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_DNSRecordToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *DNSRecordMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedDNSRecordToTag returns the removed ids of DNSRecordToTag.
+func (m *DNSRecordMutation) RemovedDNSRecordToTagIDs() (ids []int) {
+	for id := range m.removed_DNSRecordToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *DNSRecordMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// DNSRecordToTagIDs returns the DNSRecordToTag ids in the mutation.
+func (m *DNSRecordMutation) DNSRecordToTagIDs() (ids []int) {
+	for id := range m._DNSRecordToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *DNSRecordMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetDNSRecordToTag reset all changes of the "DNSRecordToTag" edge.
+func (m *DNSRecordMutation) ResetDNSRecordToTag() {
+	m._DNSRecordToTag = nil
+	m.cleared_DNSRecordToTag = false
+	m.removed_DNSRecordToTag = nil
 }
 
 // Op returns the operation name.
@@ -4739,8 +5214,8 @@ func (m *DNSRecordMutation) ResetField(name string) error {
 // mutation.
 func (m *DNSRecordMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, dnsrecord.EdgeTag)
+	if m._DNSRecordToTag != nil {
+		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
 	}
 	return edges
 }
@@ -4749,9 +5224,9 @@ func (m *DNSRecordMutation) AddedEdges() []string {
 // the given edge name.
 func (m *DNSRecordMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case dnsrecord.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case dnsrecord.EdgeDNSRecordToTag:
+		ids := make([]ent.Value, 0, len(m._DNSRecordToTag))
+		for id := range m._DNSRecordToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4763,8 +5238,8 @@ func (m *DNSRecordMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *DNSRecordMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, dnsrecord.EdgeTag)
+	if m.removed_DNSRecordToTag != nil {
+		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
 	}
 	return edges
 }
@@ -4773,9 +5248,9 @@ func (m *DNSRecordMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *DNSRecordMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dnsrecord.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case dnsrecord.EdgeDNSRecordToTag:
+		ids := make([]ent.Value, 0, len(m.removed_DNSRecordToTag))
+		for id := range m.removed_DNSRecordToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4787,8 +5262,8 @@ func (m *DNSRecordMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *DNSRecordMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, dnsrecord.EdgeTag)
+	if m.cleared_DNSRecordToTag {
+		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
 	}
 	return edges
 }
@@ -4797,8 +5272,8 @@ func (m *DNSRecordMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *DNSRecordMutation) EdgeCleared(name string) bool {
 	switch name {
-	case dnsrecord.EdgeTag:
-		return m.clearedtag
+	case dnsrecord.EdgeDNSRecordToTag:
+		return m.cleared_DNSRecordToTag
 	}
 	return false
 }
@@ -4816,8 +5291,8 @@ func (m *DNSRecordMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *DNSRecordMutation) ResetEdge(name string) error {
 	switch name {
-	case dnsrecord.EdgeTag:
-		m.ResetTag()
+	case dnsrecord.EdgeDNSRecordToTag:
+		m.ResetDNSRecordToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown DNSRecord edge %s", name)
@@ -4827,18 +5302,18 @@ func (m *DNSRecordMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type DiskMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	size          *int
-	addsize       *int
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*Disk, error)
-	predicates    []predicate.Disk
+	op                Op
+	typ               string
+	id                *int
+	size              *int
+	addsize           *int
+	clearedFields     map[string]struct{}
+	_DiskToTag        map[int]struct{}
+	removed_DiskToTag map[int]struct{}
+	cleared_DiskToTag bool
+	done              bool
+	oldValue          func(context.Context) (*Disk, error)
+	predicates        []predicate.Disk
 }
 
 var _ ent.Mutation = (*DiskMutation)(nil)
@@ -4977,57 +5452,57 @@ func (m *DiskMutation) ResetSize() {
 	m.addsize = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *DiskMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddDiskToTagIDs adds the DiskToTag edge to Tag by ids.
+func (m *DiskMutation) AddDiskToTagIDs(ids ...int) {
+	if m._DiskToTag == nil {
+		m._DiskToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._DiskToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *DiskMutation) ClearTag() {
-	m.clearedtag = true
+// ClearDiskToTag clears the DiskToTag edge to Tag.
+func (m *DiskMutation) ClearDiskToTag() {
+	m.cleared_DiskToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *DiskMutation) TagCleared() bool {
-	return m.clearedtag
+// DiskToTagCleared returns if the edge DiskToTag was cleared.
+func (m *DiskMutation) DiskToTagCleared() bool {
+	return m.cleared_DiskToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *DiskMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveDiskToTagIDs removes the DiskToTag edge to Tag by ids.
+func (m *DiskMutation) RemoveDiskToTagIDs(ids ...int) {
+	if m.removed_DiskToTag == nil {
+		m.removed_DiskToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_DiskToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *DiskMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedDiskToTag returns the removed ids of DiskToTag.
+func (m *DiskMutation) RemovedDiskToTagIDs() (ids []int) {
+	for id := range m.removed_DiskToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *DiskMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// DiskToTagIDs returns the DiskToTag ids in the mutation.
+func (m *DiskMutation) DiskToTagIDs() (ids []int) {
+	for id := range m._DiskToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *DiskMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetDiskToTag reset all changes of the "DiskToTag" edge.
+func (m *DiskMutation) ResetDiskToTag() {
+	m._DiskToTag = nil
+	m.cleared_DiskToTag = false
+	m.removed_DiskToTag = nil
 }
 
 // Op returns the operation name.
@@ -5161,8 +5636,8 @@ func (m *DiskMutation) ResetField(name string) error {
 // mutation.
 func (m *DiskMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, disk.EdgeTag)
+	if m._DiskToTag != nil {
+		edges = append(edges, disk.EdgeDiskToTag)
 	}
 	return edges
 }
@@ -5171,9 +5646,9 @@ func (m *DiskMutation) AddedEdges() []string {
 // the given edge name.
 func (m *DiskMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case disk.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case disk.EdgeDiskToTag:
+		ids := make([]ent.Value, 0, len(m._DiskToTag))
+		for id := range m._DiskToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5185,8 +5660,8 @@ func (m *DiskMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *DiskMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, disk.EdgeTag)
+	if m.removed_DiskToTag != nil {
+		edges = append(edges, disk.EdgeDiskToTag)
 	}
 	return edges
 }
@@ -5195,9 +5670,9 @@ func (m *DiskMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *DiskMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case disk.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case disk.EdgeDiskToTag:
+		ids := make([]ent.Value, 0, len(m.removed_DiskToTag))
+		for id := range m.removed_DiskToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5209,8 +5684,8 @@ func (m *DiskMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *DiskMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, disk.EdgeTag)
+	if m.cleared_DiskToTag {
+		edges = append(edges, disk.EdgeDiskToTag)
 	}
 	return edges
 }
@@ -5219,8 +5694,8 @@ func (m *DiskMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *DiskMutation) EdgeCleared(name string) bool {
 	switch name {
-	case disk.EdgeTag:
-		return m.clearedtag
+	case disk.EdgeDiskToTag:
+		return m.cleared_DiskToTag
 	}
 	return false
 }
@@ -5238,8 +5713,8 @@ func (m *DiskMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *DiskMutation) ResetEdge(name string) error {
 	switch name {
-	case disk.EdgeTag:
-		m.ResetTag()
+	case disk.EdgeDiskToTag:
+		m.ResetDiskToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown Disk edge %s", name)
@@ -5249,48 +5724,48 @@ func (m *DiskMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type EnvironmentMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	competition_id          *string
-	name                    *string
-	description             *string
-	builder                 *string
-	team_count              *int
-	addteam_count           *int
-	revision                *int
-	addrevision             *int
-	admin_cidrs             *[]string
-	exposed_vdi_ports       *[]string
-	_config                 *map[string]string
-	clearedFields           map[string]struct{}
-	tag                     map[int]struct{}
-	removedtag              map[int]struct{}
-	clearedtag              bool
-	user                    map[int]struct{}
-	removeduser             map[int]struct{}
-	cleareduser             bool
-	host                    map[int]struct{}
-	removedhost             map[int]struct{}
-	clearedhost             bool
-	competition             map[int]struct{}
-	removedcompetition      map[int]struct{}
-	clearedcompetition      bool
-	build                   map[int]struct{}
-	removedbuild            map[int]struct{}
-	clearedbuild            bool
-	included_network        map[int]struct{}
-	removedincluded_network map[int]struct{}
-	clearedincluded_network bool
-	network                 map[int]struct{}
-	removednetwork          map[int]struct{}
-	clearednetwork          bool
-	team                    map[int]struct{}
-	removedteam             map[int]struct{}
-	clearedteam             bool
-	done                    bool
-	oldValue                func(context.Context) (*Environment, error)
-	predicates              []predicate.Environment
+	op                                   Op
+	typ                                  string
+	id                                   *int
+	competition_id                       *string
+	name                                 *string
+	description                          *string
+	builder                              *string
+	team_count                           *int
+	addteam_count                        *int
+	revision                             *int
+	addrevision                          *int
+	admin_cidrs                          *[]string
+	exposed_vdi_ports                    *[]string
+	_config                              *map[string]string
+	clearedFields                        map[string]struct{}
+	_EnvironmentToTag                    map[int]struct{}
+	removed_EnvironmentToTag             map[int]struct{}
+	cleared_EnvironmentToTag             bool
+	_EnvironmentToUser                   map[int]struct{}
+	removed_EnvironmentToUser            map[int]struct{}
+	cleared_EnvironmentToUser            bool
+	_EnvironmentToHost                   map[int]struct{}
+	removed_EnvironmentToHost            map[int]struct{}
+	cleared_EnvironmentToHost            bool
+	_EnvironmentToCompetition            map[int]struct{}
+	removed_EnvironmentToCompetition     map[int]struct{}
+	cleared_EnvironmentToCompetition     bool
+	_EnvironmentToBuild                  map[int]struct{}
+	removed_EnvironmentToBuild           map[int]struct{}
+	cleared_EnvironmentToBuild           bool
+	_EnvironmentToIncludedNetwork        map[int]struct{}
+	removed_EnvironmentToIncludedNetwork map[int]struct{}
+	cleared_EnvironmentToIncludedNetwork bool
+	_EnvironmentToNetwork                map[int]struct{}
+	removed_EnvironmentToNetwork         map[int]struct{}
+	cleared_EnvironmentToNetwork         bool
+	_EnvironmentToTeam                   map[int]struct{}
+	removed_EnvironmentToTeam            map[int]struct{}
+	cleared_EnvironmentToTeam            bool
+	done                                 bool
+	oldValue                             func(context.Context) (*Environment, error)
+	predicates                           []predicate.Environment
 }
 
 var _ ent.Mutation = (*EnvironmentMutation)(nil)
@@ -5745,428 +6220,428 @@ func (m *EnvironmentMutation) ResetConfig() {
 	m._config = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *EnvironmentMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
+func (m *EnvironmentMutation) AddEnvironmentToTagIDs(ids ...int) {
+	if m._EnvironmentToTag == nil {
+		m._EnvironmentToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._EnvironmentToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *EnvironmentMutation) ClearTag() {
-	m.clearedtag = true
+// ClearEnvironmentToTag clears the EnvironmentToTag edge to Tag.
+func (m *EnvironmentMutation) ClearEnvironmentToTag() {
+	m.cleared_EnvironmentToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *EnvironmentMutation) TagCleared() bool {
-	return m.clearedtag
+// EnvironmentToTagCleared returns if the edge EnvironmentToTag was cleared.
+func (m *EnvironmentMutation) EnvironmentToTagCleared() bool {
+	return m.cleared_EnvironmentToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *EnvironmentMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveEnvironmentToTagIDs removes the EnvironmentToTag edge to Tag by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToTagIDs(ids ...int) {
+	if m.removed_EnvironmentToTag == nil {
+		m.removed_EnvironmentToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_EnvironmentToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *EnvironmentMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedEnvironmentToTag returns the removed ids of EnvironmentToTag.
+func (m *EnvironmentMutation) RemovedEnvironmentToTagIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *EnvironmentMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// EnvironmentToTagIDs returns the EnvironmentToTag ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToTagIDs() (ids []int) {
+	for id := range m._EnvironmentToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *EnvironmentMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetEnvironmentToTag reset all changes of the "EnvironmentToTag" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToTag() {
+	m._EnvironmentToTag = nil
+	m.cleared_EnvironmentToTag = false
+	m.removed_EnvironmentToTag = nil
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (m *EnvironmentMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
+// AddEnvironmentToUserIDs adds the EnvironmentToUser edge to User by ids.
+func (m *EnvironmentMutation) AddEnvironmentToUserIDs(ids ...int) {
+	if m._EnvironmentToUser == nil {
+		m._EnvironmentToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.user[ids[i]] = struct{}{}
+		m._EnvironmentToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUser clears the user edge to User.
-func (m *EnvironmentMutation) ClearUser() {
-	m.cleareduser = true
+// ClearEnvironmentToUser clears the EnvironmentToUser edge to User.
+func (m *EnvironmentMutation) ClearEnvironmentToUser() {
+	m.cleared_EnvironmentToUser = true
 }
 
-// UserCleared returns if the edge user was cleared.
-func (m *EnvironmentMutation) UserCleared() bool {
-	return m.cleareduser
+// EnvironmentToUserCleared returns if the edge EnvironmentToUser was cleared.
+func (m *EnvironmentMutation) EnvironmentToUserCleared() bool {
+	return m.cleared_EnvironmentToUser
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (m *EnvironmentMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removeduser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUser returns the removed ids of user.
-func (m *EnvironmentMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserIDs returns the user ids in the mutation.
-func (m *EnvironmentMutation) UserIDs() (ids []int) {
-	for id := range m.user {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUser reset all changes of the "user" edge.
-func (m *EnvironmentMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-	m.removeduser = nil
-}
-
-// AddHostIDs adds the host edge to Host by ids.
-func (m *EnvironmentMutation) AddHostIDs(ids ...int) {
-	if m.host == nil {
-		m.host = make(map[int]struct{})
+// RemoveEnvironmentToUserIDs removes the EnvironmentToUser edge to User by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToUserIDs(ids ...int) {
+	if m.removed_EnvironmentToUser == nil {
+		m.removed_EnvironmentToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.host[ids[i]] = struct{}{}
+		m.removed_EnvironmentToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearHost clears the host edge to Host.
-func (m *EnvironmentMutation) ClearHost() {
-	m.clearedhost = true
+// RemovedEnvironmentToUser returns the removed ids of EnvironmentToUser.
+func (m *EnvironmentMutation) RemovedEnvironmentToUserIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// HostCleared returns if the edge host was cleared.
-func (m *EnvironmentMutation) HostCleared() bool {
-	return m.clearedhost
+// EnvironmentToUserIDs returns the EnvironmentToUser ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToUserIDs() (ids []int) {
+	for id := range m._EnvironmentToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveHostIDs removes the host edge to Host by ids.
-func (m *EnvironmentMutation) RemoveHostIDs(ids ...int) {
-	if m.removedhost == nil {
-		m.removedhost = make(map[int]struct{})
+// ResetEnvironmentToUser reset all changes of the "EnvironmentToUser" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToUser() {
+	m._EnvironmentToUser = nil
+	m.cleared_EnvironmentToUser = false
+	m.removed_EnvironmentToUser = nil
+}
+
+// AddEnvironmentToHostIDs adds the EnvironmentToHost edge to Host by ids.
+func (m *EnvironmentMutation) AddEnvironmentToHostIDs(ids ...int) {
+	if m._EnvironmentToHost == nil {
+		m._EnvironmentToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedhost[ids[i]] = struct{}{}
+		m._EnvironmentToHost[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedHost returns the removed ids of host.
-func (m *EnvironmentMutation) RemovedHostIDs() (ids []int) {
-	for id := range m.removedhost {
-		ids = append(ids, id)
-	}
-	return
+// ClearEnvironmentToHost clears the EnvironmentToHost edge to Host.
+func (m *EnvironmentMutation) ClearEnvironmentToHost() {
+	m.cleared_EnvironmentToHost = true
 }
 
-// HostIDs returns the host ids in the mutation.
-func (m *EnvironmentMutation) HostIDs() (ids []int) {
-	for id := range m.host {
-		ids = append(ids, id)
-	}
-	return
+// EnvironmentToHostCleared returns if the edge EnvironmentToHost was cleared.
+func (m *EnvironmentMutation) EnvironmentToHostCleared() bool {
+	return m.cleared_EnvironmentToHost
 }
 
-// ResetHost reset all changes of the "host" edge.
-func (m *EnvironmentMutation) ResetHost() {
-	m.host = nil
-	m.clearedhost = false
-	m.removedhost = nil
-}
-
-// AddCompetitionIDs adds the competition edge to Competition by ids.
-func (m *EnvironmentMutation) AddCompetitionIDs(ids ...int) {
-	if m.competition == nil {
-		m.competition = make(map[int]struct{})
+// RemoveEnvironmentToHostIDs removes the EnvironmentToHost edge to Host by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToHostIDs(ids ...int) {
+	if m.removed_EnvironmentToHost == nil {
+		m.removed_EnvironmentToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.competition[ids[i]] = struct{}{}
+		m.removed_EnvironmentToHost[ids[i]] = struct{}{}
 	}
 }
 
-// ClearCompetition clears the competition edge to Competition.
-func (m *EnvironmentMutation) ClearCompetition() {
-	m.clearedcompetition = true
+// RemovedEnvironmentToHost returns the removed ids of EnvironmentToHost.
+func (m *EnvironmentMutation) RemovedEnvironmentToHostIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// CompetitionCleared returns if the edge competition was cleared.
-func (m *EnvironmentMutation) CompetitionCleared() bool {
-	return m.clearedcompetition
+// EnvironmentToHostIDs returns the EnvironmentToHost ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToHostIDs() (ids []int) {
+	for id := range m._EnvironmentToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveCompetitionIDs removes the competition edge to Competition by ids.
-func (m *EnvironmentMutation) RemoveCompetitionIDs(ids ...int) {
-	if m.removedcompetition == nil {
-		m.removedcompetition = make(map[int]struct{})
+// ResetEnvironmentToHost reset all changes of the "EnvironmentToHost" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToHost() {
+	m._EnvironmentToHost = nil
+	m.cleared_EnvironmentToHost = false
+	m.removed_EnvironmentToHost = nil
+}
+
+// AddEnvironmentToCompetitionIDs adds the EnvironmentToCompetition edge to Competition by ids.
+func (m *EnvironmentMutation) AddEnvironmentToCompetitionIDs(ids ...int) {
+	if m._EnvironmentToCompetition == nil {
+		m._EnvironmentToCompetition = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedcompetition[ids[i]] = struct{}{}
+		m._EnvironmentToCompetition[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedCompetition returns the removed ids of competition.
-func (m *EnvironmentMutation) RemovedCompetitionIDs() (ids []int) {
-	for id := range m.removedcompetition {
-		ids = append(ids, id)
-	}
-	return
+// ClearEnvironmentToCompetition clears the EnvironmentToCompetition edge to Competition.
+func (m *EnvironmentMutation) ClearEnvironmentToCompetition() {
+	m.cleared_EnvironmentToCompetition = true
 }
 
-// CompetitionIDs returns the competition ids in the mutation.
-func (m *EnvironmentMutation) CompetitionIDs() (ids []int) {
-	for id := range m.competition {
-		ids = append(ids, id)
-	}
-	return
+// EnvironmentToCompetitionCleared returns if the edge EnvironmentToCompetition was cleared.
+func (m *EnvironmentMutation) EnvironmentToCompetitionCleared() bool {
+	return m.cleared_EnvironmentToCompetition
 }
 
-// ResetCompetition reset all changes of the "competition" edge.
-func (m *EnvironmentMutation) ResetCompetition() {
-	m.competition = nil
-	m.clearedcompetition = false
-	m.removedcompetition = nil
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (m *EnvironmentMutation) AddBuildIDs(ids ...int) {
-	if m.build == nil {
-		m.build = make(map[int]struct{})
+// RemoveEnvironmentToCompetitionIDs removes the EnvironmentToCompetition edge to Competition by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToCompetitionIDs(ids ...int) {
+	if m.removed_EnvironmentToCompetition == nil {
+		m.removed_EnvironmentToCompetition = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.build[ids[i]] = struct{}{}
+		m.removed_EnvironmentToCompetition[ids[i]] = struct{}{}
 	}
 }
 
-// ClearBuild clears the build edge to Build.
-func (m *EnvironmentMutation) ClearBuild() {
-	m.clearedbuild = true
+// RemovedEnvironmentToCompetition returns the removed ids of EnvironmentToCompetition.
+func (m *EnvironmentMutation) RemovedEnvironmentToCompetitionIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToCompetition {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// BuildCleared returns if the edge build was cleared.
-func (m *EnvironmentMutation) BuildCleared() bool {
-	return m.clearedbuild
+// EnvironmentToCompetitionIDs returns the EnvironmentToCompetition ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToCompetitionIDs() (ids []int) {
+	for id := range m._EnvironmentToCompetition {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (m *EnvironmentMutation) RemoveBuildIDs(ids ...int) {
-	if m.removedbuild == nil {
-		m.removedbuild = make(map[int]struct{})
+// ResetEnvironmentToCompetition reset all changes of the "EnvironmentToCompetition" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToCompetition() {
+	m._EnvironmentToCompetition = nil
+	m.cleared_EnvironmentToCompetition = false
+	m.removed_EnvironmentToCompetition = nil
+}
+
+// AddEnvironmentToBuildIDs adds the EnvironmentToBuild edge to Build by ids.
+func (m *EnvironmentMutation) AddEnvironmentToBuildIDs(ids ...int) {
+	if m._EnvironmentToBuild == nil {
+		m._EnvironmentToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedbuild[ids[i]] = struct{}{}
+		m._EnvironmentToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedBuild returns the removed ids of build.
-func (m *EnvironmentMutation) RemovedBuildIDs() (ids []int) {
-	for id := range m.removedbuild {
-		ids = append(ids, id)
-	}
-	return
+// ClearEnvironmentToBuild clears the EnvironmentToBuild edge to Build.
+func (m *EnvironmentMutation) ClearEnvironmentToBuild() {
+	m.cleared_EnvironmentToBuild = true
 }
 
-// BuildIDs returns the build ids in the mutation.
-func (m *EnvironmentMutation) BuildIDs() (ids []int) {
-	for id := range m.build {
-		ids = append(ids, id)
-	}
-	return
+// EnvironmentToBuildCleared returns if the edge EnvironmentToBuild was cleared.
+func (m *EnvironmentMutation) EnvironmentToBuildCleared() bool {
+	return m.cleared_EnvironmentToBuild
 }
 
-// ResetBuild reset all changes of the "build" edge.
-func (m *EnvironmentMutation) ResetBuild() {
-	m.build = nil
-	m.clearedbuild = false
-	m.removedbuild = nil
-}
-
-// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
-func (m *EnvironmentMutation) AddIncludedNetworkIDs(ids ...int) {
-	if m.included_network == nil {
-		m.included_network = make(map[int]struct{})
+// RemoveEnvironmentToBuildIDs removes the EnvironmentToBuild edge to Build by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...int) {
+	if m.removed_EnvironmentToBuild == nil {
+		m.removed_EnvironmentToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.included_network[ids[i]] = struct{}{}
+		m.removed_EnvironmentToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// ClearIncludedNetwork clears the included_network edge to IncludedNetwork.
-func (m *EnvironmentMutation) ClearIncludedNetwork() {
-	m.clearedincluded_network = true
+// RemovedEnvironmentToBuild returns the removed ids of EnvironmentToBuild.
+func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToBuild {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// IncludedNetworkCleared returns if the edge included_network was cleared.
-func (m *EnvironmentMutation) IncludedNetworkCleared() bool {
-	return m.clearedincluded_network
+// EnvironmentToBuildIDs returns the EnvironmentToBuild ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToBuildIDs() (ids []int) {
+	for id := range m._EnvironmentToBuild {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveIncludedNetworkIDs removes the included_network edge to IncludedNetwork by ids.
-func (m *EnvironmentMutation) RemoveIncludedNetworkIDs(ids ...int) {
-	if m.removedincluded_network == nil {
-		m.removedincluded_network = make(map[int]struct{})
+// ResetEnvironmentToBuild reset all changes of the "EnvironmentToBuild" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToBuild() {
+	m._EnvironmentToBuild = nil
+	m.cleared_EnvironmentToBuild = false
+	m.removed_EnvironmentToBuild = nil
+}
+
+// AddEnvironmentToIncludedNetworkIDs adds the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+func (m *EnvironmentMutation) AddEnvironmentToIncludedNetworkIDs(ids ...int) {
+	if m._EnvironmentToIncludedNetwork == nil {
+		m._EnvironmentToIncludedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedincluded_network[ids[i]] = struct{}{}
+		m._EnvironmentToIncludedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedIncludedNetwork returns the removed ids of included_network.
-func (m *EnvironmentMutation) RemovedIncludedNetworkIDs() (ids []int) {
-	for id := range m.removedincluded_network {
-		ids = append(ids, id)
-	}
-	return
+// ClearEnvironmentToIncludedNetwork clears the EnvironmentToIncludedNetwork edge to IncludedNetwork.
+func (m *EnvironmentMutation) ClearEnvironmentToIncludedNetwork() {
+	m.cleared_EnvironmentToIncludedNetwork = true
 }
 
-// IncludedNetworkIDs returns the included_network ids in the mutation.
-func (m *EnvironmentMutation) IncludedNetworkIDs() (ids []int) {
-	for id := range m.included_network {
-		ids = append(ids, id)
-	}
-	return
+// EnvironmentToIncludedNetworkCleared returns if the edge EnvironmentToIncludedNetwork was cleared.
+func (m *EnvironmentMutation) EnvironmentToIncludedNetworkCleared() bool {
+	return m.cleared_EnvironmentToIncludedNetwork
 }
 
-// ResetIncludedNetwork reset all changes of the "included_network" edge.
-func (m *EnvironmentMutation) ResetIncludedNetwork() {
-	m.included_network = nil
-	m.clearedincluded_network = false
-	m.removedincluded_network = nil
-}
-
-// AddNetworkIDs adds the network edge to Network by ids.
-func (m *EnvironmentMutation) AddNetworkIDs(ids ...int) {
-	if m.network == nil {
-		m.network = make(map[int]struct{})
+// RemoveEnvironmentToIncludedNetworkIDs removes the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToIncludedNetworkIDs(ids ...int) {
+	if m.removed_EnvironmentToIncludedNetwork == nil {
+		m.removed_EnvironmentToIncludedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.network[ids[i]] = struct{}{}
+		m.removed_EnvironmentToIncludedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// ClearNetwork clears the network edge to Network.
-func (m *EnvironmentMutation) ClearNetwork() {
-	m.clearednetwork = true
+// RemovedEnvironmentToIncludedNetwork returns the removed ids of EnvironmentToIncludedNetwork.
+func (m *EnvironmentMutation) RemovedEnvironmentToIncludedNetworkIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToIncludedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// NetworkCleared returns if the edge network was cleared.
-func (m *EnvironmentMutation) NetworkCleared() bool {
-	return m.clearednetwork
+// EnvironmentToIncludedNetworkIDs returns the EnvironmentToIncludedNetwork ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToIncludedNetworkIDs() (ids []int) {
+	for id := range m._EnvironmentToIncludedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (m *EnvironmentMutation) RemoveNetworkIDs(ids ...int) {
-	if m.removednetwork == nil {
-		m.removednetwork = make(map[int]struct{})
+// ResetEnvironmentToIncludedNetwork reset all changes of the "EnvironmentToIncludedNetwork" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToIncludedNetwork() {
+	m._EnvironmentToIncludedNetwork = nil
+	m.cleared_EnvironmentToIncludedNetwork = false
+	m.removed_EnvironmentToIncludedNetwork = nil
+}
+
+// AddEnvironmentToNetworkIDs adds the EnvironmentToNetwork edge to Network by ids.
+func (m *EnvironmentMutation) AddEnvironmentToNetworkIDs(ids ...int) {
+	if m._EnvironmentToNetwork == nil {
+		m._EnvironmentToNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removednetwork[ids[i]] = struct{}{}
+		m._EnvironmentToNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedNetwork returns the removed ids of network.
-func (m *EnvironmentMutation) RemovedNetworkIDs() (ids []int) {
-	for id := range m.removednetwork {
-		ids = append(ids, id)
-	}
-	return
+// ClearEnvironmentToNetwork clears the EnvironmentToNetwork edge to Network.
+func (m *EnvironmentMutation) ClearEnvironmentToNetwork() {
+	m.cleared_EnvironmentToNetwork = true
 }
 
-// NetworkIDs returns the network ids in the mutation.
-func (m *EnvironmentMutation) NetworkIDs() (ids []int) {
-	for id := range m.network {
-		ids = append(ids, id)
-	}
-	return
+// EnvironmentToNetworkCleared returns if the edge EnvironmentToNetwork was cleared.
+func (m *EnvironmentMutation) EnvironmentToNetworkCleared() bool {
+	return m.cleared_EnvironmentToNetwork
 }
 
-// ResetNetwork reset all changes of the "network" edge.
-func (m *EnvironmentMutation) ResetNetwork() {
-	m.network = nil
-	m.clearednetwork = false
-	m.removednetwork = nil
-}
-
-// AddTeamIDs adds the team edge to Team by ids.
-func (m *EnvironmentMutation) AddTeamIDs(ids ...int) {
-	if m.team == nil {
-		m.team = make(map[int]struct{})
+// RemoveEnvironmentToNetworkIDs removes the EnvironmentToNetwork edge to Network by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToNetworkIDs(ids ...int) {
+	if m.removed_EnvironmentToNetwork == nil {
+		m.removed_EnvironmentToNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.team[ids[i]] = struct{}{}
+		m.removed_EnvironmentToNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTeam clears the team edge to Team.
-func (m *EnvironmentMutation) ClearTeam() {
-	m.clearedteam = true
+// RemovedEnvironmentToNetwork returns the removed ids of EnvironmentToNetwork.
+func (m *EnvironmentMutation) RemovedEnvironmentToNetworkIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// TeamCleared returns if the edge team was cleared.
-func (m *EnvironmentMutation) TeamCleared() bool {
-	return m.clearedteam
+// EnvironmentToNetworkIDs returns the EnvironmentToNetwork ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToNetworkIDs() (ids []int) {
+	for id := range m._EnvironmentToNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveTeamIDs removes the team edge to Team by ids.
-func (m *EnvironmentMutation) RemoveTeamIDs(ids ...int) {
-	if m.removedteam == nil {
-		m.removedteam = make(map[int]struct{})
+// ResetEnvironmentToNetwork reset all changes of the "EnvironmentToNetwork" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToNetwork() {
+	m._EnvironmentToNetwork = nil
+	m.cleared_EnvironmentToNetwork = false
+	m.removed_EnvironmentToNetwork = nil
+}
+
+// AddEnvironmentToTeamIDs adds the EnvironmentToTeam edge to Team by ids.
+func (m *EnvironmentMutation) AddEnvironmentToTeamIDs(ids ...int) {
+	if m._EnvironmentToTeam == nil {
+		m._EnvironmentToTeam = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedteam[ids[i]] = struct{}{}
+		m._EnvironmentToTeam[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTeam returns the removed ids of team.
-func (m *EnvironmentMutation) RemovedTeamIDs() (ids []int) {
-	for id := range m.removedteam {
+// ClearEnvironmentToTeam clears the EnvironmentToTeam edge to Team.
+func (m *EnvironmentMutation) ClearEnvironmentToTeam() {
+	m.cleared_EnvironmentToTeam = true
+}
+
+// EnvironmentToTeamCleared returns if the edge EnvironmentToTeam was cleared.
+func (m *EnvironmentMutation) EnvironmentToTeamCleared() bool {
+	return m.cleared_EnvironmentToTeam
+}
+
+// RemoveEnvironmentToTeamIDs removes the EnvironmentToTeam edge to Team by ids.
+func (m *EnvironmentMutation) RemoveEnvironmentToTeamIDs(ids ...int) {
+	if m.removed_EnvironmentToTeam == nil {
+		m.removed_EnvironmentToTeam = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToTeam[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToTeam returns the removed ids of EnvironmentToTeam.
+func (m *EnvironmentMutation) RemovedEnvironmentToTeamIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToTeam {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TeamIDs returns the team ids in the mutation.
-func (m *EnvironmentMutation) TeamIDs() (ids []int) {
-	for id := range m.team {
+// EnvironmentToTeamIDs returns the EnvironmentToTeam ids in the mutation.
+func (m *EnvironmentMutation) EnvironmentToTeamIDs() (ids []int) {
+	for id := range m._EnvironmentToTeam {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTeam reset all changes of the "team" edge.
-func (m *EnvironmentMutation) ResetTeam() {
-	m.team = nil
-	m.clearedteam = false
-	m.removedteam = nil
+// ResetEnvironmentToTeam reset all changes of the "EnvironmentToTeam" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToTeam() {
+	m._EnvironmentToTeam = nil
+	m.cleared_EnvironmentToTeam = false
+	m.removed_EnvironmentToTeam = nil
 }
 
 // Op returns the operation name.
@@ -6448,29 +6923,29 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 // mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
 	edges := make([]string, 0, 8)
-	if m.tag != nil {
-		edges = append(edges, environment.EdgeTag)
+	if m._EnvironmentToTag != nil {
+		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
-	if m.user != nil {
-		edges = append(edges, environment.EdgeUser)
+	if m._EnvironmentToUser != nil {
+		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
-	if m.host != nil {
-		edges = append(edges, environment.EdgeHost)
+	if m._EnvironmentToHost != nil {
+		edges = append(edges, environment.EdgeEnvironmentToHost)
 	}
-	if m.competition != nil {
-		edges = append(edges, environment.EdgeCompetition)
+	if m._EnvironmentToCompetition != nil {
+		edges = append(edges, environment.EdgeEnvironmentToCompetition)
 	}
-	if m.build != nil {
-		edges = append(edges, environment.EdgeBuild)
+	if m._EnvironmentToBuild != nil {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
-	if m.included_network != nil {
-		edges = append(edges, environment.EdgeIncludedNetwork)
+	if m._EnvironmentToIncludedNetwork != nil {
+		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
 	}
-	if m.network != nil {
-		edges = append(edges, environment.EdgeNetwork)
+	if m._EnvironmentToNetwork != nil {
+		edges = append(edges, environment.EdgeEnvironmentToNetwork)
 	}
-	if m.team != nil {
-		edges = append(edges, environment.EdgeTeam)
+	if m._EnvironmentToTeam != nil {
+		edges = append(edges, environment.EdgeEnvironmentToTeam)
 	}
 	return edges
 }
@@ -6479,51 +6954,51 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 // the given edge name.
 func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case environment.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case environment.EdgeEnvironmentToTag:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToTag))
+		for id := range m._EnvironmentToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
+	case environment.EdgeEnvironmentToUser:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToUser))
+		for id := range m._EnvironmentToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.host))
-		for id := range m.host {
+	case environment.EdgeEnvironmentToHost:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToHost))
+		for id := range m._EnvironmentToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeCompetition:
-		ids := make([]ent.Value, 0, len(m.competition))
-		for id := range m.competition {
+	case environment.EdgeEnvironmentToCompetition:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToCompetition))
+		for id := range m._EnvironmentToCompetition {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.build))
-		for id := range m.build {
+	case environment.EdgeEnvironmentToBuild:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToBuild))
+		for id := range m._EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeIncludedNetwork:
-		ids := make([]ent.Value, 0, len(m.included_network))
-		for id := range m.included_network {
+	case environment.EdgeEnvironmentToIncludedNetwork:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToIncludedNetwork))
+		for id := range m._EnvironmentToIncludedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeNetwork:
-		ids := make([]ent.Value, 0, len(m.network))
-		for id := range m.network {
+	case environment.EdgeEnvironmentToNetwork:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToNetwork))
+		for id := range m._EnvironmentToNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeTeam:
-		ids := make([]ent.Value, 0, len(m.team))
-		for id := range m.team {
+	case environment.EdgeEnvironmentToTeam:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToTeam))
+		for id := range m._EnvironmentToTeam {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6535,29 +7010,29 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 8)
-	if m.removedtag != nil {
-		edges = append(edges, environment.EdgeTag)
+	if m.removed_EnvironmentToTag != nil {
+		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
-	if m.removeduser != nil {
-		edges = append(edges, environment.EdgeUser)
+	if m.removed_EnvironmentToUser != nil {
+		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
-	if m.removedhost != nil {
-		edges = append(edges, environment.EdgeHost)
+	if m.removed_EnvironmentToHost != nil {
+		edges = append(edges, environment.EdgeEnvironmentToHost)
 	}
-	if m.removedcompetition != nil {
-		edges = append(edges, environment.EdgeCompetition)
+	if m.removed_EnvironmentToCompetition != nil {
+		edges = append(edges, environment.EdgeEnvironmentToCompetition)
 	}
-	if m.removedbuild != nil {
-		edges = append(edges, environment.EdgeBuild)
+	if m.removed_EnvironmentToBuild != nil {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
-	if m.removedincluded_network != nil {
-		edges = append(edges, environment.EdgeIncludedNetwork)
+	if m.removed_EnvironmentToIncludedNetwork != nil {
+		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
 	}
-	if m.removednetwork != nil {
-		edges = append(edges, environment.EdgeNetwork)
+	if m.removed_EnvironmentToNetwork != nil {
+		edges = append(edges, environment.EdgeEnvironmentToNetwork)
 	}
-	if m.removedteam != nil {
-		edges = append(edges, environment.EdgeTeam)
+	if m.removed_EnvironmentToTeam != nil {
+		edges = append(edges, environment.EdgeEnvironmentToTeam)
 	}
 	return edges
 }
@@ -6566,51 +7041,51 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case environment.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case environment.EdgeEnvironmentToTag:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToTag))
+		for id := range m.removed_EnvironmentToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
+	case environment.EdgeEnvironmentToUser:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToUser))
+		for id := range m.removed_EnvironmentToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.removedhost))
-		for id := range m.removedhost {
+	case environment.EdgeEnvironmentToHost:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToHost))
+		for id := range m.removed_EnvironmentToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeCompetition:
-		ids := make([]ent.Value, 0, len(m.removedcompetition))
-		for id := range m.removedcompetition {
+	case environment.EdgeEnvironmentToCompetition:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToCompetition))
+		for id := range m.removed_EnvironmentToCompetition {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.removedbuild))
-		for id := range m.removedbuild {
+	case environment.EdgeEnvironmentToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToBuild))
+		for id := range m.removed_EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeIncludedNetwork:
-		ids := make([]ent.Value, 0, len(m.removedincluded_network))
-		for id := range m.removedincluded_network {
+	case environment.EdgeEnvironmentToIncludedNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToIncludedNetwork))
+		for id := range m.removed_EnvironmentToIncludedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeNetwork:
-		ids := make([]ent.Value, 0, len(m.removednetwork))
-		for id := range m.removednetwork {
+	case environment.EdgeEnvironmentToNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToNetwork))
+		for id := range m.removed_EnvironmentToNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeTeam:
-		ids := make([]ent.Value, 0, len(m.removedteam))
-		for id := range m.removedteam {
+	case environment.EdgeEnvironmentToTeam:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToTeam))
+		for id := range m.removed_EnvironmentToTeam {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6622,29 +7097,29 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 8)
-	if m.clearedtag {
-		edges = append(edges, environment.EdgeTag)
+	if m.cleared_EnvironmentToTag {
+		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
-	if m.cleareduser {
-		edges = append(edges, environment.EdgeUser)
+	if m.cleared_EnvironmentToUser {
+		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
-	if m.clearedhost {
-		edges = append(edges, environment.EdgeHost)
+	if m.cleared_EnvironmentToHost {
+		edges = append(edges, environment.EdgeEnvironmentToHost)
 	}
-	if m.clearedcompetition {
-		edges = append(edges, environment.EdgeCompetition)
+	if m.cleared_EnvironmentToCompetition {
+		edges = append(edges, environment.EdgeEnvironmentToCompetition)
 	}
-	if m.clearedbuild {
-		edges = append(edges, environment.EdgeBuild)
+	if m.cleared_EnvironmentToBuild {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
-	if m.clearedincluded_network {
-		edges = append(edges, environment.EdgeIncludedNetwork)
+	if m.cleared_EnvironmentToIncludedNetwork {
+		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
 	}
-	if m.clearednetwork {
-		edges = append(edges, environment.EdgeNetwork)
+	if m.cleared_EnvironmentToNetwork {
+		edges = append(edges, environment.EdgeEnvironmentToNetwork)
 	}
-	if m.clearedteam {
-		edges = append(edges, environment.EdgeTeam)
+	if m.cleared_EnvironmentToTeam {
+		edges = append(edges, environment.EdgeEnvironmentToTeam)
 	}
 	return edges
 }
@@ -6653,22 +7128,22 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 	switch name {
-	case environment.EdgeTag:
-		return m.clearedtag
-	case environment.EdgeUser:
-		return m.cleareduser
-	case environment.EdgeHost:
-		return m.clearedhost
-	case environment.EdgeCompetition:
-		return m.clearedcompetition
-	case environment.EdgeBuild:
-		return m.clearedbuild
-	case environment.EdgeIncludedNetwork:
-		return m.clearedincluded_network
-	case environment.EdgeNetwork:
-		return m.clearednetwork
-	case environment.EdgeTeam:
-		return m.clearedteam
+	case environment.EdgeEnvironmentToTag:
+		return m.cleared_EnvironmentToTag
+	case environment.EdgeEnvironmentToUser:
+		return m.cleared_EnvironmentToUser
+	case environment.EdgeEnvironmentToHost:
+		return m.cleared_EnvironmentToHost
+	case environment.EdgeEnvironmentToCompetition:
+		return m.cleared_EnvironmentToCompetition
+	case environment.EdgeEnvironmentToBuild:
+		return m.cleared_EnvironmentToBuild
+	case environment.EdgeEnvironmentToIncludedNetwork:
+		return m.cleared_EnvironmentToIncludedNetwork
+	case environment.EdgeEnvironmentToNetwork:
+		return m.cleared_EnvironmentToNetwork
+	case environment.EdgeEnvironmentToTeam:
+		return m.cleared_EnvironmentToTeam
 	}
 	return false
 }
@@ -6686,29 +7161,29 @@ func (m *EnvironmentMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *EnvironmentMutation) ResetEdge(name string) error {
 	switch name {
-	case environment.EdgeTag:
-		m.ResetTag()
+	case environment.EdgeEnvironmentToTag:
+		m.ResetEnvironmentToTag()
 		return nil
-	case environment.EdgeUser:
-		m.ResetUser()
+	case environment.EdgeEnvironmentToUser:
+		m.ResetEnvironmentToUser()
 		return nil
-	case environment.EdgeHost:
-		m.ResetHost()
+	case environment.EdgeEnvironmentToHost:
+		m.ResetEnvironmentToHost()
 		return nil
-	case environment.EdgeCompetition:
-		m.ResetCompetition()
+	case environment.EdgeEnvironmentToCompetition:
+		m.ResetEnvironmentToCompetition()
 		return nil
-	case environment.EdgeBuild:
-		m.ResetBuild()
+	case environment.EdgeEnvironmentToBuild:
+		m.ResetEnvironmentToBuild()
 		return nil
-	case environment.EdgeIncludedNetwork:
-		m.ResetIncludedNetwork()
+	case environment.EdgeEnvironmentToIncludedNetwork:
+		m.ResetEnvironmentToIncludedNetwork()
 		return nil
-	case environment.EdgeNetwork:
-		m.ResetNetwork()
+	case environment.EdgeEnvironmentToNetwork:
+		m.ResetEnvironmentToNetwork()
 		return nil
-	case environment.EdgeTeam:
-		m.ResetTeam()
+	case environment.EdgeEnvironmentToTeam:
+		m.ResetEnvironmentToTeam()
 		return nil
 	}
 	return fmt.Errorf("unknown Environment edge %s", name)
@@ -6718,17 +7193,17 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type FileDeleteMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	_path         *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*FileDelete, error)
-	predicates    []predicate.FileDelete
+	op                      Op
+	typ                     string
+	id                      *int
+	_path                   *string
+	clearedFields           map[string]struct{}
+	_FileDeleteToTag        map[int]struct{}
+	removed_FileDeleteToTag map[int]struct{}
+	cleared_FileDeleteToTag bool
+	done                    bool
+	oldValue                func(context.Context) (*FileDelete, error)
+	predicates              []predicate.FileDelete
 }
 
 var _ ent.Mutation = (*FileDeleteMutation)(nil)
@@ -6847,57 +7322,57 @@ func (m *FileDeleteMutation) ResetPath() {
 	m._path = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *FileDeleteMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
+func (m *FileDeleteMutation) AddFileDeleteToTagIDs(ids ...int) {
+	if m._FileDeleteToTag == nil {
+		m._FileDeleteToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._FileDeleteToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *FileDeleteMutation) ClearTag() {
-	m.clearedtag = true
+// ClearFileDeleteToTag clears the FileDeleteToTag edge to Tag.
+func (m *FileDeleteMutation) ClearFileDeleteToTag() {
+	m.cleared_FileDeleteToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *FileDeleteMutation) TagCleared() bool {
-	return m.clearedtag
+// FileDeleteToTagCleared returns if the edge FileDeleteToTag was cleared.
+func (m *FileDeleteMutation) FileDeleteToTagCleared() bool {
+	return m.cleared_FileDeleteToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *FileDeleteMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveFileDeleteToTagIDs removes the FileDeleteToTag edge to Tag by ids.
+func (m *FileDeleteMutation) RemoveFileDeleteToTagIDs(ids ...int) {
+	if m.removed_FileDeleteToTag == nil {
+		m.removed_FileDeleteToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_FileDeleteToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *FileDeleteMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedFileDeleteToTag returns the removed ids of FileDeleteToTag.
+func (m *FileDeleteMutation) RemovedFileDeleteToTagIDs() (ids []int) {
+	for id := range m.removed_FileDeleteToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *FileDeleteMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// FileDeleteToTagIDs returns the FileDeleteToTag ids in the mutation.
+func (m *FileDeleteMutation) FileDeleteToTagIDs() (ids []int) {
+	for id := range m._FileDeleteToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *FileDeleteMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetFileDeleteToTag reset all changes of the "FileDeleteToTag" edge.
+func (m *FileDeleteMutation) ResetFileDeleteToTag() {
+	m._FileDeleteToTag = nil
+	m.cleared_FileDeleteToTag = false
+	m.removed_FileDeleteToTag = nil
 }
 
 // Op returns the operation name.
@@ -7016,8 +7491,8 @@ func (m *FileDeleteMutation) ResetField(name string) error {
 // mutation.
 func (m *FileDeleteMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, filedelete.EdgeTag)
+	if m._FileDeleteToTag != nil {
+		edges = append(edges, filedelete.EdgeFileDeleteToTag)
 	}
 	return edges
 }
@@ -7026,9 +7501,9 @@ func (m *FileDeleteMutation) AddedEdges() []string {
 // the given edge name.
 func (m *FileDeleteMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case filedelete.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case filedelete.EdgeFileDeleteToTag:
+		ids := make([]ent.Value, 0, len(m._FileDeleteToTag))
+		for id := range m._FileDeleteToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -7040,8 +7515,8 @@ func (m *FileDeleteMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileDeleteMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, filedelete.EdgeTag)
+	if m.removed_FileDeleteToTag != nil {
+		edges = append(edges, filedelete.EdgeFileDeleteToTag)
 	}
 	return edges
 }
@@ -7050,9 +7525,9 @@ func (m *FileDeleteMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *FileDeleteMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case filedelete.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case filedelete.EdgeFileDeleteToTag:
+		ids := make([]ent.Value, 0, len(m.removed_FileDeleteToTag))
+		for id := range m.removed_FileDeleteToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -7064,8 +7539,8 @@ func (m *FileDeleteMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileDeleteMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, filedelete.EdgeTag)
+	if m.cleared_FileDeleteToTag {
+		edges = append(edges, filedelete.EdgeFileDeleteToTag)
 	}
 	return edges
 }
@@ -7074,8 +7549,8 @@ func (m *FileDeleteMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *FileDeleteMutation) EdgeCleared(name string) bool {
 	switch name {
-	case filedelete.EdgeTag:
-		return m.clearedtag
+	case filedelete.EdgeFileDeleteToTag:
+		return m.cleared_FileDeleteToTag
 	}
 	return false
 }
@@ -7093,8 +7568,8 @@ func (m *FileDeleteMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *FileDeleteMutation) ResetEdge(name string) error {
 	switch name {
-	case filedelete.EdgeTag:
-		m.ResetTag()
+	case filedelete.EdgeFileDeleteToTag:
+		m.ResetFileDeleteToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown FileDelete edge %s", name)
@@ -7104,24 +7579,24 @@ func (m *FileDeleteMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type FileDownloadMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	source_type   *string
-	source        *string
-	destination   *string
-	template      *bool
-	mode          *string
-	disabled      *bool
-	md5           *string
-	abs_path      *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*FileDownload, error)
-	predicates    []predicate.FileDownload
+	op                        Op
+	typ                       string
+	id                        *int
+	source_type               *string
+	source                    *string
+	destination               *string
+	template                  *bool
+	mode                      *string
+	disabled                  *bool
+	md5                       *string
+	abs_path                  *string
+	clearedFields             map[string]struct{}
+	_FileDownloadToTag        map[int]struct{}
+	removed_FileDownloadToTag map[int]struct{}
+	cleared_FileDownloadToTag bool
+	done                      bool
+	oldValue                  func(context.Context) (*FileDownload, error)
+	predicates                []predicate.FileDownload
 }
 
 var _ ent.Mutation = (*FileDownloadMutation)(nil)
@@ -7499,57 +7974,57 @@ func (m *FileDownloadMutation) ResetAbsPath() {
 	m.abs_path = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *FileDownloadMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+func (m *FileDownloadMutation) AddFileDownloadToTagIDs(ids ...int) {
+	if m._FileDownloadToTag == nil {
+		m._FileDownloadToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._FileDownloadToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *FileDownloadMutation) ClearTag() {
-	m.clearedtag = true
+// ClearFileDownloadToTag clears the FileDownloadToTag edge to Tag.
+func (m *FileDownloadMutation) ClearFileDownloadToTag() {
+	m.cleared_FileDownloadToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *FileDownloadMutation) TagCleared() bool {
-	return m.clearedtag
+// FileDownloadToTagCleared returns if the edge FileDownloadToTag was cleared.
+func (m *FileDownloadMutation) FileDownloadToTagCleared() bool {
+	return m.cleared_FileDownloadToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *FileDownloadMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveFileDownloadToTagIDs removes the FileDownloadToTag edge to Tag by ids.
+func (m *FileDownloadMutation) RemoveFileDownloadToTagIDs(ids ...int) {
+	if m.removed_FileDownloadToTag == nil {
+		m.removed_FileDownloadToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_FileDownloadToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *FileDownloadMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedFileDownloadToTag returns the removed ids of FileDownloadToTag.
+func (m *FileDownloadMutation) RemovedFileDownloadToTagIDs() (ids []int) {
+	for id := range m.removed_FileDownloadToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *FileDownloadMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// FileDownloadToTagIDs returns the FileDownloadToTag ids in the mutation.
+func (m *FileDownloadMutation) FileDownloadToTagIDs() (ids []int) {
+	for id := range m._FileDownloadToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *FileDownloadMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetFileDownloadToTag reset all changes of the "FileDownloadToTag" edge.
+func (m *FileDownloadMutation) ResetFileDownloadToTag() {
+	m._FileDownloadToTag = nil
+	m.cleared_FileDownloadToTag = false
+	m.removed_FileDownloadToTag = nil
 }
 
 // Op returns the operation name.
@@ -7787,8 +8262,8 @@ func (m *FileDownloadMutation) ResetField(name string) error {
 // mutation.
 func (m *FileDownloadMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, filedownload.EdgeTag)
+	if m._FileDownloadToTag != nil {
+		edges = append(edges, filedownload.EdgeFileDownloadToTag)
 	}
 	return edges
 }
@@ -7797,9 +8272,9 @@ func (m *FileDownloadMutation) AddedEdges() []string {
 // the given edge name.
 func (m *FileDownloadMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case filedownload.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case filedownload.EdgeFileDownloadToTag:
+		ids := make([]ent.Value, 0, len(m._FileDownloadToTag))
+		for id := range m._FileDownloadToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -7811,8 +8286,8 @@ func (m *FileDownloadMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileDownloadMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, filedownload.EdgeTag)
+	if m.removed_FileDownloadToTag != nil {
+		edges = append(edges, filedownload.EdgeFileDownloadToTag)
 	}
 	return edges
 }
@@ -7821,9 +8296,9 @@ func (m *FileDownloadMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *FileDownloadMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case filedownload.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case filedownload.EdgeFileDownloadToTag:
+		ids := make([]ent.Value, 0, len(m.removed_FileDownloadToTag))
+		for id := range m.removed_FileDownloadToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -7835,8 +8310,8 @@ func (m *FileDownloadMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileDownloadMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, filedownload.EdgeTag)
+	if m.cleared_FileDownloadToTag {
+		edges = append(edges, filedownload.EdgeFileDownloadToTag)
 	}
 	return edges
 }
@@ -7845,8 +8320,8 @@ func (m *FileDownloadMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *FileDownloadMutation) EdgeCleared(name string) bool {
 	switch name {
-	case filedownload.EdgeTag:
-		return m.clearedtag
+	case filedownload.EdgeFileDownloadToTag:
+		return m.cleared_FileDownloadToTag
 	}
 	return false
 }
@@ -7864,8 +8339,8 @@ func (m *FileDownloadMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *FileDownloadMutation) ResetEdge(name string) error {
 	switch name {
-	case filedownload.EdgeTag:
-		m.ResetTag()
+	case filedownload.EdgeFileDownloadToTag:
+		m.ResetFileDownloadToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown FileDownload edge %s", name)
@@ -7875,19 +8350,19 @@ func (m *FileDownloadMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type FileExtractMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	source        *string
-	destination   *string
-	_type         *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*FileExtract, error)
-	predicates    []predicate.FileExtract
+	op                       Op
+	typ                      string
+	id                       *int
+	source                   *string
+	destination              *string
+	_type                    *string
+	clearedFields            map[string]struct{}
+	_FileExtractToTag        map[int]struct{}
+	removed_FileExtractToTag map[int]struct{}
+	cleared_FileExtractToTag bool
+	done                     bool
+	oldValue                 func(context.Context) (*FileExtract, error)
+	predicates               []predicate.FileExtract
 }
 
 var _ ent.Mutation = (*FileExtractMutation)(nil)
@@ -8080,57 +8555,57 @@ func (m *FileExtractMutation) ResetType() {
 	m._type = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *FileExtractMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
+func (m *FileExtractMutation) AddFileExtractToTagIDs(ids ...int) {
+	if m._FileExtractToTag == nil {
+		m._FileExtractToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._FileExtractToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *FileExtractMutation) ClearTag() {
-	m.clearedtag = true
+// ClearFileExtractToTag clears the FileExtractToTag edge to Tag.
+func (m *FileExtractMutation) ClearFileExtractToTag() {
+	m.cleared_FileExtractToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *FileExtractMutation) TagCleared() bool {
-	return m.clearedtag
+// FileExtractToTagCleared returns if the edge FileExtractToTag was cleared.
+func (m *FileExtractMutation) FileExtractToTagCleared() bool {
+	return m.cleared_FileExtractToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *FileExtractMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveFileExtractToTagIDs removes the FileExtractToTag edge to Tag by ids.
+func (m *FileExtractMutation) RemoveFileExtractToTagIDs(ids ...int) {
+	if m.removed_FileExtractToTag == nil {
+		m.removed_FileExtractToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_FileExtractToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *FileExtractMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedFileExtractToTag returns the removed ids of FileExtractToTag.
+func (m *FileExtractMutation) RemovedFileExtractToTagIDs() (ids []int) {
+	for id := range m.removed_FileExtractToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *FileExtractMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// FileExtractToTagIDs returns the FileExtractToTag ids in the mutation.
+func (m *FileExtractMutation) FileExtractToTagIDs() (ids []int) {
+	for id := range m._FileExtractToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *FileExtractMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetFileExtractToTag reset all changes of the "FileExtractToTag" edge.
+func (m *FileExtractMutation) ResetFileExtractToTag() {
+	m._FileExtractToTag = nil
+	m.cleared_FileExtractToTag = false
+	m.removed_FileExtractToTag = nil
 }
 
 // Op returns the operation name.
@@ -8283,8 +8758,8 @@ func (m *FileExtractMutation) ResetField(name string) error {
 // mutation.
 func (m *FileExtractMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, fileextract.EdgeTag)
+	if m._FileExtractToTag != nil {
+		edges = append(edges, fileextract.EdgeFileExtractToTag)
 	}
 	return edges
 }
@@ -8293,9 +8768,9 @@ func (m *FileExtractMutation) AddedEdges() []string {
 // the given edge name.
 func (m *FileExtractMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case fileextract.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case fileextract.EdgeFileExtractToTag:
+		ids := make([]ent.Value, 0, len(m._FileExtractToTag))
+		for id := range m._FileExtractToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8307,8 +8782,8 @@ func (m *FileExtractMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileExtractMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, fileextract.EdgeTag)
+	if m.removed_FileExtractToTag != nil {
+		edges = append(edges, fileextract.EdgeFileExtractToTag)
 	}
 	return edges
 }
@@ -8317,9 +8792,9 @@ func (m *FileExtractMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *FileExtractMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case fileextract.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case fileextract.EdgeFileExtractToTag:
+		ids := make([]ent.Value, 0, len(m.removed_FileExtractToTag))
+		for id := range m.removed_FileExtractToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8331,8 +8806,8 @@ func (m *FileExtractMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *FileExtractMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, fileextract.EdgeTag)
+	if m.cleared_FileExtractToTag {
+		edges = append(edges, fileextract.EdgeFileExtractToTag)
 	}
 	return edges
 }
@@ -8341,8 +8816,8 @@ func (m *FileExtractMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *FileExtractMutation) EdgeCleared(name string) bool {
 	switch name {
-	case fileextract.EdgeTag:
-		return m.clearedtag
+	case fileextract.EdgeFileExtractToTag:
+		return m.cleared_FileExtractToTag
 	}
 	return false
 }
@@ -8360,8 +8835,8 @@ func (m *FileExtractMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *FileExtractMutation) ResetEdge(name string) error {
 	switch name {
-	case fileextract.EdgeTag:
-		m.ResetTag()
+	case fileextract.EdgeFileExtractToTag:
+		m.ResetFileExtractToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown FileExtract edge %s", name)
@@ -8371,29 +8846,29 @@ func (m *FileExtractMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type FindingMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	description   *string
-	severity      *finding.Severity
-	difficulty    *finding.Difficulty
-	clearedFields map[string]struct{}
-	user          map[int]struct{}
-	removeduser   map[int]struct{}
-	cleareduser   bool
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	host          map[int]struct{}
-	removedhost   map[int]struct{}
-	clearedhost   bool
-	script        map[int]struct{}
-	removedscript map[int]struct{}
-	clearedscript bool
-	done          bool
-	oldValue      func(context.Context) (*Finding, error)
-	predicates    []predicate.Finding
+	op                      Op
+	typ                     string
+	id                      *int
+	name                    *string
+	description             *string
+	severity                *finding.Severity
+	difficulty              *finding.Difficulty
+	clearedFields           map[string]struct{}
+	_FindingToUser          map[int]struct{}
+	removed_FindingToUser   map[int]struct{}
+	cleared_FindingToUser   bool
+	_FindingToTag           map[int]struct{}
+	removed_FindingToTag    map[int]struct{}
+	cleared_FindingToTag    bool
+	_FindingToHost          map[int]struct{}
+	removed_FindingToHost   map[int]struct{}
+	cleared_FindingToHost   bool
+	_FindingToScript        map[int]struct{}
+	removed_FindingToScript map[int]struct{}
+	cleared_FindingToScript bool
+	done                    bool
+	oldValue                func(context.Context) (*Finding, error)
+	predicates              []predicate.Finding
 }
 
 var _ ent.Mutation = (*FindingMutation)(nil)
@@ -8623,216 +9098,216 @@ func (m *FindingMutation) ResetDifficulty() {
 	m.difficulty = nil
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (m *FindingMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
+// AddFindingToUserIDs adds the FindingToUser edge to User by ids.
+func (m *FindingMutation) AddFindingToUserIDs(ids ...int) {
+	if m._FindingToUser == nil {
+		m._FindingToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.user[ids[i]] = struct{}{}
+		m._FindingToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUser clears the user edge to User.
-func (m *FindingMutation) ClearUser() {
-	m.cleareduser = true
+// ClearFindingToUser clears the FindingToUser edge to User.
+func (m *FindingMutation) ClearFindingToUser() {
+	m.cleared_FindingToUser = true
 }
 
-// UserCleared returns if the edge user was cleared.
-func (m *FindingMutation) UserCleared() bool {
-	return m.cleareduser
+// FindingToUserCleared returns if the edge FindingToUser was cleared.
+func (m *FindingMutation) FindingToUserCleared() bool {
+	return m.cleared_FindingToUser
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (m *FindingMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
+// RemoveFindingToUserIDs removes the FindingToUser edge to User by ids.
+func (m *FindingMutation) RemoveFindingToUserIDs(ids ...int) {
+	if m.removed_FindingToUser == nil {
+		m.removed_FindingToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeduser[ids[i]] = struct{}{}
+		m.removed_FindingToUser[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedUser returns the removed ids of user.
-func (m *FindingMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
+// RemovedFindingToUser returns the removed ids of FindingToUser.
+func (m *FindingMutation) RemovedFindingToUserIDs() (ids []int) {
+	for id := range m.removed_FindingToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// UserIDs returns the user ids in the mutation.
-func (m *FindingMutation) UserIDs() (ids []int) {
-	for id := range m.user {
+// FindingToUserIDs returns the FindingToUser ids in the mutation.
+func (m *FindingMutation) FindingToUserIDs() (ids []int) {
+	for id := range m._FindingToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetUser reset all changes of the "user" edge.
-func (m *FindingMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-	m.removeduser = nil
+// ResetFindingToUser reset all changes of the "FindingToUser" edge.
+func (m *FindingMutation) ResetFindingToUser() {
+	m._FindingToUser = nil
+	m.cleared_FindingToUser = false
+	m.removed_FindingToUser = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *FindingMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddFindingToTagIDs adds the FindingToTag edge to Tag by ids.
+func (m *FindingMutation) AddFindingToTagIDs(ids ...int) {
+	if m._FindingToTag == nil {
+		m._FindingToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._FindingToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *FindingMutation) ClearTag() {
-	m.clearedtag = true
+// ClearFindingToTag clears the FindingToTag edge to Tag.
+func (m *FindingMutation) ClearFindingToTag() {
+	m.cleared_FindingToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *FindingMutation) TagCleared() bool {
-	return m.clearedtag
+// FindingToTagCleared returns if the edge FindingToTag was cleared.
+func (m *FindingMutation) FindingToTagCleared() bool {
+	return m.cleared_FindingToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *FindingMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed ids of tag.
-func (m *FindingMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the tag ids in the mutation.
-func (m *FindingMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag reset all changes of the "tag" edge.
-func (m *FindingMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
-}
-
-// AddHostIDs adds the host edge to Host by ids.
-func (m *FindingMutation) AddHostIDs(ids ...int) {
-	if m.host == nil {
-		m.host = make(map[int]struct{})
+// RemoveFindingToTagIDs removes the FindingToTag edge to Tag by ids.
+func (m *FindingMutation) RemoveFindingToTagIDs(ids ...int) {
+	if m.removed_FindingToTag == nil {
+		m.removed_FindingToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.host[ids[i]] = struct{}{}
+		m.removed_FindingToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearHost clears the host edge to Host.
-func (m *FindingMutation) ClearHost() {
-	m.clearedhost = true
+// RemovedFindingToTag returns the removed ids of FindingToTag.
+func (m *FindingMutation) RemovedFindingToTagIDs() (ids []int) {
+	for id := range m.removed_FindingToTag {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// HostCleared returns if the edge host was cleared.
-func (m *FindingMutation) HostCleared() bool {
-	return m.clearedhost
+// FindingToTagIDs returns the FindingToTag ids in the mutation.
+func (m *FindingMutation) FindingToTagIDs() (ids []int) {
+	for id := range m._FindingToTag {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveHostIDs removes the host edge to Host by ids.
-func (m *FindingMutation) RemoveHostIDs(ids ...int) {
-	if m.removedhost == nil {
-		m.removedhost = make(map[int]struct{})
+// ResetFindingToTag reset all changes of the "FindingToTag" edge.
+func (m *FindingMutation) ResetFindingToTag() {
+	m._FindingToTag = nil
+	m.cleared_FindingToTag = false
+	m.removed_FindingToTag = nil
+}
+
+// AddFindingToHostIDs adds the FindingToHost edge to Host by ids.
+func (m *FindingMutation) AddFindingToHostIDs(ids ...int) {
+	if m._FindingToHost == nil {
+		m._FindingToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedhost[ids[i]] = struct{}{}
+		m._FindingToHost[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedHost returns the removed ids of host.
-func (m *FindingMutation) RemovedHostIDs() (ids []int) {
-	for id := range m.removedhost {
-		ids = append(ids, id)
-	}
-	return
+// ClearFindingToHost clears the FindingToHost edge to Host.
+func (m *FindingMutation) ClearFindingToHost() {
+	m.cleared_FindingToHost = true
 }
 
-// HostIDs returns the host ids in the mutation.
-func (m *FindingMutation) HostIDs() (ids []int) {
-	for id := range m.host {
-		ids = append(ids, id)
-	}
-	return
+// FindingToHostCleared returns if the edge FindingToHost was cleared.
+func (m *FindingMutation) FindingToHostCleared() bool {
+	return m.cleared_FindingToHost
 }
 
-// ResetHost reset all changes of the "host" edge.
-func (m *FindingMutation) ResetHost() {
-	m.host = nil
-	m.clearedhost = false
-	m.removedhost = nil
-}
-
-// AddScriptIDs adds the script edge to Script by ids.
-func (m *FindingMutation) AddScriptIDs(ids ...int) {
-	if m.script == nil {
-		m.script = make(map[int]struct{})
+// RemoveFindingToHostIDs removes the FindingToHost edge to Host by ids.
+func (m *FindingMutation) RemoveFindingToHostIDs(ids ...int) {
+	if m.removed_FindingToHost == nil {
+		m.removed_FindingToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.script[ids[i]] = struct{}{}
+		m.removed_FindingToHost[ids[i]] = struct{}{}
 	}
 }
 
-// ClearScript clears the script edge to Script.
-func (m *FindingMutation) ClearScript() {
-	m.clearedscript = true
+// RemovedFindingToHost returns the removed ids of FindingToHost.
+func (m *FindingMutation) RemovedFindingToHostIDs() (ids []int) {
+	for id := range m.removed_FindingToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// ScriptCleared returns if the edge script was cleared.
-func (m *FindingMutation) ScriptCleared() bool {
-	return m.clearedscript
+// FindingToHostIDs returns the FindingToHost ids in the mutation.
+func (m *FindingMutation) FindingToHostIDs() (ids []int) {
+	for id := range m._FindingToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveScriptIDs removes the script edge to Script by ids.
-func (m *FindingMutation) RemoveScriptIDs(ids ...int) {
-	if m.removedscript == nil {
-		m.removedscript = make(map[int]struct{})
+// ResetFindingToHost reset all changes of the "FindingToHost" edge.
+func (m *FindingMutation) ResetFindingToHost() {
+	m._FindingToHost = nil
+	m.cleared_FindingToHost = false
+	m.removed_FindingToHost = nil
+}
+
+// AddFindingToScriptIDs adds the FindingToScript edge to Script by ids.
+func (m *FindingMutation) AddFindingToScriptIDs(ids ...int) {
+	if m._FindingToScript == nil {
+		m._FindingToScript = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedscript[ids[i]] = struct{}{}
+		m._FindingToScript[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedScript returns the removed ids of script.
-func (m *FindingMutation) RemovedScriptIDs() (ids []int) {
-	for id := range m.removedscript {
+// ClearFindingToScript clears the FindingToScript edge to Script.
+func (m *FindingMutation) ClearFindingToScript() {
+	m.cleared_FindingToScript = true
+}
+
+// FindingToScriptCleared returns if the edge FindingToScript was cleared.
+func (m *FindingMutation) FindingToScriptCleared() bool {
+	return m.cleared_FindingToScript
+}
+
+// RemoveFindingToScriptIDs removes the FindingToScript edge to Script by ids.
+func (m *FindingMutation) RemoveFindingToScriptIDs(ids ...int) {
+	if m.removed_FindingToScript == nil {
+		m.removed_FindingToScript = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_FindingToScript[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFindingToScript returns the removed ids of FindingToScript.
+func (m *FindingMutation) RemovedFindingToScriptIDs() (ids []int) {
+	for id := range m.removed_FindingToScript {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ScriptIDs returns the script ids in the mutation.
-func (m *FindingMutation) ScriptIDs() (ids []int) {
-	for id := range m.script {
+// FindingToScriptIDs returns the FindingToScript ids in the mutation.
+func (m *FindingMutation) FindingToScriptIDs() (ids []int) {
+	for id := range m._FindingToScript {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetScript reset all changes of the "script" edge.
-func (m *FindingMutation) ResetScript() {
-	m.script = nil
-	m.clearedscript = false
-	m.removedscript = nil
+// ResetFindingToScript reset all changes of the "FindingToScript" edge.
+func (m *FindingMutation) ResetFindingToScript() {
+	m._FindingToScript = nil
+	m.cleared_FindingToScript = false
+	m.removed_FindingToScript = nil
 }
 
 // Op returns the operation name.
@@ -9002,17 +9477,17 @@ func (m *FindingMutation) ResetField(name string) error {
 // mutation.
 func (m *FindingMutation) AddedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.user != nil {
-		edges = append(edges, finding.EdgeUser)
+	if m._FindingToUser != nil {
+		edges = append(edges, finding.EdgeFindingToUser)
 	}
-	if m.tag != nil {
-		edges = append(edges, finding.EdgeTag)
+	if m._FindingToTag != nil {
+		edges = append(edges, finding.EdgeFindingToTag)
 	}
-	if m.host != nil {
-		edges = append(edges, finding.EdgeHost)
+	if m._FindingToHost != nil {
+		edges = append(edges, finding.EdgeFindingToHost)
 	}
-	if m.script != nil {
-		edges = append(edges, finding.EdgeScript)
+	if m._FindingToScript != nil {
+		edges = append(edges, finding.EdgeFindingToScript)
 	}
 	return edges
 }
@@ -9021,27 +9496,27 @@ func (m *FindingMutation) AddedEdges() []string {
 // the given edge name.
 func (m *FindingMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case finding.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
+	case finding.EdgeFindingToUser:
+		ids := make([]ent.Value, 0, len(m._FindingToUser))
+		for id := range m._FindingToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case finding.EdgeFindingToTag:
+		ids := make([]ent.Value, 0, len(m._FindingToTag))
+		for id := range m._FindingToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.host))
-		for id := range m.host {
+	case finding.EdgeFindingToHost:
+		ids := make([]ent.Value, 0, len(m._FindingToHost))
+		for id := range m._FindingToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeScript:
-		ids := make([]ent.Value, 0, len(m.script))
-		for id := range m.script {
+	case finding.EdgeFindingToScript:
+		ids := make([]ent.Value, 0, len(m._FindingToScript))
+		for id := range m._FindingToScript {
 			ids = append(ids, id)
 		}
 		return ids
@@ -9053,17 +9528,17 @@ func (m *FindingMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *FindingMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removeduser != nil {
-		edges = append(edges, finding.EdgeUser)
+	if m.removed_FindingToUser != nil {
+		edges = append(edges, finding.EdgeFindingToUser)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, finding.EdgeTag)
+	if m.removed_FindingToTag != nil {
+		edges = append(edges, finding.EdgeFindingToTag)
 	}
-	if m.removedhost != nil {
-		edges = append(edges, finding.EdgeHost)
+	if m.removed_FindingToHost != nil {
+		edges = append(edges, finding.EdgeFindingToHost)
 	}
-	if m.removedscript != nil {
-		edges = append(edges, finding.EdgeScript)
+	if m.removed_FindingToScript != nil {
+		edges = append(edges, finding.EdgeFindingToScript)
 	}
 	return edges
 }
@@ -9072,27 +9547,27 @@ func (m *FindingMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *FindingMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case finding.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
+	case finding.EdgeFindingToUser:
+		ids := make([]ent.Value, 0, len(m.removed_FindingToUser))
+		for id := range m.removed_FindingToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case finding.EdgeFindingToTag:
+		ids := make([]ent.Value, 0, len(m.removed_FindingToTag))
+		for id := range m.removed_FindingToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.removedhost))
-		for id := range m.removedhost {
+	case finding.EdgeFindingToHost:
+		ids := make([]ent.Value, 0, len(m.removed_FindingToHost))
+		for id := range m.removed_FindingToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeScript:
-		ids := make([]ent.Value, 0, len(m.removedscript))
-		for id := range m.removedscript {
+	case finding.EdgeFindingToScript:
+		ids := make([]ent.Value, 0, len(m.removed_FindingToScript))
+		for id := range m.removed_FindingToScript {
 			ids = append(ids, id)
 		}
 		return ids
@@ -9104,17 +9579,17 @@ func (m *FindingMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *FindingMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.cleareduser {
-		edges = append(edges, finding.EdgeUser)
+	if m.cleared_FindingToUser {
+		edges = append(edges, finding.EdgeFindingToUser)
 	}
-	if m.clearedtag {
-		edges = append(edges, finding.EdgeTag)
+	if m.cleared_FindingToTag {
+		edges = append(edges, finding.EdgeFindingToTag)
 	}
-	if m.clearedhost {
-		edges = append(edges, finding.EdgeHost)
+	if m.cleared_FindingToHost {
+		edges = append(edges, finding.EdgeFindingToHost)
 	}
-	if m.clearedscript {
-		edges = append(edges, finding.EdgeScript)
+	if m.cleared_FindingToScript {
+		edges = append(edges, finding.EdgeFindingToScript)
 	}
 	return edges
 }
@@ -9123,14 +9598,14 @@ func (m *FindingMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *FindingMutation) EdgeCleared(name string) bool {
 	switch name {
-	case finding.EdgeUser:
-		return m.cleareduser
-	case finding.EdgeTag:
-		return m.clearedtag
-	case finding.EdgeHost:
-		return m.clearedhost
-	case finding.EdgeScript:
-		return m.clearedscript
+	case finding.EdgeFindingToUser:
+		return m.cleared_FindingToUser
+	case finding.EdgeFindingToTag:
+		return m.cleared_FindingToTag
+	case finding.EdgeFindingToHost:
+		return m.cleared_FindingToHost
+	case finding.EdgeFindingToScript:
+		return m.cleared_FindingToScript
 	}
 	return false
 }
@@ -9148,17 +9623,17 @@ func (m *FindingMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *FindingMutation) ResetEdge(name string) error {
 	switch name {
-	case finding.EdgeUser:
-		m.ResetUser()
+	case finding.EdgeFindingToUser:
+		m.ResetFindingToUser()
 		return nil
-	case finding.EdgeTag:
-		m.ResetTag()
+	case finding.EdgeFindingToTag:
+		m.ResetFindingToTag()
 		return nil
-	case finding.EdgeHost:
-		m.ResetHost()
+	case finding.EdgeFindingToHost:
+		m.ResetFindingToHost()
 		return nil
-	case finding.EdgeScript:
-		m.ResetScript()
+	case finding.EdgeFindingToScript:
+		m.ResetFindingToScript()
 		return nil
 	}
 	return fmt.Errorf("unknown Finding edge %s", name)
@@ -9168,38 +9643,41 @@ func (m *FindingMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type HostMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	hostname          *string
-	description       *string
-	_OS               *string
-	last_octet        *int
-	addlast_octet     *int
-	allow_mac_changes *bool
-	exposed_tcp_ports *[]string
-	exposed_udp_ports *[]string
-	override_password *string
-	vars              *map[string]string
-	user_groups       *[]string
-	depends_on        *[]string
-	scripts           *[]string
-	commands          *[]string
-	remote_files      *[]string
-	dns_records       *[]string
-	clearedFields     map[string]struct{}
-	disk              map[int]struct{}
-	removeddisk       map[int]struct{}
-	cleareddisk       bool
-	maintainer        map[int]struct{}
-	removedmaintainer map[int]struct{}
-	clearedmaintainer bool
-	tag               map[int]struct{}
-	removedtag        map[int]struct{}
-	clearedtag        bool
-	done              bool
-	oldValue          func(context.Context) (*Host, error)
-	predicates        []predicate.Host
+	op                        Op
+	typ                       string
+	id                        *int
+	hostname                  *string
+	description               *string
+	_OS                       *string
+	last_octet                *int
+	addlast_octet             *int
+	allow_mac_changes         *bool
+	exposed_tcp_ports         *[]string
+	exposed_udp_ports         *[]string
+	override_password         *string
+	vars                      *map[string]string
+	user_groups               *[]string
+	depends_on                *[]string
+	scripts                   *[]string
+	commands                  *[]string
+	remote_files              *[]string
+	dns_records               *[]string
+	clearedFields             map[string]struct{}
+	_HostToDisk               map[int]struct{}
+	removed_HostToDisk        map[int]struct{}
+	cleared_HostToDisk        bool
+	_HostToUser               map[int]struct{}
+	removed_HostToUser        map[int]struct{}
+	cleared_HostToUser        bool
+	_HostToTag                map[int]struct{}
+	removed_HostToTag         map[int]struct{}
+	cleared_HostToTag         bool
+	_HostToEnvironment        map[int]struct{}
+	removed_HostToEnvironment map[int]struct{}
+	cleared_HostToEnvironment bool
+	done                      bool
+	oldValue                  func(context.Context) (*Host, error)
+	predicates                []predicate.Host
 }
 
 var _ ent.Mutation = (*HostMutation)(nil)
@@ -9921,163 +10399,216 @@ func (m *HostMutation) ResetDNSRecords() {
 	delete(m.clearedFields, host.FieldDNSRecords)
 }
 
-// AddDiskIDs adds the disk edge to Disk by ids.
-func (m *HostMutation) AddDiskIDs(ids ...int) {
-	if m.disk == nil {
-		m.disk = make(map[int]struct{})
+// AddHostToDiskIDs adds the HostToDisk edge to Disk by ids.
+func (m *HostMutation) AddHostToDiskIDs(ids ...int) {
+	if m._HostToDisk == nil {
+		m._HostToDisk = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.disk[ids[i]] = struct{}{}
+		m._HostToDisk[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDisk clears the disk edge to Disk.
-func (m *HostMutation) ClearDisk() {
-	m.cleareddisk = true
+// ClearHostToDisk clears the HostToDisk edge to Disk.
+func (m *HostMutation) ClearHostToDisk() {
+	m.cleared_HostToDisk = true
 }
 
-// DiskCleared returns if the edge disk was cleared.
-func (m *HostMutation) DiskCleared() bool {
-	return m.cleareddisk
+// HostToDiskCleared returns if the edge HostToDisk was cleared.
+func (m *HostMutation) HostToDiskCleared() bool {
+	return m.cleared_HostToDisk
 }
 
-// RemoveDiskIDs removes the disk edge to Disk by ids.
-func (m *HostMutation) RemoveDiskIDs(ids ...int) {
-	if m.removeddisk == nil {
-		m.removeddisk = make(map[int]struct{})
+// RemoveHostToDiskIDs removes the HostToDisk edge to Disk by ids.
+func (m *HostMutation) RemoveHostToDiskIDs(ids ...int) {
+	if m.removed_HostToDisk == nil {
+		m.removed_HostToDisk = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeddisk[ids[i]] = struct{}{}
+		m.removed_HostToDisk[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDisk returns the removed ids of disk.
-func (m *HostMutation) RemovedDiskIDs() (ids []int) {
-	for id := range m.removeddisk {
+// RemovedHostToDisk returns the removed ids of HostToDisk.
+func (m *HostMutation) RemovedHostToDiskIDs() (ids []int) {
+	for id := range m.removed_HostToDisk {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DiskIDs returns the disk ids in the mutation.
-func (m *HostMutation) DiskIDs() (ids []int) {
-	for id := range m.disk {
+// HostToDiskIDs returns the HostToDisk ids in the mutation.
+func (m *HostMutation) HostToDiskIDs() (ids []int) {
+	for id := range m._HostToDisk {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDisk reset all changes of the "disk" edge.
-func (m *HostMutation) ResetDisk() {
-	m.disk = nil
-	m.cleareddisk = false
-	m.removeddisk = nil
+// ResetHostToDisk reset all changes of the "HostToDisk" edge.
+func (m *HostMutation) ResetHostToDisk() {
+	m._HostToDisk = nil
+	m.cleared_HostToDisk = false
+	m.removed_HostToDisk = nil
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (m *HostMutation) AddMaintainerIDs(ids ...int) {
-	if m.maintainer == nil {
-		m.maintainer = make(map[int]struct{})
+// AddHostToUserIDs adds the HostToUser edge to User by ids.
+func (m *HostMutation) AddHostToUserIDs(ids ...int) {
+	if m._HostToUser == nil {
+		m._HostToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.maintainer[ids[i]] = struct{}{}
+		m._HostToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearMaintainer clears the maintainer edge to User.
-func (m *HostMutation) ClearMaintainer() {
-	m.clearedmaintainer = true
+// ClearHostToUser clears the HostToUser edge to User.
+func (m *HostMutation) ClearHostToUser() {
+	m.cleared_HostToUser = true
 }
 
-// MaintainerCleared returns if the edge maintainer was cleared.
-func (m *HostMutation) MaintainerCleared() bool {
-	return m.clearedmaintainer
+// HostToUserCleared returns if the edge HostToUser was cleared.
+func (m *HostMutation) HostToUserCleared() bool {
+	return m.cleared_HostToUser
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (m *HostMutation) RemoveMaintainerIDs(ids ...int) {
-	if m.removedmaintainer == nil {
-		m.removedmaintainer = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedmaintainer[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMaintainer returns the removed ids of maintainer.
-func (m *HostMutation) RemovedMaintainerIDs() (ids []int) {
-	for id := range m.removedmaintainer {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MaintainerIDs returns the maintainer ids in the mutation.
-func (m *HostMutation) MaintainerIDs() (ids []int) {
-	for id := range m.maintainer {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMaintainer reset all changes of the "maintainer" edge.
-func (m *HostMutation) ResetMaintainer() {
-	m.maintainer = nil
-	m.clearedmaintainer = false
-	m.removedmaintainer = nil
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *HostMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// RemoveHostToUserIDs removes the HostToUser edge to User by ids.
+func (m *HostMutation) RemoveHostToUserIDs(ids ...int) {
+	if m.removed_HostToUser == nil {
+		m.removed_HostToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m.removed_HostToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *HostMutation) ClearTag() {
-	m.clearedtag = true
+// RemovedHostToUser returns the removed ids of HostToUser.
+func (m *HostMutation) RemovedHostToUserIDs() (ids []int) {
+	for id := range m.removed_HostToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *HostMutation) TagCleared() bool {
-	return m.clearedtag
+// HostToUserIDs returns the HostToUser ids in the mutation.
+func (m *HostMutation) HostToUserIDs() (ids []int) {
+	for id := range m._HostToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *HostMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// ResetHostToUser reset all changes of the "HostToUser" edge.
+func (m *HostMutation) ResetHostToUser() {
+	m._HostToUser = nil
+	m.cleared_HostToUser = false
+	m.removed_HostToUser = nil
+}
+
+// AddHostToTagIDs adds the HostToTag edge to Tag by ids.
+func (m *HostMutation) AddHostToTagIDs(ids ...int) {
+	if m._HostToTag == nil {
+		m._HostToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m._HostToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *HostMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// ClearHostToTag clears the HostToTag edge to Tag.
+func (m *HostMutation) ClearHostToTag() {
+	m.cleared_HostToTag = true
+}
+
+// HostToTagCleared returns if the edge HostToTag was cleared.
+func (m *HostMutation) HostToTagCleared() bool {
+	return m.cleared_HostToTag
+}
+
+// RemoveHostToTagIDs removes the HostToTag edge to Tag by ids.
+func (m *HostMutation) RemoveHostToTagIDs(ids ...int) {
+	if m.removed_HostToTag == nil {
+		m.removed_HostToTag = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_HostToTag[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHostToTag returns the removed ids of HostToTag.
+func (m *HostMutation) RemovedHostToTagIDs() (ids []int) {
+	for id := range m.removed_HostToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *HostMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// HostToTagIDs returns the HostToTag ids in the mutation.
+func (m *HostMutation) HostToTagIDs() (ids []int) {
+	for id := range m._HostToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *HostMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetHostToTag reset all changes of the "HostToTag" edge.
+func (m *HostMutation) ResetHostToTag() {
+	m._HostToTag = nil
+	m.cleared_HostToTag = false
+	m.removed_HostToTag = nil
+}
+
+// AddHostToEnvironmentIDs adds the HostToEnvironment edge to Environment by ids.
+func (m *HostMutation) AddHostToEnvironmentIDs(ids ...int) {
+	if m._HostToEnvironment == nil {
+		m._HostToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._HostToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHostToEnvironment clears the HostToEnvironment edge to Environment.
+func (m *HostMutation) ClearHostToEnvironment() {
+	m.cleared_HostToEnvironment = true
+}
+
+// HostToEnvironmentCleared returns if the edge HostToEnvironment was cleared.
+func (m *HostMutation) HostToEnvironmentCleared() bool {
+	return m.cleared_HostToEnvironment
+}
+
+// RemoveHostToEnvironmentIDs removes the HostToEnvironment edge to Environment by ids.
+func (m *HostMutation) RemoveHostToEnvironmentIDs(ids ...int) {
+	if m.removed_HostToEnvironment == nil {
+		m.removed_HostToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_HostToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHostToEnvironment returns the removed ids of HostToEnvironment.
+func (m *HostMutation) RemovedHostToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_HostToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HostToEnvironmentIDs returns the HostToEnvironment ids in the mutation.
+func (m *HostMutation) HostToEnvironmentIDs() (ids []int) {
+	for id := range m._HostToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHostToEnvironment reset all changes of the "HostToEnvironment" edge.
+func (m *HostMutation) ResetHostToEnvironment() {
+	m._HostToEnvironment = nil
+	m.cleared_HostToEnvironment = false
+	m.removed_HostToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -10481,15 +11012,18 @@ func (m *HostMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *HostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.disk != nil {
-		edges = append(edges, host.EdgeDisk)
+	edges := make([]string, 0, 4)
+	if m._HostToDisk != nil {
+		edges = append(edges, host.EdgeHostToDisk)
 	}
-	if m.maintainer != nil {
-		edges = append(edges, host.EdgeMaintainer)
+	if m._HostToUser != nil {
+		edges = append(edges, host.EdgeHostToUser)
 	}
-	if m.tag != nil {
-		edges = append(edges, host.EdgeTag)
+	if m._HostToTag != nil {
+		edges = append(edges, host.EdgeHostToTag)
+	}
+	if m._HostToEnvironment != nil {
+		edges = append(edges, host.EdgeHostToEnvironment)
 	}
 	return edges
 }
@@ -10498,21 +11032,27 @@ func (m *HostMutation) AddedEdges() []string {
 // the given edge name.
 func (m *HostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case host.EdgeDisk:
-		ids := make([]ent.Value, 0, len(m.disk))
-		for id := range m.disk {
+	case host.EdgeHostToDisk:
+		ids := make([]ent.Value, 0, len(m._HostToDisk))
+		for id := range m._HostToDisk {
 			ids = append(ids, id)
 		}
 		return ids
-	case host.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.maintainer))
-		for id := range m.maintainer {
+	case host.EdgeHostToUser:
+		ids := make([]ent.Value, 0, len(m._HostToUser))
+		for id := range m._HostToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case host.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case host.EdgeHostToTag:
+		ids := make([]ent.Value, 0, len(m._HostToTag))
+		for id := range m._HostToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case host.EdgeHostToEnvironment:
+		ids := make([]ent.Value, 0, len(m._HostToEnvironment))
+		for id := range m._HostToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -10523,15 +11063,18 @@ func (m *HostMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *HostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removeddisk != nil {
-		edges = append(edges, host.EdgeDisk)
+	edges := make([]string, 0, 4)
+	if m.removed_HostToDisk != nil {
+		edges = append(edges, host.EdgeHostToDisk)
 	}
-	if m.removedmaintainer != nil {
-		edges = append(edges, host.EdgeMaintainer)
+	if m.removed_HostToUser != nil {
+		edges = append(edges, host.EdgeHostToUser)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, host.EdgeTag)
+	if m.removed_HostToTag != nil {
+		edges = append(edges, host.EdgeHostToTag)
+	}
+	if m.removed_HostToEnvironment != nil {
+		edges = append(edges, host.EdgeHostToEnvironment)
 	}
 	return edges
 }
@@ -10540,21 +11083,27 @@ func (m *HostMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *HostMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case host.EdgeDisk:
-		ids := make([]ent.Value, 0, len(m.removeddisk))
-		for id := range m.removeddisk {
+	case host.EdgeHostToDisk:
+		ids := make([]ent.Value, 0, len(m.removed_HostToDisk))
+		for id := range m.removed_HostToDisk {
 			ids = append(ids, id)
 		}
 		return ids
-	case host.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.removedmaintainer))
-		for id := range m.removedmaintainer {
+	case host.EdgeHostToUser:
+		ids := make([]ent.Value, 0, len(m.removed_HostToUser))
+		for id := range m.removed_HostToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case host.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case host.EdgeHostToTag:
+		ids := make([]ent.Value, 0, len(m.removed_HostToTag))
+		for id := range m.removed_HostToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case host.EdgeHostToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_HostToEnvironment))
+		for id := range m.removed_HostToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -10565,15 +11114,18 @@ func (m *HostMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *HostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.cleareddisk {
-		edges = append(edges, host.EdgeDisk)
+	edges := make([]string, 0, 4)
+	if m.cleared_HostToDisk {
+		edges = append(edges, host.EdgeHostToDisk)
 	}
-	if m.clearedmaintainer {
-		edges = append(edges, host.EdgeMaintainer)
+	if m.cleared_HostToUser {
+		edges = append(edges, host.EdgeHostToUser)
 	}
-	if m.clearedtag {
-		edges = append(edges, host.EdgeTag)
+	if m.cleared_HostToTag {
+		edges = append(edges, host.EdgeHostToTag)
+	}
+	if m.cleared_HostToEnvironment {
+		edges = append(edges, host.EdgeHostToEnvironment)
 	}
 	return edges
 }
@@ -10582,12 +11134,14 @@ func (m *HostMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *HostMutation) EdgeCleared(name string) bool {
 	switch name {
-	case host.EdgeDisk:
-		return m.cleareddisk
-	case host.EdgeMaintainer:
-		return m.clearedmaintainer
-	case host.EdgeTag:
-		return m.clearedtag
+	case host.EdgeHostToDisk:
+		return m.cleared_HostToDisk
+	case host.EdgeHostToUser:
+		return m.cleared_HostToUser
+	case host.EdgeHostToTag:
+		return m.cleared_HostToTag
+	case host.EdgeHostToEnvironment:
+		return m.cleared_HostToEnvironment
 	}
 	return false
 }
@@ -10605,14 +11159,17 @@ func (m *HostMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *HostMutation) ResetEdge(name string) error {
 	switch name {
-	case host.EdgeDisk:
-		m.ResetDisk()
+	case host.EdgeHostToDisk:
+		m.ResetHostToDisk()
 		return nil
-	case host.EdgeMaintainer:
-		m.ResetMaintainer()
+	case host.EdgeHostToUser:
+		m.ResetHostToUser()
 		return nil
-	case host.EdgeTag:
-		m.ResetTag()
+	case host.EdgeHostToTag:
+		m.ResetHostToTag()
+		return nil
+	case host.EdgeHostToEnvironment:
+		m.ResetHostToEnvironment()
 		return nil
 	}
 	return fmt.Errorf("unknown Host edge %s", name)
@@ -10628,9 +11185,9 @@ type IncludedNetworkMutation struct {
 	name                                 *string
 	hosts                                *[]string
 	clearedFields                        map[string]struct{}
-	tag                                  map[int]struct{}
-	removedtag                           map[int]struct{}
-	clearedtag                           bool
+	_IncludedNetworkToTag                map[int]struct{}
+	removed_IncludedNetworkToTag         map[int]struct{}
+	cleared_IncludedNetworkToTag         bool
 	_IncludedNetworkToEnvironment        map[int]struct{}
 	removed_IncludedNetworkToEnvironment map[int]struct{}
 	cleared_IncludedNetworkToEnvironment bool
@@ -10792,57 +11349,57 @@ func (m *IncludedNetworkMutation) ResetHosts() {
 	m.hosts = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *IncludedNetworkMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+func (m *IncludedNetworkMutation) AddIncludedNetworkToTagIDs(ids ...int) {
+	if m._IncludedNetworkToTag == nil {
+		m._IncludedNetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._IncludedNetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *IncludedNetworkMutation) ClearTag() {
-	m.clearedtag = true
+// ClearIncludedNetworkToTag clears the IncludedNetworkToTag edge to Tag.
+func (m *IncludedNetworkMutation) ClearIncludedNetworkToTag() {
+	m.cleared_IncludedNetworkToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *IncludedNetworkMutation) TagCleared() bool {
-	return m.clearedtag
+// IncludedNetworkToTagCleared returns if the edge IncludedNetworkToTag was cleared.
+func (m *IncludedNetworkMutation) IncludedNetworkToTagCleared() bool {
+	return m.cleared_IncludedNetworkToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *IncludedNetworkMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveIncludedNetworkToTagIDs removes the IncludedNetworkToTag edge to Tag by ids.
+func (m *IncludedNetworkMutation) RemoveIncludedNetworkToTagIDs(ids ...int) {
+	if m.removed_IncludedNetworkToTag == nil {
+		m.removed_IncludedNetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_IncludedNetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *IncludedNetworkMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedIncludedNetworkToTag returns the removed ids of IncludedNetworkToTag.
+func (m *IncludedNetworkMutation) RemovedIncludedNetworkToTagIDs() (ids []int) {
+	for id := range m.removed_IncludedNetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *IncludedNetworkMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// IncludedNetworkToTagIDs returns the IncludedNetworkToTag ids in the mutation.
+func (m *IncludedNetworkMutation) IncludedNetworkToTagIDs() (ids []int) {
+	for id := range m._IncludedNetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *IncludedNetworkMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetIncludedNetworkToTag reset all changes of the "IncludedNetworkToTag" edge.
+func (m *IncludedNetworkMutation) ResetIncludedNetworkToTag() {
+	m._IncludedNetworkToTag = nil
+	m.cleared_IncludedNetworkToTag = false
+	m.removed_IncludedNetworkToTag = nil
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
@@ -11031,8 +11588,8 @@ func (m *IncludedNetworkMutation) ResetField(name string) error {
 // mutation.
 func (m *IncludedNetworkMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.tag != nil {
-		edges = append(edges, includednetwork.EdgeTag)
+	if m._IncludedNetworkToTag != nil {
+		edges = append(edges, includednetwork.EdgeIncludedNetworkToTag)
 	}
 	if m._IncludedNetworkToEnvironment != nil {
 		edges = append(edges, includednetwork.EdgeIncludedNetworkToEnvironment)
@@ -11044,9 +11601,9 @@ func (m *IncludedNetworkMutation) AddedEdges() []string {
 // the given edge name.
 func (m *IncludedNetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case includednetwork.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case includednetwork.EdgeIncludedNetworkToTag:
+		ids := make([]ent.Value, 0, len(m._IncludedNetworkToTag))
+		for id := range m._IncludedNetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11064,8 +11621,8 @@ func (m *IncludedNetworkMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *IncludedNetworkMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedtag != nil {
-		edges = append(edges, includednetwork.EdgeTag)
+	if m.removed_IncludedNetworkToTag != nil {
+		edges = append(edges, includednetwork.EdgeIncludedNetworkToTag)
 	}
 	if m.removed_IncludedNetworkToEnvironment != nil {
 		edges = append(edges, includednetwork.EdgeIncludedNetworkToEnvironment)
@@ -11077,9 +11634,9 @@ func (m *IncludedNetworkMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *IncludedNetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case includednetwork.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case includednetwork.EdgeIncludedNetworkToTag:
+		ids := make([]ent.Value, 0, len(m.removed_IncludedNetworkToTag))
+		for id := range m.removed_IncludedNetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11097,8 +11654,8 @@ func (m *IncludedNetworkMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *IncludedNetworkMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedtag {
-		edges = append(edges, includednetwork.EdgeTag)
+	if m.cleared_IncludedNetworkToTag {
+		edges = append(edges, includednetwork.EdgeIncludedNetworkToTag)
 	}
 	if m.cleared_IncludedNetworkToEnvironment {
 		edges = append(edges, includednetwork.EdgeIncludedNetworkToEnvironment)
@@ -11110,8 +11667,8 @@ func (m *IncludedNetworkMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *IncludedNetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case includednetwork.EdgeTag:
-		return m.clearedtag
+	case includednetwork.EdgeIncludedNetworkToTag:
+		return m.cleared_IncludedNetworkToTag
 	case includednetwork.EdgeIncludedNetworkToEnvironment:
 		return m.cleared_IncludedNetworkToEnvironment
 	}
@@ -11131,8 +11688,8 @@ func (m *IncludedNetworkMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *IncludedNetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case includednetwork.EdgeTag:
-		m.ResetTag()
+	case includednetwork.EdgeIncludedNetworkToTag:
+		m.ResetIncludedNetworkToTag()
 		return nil
 	case includednetwork.EdgeIncludedNetworkToEnvironment:
 		m.ResetIncludedNetworkToEnvironment()
@@ -11153,9 +11710,9 @@ type NetworkMutation struct {
 	vdi_visible                  *bool
 	vars                         *map[string]string
 	clearedFields                map[string]struct{}
-	tag                          map[int]struct{}
-	removedtag                   map[int]struct{}
-	clearedtag                   bool
+	_NetworkToTag                map[int]struct{}
+	removed_NetworkToTag         map[int]struct{}
+	cleared_NetworkToTag         bool
 	_NetworkToEnvironment        map[int]struct{}
 	removed_NetworkToEnvironment map[int]struct{}
 	cleared_NetworkToEnvironment bool
@@ -11391,57 +11948,57 @@ func (m *NetworkMutation) ResetVars() {
 	m.vars = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *NetworkMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+func (m *NetworkMutation) AddNetworkToTagIDs(ids ...int) {
+	if m._NetworkToTag == nil {
+		m._NetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._NetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *NetworkMutation) ClearTag() {
-	m.clearedtag = true
+// ClearNetworkToTag clears the NetworkToTag edge to Tag.
+func (m *NetworkMutation) ClearNetworkToTag() {
+	m.cleared_NetworkToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *NetworkMutation) TagCleared() bool {
-	return m.clearedtag
+// NetworkToTagCleared returns if the edge NetworkToTag was cleared.
+func (m *NetworkMutation) NetworkToTagCleared() bool {
+	return m.cleared_NetworkToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *NetworkMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveNetworkToTagIDs removes the NetworkToTag edge to Tag by ids.
+func (m *NetworkMutation) RemoveNetworkToTagIDs(ids ...int) {
+	if m.removed_NetworkToTag == nil {
+		m.removed_NetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_NetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *NetworkMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedNetworkToTag returns the removed ids of NetworkToTag.
+func (m *NetworkMutation) RemovedNetworkToTagIDs() (ids []int) {
+	for id := range m.removed_NetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *NetworkMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// NetworkToTagIDs returns the NetworkToTag ids in the mutation.
+func (m *NetworkMutation) NetworkToTagIDs() (ids []int) {
+	for id := range m._NetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *NetworkMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetNetworkToTag reset all changes of the "NetworkToTag" edge.
+func (m *NetworkMutation) ResetNetworkToTag() {
+	m._NetworkToTag = nil
+	m.cleared_NetworkToTag = false
+	m.removed_NetworkToTag = nil
 }
 
 // AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
@@ -11664,8 +12221,8 @@ func (m *NetworkMutation) ResetField(name string) error {
 // mutation.
 func (m *NetworkMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.tag != nil {
-		edges = append(edges, network.EdgeTag)
+	if m._NetworkToTag != nil {
+		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m._NetworkToEnvironment != nil {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
@@ -11677,9 +12234,9 @@ func (m *NetworkMutation) AddedEdges() []string {
 // the given edge name.
 func (m *NetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case network.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case network.EdgeNetworkToTag:
+		ids := make([]ent.Value, 0, len(m._NetworkToTag))
+		for id := range m._NetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11697,8 +12254,8 @@ func (m *NetworkMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *NetworkMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedtag != nil {
-		edges = append(edges, network.EdgeTag)
+	if m.removed_NetworkToTag != nil {
+		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m.removed_NetworkToEnvironment != nil {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
@@ -11710,9 +12267,9 @@ func (m *NetworkMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *NetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case network.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case network.EdgeNetworkToTag:
+		ids := make([]ent.Value, 0, len(m.removed_NetworkToTag))
+		for id := range m.removed_NetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11730,8 +12287,8 @@ func (m *NetworkMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *NetworkMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedtag {
-		edges = append(edges, network.EdgeTag)
+	if m.cleared_NetworkToTag {
+		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m.cleared_NetworkToEnvironment {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
@@ -11743,8 +12300,8 @@ func (m *NetworkMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *NetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case network.EdgeTag:
-		return m.clearedtag
+	case network.EdgeNetworkToTag:
+		return m.cleared_NetworkToTag
 	case network.EdgeNetworkToEnvironment:
 		return m.cleared_NetworkToEnvironment
 	}
@@ -11764,8 +12321,8 @@ func (m *NetworkMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *NetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case network.EdgeTag:
-		m.ResetTag()
+	case network.EdgeNetworkToTag:
+		m.ResetNetworkToTag()
 		return nil
 	case network.EdgeNetworkToEnvironment:
 		m.ResetNetworkToEnvironment()
@@ -11778,29 +12335,32 @@ func (m *NetworkMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type ProvisionedHostMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *int
-	subnet_ip                  *string
-	clearedFields              map[string]struct{}
-	status                     map[int]struct{}
-	removedstatus              map[int]struct{}
-	clearedstatus              bool
-	provisioned_network        map[int]struct{}
-	removedprovisioned_network map[int]struct{}
-	clearedprovisioned_network bool
-	host                       map[int]struct{}
-	removedhost                map[int]struct{}
-	clearedhost                bool
-	provisioned_steps          map[int]struct{}
-	removedprovisioned_steps   map[int]struct{}
-	clearedprovisioned_steps   bool
-	agent_status               map[int]struct{}
-	removedagent_status        map[int]struct{}
-	clearedagent_status        bool
-	done                       bool
-	oldValue                   func(context.Context) (*ProvisionedHost, error)
-	predicates                 []predicate.ProvisionedHost
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	subnet_ip                                   *string
+	clearedFields                               map[string]struct{}
+	_ProvisionedHostToTag                       map[int]struct{}
+	removed_ProvisionedHostToTag                map[int]struct{}
+	cleared_ProvisionedHostToTag                bool
+	_ProvisionedHostToStatus                    map[int]struct{}
+	removed_ProvisionedHostToStatus             map[int]struct{}
+	cleared_ProvisionedHostToStatus             bool
+	_ProvisionedHostToProvisionedNetwork        map[int]struct{}
+	removed_ProvisionedHostToProvisionedNetwork map[int]struct{}
+	cleared_ProvisionedHostToProvisionedNetwork bool
+	_ProvisionedHostToHost                      map[int]struct{}
+	removed_ProvisionedHostToHost               map[int]struct{}
+	cleared_ProvisionedHostToHost               bool
+	_ProvisionedHostToProvisioningStep          map[int]struct{}
+	removed_ProvisionedHostToProvisioningStep   map[int]struct{}
+	cleared_ProvisionedHostToProvisioningStep   bool
+	_ProvisionedHostToAgentStatus               map[int]struct{}
+	removed_ProvisionedHostToAgentStatus        map[int]struct{}
+	cleared_ProvisionedHostToAgentStatus        bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*ProvisionedHost, error)
+	predicates                                  []predicate.ProvisionedHost
 }
 
 var _ ent.Mutation = (*ProvisionedHostMutation)(nil)
@@ -11919,269 +12479,322 @@ func (m *ProvisionedHostMutation) ResetSubnetIP() {
 	m.subnet_ip = nil
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (m *ProvisionedHostMutation) AddStatuIDs(ids ...int) {
-	if m.status == nil {
-		m.status = make(map[int]struct{})
+// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToTagIDs(ids ...int) {
+	if m._ProvisionedHostToTag == nil {
+		m._ProvisionedHostToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.status[ids[i]] = struct{}{}
+		m._ProvisionedHostToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearStatus clears the status edge to Status.
-func (m *ProvisionedHostMutation) ClearStatus() {
-	m.clearedstatus = true
+// ClearProvisionedHostToTag clears the ProvisionedHostToTag edge to Tag.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToTag() {
+	m.cleared_ProvisionedHostToTag = true
 }
 
-// StatusCleared returns if the edge status was cleared.
-func (m *ProvisionedHostMutation) StatusCleared() bool {
-	return m.clearedstatus
+// ProvisionedHostToTagCleared returns if the edge ProvisionedHostToTag was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToTagCleared() bool {
+	return m.cleared_ProvisionedHostToTag
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (m *ProvisionedHostMutation) RemoveStatuIDs(ids ...int) {
-	if m.removedstatus == nil {
-		m.removedstatus = make(map[int]struct{})
+// RemoveProvisionedHostToTagIDs removes the ProvisionedHostToTag edge to Tag by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToTagIDs(ids ...int) {
+	if m.removed_ProvisionedHostToTag == nil {
+		m.removed_ProvisionedHostToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedstatus[ids[i]] = struct{}{}
+		m.removed_ProvisionedHostToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedStatus returns the removed ids of status.
-func (m *ProvisionedHostMutation) RemovedStatusIDs() (ids []int) {
-	for id := range m.removedstatus {
+// RemovedProvisionedHostToTag returns the removed ids of ProvisionedHostToTag.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToTagIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// StatusIDs returns the status ids in the mutation.
-func (m *ProvisionedHostMutation) StatusIDs() (ids []int) {
-	for id := range m.status {
+// ProvisionedHostToTagIDs returns the ProvisionedHostToTag ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToTagIDs() (ids []int) {
+	for id := range m._ProvisionedHostToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetStatus reset all changes of the "status" edge.
-func (m *ProvisionedHostMutation) ResetStatus() {
-	m.status = nil
-	m.clearedstatus = false
-	m.removedstatus = nil
+// ResetProvisionedHostToTag reset all changes of the "ProvisionedHostToTag" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToTag() {
+	m._ProvisionedHostToTag = nil
+	m.cleared_ProvisionedHostToTag = false
+	m.removed_ProvisionedHostToTag = nil
 }
 
-// AddProvisionedNetworkIDs adds the provisioned_network edge to ProvisionedNetwork by ids.
-func (m *ProvisionedHostMutation) AddProvisionedNetworkIDs(ids ...int) {
-	if m.provisioned_network == nil {
-		m.provisioned_network = make(map[int]struct{})
+// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToStatuIDs(ids ...int) {
+	if m._ProvisionedHostToStatus == nil {
+		m._ProvisionedHostToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.provisioned_network[ids[i]] = struct{}{}
+		m._ProvisionedHostToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedNetwork clears the provisioned_network edge to ProvisionedNetwork.
-func (m *ProvisionedHostMutation) ClearProvisionedNetwork() {
-	m.clearedprovisioned_network = true
+// ClearProvisionedHostToStatus clears the ProvisionedHostToStatus edge to Status.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToStatus() {
+	m.cleared_ProvisionedHostToStatus = true
 }
 
-// ProvisionedNetworkCleared returns if the edge provisioned_network was cleared.
-func (m *ProvisionedHostMutation) ProvisionedNetworkCleared() bool {
-	return m.clearedprovisioned_network
+// ProvisionedHostToStatusCleared returns if the edge ProvisionedHostToStatus was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusCleared() bool {
+	return m.cleared_ProvisionedHostToStatus
 }
 
-// RemoveProvisionedNetworkIDs removes the provisioned_network edge to ProvisionedNetwork by ids.
-func (m *ProvisionedHostMutation) RemoveProvisionedNetworkIDs(ids ...int) {
-	if m.removedprovisioned_network == nil {
-		m.removedprovisioned_network = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedprovisioned_network[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetwork returns the removed ids of provisioned_network.
-func (m *ProvisionedHostMutation) RemovedProvisionedNetworkIDs() (ids []int) {
-	for id := range m.removedprovisioned_network {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisionedNetworkIDs returns the provisioned_network ids in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedNetworkIDs() (ids []int) {
-	for id := range m.provisioned_network {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisionedNetwork reset all changes of the "provisioned_network" edge.
-func (m *ProvisionedHostMutation) ResetProvisionedNetwork() {
-	m.provisioned_network = nil
-	m.clearedprovisioned_network = false
-	m.removedprovisioned_network = nil
-}
-
-// AddHostIDs adds the host edge to Host by ids.
-func (m *ProvisionedHostMutation) AddHostIDs(ids ...int) {
-	if m.host == nil {
-		m.host = make(map[int]struct{})
+// RemoveProvisionedHostToStatuIDs removes the ProvisionedHostToStatus edge to Status by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToStatuIDs(ids ...int) {
+	if m.removed_ProvisionedHostToStatus == nil {
+		m.removed_ProvisionedHostToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.host[ids[i]] = struct{}{}
+		m.removed_ProvisionedHostToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearHost clears the host edge to Host.
-func (m *ProvisionedHostMutation) ClearHost() {
-	m.clearedhost = true
+// RemovedProvisionedHostToStatus returns the removed ids of ProvisionedHostToStatus.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToStatusIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// HostCleared returns if the edge host was cleared.
-func (m *ProvisionedHostMutation) HostCleared() bool {
-	return m.clearedhost
+// ProvisionedHostToStatusIDs returns the ProvisionedHostToStatus ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
+	for id := range m._ProvisionedHostToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveHostIDs removes the host edge to Host by ids.
-func (m *ProvisionedHostMutation) RemoveHostIDs(ids ...int) {
-	if m.removedhost == nil {
-		m.removedhost = make(map[int]struct{})
+// ResetProvisionedHostToStatus reset all changes of the "ProvisionedHostToStatus" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToStatus() {
+	m._ProvisionedHostToStatus = nil
+	m.cleared_ProvisionedHostToStatus = false
+	m.removed_ProvisionedHostToStatus = nil
+}
+
+// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) {
+	if m._ProvisionedHostToProvisionedNetwork == nil {
+		m._ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedhost[ids[i]] = struct{}{}
+		m._ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedHost returns the removed ids of host.
-func (m *ProvisionedHostMutation) RemovedHostIDs() (ids []int) {
-	for id := range m.removedhost {
-		ids = append(ids, id)
-	}
-	return
+// ClearProvisionedHostToProvisionedNetwork clears the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToProvisionedNetwork() {
+	m.cleared_ProvisionedHostToProvisionedNetwork = true
 }
 
-// HostIDs returns the host ids in the mutation.
-func (m *ProvisionedHostMutation) HostIDs() (ids []int) {
-	for id := range m.host {
-		ids = append(ids, id)
-	}
-	return
+// ProvisionedHostToProvisionedNetworkCleared returns if the edge ProvisionedHostToProvisionedNetwork was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkCleared() bool {
+	return m.cleared_ProvisionedHostToProvisionedNetwork
 }
 
-// ResetHost reset all changes of the "host" edge.
-func (m *ProvisionedHostMutation) ResetHost() {
-	m.host = nil
-	m.clearedhost = false
-	m.removedhost = nil
-}
-
-// AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
-func (m *ProvisionedHostMutation) AddProvisionedStepIDs(ids ...int) {
-	if m.provisioned_steps == nil {
-		m.provisioned_steps = make(map[int]struct{})
+// RemoveProvisionedHostToProvisionedNetworkIDs removes the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) {
+	if m.removed_ProvisionedHostToProvisionedNetwork == nil {
+		m.removed_ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.provisioned_steps[ids[i]] = struct{}{}
+		m.removed_ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedSteps clears the provisioned_steps edge to ProvisioningStep.
-func (m *ProvisionedHostMutation) ClearProvisionedSteps() {
-	m.clearedprovisioned_steps = true
+// RemovedProvisionedHostToProvisionedNetwork returns the removed ids of ProvisionedHostToProvisionedNetwork.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisionedNetworkIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// ProvisionedStepsCleared returns if the edge provisioned_steps was cleared.
-func (m *ProvisionedHostMutation) ProvisionedStepsCleared() bool {
-	return m.clearedprovisioned_steps
+// ProvisionedHostToProvisionedNetworkIDs returns the ProvisionedHostToProvisionedNetwork ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids []int) {
+	for id := range m._ProvisionedHostToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveProvisionedStepIDs removes the provisioned_steps edge to ProvisioningStep by ids.
-func (m *ProvisionedHostMutation) RemoveProvisionedStepIDs(ids ...int) {
-	if m.removedprovisioned_steps == nil {
-		m.removedprovisioned_steps = make(map[int]struct{})
+// ResetProvisionedHostToProvisionedNetwork reset all changes of the "ProvisionedHostToProvisionedNetwork" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisionedNetwork() {
+	m._ProvisionedHostToProvisionedNetwork = nil
+	m.cleared_ProvisionedHostToProvisionedNetwork = false
+	m.removed_ProvisionedHostToProvisionedNetwork = nil
+}
+
+// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToHostIDs(ids ...int) {
+	if m._ProvisionedHostToHost == nil {
+		m._ProvisionedHostToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedprovisioned_steps[ids[i]] = struct{}{}
+		m._ProvisionedHostToHost[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProvisionedSteps returns the removed ids of provisioned_steps.
-func (m *ProvisionedHostMutation) RemovedProvisionedStepsIDs() (ids []int) {
-	for id := range m.removedprovisioned_steps {
-		ids = append(ids, id)
-	}
-	return
+// ClearProvisionedHostToHost clears the ProvisionedHostToHost edge to Host.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToHost() {
+	m.cleared_ProvisionedHostToHost = true
 }
 
-// ProvisionedStepsIDs returns the provisioned_steps ids in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedStepsIDs() (ids []int) {
-	for id := range m.provisioned_steps {
-		ids = append(ids, id)
-	}
-	return
+// ProvisionedHostToHostCleared returns if the edge ProvisionedHostToHost was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToHostCleared() bool {
+	return m.cleared_ProvisionedHostToHost
 }
 
-// ResetProvisionedSteps reset all changes of the "provisioned_steps" edge.
-func (m *ProvisionedHostMutation) ResetProvisionedSteps() {
-	m.provisioned_steps = nil
-	m.clearedprovisioned_steps = false
-	m.removedprovisioned_steps = nil
-}
-
-// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
-func (m *ProvisionedHostMutation) AddAgentStatuIDs(ids ...int) {
-	if m.agent_status == nil {
-		m.agent_status = make(map[int]struct{})
+// RemoveProvisionedHostToHostIDs removes the ProvisionedHostToHost edge to Host by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToHostIDs(ids ...int) {
+	if m.removed_ProvisionedHostToHost == nil {
+		m.removed_ProvisionedHostToHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.agent_status[ids[i]] = struct{}{}
+		m.removed_ProvisionedHostToHost[ids[i]] = struct{}{}
 	}
 }
 
-// ClearAgentStatus clears the agent_status edge to AgentStatus.
-func (m *ProvisionedHostMutation) ClearAgentStatus() {
-	m.clearedagent_status = true
+// RemovedProvisionedHostToHost returns the removed ids of ProvisionedHostToHost.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToHostIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// AgentStatusCleared returns if the edge agent_status was cleared.
-func (m *ProvisionedHostMutation) AgentStatusCleared() bool {
-	return m.clearedagent_status
+// ProvisionedHostToHostIDs returns the ProvisionedHostToHost ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
+	for id := range m._ProvisionedHostToHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
-func (m *ProvisionedHostMutation) RemoveAgentStatuIDs(ids ...int) {
-	if m.removedagent_status == nil {
-		m.removedagent_status = make(map[int]struct{})
+// ResetProvisionedHostToHost reset all changes of the "ProvisionedHostToHost" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToHost() {
+	m._ProvisionedHostToHost = nil
+	m.cleared_ProvisionedHostToHost = false
+	m.removed_ProvisionedHostToHost = nil
+}
+
+// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToProvisioningStepIDs(ids ...int) {
+	if m._ProvisionedHostToProvisioningStep == nil {
+		m._ProvisionedHostToProvisioningStep = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedagent_status[ids[i]] = struct{}{}
+		m._ProvisionedHostToProvisioningStep[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedAgentStatus returns the removed ids of agent_status.
-func (m *ProvisionedHostMutation) RemovedAgentStatusIDs() (ids []int) {
-	for id := range m.removedagent_status {
+// ClearProvisionedHostToProvisioningStep clears the ProvisionedHostToProvisioningStep edge to ProvisioningStep.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToProvisioningStep() {
+	m.cleared_ProvisionedHostToProvisioningStep = true
+}
+
+// ProvisionedHostToProvisioningStepCleared returns if the edge ProvisionedHostToProvisioningStep was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepCleared() bool {
+	return m.cleared_ProvisionedHostToProvisioningStep
+}
+
+// RemoveProvisionedHostToProvisioningStepIDs removes the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) {
+	if m.removed_ProvisionedHostToProvisioningStep == nil {
+		m.removed_ProvisionedHostToProvisioningStep = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedHostToProvisioningStep[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedHostToProvisioningStep returns the removed ids of ProvisionedHostToProvisioningStep.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisioningStepIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToProvisioningStep {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// AgentStatusIDs returns the agent_status ids in the mutation.
-func (m *ProvisionedHostMutation) AgentStatusIDs() (ids []int) {
-	for id := range m.agent_status {
+// ProvisionedHostToProvisioningStepIDs returns the ProvisionedHostToProvisioningStep ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepIDs() (ids []int) {
+	for id := range m._ProvisionedHostToProvisioningStep {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetAgentStatus reset all changes of the "agent_status" edge.
-func (m *ProvisionedHostMutation) ResetAgentStatus() {
-	m.agent_status = nil
-	m.clearedagent_status = false
-	m.removedagent_status = nil
+// ResetProvisionedHostToProvisioningStep reset all changes of the "ProvisionedHostToProvisioningStep" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisioningStep() {
+	m._ProvisionedHostToProvisioningStep = nil
+	m.cleared_ProvisionedHostToProvisioningStep = false
+	m.removed_ProvisionedHostToProvisioningStep = nil
+}
+
+// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToAgentStatuIDs(ids ...int) {
+	if m._ProvisionedHostToAgentStatus == nil {
+		m._ProvisionedHostToAgentStatus = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedHostToAgentStatus[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedHostToAgentStatus clears the ProvisionedHostToAgentStatus edge to AgentStatus.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToAgentStatus() {
+	m.cleared_ProvisionedHostToAgentStatus = true
+}
+
+// ProvisionedHostToAgentStatusCleared returns if the edge ProvisionedHostToAgentStatus was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusCleared() bool {
+	return m.cleared_ProvisionedHostToAgentStatus
+}
+
+// RemoveProvisionedHostToAgentStatuIDs removes the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToAgentStatuIDs(ids ...int) {
+	if m.removed_ProvisionedHostToAgentStatus == nil {
+		m.removed_ProvisionedHostToAgentStatus = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedHostToAgentStatus[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedHostToAgentStatus returns the removed ids of ProvisionedHostToAgentStatus.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToAgentStatusIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToAgentStatus {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedHostToAgentStatusIDs returns the ProvisionedHostToAgentStatus ids in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusIDs() (ids []int) {
+	for id := range m._ProvisionedHostToAgentStatus {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedHostToAgentStatus reset all changes of the "ProvisionedHostToAgentStatus" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
+	m._ProvisionedHostToAgentStatus = nil
+	m.cleared_ProvisionedHostToAgentStatus = false
+	m.removed_ProvisionedHostToAgentStatus = nil
 }
 
 // Op returns the operation name.
@@ -12299,21 +12912,24 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.status != nil {
-		edges = append(edges, provisionedhost.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m._ProvisionedHostToTag != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
-	if m.provisioned_network != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedNetwork)
+	if m._ProvisionedHostToStatus != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
-	if m.host != nil {
-		edges = append(edges, provisionedhost.EdgeHost)
+	if m._ProvisionedHostToProvisionedNetwork != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisionedNetwork)
 	}
-	if m.provisioned_steps != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	if m._ProvisionedHostToHost != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
 	}
-	if m.agent_status != nil {
-		edges = append(edges, provisionedhost.EdgeAgentStatus)
+	if m._ProvisionedHostToProvisioningStep != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
+	}
+	if m._ProvisionedHostToAgentStatus != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
 	}
 	return edges
 }
@@ -12322,33 +12938,39 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.status))
-		for id := range m.status {
+	case provisionedhost.EdgeProvisionedHostToTag:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToTag))
+		for id := range m._ProvisionedHostToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m.provisioned_network))
-		for id := range m.provisioned_network {
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToStatus))
+		for id := range m._ProvisionedHostToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.host))
-		for id := range m.host {
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisionedNetwork))
+		for id := range m._ProvisionedHostToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeProvisionedSteps:
-		ids := make([]ent.Value, 0, len(m.provisioned_steps))
-		for id := range m.provisioned_steps {
+	case provisionedhost.EdgeProvisionedHostToHost:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToHost))
+		for id := range m._ProvisionedHostToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeAgentStatus:
-		ids := make([]ent.Value, 0, len(m.agent_status))
-		for id := range m.agent_status {
+	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisioningStep))
+		for id := range m._ProvisionedHostToProvisioningStep {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisionedhost.EdgeProvisionedHostToAgentStatus:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToAgentStatus))
+		for id := range m._ProvisionedHostToAgentStatus {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12359,21 +12981,24 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.removedstatus != nil {
-		edges = append(edges, provisionedhost.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m.removed_ProvisionedHostToTag != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
-	if m.removedprovisioned_network != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedNetwork)
+	if m.removed_ProvisionedHostToStatus != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
-	if m.removedhost != nil {
-		edges = append(edges, provisionedhost.EdgeHost)
+	if m.removed_ProvisionedHostToProvisionedNetwork != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisionedNetwork)
 	}
-	if m.removedprovisioned_steps != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	if m.removed_ProvisionedHostToHost != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
 	}
-	if m.removedagent_status != nil {
-		edges = append(edges, provisionedhost.EdgeAgentStatus)
+	if m.removed_ProvisionedHostToProvisioningStep != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
+	}
+	if m.removed_ProvisionedHostToAgentStatus != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
 	}
 	return edges
 }
@@ -12382,33 +13007,39 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.removedstatus))
-		for id := range m.removedstatus {
+	case provisionedhost.EdgeProvisionedHostToTag:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToTag))
+		for id := range m.removed_ProvisionedHostToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m.removedprovisioned_network))
-		for id := range m.removedprovisioned_network {
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToStatus))
+		for id := range m.removed_ProvisionedHostToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeHost:
-		ids := make([]ent.Value, 0, len(m.removedhost))
-		for id := range m.removedhost {
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisionedNetwork))
+		for id := range m.removed_ProvisionedHostToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeProvisionedSteps:
-		ids := make([]ent.Value, 0, len(m.removedprovisioned_steps))
-		for id := range m.removedprovisioned_steps {
+	case provisionedhost.EdgeProvisionedHostToHost:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToHost))
+		for id := range m.removed_ProvisionedHostToHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionedhost.EdgeAgentStatus:
-		ids := make([]ent.Value, 0, len(m.removedagent_status))
-		for id := range m.removedagent_status {
+	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisioningStep))
+		for id := range m.removed_ProvisionedHostToProvisioningStep {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisionedhost.EdgeProvisionedHostToAgentStatus:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToAgentStatus))
+		for id := range m.removed_ProvisionedHostToAgentStatus {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12419,21 +13050,24 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.clearedstatus {
-		edges = append(edges, provisionedhost.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m.cleared_ProvisionedHostToTag {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
-	if m.clearedprovisioned_network {
-		edges = append(edges, provisionedhost.EdgeProvisionedNetwork)
+	if m.cleared_ProvisionedHostToStatus {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
-	if m.clearedhost {
-		edges = append(edges, provisionedhost.EdgeHost)
+	if m.cleared_ProvisionedHostToProvisionedNetwork {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisionedNetwork)
 	}
-	if m.clearedprovisioned_steps {
-		edges = append(edges, provisionedhost.EdgeProvisionedSteps)
+	if m.cleared_ProvisionedHostToHost {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
 	}
-	if m.clearedagent_status {
-		edges = append(edges, provisionedhost.EdgeAgentStatus)
+	if m.cleared_ProvisionedHostToProvisioningStep {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
+	}
+	if m.cleared_ProvisionedHostToAgentStatus {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
 	}
 	return edges
 }
@@ -12442,16 +13076,18 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionedhost.EdgeStatus:
-		return m.clearedstatus
-	case provisionedhost.EdgeProvisionedNetwork:
-		return m.clearedprovisioned_network
-	case provisionedhost.EdgeHost:
-		return m.clearedhost
-	case provisionedhost.EdgeProvisionedSteps:
-		return m.clearedprovisioned_steps
-	case provisionedhost.EdgeAgentStatus:
-		return m.clearedagent_status
+	case provisionedhost.EdgeProvisionedHostToTag:
+		return m.cleared_ProvisionedHostToTag
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		return m.cleared_ProvisionedHostToStatus
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		return m.cleared_ProvisionedHostToProvisionedNetwork
+	case provisionedhost.EdgeProvisionedHostToHost:
+		return m.cleared_ProvisionedHostToHost
+	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
+		return m.cleared_ProvisionedHostToProvisioningStep
+	case provisionedhost.EdgeProvisionedHostToAgentStatus:
+		return m.cleared_ProvisionedHostToAgentStatus
 	}
 	return false
 }
@@ -12469,20 +13105,23 @@ func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionedhost.EdgeStatus:
-		m.ResetStatus()
+	case provisionedhost.EdgeProvisionedHostToTag:
+		m.ResetProvisionedHostToTag()
 		return nil
-	case provisionedhost.EdgeProvisionedNetwork:
-		m.ResetProvisionedNetwork()
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		m.ResetProvisionedHostToStatus()
 		return nil
-	case provisionedhost.EdgeHost:
-		m.ResetHost()
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		m.ResetProvisionedHostToProvisionedNetwork()
 		return nil
-	case provisionedhost.EdgeProvisionedSteps:
-		m.ResetProvisionedSteps()
+	case provisionedhost.EdgeProvisionedHostToHost:
+		m.ResetProvisionedHostToHost()
 		return nil
-	case provisionedhost.EdgeAgentStatus:
-		m.ResetAgentStatus()
+	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
+		m.ResetProvisionedHostToProvisioningStep()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToAgentStatus:
+		m.ResetProvisionedHostToAgentStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost edge %s", name)
@@ -12492,30 +13131,33 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type ProvisionedNetworkMutation struct {
 	config
-	op                               Op
-	typ                              string
-	id                               *int
-	name                             *string
-	cidr                             *string
-	clearedFields                    map[string]struct{}
-	status                           map[int]struct{}
-	removedstatus                    map[int]struct{}
-	clearedstatus                    bool
-	network                          map[int]struct{}
-	removednetwork                   map[int]struct{}
-	clearednetwork                   bool
-	build                            map[int]struct{}
-	removedbuild                     map[int]struct{}
-	clearedbuild                     bool
-	_ProvisionedNetworkToTeam        map[int]struct{}
-	removed_ProvisionedNetworkToTeam map[int]struct{}
-	cleared_ProvisionedNetworkToTeam bool
-	provisioned_hosts                map[int]struct{}
-	removedprovisioned_hosts         map[int]struct{}
-	clearedprovisioned_hosts         bool
-	done                             bool
-	oldValue                         func(context.Context) (*ProvisionedNetwork, error)
-	predicates                       []predicate.ProvisionedNetwork
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	name                                        *string
+	cidr                                        *string
+	clearedFields                               map[string]struct{}
+	_ProvisionedNetworkToTag                    map[int]struct{}
+	removed_ProvisionedNetworkToTag             map[int]struct{}
+	cleared_ProvisionedNetworkToTag             bool
+	_ProvisionedNetworkToStatus                 map[int]struct{}
+	removed_ProvisionedNetworkToStatus          map[int]struct{}
+	cleared_ProvisionedNetworkToStatus          bool
+	_ProvisionedNetworkToNetwork                map[int]struct{}
+	removed_ProvisionedNetworkToNetwork         map[int]struct{}
+	cleared_ProvisionedNetworkToNetwork         bool
+	_ProvisionedNetworkToBuild                  map[int]struct{}
+	removed_ProvisionedNetworkToBuild           map[int]struct{}
+	cleared_ProvisionedNetworkToBuild           bool
+	_ProvisionedNetworkToTeam                   map[int]struct{}
+	removed_ProvisionedNetworkToTeam            map[int]struct{}
+	cleared_ProvisionedNetworkToTeam            bool
+	_ProvisionedNetworkToProvisionedHost        map[int]struct{}
+	removed_ProvisionedNetworkToProvisionedHost map[int]struct{}
+	cleared_ProvisionedNetworkToProvisionedHost bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*ProvisionedNetwork, error)
+	predicates                                  []predicate.ProvisionedNetwork
 }
 
 var _ ent.Mutation = (*ProvisionedNetworkMutation)(nil)
@@ -12671,163 +13313,216 @@ func (m *ProvisionedNetworkMutation) ResetCidr() {
 	m.cidr = nil
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (m *ProvisionedNetworkMutation) AddStatuIDs(ids ...int) {
-	if m.status == nil {
-		m.status = make(map[int]struct{})
+// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToTagIDs(ids ...int) {
+	if m._ProvisionedNetworkToTag == nil {
+		m._ProvisionedNetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.status[ids[i]] = struct{}{}
+		m._ProvisionedNetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearStatus clears the status edge to Status.
-func (m *ProvisionedNetworkMutation) ClearStatus() {
-	m.clearedstatus = true
+// ClearProvisionedNetworkToTag clears the ProvisionedNetworkToTag edge to Tag.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToTag() {
+	m.cleared_ProvisionedNetworkToTag = true
 }
 
-// StatusCleared returns if the edge status was cleared.
-func (m *ProvisionedNetworkMutation) StatusCleared() bool {
-	return m.clearedstatus
+// ProvisionedNetworkToTagCleared returns if the edge ProvisionedNetworkToTag was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTagCleared() bool {
+	return m.cleared_ProvisionedNetworkToTag
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (m *ProvisionedNetworkMutation) RemoveStatuIDs(ids ...int) {
-	if m.removedstatus == nil {
-		m.removedstatus = make(map[int]struct{})
+// RemoveProvisionedNetworkToTagIDs removes the ProvisionedNetworkToTag edge to Tag by ids.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToTagIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToTag == nil {
+		m.removed_ProvisionedNetworkToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedstatus[ids[i]] = struct{}{}
+		m.removed_ProvisionedNetworkToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedStatus returns the removed ids of status.
-func (m *ProvisionedNetworkMutation) RemovedStatusIDs() (ids []int) {
-	for id := range m.removedstatus {
+// RemovedProvisionedNetworkToTag returns the removed ids of ProvisionedNetworkToTag.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToTagIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// StatusIDs returns the status ids in the mutation.
-func (m *ProvisionedNetworkMutation) StatusIDs() (ids []int) {
-	for id := range m.status {
+// ProvisionedNetworkToTagIDs returns the ProvisionedNetworkToTag ids in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTagIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetStatus reset all changes of the "status" edge.
-func (m *ProvisionedNetworkMutation) ResetStatus() {
-	m.status = nil
-	m.clearedstatus = false
-	m.removedstatus = nil
+// ResetProvisionedNetworkToTag reset all changes of the "ProvisionedNetworkToTag" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToTag() {
+	m._ProvisionedNetworkToTag = nil
+	m.cleared_ProvisionedNetworkToTag = false
+	m.removed_ProvisionedNetworkToTag = nil
 }
 
-// AddNetworkIDs adds the network edge to Network by ids.
-func (m *ProvisionedNetworkMutation) AddNetworkIDs(ids ...int) {
-	if m.network == nil {
-		m.network = make(map[int]struct{})
+// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToStatuIDs(ids ...int) {
+	if m._ProvisionedNetworkToStatus == nil {
+		m._ProvisionedNetworkToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.network[ids[i]] = struct{}{}
+		m._ProvisionedNetworkToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearNetwork clears the network edge to Network.
-func (m *ProvisionedNetworkMutation) ClearNetwork() {
-	m.clearednetwork = true
+// ClearProvisionedNetworkToStatus clears the ProvisionedNetworkToStatus edge to Status.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToStatus() {
+	m.cleared_ProvisionedNetworkToStatus = true
 }
 
-// NetworkCleared returns if the edge network was cleared.
-func (m *ProvisionedNetworkMutation) NetworkCleared() bool {
-	return m.clearednetwork
+// ProvisionedNetworkToStatusCleared returns if the edge ProvisionedNetworkToStatus was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusCleared() bool {
+	return m.cleared_ProvisionedNetworkToStatus
 }
 
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (m *ProvisionedNetworkMutation) RemoveNetworkIDs(ids ...int) {
-	if m.removednetwork == nil {
-		m.removednetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removednetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedNetwork returns the removed ids of network.
-func (m *ProvisionedNetworkMutation) RemovedNetworkIDs() (ids []int) {
-	for id := range m.removednetwork {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// NetworkIDs returns the network ids in the mutation.
-func (m *ProvisionedNetworkMutation) NetworkIDs() (ids []int) {
-	for id := range m.network {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetNetwork reset all changes of the "network" edge.
-func (m *ProvisionedNetworkMutation) ResetNetwork() {
-	m.network = nil
-	m.clearednetwork = false
-	m.removednetwork = nil
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (m *ProvisionedNetworkMutation) AddBuildIDs(ids ...int) {
-	if m.build == nil {
-		m.build = make(map[int]struct{})
+// RemoveProvisionedNetworkToStatuIDs removes the ProvisionedNetworkToStatus edge to Status by ids.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToStatuIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToStatus == nil {
+		m.removed_ProvisionedNetworkToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.build[ids[i]] = struct{}{}
+		m.removed_ProvisionedNetworkToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearBuild clears the build edge to Build.
-func (m *ProvisionedNetworkMutation) ClearBuild() {
-	m.clearedbuild = true
+// RemovedProvisionedNetworkToStatus returns the removed ids of ProvisionedNetworkToStatus.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToStatusIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// BuildCleared returns if the edge build was cleared.
-func (m *ProvisionedNetworkMutation) BuildCleared() bool {
-	return m.clearedbuild
+// ProvisionedNetworkToStatusIDs returns the ProvisionedNetworkToStatus ids in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (m *ProvisionedNetworkMutation) RemoveBuildIDs(ids ...int) {
-	if m.removedbuild == nil {
-		m.removedbuild = make(map[int]struct{})
+// ResetProvisionedNetworkToStatus reset all changes of the "ProvisionedNetworkToStatus" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToStatus() {
+	m._ProvisionedNetworkToStatus = nil
+	m.cleared_ProvisionedNetworkToStatus = false
+	m.removed_ProvisionedNetworkToStatus = nil
+}
+
+// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToNetworkIDs(ids ...int) {
+	if m._ProvisionedNetworkToNetwork == nil {
+		m._ProvisionedNetworkToNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedbuild[ids[i]] = struct{}{}
+		m._ProvisionedNetworkToNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedBuild returns the removed ids of build.
-func (m *ProvisionedNetworkMutation) RemovedBuildIDs() (ids []int) {
-	for id := range m.removedbuild {
+// ClearProvisionedNetworkToNetwork clears the ProvisionedNetworkToNetwork edge to Network.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToNetwork() {
+	m.cleared_ProvisionedNetworkToNetwork = true
+}
+
+// ProvisionedNetworkToNetworkCleared returns if the edge ProvisionedNetworkToNetwork was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkCleared() bool {
+	return m.cleared_ProvisionedNetworkToNetwork
+}
+
+// RemoveProvisionedNetworkToNetworkIDs removes the ProvisionedNetworkToNetwork edge to Network by ids.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToNetworkIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToNetwork == nil {
+		m.removed_ProvisionedNetworkToNetwork = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedNetworkToNetwork[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedNetworkToNetwork returns the removed ids of ProvisionedNetworkToNetwork.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToNetworkIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToNetwork {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// BuildIDs returns the build ids in the mutation.
-func (m *ProvisionedNetworkMutation) BuildIDs() (ids []int) {
-	for id := range m.build {
+// ProvisionedNetworkToNetworkIDs returns the ProvisionedNetworkToNetwork ids in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToNetwork {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetBuild reset all changes of the "build" edge.
-func (m *ProvisionedNetworkMutation) ResetBuild() {
-	m.build = nil
-	m.clearedbuild = false
-	m.removedbuild = nil
+// ResetProvisionedNetworkToNetwork reset all changes of the "ProvisionedNetworkToNetwork" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToNetwork() {
+	m._ProvisionedNetworkToNetwork = nil
+	m.cleared_ProvisionedNetworkToNetwork = false
+	m.removed_ProvisionedNetworkToNetwork = nil
+}
+
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToBuildIDs(ids ...int) {
+	if m._ProvisionedNetworkToBuild == nil {
+		m._ProvisionedNetworkToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedNetworkToBuild clears the ProvisionedNetworkToBuild edge to Build.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToBuild() {
+	m.cleared_ProvisionedNetworkToBuild = true
+}
+
+// ProvisionedNetworkToBuildCleared returns if the edge ProvisionedNetworkToBuild was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildCleared() bool {
+	return m.cleared_ProvisionedNetworkToBuild
+}
+
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to Build by ids.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToBuildIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToBuild == nil {
+		m.removed_ProvisionedNetworkToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedNetworkToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedNetworkToBuild returns the removed ids of ProvisionedNetworkToBuild.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToBuildIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedNetworkToBuildIDs returns the ProvisionedNetworkToBuild ids in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedNetworkToBuild reset all changes of the "ProvisionedNetworkToBuild" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToBuild() {
+	m._ProvisionedNetworkToBuild = nil
+	m.cleared_ProvisionedNetworkToBuild = false
+	m.removed_ProvisionedNetworkToBuild = nil
 }
 
 // AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
@@ -12883,57 +13578,57 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToTeam() {
 	m.removed_ProvisionedNetworkToTeam = nil
 }
 
-// AddProvisionedHostIDs adds the provisioned_hosts edge to ProvisionedHost by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedHostIDs(ids ...int) {
-	if m.provisioned_hosts == nil {
-		m.provisioned_hosts = make(map[int]struct{})
+// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) {
+	if m._ProvisionedNetworkToProvisionedHost == nil {
+		m._ProvisionedNetworkToProvisionedHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.provisioned_hosts[ids[i]] = struct{}{}
+		m._ProvisionedNetworkToProvisionedHost[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedHosts clears the provisioned_hosts edge to ProvisionedHost.
-func (m *ProvisionedNetworkMutation) ClearProvisionedHosts() {
-	m.clearedprovisioned_hosts = true
+// ClearProvisionedNetworkToProvisionedHost clears the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToProvisionedHost() {
+	m.cleared_ProvisionedNetworkToProvisionedHost = true
 }
 
-// ProvisionedHostsCleared returns if the edge provisioned_hosts was cleared.
-func (m *ProvisionedNetworkMutation) ProvisionedHostsCleared() bool {
-	return m.clearedprovisioned_hosts
+// ProvisionedNetworkToProvisionedHostCleared returns if the edge ProvisionedNetworkToProvisionedHost was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostCleared() bool {
+	return m.cleared_ProvisionedNetworkToProvisionedHost
 }
 
-// RemoveProvisionedHostIDs removes the provisioned_hosts edge to ProvisionedHost by ids.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedHostIDs(ids ...int) {
-	if m.removedprovisioned_hosts == nil {
-		m.removedprovisioned_hosts = make(map[int]struct{})
+// RemoveProvisionedNetworkToProvisionedHostIDs removes the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToProvisionedHost == nil {
+		m.removed_ProvisionedNetworkToProvisionedHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedprovisioned_hosts[ids[i]] = struct{}{}
+		m.removed_ProvisionedNetworkToProvisionedHost[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProvisionedHosts returns the removed ids of provisioned_hosts.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedHostsIDs() (ids []int) {
-	for id := range m.removedprovisioned_hosts {
+// RemovedProvisionedNetworkToProvisionedHost returns the removed ids of ProvisionedNetworkToProvisionedHost.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToProvisionedHostIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToProvisionedHost {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProvisionedHostsIDs returns the provisioned_hosts ids in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedHostsIDs() (ids []int) {
-	for id := range m.provisioned_hosts {
+// ProvisionedNetworkToProvisionedHostIDs returns the ProvisionedNetworkToProvisionedHost ids in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToProvisionedHost {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProvisionedHosts reset all changes of the "provisioned_hosts" edge.
-func (m *ProvisionedNetworkMutation) ResetProvisionedHosts() {
-	m.provisioned_hosts = nil
-	m.clearedprovisioned_hosts = false
-	m.removedprovisioned_hosts = nil
+// ResetProvisionedNetworkToProvisionedHost reset all changes of the "ProvisionedNetworkToProvisionedHost" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToProvisionedHost() {
+	m._ProvisionedNetworkToProvisionedHost = nil
+	m.cleared_ProvisionedNetworkToProvisionedHost = false
+	m.removed_ProvisionedNetworkToProvisionedHost = nil
 }
 
 // Op returns the operation name.
@@ -13068,21 +13763,24 @@ func (m *ProvisionedNetworkMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisionedNetworkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.status != nil {
-		edges = append(edges, provisionednetwork.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m._ProvisionedNetworkToTag != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
-	if m.network != nil {
-		edges = append(edges, provisionednetwork.EdgeNetwork)
+	if m._ProvisionedNetworkToStatus != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
 	}
-	if m.build != nil {
-		edges = append(edges, provisionednetwork.EdgeBuild)
+	if m._ProvisionedNetworkToNetwork != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToNetwork)
+	}
+	if m._ProvisionedNetworkToBuild != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToBuild)
 	}
 	if m._ProvisionedNetworkToTeam != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTeam)
 	}
-	if m.provisioned_hosts != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedHosts)
+	if m._ProvisionedNetworkToProvisionedHost != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
 	return edges
 }
@@ -13091,21 +13789,27 @@ func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.status))
-		for id := range m.status {
+	case provisionednetwork.EdgeProvisionedNetworkToTag:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToTag))
+		for id := range m._ProvisionedNetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeNetwork:
-		ids := make([]ent.Value, 0, len(m.network))
-		for id := range m.network {
+	case provisionednetwork.EdgeProvisionedNetworkToStatus:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToStatus))
+		for id := range m._ProvisionedNetworkToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.build))
-		for id := range m.build {
+	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToNetwork))
+		for id := range m._ProvisionedNetworkToNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisionednetwork.EdgeProvisionedNetworkToBuild:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToBuild))
+		for id := range m._ProvisionedNetworkToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13115,9 +13819,9 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeProvisionedHosts:
-		ids := make([]ent.Value, 0, len(m.provisioned_hosts))
-		for id := range m.provisioned_hosts {
+	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToProvisionedHost))
+		for id := range m._ProvisionedNetworkToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13128,21 +13832,24 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.removedstatus != nil {
-		edges = append(edges, provisionednetwork.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m.removed_ProvisionedNetworkToTag != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
-	if m.removednetwork != nil {
-		edges = append(edges, provisionednetwork.EdgeNetwork)
+	if m.removed_ProvisionedNetworkToStatus != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
 	}
-	if m.removedbuild != nil {
-		edges = append(edges, provisionednetwork.EdgeBuild)
+	if m.removed_ProvisionedNetworkToNetwork != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToNetwork)
+	}
+	if m.removed_ProvisionedNetworkToBuild != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToBuild)
 	}
 	if m.removed_ProvisionedNetworkToTeam != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTeam)
 	}
-	if m.removedprovisioned_hosts != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedHosts)
+	if m.removed_ProvisionedNetworkToProvisionedHost != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
 	return edges
 }
@@ -13151,21 +13858,27 @@ func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.removedstatus))
-		for id := range m.removedstatus {
+	case provisionednetwork.EdgeProvisionedNetworkToTag:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToTag))
+		for id := range m.removed_ProvisionedNetworkToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeNetwork:
-		ids := make([]ent.Value, 0, len(m.removednetwork))
-		for id := range m.removednetwork {
+	case provisionednetwork.EdgeProvisionedNetworkToStatus:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToStatus))
+		for id := range m.removed_ProvisionedNetworkToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.removedbuild))
-		for id := range m.removedbuild {
+	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToNetwork))
+		for id := range m.removed_ProvisionedNetworkToNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisionednetwork.EdgeProvisionedNetworkToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToBuild))
+		for id := range m.removed_ProvisionedNetworkToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13175,9 +13888,9 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisionednetwork.EdgeProvisionedHosts:
-		ids := make([]ent.Value, 0, len(m.removedprovisioned_hosts))
-		for id := range m.removedprovisioned_hosts {
+	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToProvisionedHost))
+		for id := range m.removed_ProvisionedNetworkToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13188,21 +13901,24 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.clearedstatus {
-		edges = append(edges, provisionednetwork.EdgeStatus)
+	edges := make([]string, 0, 6)
+	if m.cleared_ProvisionedNetworkToTag {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
-	if m.clearednetwork {
-		edges = append(edges, provisionednetwork.EdgeNetwork)
+	if m.cleared_ProvisionedNetworkToStatus {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
 	}
-	if m.clearedbuild {
-		edges = append(edges, provisionednetwork.EdgeBuild)
+	if m.cleared_ProvisionedNetworkToNetwork {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToNetwork)
+	}
+	if m.cleared_ProvisionedNetworkToBuild {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToBuild)
 	}
 	if m.cleared_ProvisionedNetworkToTeam {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTeam)
 	}
-	if m.clearedprovisioned_hosts {
-		edges = append(edges, provisionednetwork.EdgeProvisionedHosts)
+	if m.cleared_ProvisionedNetworkToProvisionedHost {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
 	return edges
 }
@@ -13211,16 +13927,18 @@ func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionednetwork.EdgeStatus:
-		return m.clearedstatus
-	case provisionednetwork.EdgeNetwork:
-		return m.clearednetwork
-	case provisionednetwork.EdgeBuild:
-		return m.clearedbuild
+	case provisionednetwork.EdgeProvisionedNetworkToTag:
+		return m.cleared_ProvisionedNetworkToTag
+	case provisionednetwork.EdgeProvisionedNetworkToStatus:
+		return m.cleared_ProvisionedNetworkToStatus
+	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
+		return m.cleared_ProvisionedNetworkToNetwork
+	case provisionednetwork.EdgeProvisionedNetworkToBuild:
+		return m.cleared_ProvisionedNetworkToBuild
 	case provisionednetwork.EdgeProvisionedNetworkToTeam:
 		return m.cleared_ProvisionedNetworkToTeam
-	case provisionednetwork.EdgeProvisionedHosts:
-		return m.clearedprovisioned_hosts
+	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
+		return m.cleared_ProvisionedNetworkToProvisionedHost
 	}
 	return false
 }
@@ -13238,20 +13956,23 @@ func (m *ProvisionedNetworkMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionednetwork.EdgeStatus:
-		m.ResetStatus()
+	case provisionednetwork.EdgeProvisionedNetworkToTag:
+		m.ResetProvisionedNetworkToTag()
 		return nil
-	case provisionednetwork.EdgeNetwork:
-		m.ResetNetwork()
+	case provisionednetwork.EdgeProvisionedNetworkToStatus:
+		m.ResetProvisionedNetworkToStatus()
 		return nil
-	case provisionednetwork.EdgeBuild:
-		m.ResetBuild()
+	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
+		m.ResetProvisionedNetworkToNetwork()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToBuild:
+		m.ResetProvisionedNetworkToBuild()
 		return nil
 	case provisionednetwork.EdgeProvisionedNetworkToTeam:
 		m.ResetProvisionedNetworkToTeam()
 		return nil
-	case provisionednetwork.EdgeProvisionedHosts:
-		m.ResetProvisionedHosts()
+	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
+		m.ResetProvisionedNetworkToProvisionedHost()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork edge %s", name)
@@ -13261,34 +13982,37 @@ func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type ProvisioningStepMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	provisioner_type        *string
-	step_number             *int
-	addstep_number          *int
-	clearedFields           map[string]struct{}
-	status                  map[int]struct{}
-	removedstatus           map[int]struct{}
-	clearedstatus           bool
-	provisioned_host        map[int]struct{}
-	removedprovisioned_host map[int]struct{}
-	clearedprovisioned_host bool
-	script                  map[int]struct{}
-	removedscript           map[int]struct{}
-	clearedscript           bool
-	command                 map[int]struct{}
-	removedcommand          map[int]struct{}
-	clearedcommand          bool
-	dns_record              map[int]struct{}
-	removeddns_record       map[int]struct{}
-	cleareddns_record       bool
-	remote_file             map[int]struct{}
-	removedremote_file      map[int]struct{}
-	clearedremote_file      bool
-	done                    bool
-	oldValue                func(context.Context) (*ProvisioningStep, error)
-	predicates              []predicate.ProvisioningStep
+	op                                        Op
+	typ                                       string
+	id                                        *int
+	provisioner_type                          *string
+	step_number                               *int
+	addstep_number                            *int
+	clearedFields                             map[string]struct{}
+	_ProvisioningStepToTag                    map[int]struct{}
+	removed_ProvisioningStepToTag             map[int]struct{}
+	cleared_ProvisioningStepToTag             bool
+	_ProvisioningStepToStatus                 map[int]struct{}
+	removed_ProvisioningStepToStatus          map[int]struct{}
+	cleared_ProvisioningStepToStatus          bool
+	_ProvisioningStepToProvisionedHost        map[int]struct{}
+	removed_ProvisioningStepToProvisionedHost map[int]struct{}
+	cleared_ProvisioningStepToProvisionedHost bool
+	_ProvisioningStepToScript                 map[int]struct{}
+	removed_ProvisioningStepToScript          map[int]struct{}
+	cleared_ProvisioningStepToScript          bool
+	_ProvisioningStepToCommand                map[int]struct{}
+	removed_ProvisioningStepToCommand         map[int]struct{}
+	cleared_ProvisioningStepToCommand         bool
+	_ProvisioningStepToDNSRecord              map[int]struct{}
+	removed_ProvisioningStepToDNSRecord       map[int]struct{}
+	cleared_ProvisioningStepToDNSRecord       bool
+	_ProvisioningStepToRemoteFile             map[int]struct{}
+	removed_ProvisioningStepToRemoteFile      map[int]struct{}
+	cleared_ProvisioningStepToRemoteFile      bool
+	done                                      bool
+	oldValue                                  func(context.Context) (*ProvisioningStep, error)
+	predicates                                []predicate.ProvisioningStep
 }
 
 var _ ent.Mutation = (*ProvisioningStepMutation)(nil)
@@ -13464,322 +14188,375 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 	m.addstep_number = nil
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (m *ProvisioningStepMutation) AddStatuIDs(ids ...int) {
-	if m.status == nil {
-		m.status = make(map[int]struct{})
+// AddProvisioningStepToTagIDs adds the ProvisioningStepToTag edge to Tag by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToTagIDs(ids ...int) {
+	if m._ProvisioningStepToTag == nil {
+		m._ProvisioningStepToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.status[ids[i]] = struct{}{}
+		m._ProvisioningStepToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearStatus clears the status edge to Status.
-func (m *ProvisioningStepMutation) ClearStatus() {
-	m.clearedstatus = true
+// ClearProvisioningStepToTag clears the ProvisioningStepToTag edge to Tag.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToTag() {
+	m.cleared_ProvisioningStepToTag = true
 }
 
-// StatusCleared returns if the edge status was cleared.
-func (m *ProvisioningStepMutation) StatusCleared() bool {
-	return m.clearedstatus
+// ProvisioningStepToTagCleared returns if the edge ProvisioningStepToTag was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToTagCleared() bool {
+	return m.cleared_ProvisioningStepToTag
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (m *ProvisioningStepMutation) RemoveStatuIDs(ids ...int) {
-	if m.removedstatus == nil {
-		m.removedstatus = make(map[int]struct{})
+// RemoveProvisioningStepToTagIDs removes the ProvisioningStepToTag edge to Tag by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToTagIDs(ids ...int) {
+	if m.removed_ProvisioningStepToTag == nil {
+		m.removed_ProvisioningStepToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedstatus[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedStatus returns the removed ids of status.
-func (m *ProvisioningStepMutation) RemovedStatusIDs() (ids []int) {
-	for id := range m.removedstatus {
+// RemovedProvisioningStepToTag returns the removed ids of ProvisioningStepToTag.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToTagIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// StatusIDs returns the status ids in the mutation.
-func (m *ProvisioningStepMutation) StatusIDs() (ids []int) {
-	for id := range m.status {
+// ProvisioningStepToTagIDs returns the ProvisioningStepToTag ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToTagIDs() (ids []int) {
+	for id := range m._ProvisioningStepToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetStatus reset all changes of the "status" edge.
-func (m *ProvisioningStepMutation) ResetStatus() {
-	m.status = nil
-	m.clearedstatus = false
-	m.removedstatus = nil
+// ResetProvisioningStepToTag reset all changes of the "ProvisioningStepToTag" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToTag() {
+	m._ProvisioningStepToTag = nil
+	m.cleared_ProvisioningStepToTag = false
+	m.removed_ProvisioningStepToTag = nil
 }
 
-// AddProvisionedHostIDs adds the provisioned_host edge to ProvisionedHost by ids.
-func (m *ProvisioningStepMutation) AddProvisionedHostIDs(ids ...int) {
-	if m.provisioned_host == nil {
-		m.provisioned_host = make(map[int]struct{})
+// AddProvisioningStepToStatuIDs adds the ProvisioningStepToStatus edge to Status by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToStatuIDs(ids ...int) {
+	if m._ProvisioningStepToStatus == nil {
+		m._ProvisioningStepToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.provisioned_host[ids[i]] = struct{}{}
+		m._ProvisioningStepToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedHost clears the provisioned_host edge to ProvisionedHost.
-func (m *ProvisioningStepMutation) ClearProvisionedHost() {
-	m.clearedprovisioned_host = true
+// ClearProvisioningStepToStatus clears the ProvisioningStepToStatus edge to Status.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToStatus() {
+	m.cleared_ProvisioningStepToStatus = true
 }
 
-// ProvisionedHostCleared returns if the edge provisioned_host was cleared.
-func (m *ProvisioningStepMutation) ProvisionedHostCleared() bool {
-	return m.clearedprovisioned_host
+// ProvisioningStepToStatusCleared returns if the edge ProvisioningStepToStatus was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusCleared() bool {
+	return m.cleared_ProvisioningStepToStatus
 }
 
-// RemoveProvisionedHostIDs removes the provisioned_host edge to ProvisionedHost by ids.
-func (m *ProvisioningStepMutation) RemoveProvisionedHostIDs(ids ...int) {
-	if m.removedprovisioned_host == nil {
-		m.removedprovisioned_host = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedprovisioned_host[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHost returns the removed ids of provisioned_host.
-func (m *ProvisioningStepMutation) RemovedProvisionedHostIDs() (ids []int) {
-	for id := range m.removedprovisioned_host {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisionedHostIDs returns the provisioned_host ids in the mutation.
-func (m *ProvisioningStepMutation) ProvisionedHostIDs() (ids []int) {
-	for id := range m.provisioned_host {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisionedHost reset all changes of the "provisioned_host" edge.
-func (m *ProvisioningStepMutation) ResetProvisionedHost() {
-	m.provisioned_host = nil
-	m.clearedprovisioned_host = false
-	m.removedprovisioned_host = nil
-}
-
-// AddScriptIDs adds the script edge to Script by ids.
-func (m *ProvisioningStepMutation) AddScriptIDs(ids ...int) {
-	if m.script == nil {
-		m.script = make(map[int]struct{})
+// RemoveProvisioningStepToStatuIDs removes the ProvisioningStepToStatus edge to Status by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToStatuIDs(ids ...int) {
+	if m.removed_ProvisioningStepToStatus == nil {
+		m.removed_ProvisioningStepToStatus = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.script[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToStatus[ids[i]] = struct{}{}
 	}
 }
 
-// ClearScript clears the script edge to Script.
-func (m *ProvisioningStepMutation) ClearScript() {
-	m.clearedscript = true
+// RemovedProvisioningStepToStatus returns the removed ids of ProvisioningStepToStatus.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToStatusIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// ScriptCleared returns if the edge script was cleared.
-func (m *ProvisioningStepMutation) ScriptCleared() bool {
-	return m.clearedscript
+// ProvisioningStepToStatusIDs returns the ProvisioningStepToStatus ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
+	for id := range m._ProvisioningStepToStatus {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveScriptIDs removes the script edge to Script by ids.
-func (m *ProvisioningStepMutation) RemoveScriptIDs(ids ...int) {
-	if m.removedscript == nil {
-		m.removedscript = make(map[int]struct{})
+// ResetProvisioningStepToStatus reset all changes of the "ProvisioningStepToStatus" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToStatus() {
+	m._ProvisioningStepToStatus = nil
+	m.cleared_ProvisioningStepToStatus = false
+	m.removed_ProvisioningStepToStatus = nil
+}
+
+// AddProvisioningStepToProvisionedHostIDs adds the ProvisioningStepToProvisionedHost edge to ProvisionedHost by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToProvisionedHostIDs(ids ...int) {
+	if m._ProvisioningStepToProvisionedHost == nil {
+		m._ProvisioningStepToProvisionedHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedscript[ids[i]] = struct{}{}
+		m._ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedScript returns the removed ids of script.
-func (m *ProvisioningStepMutation) RemovedScriptIDs() (ids []int) {
-	for id := range m.removedscript {
-		ids = append(ids, id)
-	}
-	return
+// ClearProvisioningStepToProvisionedHost clears the ProvisioningStepToProvisionedHost edge to ProvisionedHost.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToProvisionedHost() {
+	m.cleared_ProvisioningStepToProvisionedHost = true
 }
 
-// ScriptIDs returns the script ids in the mutation.
-func (m *ProvisioningStepMutation) ScriptIDs() (ids []int) {
-	for id := range m.script {
-		ids = append(ids, id)
-	}
-	return
+// ProvisioningStepToProvisionedHostCleared returns if the edge ProvisioningStepToProvisionedHost was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostCleared() bool {
+	return m.cleared_ProvisioningStepToProvisionedHost
 }
 
-// ResetScript reset all changes of the "script" edge.
-func (m *ProvisioningStepMutation) ResetScript() {
-	m.script = nil
-	m.clearedscript = false
-	m.removedscript = nil
-}
-
-// AddCommandIDs adds the command edge to Command by ids.
-func (m *ProvisioningStepMutation) AddCommandIDs(ids ...int) {
-	if m.command == nil {
-		m.command = make(map[int]struct{})
+// RemoveProvisioningStepToProvisionedHostIDs removes the ProvisioningStepToProvisionedHost edge to ProvisionedHost by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToProvisionedHostIDs(ids ...int) {
+	if m.removed_ProvisioningStepToProvisionedHost == nil {
+		m.removed_ProvisioningStepToProvisionedHost = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.command[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
 	}
 }
 
-// ClearCommand clears the command edge to Command.
-func (m *ProvisioningStepMutation) ClearCommand() {
-	m.clearedcommand = true
+// RemovedProvisioningStepToProvisionedHost returns the removed ids of ProvisioningStepToProvisionedHost.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToProvisionedHostIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// CommandCleared returns if the edge command was cleared.
-func (m *ProvisioningStepMutation) CommandCleared() bool {
-	return m.clearedcommand
+// ProvisioningStepToProvisionedHostIDs returns the ProvisioningStepToProvisionedHost ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids []int) {
+	for id := range m._ProvisioningStepToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveCommandIDs removes the command edge to Command by ids.
-func (m *ProvisioningStepMutation) RemoveCommandIDs(ids ...int) {
-	if m.removedcommand == nil {
-		m.removedcommand = make(map[int]struct{})
+// ResetProvisioningStepToProvisionedHost reset all changes of the "ProvisioningStepToProvisionedHost" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToProvisionedHost() {
+	m._ProvisioningStepToProvisionedHost = nil
+	m.cleared_ProvisioningStepToProvisionedHost = false
+	m.removed_ProvisioningStepToProvisionedHost = nil
+}
+
+// AddProvisioningStepToScriptIDs adds the ProvisioningStepToScript edge to Script by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToScriptIDs(ids ...int) {
+	if m._ProvisioningStepToScript == nil {
+		m._ProvisioningStepToScript = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedcommand[ids[i]] = struct{}{}
+		m._ProvisioningStepToScript[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedCommand returns the removed ids of command.
-func (m *ProvisioningStepMutation) RemovedCommandIDs() (ids []int) {
-	for id := range m.removedcommand {
-		ids = append(ids, id)
-	}
-	return
+// ClearProvisioningStepToScript clears the ProvisioningStepToScript edge to Script.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToScript() {
+	m.cleared_ProvisioningStepToScript = true
 }
 
-// CommandIDs returns the command ids in the mutation.
-func (m *ProvisioningStepMutation) CommandIDs() (ids []int) {
-	for id := range m.command {
-		ids = append(ids, id)
-	}
-	return
+// ProvisioningStepToScriptCleared returns if the edge ProvisioningStepToScript was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptCleared() bool {
+	return m.cleared_ProvisioningStepToScript
 }
 
-// ResetCommand reset all changes of the "command" edge.
-func (m *ProvisioningStepMutation) ResetCommand() {
-	m.command = nil
-	m.clearedcommand = false
-	m.removedcommand = nil
-}
-
-// AddDNSRecordIDs adds the dns_record edge to DNSRecord by ids.
-func (m *ProvisioningStepMutation) AddDNSRecordIDs(ids ...int) {
-	if m.dns_record == nil {
-		m.dns_record = make(map[int]struct{})
+// RemoveProvisioningStepToScriptIDs removes the ProvisioningStepToScript edge to Script by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToScriptIDs(ids ...int) {
+	if m.removed_ProvisioningStepToScript == nil {
+		m.removed_ProvisioningStepToScript = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.dns_record[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToScript[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDNSRecord clears the dns_record edge to DNSRecord.
-func (m *ProvisioningStepMutation) ClearDNSRecord() {
-	m.cleareddns_record = true
+// RemovedProvisioningStepToScript returns the removed ids of ProvisioningStepToScript.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToScriptIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToScript {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// DNSRecordCleared returns if the edge dns_record was cleared.
-func (m *ProvisioningStepMutation) DNSRecordCleared() bool {
-	return m.cleareddns_record
+// ProvisioningStepToScriptIDs returns the ProvisioningStepToScript ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
+	for id := range m._ProvisioningStepToScript {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveDNSRecordIDs removes the dns_record edge to DNSRecord by ids.
-func (m *ProvisioningStepMutation) RemoveDNSRecordIDs(ids ...int) {
-	if m.removeddns_record == nil {
-		m.removeddns_record = make(map[int]struct{})
+// ResetProvisioningStepToScript reset all changes of the "ProvisioningStepToScript" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToScript() {
+	m._ProvisioningStepToScript = nil
+	m.cleared_ProvisioningStepToScript = false
+	m.removed_ProvisioningStepToScript = nil
+}
+
+// AddProvisioningStepToCommandIDs adds the ProvisioningStepToCommand edge to Command by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToCommandIDs(ids ...int) {
+	if m._ProvisioningStepToCommand == nil {
+		m._ProvisioningStepToCommand = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removeddns_record[ids[i]] = struct{}{}
+		m._ProvisioningStepToCommand[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDNSRecord returns the removed ids of dns_record.
-func (m *ProvisioningStepMutation) RemovedDNSRecordIDs() (ids []int) {
-	for id := range m.removeddns_record {
-		ids = append(ids, id)
-	}
-	return
+// ClearProvisioningStepToCommand clears the ProvisioningStepToCommand edge to Command.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToCommand() {
+	m.cleared_ProvisioningStepToCommand = true
 }
 
-// DNSRecordIDs returns the dns_record ids in the mutation.
-func (m *ProvisioningStepMutation) DNSRecordIDs() (ids []int) {
-	for id := range m.dns_record {
-		ids = append(ids, id)
-	}
-	return
+// ProvisioningStepToCommandCleared returns if the edge ProvisioningStepToCommand was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandCleared() bool {
+	return m.cleared_ProvisioningStepToCommand
 }
 
-// ResetDNSRecord reset all changes of the "dns_record" edge.
-func (m *ProvisioningStepMutation) ResetDNSRecord() {
-	m.dns_record = nil
-	m.cleareddns_record = false
-	m.removeddns_record = nil
-}
-
-// AddRemoteFileIDs adds the remote_file edge to RemoteFile by ids.
-func (m *ProvisioningStepMutation) AddRemoteFileIDs(ids ...int) {
-	if m.remote_file == nil {
-		m.remote_file = make(map[int]struct{})
+// RemoveProvisioningStepToCommandIDs removes the ProvisioningStepToCommand edge to Command by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToCommandIDs(ids ...int) {
+	if m.removed_ProvisioningStepToCommand == nil {
+		m.removed_ProvisioningStepToCommand = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.remote_file[ids[i]] = struct{}{}
+		m.removed_ProvisioningStepToCommand[ids[i]] = struct{}{}
 	}
 }
 
-// ClearRemoteFile clears the remote_file edge to RemoteFile.
-func (m *ProvisioningStepMutation) ClearRemoteFile() {
-	m.clearedremote_file = true
+// RemovedProvisioningStepToCommand returns the removed ids of ProvisioningStepToCommand.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToCommandIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToCommand {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoteFileCleared returns if the edge remote_file was cleared.
-func (m *ProvisioningStepMutation) RemoteFileCleared() bool {
-	return m.clearedremote_file
+// ProvisioningStepToCommandIDs returns the ProvisioningStepToCommand ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
+	for id := range m._ProvisioningStepToCommand {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveRemoteFileIDs removes the remote_file edge to RemoteFile by ids.
-func (m *ProvisioningStepMutation) RemoveRemoteFileIDs(ids ...int) {
-	if m.removedremote_file == nil {
-		m.removedremote_file = make(map[int]struct{})
+// ResetProvisioningStepToCommand reset all changes of the "ProvisioningStepToCommand" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToCommand() {
+	m._ProvisioningStepToCommand = nil
+	m.cleared_ProvisioningStepToCommand = false
+	m.removed_ProvisioningStepToCommand = nil
+}
+
+// AddProvisioningStepToDNSRecordIDs adds the ProvisioningStepToDNSRecord edge to DNSRecord by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToDNSRecordIDs(ids ...int) {
+	if m._ProvisioningStepToDNSRecord == nil {
+		m._ProvisioningStepToDNSRecord = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedremote_file[ids[i]] = struct{}{}
+		m._ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedRemoteFile returns the removed ids of remote_file.
-func (m *ProvisioningStepMutation) RemovedRemoteFileIDs() (ids []int) {
-	for id := range m.removedremote_file {
+// ClearProvisioningStepToDNSRecord clears the ProvisioningStepToDNSRecord edge to DNSRecord.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToDNSRecord() {
+	m.cleared_ProvisioningStepToDNSRecord = true
+}
+
+// ProvisioningStepToDNSRecordCleared returns if the edge ProvisioningStepToDNSRecord was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordCleared() bool {
+	return m.cleared_ProvisioningStepToDNSRecord
+}
+
+// RemoveProvisioningStepToDNSRecordIDs removes the ProvisioningStepToDNSRecord edge to DNSRecord by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToDNSRecordIDs(ids ...int) {
+	if m.removed_ProvisioningStepToDNSRecord == nil {
+		m.removed_ProvisioningStepToDNSRecord = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToDNSRecord returns the removed ids of ProvisioningStepToDNSRecord.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToDNSRecordIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToDNSRecord {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// RemoteFileIDs returns the remote_file ids in the mutation.
-func (m *ProvisioningStepMutation) RemoteFileIDs() (ids []int) {
-	for id := range m.remote_file {
+// ProvisioningStepToDNSRecordIDs returns the ProvisioningStepToDNSRecord ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) {
+	for id := range m._ProvisioningStepToDNSRecord {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetRemoteFile reset all changes of the "remote_file" edge.
-func (m *ProvisioningStepMutation) ResetRemoteFile() {
-	m.remote_file = nil
-	m.clearedremote_file = false
-	m.removedremote_file = nil
+// ResetProvisioningStepToDNSRecord reset all changes of the "ProvisioningStepToDNSRecord" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToDNSRecord() {
+	m._ProvisioningStepToDNSRecord = nil
+	m.cleared_ProvisioningStepToDNSRecord = false
+	m.removed_ProvisioningStepToDNSRecord = nil
+}
+
+// AddProvisioningStepToRemoteFileIDs adds the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToRemoteFileIDs(ids ...int) {
+	if m._ProvisioningStepToRemoteFile == nil {
+		m._ProvisioningStepToRemoteFile = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisioningStepToRemoteFile[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisioningStepToRemoteFile clears the ProvisioningStepToRemoteFile edge to RemoteFile.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToRemoteFile() {
+	m.cleared_ProvisioningStepToRemoteFile = true
+}
+
+// ProvisioningStepToRemoteFileCleared returns if the edge ProvisioningStepToRemoteFile was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToRemoteFileCleared() bool {
+	return m.cleared_ProvisioningStepToRemoteFile
+}
+
+// RemoveProvisioningStepToRemoteFileIDs removes the ProvisioningStepToRemoteFile edge to RemoteFile by ids.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToRemoteFileIDs(ids ...int) {
+	if m.removed_ProvisioningStepToRemoteFile == nil {
+		m.removed_ProvisioningStepToRemoteFile = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToRemoteFile[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToRemoteFile returns the removed ids of ProvisioningStepToRemoteFile.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToRemoteFileIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToRemoteFile {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisioningStepToRemoteFileIDs returns the ProvisioningStepToRemoteFile ids in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToRemoteFileIDs() (ids []int) {
+	for id := range m._ProvisioningStepToRemoteFile {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisioningStepToRemoteFile reset all changes of the "ProvisioningStepToRemoteFile" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToRemoteFile() {
+	m._ProvisioningStepToRemoteFile = nil
+	m.cleared_ProvisioningStepToRemoteFile = false
+	m.removed_ProvisioningStepToRemoteFile = nil
 }
 
 // Op returns the operation name.
@@ -13929,24 +14706,27 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.status != nil {
-		edges = append(edges, provisioningstep.EdgeStatus)
+	edges := make([]string, 0, 7)
+	if m._ProvisioningStepToTag != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
-	if m.provisioned_host != nil {
-		edges = append(edges, provisioningstep.EdgeProvisionedHost)
+	if m._ProvisioningStepToStatus != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
-	if m.script != nil {
-		edges = append(edges, provisioningstep.EdgeScript)
+	if m._ProvisioningStepToProvisionedHost != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToProvisionedHost)
 	}
-	if m.command != nil {
-		edges = append(edges, provisioningstep.EdgeCommand)
+	if m._ProvisioningStepToScript != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToScript)
 	}
-	if m.dns_record != nil {
-		edges = append(edges, provisioningstep.EdgeDNSRecord)
+	if m._ProvisioningStepToCommand != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToCommand)
 	}
-	if m.remote_file != nil {
-		edges = append(edges, provisioningstep.EdgeRemoteFile)
+	if m._ProvisioningStepToDNSRecord != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
+	}
+	if m._ProvisioningStepToRemoteFile != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
 	}
 	return edges
 }
@@ -13955,39 +14735,45 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.status))
-		for id := range m.status {
+	case provisioningstep.EdgeProvisioningStepToTag:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToTag))
+		for id := range m._ProvisioningStepToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeProvisionedHost:
-		ids := make([]ent.Value, 0, len(m.provisioned_host))
-		for id := range m.provisioned_host {
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToStatus))
+		for id := range m._ProvisioningStepToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeScript:
-		ids := make([]ent.Value, 0, len(m.script))
-		for id := range m.script {
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToProvisionedHost))
+		for id := range m._ProvisioningStepToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeCommand:
-		ids := make([]ent.Value, 0, len(m.command))
-		for id := range m.command {
+	case provisioningstep.EdgeProvisioningStepToScript:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToScript))
+		for id := range m._ProvisioningStepToScript {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeDNSRecord:
-		ids := make([]ent.Value, 0, len(m.dns_record))
-		for id := range m.dns_record {
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToCommand))
+		for id := range m._ProvisioningStepToCommand {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeRemoteFile:
-		ids := make([]ent.Value, 0, len(m.remote_file))
-		for id := range m.remote_file {
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToDNSRecord))
+		for id := range m._ProvisioningStepToDNSRecord {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToRemoteFile:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToRemoteFile))
+		for id := range m._ProvisioningStepToRemoteFile {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13998,24 +14784,27 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.removedstatus != nil {
-		edges = append(edges, provisioningstep.EdgeStatus)
+	edges := make([]string, 0, 7)
+	if m.removed_ProvisioningStepToTag != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
-	if m.removedprovisioned_host != nil {
-		edges = append(edges, provisioningstep.EdgeProvisionedHost)
+	if m.removed_ProvisioningStepToStatus != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
-	if m.removedscript != nil {
-		edges = append(edges, provisioningstep.EdgeScript)
+	if m.removed_ProvisioningStepToProvisionedHost != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToProvisionedHost)
 	}
-	if m.removedcommand != nil {
-		edges = append(edges, provisioningstep.EdgeCommand)
+	if m.removed_ProvisioningStepToScript != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToScript)
 	}
-	if m.removeddns_record != nil {
-		edges = append(edges, provisioningstep.EdgeDNSRecord)
+	if m.removed_ProvisioningStepToCommand != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToCommand)
 	}
-	if m.removedremote_file != nil {
-		edges = append(edges, provisioningstep.EdgeRemoteFile)
+	if m.removed_ProvisioningStepToDNSRecord != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
+	}
+	if m.removed_ProvisioningStepToRemoteFile != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
 	}
 	return edges
 }
@@ -14024,39 +14813,45 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeStatus:
-		ids := make([]ent.Value, 0, len(m.removedstatus))
-		for id := range m.removedstatus {
+	case provisioningstep.EdgeProvisioningStepToTag:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToTag))
+		for id := range m.removed_ProvisioningStepToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeProvisionedHost:
-		ids := make([]ent.Value, 0, len(m.removedprovisioned_host))
-		for id := range m.removedprovisioned_host {
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToStatus))
+		for id := range m.removed_ProvisioningStepToStatus {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeScript:
-		ids := make([]ent.Value, 0, len(m.removedscript))
-		for id := range m.removedscript {
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToProvisionedHost))
+		for id := range m.removed_ProvisioningStepToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeCommand:
-		ids := make([]ent.Value, 0, len(m.removedcommand))
-		for id := range m.removedcommand {
+	case provisioningstep.EdgeProvisioningStepToScript:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToScript))
+		for id := range m.removed_ProvisioningStepToScript {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeDNSRecord:
-		ids := make([]ent.Value, 0, len(m.removeddns_record))
-		for id := range m.removeddns_record {
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToCommand))
+		for id := range m.removed_ProvisioningStepToCommand {
 			ids = append(ids, id)
 		}
 		return ids
-	case provisioningstep.EdgeRemoteFile:
-		ids := make([]ent.Value, 0, len(m.removedremote_file))
-		for id := range m.removedremote_file {
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToDNSRecord))
+		for id := range m.removed_ProvisioningStepToDNSRecord {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisioningstep.EdgeProvisioningStepToRemoteFile:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToRemoteFile))
+		for id := range m.removed_ProvisioningStepToRemoteFile {
 			ids = append(ids, id)
 		}
 		return ids
@@ -14067,24 +14862,27 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.clearedstatus {
-		edges = append(edges, provisioningstep.EdgeStatus)
+	edges := make([]string, 0, 7)
+	if m.cleared_ProvisioningStepToTag {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
-	if m.clearedprovisioned_host {
-		edges = append(edges, provisioningstep.EdgeProvisionedHost)
+	if m.cleared_ProvisioningStepToStatus {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
-	if m.clearedscript {
-		edges = append(edges, provisioningstep.EdgeScript)
+	if m.cleared_ProvisioningStepToProvisionedHost {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToProvisionedHost)
 	}
-	if m.clearedcommand {
-		edges = append(edges, provisioningstep.EdgeCommand)
+	if m.cleared_ProvisioningStepToScript {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToScript)
 	}
-	if m.cleareddns_record {
-		edges = append(edges, provisioningstep.EdgeDNSRecord)
+	if m.cleared_ProvisioningStepToCommand {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToCommand)
 	}
-	if m.clearedremote_file {
-		edges = append(edges, provisioningstep.EdgeRemoteFile)
+	if m.cleared_ProvisioningStepToDNSRecord {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
+	}
+	if m.cleared_ProvisioningStepToRemoteFile {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToRemoteFile)
 	}
 	return edges
 }
@@ -14093,18 +14891,20 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisioningstep.EdgeStatus:
-		return m.clearedstatus
-	case provisioningstep.EdgeProvisionedHost:
-		return m.clearedprovisioned_host
-	case provisioningstep.EdgeScript:
-		return m.clearedscript
-	case provisioningstep.EdgeCommand:
-		return m.clearedcommand
-	case provisioningstep.EdgeDNSRecord:
-		return m.cleareddns_record
-	case provisioningstep.EdgeRemoteFile:
-		return m.clearedremote_file
+	case provisioningstep.EdgeProvisioningStepToTag:
+		return m.cleared_ProvisioningStepToTag
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		return m.cleared_ProvisioningStepToStatus
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		return m.cleared_ProvisioningStepToProvisionedHost
+	case provisioningstep.EdgeProvisioningStepToScript:
+		return m.cleared_ProvisioningStepToScript
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		return m.cleared_ProvisioningStepToCommand
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		return m.cleared_ProvisioningStepToDNSRecord
+	case provisioningstep.EdgeProvisioningStepToRemoteFile:
+		return m.cleared_ProvisioningStepToRemoteFile
 	}
 	return false
 }
@@ -14122,23 +14922,26 @@ func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	switch name {
-	case provisioningstep.EdgeStatus:
-		m.ResetStatus()
+	case provisioningstep.EdgeProvisioningStepToTag:
+		m.ResetProvisioningStepToTag()
 		return nil
-	case provisioningstep.EdgeProvisionedHost:
-		m.ResetProvisionedHost()
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		m.ResetProvisioningStepToStatus()
 		return nil
-	case provisioningstep.EdgeScript:
-		m.ResetScript()
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		m.ResetProvisioningStepToProvisionedHost()
 		return nil
-	case provisioningstep.EdgeCommand:
-		m.ResetCommand()
+	case provisioningstep.EdgeProvisioningStepToScript:
+		m.ResetProvisioningStepToScript()
 		return nil
-	case provisioningstep.EdgeDNSRecord:
-		m.ResetDNSRecord()
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		m.ResetProvisioningStepToCommand()
 		return nil
-	case provisioningstep.EdgeRemoteFile:
-		m.ResetRemoteFile()
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		m.ResetProvisioningStepToDNSRecord()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToRemoteFile:
+		m.ResetProvisioningStepToRemoteFile()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
@@ -14148,26 +14951,26 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type RemoteFileMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	source_type   *string
-	source        *string
-	destination   *string
-	vars          *map[string]string
-	template      *bool
-	perms         *string
-	disabled      *bool
-	md5           *string
-	abs_path      *string
-	ext           *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*RemoteFile, error)
-	predicates    []predicate.RemoteFile
+	op                      Op
+	typ                     string
+	id                      *int
+	source_type             *string
+	source                  *string
+	destination             *string
+	vars                    *map[string]string
+	template                *bool
+	perms                   *string
+	disabled                *bool
+	md5                     *string
+	abs_path                *string
+	ext                     *string
+	clearedFields           map[string]struct{}
+	_RemoteFileToTag        map[int]struct{}
+	removed_RemoteFileToTag map[int]struct{}
+	cleared_RemoteFileToTag bool
+	done                    bool
+	oldValue                func(context.Context) (*RemoteFile, error)
+	predicates              []predicate.RemoteFile
 }
 
 var _ ent.Mutation = (*RemoteFileMutation)(nil)
@@ -14619,57 +15422,57 @@ func (m *RemoteFileMutation) ResetExt() {
 	m.ext = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *RemoteFileMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddRemoteFileToTagIDs adds the RemoteFileToTag edge to Tag by ids.
+func (m *RemoteFileMutation) AddRemoteFileToTagIDs(ids ...int) {
+	if m._RemoteFileToTag == nil {
+		m._RemoteFileToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._RemoteFileToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *RemoteFileMutation) ClearTag() {
-	m.clearedtag = true
+// ClearRemoteFileToTag clears the RemoteFileToTag edge to Tag.
+func (m *RemoteFileMutation) ClearRemoteFileToTag() {
+	m.cleared_RemoteFileToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *RemoteFileMutation) TagCleared() bool {
-	return m.clearedtag
+// RemoteFileToTagCleared returns if the edge RemoteFileToTag was cleared.
+func (m *RemoteFileMutation) RemoteFileToTagCleared() bool {
+	return m.cleared_RemoteFileToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *RemoteFileMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveRemoteFileToTagIDs removes the RemoteFileToTag edge to Tag by ids.
+func (m *RemoteFileMutation) RemoveRemoteFileToTagIDs(ids ...int) {
+	if m.removed_RemoteFileToTag == nil {
+		m.removed_RemoteFileToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_RemoteFileToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *RemoteFileMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedRemoteFileToTag returns the removed ids of RemoteFileToTag.
+func (m *RemoteFileMutation) RemovedRemoteFileToTagIDs() (ids []int) {
+	for id := range m.removed_RemoteFileToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *RemoteFileMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// RemoteFileToTagIDs returns the RemoteFileToTag ids in the mutation.
+func (m *RemoteFileMutation) RemoteFileToTagIDs() (ids []int) {
+	for id := range m._RemoteFileToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *RemoteFileMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetRemoteFileToTag reset all changes of the "RemoteFileToTag" edge.
+func (m *RemoteFileMutation) ResetRemoteFileToTag() {
+	m._RemoteFileToTag = nil
+	m.cleared_RemoteFileToTag = false
+	m.removed_RemoteFileToTag = nil
 }
 
 // Op returns the operation name.
@@ -14941,8 +15744,8 @@ func (m *RemoteFileMutation) ResetField(name string) error {
 // mutation.
 func (m *RemoteFileMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, remotefile.EdgeTag)
+	if m._RemoteFileToTag != nil {
+		edges = append(edges, remotefile.EdgeRemoteFileToTag)
 	}
 	return edges
 }
@@ -14951,9 +15754,9 @@ func (m *RemoteFileMutation) AddedEdges() []string {
 // the given edge name.
 func (m *RemoteFileMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case remotefile.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case remotefile.EdgeRemoteFileToTag:
+		ids := make([]ent.Value, 0, len(m._RemoteFileToTag))
+		for id := range m._RemoteFileToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -14965,8 +15768,8 @@ func (m *RemoteFileMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *RemoteFileMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, remotefile.EdgeTag)
+	if m.removed_RemoteFileToTag != nil {
+		edges = append(edges, remotefile.EdgeRemoteFileToTag)
 	}
 	return edges
 }
@@ -14975,9 +15778,9 @@ func (m *RemoteFileMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *RemoteFileMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case remotefile.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case remotefile.EdgeRemoteFileToTag:
+		ids := make([]ent.Value, 0, len(m.removed_RemoteFileToTag))
+		for id := range m.removed_RemoteFileToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -14989,8 +15792,8 @@ func (m *RemoteFileMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *RemoteFileMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, remotefile.EdgeTag)
+	if m.cleared_RemoteFileToTag {
+		edges = append(edges, remotefile.EdgeRemoteFileToTag)
 	}
 	return edges
 }
@@ -14999,8 +15802,8 @@ func (m *RemoteFileMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *RemoteFileMutation) EdgeCleared(name string) bool {
 	switch name {
-	case remotefile.EdgeTag:
-		return m.clearedtag
+	case remotefile.EdgeRemoteFileToTag:
+		return m.cleared_RemoteFileToTag
 	}
 	return false
 }
@@ -15018,8 +15821,8 @@ func (m *RemoteFileMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *RemoteFileMutation) ResetEdge(name string) error {
 	switch name {
-	case remotefile.EdgeTag:
-		m.ResetTag()
+	case remotefile.EdgeRemoteFileToTag:
+		m.ResetRemoteFileToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown RemoteFile edge %s", name)
@@ -15029,36 +15832,36 @@ func (m *RemoteFileMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type ScriptMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	name              *string
-	language          *string
-	description       *string
-	source            *string
-	source_type       *string
-	cooldown          *int
-	addcooldown       *int
-	timeout           *int
-	addtimeout        *int
-	ignore_errors     *bool
-	args              *[]string
-	disabled          *bool
-	vars              *map[string]string
-	abs_path          *string
-	clearedFields     map[string]struct{}
-	tag               map[int]struct{}
-	removedtag        map[int]struct{}
-	clearedtag        bool
-	maintainer        map[int]struct{}
-	removedmaintainer map[int]struct{}
-	clearedmaintainer bool
-	finding           map[int]struct{}
-	removedfinding    map[int]struct{}
-	clearedfinding    bool
-	done              bool
-	oldValue          func(context.Context) (*Script, error)
-	predicates        []predicate.Script
+	op                      Op
+	typ                     string
+	id                      *int
+	name                    *string
+	language                *string
+	description             *string
+	source                  *string
+	source_type             *string
+	cooldown                *int
+	addcooldown             *int
+	timeout                 *int
+	addtimeout              *int
+	ignore_errors           *bool
+	args                    *[]string
+	disabled                *bool
+	vars                    *map[string]string
+	abs_path                *string
+	clearedFields           map[string]struct{}
+	_ScriptToTag            map[int]struct{}
+	removed_ScriptToTag     map[int]struct{}
+	cleared_ScriptToTag     bool
+	_ScriptToUser           map[int]struct{}
+	removed_ScriptToUser    map[int]struct{}
+	cleared_ScriptToUser    bool
+	_ScriptToFinding        map[int]struct{}
+	removed_ScriptToFinding map[int]struct{}
+	cleared_ScriptToFinding bool
+	done                    bool
+	oldValue                func(context.Context) (*Script, error)
+	predicates              []predicate.Script
 }
 
 var _ ent.Mutation = (*ScriptMutation)(nil)
@@ -15624,163 +16427,163 @@ func (m *ScriptMutation) ResetAbsPath() {
 	m.abs_path = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *ScriptMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
+func (m *ScriptMutation) AddScriptToTagIDs(ids ...int) {
+	if m._ScriptToTag == nil {
+		m._ScriptToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._ScriptToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *ScriptMutation) ClearTag() {
-	m.clearedtag = true
+// ClearScriptToTag clears the ScriptToTag edge to Tag.
+func (m *ScriptMutation) ClearScriptToTag() {
+	m.cleared_ScriptToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *ScriptMutation) TagCleared() bool {
-	return m.clearedtag
+// ScriptToTagCleared returns if the edge ScriptToTag was cleared.
+func (m *ScriptMutation) ScriptToTagCleared() bool {
+	return m.cleared_ScriptToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *ScriptMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveScriptToTagIDs removes the ScriptToTag edge to Tag by ids.
+func (m *ScriptMutation) RemoveScriptToTagIDs(ids ...int) {
+	if m.removed_ScriptToTag == nil {
+		m.removed_ScriptToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_ScriptToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *ScriptMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedScriptToTag returns the removed ids of ScriptToTag.
+func (m *ScriptMutation) RemovedScriptToTagIDs() (ids []int) {
+	for id := range m.removed_ScriptToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *ScriptMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// ScriptToTagIDs returns the ScriptToTag ids in the mutation.
+func (m *ScriptMutation) ScriptToTagIDs() (ids []int) {
+	for id := range m._ScriptToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *ScriptMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetScriptToTag reset all changes of the "ScriptToTag" edge.
+func (m *ScriptMutation) ResetScriptToTag() {
+	m._ScriptToTag = nil
+	m.cleared_ScriptToTag = false
+	m.removed_ScriptToTag = nil
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (m *ScriptMutation) AddMaintainerIDs(ids ...int) {
-	if m.maintainer == nil {
-		m.maintainer = make(map[int]struct{})
+// AddScriptToUserIDs adds the ScriptToUser edge to User by ids.
+func (m *ScriptMutation) AddScriptToUserIDs(ids ...int) {
+	if m._ScriptToUser == nil {
+		m._ScriptToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.maintainer[ids[i]] = struct{}{}
+		m._ScriptToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearMaintainer clears the maintainer edge to User.
-func (m *ScriptMutation) ClearMaintainer() {
-	m.clearedmaintainer = true
+// ClearScriptToUser clears the ScriptToUser edge to User.
+func (m *ScriptMutation) ClearScriptToUser() {
+	m.cleared_ScriptToUser = true
 }
 
-// MaintainerCleared returns if the edge maintainer was cleared.
-func (m *ScriptMutation) MaintainerCleared() bool {
-	return m.clearedmaintainer
+// ScriptToUserCleared returns if the edge ScriptToUser was cleared.
+func (m *ScriptMutation) ScriptToUserCleared() bool {
+	return m.cleared_ScriptToUser
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (m *ScriptMutation) RemoveMaintainerIDs(ids ...int) {
-	if m.removedmaintainer == nil {
-		m.removedmaintainer = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removedmaintainer[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMaintainer returns the removed ids of maintainer.
-func (m *ScriptMutation) RemovedMaintainerIDs() (ids []int) {
-	for id := range m.removedmaintainer {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MaintainerIDs returns the maintainer ids in the mutation.
-func (m *ScriptMutation) MaintainerIDs() (ids []int) {
-	for id := range m.maintainer {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMaintainer reset all changes of the "maintainer" edge.
-func (m *ScriptMutation) ResetMaintainer() {
-	m.maintainer = nil
-	m.clearedmaintainer = false
-	m.removedmaintainer = nil
-}
-
-// AddFindingIDs adds the finding edge to Finding by ids.
-func (m *ScriptMutation) AddFindingIDs(ids ...int) {
-	if m.finding == nil {
-		m.finding = make(map[int]struct{})
+// RemoveScriptToUserIDs removes the ScriptToUser edge to User by ids.
+func (m *ScriptMutation) RemoveScriptToUserIDs(ids ...int) {
+	if m.removed_ScriptToUser == nil {
+		m.removed_ScriptToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.finding[ids[i]] = struct{}{}
+		m.removed_ScriptToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearFinding clears the finding edge to Finding.
-func (m *ScriptMutation) ClearFinding() {
-	m.clearedfinding = true
+// RemovedScriptToUser returns the removed ids of ScriptToUser.
+func (m *ScriptMutation) RemovedScriptToUserIDs() (ids []int) {
+	for id := range m.removed_ScriptToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// FindingCleared returns if the edge finding was cleared.
-func (m *ScriptMutation) FindingCleared() bool {
-	return m.clearedfinding
+// ScriptToUserIDs returns the ScriptToUser ids in the mutation.
+func (m *ScriptMutation) ScriptToUserIDs() (ids []int) {
+	for id := range m._ScriptToUser {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// RemoveFindingIDs removes the finding edge to Finding by ids.
-func (m *ScriptMutation) RemoveFindingIDs(ids ...int) {
-	if m.removedfinding == nil {
-		m.removedfinding = make(map[int]struct{})
+// ResetScriptToUser reset all changes of the "ScriptToUser" edge.
+func (m *ScriptMutation) ResetScriptToUser() {
+	m._ScriptToUser = nil
+	m.cleared_ScriptToUser = false
+	m.removed_ScriptToUser = nil
+}
+
+// AddScriptToFindingIDs adds the ScriptToFinding edge to Finding by ids.
+func (m *ScriptMutation) AddScriptToFindingIDs(ids ...int) {
+	if m._ScriptToFinding == nil {
+		m._ScriptToFinding = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedfinding[ids[i]] = struct{}{}
+		m._ScriptToFinding[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedFinding returns the removed ids of finding.
-func (m *ScriptMutation) RemovedFindingIDs() (ids []int) {
-	for id := range m.removedfinding {
+// ClearScriptToFinding clears the ScriptToFinding edge to Finding.
+func (m *ScriptMutation) ClearScriptToFinding() {
+	m.cleared_ScriptToFinding = true
+}
+
+// ScriptToFindingCleared returns if the edge ScriptToFinding was cleared.
+func (m *ScriptMutation) ScriptToFindingCleared() bool {
+	return m.cleared_ScriptToFinding
+}
+
+// RemoveScriptToFindingIDs removes the ScriptToFinding edge to Finding by ids.
+func (m *ScriptMutation) RemoveScriptToFindingIDs(ids ...int) {
+	if m.removed_ScriptToFinding == nil {
+		m.removed_ScriptToFinding = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ScriptToFinding[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScriptToFinding returns the removed ids of ScriptToFinding.
+func (m *ScriptMutation) RemovedScriptToFindingIDs() (ids []int) {
+	for id := range m.removed_ScriptToFinding {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// FindingIDs returns the finding ids in the mutation.
-func (m *ScriptMutation) FindingIDs() (ids []int) {
-	for id := range m.finding {
+// ScriptToFindingIDs returns the ScriptToFinding ids in the mutation.
+func (m *ScriptMutation) ScriptToFindingIDs() (ids []int) {
+	for id := range m._ScriptToFinding {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetFinding reset all changes of the "finding" edge.
-func (m *ScriptMutation) ResetFinding() {
-	m.finding = nil
-	m.clearedfinding = false
-	m.removedfinding = nil
+// ResetScriptToFinding reset all changes of the "ScriptToFinding" edge.
+func (m *ScriptMutation) ResetScriptToFinding() {
+	m._ScriptToFinding = nil
+	m.cleared_ScriptToFinding = false
+	m.removed_ScriptToFinding = nil
 }
 
 // Op returns the operation name.
@@ -16113,14 +16916,14 @@ func (m *ScriptMutation) ResetField(name string) error {
 // mutation.
 func (m *ScriptMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.tag != nil {
-		edges = append(edges, script.EdgeTag)
+	if m._ScriptToTag != nil {
+		edges = append(edges, script.EdgeScriptToTag)
 	}
-	if m.maintainer != nil {
-		edges = append(edges, script.EdgeMaintainer)
+	if m._ScriptToUser != nil {
+		edges = append(edges, script.EdgeScriptToUser)
 	}
-	if m.finding != nil {
-		edges = append(edges, script.EdgeFinding)
+	if m._ScriptToFinding != nil {
+		edges = append(edges, script.EdgeScriptToFinding)
 	}
 	return edges
 }
@@ -16129,21 +16932,21 @@ func (m *ScriptMutation) AddedEdges() []string {
 // the given edge name.
 func (m *ScriptMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case script.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case script.EdgeScriptToTag:
+		ids := make([]ent.Value, 0, len(m._ScriptToTag))
+		for id := range m._ScriptToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case script.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.maintainer))
-		for id := range m.maintainer {
+	case script.EdgeScriptToUser:
+		ids := make([]ent.Value, 0, len(m._ScriptToUser))
+		for id := range m._ScriptToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case script.EdgeFinding:
-		ids := make([]ent.Value, 0, len(m.finding))
-		for id := range m.finding {
+	case script.EdgeScriptToFinding:
+		ids := make([]ent.Value, 0, len(m._ScriptToFinding))
+		for id := range m._ScriptToFinding {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16155,14 +16958,14 @@ func (m *ScriptMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *ScriptMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removedtag != nil {
-		edges = append(edges, script.EdgeTag)
+	if m.removed_ScriptToTag != nil {
+		edges = append(edges, script.EdgeScriptToTag)
 	}
-	if m.removedmaintainer != nil {
-		edges = append(edges, script.EdgeMaintainer)
+	if m.removed_ScriptToUser != nil {
+		edges = append(edges, script.EdgeScriptToUser)
 	}
-	if m.removedfinding != nil {
-		edges = append(edges, script.EdgeFinding)
+	if m.removed_ScriptToFinding != nil {
+		edges = append(edges, script.EdgeScriptToFinding)
 	}
 	return edges
 }
@@ -16171,21 +16974,21 @@ func (m *ScriptMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *ScriptMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case script.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case script.EdgeScriptToTag:
+		ids := make([]ent.Value, 0, len(m.removed_ScriptToTag))
+		for id := range m.removed_ScriptToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case script.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.removedmaintainer))
-		for id := range m.removedmaintainer {
+	case script.EdgeScriptToUser:
+		ids := make([]ent.Value, 0, len(m.removed_ScriptToUser))
+		for id := range m.removed_ScriptToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case script.EdgeFinding:
-		ids := make([]ent.Value, 0, len(m.removedfinding))
-		for id := range m.removedfinding {
+	case script.EdgeScriptToFinding:
+		ids := make([]ent.Value, 0, len(m.removed_ScriptToFinding))
+		for id := range m.removed_ScriptToFinding {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16197,14 +17000,14 @@ func (m *ScriptMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *ScriptMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.clearedtag {
-		edges = append(edges, script.EdgeTag)
+	if m.cleared_ScriptToTag {
+		edges = append(edges, script.EdgeScriptToTag)
 	}
-	if m.clearedmaintainer {
-		edges = append(edges, script.EdgeMaintainer)
+	if m.cleared_ScriptToUser {
+		edges = append(edges, script.EdgeScriptToUser)
 	}
-	if m.clearedfinding {
-		edges = append(edges, script.EdgeFinding)
+	if m.cleared_ScriptToFinding {
+		edges = append(edges, script.EdgeScriptToFinding)
 	}
 	return edges
 }
@@ -16213,12 +17016,12 @@ func (m *ScriptMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ScriptMutation) EdgeCleared(name string) bool {
 	switch name {
-	case script.EdgeTag:
-		return m.clearedtag
-	case script.EdgeMaintainer:
-		return m.clearedmaintainer
-	case script.EdgeFinding:
-		return m.clearedfinding
+	case script.EdgeScriptToTag:
+		return m.cleared_ScriptToTag
+	case script.EdgeScriptToUser:
+		return m.cleared_ScriptToUser
+	case script.EdgeScriptToFinding:
+		return m.cleared_ScriptToFinding
 	}
 	return false
 }
@@ -16236,14 +17039,14 @@ func (m *ScriptMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ScriptMutation) ResetEdge(name string) error {
 	switch name {
-	case script.EdgeTag:
-		m.ResetTag()
+	case script.EdgeScriptToTag:
+		m.ResetScriptToTag()
 		return nil
-	case script.EdgeMaintainer:
-		m.ResetMaintainer()
+	case script.EdgeScriptToUser:
+		m.ResetScriptToUser()
 		return nil
-	case script.EdgeFinding:
-		m.ResetFinding()
+	case script.EdgeScriptToFinding:
+		m.ResetScriptToFinding()
 		return nil
 	}
 	return fmt.Errorf("unknown Script edge %s", name)
@@ -16253,22 +17056,22 @@ func (m *ScriptMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type StatusMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	state         *status.State
-	started_at    *time.Time
-	ended_at      *time.Time
-	failed        *bool
-	completed     *bool
-	error         *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*Status, error)
-	predicates    []predicate.Status
+	op                  Op
+	typ                 string
+	id                  *int
+	state               *status.State
+	started_at          *time.Time
+	ended_at            *time.Time
+	failed              *bool
+	completed           *bool
+	error               *string
+	clearedFields       map[string]struct{}
+	_StatusToTag        map[int]struct{}
+	removed_StatusToTag map[int]struct{}
+	cleared_StatusToTag bool
+	done                bool
+	oldValue            func(context.Context) (*Status, error)
+	predicates          []predicate.Status
 }
 
 var _ ent.Mutation = (*StatusMutation)(nil)
@@ -16572,57 +17375,57 @@ func (m *StatusMutation) ResetError() {
 	m.error = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *StatusMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddStatusToTagIDs adds the StatusToTag edge to Tag by ids.
+func (m *StatusMutation) AddStatusToTagIDs(ids ...int) {
+	if m._StatusToTag == nil {
+		m._StatusToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._StatusToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *StatusMutation) ClearTag() {
-	m.clearedtag = true
+// ClearStatusToTag clears the StatusToTag edge to Tag.
+func (m *StatusMutation) ClearStatusToTag() {
+	m.cleared_StatusToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *StatusMutation) TagCleared() bool {
-	return m.clearedtag
+// StatusToTagCleared returns if the edge StatusToTag was cleared.
+func (m *StatusMutation) StatusToTagCleared() bool {
+	return m.cleared_StatusToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *StatusMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveStatusToTagIDs removes the StatusToTag edge to Tag by ids.
+func (m *StatusMutation) RemoveStatusToTagIDs(ids ...int) {
+	if m.removed_StatusToTag == nil {
+		m.removed_StatusToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_StatusToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *StatusMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedStatusToTag returns the removed ids of StatusToTag.
+func (m *StatusMutation) RemovedStatusToTagIDs() (ids []int) {
+	for id := range m.removed_StatusToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *StatusMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// StatusToTagIDs returns the StatusToTag ids in the mutation.
+func (m *StatusMutation) StatusToTagIDs() (ids []int) {
+	for id := range m._StatusToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *StatusMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetStatusToTag reset all changes of the "StatusToTag" edge.
+func (m *StatusMutation) ResetStatusToTag() {
+	m._StatusToTag = nil
+	m.cleared_StatusToTag = false
+	m.removed_StatusToTag = nil
 }
 
 // Op returns the operation name.
@@ -16826,8 +17629,8 @@ func (m *StatusMutation) ResetField(name string) error {
 // mutation.
 func (m *StatusMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, status.EdgeTag)
+	if m._StatusToTag != nil {
+		edges = append(edges, status.EdgeStatusToTag)
 	}
 	return edges
 }
@@ -16836,9 +17639,9 @@ func (m *StatusMutation) AddedEdges() []string {
 // the given edge name.
 func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case status.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case status.EdgeStatusToTag:
+		ids := make([]ent.Value, 0, len(m._StatusToTag))
+		for id := range m._StatusToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16850,8 +17653,8 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *StatusMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, status.EdgeTag)
+	if m.removed_StatusToTag != nil {
+		edges = append(edges, status.EdgeStatusToTag)
 	}
 	return edges
 }
@@ -16860,9 +17663,9 @@ func (m *StatusMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case status.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case status.EdgeStatusToTag:
+		ids := make([]ent.Value, 0, len(m.removed_StatusToTag))
+		for id := range m.removed_StatusToTag {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16874,8 +17677,8 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *StatusMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, status.EdgeTag)
+	if m.cleared_StatusToTag {
+		edges = append(edges, status.EdgeStatusToTag)
 	}
 	return edges
 }
@@ -16884,8 +17687,8 @@ func (m *StatusMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *StatusMutation) EdgeCleared(name string) bool {
 	switch name {
-	case status.EdgeTag:
-		return m.clearedtag
+	case status.EdgeStatusToTag:
+		return m.cleared_StatusToTag
 	}
 	return false
 }
@@ -16903,8 +17706,8 @@ func (m *StatusMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *StatusMutation) ResetEdge(name string) error {
 	switch name {
-	case status.EdgeTag:
-		m.ResetTag()
+	case status.EdgeStatusToTag:
+		m.ResetStatusToTag()
 		return nil
 	}
 	return fmt.Errorf("unknown Status edge %s", name)
@@ -17318,33 +18121,33 @@ func (m *TagMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type TeamMutation struct {
 	config
-	op                          Op
-	typ                         string
-	id                          *int
-	team_number                 *int
-	addteam_number              *int
-	_config                     *map[string]string
-	revision                    *int64
-	addrevision                 *int64
-	clearedFields               map[string]struct{}
-	maintainer                  map[int]struct{}
-	removedmaintainer           map[int]struct{}
-	clearedmaintainer           bool
-	build                       map[int]struct{}
-	removedbuild                map[int]struct{}
-	clearedbuild                bool
-	_TeamToEnvironment          map[int]struct{}
-	removed_TeamToEnvironment   map[int]struct{}
-	cleared_TeamToEnvironment   bool
-	tag                         map[int]struct{}
-	removedtag                  map[int]struct{}
-	clearedtag                  bool
-	provisioned_networks        map[int]struct{}
-	removedprovisioned_networks map[int]struct{}
-	clearedprovisioned_networks bool
-	done                        bool
-	oldValue                    func(context.Context) (*Team, error)
-	predicates                  []predicate.Team
+	op                               Op
+	typ                              string
+	id                               *int
+	team_number                      *int
+	addteam_number                   *int
+	_config                          *map[string]string
+	revision                         *int64
+	addrevision                      *int64
+	clearedFields                    map[string]struct{}
+	_TeamToUser                      map[int]struct{}
+	removed_TeamToUser               map[int]struct{}
+	cleared_TeamToUser               bool
+	_TeamToBuild                     map[int]struct{}
+	removed_TeamToBuild              map[int]struct{}
+	cleared_TeamToBuild              bool
+	_TeamToEnvironment               map[int]struct{}
+	removed_TeamToEnvironment        map[int]struct{}
+	cleared_TeamToEnvironment        bool
+	_TeamToTag                       map[int]struct{}
+	removed_TeamToTag                map[int]struct{}
+	cleared_TeamToTag                bool
+	_TeamToProvisionedNetwork        map[int]struct{}
+	removed_TeamToProvisionedNetwork map[int]struct{}
+	cleared_TeamToProvisionedNetwork bool
+	done                             bool
+	oldValue                         func(context.Context) (*Team, error)
+	predicates                       []predicate.Team
 }
 
 var _ ent.Mutation = (*TeamMutation)(nil)
@@ -17577,110 +18380,110 @@ func (m *TeamMutation) ResetRevision() {
 	m.addrevision = nil
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (m *TeamMutation) AddMaintainerIDs(ids ...int) {
-	if m.maintainer == nil {
-		m.maintainer = make(map[int]struct{})
+// AddTeamToUserIDs adds the TeamToUser edge to User by ids.
+func (m *TeamMutation) AddTeamToUserIDs(ids ...int) {
+	if m._TeamToUser == nil {
+		m._TeamToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.maintainer[ids[i]] = struct{}{}
+		m._TeamToUser[ids[i]] = struct{}{}
 	}
 }
 
-// ClearMaintainer clears the maintainer edge to User.
-func (m *TeamMutation) ClearMaintainer() {
-	m.clearedmaintainer = true
+// ClearTeamToUser clears the TeamToUser edge to User.
+func (m *TeamMutation) ClearTeamToUser() {
+	m.cleared_TeamToUser = true
 }
 
-// MaintainerCleared returns if the edge maintainer was cleared.
-func (m *TeamMutation) MaintainerCleared() bool {
-	return m.clearedmaintainer
+// TeamToUserCleared returns if the edge TeamToUser was cleared.
+func (m *TeamMutation) TeamToUserCleared() bool {
+	return m.cleared_TeamToUser
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (m *TeamMutation) RemoveMaintainerIDs(ids ...int) {
-	if m.removedmaintainer == nil {
-		m.removedmaintainer = make(map[int]struct{})
+// RemoveTeamToUserIDs removes the TeamToUser edge to User by ids.
+func (m *TeamMutation) RemoveTeamToUserIDs(ids ...int) {
+	if m.removed_TeamToUser == nil {
+		m.removed_TeamToUser = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedmaintainer[ids[i]] = struct{}{}
+		m.removed_TeamToUser[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedMaintainer returns the removed ids of maintainer.
-func (m *TeamMutation) RemovedMaintainerIDs() (ids []int) {
-	for id := range m.removedmaintainer {
+// RemovedTeamToUser returns the removed ids of TeamToUser.
+func (m *TeamMutation) RemovedTeamToUserIDs() (ids []int) {
+	for id := range m.removed_TeamToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// MaintainerIDs returns the maintainer ids in the mutation.
-func (m *TeamMutation) MaintainerIDs() (ids []int) {
-	for id := range m.maintainer {
+// TeamToUserIDs returns the TeamToUser ids in the mutation.
+func (m *TeamMutation) TeamToUserIDs() (ids []int) {
+	for id := range m._TeamToUser {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetMaintainer reset all changes of the "maintainer" edge.
-func (m *TeamMutation) ResetMaintainer() {
-	m.maintainer = nil
-	m.clearedmaintainer = false
-	m.removedmaintainer = nil
+// ResetTeamToUser reset all changes of the "TeamToUser" edge.
+func (m *TeamMutation) ResetTeamToUser() {
+	m._TeamToUser = nil
+	m.cleared_TeamToUser = false
+	m.removed_TeamToUser = nil
 }
 
-// AddBuildIDs adds the build edge to Build by ids.
-func (m *TeamMutation) AddBuildIDs(ids ...int) {
-	if m.build == nil {
-		m.build = make(map[int]struct{})
+// AddTeamToBuildIDs adds the TeamToBuild edge to Build by ids.
+func (m *TeamMutation) AddTeamToBuildIDs(ids ...int) {
+	if m._TeamToBuild == nil {
+		m._TeamToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.build[ids[i]] = struct{}{}
+		m._TeamToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// ClearBuild clears the build edge to Build.
-func (m *TeamMutation) ClearBuild() {
-	m.clearedbuild = true
+// ClearTeamToBuild clears the TeamToBuild edge to Build.
+func (m *TeamMutation) ClearTeamToBuild() {
+	m.cleared_TeamToBuild = true
 }
 
-// BuildCleared returns if the edge build was cleared.
-func (m *TeamMutation) BuildCleared() bool {
-	return m.clearedbuild
+// TeamToBuildCleared returns if the edge TeamToBuild was cleared.
+func (m *TeamMutation) TeamToBuildCleared() bool {
+	return m.cleared_TeamToBuild
 }
 
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (m *TeamMutation) RemoveBuildIDs(ids ...int) {
-	if m.removedbuild == nil {
-		m.removedbuild = make(map[int]struct{})
+// RemoveTeamToBuildIDs removes the TeamToBuild edge to Build by ids.
+func (m *TeamMutation) RemoveTeamToBuildIDs(ids ...int) {
+	if m.removed_TeamToBuild == nil {
+		m.removed_TeamToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedbuild[ids[i]] = struct{}{}
+		m.removed_TeamToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedBuild returns the removed ids of build.
-func (m *TeamMutation) RemovedBuildIDs() (ids []int) {
-	for id := range m.removedbuild {
+// RemovedTeamToBuild returns the removed ids of TeamToBuild.
+func (m *TeamMutation) RemovedTeamToBuildIDs() (ids []int) {
+	for id := range m.removed_TeamToBuild {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// BuildIDs returns the build ids in the mutation.
-func (m *TeamMutation) BuildIDs() (ids []int) {
-	for id := range m.build {
+// TeamToBuildIDs returns the TeamToBuild ids in the mutation.
+func (m *TeamMutation) TeamToBuildIDs() (ids []int) {
+	for id := range m._TeamToBuild {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetBuild reset all changes of the "build" edge.
-func (m *TeamMutation) ResetBuild() {
-	m.build = nil
-	m.clearedbuild = false
-	m.removedbuild = nil
+// ResetTeamToBuild reset all changes of the "TeamToBuild" edge.
+func (m *TeamMutation) ResetTeamToBuild() {
+	m._TeamToBuild = nil
+	m.cleared_TeamToBuild = false
+	m.removed_TeamToBuild = nil
 }
 
 // AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
@@ -17736,110 +18539,110 @@ func (m *TeamMutation) ResetTeamToEnvironment() {
 	m.removed_TeamToEnvironment = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *TeamMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddTeamToTagIDs adds the TeamToTag edge to Tag by ids.
+func (m *TeamMutation) AddTeamToTagIDs(ids ...int) {
+	if m._TeamToTag == nil {
+		m._TeamToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._TeamToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *TeamMutation) ClearTag() {
-	m.clearedtag = true
+// ClearTeamToTag clears the TeamToTag edge to Tag.
+func (m *TeamMutation) ClearTeamToTag() {
+	m.cleared_TeamToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *TeamMutation) TagCleared() bool {
-	return m.clearedtag
+// TeamToTagCleared returns if the edge TeamToTag was cleared.
+func (m *TeamMutation) TeamToTagCleared() bool {
+	return m.cleared_TeamToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *TeamMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveTeamToTagIDs removes the TeamToTag edge to Tag by ids.
+func (m *TeamMutation) RemoveTeamToTagIDs(ids ...int) {
+	if m.removed_TeamToTag == nil {
+		m.removed_TeamToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_TeamToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *TeamMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedTeamToTag returns the removed ids of TeamToTag.
+func (m *TeamMutation) RemovedTeamToTagIDs() (ids []int) {
+	for id := range m.removed_TeamToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *TeamMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// TeamToTagIDs returns the TeamToTag ids in the mutation.
+func (m *TeamMutation) TeamToTagIDs() (ids []int) {
+	for id := range m._TeamToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *TeamMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetTeamToTag reset all changes of the "TeamToTag" edge.
+func (m *TeamMutation) ResetTeamToTag() {
+	m._TeamToTag = nil
+	m.cleared_TeamToTag = false
+	m.removed_TeamToTag = nil
 }
 
-// AddProvisionedNetworkIDs adds the provisioned_networks edge to ProvisionedNetwork by ids.
-func (m *TeamMutation) AddProvisionedNetworkIDs(ids ...int) {
-	if m.provisioned_networks == nil {
-		m.provisioned_networks = make(map[int]struct{})
+// AddTeamToProvisionedNetworkIDs adds the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *TeamMutation) AddTeamToProvisionedNetworkIDs(ids ...int) {
+	if m._TeamToProvisionedNetwork == nil {
+		m._TeamToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.provisioned_networks[ids[i]] = struct{}{}
+		m._TeamToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProvisionedNetworks clears the provisioned_networks edge to ProvisionedNetwork.
-func (m *TeamMutation) ClearProvisionedNetworks() {
-	m.clearedprovisioned_networks = true
+// ClearTeamToProvisionedNetwork clears the TeamToProvisionedNetwork edge to ProvisionedNetwork.
+func (m *TeamMutation) ClearTeamToProvisionedNetwork() {
+	m.cleared_TeamToProvisionedNetwork = true
 }
 
-// ProvisionedNetworksCleared returns if the edge provisioned_networks was cleared.
-func (m *TeamMutation) ProvisionedNetworksCleared() bool {
-	return m.clearedprovisioned_networks
+// TeamToProvisionedNetworkCleared returns if the edge TeamToProvisionedNetwork was cleared.
+func (m *TeamMutation) TeamToProvisionedNetworkCleared() bool {
+	return m.cleared_TeamToProvisionedNetwork
 }
 
-// RemoveProvisionedNetworkIDs removes the provisioned_networks edge to ProvisionedNetwork by ids.
-func (m *TeamMutation) RemoveProvisionedNetworkIDs(ids ...int) {
-	if m.removedprovisioned_networks == nil {
-		m.removedprovisioned_networks = make(map[int]struct{})
+// RemoveTeamToProvisionedNetworkIDs removes the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (m *TeamMutation) RemoveTeamToProvisionedNetworkIDs(ids ...int) {
+	if m.removed_TeamToProvisionedNetwork == nil {
+		m.removed_TeamToProvisionedNetwork = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedprovisioned_networks[ids[i]] = struct{}{}
+		m.removed_TeamToProvisionedNetwork[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProvisionedNetworks returns the removed ids of provisioned_networks.
-func (m *TeamMutation) RemovedProvisionedNetworksIDs() (ids []int) {
-	for id := range m.removedprovisioned_networks {
+// RemovedTeamToProvisionedNetwork returns the removed ids of TeamToProvisionedNetwork.
+func (m *TeamMutation) RemovedTeamToProvisionedNetworkIDs() (ids []int) {
+	for id := range m.removed_TeamToProvisionedNetwork {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProvisionedNetworksIDs returns the provisioned_networks ids in the mutation.
-func (m *TeamMutation) ProvisionedNetworksIDs() (ids []int) {
-	for id := range m.provisioned_networks {
+// TeamToProvisionedNetworkIDs returns the TeamToProvisionedNetwork ids in the mutation.
+func (m *TeamMutation) TeamToProvisionedNetworkIDs() (ids []int) {
+	for id := range m._TeamToProvisionedNetwork {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProvisionedNetworks reset all changes of the "provisioned_networks" edge.
-func (m *TeamMutation) ResetProvisionedNetworks() {
-	m.provisioned_networks = nil
-	m.clearedprovisioned_networks = false
-	m.removedprovisioned_networks = nil
+// ResetTeamToProvisionedNetwork reset all changes of the "TeamToProvisionedNetwork" edge.
+func (m *TeamMutation) ResetTeamToProvisionedNetwork() {
+	m._TeamToProvisionedNetwork = nil
+	m.cleared_TeamToProvisionedNetwork = false
+	m.removed_TeamToProvisionedNetwork = nil
 }
 
 // Op returns the operation name.
@@ -18019,20 +18822,20 @@ func (m *TeamMutation) ResetField(name string) error {
 // mutation.
 func (m *TeamMutation) AddedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.maintainer != nil {
-		edges = append(edges, team.EdgeMaintainer)
+	if m._TeamToUser != nil {
+		edges = append(edges, team.EdgeTeamToUser)
 	}
-	if m.build != nil {
-		edges = append(edges, team.EdgeBuild)
+	if m._TeamToBuild != nil {
+		edges = append(edges, team.EdgeTeamToBuild)
 	}
 	if m._TeamToEnvironment != nil {
 		edges = append(edges, team.EdgeTeamToEnvironment)
 	}
-	if m.tag != nil {
-		edges = append(edges, team.EdgeTag)
+	if m._TeamToTag != nil {
+		edges = append(edges, team.EdgeTeamToTag)
 	}
-	if m.provisioned_networks != nil {
-		edges = append(edges, team.EdgeProvisionedNetworks)
+	if m._TeamToProvisionedNetwork != nil {
+		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
 	}
 	return edges
 }
@@ -18041,15 +18844,15 @@ func (m *TeamMutation) AddedEdges() []string {
 // the given edge name.
 func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case team.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.maintainer))
-		for id := range m.maintainer {
+	case team.EdgeTeamToUser:
+		ids := make([]ent.Value, 0, len(m._TeamToUser))
+		for id := range m._TeamToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.build))
-		for id := range m.build {
+	case team.EdgeTeamToBuild:
+		ids := make([]ent.Value, 0, len(m._TeamToBuild))
+		for id := range m._TeamToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18059,15 +18862,15 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case team.EdgeTeamToTag:
+		ids := make([]ent.Value, 0, len(m._TeamToTag))
+		for id := range m._TeamToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeProvisionedNetworks:
-		ids := make([]ent.Value, 0, len(m.provisioned_networks))
-		for id := range m.provisioned_networks {
+	case team.EdgeTeamToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m._TeamToProvisionedNetwork))
+		for id := range m._TeamToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18079,20 +18882,20 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 // mutation.
 func (m *TeamMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.removedmaintainer != nil {
-		edges = append(edges, team.EdgeMaintainer)
+	if m.removed_TeamToUser != nil {
+		edges = append(edges, team.EdgeTeamToUser)
 	}
-	if m.removedbuild != nil {
-		edges = append(edges, team.EdgeBuild)
+	if m.removed_TeamToBuild != nil {
+		edges = append(edges, team.EdgeTeamToBuild)
 	}
 	if m.removed_TeamToEnvironment != nil {
 		edges = append(edges, team.EdgeTeamToEnvironment)
 	}
-	if m.removedtag != nil {
-		edges = append(edges, team.EdgeTag)
+	if m.removed_TeamToTag != nil {
+		edges = append(edges, team.EdgeTeamToTag)
 	}
-	if m.removedprovisioned_networks != nil {
-		edges = append(edges, team.EdgeProvisionedNetworks)
+	if m.removed_TeamToProvisionedNetwork != nil {
+		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
 	}
 	return edges
 }
@@ -18101,15 +18904,15 @@ func (m *TeamMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case team.EdgeMaintainer:
-		ids := make([]ent.Value, 0, len(m.removedmaintainer))
-		for id := range m.removedmaintainer {
+	case team.EdgeTeamToUser:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToUser))
+		for id := range m.removed_TeamToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeBuild:
-		ids := make([]ent.Value, 0, len(m.removedbuild))
-		for id := range m.removedbuild {
+	case team.EdgeTeamToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToBuild))
+		for id := range m.removed_TeamToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18119,15 +18922,15 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case team.EdgeTeamToTag:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToTag))
+		for id := range m.removed_TeamToTag {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeProvisionedNetworks:
-		ids := make([]ent.Value, 0, len(m.removedprovisioned_networks))
-		for id := range m.removedprovisioned_networks {
+	case team.EdgeTeamToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToProvisionedNetwork))
+		for id := range m.removed_TeamToProvisionedNetwork {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18139,20 +18942,20 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 // mutation.
 func (m *TeamMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.clearedmaintainer {
-		edges = append(edges, team.EdgeMaintainer)
+	if m.cleared_TeamToUser {
+		edges = append(edges, team.EdgeTeamToUser)
 	}
-	if m.clearedbuild {
-		edges = append(edges, team.EdgeBuild)
+	if m.cleared_TeamToBuild {
+		edges = append(edges, team.EdgeTeamToBuild)
 	}
 	if m.cleared_TeamToEnvironment {
 		edges = append(edges, team.EdgeTeamToEnvironment)
 	}
-	if m.clearedtag {
-		edges = append(edges, team.EdgeTag)
+	if m.cleared_TeamToTag {
+		edges = append(edges, team.EdgeTeamToTag)
 	}
-	if m.clearedprovisioned_networks {
-		edges = append(edges, team.EdgeProvisionedNetworks)
+	if m.cleared_TeamToProvisionedNetwork {
+		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
 	}
 	return edges
 }
@@ -18161,16 +18964,16 @@ func (m *TeamMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *TeamMutation) EdgeCleared(name string) bool {
 	switch name {
-	case team.EdgeMaintainer:
-		return m.clearedmaintainer
-	case team.EdgeBuild:
-		return m.clearedbuild
+	case team.EdgeTeamToUser:
+		return m.cleared_TeamToUser
+	case team.EdgeTeamToBuild:
+		return m.cleared_TeamToBuild
 	case team.EdgeTeamToEnvironment:
 		return m.cleared_TeamToEnvironment
-	case team.EdgeTag:
-		return m.clearedtag
-	case team.EdgeProvisionedNetworks:
-		return m.clearedprovisioned_networks
+	case team.EdgeTeamToTag:
+		return m.cleared_TeamToTag
+	case team.EdgeTeamToProvisionedNetwork:
+		return m.cleared_TeamToProvisionedNetwork
 	}
 	return false
 }
@@ -18188,20 +18991,20 @@ func (m *TeamMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *TeamMutation) ResetEdge(name string) error {
 	switch name {
-	case team.EdgeMaintainer:
-		m.ResetMaintainer()
+	case team.EdgeTeamToUser:
+		m.ResetTeamToUser()
 		return nil
-	case team.EdgeBuild:
-		m.ResetBuild()
+	case team.EdgeTeamToBuild:
+		m.ResetTeamToBuild()
 		return nil
 	case team.EdgeTeamToEnvironment:
 		m.ResetTeamToEnvironment()
 		return nil
-	case team.EdgeTag:
-		m.ResetTag()
+	case team.EdgeTeamToTag:
+		m.ResetTeamToTag()
 		return nil
-	case team.EdgeProvisionedNetworks:
-		m.ResetProvisionedNetworks()
+	case team.EdgeTeamToProvisionedNetwork:
+		m.ResetTeamToProvisionedNetwork()
 		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)
@@ -18211,19 +19014,22 @@ func (m *TeamMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	uuid          *string
-	email         *string
-	clearedFields map[string]struct{}
-	tag           map[int]struct{}
-	removedtag    map[int]struct{}
-	clearedtag    bool
-	done          bool
-	oldValue      func(context.Context) (*User, error)
-	predicates    []predicate.User
+	op                        Op
+	typ                       string
+	id                        *int
+	name                      *string
+	uuid                      *string
+	email                     *string
+	clearedFields             map[string]struct{}
+	_UserToTag                map[int]struct{}
+	removed_UserToTag         map[int]struct{}
+	cleared_UserToTag         bool
+	_UserToEnvironment        map[int]struct{}
+	removed_UserToEnvironment map[int]struct{}
+	cleared_UserToEnvironment bool
+	done                      bool
+	oldValue                  func(context.Context) (*User, error)
+	predicates                []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -18416,57 +19222,110 @@ func (m *UserMutation) ResetEmail() {
 	m.email = nil
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (m *UserMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
+// AddUserToTagIDs adds the UserToTag edge to Tag by ids.
+func (m *UserMutation) AddUserToTagIDs(ids ...int) {
+	if m._UserToTag == nil {
+		m._UserToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
+		m._UserToTag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTag clears the tag edge to Tag.
-func (m *UserMutation) ClearTag() {
-	m.clearedtag = true
+// ClearUserToTag clears the UserToTag edge to Tag.
+func (m *UserMutation) ClearUserToTag() {
+	m.cleared_UserToTag = true
 }
 
-// TagCleared returns if the edge tag was cleared.
-func (m *UserMutation) TagCleared() bool {
-	return m.clearedtag
+// UserToTagCleared returns if the edge UserToTag was cleared.
+func (m *UserMutation) UserToTagCleared() bool {
+	return m.cleared_UserToTag
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (m *UserMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
+// RemoveUserToTagIDs removes the UserToTag edge to Tag by ids.
+func (m *UserMutation) RemoveUserToTagIDs(ids ...int) {
+	if m.removed_UserToTag == nil {
+		m.removed_UserToTag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removedtag[ids[i]] = struct{}{}
+		m.removed_UserToTag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTag returns the removed ids of tag.
-func (m *UserMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
+// RemovedUserToTag returns the removed ids of UserToTag.
+func (m *UserMutation) RemovedUserToTagIDs() (ids []int) {
+	for id := range m.removed_UserToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagIDs returns the tag ids in the mutation.
-func (m *UserMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
+// UserToTagIDs returns the UserToTag ids in the mutation.
+func (m *UserMutation) UserToTagIDs() (ids []int) {
+	for id := range m._UserToTag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTag reset all changes of the "tag" edge.
-func (m *UserMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
+// ResetUserToTag reset all changes of the "UserToTag" edge.
+func (m *UserMutation) ResetUserToTag() {
+	m._UserToTag = nil
+	m.cleared_UserToTag = false
+	m.removed_UserToTag = nil
+}
+
+// AddUserToEnvironmentIDs adds the UserToEnvironment edge to Environment by ids.
+func (m *UserMutation) AddUserToEnvironmentIDs(ids ...int) {
+	if m._UserToEnvironment == nil {
+		m._UserToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._UserToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUserToEnvironment clears the UserToEnvironment edge to Environment.
+func (m *UserMutation) ClearUserToEnvironment() {
+	m.cleared_UserToEnvironment = true
+}
+
+// UserToEnvironmentCleared returns if the edge UserToEnvironment was cleared.
+func (m *UserMutation) UserToEnvironmentCleared() bool {
+	return m.cleared_UserToEnvironment
+}
+
+// RemoveUserToEnvironmentIDs removes the UserToEnvironment edge to Environment by ids.
+func (m *UserMutation) RemoveUserToEnvironmentIDs(ids ...int) {
+	if m.removed_UserToEnvironment == nil {
+		m.removed_UserToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_UserToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUserToEnvironment returns the removed ids of UserToEnvironment.
+func (m *UserMutation) RemovedUserToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_UserToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserToEnvironmentIDs returns the UserToEnvironment ids in the mutation.
+func (m *UserMutation) UserToEnvironmentIDs() (ids []int) {
+	for id := range m._UserToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUserToEnvironment reset all changes of the "UserToEnvironment" edge.
+func (m *UserMutation) ResetUserToEnvironment() {
+	m._UserToEnvironment = nil
+	m.cleared_UserToEnvironment = false
+	m.removed_UserToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -18618,9 +19477,12 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.tag != nil {
-		edges = append(edges, user.EdgeTag)
+	edges := make([]string, 0, 2)
+	if m._UserToTag != nil {
+		edges = append(edges, user.EdgeUserToTag)
+	}
+	if m._UserToEnvironment != nil {
+		edges = append(edges, user.EdgeUserToEnvironment)
 	}
 	return edges
 }
@@ -18629,9 +19491,15 @@ func (m *UserMutation) AddedEdges() []string {
 // the given edge name.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.tag))
-		for id := range m.tag {
+	case user.EdgeUserToTag:
+		ids := make([]ent.Value, 0, len(m._UserToTag))
+		for id := range m._UserToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeUserToEnvironment:
+		ids := make([]ent.Value, 0, len(m._UserToEnvironment))
+		for id := range m._UserToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18642,9 +19510,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedtag != nil {
-		edges = append(edges, user.EdgeTag)
+	edges := make([]string, 0, 2)
+	if m.removed_UserToTag != nil {
+		edges = append(edges, user.EdgeUserToTag)
+	}
+	if m.removed_UserToEnvironment != nil {
+		edges = append(edges, user.EdgeUserToEnvironment)
 	}
 	return edges
 }
@@ -18653,9 +19524,15 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeTag:
-		ids := make([]ent.Value, 0, len(m.removedtag))
-		for id := range m.removedtag {
+	case user.EdgeUserToTag:
+		ids := make([]ent.Value, 0, len(m.removed_UserToTag))
+		for id := range m.removed_UserToTag {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeUserToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_UserToEnvironment))
+		for id := range m.removed_UserToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18666,9 +19543,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtag {
-		edges = append(edges, user.EdgeTag)
+	edges := make([]string, 0, 2)
+	if m.cleared_UserToTag {
+		edges = append(edges, user.EdgeUserToTag)
+	}
+	if m.cleared_UserToEnvironment {
+		edges = append(edges, user.EdgeUserToEnvironment)
 	}
 	return edges
 }
@@ -18677,8 +19557,10 @@ func (m *UserMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
-	case user.EdgeTag:
-		return m.clearedtag
+	case user.EdgeUserToTag:
+		return m.cleared_UserToTag
+	case user.EdgeUserToEnvironment:
+		return m.cleared_UserToEnvironment
 	}
 	return false
 }
@@ -18696,8 +19578,11 @@ func (m *UserMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
-	case user.EdgeTag:
-		m.ResetTag()
+	case user.EdgeUserToTag:
+		m.ResetUserToTag()
+		return nil
+	case user.EdgeUserToEnvironment:
+		m.ResetUserToEnvironment()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

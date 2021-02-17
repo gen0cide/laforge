@@ -26,14 +26,14 @@ type Network struct {
 	Vars map[string]string `json:"vars,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NetworkQuery when eager-loading is set.
-	Edges                       NetworkEdges `json:"edges"`
-	provisioned_network_network *int
+	Edges                                              NetworkEdges `json:"edges"`
+	provisioned_network_provisioned_network_to_network *int
 }
 
 // NetworkEdges holds the relations/edges for other nodes in the graph.
 type NetworkEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// NetworkToTag holds the value of the NetworkToTag edge.
+	NetworkToTag []*Tag
 	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
 	NetworkToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
@@ -41,13 +41,13 @@ type NetworkEdges struct {
 	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// NetworkToTagOrErr returns the NetworkToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e NetworkEdges) TagOrErr() ([]*Tag, error) {
+func (e NetworkEdges) NetworkToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.NetworkToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "NetworkToTag"}
 }
 
 // NetworkToEnvironmentOrErr returns the NetworkToEnvironment value or an error if the edge
@@ -73,7 +73,7 @@ func (*Network) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Network) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioned_network_network
+		&sql.NullInt64{}, // provisioned_network_provisioned_network_to_network
 	}
 }
 
@@ -115,18 +115,18 @@ func (n *Network) assignValues(values ...interface{}) error {
 	values = values[4:]
 	if len(values) == len(network.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_network", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
 		} else if value.Valid {
-			n.provisioned_network_network = new(int)
-			*n.provisioned_network_network = int(value.Int64)
+			n.provisioned_network_provisioned_network_to_network = new(int)
+			*n.provisioned_network_provisioned_network_to_network = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Network.
-func (n *Network) QueryTag() *TagQuery {
-	return (&NetworkClient{config: n.config}).QueryTag(n)
+// QueryNetworkToTag queries the NetworkToTag edge of the Network.
+func (n *Network) QueryNetworkToTag() *TagQuery {
+	return (&NetworkClient{config: n.config}).QueryNetworkToTag(n)
 }
 
 // QueryNetworkToEnvironment queries the NetworkToEnvironment edge of the Network.

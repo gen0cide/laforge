@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -13,6 +14,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSQuery is the builder for querying DNS entities.
@@ -22,7 +24,9 @@ type DNSQuery struct {
 	offset     *int
 	order      []OrderFunc
 	predicates []predicate.DNS
-	withFKs    bool
+	// eager-loading edges.
+	withDNSToTag *TagQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -50,6 +54,28 @@ func (dq *DNSQuery) Offset(offset int) *DNSQuery {
 func (dq *DNSQuery) Order(o ...OrderFunc) *DNSQuery {
 	dq.order = append(dq.order, o...)
 	return dq
+}
+
+// QueryDNSToTag chains the current query on the DNSToTag edge.
+func (dq *DNSQuery) QueryDNSToTag() *TagQuery {
+	query := &TagQuery{config: dq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dns.Table, dns.FieldID, selector),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dns.DNSToTagTable, dns.DNSToTagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first DNS entity in the query. Returns *NotFoundError when no dns was found.
@@ -222,15 +248,27 @@ func (dq *DNSQuery) Clone() *DNSQuery {
 		return nil
 	}
 	return &DNSQuery{
-		config:     dq.config,
-		limit:      dq.limit,
-		offset:     dq.offset,
-		order:      append([]OrderFunc{}, dq.order...),
-		predicates: append([]predicate.DNS{}, dq.predicates...),
+		config:       dq.config,
+		limit:        dq.limit,
+		offset:       dq.offset,
+		order:        append([]OrderFunc{}, dq.order...),
+		predicates:   append([]predicate.DNS{}, dq.predicates...),
+		withDNSToTag: dq.withDNSToTag.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
+}
+
+//  WithDNSToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "DNSToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (dq *DNSQuery) WithDNSToTag(opts ...func(*TagQuery)) *DNSQuery {
+	query := &TagQuery{config: dq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withDNSToTag = query
+	return dq
 }
 
 // GroupBy used to group vertices by one or more fields/columns.
@@ -297,9 +335,12 @@ func (dq *DNSQuery) prepareQuery(ctx context.Context) error {
 
 func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 	var (
-		nodes   = []*DNS{}
-		withFKs = dq.withFKs
-		_spec   = dq.querySpec()
+		nodes       = []*DNS{}
+		withFKs     = dq.withFKs
+		_spec       = dq.querySpec()
+		loadedTypes = [1]bool{
+			dq.withDNSToTag != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, dns.ForeignKeys...)
@@ -318,6 +359,7 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(values...)
 	}
 	if err := sqlgraph.QueryNodes(ctx, dq.driver, _spec); err != nil {
@@ -326,6 +368,36 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := dq.withDNSToTag; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*DNS)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.DNSToTag = []*Tag{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Tag(func(s *sql.Selector) {
+			s.Where(sql.InValues(dns.DNSToTagColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.dns_dns_to_tag
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "dns_dns_to_tag" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "dns_dns_to_tag" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.DNSToTag = append(node.Edges.DNSToTag, n)
+		}
+	}
+
 	return nodes, nil
 }
 

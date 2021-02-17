@@ -14,18 +14,18 @@ const (
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeFileExtractToTag holds the string denoting the fileextracttotag edge name in mutations.
+	EdgeFileExtractToTag = "FileExtractToTag"
 
 	// Table holds the table name of the fileextract in the database.
 	Table = "file_extracts"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// FileExtractToTagTable is the table the holds the FileExtractToTag relation/edge.
+	FileExtractToTagTable = "tags"
+	// FileExtractToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "file_extract_tag"
+	FileExtractToTagInverseTable = "tags"
+	// FileExtractToTagColumn is the table column denoting the FileExtractToTag relation/edge.
+	FileExtractToTagColumn = "file_extract_file_extract_to_tag"
 )
 
 // Columns holds all SQL columns for fileextract fields.

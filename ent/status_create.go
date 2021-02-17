@@ -57,19 +57,19 @@ func (sc *StatusCreate) SetError(s string) *StatusCreate {
 	return sc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (sc *StatusCreate) AddTagIDs(ids ...int) *StatusCreate {
-	sc.mutation.AddTagIDs(ids...)
+// AddStatusToTagIDs adds the StatusToTag edge to Tag by ids.
+func (sc *StatusCreate) AddStatusToTagIDs(ids ...int) *StatusCreate {
+	sc.mutation.AddStatusToTagIDs(ids...)
 	return sc
 }
 
-// AddTag adds the tag edges to Tag.
-func (sc *StatusCreate) AddTag(t ...*Tag) *StatusCreate {
+// AddStatusToTag adds the StatusToTag edges to Tag.
+func (sc *StatusCreate) AddStatusToTag(t ...*Tag) *StatusCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return sc.AddTagIDs(ids...)
+	return sc.AddStatusToTagIDs(ids...)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -221,12 +221,12 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 		})
 		_node.Error = value
 	}
-	if nodes := sc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.StatusToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   status.TagTable,
-			Columns: []string{status.TagColumn},
+			Table:   status.StatusToTagTable,
+			Columns: []string{status.StatusToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

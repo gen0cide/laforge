@@ -25,8 +25,8 @@ type StatusQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Status
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withStatusToTag *TagQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,8 +56,8 @@ func (sq *StatusQuery) Order(o ...OrderFunc) *StatusQuery {
 	return sq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (sq *StatusQuery) QueryTag() *TagQuery {
+// QueryStatusToTag chains the current query on the StatusToTag edge.
+func (sq *StatusQuery) QueryStatusToTag() *TagQuery {
 	query := &TagQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
@@ -70,7 +70,7 @@ func (sq *StatusQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, status.TagTable, status.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, status.StatusToTagTable, status.StatusToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -248,26 +248,26 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		return nil
 	}
 	return &StatusQuery{
-		config:     sq.config,
-		limit:      sq.limit,
-		offset:     sq.offset,
-		order:      append([]OrderFunc{}, sq.order...),
-		predicates: append([]predicate.Status{}, sq.predicates...),
-		withTag:    sq.withTag.Clone(),
+		config:          sq.config,
+		limit:           sq.limit,
+		offset:          sq.offset,
+		order:           append([]OrderFunc{}, sq.order...),
+		predicates:      append([]predicate.Status{}, sq.predicates...),
+		withStatusToTag: sq.withStatusToTag.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (sq *StatusQuery) WithTag(opts ...func(*TagQuery)) *StatusQuery {
+//  WithStatusToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "StatusToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToTag(opts ...func(*TagQuery)) *StatusQuery {
 	query := &TagQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withTag = query
+	sq.withStatusToTag = query
 	return sq
 }
 
@@ -339,7 +339,7 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [1]bool{
-			sq.withTag != nil,
+			sq.withStatusToTag != nil,
 		}
 	)
 	if withFKs {
@@ -369,32 +369,32 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		return nodes, nil
 	}
 
-	if query := sq.withTag; query != nil {
+	if query := sq.withStatusToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Status)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.StatusToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(status.TagColumn, fks...))
+			s.Where(sql.InValues(status.StatusToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.status_tag
+			fk := n.status_status_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "status_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "status_status_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "status_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "status_status_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.StatusToTag = append(node.Edges.StatusToTag, n)
 		}
 	}
 

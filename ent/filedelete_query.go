@@ -25,7 +25,7 @@ type FileDeleteQuery struct {
 	order      []OrderFunc
 	predicates []predicate.FileDelete
 	// eager-loading edges.
-	withTag *TagQuery
+	withFileDeleteToTag *TagQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,8 +55,8 @@ func (fdq *FileDeleteQuery) Order(o ...OrderFunc) *FileDeleteQuery {
 	return fdq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fdq *FileDeleteQuery) QueryTag() *TagQuery {
+// QueryFileDeleteToTag chains the current query on the FileDeleteToTag edge.
+func (fdq *FileDeleteQuery) QueryFileDeleteToTag() *TagQuery {
 	query := &TagQuery{config: fdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fdq.prepareQuery(ctx); err != nil {
@@ -69,7 +69,7 @@ func (fdq *FileDeleteQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedelete.Table, filedelete.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.TagTable, filedelete.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.FileDeleteToTagTable, filedelete.FileDeleteToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -247,26 +247,26 @@ func (fdq *FileDeleteQuery) Clone() *FileDeleteQuery {
 		return nil
 	}
 	return &FileDeleteQuery{
-		config:     fdq.config,
-		limit:      fdq.limit,
-		offset:     fdq.offset,
-		order:      append([]OrderFunc{}, fdq.order...),
-		predicates: append([]predicate.FileDelete{}, fdq.predicates...),
-		withTag:    fdq.withTag.Clone(),
+		config:              fdq.config,
+		limit:               fdq.limit,
+		offset:              fdq.offset,
+		order:               append([]OrderFunc{}, fdq.order...),
+		predicates:          append([]predicate.FileDelete{}, fdq.predicates...),
+		withFileDeleteToTag: fdq.withFileDeleteToTag.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fdq *FileDeleteQuery) WithTag(opts ...func(*TagQuery)) *FileDeleteQuery {
+//  WithFileDeleteToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "FileDeleteToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (fdq *FileDeleteQuery) WithFileDeleteToTag(opts ...func(*TagQuery)) *FileDeleteQuery {
 	query := &TagQuery{config: fdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fdq.withTag = query
+	fdq.withFileDeleteToTag = query
 	return fdq
 }
 
@@ -337,7 +337,7 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 		nodes       = []*FileDelete{}
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
-			fdq.withTag != nil,
+			fdq.withFileDeleteToTag != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -361,32 +361,32 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 		return nodes, nil
 	}
 
-	if query := fdq.withTag; query != nil {
+	if query := fdq.withFileDeleteToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*FileDelete)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FileDeleteToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(filedelete.TagColumn, fks...))
+			s.Where(sql.InValues(filedelete.FileDeleteToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.file_delete_tag
+			fk := n.file_delete_file_delete_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_delete_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "file_delete_file_delete_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_delete_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "file_delete_file_delete_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FileDeleteToTag = append(node.Edges.FileDeleteToTag, n)
 		}
 	}
 

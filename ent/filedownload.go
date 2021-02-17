@@ -38,20 +38,20 @@ type FileDownload struct {
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
 type FileDownloadEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
+	FileDownloadToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FileDownloadToTagOrErr returns the FileDownloadToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FileDownloadEdges) TagOrErr() ([]*Tag, error) {
+func (e FileDownloadEdges) FileDownloadToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.FileDownloadToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FileDownloadToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -124,9 +124,9 @@ func (fd *FileDownload) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryTag queries the tag edge of the FileDownload.
-func (fd *FileDownload) QueryTag() *TagQuery {
-	return (&FileDownloadClient{config: fd.config}).QueryTag(fd)
+// QueryFileDownloadToTag queries the FileDownloadToTag edge of the FileDownload.
+func (fd *FileDownload) QueryFileDownloadToTag() *TagQuery {
+	return (&FileDownloadClient{config: fd.config}).QueryFileDownloadToTag(fd)
 }
 
 // Update returns a builder for updating this FileDownload.

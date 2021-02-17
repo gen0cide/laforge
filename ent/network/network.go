@@ -16,20 +16,20 @@ const (
 	// FieldVars holds the string denoting the vars field in the database.
 	FieldVars = "vars"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeNetworkToTag holds the string denoting the networktotag edge name in mutations.
+	EdgeNetworkToTag = "NetworkToTag"
 	// EdgeNetworkToEnvironment holds the string denoting the networktoenvironment edge name in mutations.
 	EdgeNetworkToEnvironment = "NetworkToEnvironment"
 
 	// Table holds the table name of the network in the database.
 	Table = "networks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// NetworkToTagTable is the table the holds the NetworkToTag relation/edge.
+	NetworkToTagTable = "tags"
+	// NetworkToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "network_tag"
+	NetworkToTagInverseTable = "tags"
+	// NetworkToTagColumn is the table column denoting the NetworkToTag relation/edge.
+	NetworkToTagColumn = "network_network_to_tag"
 	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge. The primary key declared below.
 	NetworkToEnvironmentTable = "network_NetworkToEnvironment"
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
@@ -48,7 +48,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Network type.
 var ForeignKeys = []string{
-	"provisioned_network_network",
+	"provisioned_network_provisioned_network_to_network",
 }
 
 var (

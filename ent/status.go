@@ -30,28 +30,28 @@ type Status struct {
 	Error string `json:"error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StatusQuery when eager-loading is set.
-	Edges                      StatusEdges `json:"edges"`
-	provisioned_host_status    *int
-	provisioned_network_status *int
-	provisioning_step_status   *int
+	Edges                                             StatusEdges `json:"edges"`
+	provisioned_host_provisioned_host_to_status       *int
+	provisioned_network_provisioned_network_to_status *int
+	provisioning_step_provisioning_step_to_status     *int
 }
 
 // StatusEdges holds the relations/edges for other nodes in the graph.
 type StatusEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// StatusToTag holds the value of the StatusToTag edge.
+	StatusToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// StatusToTagOrErr returns the StatusToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e StatusEdges) TagOrErr() ([]*Tag, error) {
+func (e StatusEdges) StatusToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.StatusToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "StatusToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -70,9 +70,9 @@ func (*Status) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Status) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioned_host_status
-		&sql.NullInt64{}, // provisioned_network_status
-		&sql.NullInt64{}, // provisioning_step_status
+		&sql.NullInt64{}, // provisioned_host_provisioned_host_to_status
+		&sql.NullInt64{}, // provisioned_network_provisioned_network_to_status
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_status
 	}
 }
 
@@ -121,30 +121,30 @@ func (s *Status) assignValues(values ...interface{}) error {
 	values = values[6:]
 	if len(values) == len(status.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_status", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_status", value)
 		} else if value.Valid {
-			s.provisioned_host_status = new(int)
-			*s.provisioned_host_status = int(value.Int64)
+			s.provisioned_host_provisioned_host_to_status = new(int)
+			*s.provisioned_host_provisioned_host_to_status = int(value.Int64)
 		}
 		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_status", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_status", value)
 		} else if value.Valid {
-			s.provisioned_network_status = new(int)
-			*s.provisioned_network_status = int(value.Int64)
+			s.provisioned_network_provisioned_network_to_status = new(int)
+			*s.provisioned_network_provisioned_network_to_status = int(value.Int64)
 		}
 		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_status", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_status", value)
 		} else if value.Valid {
-			s.provisioning_step_status = new(int)
-			*s.provisioning_step_status = int(value.Int64)
+			s.provisioning_step_provisioning_step_to_status = new(int)
+			*s.provisioning_step_provisioning_step_to_status = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Status.
-func (s *Status) QueryTag() *TagQuery {
-	return (&StatusClient{config: s.config}).QueryTag(s)
+// QueryStatusToTag queries the StatusToTag edge of the Status.
+func (s *Status) QueryStatusToTag() *TagQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToTag(s)
 }
 
 // Update returns a builder for updating this Status.

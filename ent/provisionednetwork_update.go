@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -43,49 +44,64 @@ func (pnu *ProvisionedNetworkUpdate) SetCidr(s string) *ProvisionedNetworkUpdate
 	return pnu
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (pnu *ProvisionedNetworkUpdate) AddStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddStatuIDs(ids...)
+// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnu
 }
 
-// AddStatus adds the status edges to Status.
-func (pnu *ProvisionedNetworkUpdate) AddStatus(s ...*Status) *ProvisionedNetworkUpdate {
+// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pnu.AddProvisionedNetworkToTagIDs(ids...)
+}
+
+// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.AddProvisionedNetworkToStatuIDs(ids...)
+	return pnu
+}
+
+// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return pnu.AddStatuIDs(ids...)
+	return pnu.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddNetworkIDs adds the network edge to Network by ids.
-func (pnu *ProvisionedNetworkUpdate) AddNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddNetworkIDs(ids...)
+// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnu
 }
 
-// AddNetwork adds the network edges to Network.
-func (pnu *ProvisionedNetworkUpdate) AddNetwork(n ...*Network) *ProvisionedNetworkUpdate {
+// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return pnu.AddNetworkIDs(ids...)
+	return pnu.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddBuildIDs adds the build edge to Build by ids.
-func (pnu *ProvisionedNetworkUpdate) AddBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddBuildIDs(ids...)
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnu
 }
 
-// AddBuild adds the build edges to Build.
-func (pnu *ProvisionedNetworkUpdate) AddBuild(b ...*Build) *ProvisionedNetworkUpdate {
+// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return pnu.AddBuildIDs(ids...)
+	return pnu.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
 // AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
@@ -103,19 +119,19 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTeam(t ...*Team) *Pr
 	return pnu.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedHostIDs adds the provisioned_hosts edge to ProvisionedHost by ids.
-func (pnu *ProvisionedNetworkUpdate) AddProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddProvisionedHostIDs(ids...)
+// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedHosts adds the provisioned_hosts edges to ProvisionedHost.
-func (pnu *ProvisionedNetworkUpdate) AddProvisionedHosts(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
+// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pnu.AddProvisionedHostIDs(ids...)
+	return pnu.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -123,67 +139,88 @@ func (pnu *ProvisionedNetworkUpdate) Mutation() *ProvisionedNetworkMutation {
 	return pnu.mutation
 }
 
-// ClearStatus clears all "status" edges to type Status.
-func (pnu *ProvisionedNetworkUpdate) ClearStatus() *ProvisionedNetworkUpdate {
-	pnu.mutation.ClearStatus()
+// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to type Tag.
+func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToTag() *ProvisionedNetworkUpdate {
+	pnu.mutation.ClearProvisionedNetworkToTag()
 	return pnu
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (pnu *ProvisionedNetworkUpdate) RemoveStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveStatuIDs(ids...)
+// RemoveProvisionedNetworkToTagIDs removes the ProvisionedNetworkToTag edge to Tag by ids.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.RemoveProvisionedNetworkToTagIDs(ids...)
 	return pnu
 }
 
-// RemoveStatus removes status edges to Status.
-func (pnu *ProvisionedNetworkUpdate) RemoveStatus(s ...*Status) *ProvisionedNetworkUpdate {
+// RemoveProvisionedNetworkToTag removes ProvisionedNetworkToTag edges to Tag.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pnu.RemoveProvisionedNetworkToTagIDs(ids...)
+}
+
+// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to type Status.
+func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToStatus() *ProvisionedNetworkUpdate {
+	pnu.mutation.ClearProvisionedNetworkToStatus()
+	return pnu
+}
+
+// RemoveProvisionedNetworkToStatuIDs removes the ProvisionedNetworkToStatus edge to Status by ids.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.RemoveProvisionedNetworkToStatuIDs(ids...)
+	return pnu
+}
+
+// RemoveProvisionedNetworkToStatus removes ProvisionedNetworkToStatus edges to Status.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return pnu.RemoveStatuIDs(ids...)
+	return pnu.RemoveProvisionedNetworkToStatuIDs(ids...)
 }
 
-// ClearNetwork clears all "network" edges to type Network.
-func (pnu *ProvisionedNetworkUpdate) ClearNetwork() *ProvisionedNetworkUpdate {
-	pnu.mutation.ClearNetwork()
+// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to type Network.
+func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToNetwork() *ProvisionedNetworkUpdate {
+	pnu.mutation.ClearProvisionedNetworkToNetwork()
 	return pnu
 }
 
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (pnu *ProvisionedNetworkUpdate) RemoveNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveNetworkIDs(ids...)
+// RemoveProvisionedNetworkToNetworkIDs removes the ProvisionedNetworkToNetwork edge to Network by ids.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.RemoveProvisionedNetworkToNetworkIDs(ids...)
 	return pnu
 }
 
-// RemoveNetwork removes network edges to Network.
-func (pnu *ProvisionedNetworkUpdate) RemoveNetwork(n ...*Network) *ProvisionedNetworkUpdate {
+// RemoveProvisionedNetworkToNetwork removes ProvisionedNetworkToNetwork edges to Network.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return pnu.RemoveNetworkIDs(ids...)
+	return pnu.RemoveProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// ClearBuild clears all "build" edges to type Build.
-func (pnu *ProvisionedNetworkUpdate) ClearBuild() *ProvisionedNetworkUpdate {
-	pnu.mutation.ClearBuild()
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type Build.
+func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToBuild() *ProvisionedNetworkUpdate {
+	pnu.mutation.ClearProvisionedNetworkToBuild()
 	return pnu
 }
 
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (pnu *ProvisionedNetworkUpdate) RemoveBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveBuildIDs(ids...)
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to Build by ids.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
 	return pnu
 }
 
-// RemoveBuild removes build edges to Build.
-func (pnu *ProvisionedNetworkUpdate) RemoveBuild(b ...*Build) *ProvisionedNetworkUpdate {
+// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to Build.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return pnu.RemoveBuildIDs(ids...)
+	return pnu.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
 // ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to type Team.
@@ -207,25 +244,25 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTeam(t ...*Team) 
 	return pnu.RemoveProvisionedNetworkToTeamIDs(ids...)
 }
 
-// ClearProvisionedHosts clears all "provisioned_hosts" edges to type ProvisionedHost.
-func (pnu *ProvisionedNetworkUpdate) ClearProvisionedHosts() *ProvisionedNetworkUpdate {
-	pnu.mutation.ClearProvisionedHosts()
+// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to type ProvisionedHost.
+func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToProvisionedHost() *ProvisionedNetworkUpdate {
+	pnu.mutation.ClearProvisionedNetworkToProvisionedHost()
 	return pnu
 }
 
-// RemoveProvisionedHostIDs removes the provisioned_hosts edge to ProvisionedHost by ids.
-func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveProvisionedHostIDs(ids...)
+// RemoveProvisionedNetworkToProvisionedHostIDs removes the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
+	pnu.mutation.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedHosts removes provisioned_hosts edges to ProvisionedHost.
-func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedHosts(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
+// RemoveProvisionedNetworkToProvisionedHost removes ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pnu.RemoveProvisionedHostIDs(ids...)
+	return pnu.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -311,12 +348,66 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 			Column: provisionednetwork.FieldCidr,
 		})
 	}
-	if pnu.mutation.StatusCleared() {
+	if pnu.mutation.ProvisionedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pnu.mutation.RemovedProvisionedNetworkToTagIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToTagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pnu.mutation.ProvisionedNetworkToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pnu.mutation.ProvisionedNetworkToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -327,12 +418,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.RemovedStatusIDs(); len(nodes) > 0 && !pnu.mutation.StatusCleared() {
+	if nodes := pnu.mutation.RemovedProvisionedNetworkToStatusIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -346,12 +437,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.StatusIDs(); len(nodes) > 0 {
+	if nodes := pnu.mutation.ProvisionedNetworkToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -365,12 +456,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnu.mutation.NetworkCleared() {
+	if pnu.mutation.ProvisionedNetworkToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -381,12 +472,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !pnu.mutation.NetworkCleared() {
+	if nodes := pnu.mutation.RemovedProvisionedNetworkToNetworkIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -400,12 +491,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.NetworkIDs(); len(nodes) > 0 {
+	if nodes := pnu.mutation.ProvisionedNetworkToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -419,12 +510,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnu.mutation.BuildCleared() {
+	if pnu.mutation.ProvisionedNetworkToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -435,12 +526,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.RemovedBuildIDs(); len(nodes) > 0 && !pnu.mutation.BuildCleared() {
+	if nodes := pnu.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -454,12 +545,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.BuildIDs(); len(nodes) > 0 {
+	if nodes := pnu.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -527,12 +618,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnu.mutation.ProvisionedHostsCleared() {
+	if pnu.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -543,12 +634,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.RemovedProvisionedHostsIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedHostsCleared() {
+	if nodes := pnu.mutation.RemovedProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -562,12 +653,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnu.mutation.ProvisionedHostsIDs(); len(nodes) > 0 {
+	if nodes := pnu.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -611,49 +702,64 @@ func (pnuo *ProvisionedNetworkUpdateOne) SetCidr(s string) *ProvisionedNetworkUp
 	return pnuo
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) AddStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddStatuIDs(ids...)
+// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnuo
 }
 
-// AddStatus adds the status edges to Status.
-func (pnuo *ProvisionedNetworkUpdateOne) AddStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
+// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pnuo.AddProvisionedNetworkToTagIDs(ids...)
+}
+
+// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.AddProvisionedNetworkToStatuIDs(ids...)
+	return pnuo
+}
+
+// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return pnuo.AddStatuIDs(ids...)
+	return pnuo.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddNetworkIDs adds the network edge to Network by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) AddNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddNetworkIDs(ids...)
+// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnuo
 }
 
-// AddNetwork adds the network edges to Network.
-func (pnuo *ProvisionedNetworkUpdateOne) AddNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
+// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return pnuo.AddNetworkIDs(ids...)
+	return pnuo.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddBuildIDs adds the build edge to Build by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) AddBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddBuildIDs(ids...)
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnuo
 }
 
-// AddBuild adds the build edges to Build.
-func (pnuo *ProvisionedNetworkUpdateOne) AddBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
+// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return pnuo.AddBuildIDs(ids...)
+	return pnuo.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
 // AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
@@ -671,19 +777,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTeam(t ...*Team)
 	return pnuo.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedHostIDs adds the provisioned_hosts edge to ProvisionedHost by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddProvisionedHostIDs(ids...)
+// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedHosts adds the provisioned_hosts edges to ProvisionedHost.
-func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedHosts(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
+// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pnuo.AddProvisionedHostIDs(ids...)
+	return pnuo.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -691,67 +797,88 @@ func (pnuo *ProvisionedNetworkUpdateOne) Mutation() *ProvisionedNetworkMutation 
 	return pnuo.mutation
 }
 
-// ClearStatus clears all "status" edges to type Status.
-func (pnuo *ProvisionedNetworkUpdateOne) ClearStatus() *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.ClearStatus()
+// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to type Tag.
+func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToTag() *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.ClearProvisionedNetworkToTag()
 	return pnuo
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveStatuIDs(ids...)
+// RemoveProvisionedNetworkToTagIDs removes the ProvisionedNetworkToTag edge to Tag by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.RemoveProvisionedNetworkToTagIDs(ids...)
 	return pnuo
 }
 
-// RemoveStatus removes status edges to Status.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
+// RemoveProvisionedNetworkToTag removes ProvisionedNetworkToTag edges to Tag.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pnuo.RemoveProvisionedNetworkToTagIDs(ids...)
+}
+
+// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to type Status.
+func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToStatus() *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.ClearProvisionedNetworkToStatus()
+	return pnuo
+}
+
+// RemoveProvisionedNetworkToStatuIDs removes the ProvisionedNetworkToStatus edge to Status by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.RemoveProvisionedNetworkToStatuIDs(ids...)
+	return pnuo
+}
+
+// RemoveProvisionedNetworkToStatus removes ProvisionedNetworkToStatus edges to Status.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return pnuo.RemoveStatuIDs(ids...)
+	return pnuo.RemoveProvisionedNetworkToStatuIDs(ids...)
 }
 
-// ClearNetwork clears all "network" edges to type Network.
-func (pnuo *ProvisionedNetworkUpdateOne) ClearNetwork() *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.ClearNetwork()
+// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to type Network.
+func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToNetwork() *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.ClearProvisionedNetworkToNetwork()
 	return pnuo
 }
 
-// RemoveNetworkIDs removes the network edge to Network by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveNetworkIDs(ids...)
+// RemoveProvisionedNetworkToNetworkIDs removes the ProvisionedNetworkToNetwork edge to Network by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.RemoveProvisionedNetworkToNetworkIDs(ids...)
 	return pnuo
 }
 
-// RemoveNetwork removes network edges to Network.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
+// RemoveProvisionedNetworkToNetwork removes ProvisionedNetworkToNetwork edges to Network.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return pnuo.RemoveNetworkIDs(ids...)
+	return pnuo.RemoveProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// ClearBuild clears all "build" edges to type Build.
-func (pnuo *ProvisionedNetworkUpdateOne) ClearBuild() *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.ClearBuild()
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type Build.
+func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToBuild() *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.ClearProvisionedNetworkToBuild()
 	return pnuo
 }
 
-// RemoveBuildIDs removes the build edge to Build by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveBuildIDs(ids...)
+// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to Build by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
 	return pnuo
 }
 
-// RemoveBuild removes build edges to Build.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
+// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to Build.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return pnuo.RemoveBuildIDs(ids...)
+	return pnuo.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
 // ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to type Team.
@@ -775,25 +902,25 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTeam(t ...*Te
 	return pnuo.RemoveProvisionedNetworkToTeamIDs(ids...)
 }
 
-// ClearProvisionedHosts clears all "provisioned_hosts" edges to type ProvisionedHost.
-func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedHosts() *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.ClearProvisionedHosts()
+// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to type ProvisionedHost.
+func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToProvisionedHost() *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.ClearProvisionedNetworkToProvisionedHost()
 	return pnuo
 }
 
-// RemoveProvisionedHostIDs removes the provisioned_hosts edge to ProvisionedHost by ids.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveProvisionedHostIDs(ids...)
+// RemoveProvisionedNetworkToProvisionedHostIDs removes the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedHosts removes provisioned_hosts edges to ProvisionedHost.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedHosts(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
+// RemoveProvisionedNetworkToProvisionedHost removes ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pnuo.RemoveProvisionedHostIDs(ids...)
+	return pnuo.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -877,12 +1004,66 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 			Column: provisionednetwork.FieldCidr,
 		})
 	}
-	if pnuo.mutation.StatusCleared() {
+	if pnuo.mutation.ProvisionedNetworkToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pnuo.mutation.RemovedProvisionedNetworkToTagIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToTagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pnuo.mutation.ProvisionedNetworkToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pnuo.mutation.ProvisionedNetworkToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -893,12 +1074,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.RemovedStatusIDs(); len(nodes) > 0 && !pnuo.mutation.StatusCleared() {
+	if nodes := pnuo.mutation.RemovedProvisionedNetworkToStatusIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -912,12 +1093,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.StatusIDs(); len(nodes) > 0 {
+	if nodes := pnuo.mutation.ProvisionedNetworkToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -931,12 +1112,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnuo.mutation.NetworkCleared() {
+	if pnuo.mutation.ProvisionedNetworkToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -947,12 +1128,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.RemovedNetworkIDs(); len(nodes) > 0 && !pnuo.mutation.NetworkCleared() {
+	if nodes := pnuo.mutation.RemovedProvisionedNetworkToNetworkIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -966,12 +1147,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.NetworkIDs(); len(nodes) > 0 {
+	if nodes := pnuo.mutation.ProvisionedNetworkToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -985,12 +1166,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnuo.mutation.BuildCleared() {
+	if pnuo.mutation.ProvisionedNetworkToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1001,12 +1182,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.RemovedBuildIDs(); len(nodes) > 0 && !pnuo.mutation.BuildCleared() {
+	if nodes := pnuo.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1020,12 +1201,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.BuildIDs(); len(nodes) > 0 {
+	if nodes := pnuo.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1093,12 +1274,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pnuo.mutation.ProvisionedHostsCleared() {
+	if pnuo.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1109,12 +1290,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.RemovedProvisionedHostsIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedHostsCleared() {
+	if nodes := pnuo.mutation.RemovedProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1128,12 +1309,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pnuo.mutation.ProvisionedHostsIDs(); len(nodes) > 0 {
+	if nodes := pnuo.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

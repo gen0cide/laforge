@@ -25,8 +25,8 @@ type RemoteFileQuery struct {
 	order      []OrderFunc
 	predicates []predicate.RemoteFile
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withRemoteFileToTag *TagQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,8 +56,8 @@ func (rfq *RemoteFileQuery) Order(o ...OrderFunc) *RemoteFileQuery {
 	return rfq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (rfq *RemoteFileQuery) QueryTag() *TagQuery {
+// QueryRemoteFileToTag chains the current query on the RemoteFileToTag edge.
+func (rfq *RemoteFileQuery) QueryRemoteFileToTag() *TagQuery {
 	query := &TagQuery{config: rfq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := rfq.prepareQuery(ctx); err != nil {
@@ -70,7 +70,7 @@ func (rfq *RemoteFileQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(remotefile.Table, remotefile.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, remotefile.TagTable, remotefile.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, remotefile.RemoteFileToTagTable, remotefile.RemoteFileToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rfq.driver.Dialect(), step)
 		return fromU, nil
@@ -248,26 +248,26 @@ func (rfq *RemoteFileQuery) Clone() *RemoteFileQuery {
 		return nil
 	}
 	return &RemoteFileQuery{
-		config:     rfq.config,
-		limit:      rfq.limit,
-		offset:     rfq.offset,
-		order:      append([]OrderFunc{}, rfq.order...),
-		predicates: append([]predicate.RemoteFile{}, rfq.predicates...),
-		withTag:    rfq.withTag.Clone(),
+		config:              rfq.config,
+		limit:               rfq.limit,
+		offset:              rfq.offset,
+		order:               append([]OrderFunc{}, rfq.order...),
+		predicates:          append([]predicate.RemoteFile{}, rfq.predicates...),
+		withRemoteFileToTag: rfq.withRemoteFileToTag.Clone(),
 		// clone intermediate query.
 		sql:  rfq.sql.Clone(),
 		path: rfq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (rfq *RemoteFileQuery) WithTag(opts ...func(*TagQuery)) *RemoteFileQuery {
+//  WithRemoteFileToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "RemoteFileToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (rfq *RemoteFileQuery) WithRemoteFileToTag(opts ...func(*TagQuery)) *RemoteFileQuery {
 	query := &TagQuery{config: rfq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	rfq.withTag = query
+	rfq.withRemoteFileToTag = query
 	return rfq
 }
 
@@ -339,7 +339,7 @@ func (rfq *RemoteFileQuery) sqlAll(ctx context.Context) ([]*RemoteFile, error) {
 		withFKs     = rfq.withFKs
 		_spec       = rfq.querySpec()
 		loadedTypes = [1]bool{
-			rfq.withTag != nil,
+			rfq.withRemoteFileToTag != nil,
 		}
 	)
 	if withFKs {
@@ -369,32 +369,32 @@ func (rfq *RemoteFileQuery) sqlAll(ctx context.Context) ([]*RemoteFile, error) {
 		return nodes, nil
 	}
 
-	if query := rfq.withTag; query != nil {
+	if query := rfq.withRemoteFileToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*RemoteFile)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.RemoteFileToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(remotefile.TagColumn, fks...))
+			s.Where(sql.InValues(remotefile.RemoteFileToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.remote_file_tag
+			fk := n.remote_file_remote_file_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "remote_file_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "remote_file_remote_file_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "remote_file_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "remote_file_remote_file_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.RemoteFileToTag = append(node.Edges.RemoteFileToTag, n)
 		}
 	}
 

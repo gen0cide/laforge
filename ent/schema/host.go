@@ -38,6 +38,6 @@ func (Host) Edges() []ent.Edge {
 		edge.To("HostToDisk", Disk.Type),
 		edge.To("HostToUser", User.Type),
 		edge.To("HostToTag", Tag.Type),
-		edge.From("HostToEnvironment", Host.Type).Ref("EnvironmentToHost"),
+		edge.From("HostToEnvironment", Environment.Type).Ref("EnvironmentToHost"),
 	}
 }

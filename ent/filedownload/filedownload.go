@@ -24,18 +24,18 @@ const (
 	// FieldAbsPath holds the string denoting the abs_path field in the database.
 	FieldAbsPath = "abs_path"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeFileDownloadToTag holds the string denoting the filedownloadtotag edge name in mutations.
+	EdgeFileDownloadToTag = "FileDownloadToTag"
 
 	// Table holds the table name of the filedownload in the database.
 	Table = "file_downloads"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// FileDownloadToTagTable is the table the holds the FileDownloadToTag relation/edge.
+	FileDownloadToTagTable = "tags"
+	// FileDownloadToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "file_download_tag"
+	FileDownloadToTagInverseTable = "tags"
+	// FileDownloadToTagColumn is the table column denoting the FileDownloadToTag relation/edge.
+	FileDownloadToTagColumn = "file_download_file_download_to_tag"
 )
 
 // Columns holds all SQL columns for filedownload fields.

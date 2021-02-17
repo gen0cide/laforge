@@ -36,16 +36,25 @@ const (
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
 
-	// EdgeHost holds the string denoting the host edge name in mutations.
-	EdgeHost = "host"
+	// EdgeAgentStatusToTag holds the string denoting the agentstatustotag edge name in mutations.
+	EdgeAgentStatusToTag = "AgentStatusToTag"
+	// EdgeAgentStatusToProvisionedHost holds the string denoting the agentstatustoprovisionedhost edge name in mutations.
+	EdgeAgentStatusToProvisionedHost = "AgentStatusToProvisionedHost"
 
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// HostTable is the table the holds the host relation/edge. The primary key declared below.
-	HostTable = "agent_status_host"
-	// HostInverseTable is the table name for the ProvisionedHost entity.
+	// AgentStatusToTagTable is the table the holds the AgentStatusToTag relation/edge.
+	AgentStatusToTagTable = "tags"
+	// AgentStatusToTagInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	AgentStatusToTagInverseTable = "tags"
+	// AgentStatusToTagColumn is the table column denoting the AgentStatusToTag relation/edge.
+	AgentStatusToTagColumn = "agent_status_agent_status_to_tag"
+	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge. The primary key declared below.
+	AgentStatusToProvisionedHostTable = "agent_status_AgentStatusToProvisionedHost"
+	// AgentStatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
-	HostInverseTable = "provisioned_hosts"
+	AgentStatusToProvisionedHostInverseTable = "provisioned_hosts"
 )
 
 // Columns holds all SQL columns for agentstatus fields.
@@ -68,9 +77,9 @@ var Columns = []string{
 }
 
 var (
-	// HostPrimaryKey and HostColumn2 are the table columns denoting the
-	// primary key for the host relation (M2M).
-	HostPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
+	// AgentStatusToProvisionedHostPrimaryKey and AgentStatusToProvisionedHostColumn2 are the table columns denoting the
+	// primary key for the AgentStatusToProvisionedHost relation (M2M).
+	AgentStatusToProvisionedHostPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

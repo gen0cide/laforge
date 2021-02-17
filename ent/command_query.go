@@ -26,9 +26,9 @@ type CommandQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Command
 	// eager-loading edges.
-	withUser *UserQuery
-	withTag  *TagQuery
-	withFKs  bool
+	withCommandToUser *UserQuery
+	withCommandToTag  *TagQuery
+	withFKs           bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,8 +58,8 @@ func (cq *CommandQuery) Order(o ...OrderFunc) *CommandQuery {
 	return cq
 }
 
-// QueryUser chains the current query on the user edge.
-func (cq *CommandQuery) QueryUser() *UserQuery {
+// QueryCommandToUser chains the current query on the CommandToUser edge.
+func (cq *CommandQuery) QueryCommandToUser() *UserQuery {
 	query := &UserQuery{config: cq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
@@ -72,7 +72,7 @@ func (cq *CommandQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.UserTable, command.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToUserTable, command.CommandToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -80,8 +80,8 @@ func (cq *CommandQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (cq *CommandQuery) QueryTag() *TagQuery {
+// QueryCommandToTag chains the current query on the CommandToTag edge.
+func (cq *CommandQuery) QueryCommandToTag() *TagQuery {
 	query := &TagQuery{config: cq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
@@ -94,7 +94,7 @@ func (cq *CommandQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.TagTable, command.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToTagTable, command.CommandToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,38 +272,38 @@ func (cq *CommandQuery) Clone() *CommandQuery {
 		return nil
 	}
 	return &CommandQuery{
-		config:     cq.config,
-		limit:      cq.limit,
-		offset:     cq.offset,
-		order:      append([]OrderFunc{}, cq.order...),
-		predicates: append([]predicate.Command{}, cq.predicates...),
-		withUser:   cq.withUser.Clone(),
-		withTag:    cq.withTag.Clone(),
+		config:            cq.config,
+		limit:             cq.limit,
+		offset:            cq.offset,
+		order:             append([]OrderFunc{}, cq.order...),
+		predicates:        append([]predicate.Command{}, cq.predicates...),
+		withCommandToUser: cq.withCommandToUser.Clone(),
+		withCommandToTag:  cq.withCommandToTag.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
 	}
 }
 
-//  WithUser tells the query-builder to eager-loads the nodes that are connected to
-// the "user" edge. The optional arguments used to configure the query builder of the edge.
-func (cq *CommandQuery) WithUser(opts ...func(*UserQuery)) *CommandQuery {
+//  WithCommandToUser tells the query-builder to eager-loads the nodes that are connected to
+// the "CommandToUser" edge. The optional arguments used to configure the query builder of the edge.
+func (cq *CommandQuery) WithCommandToUser(opts ...func(*UserQuery)) *CommandQuery {
 	query := &UserQuery{config: cq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withUser = query
+	cq.withCommandToUser = query
 	return cq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (cq *CommandQuery) WithTag(opts ...func(*TagQuery)) *CommandQuery {
+//  WithCommandToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "CommandToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (cq *CommandQuery) WithCommandToTag(opts ...func(*TagQuery)) *CommandQuery {
 	query := &TagQuery{config: cq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withTag = query
+	cq.withCommandToTag = query
 	return cq
 }
 
@@ -313,7 +313,7 @@ func (cq *CommandQuery) WithTag(opts ...func(*TagQuery)) *CommandQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -339,7 +339,7 @@ func (cq *CommandQuery) GroupBy(field string, fields ...string) *CommandGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Command.Query().
@@ -375,8 +375,8 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
 		loadedTypes = [2]bool{
-			cq.withUser != nil,
-			cq.withTag != nil,
+			cq.withCommandToUser != nil,
+			cq.withCommandToTag != nil,
 		}
 	)
 	if withFKs {
@@ -406,61 +406,61 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 		return nodes, nil
 	}
 
-	if query := cq.withUser; query != nil {
+	if query := cq.withCommandToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Command)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
+			nodes[i].Edges.CommandToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(command.UserColumn, fks...))
+			s.Where(sql.InValues(command.CommandToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.command_user
+			fk := n.command_command_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "command_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "command_command_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "command_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "command_command_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.User = append(node.Edges.User, n)
+			node.Edges.CommandToUser = append(node.Edges.CommandToUser, n)
 		}
 	}
 
-	if query := cq.withTag; query != nil {
+	if query := cq.withCommandToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Command)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.CommandToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(command.TagColumn, fks...))
+			s.Where(sql.InValues(command.CommandToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.command_tag
+			fk := n.command_command_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "command_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "command_command_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "command_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "command_command_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.CommandToTag = append(node.Edges.CommandToTag, n)
 		}
 	}
 

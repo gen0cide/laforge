@@ -30,53 +30,53 @@ type Finding struct {
 
 // FindingEdges holds the relations/edges for other nodes in the graph.
 type FindingEdges struct {
-	// User holds the value of the user edge.
-	User []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// Host holds the value of the host edge.
-	Host []*Host
-	// Script holds the value of the script edge.
-	Script []*Script
+	// FindingToUser holds the value of the FindingToUser edge.
+	FindingToUser []*User
+	// FindingToTag holds the value of the FindingToTag edge.
+	FindingToTag []*Tag
+	// FindingToHost holds the value of the FindingToHost edge.
+	FindingToHost []*Host
+	// FindingToScript holds the value of the FindingToScript edge.
+	FindingToScript []*Script
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
 }
 
-// UserOrErr returns the User value or an error if the edge
+// FindingToUserOrErr returns the FindingToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) UserOrErr() ([]*User, error) {
+func (e FindingEdges) FindingToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.User, nil
+		return e.FindingToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "FindingToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FindingToTagOrErr returns the FindingToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) TagOrErr() ([]*Tag, error) {
+func (e FindingEdges) FindingToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[1] {
-		return e.Tag, nil
+		return e.FindingToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FindingToTag"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// FindingToHostOrErr returns the FindingToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) HostOrErr() ([]*Host, error) {
+func (e FindingEdges) FindingToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.FindingToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "FindingToHost"}
 }
 
-// ScriptOrErr returns the Script value or an error if the edge
+// FindingToScriptOrErr returns the FindingToScript value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) ScriptOrErr() ([]*Script, error) {
+func (e FindingEdges) FindingToScriptOrErr() ([]*Script, error) {
 	if e.loadedTypes[3] {
-		return e.Script, nil
+		return e.FindingToScript, nil
 	}
-	return nil, &NotLoadedError{edge: "script"}
+	return nil, &NotLoadedError{edge: "FindingToScript"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -125,24 +125,24 @@ func (f *Finding) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryUser queries the user edge of the Finding.
-func (f *Finding) QueryUser() *UserQuery {
-	return (&FindingClient{config: f.config}).QueryUser(f)
+// QueryFindingToUser queries the FindingToUser edge of the Finding.
+func (f *Finding) QueryFindingToUser() *UserQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToUser(f)
 }
 
-// QueryTag queries the tag edge of the Finding.
-func (f *Finding) QueryTag() *TagQuery {
-	return (&FindingClient{config: f.config}).QueryTag(f)
+// QueryFindingToTag queries the FindingToTag edge of the Finding.
+func (f *Finding) QueryFindingToTag() *TagQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToTag(f)
 }
 
-// QueryHost queries the host edge of the Finding.
-func (f *Finding) QueryHost() *HostQuery {
-	return (&FindingClient{config: f.config}).QueryHost(f)
+// QueryFindingToHost queries the FindingToHost edge of the Finding.
+func (f *Finding) QueryFindingToHost() *HostQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToHost(f)
 }
 
-// QueryScript queries the script edge of the Finding.
-func (f *Finding) QueryScript() *ScriptQuery {
-	return (&FindingClient{config: f.config}).QueryScript(f)
+// QueryFindingToScript queries the FindingToScript edge of the Finding.
+func (f *Finding) QueryFindingToScript() *ScriptQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToScript(f)
 }
 
 // Update returns a builder for updating this Finding.

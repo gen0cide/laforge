@@ -10,6 +10,7 @@ import (
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -49,64 +50,79 @@ func (bu *BuildUpdate) SetConfig(m map[string]string) *BuildUpdate {
 	return bu
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (bu *BuildUpdate) AddMaintainerIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddMaintainerIDs(ids...)
+// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+func (bu *BuildUpdate) AddBuildToUserIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddBuildToUserIDs(ids...)
 	return bu
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (bu *BuildUpdate) AddMaintainer(u ...*User) *BuildUpdate {
+// AddBuildToUser adds the BuildToUser edges to User.
+func (bu *BuildUpdate) AddBuildToUser(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bu.AddMaintainerIDs(ids...)
+	return bu.AddBuildToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (bu *BuildUpdate) AddTagIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddTagIDs(ids...)
+// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+func (bu *BuildUpdate) AddBuildToTagIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddBuildToTagIDs(ids...)
 	return bu
 }
 
-// AddTag adds the tag edges to Tag.
-func (bu *BuildUpdate) AddTag(t ...*Tag) *BuildUpdate {
+// AddBuildToTag adds the BuildToTag edges to Tag.
+func (bu *BuildUpdate) AddBuildToTag(t ...*Tag) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return bu.AddTagIDs(ids...)
+	return bu.AddBuildToTagIDs(ids...)
 }
 
-// AddTeamIDs adds the team edge to Team by ids.
-func (bu *BuildUpdate) AddTeamIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddTeamIDs(ids...)
+// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (bu *BuildUpdate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
-// AddTeam adds the team edges to Team.
-func (bu *BuildUpdate) AddTeam(t ...*Team) *BuildUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return bu.AddTeamIDs(ids...)
-}
-
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (bu *BuildUpdate) AddProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddProvisionedNetworkToBuildIDs(ids...)
-	return bu
-}
-
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to ProvisionedNetwork.
-func (bu *BuildUpdate) AddProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdate {
+// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+func (bu *BuildUpdate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return bu.AddProvisionedNetworkToBuildIDs(ids...)
+	return bu.AddBuildToProvisionedNetworkIDs(ids...)
+}
+
+// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+func (bu *BuildUpdate) AddBuildToTeamIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddBuildToTeamIDs(ids...)
+	return bu
+}
+
+// AddBuildToTeam adds the BuildToTeam edges to Team.
+func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return bu.AddBuildToTeamIDs(ids...)
+}
+
+// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+func (bu *BuildUpdate) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
+	bu.mutation.AddBuildToEnvironmentIDs(ids...)
+	return bu
+}
+
+// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+func (bu *BuildUpdate) AddBuildToEnvironment(e ...*Environment) *BuildUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return bu.AddBuildToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the BuildMutation object of the builder.
@@ -114,88 +130,109 @@ func (bu *BuildUpdate) Mutation() *BuildMutation {
 	return bu.mutation
 }
 
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (bu *BuildUpdate) ClearMaintainer() *BuildUpdate {
-	bu.mutation.ClearMaintainer()
+// ClearBuildToUser clears all "BuildToUser" edges to type User.
+func (bu *BuildUpdate) ClearBuildToUser() *BuildUpdate {
+	bu.mutation.ClearBuildToUser()
 	return bu
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (bu *BuildUpdate) RemoveMaintainerIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveMaintainerIDs(ids...)
+// RemoveBuildToUserIDs removes the BuildToUser edge to User by ids.
+func (bu *BuildUpdate) RemoveBuildToUserIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveBuildToUserIDs(ids...)
 	return bu
 }
 
-// RemoveMaintainer removes maintainer edges to User.
-func (bu *BuildUpdate) RemoveMaintainer(u ...*User) *BuildUpdate {
+// RemoveBuildToUser removes BuildToUser edges to User.
+func (bu *BuildUpdate) RemoveBuildToUser(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return bu.RemoveMaintainerIDs(ids...)
+	return bu.RemoveBuildToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (bu *BuildUpdate) ClearTag() *BuildUpdate {
-	bu.mutation.ClearTag()
+// ClearBuildToTag clears all "BuildToTag" edges to type Tag.
+func (bu *BuildUpdate) ClearBuildToTag() *BuildUpdate {
+	bu.mutation.ClearBuildToTag()
 	return bu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (bu *BuildUpdate) RemoveTagIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveTagIDs(ids...)
+// RemoveBuildToTagIDs removes the BuildToTag edge to Tag by ids.
+func (bu *BuildUpdate) RemoveBuildToTagIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveBuildToTagIDs(ids...)
 	return bu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (bu *BuildUpdate) RemoveTag(t ...*Tag) *BuildUpdate {
+// RemoveBuildToTag removes BuildToTag edges to Tag.
+func (bu *BuildUpdate) RemoveBuildToTag(t ...*Tag) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return bu.RemoveTagIDs(ids...)
+	return bu.RemoveBuildToTagIDs(ids...)
 }
 
-// ClearTeam clears all "team" edges to type Team.
-func (bu *BuildUpdate) ClearTeam() *BuildUpdate {
-	bu.mutation.ClearTeam()
+// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to type ProvisionedNetwork.
+func (bu *BuildUpdate) ClearBuildToProvisionedNetwork() *BuildUpdate {
+	bu.mutation.ClearBuildToProvisionedNetwork()
 	return bu
 }
 
-// RemoveTeamIDs removes the team edge to Team by ids.
-func (bu *BuildUpdate) RemoveTeamIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveTeamIDs(ids...)
+// RemoveBuildToProvisionedNetworkIDs removes the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (bu *BuildUpdate) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
-// RemoveTeam removes team edges to Team.
-func (bu *BuildUpdate) RemoveTeam(t ...*Team) *BuildUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return bu.RemoveTeamIDs(ids...)
-}
-
-// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type ProvisionedNetwork.
-func (bu *BuildUpdate) ClearProvisionedNetworkToBuild() *BuildUpdate {
-	bu.mutation.ClearProvisionedNetworkToBuild()
-	return bu
-}
-
-// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (bu *BuildUpdate) RemoveProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
-	return bu
-}
-
-// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to ProvisionedNetwork.
-func (bu *BuildUpdate) RemoveProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdate {
+// RemoveBuildToProvisionedNetwork removes BuildToProvisionedNetwork edges to ProvisionedNetwork.
+func (bu *BuildUpdate) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return bu.RemoveProvisionedNetworkToBuildIDs(ids...)
+	return bu.RemoveBuildToProvisionedNetworkIDs(ids...)
+}
+
+// ClearBuildToTeam clears all "BuildToTeam" edges to type Team.
+func (bu *BuildUpdate) ClearBuildToTeam() *BuildUpdate {
+	bu.mutation.ClearBuildToTeam()
+	return bu
+}
+
+// RemoveBuildToTeamIDs removes the BuildToTeam edge to Team by ids.
+func (bu *BuildUpdate) RemoveBuildToTeamIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveBuildToTeamIDs(ids...)
+	return bu
+}
+
+// RemoveBuildToTeam removes BuildToTeam edges to Team.
+func (bu *BuildUpdate) RemoveBuildToTeam(t ...*Team) *BuildUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return bu.RemoveBuildToTeamIDs(ids...)
+}
+
+// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to type Environment.
+func (bu *BuildUpdate) ClearBuildToEnvironment() *BuildUpdate {
+	bu.mutation.ClearBuildToEnvironment()
+	return bu
+}
+
+// RemoveBuildToEnvironmentIDs removes the BuildToEnvironment edge to Environment by ids.
+func (bu *BuildUpdate) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
+	bu.mutation.RemoveBuildToEnvironmentIDs(ids...)
+	return bu
+}
+
+// RemoveBuildToEnvironment removes BuildToEnvironment edges to Environment.
+func (bu *BuildUpdate) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return bu.RemoveBuildToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -288,12 +325,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: build.FieldConfig,
 		})
 	}
-	if bu.mutation.MaintainerCleared() {
+	if bu.mutation.BuildToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -304,12 +341,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !bu.mutation.MaintainerCleared() {
+	if nodes := bu.mutation.RemovedBuildToUserIDs(); len(nodes) > 0 && !bu.mutation.BuildToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -323,12 +360,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -342,12 +379,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.TagCleared() {
+	if bu.mutation.BuildToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -358,12 +395,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedTagIDs(); len(nodes) > 0 && !bu.mutation.TagCleared() {
+	if nodes := bu.mutation.RemovedBuildToTagIDs(); len(nodes) > 0 && !bu.mutation.BuildToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -377,12 +414,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -396,12 +433,66 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.TeamCleared() {
+	if bu.mutation.BuildToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedBuildToProvisionedNetworkIDs(); len(nodes) > 0 && !bu.mutation.BuildToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -412,12 +503,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedTeamIDs(); len(nodes) > 0 && !bu.mutation.TeamCleared() {
+	if nodes := bu.mutation.RemovedBuildToTeamIDs(); len(nodes) > 0 && !bu.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -431,12 +522,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -450,33 +541,33 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.ProvisionedNetworkToBuildCleared() {
+	if bu.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !bu.mutation.ProvisionedNetworkToBuildCleared() {
+	if nodes := bu.mutation.RemovedBuildToEnvironmentIDs(); len(nodes) > 0 && !bu.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -485,17 +576,17 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -541,64 +632,79 @@ func (buo *BuildUpdateOne) SetConfig(m map[string]string) *BuildUpdateOne {
 	return buo
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (buo *BuildUpdateOne) AddMaintainerIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddMaintainerIDs(ids...)
+// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+func (buo *BuildUpdateOne) AddBuildToUserIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddBuildToUserIDs(ids...)
 	return buo
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (buo *BuildUpdateOne) AddMaintainer(u ...*User) *BuildUpdateOne {
+// AddBuildToUser adds the BuildToUser edges to User.
+func (buo *BuildUpdateOne) AddBuildToUser(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return buo.AddMaintainerIDs(ids...)
+	return buo.AddBuildToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (buo *BuildUpdateOne) AddTagIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddTagIDs(ids...)
+// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+func (buo *BuildUpdateOne) AddBuildToTagIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddBuildToTagIDs(ids...)
 	return buo
 }
 
-// AddTag adds the tag edges to Tag.
-func (buo *BuildUpdateOne) AddTag(t ...*Tag) *BuildUpdateOne {
+// AddBuildToTag adds the BuildToTag edges to Tag.
+func (buo *BuildUpdateOne) AddBuildToTag(t ...*Tag) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return buo.AddTagIDs(ids...)
+	return buo.AddBuildToTagIDs(ids...)
 }
 
-// AddTeamIDs adds the team edge to Team by ids.
-func (buo *BuildUpdateOne) AddTeamIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddTeamIDs(ids...)
+// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (buo *BuildUpdateOne) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
-// AddTeam adds the team edges to Team.
-func (buo *BuildUpdateOne) AddTeam(t ...*Team) *BuildUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return buo.AddTeamIDs(ids...)
-}
-
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (buo *BuildUpdateOne) AddProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddProvisionedNetworkToBuildIDs(ids...)
-	return buo
-}
-
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to ProvisionedNetwork.
-func (buo *BuildUpdateOne) AddProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdateOne {
+// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+func (buo *BuildUpdateOne) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return buo.AddProvisionedNetworkToBuildIDs(ids...)
+	return buo.AddBuildToProvisionedNetworkIDs(ids...)
+}
+
+// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+func (buo *BuildUpdateOne) AddBuildToTeamIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddBuildToTeamIDs(ids...)
+	return buo
+}
+
+// AddBuildToTeam adds the BuildToTeam edges to Team.
+func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return buo.AddBuildToTeamIDs(ids...)
+}
+
+// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+func (buo *BuildUpdateOne) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.AddBuildToEnvironmentIDs(ids...)
+	return buo
+}
+
+// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+func (buo *BuildUpdateOne) AddBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return buo.AddBuildToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the BuildMutation object of the builder.
@@ -606,88 +712,109 @@ func (buo *BuildUpdateOne) Mutation() *BuildMutation {
 	return buo.mutation
 }
 
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (buo *BuildUpdateOne) ClearMaintainer() *BuildUpdateOne {
-	buo.mutation.ClearMaintainer()
+// ClearBuildToUser clears all "BuildToUser" edges to type User.
+func (buo *BuildUpdateOne) ClearBuildToUser() *BuildUpdateOne {
+	buo.mutation.ClearBuildToUser()
 	return buo
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (buo *BuildUpdateOne) RemoveMaintainerIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveMaintainerIDs(ids...)
+// RemoveBuildToUserIDs removes the BuildToUser edge to User by ids.
+func (buo *BuildUpdateOne) RemoveBuildToUserIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToUserIDs(ids...)
 	return buo
 }
 
-// RemoveMaintainer removes maintainer edges to User.
-func (buo *BuildUpdateOne) RemoveMaintainer(u ...*User) *BuildUpdateOne {
+// RemoveBuildToUser removes BuildToUser edges to User.
+func (buo *BuildUpdateOne) RemoveBuildToUser(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return buo.RemoveMaintainerIDs(ids...)
+	return buo.RemoveBuildToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (buo *BuildUpdateOne) ClearTag() *BuildUpdateOne {
-	buo.mutation.ClearTag()
+// ClearBuildToTag clears all "BuildToTag" edges to type Tag.
+func (buo *BuildUpdateOne) ClearBuildToTag() *BuildUpdateOne {
+	buo.mutation.ClearBuildToTag()
 	return buo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (buo *BuildUpdateOne) RemoveTagIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveTagIDs(ids...)
+// RemoveBuildToTagIDs removes the BuildToTag edge to Tag by ids.
+func (buo *BuildUpdateOne) RemoveBuildToTagIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToTagIDs(ids...)
 	return buo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (buo *BuildUpdateOne) RemoveTag(t ...*Tag) *BuildUpdateOne {
+// RemoveBuildToTag removes BuildToTag edges to Tag.
+func (buo *BuildUpdateOne) RemoveBuildToTag(t ...*Tag) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return buo.RemoveTagIDs(ids...)
+	return buo.RemoveBuildToTagIDs(ids...)
 }
 
-// ClearTeam clears all "team" edges to type Team.
-func (buo *BuildUpdateOne) ClearTeam() *BuildUpdateOne {
-	buo.mutation.ClearTeam()
+// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to type ProvisionedNetwork.
+func (buo *BuildUpdateOne) ClearBuildToProvisionedNetwork() *BuildUpdateOne {
+	buo.mutation.ClearBuildToProvisionedNetwork()
 	return buo
 }
 
-// RemoveTeamIDs removes the team edge to Team by ids.
-func (buo *BuildUpdateOne) RemoveTeamIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveTeamIDs(ids...)
+// RemoveBuildToProvisionedNetworkIDs removes the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
-// RemoveTeam removes team edges to Team.
-func (buo *BuildUpdateOne) RemoveTeam(t ...*Team) *BuildUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return buo.RemoveTeamIDs(ids...)
-}
-
-// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type ProvisionedNetwork.
-func (buo *BuildUpdateOne) ClearProvisionedNetworkToBuild() *BuildUpdateOne {
-	buo.mutation.ClearProvisionedNetworkToBuild()
-	return buo
-}
-
-// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to ProvisionedNetwork by ids.
-func (buo *BuildUpdateOne) RemoveProvisionedNetworkToBuildIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
-	return buo
-}
-
-// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to ProvisionedNetwork.
-func (buo *BuildUpdateOne) RemoveProvisionedNetworkToBuild(p ...*ProvisionedNetwork) *BuildUpdateOne {
+// RemoveBuildToProvisionedNetwork removes BuildToProvisionedNetwork edges to ProvisionedNetwork.
+func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return buo.RemoveProvisionedNetworkToBuildIDs(ids...)
+	return buo.RemoveBuildToProvisionedNetworkIDs(ids...)
+}
+
+// ClearBuildToTeam clears all "BuildToTeam" edges to type Team.
+func (buo *BuildUpdateOne) ClearBuildToTeam() *BuildUpdateOne {
+	buo.mutation.ClearBuildToTeam()
+	return buo
+}
+
+// RemoveBuildToTeamIDs removes the BuildToTeam edge to Team by ids.
+func (buo *BuildUpdateOne) RemoveBuildToTeamIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToTeamIDs(ids...)
+	return buo
+}
+
+// RemoveBuildToTeam removes BuildToTeam edges to Team.
+func (buo *BuildUpdateOne) RemoveBuildToTeam(t ...*Team) *BuildUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return buo.RemoveBuildToTeamIDs(ids...)
+}
+
+// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to type Environment.
+func (buo *BuildUpdateOne) ClearBuildToEnvironment() *BuildUpdateOne {
+	buo.mutation.ClearBuildToEnvironment()
+	return buo
+}
+
+// RemoveBuildToEnvironmentIDs removes the BuildToEnvironment edge to Environment by ids.
+func (buo *BuildUpdateOne) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToEnvironmentIDs(ids...)
+	return buo
+}
+
+// RemoveBuildToEnvironment removes BuildToEnvironment edges to Environment.
+func (buo *BuildUpdateOne) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return buo.RemoveBuildToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -778,12 +905,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Column: build.FieldConfig,
 		})
 	}
-	if buo.mutation.MaintainerCleared() {
+	if buo.mutation.BuildToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -794,12 +921,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !buo.mutation.MaintainerCleared() {
+	if nodes := buo.mutation.RemovedBuildToUserIDs(); len(nodes) > 0 && !buo.mutation.BuildToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -813,12 +940,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.MaintainerTable,
-			Columns: []string{build.MaintainerColumn},
+			Table:   build.BuildToUserTable,
+			Columns: []string{build.BuildToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -832,12 +959,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.TagCleared() {
+	if buo.mutation.BuildToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -848,12 +975,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedTagIDs(); len(nodes) > 0 && !buo.mutation.TagCleared() {
+	if nodes := buo.mutation.RemovedBuildToTagIDs(); len(nodes) > 0 && !buo.mutation.BuildToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -867,12 +994,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   build.TagTable,
-			Columns: []string{build.TagColumn},
+			Table:   build.BuildToTagTable,
+			Columns: []string{build.BuildToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -886,12 +1013,66 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.TeamCleared() {
+	if buo.mutation.BuildToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedBuildToProvisionedNetworkIDs(); len(nodes) > 0 && !buo.mutation.BuildToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   build.BuildToProvisionedNetworkTable,
+			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -902,12 +1083,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedTeamIDs(); len(nodes) > 0 && !buo.mutation.TeamCleared() {
+	if nodes := buo.mutation.RemovedBuildToTeamIDs(); len(nodes) > 0 && !buo.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -921,12 +1102,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   build.TeamTable,
-			Columns: build.TeamPrimaryKey,
+			Table:   build.BuildToTeamTable,
+			Columns: build.BuildToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -940,33 +1121,33 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.ProvisionedNetworkToBuildCleared() {
+	if buo.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedProvisionedNetworkToBuildIDs(); len(nodes) > 0 && !buo.mutation.ProvisionedNetworkToBuildCleared() {
+	if nodes := buo.mutation.RemovedBuildToEnvironmentIDs(); len(nodes) > 0 && !buo.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -975,17 +1156,17 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   build.ProvisionedNetworkToBuildTable,
-			Columns: build.ProvisionedNetworkToBuildPrimaryKey,
+			Inverse: true,
+			Table:   build.BuildToEnvironmentTable,
+			Columns: build.BuildToEnvironmentPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}

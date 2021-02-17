@@ -348,25 +348,25 @@ func VdiVisibleNEQ(v bool) predicate.Network {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Network {
+// HasNetworkToTag applies the HasEdge predicate on the "NetworkToTag" edge.
+func HasNetworkToTag() predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(NetworkToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NetworkToTagTable, NetworkToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Network {
+// HasNetworkToTagWith applies the HasEdge predicate on the "NetworkToTag" edge with a given conditions (other predicates).
+func HasNetworkToTagWith(preds ...predicate.Tag) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(NetworkToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NetworkToTagTable, NetworkToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

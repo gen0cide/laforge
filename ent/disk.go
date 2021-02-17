@@ -19,26 +19,26 @@ type Disk struct {
 	Size int `json:"size,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiskQuery when eager-loading is set.
-	Edges     DiskEdges `json:"edges"`
-	host_disk *int
+	Edges             DiskEdges `json:"edges"`
+	host_host_to_disk *int
 }
 
 // DiskEdges holds the relations/edges for other nodes in the graph.
 type DiskEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// DiskToTag holds the value of the DiskToTag edge.
+	DiskToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// DiskToTagOrErr returns the DiskToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e DiskEdges) TagOrErr() ([]*Tag, error) {
+func (e DiskEdges) DiskToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.DiskToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "DiskToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -52,7 +52,7 @@ func (*Disk) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Disk) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // host_disk
+		&sql.NullInt64{}, // host_host_to_disk
 	}
 }
 
@@ -76,18 +76,18 @@ func (d *Disk) assignValues(values ...interface{}) error {
 	values = values[1:]
 	if len(values) == len(disk.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_disk", value)
+			return fmt.Errorf("unexpected type %T for edge-field host_host_to_disk", value)
 		} else if value.Valid {
-			d.host_disk = new(int)
-			*d.host_disk = int(value.Int64)
+			d.host_host_to_disk = new(int)
+			*d.host_host_to_disk = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Disk.
-func (d *Disk) QueryTag() *TagQuery {
-	return (&DiskClient{config: d.config}).QueryTag(d)
+// QueryDiskToTag queries the DiskToTag edge of the Disk.
+func (d *Disk) QueryDiskToTag() *TagQuery {
+	return (&DiskClient{config: d.config}).QueryDiskToTag(d)
 }
 
 // Update returns a builder for updating this Disk.

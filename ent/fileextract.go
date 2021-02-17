@@ -28,20 +28,20 @@ type FileExtract struct {
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
 type FileExtractEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// FileExtractToTag holds the value of the FileExtractToTag edge.
+	FileExtractToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FileExtractToTagOrErr returns the FileExtractToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FileExtractEdges) TagOrErr() ([]*Tag, error) {
+func (e FileExtractEdges) FileExtractToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.FileExtractToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FileExtractToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -84,9 +84,9 @@ func (fe *FileExtract) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryTag queries the tag edge of the FileExtract.
-func (fe *FileExtract) QueryTag() *TagQuery {
-	return (&FileExtractClient{config: fe.config}).QueryTag(fe)
+// QueryFileExtractToTag queries the FileExtractToTag edge of the FileExtract.
+func (fe *FileExtract) QueryFileExtractToTag() *TagQuery {
+	return (&FileExtractClient{config: fe.config}).QueryFileExtractToTag(fe)
 }
 
 // Update returns a builder for updating this FileExtract.

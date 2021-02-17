@@ -26,7 +26,7 @@ type IncludedNetworkQuery struct {
 	order      []OrderFunc
 	predicates []predicate.IncludedNetwork
 	// eager-loading edges.
-	withTag                          *TagQuery
+	withIncludedNetworkToTag         *TagQuery
 	withIncludedNetworkToEnvironment *EnvironmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -57,8 +57,8 @@ func (inq *IncludedNetworkQuery) Order(o ...OrderFunc) *IncludedNetworkQuery {
 	return inq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (inq *IncludedNetworkQuery) QueryTag() *TagQuery {
+// QueryIncludedNetworkToTag chains the current query on the IncludedNetworkToTag edge.
+func (inq *IncludedNetworkQuery) QueryIncludedNetworkToTag() *TagQuery {
 	query := &TagQuery{config: inq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := inq.prepareQuery(ctx); err != nil {
@@ -71,7 +71,7 @@ func (inq *IncludedNetworkQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, includednetwork.TagTable, includednetwork.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, includednetwork.IncludedNetworkToTagTable, includednetwork.IncludedNetworkToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(inq.driver.Dialect(), step)
 		return fromU, nil
@@ -276,7 +276,7 @@ func (inq *IncludedNetworkQuery) Clone() *IncludedNetworkQuery {
 		offset:                           inq.offset,
 		order:                            append([]OrderFunc{}, inq.order...),
 		predicates:                       append([]predicate.IncludedNetwork{}, inq.predicates...),
-		withTag:                          inq.withTag.Clone(),
+		withIncludedNetworkToTag:         inq.withIncludedNetworkToTag.Clone(),
 		withIncludedNetworkToEnvironment: inq.withIncludedNetworkToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  inq.sql.Clone(),
@@ -284,14 +284,14 @@ func (inq *IncludedNetworkQuery) Clone() *IncludedNetworkQuery {
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (inq *IncludedNetworkQuery) WithTag(opts ...func(*TagQuery)) *IncludedNetworkQuery {
+//  WithIncludedNetworkToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "IncludedNetworkToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (inq *IncludedNetworkQuery) WithIncludedNetworkToTag(opts ...func(*TagQuery)) *IncludedNetworkQuery {
 	query := &TagQuery{config: inq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	inq.withTag = query
+	inq.withIncludedNetworkToTag = query
 	return inq
 }
 
@@ -373,7 +373,7 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 		nodes       = []*IncludedNetwork{}
 		_spec       = inq.querySpec()
 		loadedTypes = [2]bool{
-			inq.withTag != nil,
+			inq.withIncludedNetworkToTag != nil,
 			inq.withIncludedNetworkToEnvironment != nil,
 		}
 	)
@@ -398,32 +398,32 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 		return nodes, nil
 	}
 
-	if query := inq.withTag; query != nil {
+	if query := inq.withIncludedNetworkToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*IncludedNetwork)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.IncludedNetworkToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(includednetwork.TagColumn, fks...))
+			s.Where(sql.InValues(includednetwork.IncludedNetworkToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.included_network_tag
+			fk := n.included_network_included_network_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "included_network_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "included_network_included_network_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "included_network_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "included_network_included_network_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.IncludedNetworkToTag = append(node.Edges.IncludedNetworkToTag, n)
 		}
 	}
 

@@ -80,19 +80,19 @@ func (rfc *RemoteFileCreate) SetExt(s string) *RemoteFileCreate {
 	return rfc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (rfc *RemoteFileCreate) AddTagIDs(ids ...int) *RemoteFileCreate {
-	rfc.mutation.AddTagIDs(ids...)
+// AddRemoteFileToTagIDs adds the RemoteFileToTag edge to Tag by ids.
+func (rfc *RemoteFileCreate) AddRemoteFileToTagIDs(ids ...int) *RemoteFileCreate {
+	rfc.mutation.AddRemoteFileToTagIDs(ids...)
 	return rfc
 }
 
-// AddTag adds the tag edges to Tag.
-func (rfc *RemoteFileCreate) AddTag(t ...*Tag) *RemoteFileCreate {
+// AddRemoteFileToTag adds the RemoteFileToTag edges to Tag.
+func (rfc *RemoteFileCreate) AddRemoteFileToTag(t ...*Tag) *RemoteFileCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return rfc.AddTagIDs(ids...)
+	return rfc.AddRemoteFileToTagIDs(ids...)
 }
 
 // Mutation returns the RemoteFileMutation object of the builder.
@@ -283,12 +283,12 @@ func (rfc *RemoteFileCreate) createSpec() (*RemoteFile, *sqlgraph.CreateSpec) {
 		})
 		_node.Ext = value
 	}
-	if nodes := rfc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := rfc.mutation.RemoteFileToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

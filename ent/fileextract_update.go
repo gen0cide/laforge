@@ -45,19 +45,19 @@ func (feu *FileExtractUpdate) SetType(s string) *FileExtractUpdate {
 	return feu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (feu *FileExtractUpdate) AddTagIDs(ids ...int) *FileExtractUpdate {
-	feu.mutation.AddTagIDs(ids...)
+// AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
+func (feu *FileExtractUpdate) AddFileExtractToTagIDs(ids ...int) *FileExtractUpdate {
+	feu.mutation.AddFileExtractToTagIDs(ids...)
 	return feu
 }
 
-// AddTag adds the tag edges to Tag.
-func (feu *FileExtractUpdate) AddTag(t ...*Tag) *FileExtractUpdate {
+// AddFileExtractToTag adds the FileExtractToTag edges to Tag.
+func (feu *FileExtractUpdate) AddFileExtractToTag(t ...*Tag) *FileExtractUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return feu.AddTagIDs(ids...)
+	return feu.AddFileExtractToTagIDs(ids...)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -65,25 +65,25 @@ func (feu *FileExtractUpdate) Mutation() *FileExtractMutation {
 	return feu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (feu *FileExtractUpdate) ClearTag() *FileExtractUpdate {
-	feu.mutation.ClearTag()
+// ClearFileExtractToTag clears all "FileExtractToTag" edges to type Tag.
+func (feu *FileExtractUpdate) ClearFileExtractToTag() *FileExtractUpdate {
+	feu.mutation.ClearFileExtractToTag()
 	return feu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (feu *FileExtractUpdate) RemoveTagIDs(ids ...int) *FileExtractUpdate {
-	feu.mutation.RemoveTagIDs(ids...)
+// RemoveFileExtractToTagIDs removes the FileExtractToTag edge to Tag by ids.
+func (feu *FileExtractUpdate) RemoveFileExtractToTagIDs(ids ...int) *FileExtractUpdate {
+	feu.mutation.RemoveFileExtractToTagIDs(ids...)
 	return feu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (feu *FileExtractUpdate) RemoveTag(t ...*Tag) *FileExtractUpdate {
+// RemoveFileExtractToTag removes FileExtractToTag edges to Tag.
+func (feu *FileExtractUpdate) RemoveFileExtractToTag(t ...*Tag) *FileExtractUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return feu.RemoveTagIDs(ids...)
+	return feu.RemoveFileExtractToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -176,12 +176,12 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: fileextract.FieldType,
 		})
 	}
-	if feu.mutation.TagCleared() {
+	if feu.mutation.FileExtractToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -192,12 +192,12 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feu.mutation.RemovedTagIDs(); len(nodes) > 0 && !feu.mutation.TagCleared() {
+	if nodes := feu.mutation.RemovedFileExtractToTagIDs(); len(nodes) > 0 && !feu.mutation.FileExtractToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -211,12 +211,12 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := feu.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -266,19 +266,19 @@ func (feuo *FileExtractUpdateOne) SetType(s string) *FileExtractUpdateOne {
 	return feuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (feuo *FileExtractUpdateOne) AddTagIDs(ids ...int) *FileExtractUpdateOne {
-	feuo.mutation.AddTagIDs(ids...)
+// AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
+func (feuo *FileExtractUpdateOne) AddFileExtractToTagIDs(ids ...int) *FileExtractUpdateOne {
+	feuo.mutation.AddFileExtractToTagIDs(ids...)
 	return feuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (feuo *FileExtractUpdateOne) AddTag(t ...*Tag) *FileExtractUpdateOne {
+// AddFileExtractToTag adds the FileExtractToTag edges to Tag.
+func (feuo *FileExtractUpdateOne) AddFileExtractToTag(t ...*Tag) *FileExtractUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return feuo.AddTagIDs(ids...)
+	return feuo.AddFileExtractToTagIDs(ids...)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -286,25 +286,25 @@ func (feuo *FileExtractUpdateOne) Mutation() *FileExtractMutation {
 	return feuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (feuo *FileExtractUpdateOne) ClearTag() *FileExtractUpdateOne {
-	feuo.mutation.ClearTag()
+// ClearFileExtractToTag clears all "FileExtractToTag" edges to type Tag.
+func (feuo *FileExtractUpdateOne) ClearFileExtractToTag() *FileExtractUpdateOne {
+	feuo.mutation.ClearFileExtractToTag()
 	return feuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (feuo *FileExtractUpdateOne) RemoveTagIDs(ids ...int) *FileExtractUpdateOne {
-	feuo.mutation.RemoveTagIDs(ids...)
+// RemoveFileExtractToTagIDs removes the FileExtractToTag edge to Tag by ids.
+func (feuo *FileExtractUpdateOne) RemoveFileExtractToTagIDs(ids ...int) *FileExtractUpdateOne {
+	feuo.mutation.RemoveFileExtractToTagIDs(ids...)
 	return feuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (feuo *FileExtractUpdateOne) RemoveTag(t ...*Tag) *FileExtractUpdateOne {
+// RemoveFileExtractToTag removes FileExtractToTag edges to Tag.
+func (feuo *FileExtractUpdateOne) RemoveFileExtractToTag(t ...*Tag) *FileExtractUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return feuo.RemoveTagIDs(ids...)
+	return feuo.RemoveFileExtractToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -395,12 +395,12 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Column: fileextract.FieldType,
 		})
 	}
-	if feuo.mutation.TagCleared() {
+	if feuo.mutation.FileExtractToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -411,12 +411,12 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !feuo.mutation.TagCleared() {
+	if nodes := feuo.mutation.RemovedFileExtractToTagIDs(); len(nodes) > 0 && !feuo.mutation.FileExtractToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -430,12 +430,12 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feuo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := feuo.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

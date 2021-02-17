@@ -20,18 +20,18 @@ const (
 	// FieldDisabled holds the string denoting the disabled field in the database.
 	FieldDisabled = "disabled"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeDNSRecordToTag holds the string denoting the dnsrecordtotag edge name in mutations.
+	EdgeDNSRecordToTag = "DNSRecordToTag"
 
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// DNSRecordToTagTable is the table the holds the DNSRecordToTag relation/edge.
+	DNSRecordToTagTable = "tags"
+	// DNSRecordToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "dns_record_tag"
+	DNSRecordToTagInverseTable = "tags"
+	// DNSRecordToTagColumn is the table column denoting the DNSRecordToTag relation/edge.
+	DNSRecordToTagColumn = "dns_record_dns_record_to_tag"
 )
 
 // Columns holds all SQL columns for dnsrecord fields.
@@ -47,7 +47,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.
 var ForeignKeys = []string{
-	"provisioning_step_dns_record",
+	"provisioning_step_provisioning_step_to_dns_record",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

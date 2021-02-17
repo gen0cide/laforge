@@ -26,19 +26,19 @@ func (fdc *FileDeleteCreate) SetPath(s string) *FileDeleteCreate {
 	return fdc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdc *FileDeleteCreate) AddTagIDs(ids ...int) *FileDeleteCreate {
-	fdc.mutation.AddTagIDs(ids...)
+// AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
+func (fdc *FileDeleteCreate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteCreate {
+	fdc.mutation.AddFileDeleteToTagIDs(ids...)
 	return fdc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdc *FileDeleteCreate) AddTag(t ...*Tag) *FileDeleteCreate {
+// AddFileDeleteToTag adds the FileDeleteToTag edges to Tag.
+func (fdc *FileDeleteCreate) AddFileDeleteToTag(t ...*Tag) *FileDeleteCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fdc.AddTagIDs(ids...)
+	return fdc.AddFileDeleteToTagIDs(ids...)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -130,12 +130,12 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		})
 		_node.Path = value
 	}
-	if nodes := fdc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fdc.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedelete.TagTable,
-			Columns: []string{filedelete.TagColumn},
+			Table:   filedelete.FileDeleteToTagTable,
+			Columns: []string{filedelete.FileDeleteToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

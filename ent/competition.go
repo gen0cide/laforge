@@ -22,26 +22,47 @@ type Competition struct {
 	Config map[string]string `json:"config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
-	Edges                   CompetitionEdges `json:"edges"`
-	environment_competition *int
+	Edges CompetitionEdges `json:"edges"`
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
 type CompetitionEdges struct {
-	// DNS holds the value of the dns edge.
-	DNS []*DNS
+	// CompetitionToTag holds the value of the CompetitionToTag edge.
+	CompetitionToTag []*Tag
+	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
+	CompetitionToDNS []*DNS
+	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
+	CompetitionToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
-// DNSOrErr returns the DNS value or an error if the edge
+// CompetitionToTagOrErr returns the CompetitionToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e CompetitionEdges) DNSOrErr() ([]*DNS, error) {
+func (e CompetitionEdges) CompetitionToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.DNS, nil
+		return e.CompetitionToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "dns"}
+	return nil, &NotLoadedError{edge: "CompetitionToTag"}
+}
+
+// CompetitionToDNSOrErr returns the CompetitionToDNS value or an error if the edge
+// was not loaded in eager-loading.
+func (e CompetitionEdges) CompetitionToDNSOrErr() ([]*DNS, error) {
+	if e.loadedTypes[1] {
+		return e.CompetitionToDNS, nil
+	}
+	return nil, &NotLoadedError{edge: "CompetitionToDNS"}
+}
+
+// CompetitionToEnvironmentOrErr returns the CompetitionToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e CompetitionEdges) CompetitionToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[2] {
+		return e.CompetitionToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "CompetitionToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -50,13 +71,6 @@ func (*Competition) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // root_password
 		&[]byte{},         // config
-	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Competition) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // environment_competition
 	}
 }
 
@@ -85,21 +99,22 @@ func (c *Competition) assignValues(values ...interface{}) error {
 			return fmt.Errorf("unmarshal field config: %v", err)
 		}
 	}
-	values = values[2:]
-	if len(values) == len(competition.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_competition", value)
-		} else if value.Valid {
-			c.environment_competition = new(int)
-			*c.environment_competition = int(value.Int64)
-		}
-	}
 	return nil
 }
 
-// QueryDNS queries the dns edge of the Competition.
-func (c *Competition) QueryDNS() *DNSQuery {
-	return (&CompetitionClient{config: c.config}).QueryDNS(c)
+// QueryCompetitionToTag queries the CompetitionToTag edge of the Competition.
+func (c *Competition) QueryCompetitionToTag() *TagQuery {
+	return (&CompetitionClient{config: c.config}).QueryCompetitionToTag(c)
+}
+
+// QueryCompetitionToDNS queries the CompetitionToDNS edge of the Competition.
+func (c *Competition) QueryCompetitionToDNS() *DNSQuery {
+	return (&CompetitionClient{config: c.config}).QueryCompetitionToDNS(c)
+}
+
+// QueryCompetitionToEnvironment queries the CompetitionToEnvironment edge of the Competition.
+func (c *Competition) QueryCompetitionToEnvironment() *EnvironmentQuery {
+	return (&CompetitionClient{config: c.config}).QueryCompetitionToEnvironment(c)
 }
 
 // Update returns a builder for updating this Competition.

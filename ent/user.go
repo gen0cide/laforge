@@ -23,32 +23,42 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges             UserEdges `json:"edges"`
-	build_maintainer  *int
-	command_user      *int
-	environment_user  *int
-	finding_user      *int
-	host_maintainer   *int
-	script_maintainer *int
-	team_maintainer   *int
+	Edges                   UserEdges `json:"edges"`
+	build_build_to_user     *int
+	command_command_to_user *int
+	finding_finding_to_user *int
+	host_host_to_user       *int
+	script_script_to_user   *int
+	team_team_to_user       *int
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// UserToTag holds the value of the UserToTag edge.
+	UserToTag []*Tag
+	// UserToEnvironment holds the value of the UserToEnvironment edge.
+	UserToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// UserToTagOrErr returns the UserToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) TagOrErr() ([]*Tag, error) {
+func (e UserEdges) UserToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.UserToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "UserToTag"}
+}
+
+// UserToEnvironmentOrErr returns the UserToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) UserToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.UserToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "UserToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -64,13 +74,12 @@ func (*User) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*User) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // build_maintainer
-		&sql.NullInt64{}, // command_user
-		&sql.NullInt64{}, // environment_user
-		&sql.NullInt64{}, // finding_user
-		&sql.NullInt64{}, // host_maintainer
-		&sql.NullInt64{}, // script_maintainer
-		&sql.NullInt64{}, // team_maintainer
+		&sql.NullInt64{}, // build_build_to_user
+		&sql.NullInt64{}, // command_command_to_user
+		&sql.NullInt64{}, // finding_finding_to_user
+		&sql.NullInt64{}, // host_host_to_user
+		&sql.NullInt64{}, // script_script_to_user
+		&sql.NullInt64{}, // team_team_to_user
 	}
 }
 
@@ -104,54 +113,53 @@ func (u *User) assignValues(values ...interface{}) error {
 	values = values[3:]
 	if len(values) == len(user.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_maintainer", value)
+			return fmt.Errorf("unexpected type %T for edge-field build_build_to_user", value)
 		} else if value.Valid {
-			u.build_maintainer = new(int)
-			*u.build_maintainer = int(value.Int64)
+			u.build_build_to_user = new(int)
+			*u.build_build_to_user = int(value.Int64)
 		}
 		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field command_user", value)
+			return fmt.Errorf("unexpected type %T for edge-field command_command_to_user", value)
 		} else if value.Valid {
-			u.command_user = new(int)
-			*u.command_user = int(value.Int64)
+			u.command_command_to_user = new(int)
+			*u.command_command_to_user = int(value.Int64)
 		}
 		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_user", value)
+			return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_user", value)
 		} else if value.Valid {
-			u.environment_user = new(int)
-			*u.environment_user = int(value.Int64)
+			u.finding_finding_to_user = new(int)
+			*u.finding_finding_to_user = int(value.Int64)
 		}
 		if value, ok := values[3].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_user", value)
+			return fmt.Errorf("unexpected type %T for edge-field host_host_to_user", value)
 		} else if value.Valid {
-			u.finding_user = new(int)
-			*u.finding_user = int(value.Int64)
+			u.host_host_to_user = new(int)
+			*u.host_host_to_user = int(value.Int64)
 		}
 		if value, ok := values[4].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_maintainer", value)
+			return fmt.Errorf("unexpected type %T for edge-field script_script_to_user", value)
 		} else if value.Valid {
-			u.host_maintainer = new(int)
-			*u.host_maintainer = int(value.Int64)
+			u.script_script_to_user = new(int)
+			*u.script_script_to_user = int(value.Int64)
 		}
 		if value, ok := values[5].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field script_maintainer", value)
+			return fmt.Errorf("unexpected type %T for edge-field team_team_to_user", value)
 		} else if value.Valid {
-			u.script_maintainer = new(int)
-			*u.script_maintainer = int(value.Int64)
-		}
-		if value, ok := values[6].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_maintainer", value)
-		} else if value.Valid {
-			u.team_maintainer = new(int)
-			*u.team_maintainer = int(value.Int64)
+			u.team_team_to_user = new(int)
+			*u.team_team_to_user = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the User.
-func (u *User) QueryTag() *TagQuery {
-	return (&UserClient{config: u.config}).QueryTag(u)
+// QueryUserToTag queries the UserToTag edge of the User.
+func (u *User) QueryUserToTag() *TagQuery {
+	return (&UserClient{config: u.config}).QueryUserToTag(u)
+}
+
+// QueryUserToEnvironment queries the UserToEnvironment edge of the User.
+func (u *User) QueryUserToEnvironment() *EnvironmentQuery {
+	return (&UserClient{config: u.config}).QueryUserToEnvironment(u)
 }
 
 // Update returns a builder for updating this User.

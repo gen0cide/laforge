@@ -24,20 +24,20 @@ type FileDelete struct {
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
 type FileDeleteEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
+	FileDeleteToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FileDeleteToTagOrErr returns the FileDeleteToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FileDeleteEdges) TagOrErr() ([]*Tag, error) {
+func (e FileDeleteEdges) FileDeleteToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.FileDeleteToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FileDeleteToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,9 +68,9 @@ func (fd *FileDelete) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryTag queries the tag edge of the FileDelete.
-func (fd *FileDelete) QueryTag() *TagQuery {
-	return (&FileDeleteClient{config: fd.config}).QueryTag(fd)
+// QueryFileDeleteToTag queries the FileDeleteToTag edge of the FileDelete.
+func (fd *FileDelete) QueryFileDeleteToTag() *TagQuery {
+	return (&FileDeleteClient{config: fd.config}).QueryFileDeleteToTag(fd)
 }
 
 // Update returns a builder for updating this FileDelete.

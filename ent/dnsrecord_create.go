@@ -56,19 +56,19 @@ func (drc *DNSRecordCreate) SetDisabled(b bool) *DNSRecordCreate {
 	return drc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (drc *DNSRecordCreate) AddTagIDs(ids ...int) *DNSRecordCreate {
-	drc.mutation.AddTagIDs(ids...)
+// AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
+func (drc *DNSRecordCreate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordCreate {
+	drc.mutation.AddDNSRecordToTagIDs(ids...)
 	return drc
 }
 
-// AddTag adds the tag edges to Tag.
-func (drc *DNSRecordCreate) AddTag(t ...*Tag) *DNSRecordCreate {
+// AddDNSRecordToTag adds the DNSRecordToTag edges to Tag.
+func (drc *DNSRecordCreate) AddDNSRecordToTag(t ...*Tag) *DNSRecordCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return drc.AddTagIDs(ids...)
+	return drc.AddDNSRecordToTagIDs(ids...)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -215,12 +215,12 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 		})
 		_node.Disabled = value
 	}
-	if nodes := drc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := drc.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

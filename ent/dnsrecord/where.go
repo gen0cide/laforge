@@ -466,25 +466,25 @@ func DisabledNEQ(v bool) predicate.DNSRecord {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.DNSRecord {
+// HasDNSRecordToTag applies the HasEdge predicate on the "DNSRecordToTag" edge.
+func HasDNSRecordToTag() predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DNSRecordToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.DNSRecord {
+// HasDNSRecordToTagWith applies the HasEdge predicate on the "DNSRecordToTag" edge with a given conditions (other predicates).
+func HasDNSRecordToTagWith(preds ...predicate.Tag) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DNSRecordToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -24,6 +24,6 @@ func (Competition) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("CompetitionToTag", Tag.Type),
 		edge.To("CompetitionToDNS", DNS.Type),
-		edge.From("CompetitionToEnvironment", Competition.Type).Ref("EnvironmentToCompetition"),
+		edge.From("CompetitionToEnvironment", Environment.Type).Ref("EnvironmentToCompetition"),
 	}
 }

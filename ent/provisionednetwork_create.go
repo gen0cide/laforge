@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -36,49 +37,64 @@ func (pnc *ProvisionedNetworkCreate) SetCidr(s string) *ProvisionedNetworkCreate
 	return pnc
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (pnc *ProvisionedNetworkCreate) AddStatuIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddStatuIDs(ids...)
+// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnc
 }
 
-// AddStatus adds the status edges to Status.
-func (pnc *ProvisionedNetworkCreate) AddStatus(s ...*Status) *ProvisionedNetworkCreate {
+// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pnc.AddProvisionedNetworkToTagIDs(ids...)
+}
+
+// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToStatuIDs(ids...)
+	return pnc
+}
+
+// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkCreate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return pnc.AddStatuIDs(ids...)
+	return pnc.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddNetworkIDs adds the network edge to Network by ids.
-func (pnc *ProvisionedNetworkCreate) AddNetworkIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddNetworkIDs(ids...)
+// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnc
 }
 
-// AddNetwork adds the network edges to Network.
-func (pnc *ProvisionedNetworkCreate) AddNetwork(n ...*Network) *ProvisionedNetworkCreate {
+// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkCreate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return pnc.AddNetworkIDs(ids...)
+	return pnc.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddBuildIDs adds the build edge to Build by ids.
-func (pnc *ProvisionedNetworkCreate) AddBuildIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddBuildIDs(ids...)
+// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnc
 }
 
-// AddBuild adds the build edges to Build.
-func (pnc *ProvisionedNetworkCreate) AddBuild(b ...*Build) *ProvisionedNetworkCreate {
+// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkCreate {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return pnc.AddBuildIDs(ids...)
+	return pnc.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
 // AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
@@ -96,19 +112,19 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTeam(t ...*Team) *Pr
 	return pnc.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedHostIDs adds the provisioned_hosts edge to ProvisionedHost by ids.
-func (pnc *ProvisionedNetworkCreate) AddProvisionedHostIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddProvisionedHostIDs(ids...)
+// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedHosts adds the provisioned_hosts edges to ProvisionedHost.
-func (pnc *ProvisionedNetworkCreate) AddProvisionedHosts(p ...*ProvisionedHost) *ProvisionedNetworkCreate {
+// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pnc.AddProvisionedHostIDs(ids...)
+	return pnc.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -211,12 +227,31 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 		})
 		_node.Cidr = value
 	}
-	if nodes := pnc.mutation.StatusIDs(); len(nodes) > 0 {
+	if nodes := pnc.mutation.ProvisionedNetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.StatusTable,
-			Columns: []string{provisionednetwork.StatusColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToTagTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pnc.mutation.ProvisionedNetworkToStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionednetwork.ProvisionedNetworkToStatusTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -230,12 +265,12 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := pnc.mutation.NetworkIDs(); len(nodes) > 0 {
+	if nodes := pnc.mutation.ProvisionedNetworkToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionednetwork.NetworkTable,
-			Columns: []string{provisionednetwork.NetworkColumn},
+			Table:   provisionednetwork.ProvisionedNetworkToNetworkTable,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -249,12 +284,12 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := pnc.mutation.BuildIDs(); len(nodes) > 0 {
+	if nodes := pnc.mutation.ProvisionedNetworkToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.BuildTable,
-			Columns: provisionednetwork.BuildPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToBuildTable,
+			Columns: provisionednetwork.ProvisionedNetworkToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -287,12 +322,12 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := pnc.mutation.ProvisionedHostsIDs(); len(nodes) > 0 {
+	if nodes := pnc.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionednetwork.ProvisionedHostsTable,
-			Columns: provisionednetwork.ProvisionedHostsPrimaryKey,
+			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
+			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -25,8 +25,8 @@ type DNSRecordQuery struct {
 	order      []OrderFunc
 	predicates []predicate.DNSRecord
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withDNSRecordToTag *TagQuery
+	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,8 +56,8 @@ func (drq *DNSRecordQuery) Order(o ...OrderFunc) *DNSRecordQuery {
 	return drq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (drq *DNSRecordQuery) QueryTag() *TagQuery {
+// QueryDNSRecordToTag chains the current query on the DNSRecordToTag edge.
+func (drq *DNSRecordQuery) QueryDNSRecordToTag() *TagQuery {
 	query := &TagQuery{config: drq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := drq.prepareQuery(ctx); err != nil {
@@ -70,7 +70,7 @@ func (drq *DNSRecordQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsrecord.TagTable, dnsrecord.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsrecord.DNSRecordToTagTable, dnsrecord.DNSRecordToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
 		return fromU, nil
@@ -248,26 +248,26 @@ func (drq *DNSRecordQuery) Clone() *DNSRecordQuery {
 		return nil
 	}
 	return &DNSRecordQuery{
-		config:     drq.config,
-		limit:      drq.limit,
-		offset:     drq.offset,
-		order:      append([]OrderFunc{}, drq.order...),
-		predicates: append([]predicate.DNSRecord{}, drq.predicates...),
-		withTag:    drq.withTag.Clone(),
+		config:             drq.config,
+		limit:              drq.limit,
+		offset:             drq.offset,
+		order:              append([]OrderFunc{}, drq.order...),
+		predicates:         append([]predicate.DNSRecord{}, drq.predicates...),
+		withDNSRecordToTag: drq.withDNSRecordToTag.Clone(),
 		// clone intermediate query.
 		sql:  drq.sql.Clone(),
 		path: drq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (drq *DNSRecordQuery) WithTag(opts ...func(*TagQuery)) *DNSRecordQuery {
+//  WithDNSRecordToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "DNSRecordToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (drq *DNSRecordQuery) WithDNSRecordToTag(opts ...func(*TagQuery)) *DNSRecordQuery {
 	query := &TagQuery{config: drq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	drq.withTag = query
+	drq.withDNSRecordToTag = query
 	return drq
 }
 
@@ -339,7 +339,7 @@ func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 		withFKs     = drq.withFKs
 		_spec       = drq.querySpec()
 		loadedTypes = [1]bool{
-			drq.withTag != nil,
+			drq.withDNSRecordToTag != nil,
 		}
 	)
 	if withFKs {
@@ -369,32 +369,32 @@ func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 		return nodes, nil
 	}
 
-	if query := drq.withTag; query != nil {
+	if query := drq.withDNSRecordToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*DNSRecord)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.DNSRecordToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(dnsrecord.TagColumn, fks...))
+			s.Where(sql.InValues(dnsrecord.DNSRecordToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.dns_record_tag
+			fk := n.dns_record_dns_record_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "dns_record_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "dns_record_dns_record_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "dns_record_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "dns_record_dns_record_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.DNSRecordToTag = append(node.Edges.DNSRecordToTag, n)
 		}
 	}
 

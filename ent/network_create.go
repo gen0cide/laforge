@@ -45,19 +45,19 @@ func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
 	return nc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nc *NetworkCreate) AddTagIDs(ids ...int) *NetworkCreate {
-	nc.mutation.AddTagIDs(ids...)
+// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+func (nc *NetworkCreate) AddNetworkToTagIDs(ids ...int) *NetworkCreate {
+	nc.mutation.AddNetworkToTagIDs(ids...)
 	return nc
 }
 
-// AddTag adds the tag edges to Tag.
-func (nc *NetworkCreate) AddTag(t ...*Tag) *NetworkCreate {
+// AddNetworkToTag adds the NetworkToTag edges to Tag.
+func (nc *NetworkCreate) AddNetworkToTag(t ...*Tag) *NetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nc.AddTagIDs(ids...)
+	return nc.AddNetworkToTagIDs(ids...)
 }
 
 // AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
@@ -197,12 +197,12 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 		})
 		_node.Vars = value
 	}
-	if nodes := nc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := nc.mutation.NetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

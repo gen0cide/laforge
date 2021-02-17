@@ -445,25 +445,53 @@ func EmailContainsFold(v string) predicate.User {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.User {
+// HasUserToTag applies the HasEdge predicate on the "UserToTag" edge.
+func HasUserToTag() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(UserToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserToTagTable, UserToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.User {
+// HasUserToTagWith applies the HasEdge predicate on the "UserToTag" edge with a given conditions (other predicates).
+func HasUserToTagWith(preds ...predicate.Tag) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(UserToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserToTagTable, UserToTagColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserToEnvironment applies the HasEdge predicate on the "UserToEnvironment" edge.
+func HasUserToEnvironment() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, UserToEnvironmentTable, UserToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserToEnvironmentWith applies the HasEdge predicate on the "UserToEnvironment" edge with a given conditions (other predicates).
+func HasUserToEnvironmentWith(preds ...predicate.Environment) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, UserToEnvironmentTable, UserToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

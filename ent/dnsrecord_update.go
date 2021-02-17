@@ -63,19 +63,19 @@ func (dru *DNSRecordUpdate) SetDisabled(b bool) *DNSRecordUpdate {
 	return dru
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (dru *DNSRecordUpdate) AddTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.AddTagIDs(ids...)
+// AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
+func (dru *DNSRecordUpdate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordUpdate {
+	dru.mutation.AddDNSRecordToTagIDs(ids...)
 	return dru
 }
 
-// AddTag adds the tag edges to Tag.
-func (dru *DNSRecordUpdate) AddTag(t ...*Tag) *DNSRecordUpdate {
+// AddDNSRecordToTag adds the DNSRecordToTag edges to Tag.
+func (dru *DNSRecordUpdate) AddDNSRecordToTag(t ...*Tag) *DNSRecordUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return dru.AddTagIDs(ids...)
+	return dru.AddDNSRecordToTagIDs(ids...)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -83,25 +83,25 @@ func (dru *DNSRecordUpdate) Mutation() *DNSRecordMutation {
 	return dru.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (dru *DNSRecordUpdate) ClearTag() *DNSRecordUpdate {
-	dru.mutation.ClearTag()
+// ClearDNSRecordToTag clears all "DNSRecordToTag" edges to type Tag.
+func (dru *DNSRecordUpdate) ClearDNSRecordToTag() *DNSRecordUpdate {
+	dru.mutation.ClearDNSRecordToTag()
 	return dru
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (dru *DNSRecordUpdate) RemoveTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.RemoveTagIDs(ids...)
+// RemoveDNSRecordToTagIDs removes the DNSRecordToTag edge to Tag by ids.
+func (dru *DNSRecordUpdate) RemoveDNSRecordToTagIDs(ids ...int) *DNSRecordUpdate {
+	dru.mutation.RemoveDNSRecordToTagIDs(ids...)
 	return dru
 }
 
-// RemoveTag removes tag edges to Tag.
-func (dru *DNSRecordUpdate) RemoveTag(t ...*Tag) *DNSRecordUpdate {
+// RemoveDNSRecordToTag removes DNSRecordToTag edges to Tag.
+func (dru *DNSRecordUpdate) RemoveDNSRecordToTag(t ...*Tag) *DNSRecordUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return dru.RemoveTagIDs(ids...)
+	return dru.RemoveDNSRecordToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -215,12 +215,12 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: dnsrecord.FieldDisabled,
 		})
 	}
-	if dru.mutation.TagCleared() {
+	if dru.mutation.DNSRecordToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -231,12 +231,12 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := dru.mutation.RemovedTagIDs(); len(nodes) > 0 && !dru.mutation.TagCleared() {
+	if nodes := dru.mutation.RemovedDNSRecordToTagIDs(); len(nodes) > 0 && !dru.mutation.DNSRecordToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -250,12 +250,12 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := dru.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := dru.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -323,19 +323,19 @@ func (druo *DNSRecordUpdateOne) SetDisabled(b bool) *DNSRecordUpdateOne {
 	return druo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (druo *DNSRecordUpdateOne) AddTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.AddTagIDs(ids...)
+// AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
+func (druo *DNSRecordUpdateOne) AddDNSRecordToTagIDs(ids ...int) *DNSRecordUpdateOne {
+	druo.mutation.AddDNSRecordToTagIDs(ids...)
 	return druo
 }
 
-// AddTag adds the tag edges to Tag.
-func (druo *DNSRecordUpdateOne) AddTag(t ...*Tag) *DNSRecordUpdateOne {
+// AddDNSRecordToTag adds the DNSRecordToTag edges to Tag.
+func (druo *DNSRecordUpdateOne) AddDNSRecordToTag(t ...*Tag) *DNSRecordUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return druo.AddTagIDs(ids...)
+	return druo.AddDNSRecordToTagIDs(ids...)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -343,25 +343,25 @@ func (druo *DNSRecordUpdateOne) Mutation() *DNSRecordMutation {
 	return druo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (druo *DNSRecordUpdateOne) ClearTag() *DNSRecordUpdateOne {
-	druo.mutation.ClearTag()
+// ClearDNSRecordToTag clears all "DNSRecordToTag" edges to type Tag.
+func (druo *DNSRecordUpdateOne) ClearDNSRecordToTag() *DNSRecordUpdateOne {
+	druo.mutation.ClearDNSRecordToTag()
 	return druo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (druo *DNSRecordUpdateOne) RemoveTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.RemoveTagIDs(ids...)
+// RemoveDNSRecordToTagIDs removes the DNSRecordToTag edge to Tag by ids.
+func (druo *DNSRecordUpdateOne) RemoveDNSRecordToTagIDs(ids ...int) *DNSRecordUpdateOne {
+	druo.mutation.RemoveDNSRecordToTagIDs(ids...)
 	return druo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (druo *DNSRecordUpdateOne) RemoveTag(t ...*Tag) *DNSRecordUpdateOne {
+// RemoveDNSRecordToTag removes DNSRecordToTag edges to Tag.
+func (druo *DNSRecordUpdateOne) RemoveDNSRecordToTag(t ...*Tag) *DNSRecordUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return druo.RemoveTagIDs(ids...)
+	return druo.RemoveDNSRecordToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -473,12 +473,12 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Column: dnsrecord.FieldDisabled,
 		})
 	}
-	if druo.mutation.TagCleared() {
+	if druo.mutation.DNSRecordToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -489,12 +489,12 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := druo.mutation.RemovedTagIDs(); len(nodes) > 0 && !druo.mutation.TagCleared() {
+	if nodes := druo.mutation.RemovedDNSRecordToTagIDs(); len(nodes) > 0 && !druo.mutation.DNSRecordToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -508,12 +508,12 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := druo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := druo.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -30,26 +30,26 @@ type DNSRecord struct {
 	Disabled bool `json:"disabled,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSRecordQuery when eager-loading is set.
-	Edges                        DNSRecordEdges `json:"edges"`
-	provisioning_step_dns_record *int
+	Edges                                             DNSRecordEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_dns_record *int
 }
 
 // DNSRecordEdges holds the relations/edges for other nodes in the graph.
 type DNSRecordEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
+	DNSRecordToTag []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// DNSRecordToTagOrErr returns the DNSRecordToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e DNSRecordEdges) TagOrErr() ([]*Tag, error) {
+func (e DNSRecordEdges) DNSRecordToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.DNSRecordToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "DNSRecordToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,7 +68,7 @@ func (*DNSRecord) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*DNSRecord) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_dns_record
+		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_dns_record
 	}
 }
 
@@ -123,18 +123,18 @@ func (dr *DNSRecord) assignValues(values ...interface{}) error {
 	values = values[6:]
 	if len(values) == len(dnsrecord.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_dns_record", value)
+			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_dns_record", value)
 		} else if value.Valid {
-			dr.provisioning_step_dns_record = new(int)
-			*dr.provisioning_step_dns_record = int(value.Int64)
+			dr.provisioning_step_provisioning_step_to_dns_record = new(int)
+			*dr.provisioning_step_provisioning_step_to_dns_record = int(value.Int64)
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the DNSRecord.
-func (dr *DNSRecord) QueryTag() *TagQuery {
-	return (&DNSRecordClient{config: dr.config}).QueryTag(dr)
+// QueryDNSRecordToTag queries the DNSRecordToTag edge of the DNSRecord.
+func (dr *DNSRecord) QueryDNSRecordToTag() *TagQuery {
+	return (&DNSRecordClient{config: dr.config}).QueryDNSRecordToTag(dr)
 }
 
 // Update returns a builder for updating this DNSRecord.

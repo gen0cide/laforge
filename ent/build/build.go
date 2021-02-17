@@ -12,41 +12,48 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
-	EdgeMaintainer = "maintainer"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeTeam holds the string denoting the team edge name in mutations.
-	EdgeTeam = "team"
-	// EdgeProvisionedNetworkToBuild holds the string denoting the provisionednetworktobuild edge name in mutations.
-	EdgeProvisionedNetworkToBuild = "ProvisionedNetworkToBuild"
+	// EdgeBuildToUser holds the string denoting the buildtouser edge name in mutations.
+	EdgeBuildToUser = "BuildToUser"
+	// EdgeBuildToTag holds the string denoting the buildtotag edge name in mutations.
+	EdgeBuildToTag = "BuildToTag"
+	// EdgeBuildToProvisionedNetwork holds the string denoting the buildtoprovisionednetwork edge name in mutations.
+	EdgeBuildToProvisionedNetwork = "BuildToProvisionedNetwork"
+	// EdgeBuildToTeam holds the string denoting the buildtoteam edge name in mutations.
+	EdgeBuildToTeam = "BuildToTeam"
+	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
+	EdgeBuildToEnvironment = "BuildToEnvironment"
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
-	// MaintainerTable is the table the holds the maintainer relation/edge.
-	MaintainerTable = "users"
-	// MaintainerInverseTable is the table name for the User entity.
+	// BuildToUserTable is the table the holds the BuildToUser relation/edge.
+	BuildToUserTable = "users"
+	// BuildToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	MaintainerInverseTable = "users"
-	// MaintainerColumn is the table column denoting the maintainer relation/edge.
-	MaintainerColumn = "build_maintainer"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	BuildToUserInverseTable = "users"
+	// BuildToUserColumn is the table column denoting the BuildToUser relation/edge.
+	BuildToUserColumn = "build_build_to_user"
+	// BuildToTagTable is the table the holds the BuildToTag relation/edge.
+	BuildToTagTable = "tags"
+	// BuildToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "build_tag"
-	// TeamTable is the table the holds the team relation/edge. The primary key declared below.
-	TeamTable = "team_build"
-	// TeamInverseTable is the table name for the Team entity.
-	// It exists in this package in order to avoid circular dependency with the "team" package.
-	TeamInverseTable = "teams"
-	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge. The primary key declared below.
-	ProvisionedNetworkToBuildTable = "build_ProvisionedNetworkToBuild"
-	// ProvisionedNetworkToBuildInverseTable is the table name for the ProvisionedNetwork entity.
+	BuildToTagInverseTable = "tags"
+	// BuildToTagColumn is the table column denoting the BuildToTag relation/edge.
+	BuildToTagColumn = "build_build_to_tag"
+	// BuildToProvisionedNetworkTable is the table the holds the BuildToProvisionedNetwork relation/edge. The primary key declared below.
+	BuildToProvisionedNetworkTable = "build_BuildToProvisionedNetwork"
+	// BuildToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
-	ProvisionedNetworkToBuildInverseTable = "provisioned_networks"
+	BuildToProvisionedNetworkInverseTable = "provisioned_networks"
+	// BuildToTeamTable is the table the holds the BuildToTeam relation/edge. The primary key declared below.
+	BuildToTeamTable = "team_TeamToBuild"
+	// BuildToTeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	BuildToTeamInverseTable = "teams"
+	// BuildToEnvironmentTable is the table the holds the BuildToEnvironment relation/edge. The primary key declared below.
+	BuildToEnvironmentTable = "environment_EnvironmentToBuild"
+	// BuildToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	BuildToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -56,29 +63,22 @@ var Columns = []string{
 	FieldConfig,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
-var ForeignKeys = []string{
-	"environment_build",
-}
-
 var (
-	// TeamPrimaryKey and TeamColumn2 are the table columns denoting the
-	// primary key for the team relation (M2M).
-	TeamPrimaryKey = []string{"team_id", "build_id"}
-	// ProvisionedNetworkToBuildPrimaryKey and ProvisionedNetworkToBuildColumn2 are the table columns denoting the
-	// primary key for the ProvisionedNetworkToBuild relation (M2M).
-	ProvisionedNetworkToBuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
+	// BuildToProvisionedNetworkPrimaryKey and BuildToProvisionedNetworkColumn2 are the table columns denoting the
+	// primary key for the BuildToProvisionedNetwork relation (M2M).
+	BuildToProvisionedNetworkPrimaryKey = []string{"build_id", "provisioned_network_id"}
+	// BuildToTeamPrimaryKey and BuildToTeamColumn2 are the table columns denoting the
+	// primary key for the BuildToTeam relation (M2M).
+	BuildToTeamPrimaryKey = []string{"team_id", "build_id"}
+	// BuildToEnvironmentPrimaryKey and BuildToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the BuildToEnvironment relation (M2M).
+	BuildToEnvironmentPrimaryKey = []string{"environment_id", "build_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

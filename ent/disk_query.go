@@ -25,8 +25,8 @@ type DiskQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Disk
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withDiskToTag *TagQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,8 +56,8 @@ func (dq *DiskQuery) Order(o ...OrderFunc) *DiskQuery {
 	return dq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (dq *DiskQuery) QueryTag() *TagQuery {
+// QueryDiskToTag chains the current query on the DiskToTag edge.
+func (dq *DiskQuery) QueryDiskToTag() *TagQuery {
 	query := &TagQuery{config: dq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
@@ -70,7 +70,7 @@ func (dq *DiskQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(disk.Table, disk.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, disk.TagTable, disk.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, disk.DiskToTagTable, disk.DiskToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -248,26 +248,26 @@ func (dq *DiskQuery) Clone() *DiskQuery {
 		return nil
 	}
 	return &DiskQuery{
-		config:     dq.config,
-		limit:      dq.limit,
-		offset:     dq.offset,
-		order:      append([]OrderFunc{}, dq.order...),
-		predicates: append([]predicate.Disk{}, dq.predicates...),
-		withTag:    dq.withTag.Clone(),
+		config:        dq.config,
+		limit:         dq.limit,
+		offset:        dq.offset,
+		order:         append([]OrderFunc{}, dq.order...),
+		predicates:    append([]predicate.Disk{}, dq.predicates...),
+		withDiskToTag: dq.withDiskToTag.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (dq *DiskQuery) WithTag(opts ...func(*TagQuery)) *DiskQuery {
+//  WithDiskToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "DiskToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (dq *DiskQuery) WithDiskToTag(opts ...func(*TagQuery)) *DiskQuery {
 	query := &TagQuery{config: dq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	dq.withTag = query
+	dq.withDiskToTag = query
 	return dq
 }
 
@@ -339,7 +339,7 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
 		loadedTypes = [1]bool{
-			dq.withTag != nil,
+			dq.withDiskToTag != nil,
 		}
 	)
 	if withFKs {
@@ -369,32 +369,32 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		return nodes, nil
 	}
 
-	if query := dq.withTag; query != nil {
+	if query := dq.withDiskToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Disk)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.DiskToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(disk.TagColumn, fks...))
+			s.Where(sql.InValues(disk.DiskToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.disk_tag
+			fk := n.disk_disk_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "disk_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "disk_disk_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "disk_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "disk_disk_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.DiskToTag = append(node.Edges.DiskToTag, n)
 		}
 	}
 

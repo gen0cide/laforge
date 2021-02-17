@@ -28,10 +28,10 @@ type FindingQuery struct {
 	order      []OrderFunc
 	predicates []predicate.Finding
 	// eager-loading edges.
-	withUser   *UserQuery
-	withTag    *TagQuery
-	withHost   *HostQuery
-	withScript *ScriptQuery
+	withFindingToUser   *UserQuery
+	withFindingToTag    *TagQuery
+	withFindingToHost   *HostQuery
+	withFindingToScript *ScriptQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +61,8 @@ func (fq *FindingQuery) Order(o ...OrderFunc) *FindingQuery {
 	return fq
 }
 
-// QueryUser chains the current query on the user edge.
-func (fq *FindingQuery) QueryUser() *UserQuery {
+// QueryFindingToUser chains the current query on the FindingToUser edge.
+func (fq *FindingQuery) QueryFindingToUser() *UserQuery {
 	query := &UserQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
@@ -75,7 +75,7 @@ func (fq *FindingQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.UserTable, finding.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToUserTable, finding.FindingToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -83,8 +83,8 @@ func (fq *FindingQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fq *FindingQuery) QueryTag() *TagQuery {
+// QueryFindingToTag chains the current query on the FindingToTag edge.
+func (fq *FindingQuery) QueryFindingToTag() *TagQuery {
 	query := &TagQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
@@ -97,7 +97,7 @@ func (fq *FindingQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.TagTable, finding.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToTagTable, finding.FindingToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -105,8 +105,8 @@ func (fq *FindingQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// QueryHost chains the current query on the host edge.
-func (fq *FindingQuery) QueryHost() *HostQuery {
+// QueryFindingToHost chains the current query on the FindingToHost edge.
+func (fq *FindingQuery) QueryFindingToHost() *HostQuery {
 	query := &HostQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
@@ -119,7 +119,7 @@ func (fq *FindingQuery) QueryHost() *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.HostTable, finding.HostColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToHostTable, finding.FindingToHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -127,8 +127,8 @@ func (fq *FindingQuery) QueryHost() *HostQuery {
 	return query
 }
 
-// QueryScript chains the current query on the script edge.
-func (fq *FindingQuery) QueryScript() *ScriptQuery {
+// QueryFindingToScript chains the current query on the FindingToScript edge.
+func (fq *FindingQuery) QueryFindingToScript() *ScriptQuery {
 	query := &ScriptQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
@@ -141,7 +141,7 @@ func (fq *FindingQuery) QueryScript() *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, finding.ScriptTable, finding.ScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -319,62 +319,62 @@ func (fq *FindingQuery) Clone() *FindingQuery {
 		return nil
 	}
 	return &FindingQuery{
-		config:     fq.config,
-		limit:      fq.limit,
-		offset:     fq.offset,
-		order:      append([]OrderFunc{}, fq.order...),
-		predicates: append([]predicate.Finding{}, fq.predicates...),
-		withUser:   fq.withUser.Clone(),
-		withTag:    fq.withTag.Clone(),
-		withHost:   fq.withHost.Clone(),
-		withScript: fq.withScript.Clone(),
+		config:              fq.config,
+		limit:               fq.limit,
+		offset:              fq.offset,
+		order:               append([]OrderFunc{}, fq.order...),
+		predicates:          append([]predicate.Finding{}, fq.predicates...),
+		withFindingToUser:   fq.withFindingToUser.Clone(),
+		withFindingToTag:    fq.withFindingToTag.Clone(),
+		withFindingToHost:   fq.withFindingToHost.Clone(),
+		withFindingToScript: fq.withFindingToScript.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
 	}
 }
 
-//  WithUser tells the query-builder to eager-loads the nodes that are connected to
-// the "user" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithUser(opts ...func(*UserQuery)) *FindingQuery {
+//  WithFindingToUser tells the query-builder to eager-loads the nodes that are connected to
+// the "FindingToUser" edge. The optional arguments used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToUser(opts ...func(*UserQuery)) *FindingQuery {
 	query := &UserQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withUser = query
+	fq.withFindingToUser = query
 	return fq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithTag(opts ...func(*TagQuery)) *FindingQuery {
+//  WithFindingToTag tells the query-builder to eager-loads the nodes that are connected to
+// the "FindingToTag" edge. The optional arguments used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToTag(opts ...func(*TagQuery)) *FindingQuery {
 	query := &TagQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withTag = query
+	fq.withFindingToTag = query
 	return fq
 }
 
-//  WithHost tells the query-builder to eager-loads the nodes that are connected to
-// the "host" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithHost(opts ...func(*HostQuery)) *FindingQuery {
+//  WithFindingToHost tells the query-builder to eager-loads the nodes that are connected to
+// the "FindingToHost" edge. The optional arguments used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToHost(opts ...func(*HostQuery)) *FindingQuery {
 	query := &HostQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withHost = query
+	fq.withFindingToHost = query
 	return fq
 }
 
-//  WithScript tells the query-builder to eager-loads the nodes that are connected to
-// the "script" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithScript(opts ...func(*ScriptQuery)) *FindingQuery {
+//  WithFindingToScript tells the query-builder to eager-loads the nodes that are connected to
+// the "FindingToScript" edge. The optional arguments used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToScript(opts ...func(*ScriptQuery)) *FindingQuery {
 	query := &ScriptQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withScript = query
+	fq.withFindingToScript = query
 	return fq
 }
 
@@ -445,10 +445,10 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		nodes       = []*Finding{}
 		_spec       = fq.querySpec()
 		loadedTypes = [4]bool{
-			fq.withUser != nil,
-			fq.withTag != nil,
-			fq.withHost != nil,
-			fq.withScript != nil,
+			fq.withFindingToUser != nil,
+			fq.withFindingToTag != nil,
+			fq.withFindingToHost != nil,
+			fq.withFindingToScript != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -472,100 +472,100 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		return nodes, nil
 	}
 
-	if query := fq.withUser; query != nil {
+	if query := fq.withFindingToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
+			nodes[i].Edges.FindingToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.UserColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_user
+			fk := n.finding_finding_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.User = append(node.Edges.User, n)
+			node.Edges.FindingToUser = append(node.Edges.FindingToUser, n)
 		}
 	}
 
-	if query := fq.withTag; query != nil {
+	if query := fq.withFindingToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FindingToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.TagColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_tag
+			fk := n.finding_finding_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FindingToTag = append(node.Edges.FindingToTag, n)
 		}
 	}
 
-	if query := fq.withHost; query != nil {
+	if query := fq.withFindingToHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Host = []*Host{}
+			nodes[i].Edges.FindingToHost = []*Host{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Host(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.HostColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToHostColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_host
+			fk := n.finding_finding_to_host
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_host" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_host" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_host" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_host" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Host = append(node.Edges.Host, n)
+			node.Edges.FindingToHost = append(node.Edges.FindingToHost, n)
 		}
 	}
 
-	if query := fq.withScript; query != nil {
+	if query := fq.withFindingToScript; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		ids := make(map[int]*Finding, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
-			node.Edges.Script = []*Script{}
+			node.Edges.FindingToScript = []*Script{}
 		}
 		var (
 			edgeids []int
@@ -574,11 +574,11 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
 				Inverse: false,
-				Table:   finding.ScriptTable,
-				Columns: finding.ScriptPrimaryKey,
+				Table:   finding.FindingToScriptTable,
+				Columns: finding.FindingToScriptPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(finding.ScriptPrimaryKey[0], fks...))
+				s.Where(sql.InValues(finding.FindingToScriptPrimaryKey[0], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {
@@ -605,7 +605,7 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, fq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "script": %v`, err)
+			return nil, fmt.Errorf(`query edges "FindingToScript": %v`, err)
 		}
 		query.Where(script.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -615,10 +615,10 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		for _, n := range neighbors {
 			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "script" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected "FindingToScript" node returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Script = append(nodes[i].Edges.Script, n)
+				nodes[i].Edges.FindingToScript = append(nodes[i].Edges.FindingToScript, n)
 			}
 		}
 	}

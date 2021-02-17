@@ -40,19 +40,19 @@ func (du *DiskUpdate) AddSize(i int) *DiskUpdate {
 	return du
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (du *DiskUpdate) AddTagIDs(ids ...int) *DiskUpdate {
-	du.mutation.AddTagIDs(ids...)
+// AddDiskToTagIDs adds the DiskToTag edge to Tag by ids.
+func (du *DiskUpdate) AddDiskToTagIDs(ids ...int) *DiskUpdate {
+	du.mutation.AddDiskToTagIDs(ids...)
 	return du
 }
 
-// AddTag adds the tag edges to Tag.
-func (du *DiskUpdate) AddTag(t ...*Tag) *DiskUpdate {
+// AddDiskToTag adds the DiskToTag edges to Tag.
+func (du *DiskUpdate) AddDiskToTag(t ...*Tag) *DiskUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return du.AddTagIDs(ids...)
+	return du.AddDiskToTagIDs(ids...)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -60,25 +60,25 @@ func (du *DiskUpdate) Mutation() *DiskMutation {
 	return du.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (du *DiskUpdate) ClearTag() *DiskUpdate {
-	du.mutation.ClearTag()
+// ClearDiskToTag clears all "DiskToTag" edges to type Tag.
+func (du *DiskUpdate) ClearDiskToTag() *DiskUpdate {
+	du.mutation.ClearDiskToTag()
 	return du
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (du *DiskUpdate) RemoveTagIDs(ids ...int) *DiskUpdate {
-	du.mutation.RemoveTagIDs(ids...)
+// RemoveDiskToTagIDs removes the DiskToTag edge to Tag by ids.
+func (du *DiskUpdate) RemoveDiskToTagIDs(ids ...int) *DiskUpdate {
+	du.mutation.RemoveDiskToTagIDs(ids...)
 	return du
 }
 
-// RemoveTag removes tag edges to Tag.
-func (du *DiskUpdate) RemoveTag(t ...*Tag) *DiskUpdate {
+// RemoveDiskToTag removes DiskToTag edges to Tag.
+func (du *DiskUpdate) RemoveDiskToTag(t ...*Tag) *DiskUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return du.RemoveTagIDs(ids...)
+	return du.RemoveDiskToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -180,12 +180,12 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: disk.FieldSize,
 		})
 	}
-	if du.mutation.TagCleared() {
+	if du.mutation.DiskToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -196,12 +196,12 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RemovedTagIDs(); len(nodes) > 0 && !du.mutation.TagCleared() {
+	if nodes := du.mutation.RemovedDiskToTagIDs(); len(nodes) > 0 && !du.mutation.DiskToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -215,12 +215,12 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := du.mutation.DiskToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -265,19 +265,19 @@ func (duo *DiskUpdateOne) AddSize(i int) *DiskUpdateOne {
 	return duo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (duo *DiskUpdateOne) AddTagIDs(ids ...int) *DiskUpdateOne {
-	duo.mutation.AddTagIDs(ids...)
+// AddDiskToTagIDs adds the DiskToTag edge to Tag by ids.
+func (duo *DiskUpdateOne) AddDiskToTagIDs(ids ...int) *DiskUpdateOne {
+	duo.mutation.AddDiskToTagIDs(ids...)
 	return duo
 }
 
-// AddTag adds the tag edges to Tag.
-func (duo *DiskUpdateOne) AddTag(t ...*Tag) *DiskUpdateOne {
+// AddDiskToTag adds the DiskToTag edges to Tag.
+func (duo *DiskUpdateOne) AddDiskToTag(t ...*Tag) *DiskUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return duo.AddTagIDs(ids...)
+	return duo.AddDiskToTagIDs(ids...)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -285,25 +285,25 @@ func (duo *DiskUpdateOne) Mutation() *DiskMutation {
 	return duo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (duo *DiskUpdateOne) ClearTag() *DiskUpdateOne {
-	duo.mutation.ClearTag()
+// ClearDiskToTag clears all "DiskToTag" edges to type Tag.
+func (duo *DiskUpdateOne) ClearDiskToTag() *DiskUpdateOne {
+	duo.mutation.ClearDiskToTag()
 	return duo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (duo *DiskUpdateOne) RemoveTagIDs(ids ...int) *DiskUpdateOne {
-	duo.mutation.RemoveTagIDs(ids...)
+// RemoveDiskToTagIDs removes the DiskToTag edge to Tag by ids.
+func (duo *DiskUpdateOne) RemoveDiskToTagIDs(ids ...int) *DiskUpdateOne {
+	duo.mutation.RemoveDiskToTagIDs(ids...)
 	return duo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (duo *DiskUpdateOne) RemoveTag(t ...*Tag) *DiskUpdateOne {
+// RemoveDiskToTag removes DiskToTag edges to Tag.
+func (duo *DiskUpdateOne) RemoveDiskToTag(t ...*Tag) *DiskUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return duo.RemoveTagIDs(ids...)
+	return duo.RemoveDiskToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -403,12 +403,12 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Column: disk.FieldSize,
 		})
 	}
-	if duo.mutation.TagCleared() {
+	if duo.mutation.DiskToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -419,12 +419,12 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RemovedTagIDs(); len(nodes) > 0 && !duo.mutation.TagCleared() {
+	if nodes := duo.mutation.RemovedDiskToTagIDs(); len(nodes) > 0 && !duo.mutation.DiskToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -438,12 +438,12 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := duo.mutation.DiskToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

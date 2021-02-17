@@ -11,6 +11,8 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionCreate is the builder for creating a Competition entity.
@@ -32,19 +34,49 @@ func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
 	return cc
 }
 
-// AddDnIDs adds the dns edge to DNS by ids.
-func (cc *CompetitionCreate) AddDnIDs(ids ...int) *CompetitionCreate {
-	cc.mutation.AddDnIDs(ids...)
+// AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
+func (cc *CompetitionCreate) AddCompetitionToTagIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToTagIDs(ids...)
 	return cc
 }
 
-// AddDNS adds the dns edges to DNS.
-func (cc *CompetitionCreate) AddDNS(d ...*DNS) *CompetitionCreate {
+// AddCompetitionToTag adds the CompetitionToTag edges to Tag.
+func (cc *CompetitionCreate) AddCompetitionToTag(t ...*Tag) *CompetitionCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cc.AddCompetitionToTagIDs(ids...)
+}
+
+// AddCompetitionToDNSIDs adds the CompetitionToDNS edge to DNS by ids.
+func (cc *CompetitionCreate) AddCompetitionToDNSIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToDNSIDs(ids...)
+	return cc
+}
+
+// AddCompetitionToDNS adds the CompetitionToDNS edges to DNS.
+func (cc *CompetitionCreate) AddCompetitionToDNS(d ...*DNS) *CompetitionCreate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return cc.AddDnIDs(ids...)
+	return cc.AddCompetitionToDNSIDs(ids...)
+}
+
+// AddCompetitionToEnvironmentIDs adds the CompetitionToEnvironment edge to Environment by ids.
+func (cc *CompetitionCreate) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToEnvironmentIDs(ids...)
+	return cc
+}
+
+// AddCompetitionToEnvironment adds the CompetitionToEnvironment edges to Environment.
+func (cc *CompetitionCreate) AddCompetitionToEnvironment(e ...*Environment) *CompetitionCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cc.AddCompetitionToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -147,17 +179,55 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
-	if nodes := cc.mutation.DNSIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.CompetitionToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   competition.DNSTable,
-			Columns: []string{competition.DNSColumn},
+			Table:   competition.CompetitionToTagTable,
+			Columns: []string{competition.CompetitionToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   competition.CompetitionToDNSTable,
+			Columns: []string{competition.CompetitionToDNSColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: dns.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   competition.CompetitionToEnvironmentTable,
+			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

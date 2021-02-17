@@ -27,8 +27,8 @@ type IncludedNetwork struct {
 
 // IncludedNetworkEdges holds the relations/edges for other nodes in the graph.
 type IncludedNetworkEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// IncludedNetworkToTag holds the value of the IncludedNetworkToTag edge.
+	IncludedNetworkToTag []*Tag
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
 	IncludedNetworkToEnvironment []*Environment
 	// loadedTypes holds the information for reporting if a
@@ -36,13 +36,13 @@ type IncludedNetworkEdges struct {
 	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// IncludedNetworkToTagOrErr returns the IncludedNetworkToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e IncludedNetworkEdges) TagOrErr() ([]*Tag, error) {
+func (e IncludedNetworkEdges) IncludedNetworkToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.IncludedNetworkToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "IncludedNetworkToTag"}
 }
 
 // IncludedNetworkToEnvironmentOrErr returns the IncludedNetworkToEnvironment value or an error if the edge
@@ -91,9 +91,9 @@ func (in *IncludedNetwork) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryTag queries the tag edge of the IncludedNetwork.
-func (in *IncludedNetwork) QueryTag() *TagQuery {
-	return (&IncludedNetworkClient{config: in.config}).QueryTag(in)
+// QueryIncludedNetworkToTag queries the IncludedNetworkToTag edge of the IncludedNetwork.
+func (in *IncludedNetwork) QueryIncludedNetworkToTag() *TagQuery {
+	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToTag(in)
 }
 
 // QueryIncludedNetworkToEnvironment queries the IncludedNetworkToEnvironment edge of the IncludedNetwork.

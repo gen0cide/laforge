@@ -87,19 +87,19 @@ func (rfu *RemoteFileUpdate) SetExt(s string) *RemoteFileUpdate {
 	return rfu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (rfu *RemoteFileUpdate) AddTagIDs(ids ...int) *RemoteFileUpdate {
-	rfu.mutation.AddTagIDs(ids...)
+// AddRemoteFileToTagIDs adds the RemoteFileToTag edge to Tag by ids.
+func (rfu *RemoteFileUpdate) AddRemoteFileToTagIDs(ids ...int) *RemoteFileUpdate {
+	rfu.mutation.AddRemoteFileToTagIDs(ids...)
 	return rfu
 }
 
-// AddTag adds the tag edges to Tag.
-func (rfu *RemoteFileUpdate) AddTag(t ...*Tag) *RemoteFileUpdate {
+// AddRemoteFileToTag adds the RemoteFileToTag edges to Tag.
+func (rfu *RemoteFileUpdate) AddRemoteFileToTag(t ...*Tag) *RemoteFileUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return rfu.AddTagIDs(ids...)
+	return rfu.AddRemoteFileToTagIDs(ids...)
 }
 
 // Mutation returns the RemoteFileMutation object of the builder.
@@ -107,25 +107,25 @@ func (rfu *RemoteFileUpdate) Mutation() *RemoteFileMutation {
 	return rfu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (rfu *RemoteFileUpdate) ClearTag() *RemoteFileUpdate {
-	rfu.mutation.ClearTag()
+// ClearRemoteFileToTag clears all "RemoteFileToTag" edges to type Tag.
+func (rfu *RemoteFileUpdate) ClearRemoteFileToTag() *RemoteFileUpdate {
+	rfu.mutation.ClearRemoteFileToTag()
 	return rfu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (rfu *RemoteFileUpdate) RemoveTagIDs(ids ...int) *RemoteFileUpdate {
-	rfu.mutation.RemoveTagIDs(ids...)
+// RemoveRemoteFileToTagIDs removes the RemoteFileToTag edge to Tag by ids.
+func (rfu *RemoteFileUpdate) RemoveRemoteFileToTagIDs(ids ...int) *RemoteFileUpdate {
+	rfu.mutation.RemoveRemoteFileToTagIDs(ids...)
 	return rfu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (rfu *RemoteFileUpdate) RemoveTag(t ...*Tag) *RemoteFileUpdate {
+// RemoveRemoteFileToTag removes RemoteFileToTag edges to Tag.
+func (rfu *RemoteFileUpdate) RemoveRemoteFileToTag(t ...*Tag) *RemoteFileUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return rfu.RemoveTagIDs(ids...)
+	return rfu.RemoveRemoteFileToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -267,12 +267,12 @@ func (rfu *RemoteFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: remotefile.FieldExt,
 		})
 	}
-	if rfu.mutation.TagCleared() {
+	if rfu.mutation.RemoteFileToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -283,12 +283,12 @@ func (rfu *RemoteFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rfu.mutation.RemovedTagIDs(); len(nodes) > 0 && !rfu.mutation.TagCleared() {
+	if nodes := rfu.mutation.RemovedRemoteFileToTagIDs(); len(nodes) > 0 && !rfu.mutation.RemoteFileToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -302,12 +302,12 @@ func (rfu *RemoteFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rfu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := rfu.mutation.RemoteFileToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -399,19 +399,19 @@ func (rfuo *RemoteFileUpdateOne) SetExt(s string) *RemoteFileUpdateOne {
 	return rfuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (rfuo *RemoteFileUpdateOne) AddTagIDs(ids ...int) *RemoteFileUpdateOne {
-	rfuo.mutation.AddTagIDs(ids...)
+// AddRemoteFileToTagIDs adds the RemoteFileToTag edge to Tag by ids.
+func (rfuo *RemoteFileUpdateOne) AddRemoteFileToTagIDs(ids ...int) *RemoteFileUpdateOne {
+	rfuo.mutation.AddRemoteFileToTagIDs(ids...)
 	return rfuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (rfuo *RemoteFileUpdateOne) AddTag(t ...*Tag) *RemoteFileUpdateOne {
+// AddRemoteFileToTag adds the RemoteFileToTag edges to Tag.
+func (rfuo *RemoteFileUpdateOne) AddRemoteFileToTag(t ...*Tag) *RemoteFileUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return rfuo.AddTagIDs(ids...)
+	return rfuo.AddRemoteFileToTagIDs(ids...)
 }
 
 // Mutation returns the RemoteFileMutation object of the builder.
@@ -419,25 +419,25 @@ func (rfuo *RemoteFileUpdateOne) Mutation() *RemoteFileMutation {
 	return rfuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (rfuo *RemoteFileUpdateOne) ClearTag() *RemoteFileUpdateOne {
-	rfuo.mutation.ClearTag()
+// ClearRemoteFileToTag clears all "RemoteFileToTag" edges to type Tag.
+func (rfuo *RemoteFileUpdateOne) ClearRemoteFileToTag() *RemoteFileUpdateOne {
+	rfuo.mutation.ClearRemoteFileToTag()
 	return rfuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (rfuo *RemoteFileUpdateOne) RemoveTagIDs(ids ...int) *RemoteFileUpdateOne {
-	rfuo.mutation.RemoveTagIDs(ids...)
+// RemoveRemoteFileToTagIDs removes the RemoteFileToTag edge to Tag by ids.
+func (rfuo *RemoteFileUpdateOne) RemoveRemoteFileToTagIDs(ids ...int) *RemoteFileUpdateOne {
+	rfuo.mutation.RemoveRemoteFileToTagIDs(ids...)
 	return rfuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (rfuo *RemoteFileUpdateOne) RemoveTag(t ...*Tag) *RemoteFileUpdateOne {
+// RemoveRemoteFileToTag removes RemoteFileToTag edges to Tag.
+func (rfuo *RemoteFileUpdateOne) RemoveRemoteFileToTag(t ...*Tag) *RemoteFileUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return rfuo.RemoveTagIDs(ids...)
+	return rfuo.RemoveRemoteFileToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -577,12 +577,12 @@ func (rfuo *RemoteFileUpdateOne) sqlSave(ctx context.Context) (_node *RemoteFile
 			Column: remotefile.FieldExt,
 		})
 	}
-	if rfuo.mutation.TagCleared() {
+	if rfuo.mutation.RemoteFileToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -593,12 +593,12 @@ func (rfuo *RemoteFileUpdateOne) sqlSave(ctx context.Context) (_node *RemoteFile
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rfuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !rfuo.mutation.TagCleared() {
+	if nodes := rfuo.mutation.RemovedRemoteFileToTagIDs(); len(nodes) > 0 && !rfuo.mutation.RemoteFileToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -612,12 +612,12 @@ func (rfuo *RemoteFileUpdateOne) sqlSave(ctx context.Context) (_node *RemoteFile
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rfuo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := rfuo.mutation.RemoteFileToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   remotefile.TagTable,
-			Columns: []string{remotefile.TagColumn},
+			Table:   remotefile.RemoteFileToTagTable,
+			Columns: []string{remotefile.RemoteFileToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

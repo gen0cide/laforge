@@ -96,34 +96,40 @@ func (cu *CommandUpdate) SetVars(m map[string]string) *CommandUpdate {
 	return cu
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (cu *CommandUpdate) AddUserIDs(ids ...int) *CommandUpdate {
-	cu.mutation.AddUserIDs(ids...)
+// SetTags sets the tags field.
+func (cu *CommandUpdate) SetTags(m map[string]string) *CommandUpdate {
+	cu.mutation.SetTags(m)
 	return cu
 }
 
-// AddUser adds the user edges to User.
-func (cu *CommandUpdate) AddUser(u ...*User) *CommandUpdate {
+// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+func (cu *CommandUpdate) AddCommandToUserIDs(ids ...int) *CommandUpdate {
+	cu.mutation.AddCommandToUserIDs(ids...)
+	return cu
+}
+
+// AddCommandToUser adds the CommandToUser edges to User.
+func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cu.AddUserIDs(ids...)
+	return cu.AddCommandToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cu *CommandUpdate) AddTagIDs(ids ...int) *CommandUpdate {
-	cu.mutation.AddTagIDs(ids...)
+// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+func (cu *CommandUpdate) AddCommandToTagIDs(ids ...int) *CommandUpdate {
+	cu.mutation.AddCommandToTagIDs(ids...)
 	return cu
 }
 
-// AddTag adds the tag edges to Tag.
-func (cu *CommandUpdate) AddTag(t ...*Tag) *CommandUpdate {
+// AddCommandToTag adds the CommandToTag edges to Tag.
+func (cu *CommandUpdate) AddCommandToTag(t ...*Tag) *CommandUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return cu.AddTagIDs(ids...)
+	return cu.AddCommandToTagIDs(ids...)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -131,46 +137,46 @@ func (cu *CommandUpdate) Mutation() *CommandMutation {
 	return cu.mutation
 }
 
-// ClearUser clears all "user" edges to type User.
-func (cu *CommandUpdate) ClearUser() *CommandUpdate {
-	cu.mutation.ClearUser()
+// ClearCommandToUser clears all "CommandToUser" edges to type User.
+func (cu *CommandUpdate) ClearCommandToUser() *CommandUpdate {
+	cu.mutation.ClearCommandToUser()
 	return cu
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (cu *CommandUpdate) RemoveUserIDs(ids ...int) *CommandUpdate {
-	cu.mutation.RemoveUserIDs(ids...)
+// RemoveCommandToUserIDs removes the CommandToUser edge to User by ids.
+func (cu *CommandUpdate) RemoveCommandToUserIDs(ids ...int) *CommandUpdate {
+	cu.mutation.RemoveCommandToUserIDs(ids...)
 	return cu
 }
 
-// RemoveUser removes user edges to User.
-func (cu *CommandUpdate) RemoveUser(u ...*User) *CommandUpdate {
+// RemoveCommandToUser removes CommandToUser edges to User.
+func (cu *CommandUpdate) RemoveCommandToUser(u ...*User) *CommandUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cu.RemoveUserIDs(ids...)
+	return cu.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (cu *CommandUpdate) ClearTag() *CommandUpdate {
-	cu.mutation.ClearTag()
+// ClearCommandToTag clears all "CommandToTag" edges to type Tag.
+func (cu *CommandUpdate) ClearCommandToTag() *CommandUpdate {
+	cu.mutation.ClearCommandToTag()
 	return cu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (cu *CommandUpdate) RemoveTagIDs(ids ...int) *CommandUpdate {
-	cu.mutation.RemoveTagIDs(ids...)
+// RemoveCommandToTagIDs removes the CommandToTag edge to Tag by ids.
+func (cu *CommandUpdate) RemoveCommandToTagIDs(ids ...int) *CommandUpdate {
+	cu.mutation.RemoveCommandToTagIDs(ids...)
 	return cu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (cu *CommandUpdate) RemoveTag(t ...*Tag) *CommandUpdate {
+// RemoveCommandToTag removes CommandToTag edges to Tag.
+func (cu *CommandUpdate) RemoveCommandToTag(t ...*Tag) *CommandUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return cu.RemoveTagIDs(ids...)
+	return cu.RemoveCommandToTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -340,12 +346,19 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: command.FieldVars,
 		})
 	}
-	if cu.mutation.UserCleared() {
+	if value, ok := cu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: command.FieldTags,
+		})
+	}
+	if cu.mutation.CommandToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -356,12 +369,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.RemovedUserIDs(); len(nodes) > 0 && !cu.mutation.UserCleared() {
+	if nodes := cu.mutation.RemovedCommandToUserIDs(); len(nodes) > 0 && !cu.mutation.CommandToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -375,12 +388,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := cu.mutation.CommandToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -394,12 +407,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cu.mutation.TagCleared() {
+	if cu.mutation.CommandToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -410,12 +423,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.RemovedTagIDs(); len(nodes) > 0 && !cu.mutation.TagCleared() {
+	if nodes := cu.mutation.RemovedCommandToTagIDs(); len(nodes) > 0 && !cu.mutation.CommandToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -429,12 +442,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := cu.mutation.CommandToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -534,34 +547,40 @@ func (cuo *CommandUpdateOne) SetVars(m map[string]string) *CommandUpdateOne {
 	return cuo
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (cuo *CommandUpdateOne) AddUserIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.AddUserIDs(ids...)
+// SetTags sets the tags field.
+func (cuo *CommandUpdateOne) SetTags(m map[string]string) *CommandUpdateOne {
+	cuo.mutation.SetTags(m)
 	return cuo
 }
 
-// AddUser adds the user edges to User.
-func (cuo *CommandUpdateOne) AddUser(u ...*User) *CommandUpdateOne {
+// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+func (cuo *CommandUpdateOne) AddCommandToUserIDs(ids ...int) *CommandUpdateOne {
+	cuo.mutation.AddCommandToUserIDs(ids...)
+	return cuo
+}
+
+// AddCommandToUser adds the CommandToUser edges to User.
+func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cuo.AddUserIDs(ids...)
+	return cuo.AddCommandToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cuo *CommandUpdateOne) AddTagIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.AddTagIDs(ids...)
+// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+func (cuo *CommandUpdateOne) AddCommandToTagIDs(ids ...int) *CommandUpdateOne {
+	cuo.mutation.AddCommandToTagIDs(ids...)
 	return cuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (cuo *CommandUpdateOne) AddTag(t ...*Tag) *CommandUpdateOne {
+// AddCommandToTag adds the CommandToTag edges to Tag.
+func (cuo *CommandUpdateOne) AddCommandToTag(t ...*Tag) *CommandUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return cuo.AddTagIDs(ids...)
+	return cuo.AddCommandToTagIDs(ids...)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -569,46 +588,46 @@ func (cuo *CommandUpdateOne) Mutation() *CommandMutation {
 	return cuo.mutation
 }
 
-// ClearUser clears all "user" edges to type User.
-func (cuo *CommandUpdateOne) ClearUser() *CommandUpdateOne {
-	cuo.mutation.ClearUser()
+// ClearCommandToUser clears all "CommandToUser" edges to type User.
+func (cuo *CommandUpdateOne) ClearCommandToUser() *CommandUpdateOne {
+	cuo.mutation.ClearCommandToUser()
 	return cuo
 }
 
-// RemoveUserIDs removes the user edge to User by ids.
-func (cuo *CommandUpdateOne) RemoveUserIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.RemoveUserIDs(ids...)
+// RemoveCommandToUserIDs removes the CommandToUser edge to User by ids.
+func (cuo *CommandUpdateOne) RemoveCommandToUserIDs(ids ...int) *CommandUpdateOne {
+	cuo.mutation.RemoveCommandToUserIDs(ids...)
 	return cuo
 }
 
-// RemoveUser removes user edges to User.
-func (cuo *CommandUpdateOne) RemoveUser(u ...*User) *CommandUpdateOne {
+// RemoveCommandToUser removes CommandToUser edges to User.
+func (cuo *CommandUpdateOne) RemoveCommandToUser(u ...*User) *CommandUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cuo.RemoveUserIDs(ids...)
+	return cuo.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (cuo *CommandUpdateOne) ClearTag() *CommandUpdateOne {
-	cuo.mutation.ClearTag()
+// ClearCommandToTag clears all "CommandToTag" edges to type Tag.
+func (cuo *CommandUpdateOne) ClearCommandToTag() *CommandUpdateOne {
+	cuo.mutation.ClearCommandToTag()
 	return cuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (cuo *CommandUpdateOne) RemoveTagIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.RemoveTagIDs(ids...)
+// RemoveCommandToTagIDs removes the CommandToTag edge to Tag by ids.
+func (cuo *CommandUpdateOne) RemoveCommandToTagIDs(ids ...int) *CommandUpdateOne {
+	cuo.mutation.RemoveCommandToTagIDs(ids...)
 	return cuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (cuo *CommandUpdateOne) RemoveTag(t ...*Tag) *CommandUpdateOne {
+// RemoveCommandToTag removes CommandToTag edges to Tag.
+func (cuo *CommandUpdateOne) RemoveCommandToTag(t ...*Tag) *CommandUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return cuo.RemoveTagIDs(ids...)
+	return cuo.RemoveCommandToTagIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -776,12 +795,19 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Column: command.FieldVars,
 		})
 	}
-	if cuo.mutation.UserCleared() {
+	if value, ok := cuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: command.FieldTags,
+		})
+	}
+	if cuo.mutation.CommandToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -792,12 +818,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.RemovedUserIDs(); len(nodes) > 0 && !cuo.mutation.UserCleared() {
+	if nodes := cuo.mutation.RemovedCommandToUserIDs(); len(nodes) > 0 && !cuo.mutation.CommandToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -811,12 +837,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := cuo.mutation.CommandToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -830,12 +856,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cuo.mutation.TagCleared() {
+	if cuo.mutation.CommandToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -846,12 +872,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !cuo.mutation.TagCleared() {
+	if nodes := cuo.mutation.RemovedCommandToTagIDs(); len(nodes) > 0 && !cuo.mutation.CommandToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -865,12 +891,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := cuo.mutation.CommandToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

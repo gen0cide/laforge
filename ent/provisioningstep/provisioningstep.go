@@ -12,61 +12,70 @@ const (
 	// FieldStepNumber holds the string denoting the step_number field in the database.
 	FieldStepNumber = "step_number"
 
-	// EdgeStatus holds the string denoting the status edge name in mutations.
-	EdgeStatus = "status"
-	// EdgeProvisionedHost holds the string denoting the provisioned_host edge name in mutations.
-	EdgeProvisionedHost = "provisioned_host"
-	// EdgeScript holds the string denoting the script edge name in mutations.
-	EdgeScript = "script"
-	// EdgeCommand holds the string denoting the command edge name in mutations.
-	EdgeCommand = "command"
-	// EdgeDNSRecord holds the string denoting the dns_record edge name in mutations.
-	EdgeDNSRecord = "dns_record"
-	// EdgeRemoteFile holds the string denoting the remote_file edge name in mutations.
-	EdgeRemoteFile = "remote_file"
+	// EdgeProvisioningStepToTag holds the string denoting the provisioningsteptotag edge name in mutations.
+	EdgeProvisioningStepToTag = "ProvisioningStepToTag"
+	// EdgeProvisioningStepToStatus holds the string denoting the provisioningsteptostatus edge name in mutations.
+	EdgeProvisioningStepToStatus = "ProvisioningStepToStatus"
+	// EdgeProvisioningStepToProvisionedHost holds the string denoting the provisioningsteptoprovisionedhost edge name in mutations.
+	EdgeProvisioningStepToProvisionedHost = "ProvisioningStepToProvisionedHost"
+	// EdgeProvisioningStepToScript holds the string denoting the provisioningsteptoscript edge name in mutations.
+	EdgeProvisioningStepToScript = "ProvisioningStepToScript"
+	// EdgeProvisioningStepToCommand holds the string denoting the provisioningsteptocommand edge name in mutations.
+	EdgeProvisioningStepToCommand = "ProvisioningStepToCommand"
+	// EdgeProvisioningStepToDNSRecord holds the string denoting the provisioningsteptodnsrecord edge name in mutations.
+	EdgeProvisioningStepToDNSRecord = "ProvisioningStepToDNSRecord"
+	// EdgeProvisioningStepToRemoteFile holds the string denoting the provisioningsteptoremotefile edge name in mutations.
+	EdgeProvisioningStepToRemoteFile = "ProvisioningStepToRemoteFile"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
-	// StatusTable is the table the holds the status relation/edge.
-	StatusTable = "status"
-	// StatusInverseTable is the table name for the Status entity.
+	// ProvisioningStepToTagTable is the table the holds the ProvisioningStepToTag relation/edge.
+	ProvisioningStepToTagTable = "tags"
+	// ProvisioningStepToTagInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	ProvisioningStepToTagInverseTable = "tags"
+	// ProvisioningStepToTagColumn is the table column denoting the ProvisioningStepToTag relation/edge.
+	ProvisioningStepToTagColumn = "provisioning_step_provisioning_step_to_tag"
+	// ProvisioningStepToStatusTable is the table the holds the ProvisioningStepToStatus relation/edge.
+	ProvisioningStepToStatusTable = "status"
+	// ProvisioningStepToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
-	StatusInverseTable = "status"
-	// StatusColumn is the table column denoting the status relation/edge.
-	StatusColumn = "provisioning_step_status"
-	// ProvisionedHostTable is the table the holds the provisioned_host relation/edge. The primary key declared below.
-	ProvisionedHostTable = "provisioning_step_provisioned_host"
-	// ProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
+	ProvisioningStepToStatusInverseTable = "status"
+	// ProvisioningStepToStatusColumn is the table column denoting the ProvisioningStepToStatus relation/edge.
+	ProvisioningStepToStatusColumn = "provisioning_step_provisioning_step_to_status"
+	// ProvisioningStepToProvisionedHostTable is the table the holds the ProvisioningStepToProvisionedHost relation/edge. The primary key declared below.
+	ProvisioningStepToProvisionedHostTable = "provisioning_step_ProvisioningStepToProvisionedHost"
+	// ProvisioningStepToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
-	ProvisionedHostInverseTable = "provisioned_hosts"
-	// ScriptTable is the table the holds the script relation/edge.
-	ScriptTable = "scripts"
-	// ScriptInverseTable is the table name for the Script entity.
+	ProvisioningStepToProvisionedHostInverseTable = "provisioned_hosts"
+	// ProvisioningStepToScriptTable is the table the holds the ProvisioningStepToScript relation/edge.
+	ProvisioningStepToScriptTable = "scripts"
+	// ProvisioningStepToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
-	ScriptInverseTable = "scripts"
-	// ScriptColumn is the table column denoting the script relation/edge.
-	ScriptColumn = "provisioning_step_script"
-	// CommandTable is the table the holds the command relation/edge.
-	CommandTable = "commands"
-	// CommandInverseTable is the table name for the Command entity.
+	ProvisioningStepToScriptInverseTable = "scripts"
+	// ProvisioningStepToScriptColumn is the table column denoting the ProvisioningStepToScript relation/edge.
+	ProvisioningStepToScriptColumn = "provisioning_step_provisioning_step_to_script"
+	// ProvisioningStepToCommandTable is the table the holds the ProvisioningStepToCommand relation/edge.
+	ProvisioningStepToCommandTable = "commands"
+	// ProvisioningStepToCommandInverseTable is the table name for the Command entity.
 	// It exists in this package in order to avoid circular dependency with the "command" package.
-	CommandInverseTable = "commands"
-	// CommandColumn is the table column denoting the command relation/edge.
-	CommandColumn = "provisioning_step_command"
-	// DNSRecordTable is the table the holds the dns_record relation/edge.
-	DNSRecordTable = "dns_records"
-	// DNSRecordInverseTable is the table name for the DNSRecord entity.
+	ProvisioningStepToCommandInverseTable = "commands"
+	// ProvisioningStepToCommandColumn is the table column denoting the ProvisioningStepToCommand relation/edge.
+	ProvisioningStepToCommandColumn = "provisioning_step_provisioning_step_to_command"
+	// ProvisioningStepToDNSRecordTable is the table the holds the ProvisioningStepToDNSRecord relation/edge.
+	ProvisioningStepToDNSRecordTable = "dns_records"
+	// ProvisioningStepToDNSRecordInverseTable is the table name for the DNSRecord entity.
 	// It exists in this package in order to avoid circular dependency with the "dnsrecord" package.
-	DNSRecordInverseTable = "dns_records"
-	// DNSRecordColumn is the table column denoting the dns_record relation/edge.
-	DNSRecordColumn = "provisioning_step_dns_record"
-	// RemoteFileTable is the table the holds the remote_file relation/edge.
-	RemoteFileTable = "remote_files"
-	// RemoteFileInverseTable is the table name for the RemoteFile entity.
+	ProvisioningStepToDNSRecordInverseTable = "dns_records"
+	// ProvisioningStepToDNSRecordColumn is the table column denoting the ProvisioningStepToDNSRecord relation/edge.
+	ProvisioningStepToDNSRecordColumn = "provisioning_step_provisioning_step_to_dns_record"
+	// ProvisioningStepToRemoteFileTable is the table the holds the ProvisioningStepToRemoteFile relation/edge.
+	ProvisioningStepToRemoteFileTable = "remote_files"
+	// ProvisioningStepToRemoteFileInverseTable is the table name for the RemoteFile entity.
 	// It exists in this package in order to avoid circular dependency with the "remotefile" package.
-	RemoteFileInverseTable = "remote_files"
-	// RemoteFileColumn is the table column denoting the remote_file relation/edge.
-	RemoteFileColumn = "provisioning_step_remote_file"
+	ProvisioningStepToRemoteFileInverseTable = "remote_files"
+	// ProvisioningStepToRemoteFileColumn is the table column denoting the ProvisioningStepToRemoteFile relation/edge.
+	ProvisioningStepToRemoteFileColumn = "provisioning_step_provisioning_step_to_remote_file"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.
@@ -77,9 +86,9 @@ var Columns = []string{
 }
 
 var (
-	// ProvisionedHostPrimaryKey and ProvisionedHostColumn2 are the table columns denoting the
-	// primary key for the provisioned_host relation (M2M).
-	ProvisionedHostPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
+	// ProvisioningStepToProvisionedHostPrimaryKey and ProvisioningStepToProvisionedHostColumn2 are the table columns denoting the
+	// primary key for the ProvisioningStepToProvisionedHost relation (M2M).
+	ProvisioningStepToProvisionedHostPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

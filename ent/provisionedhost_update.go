@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisionedHostUpdate is the builder for updating ProvisionedHost entities.
@@ -37,79 +38,94 @@ func (phu *ProvisionedHostUpdate) SetSubnetIP(s string) *ProvisionedHostUpdate {
 	return phu
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (phu *ProvisionedHostUpdate) AddStatuIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddStatuIDs(ids...)
+// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToTagIDs(ids...)
 	return phu
 }
 
-// AddStatus adds the status edges to Status.
-func (phu *ProvisionedHostUpdate) AddStatus(s ...*Status) *ProvisionedHostUpdate {
+// AddProvisionedHostToTag adds the ProvisionedHostToTag edges to Tag.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return phu.AddProvisionedHostToTagIDs(ids...)
+}
+
+// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToStatuIDs(ids...)
+	return phu
+}
+
+// AddProvisionedHostToStatus adds the ProvisionedHostToStatus edges to Status.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return phu.AddStatuIDs(ids...)
+	return phu.AddProvisionedHostToStatuIDs(ids...)
 }
 
-// AddProvisionedNetworkIDs adds the provisioned_network edge to ProvisionedNetwork by ids.
-func (phu *ProvisionedHostUpdate) AddProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddProvisionedNetworkIDs(ids...)
+// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phu
 }
 
-// AddProvisionedNetwork adds the provisioned_network edges to ProvisionedNetwork.
-func (phu *ProvisionedHostUpdate) AddProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
+// AddProvisionedHostToProvisionedNetwork adds the ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phu.AddProvisionedNetworkIDs(ids...)
+	return phu.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// AddHostIDs adds the host edge to Host by ids.
-func (phu *ProvisionedHostUpdate) AddHostIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddHostIDs(ids...)
+// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToHostIDs(ids...)
 	return phu
 }
 
-// AddHost adds the host edges to Host.
-func (phu *ProvisionedHostUpdate) AddHost(h ...*Host) *ProvisionedHostUpdate {
+// AddProvisionedHostToHost adds the ProvisionedHostToHost edges to Host.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return phu.AddHostIDs(ids...)
+	return phu.AddProvisionedHostToHostIDs(ids...)
 }
 
-// AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
-func (phu *ProvisionedHostUpdate) AddProvisionedStepIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddProvisionedStepIDs(ids...)
+// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
-// AddProvisionedSteps adds the provisioned_steps edges to ProvisioningStep.
-func (phu *ProvisionedHostUpdate) AddProvisionedSteps(p ...*ProvisioningStep) *ProvisionedHostUpdate {
+// AddProvisionedHostToProvisioningStep adds the ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phu.AddProvisionedStepIDs(ids...)
+	return phu.AddProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
-func (phu *ProvisionedHostUpdate) AddAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddAgentStatuIDs(ids...)
+// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
-// AddAgentStatus adds the agent_status edges to AgentStatus.
-func (phu *ProvisionedHostUpdate) AddAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
+// AddProvisionedHostToAgentStatus adds the ProvisionedHostToAgentStatus edges to AgentStatus.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return phu.AddAgentStatuIDs(ids...)
+	return phu.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -117,109 +133,130 @@ func (phu *ProvisionedHostUpdate) Mutation() *ProvisionedHostMutation {
 	return phu.mutation
 }
 
-// ClearStatus clears all "status" edges to type Status.
-func (phu *ProvisionedHostUpdate) ClearStatus() *ProvisionedHostUpdate {
-	phu.mutation.ClearStatus()
+// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to type Tag.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToTag() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToTag()
 	return phu
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (phu *ProvisionedHostUpdate) RemoveStatuIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveStatuIDs(ids...)
+// RemoveProvisionedHostToTagIDs removes the ProvisionedHostToTag edge to Tag by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToTagIDs(ids...)
 	return phu
 }
 
-// RemoveStatus removes status edges to Status.
-func (phu *ProvisionedHostUpdate) RemoveStatus(s ...*Status) *ProvisionedHostUpdate {
+// RemoveProvisionedHostToTag removes ProvisionedHostToTag edges to Tag.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return phu.RemoveProvisionedHostToTagIDs(ids...)
+}
+
+// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to type Status.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToStatus() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToStatus()
+	return phu
+}
+
+// RemoveProvisionedHostToStatuIDs removes the ProvisionedHostToStatus edge to Status by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToStatuIDs(ids...)
+	return phu
+}
+
+// RemoveProvisionedHostToStatus removes ProvisionedHostToStatus edges to Status.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return phu.RemoveStatuIDs(ids...)
+	return phu.RemoveProvisionedHostToStatuIDs(ids...)
 }
 
-// ClearProvisionedNetwork clears all "provisioned_network" edges to type ProvisionedNetwork.
-func (phu *ProvisionedHostUpdate) ClearProvisionedNetwork() *ProvisionedHostUpdate {
-	phu.mutation.ClearProvisionedNetwork()
+// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to type ProvisionedNetwork.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisionedNetwork() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToProvisionedNetwork()
 	return phu
 }
 
-// RemoveProvisionedNetworkIDs removes the provisioned_network edge to ProvisionedNetwork by ids.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveProvisionedNetworkIDs(ids...)
+// RemoveProvisionedHostToProvisionedNetworkIDs removes the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedNetwork removes provisioned_network edges to ProvisionedNetwork.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
+// RemoveProvisionedHostToProvisionedNetwork removes ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phu.RemoveProvisionedNetworkIDs(ids...)
+	return phu.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// ClearHost clears all "host" edges to type Host.
-func (phu *ProvisionedHostUpdate) ClearHost() *ProvisionedHostUpdate {
-	phu.mutation.ClearHost()
+// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to type Host.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToHost() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToHost()
 	return phu
 }
 
-// RemoveHostIDs removes the host edge to Host by ids.
-func (phu *ProvisionedHostUpdate) RemoveHostIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveHostIDs(ids...)
+// RemoveProvisionedHostToHostIDs removes the ProvisionedHostToHost edge to Host by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToHostIDs(ids...)
 	return phu
 }
 
-// RemoveHost removes host edges to Host.
-func (phu *ProvisionedHostUpdate) RemoveHost(h ...*Host) *ProvisionedHostUpdate {
+// RemoveProvisionedHostToHost removes ProvisionedHostToHost edges to Host.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return phu.RemoveHostIDs(ids...)
+	return phu.RemoveProvisionedHostToHostIDs(ids...)
 }
 
-// ClearProvisionedSteps clears all "provisioned_steps" edges to type ProvisioningStep.
-func (phu *ProvisionedHostUpdate) ClearProvisionedSteps() *ProvisionedHostUpdate {
-	phu.mutation.ClearProvisionedSteps()
+// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to type ProvisioningStep.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisioningStep() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToProvisioningStep()
 	return phu
 }
 
-// RemoveProvisionedStepIDs removes the provisioned_steps edge to ProvisioningStep by ids.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedStepIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveProvisionedStepIDs(ids...)
+// RemoveProvisionedHostToProvisioningStepIDs removes the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedSteps removes provisioned_steps edges to ProvisioningStep.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedSteps(p ...*ProvisioningStep) *ProvisionedHostUpdate {
+// RemoveProvisionedHostToProvisioningStep removes ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phu.RemoveProvisionedStepIDs(ids...)
+	return phu.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// ClearAgentStatus clears all "agent_status" edges to type AgentStatus.
-func (phu *ProvisionedHostUpdate) ClearAgentStatus() *ProvisionedHostUpdate {
-	phu.mutation.ClearAgentStatus()
+// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to type AgentStatus.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToAgentStatus() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToAgentStatus()
 	return phu
 }
 
-// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
-func (phu *ProvisionedHostUpdate) RemoveAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveAgentStatuIDs(ids...)
+// RemoveProvisionedHostToAgentStatuIDs removes the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
-// RemoveAgentStatus removes agent_status edges to AgentStatus.
-func (phu *ProvisionedHostUpdate) RemoveAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
+// RemoveProvisionedHostToAgentStatus removes ProvisionedHostToAgentStatus edges to AgentStatus.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return phu.RemoveAgentStatuIDs(ids...)
+	return phu.RemoveProvisionedHostToAgentStatuIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -298,12 +335,66 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Column: provisionedhost.FieldSubnetIP,
 		})
 	}
-	if phu.mutation.StatusCleared() {
+	if phu.mutation.ProvisionedHostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.RemovedProvisionedHostToTagIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToTagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phu.mutation.ProvisionedHostToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -314,12 +405,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.RemovedStatusIDs(); len(nodes) > 0 && !phu.mutation.StatusCleared() {
+	if nodes := phu.mutation.RemovedProvisionedHostToStatusIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -333,12 +424,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.StatusIDs(); len(nodes) > 0 {
+	if nodes := phu.mutation.ProvisionedHostToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -352,12 +443,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phu.mutation.ProvisionedNetworkCleared() {
+	if phu.mutation.ProvisionedHostToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -368,12 +459,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.RemovedProvisionedNetworkIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedNetworkCleared() {
+	if nodes := phu.mutation.RemovedProvisionedHostToProvisionedNetworkIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -387,12 +478,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.ProvisionedNetworkIDs(); len(nodes) > 0 {
+	if nodes := phu.mutation.ProvisionedHostToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -406,12 +497,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phu.mutation.HostCleared() {
+	if phu.mutation.ProvisionedHostToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -422,12 +513,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.RemovedHostIDs(); len(nodes) > 0 && !phu.mutation.HostCleared() {
+	if nodes := phu.mutation.RemovedProvisionedHostToHostIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -441,12 +532,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := phu.mutation.ProvisionedHostToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -460,12 +551,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phu.mutation.ProvisionedStepsCleared() {
+	if phu.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -476,12 +567,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.RemovedProvisionedStepsIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedStepsCleared() {
+	if nodes := phu.mutation.RemovedProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -495,12 +586,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.ProvisionedStepsIDs(); len(nodes) > 0 {
+	if nodes := phu.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -514,12 +605,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phu.mutation.AgentStatusCleared() {
+	if phu.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -530,12 +621,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.RemovedAgentStatusIDs(); len(nodes) > 0 && !phu.mutation.AgentStatusCleared() {
+	if nodes := phu.mutation.RemovedProvisionedHostToAgentStatusIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -549,12 +640,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phu.mutation.AgentStatusIDs(); len(nodes) > 0 {
+	if nodes := phu.mutation.ProvisionedHostToAgentStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -592,79 +683,94 @@ func (phuo *ProvisionedHostUpdateOne) SetSubnetIP(s string) *ProvisionedHostUpda
 	return phuo
 }
 
-// AddStatuIDs adds the status edge to Status by ids.
-func (phuo *ProvisionedHostUpdateOne) AddStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddStatuIDs(ids...)
+// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToTagIDs(ids...)
 	return phuo
 }
 
-// AddStatus adds the status edges to Status.
-func (phuo *ProvisionedHostUpdateOne) AddStatus(s ...*Status) *ProvisionedHostUpdateOne {
+// AddProvisionedHostToTag adds the ProvisionedHostToTag edges to Tag.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return phuo.AddProvisionedHostToTagIDs(ids...)
+}
+
+// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToStatuIDs(ids...)
+	return phuo
+}
+
+// AddProvisionedHostToStatus adds the ProvisionedHostToStatus edges to Status.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return phuo.AddStatuIDs(ids...)
+	return phuo.AddProvisionedHostToStatuIDs(ids...)
 }
 
-// AddProvisionedNetworkIDs adds the provisioned_network edge to ProvisionedNetwork by ids.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddProvisionedNetworkIDs(ids...)
+// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedNetwork adds the provisioned_network edges to ProvisionedNetwork.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
+// AddProvisionedHostToProvisionedNetwork adds the ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phuo.AddProvisionedNetworkIDs(ids...)
+	return phuo.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// AddHostIDs adds the host edge to Host by ids.
-func (phuo *ProvisionedHostUpdateOne) AddHostIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddHostIDs(ids...)
+// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToHostIDs(ids...)
 	return phuo
 }
 
-// AddHost adds the host edges to Host.
-func (phuo *ProvisionedHostUpdateOne) AddHost(h ...*Host) *ProvisionedHostUpdateOne {
+// AddProvisionedHostToHost adds the ProvisionedHostToHost edges to Host.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return phuo.AddHostIDs(ids...)
+	return phuo.AddProvisionedHostToHostIDs(ids...)
 }
 
-// AddProvisionedStepIDs adds the provisioned_steps edge to ProvisioningStep by ids.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedStepIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddProvisionedStepIDs(ids...)
+// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedSteps adds the provisioned_steps edges to ProvisioningStep.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedSteps(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
+// AddProvisionedHostToProvisioningStep adds the ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phuo.AddProvisionedStepIDs(ids...)
+	return phuo.AddProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// AddAgentStatuIDs adds the agent_status edge to AgentStatus by ids.
-func (phuo *ProvisionedHostUpdateOne) AddAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddAgentStatuIDs(ids...)
+// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
-// AddAgentStatus adds the agent_status edges to AgentStatus.
-func (phuo *ProvisionedHostUpdateOne) AddAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
+// AddProvisionedHostToAgentStatus adds the ProvisionedHostToAgentStatus edges to AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return phuo.AddAgentStatuIDs(ids...)
+	return phuo.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -672,109 +778,130 @@ func (phuo *ProvisionedHostUpdateOne) Mutation() *ProvisionedHostMutation {
 	return phuo.mutation
 }
 
-// ClearStatus clears all "status" edges to type Status.
-func (phuo *ProvisionedHostUpdateOne) ClearStatus() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearStatus()
+// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to type Tag.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToTag() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToTag()
 	return phuo
 }
 
-// RemoveStatuIDs removes the status edge to Status by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveStatuIDs(ids...)
+// RemoveProvisionedHostToTagIDs removes the ProvisionedHostToTag edge to Tag by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToTagIDs(ids...)
 	return phuo
 }
 
-// RemoveStatus removes status edges to Status.
-func (phuo *ProvisionedHostUpdateOne) RemoveStatus(s ...*Status) *ProvisionedHostUpdateOne {
+// RemoveProvisionedHostToTag removes ProvisionedHostToTag edges to Tag.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return phuo.RemoveProvisionedHostToTagIDs(ids...)
+}
+
+// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to type Status.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToStatus() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToStatus()
+	return phuo
+}
+
+// RemoveProvisionedHostToStatuIDs removes the ProvisionedHostToStatus edge to Status by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToStatuIDs(ids...)
+	return phuo
+}
+
+// RemoveProvisionedHostToStatus removes ProvisionedHostToStatus edges to Status.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return phuo.RemoveStatuIDs(ids...)
+	return phuo.RemoveProvisionedHostToStatuIDs(ids...)
 }
 
-// ClearProvisionedNetwork clears all "provisioned_network" edges to type ProvisionedNetwork.
-func (phuo *ProvisionedHostUpdateOne) ClearProvisionedNetwork() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearProvisionedNetwork()
+// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to type ProvisionedNetwork.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisionedNetwork() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToProvisionedNetwork()
 	return phuo
 }
 
-// RemoveProvisionedNetworkIDs removes the provisioned_network edge to ProvisionedNetwork by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveProvisionedNetworkIDs(ids...)
+// RemoveProvisionedHostToProvisionedNetworkIDs removes the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedNetwork removes provisioned_network edges to ProvisionedNetwork.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
+// RemoveProvisionedHostToProvisionedNetwork removes ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phuo.RemoveProvisionedNetworkIDs(ids...)
+	return phuo.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// ClearHost clears all "host" edges to type Host.
-func (phuo *ProvisionedHostUpdateOne) ClearHost() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearHost()
+// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to type Host.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToHost() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToHost()
 	return phuo
 }
 
-// RemoveHostIDs removes the host edge to Host by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveHostIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveHostIDs(ids...)
+// RemoveProvisionedHostToHostIDs removes the ProvisionedHostToHost edge to Host by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToHostIDs(ids...)
 	return phuo
 }
 
-// RemoveHost removes host edges to Host.
-func (phuo *ProvisionedHostUpdateOne) RemoveHost(h ...*Host) *ProvisionedHostUpdateOne {
+// RemoveProvisionedHostToHost removes ProvisionedHostToHost edges to Host.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return phuo.RemoveHostIDs(ids...)
+	return phuo.RemoveProvisionedHostToHostIDs(ids...)
 }
 
-// ClearProvisionedSteps clears all "provisioned_steps" edges to type ProvisioningStep.
-func (phuo *ProvisionedHostUpdateOne) ClearProvisionedSteps() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearProvisionedSteps()
+// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to type ProvisioningStep.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisioningStep() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToProvisioningStep()
 	return phuo
 }
 
-// RemoveProvisionedStepIDs removes the provisioned_steps edge to ProvisioningStep by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedStepIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveProvisionedStepIDs(ids...)
+// RemoveProvisionedHostToProvisioningStepIDs removes the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedSteps removes provisioned_steps edges to ProvisioningStep.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedSteps(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
+// RemoveProvisionedHostToProvisioningStep removes ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return phuo.RemoveProvisionedStepIDs(ids...)
+	return phuo.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// ClearAgentStatus clears all "agent_status" edges to type AgentStatus.
-func (phuo *ProvisionedHostUpdateOne) ClearAgentStatus() *ProvisionedHostUpdateOne {
-	phuo.mutation.ClearAgentStatus()
+// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to type AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToAgentStatus() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToAgentStatus()
 	return phuo
 }
 
-// RemoveAgentStatuIDs removes the agent_status edge to AgentStatus by ids.
-func (phuo *ProvisionedHostUpdateOne) RemoveAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveAgentStatuIDs(ids...)
+// RemoveProvisionedHostToAgentStatuIDs removes the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
-// RemoveAgentStatus removes agent_status edges to AgentStatus.
-func (phuo *ProvisionedHostUpdateOne) RemoveAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
+// RemoveProvisionedHostToAgentStatus removes ProvisionedHostToAgentStatus edges to AgentStatus.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return phuo.RemoveAgentStatuIDs(ids...)
+	return phuo.RemoveProvisionedHostToAgentStatuIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -851,12 +978,66 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Column: provisionedhost.FieldSubnetIP,
 		})
 	}
-	if phuo.mutation.StatusCleared() {
+	if phuo.mutation.ProvisionedHostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.RemovedProvisionedHostToTagIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToTagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToTagTable,
+			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.ProvisionedHostToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -867,12 +1048,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.RemovedStatusIDs(); len(nodes) > 0 && !phuo.mutation.StatusCleared() {
+	if nodes := phuo.mutation.RemovedProvisionedHostToStatusIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -886,12 +1067,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.StatusIDs(); len(nodes) > 0 {
+	if nodes := phuo.mutation.ProvisionedHostToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.StatusTable,
-			Columns: []string{provisionedhost.StatusColumn},
+			Table:   provisionedhost.ProvisionedHostToStatusTable,
+			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -905,12 +1086,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phuo.mutation.ProvisionedNetworkCleared() {
+	if phuo.mutation.ProvisionedHostToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -921,12 +1102,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.RemovedProvisionedNetworkIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedNetworkCleared() {
+	if nodes := phuo.mutation.RemovedProvisionedHostToProvisionedNetworkIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -940,12 +1121,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.ProvisionedNetworkIDs(); len(nodes) > 0 {
+	if nodes := phuo.mutation.ProvisionedHostToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   provisionedhost.ProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedNetworkPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
+			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -959,12 +1140,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phuo.mutation.HostCleared() {
+	if phuo.mutation.ProvisionedHostToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -975,12 +1156,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.RemovedHostIDs(); len(nodes) > 0 && !phuo.mutation.HostCleared() {
+	if nodes := phuo.mutation.RemovedProvisionedHostToHostIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -994,12 +1175,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := phuo.mutation.ProvisionedHostToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   provisionedhost.HostTable,
-			Columns: []string{provisionedhost.HostColumn},
+			Table:   provisionedhost.ProvisionedHostToHostTable,
+			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1013,12 +1194,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phuo.mutation.ProvisionedStepsCleared() {
+	if phuo.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1029,12 +1210,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.RemovedProvisionedStepsIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedStepsCleared() {
+	if nodes := phuo.mutation.RemovedProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1048,12 +1229,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.ProvisionedStepsIDs(); len(nodes) > 0 {
+	if nodes := phuo.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.ProvisionedStepsTable,
-			Columns: provisionedhost.ProvisionedStepsPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
+			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1067,12 +1248,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if phuo.mutation.AgentStatusCleared() {
+	if phuo.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1083,12 +1264,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.RemovedAgentStatusIDs(); len(nodes) > 0 && !phuo.mutation.AgentStatusCleared() {
+	if nodes := phuo.mutation.RemovedProvisionedHostToAgentStatusIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1102,12 +1283,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := phuo.mutation.AgentStatusIDs(); len(nodes) > 0 {
+	if nodes := phuo.mutation.ProvisionedHostToAgentStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   provisionedhost.AgentStatusTable,
-			Columns: provisionedhost.AgentStatusPrimaryKey,
+			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
+			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

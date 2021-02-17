@@ -24,64 +24,75 @@ type ProvisionedHost struct {
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
 type ProvisionedHostEdges struct {
-	// Status holds the value of the status edge.
-	Status []*Status
-	// ProvisionedNetwork holds the value of the provisioned_network edge.
-	ProvisionedNetwork []*ProvisionedNetwork
-	// Host holds the value of the host edge.
-	Host []*Host
-	// ProvisionedSteps holds the value of the provisioned_steps edge.
-	ProvisionedSteps []*ProvisioningStep
-	// AgentStatus holds the value of the agent_status edge.
-	AgentStatus []*AgentStatus
+	// ProvisionedHostToTag holds the value of the ProvisionedHostToTag edge.
+	ProvisionedHostToTag []*Tag
+	// ProvisionedHostToStatus holds the value of the ProvisionedHostToStatus edge.
+	ProvisionedHostToStatus []*Status
+	// ProvisionedHostToProvisionedNetwork holds the value of the ProvisionedHostToProvisionedNetwork edge.
+	ProvisionedHostToProvisionedNetwork []*ProvisionedNetwork
+	// ProvisionedHostToHost holds the value of the ProvisionedHostToHost edge.
+	ProvisionedHostToHost []*Host
+	// ProvisionedHostToProvisioningStep holds the value of the ProvisionedHostToProvisioningStep edge.
+	ProvisionedHostToProvisioningStep []*ProvisioningStep
+	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
+	ProvisionedHostToAgentStatus []*AgentStatus
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
-// StatusOrErr returns the Status value or an error if the edge
+// ProvisionedHostToTagOrErr returns the ProvisionedHostToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) StatusOrErr() ([]*Status, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Status, nil
+		return e.ProvisionedHostToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "status"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToTag"}
 }
 
-// ProvisionedNetworkOrErr returns the ProvisionedNetwork value or an error if the edge
+// ProvisionedHostToStatusOrErr returns the ProvisionedHostToStatus value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToStatusOrErr() ([]*Status, error) {
 	if e.loadedTypes[1] {
-		return e.ProvisionedNetwork, nil
+		return e.ProvisionedHostToStatus, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_network"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToStatus"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// ProvisionedHostToProvisionedNetworkOrErr returns the ProvisionedHostToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) HostOrErr() ([]*Host, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.ProvisionedHostToProvisionedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToProvisionedNetwork"}
 }
 
-// ProvisionedStepsOrErr returns the ProvisionedSteps value or an error if the edge
+// ProvisionedHostToHostOrErr returns the ProvisionedHostToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisionedStepsOrErr() ([]*ProvisioningStep, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[3] {
-		return e.ProvisionedSteps, nil
+		return e.ProvisionedHostToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_steps"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToHost"}
 }
 
-// AgentStatusOrErr returns the AgentStatus value or an error if the edge
+// ProvisionedHostToProvisioningStepOrErr returns the ProvisionedHostToProvisioningStep value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) AgentStatusOrErr() ([]*AgentStatus, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToProvisioningStepOrErr() ([]*ProvisioningStep, error) {
 	if e.loadedTypes[4] {
-		return e.AgentStatus, nil
+		return e.ProvisionedHostToProvisioningStep, nil
 	}
-	return nil, &NotLoadedError{edge: "agent_status"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToProvisioningStep"}
+}
+
+// ProvisionedHostToAgentStatusOrErr returns the ProvisionedHostToAgentStatus value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatus, error) {
+	if e.loadedTypes[5] {
+		return e.ProvisionedHostToAgentStatus, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentStatus"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -112,29 +123,34 @@ func (ph *ProvisionedHost) assignValues(values ...interface{}) error {
 	return nil
 }
 
-// QueryStatus queries the status edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryStatus() *StatusQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryStatus(ph)
+// QueryProvisionedHostToTag queries the ProvisionedHostToTag edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToTag() *TagQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToTag(ph)
 }
 
-// QueryProvisionedNetwork queries the provisioned_network edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryProvisionedNetwork() *ProvisionedNetworkQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedNetwork(ph)
+// QueryProvisionedHostToStatus queries the ProvisionedHostToStatus edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToStatus() *StatusQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToStatus(ph)
 }
 
-// QueryHost queries the host edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryHost() *HostQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryHost(ph)
+// QueryProvisionedHostToProvisionedNetwork queries the ProvisionedHostToProvisionedNetwork edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToProvisionedNetwork(ph)
 }
 
-// QueryProvisionedSteps queries the provisioned_steps edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryProvisionedSteps() *ProvisioningStepQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedSteps(ph)
+// QueryProvisionedHostToHost queries the ProvisionedHostToHost edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToHost() *HostQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToHost(ph)
 }
 
-// QueryAgentStatus queries the agent_status edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryAgentStatus() *AgentStatusQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryAgentStatus(ph)
+// QueryProvisionedHostToProvisioningStep queries the ProvisionedHostToProvisioningStep edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToProvisioningStep() *ProvisioningStepQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToProvisioningStep(ph)
+}
+
+// QueryProvisionedHostToAgentStatus queries the ProvisionedHostToAgentStatus edge of the ProvisionedHost.
+func (ph *ProvisionedHost) QueryProvisionedHostToAgentStatus() *AgentStatusQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToAgentStatus(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.

@@ -38,19 +38,19 @@ func (fec *FileExtractCreate) SetType(s string) *FileExtractCreate {
 	return fec
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fec *FileExtractCreate) AddTagIDs(ids ...int) *FileExtractCreate {
-	fec.mutation.AddTagIDs(ids...)
+// AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
+func (fec *FileExtractCreate) AddFileExtractToTagIDs(ids ...int) *FileExtractCreate {
+	fec.mutation.AddFileExtractToTagIDs(ids...)
 	return fec
 }
 
-// AddTag adds the tag edges to Tag.
-func (fec *FileExtractCreate) AddTag(t ...*Tag) *FileExtractCreate {
+// AddFileExtractToTag adds the FileExtractToTag edges to Tag.
+func (fec *FileExtractCreate) AddFileExtractToTag(t ...*Tag) *FileExtractCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fec.AddTagIDs(ids...)
+	return fec.AddFileExtractToTagIDs(ids...)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -164,12 +164,12 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		})
 		_node.Type = value
 	}
-	if nodes := fec.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fec.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
