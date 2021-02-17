@@ -32,8 +32,8 @@ func (Script) Fields() []ent.Field {
 // Edges of the Script.
 func (Script) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
-		edge.To("maintainer", User.Type),
-		edge.From("finding", Finding.Type).Ref("script"),
+		edge.To("ScriptToTag", Tag.Type),
+		edge.To("ScriptToUser", User.Type),
+		edge.From("ScriptToFinding", Finding.Type).Ref("FindingToScript"),
 	}
 }

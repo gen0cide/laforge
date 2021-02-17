@@ -35,8 +35,9 @@ func (Host) Fields() []ent.Field {
 // Edges of the Host.
 func (Host) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("disk", Disk.Type),
-		edge.To("maintainer", User.Type),
-		edge.To("tag", Tag.Type),
+		edge.To("HostToDisk", Disk.Type),
+		edge.To("HostToUser", User.Type),
+		edge.To("HostToTag", Tag.Type),
+		edge.From("HostToEnvironment", Host.Type).Ref("EnvironmentToHost"),
 	}
 }

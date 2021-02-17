@@ -21,6 +21,6 @@ func (Disk) Fields() []ent.Field {
 // Edges of the Disk.
 func (Disk) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("DiskToTag", Tag.Type),
 	}
 }

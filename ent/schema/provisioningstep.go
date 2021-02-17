@@ -22,11 +22,12 @@ func (ProvisioningStep) Fields() []ent.Field {
 // Edges of the ProvisioningStep.
 func (ProvisioningStep) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("status", Status.Type),
-		edge.To("provisioned_host", ProvisionedHost.Type),
-		edge.To("script", Script.Type),
-		edge.To("command", Command.Type),
-		edge.To("dns_record", DNSRecord.Type),
-		edge.To("remote_file", RemoteFile.Type),
+		edge.To("ProvisioningStepToTag", Tag.Type),
+		edge.To("ProvisioningStepToStatus", Status.Type),
+		edge.To("ProvisioningStepToProvisionedHost", ProvisionedHost.Type),
+		edge.To("ProvisioningStepToScript", Script.Type),
+		edge.To("ProvisioningStepToCommand", Command.Type),
+		edge.To("ProvisioningStepToDNSRecord", DNSRecord.Type),
+		edge.To("ProvisioningStepToRemoteFile", RemoteFile.Type),
 	}
 }

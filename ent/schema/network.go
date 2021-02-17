@@ -24,7 +24,7 @@ func (Network) Fields() []ent.Field {
 // Edges of the Network.
 func (Network) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("NetworkToTag", Tag.Type),
 		edge.To("NetworkToEnvironment", Environment.Type),
 	}
 }

@@ -24,9 +24,9 @@ func (Finding) Fields() []ent.Field {
 // Edges of the Finding.
 func (Finding) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user", User.Type),
-		edge.To("tag", Tag.Type),
-		edge.To("host", Host.Type),
-		edge.To("script", Script.Type),
+		edge.To("FindingToUser", User.Type),
+		edge.To("FindingToTag", Tag.Type),
+		edge.To("FindingToHost", Host.Type),
+		edge.To("FindingToScript", Script.Type),
 	}
 }

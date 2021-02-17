@@ -26,6 +26,6 @@ func (DNSRecord) Fields() []ent.Field {
 // Edges of the DNSRecord.
 func (DNSRecord) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("DNSRecordToTag", Tag.Type),
 	}
 }

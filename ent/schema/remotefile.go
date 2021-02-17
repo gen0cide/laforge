@@ -30,6 +30,6 @@ func (RemoteFile) Fields() []ent.Field {
 // Edges of the RemoteFile.
 func (RemoteFile) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("RemoteFileToTag", Tag.Type),
 	}
 }

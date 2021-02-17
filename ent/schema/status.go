@@ -26,6 +26,6 @@ func (Status) Fields() []ent.Field {
 // Edges of the Status.
 func (Status) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("StatusToTag", Tag.Type),
 	}
 }

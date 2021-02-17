@@ -22,9 +22,10 @@ func (Build) Fields() []ent.Field {
 // Edges of the Build.
 func (Build) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("maintainer", User.Type),
-		edge.To("tag", Tag.Type),
-		edge.From("team", Team.Type).Ref("build"),
-		edge.To("ProvisionedNetworkToBuild", ProvisionedNetwork.Type),
+		edge.To("BuildToUser", User.Type),
+		edge.To("BuildToTag", Tag.Type),
+		edge.To("BuildToProvisionedNetwork", ProvisionedNetwork.Type),
+		edge.From("BuildToTeam", Team.Type).Ref("TeamToBuild"),
+		edge.From("BuildToEnvironment", Build.Type).Ref("EnvironmentToBuild"),
 	}
 }

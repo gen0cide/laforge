@@ -29,13 +29,13 @@ func (Environment) Fields() []ent.Field {
 // Edges of the Environment.
 func (Environment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
-		edge.To("user", User.Type),
-		edge.To("host", Host.Type),
-		edge.To("competition", Competition.Type),
-		edge.To("build", Build.Type),
-		edge.From("included_network", IncludedNetwork.Type).Ref("IncludedNetworkToEnvironment"),
-		edge.From("network", Network.Type).Ref("NetworkToEnvironment"),
-		edge.From("team", Team.Type).Ref("TeamToEnvironment"),
+		edge.To("EnvironmentToTag", Tag.Type),
+		edge.To("EnvironmentToUser", User.Type),
+		edge.To("EnvironmentToHost", Host.Type),
+		edge.To("EnvironmentToCompetition", Competition.Type),
+		edge.To("EnvironmentToBuild", Build.Type),
+		edge.From("EnvironmentToIncludedNetwork", IncludedNetwork.Type).Ref("IncludedNetworkToEnvironment"),
+		edge.From("EnvironmentToNetwork", Network.Type).Ref("NetworkToEnvironment"),
+		edge.From("EnvironmentToTeam", Team.Type).Ref("TeamToEnvironment"),
 	}
 }
