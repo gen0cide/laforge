@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,11 +9,14 @@ import (
 	"strings"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/user"
 	"github.com/gen0cide/laforge/loader/include"
 	hcl2 "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/ext/transform"
 	gohcl2 "github.com/hashicorp/hcl/v2/gohcl"
 	hcl2parse "github.com/hashicorp/hcl/v2/hclparse"
+	_ "github.com/mattn/go-sqlite3"
 	zglob "github.com/mattn/go-zglob"
 )
 
@@ -26,6 +30,7 @@ type fileGlobResolver struct {
 	Parser  *hcl2parse.Parser
 }
 
+// DefinedConfigs is the stuct to hold in all the loading for hcl
 type DefinedConfigs struct {
 	Filename            string
 	BaseDir             string             `hcl:"base_dir,optional" json:"base_dir,omitempty"`
@@ -208,10 +213,139 @@ func NewLoader() *Loader {
 }
 
 func main() {
+	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
+	ctx := context.Background()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	// Run the auto migration tool.
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
 	tloader := NewLoader()
 	test := gohcl2.EncodeAsBlock(&ent.Environment{}, "enviroment")
 	fmt.Println(test)
 	tloader.ParseConfigFile("/home/red/Documents/infra/envs/fred/env.laforge")
 	tloader.Bind()
+	for _, element := range tloader.ConfigMap {
+		envs, _ := createEnviroments(ctx, client, element.DefinedEnvironments)
+		user, _ := envs[0].QueryEnvironmentToUser().Only(ctx)
+		backenv := user.QueryUserToEnvironment().OnlyX(ctx) // Will Fail with multiple users connected to the Env
+		log.Println(envs[0])
+		log.Println(backenv)
+	}
 	fmt.Println(tloader)
+}
+
+func createEnviroments(ctx context.Context, client *ent.Client, configEnvs []*ent.Environment) ([]*ent.Environment, error) {
+	bulk := []*ent.EnvironmentCreate{}
+	returnedEnvironment := []*ent.Environment{}
+	client.Environment.Create()
+	for _, env := range configEnvs {
+		users, err := createUsers(ctx, client, env.Edges.EnvironmentToUser, env.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		entEnv, err := client.Environment.
+			Query().
+			Where(environment.HclIDEQ(env.HclID)).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.Environment.Create().
+					SetHclID(env.HclID).
+					SetAdminCidrs(env.AdminCidrs).
+					SetBuilder(env.Builder).
+					SetCompetitionID(env.CompetitionID).
+					SetConfig(env.Config).
+					SetDescription(env.Description).
+					SetExposedVdiPorts(env.ExposedVdiPorts).
+					SetName(env.Name).
+					SetRevision(env.Revision).
+					SetTags(env.Tags).
+					SetTeamCount(env.TeamCount).
+					AddEnvironmentToUser(users...)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		updatedEnv, err := entEnv.Update().
+			SetHclID(env.HclID).
+			SetAdminCidrs(env.AdminCidrs).
+			SetBuilder(env.Builder).
+			SetCompetitionID(env.CompetitionID).
+			SetConfig(env.Config).
+			SetDescription(env.Description).
+			SetExposedVdiPorts(env.ExposedVdiPorts).
+			SetName(env.Name).
+			SetRevision(env.Revision).
+			SetTags(env.Tags).
+			SetTeamCount(env.TeamCount).
+			AddEnvironmentToUser(users...).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedEnvironment = append(returnedEnvironment, updatedEnv)
+	}
+	if len(bulk) > 0 {
+		dbEnv, err := client.Environment.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedEnvironment = append(returnedEnvironment, dbEnv...)
+	}
+	return returnedEnvironment, nil
+}
+
+func createUsers(ctx context.Context, client *ent.Client, configUsers []*ent.User, envHclID string) ([]*ent.User, error) {
+	bulk := []*ent.UserCreate{}
+	returnedUsers := []*ent.User{}
+	for _, cuser := range configUsers {
+		entUser, err := client.User.
+			Query().
+			Where(
+				user.And(
+					user.HclIDEQ(cuser.HclID),
+					user.HasUserToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.User.Create().
+					SetHclID(cuser.HclID).
+					SetEmail(cuser.Email).
+					SetUUID(cuser.UUID).
+					SetName(cuser.Name)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entUser.Update().
+			SetHclID(cuser.HclID).
+			SetEmail(cuser.Email).
+			SetUUID(cuser.UUID).
+			SetName(cuser.Name).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbUsers, err := client.User.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedUsers = append(returnedUsers, dbUsers...)
+	}
+	return returnedUsers, nil
 }
