@@ -7,6 +7,7 @@ import { SubheaderService } from '../_services/subheader.service';
 import { PlanService } from '../../../../../plan.service';
 import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
+import { Environment } from 'src/app/models/environment.model';
 
 interface Branch {
   name: string;
@@ -31,17 +32,28 @@ export class SubheaderComponent implements OnInit {
     { name: 'Bradley', hash: '98y3if' },
     { name: 'Lucas', hash: '32a7fh' }
   ];
+  environment: Environment;
   envIsLoading: Observable<boolean>;
 
-  constructor(private layout: LayoutService, private subheader: SubheaderService, private planService: PlanService, public envService: EnvironmentService, private cdRef: ChangeDetectorRef) {
+  constructor(
+    private layout: LayoutService,
+    private subheader: SubheaderService,
+    private planService: PlanService,
+    public envService: EnvironmentService,
+    private cdRef: ChangeDetectorRef
+  ) {
     this.title$ = this.subheader.titleSubject.asObservable();
     this.breadcrumbs$ = this.subheader.breadCrumbsSubject.asObservable();
     this.description$ = this.subheader.descriptionSubject.asObservable();
 
     this.envService.getEnvironments().subscribe(() => {
       this.cdRef.markForCheck();
-    })
+    });
 
+    this.envService
+      .getCurrentEnv()
+      .asObservable()
+      .subscribe((env) => (this.environment = env));
     this.envIsLoading = this.envService.envIsLoading.asObservable();
   }
 

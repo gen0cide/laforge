@@ -44,7 +44,7 @@
       <i class="fa fa-spinner fa-spin" *ngIf="envIsLoading | async"></i>
       <mat-form-field appearance="fill" *ngIf="this.envService.getEnvironments() | async as _environments">
         <mat-label>Environments</mat-label>
-        <mat-select (selectionChange)="selectEnvironment($event)">
+        <mat-select (selectionChange)="selectEnvironment($event)" [value]="environment.id">
           <mat-option *ngFor="let env of _environments" [value]="env.id">
             <b>{{ env.Name }} | </b><em>{{ env.CompetitionID }}</em>
           </mat-option>
