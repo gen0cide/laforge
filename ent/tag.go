@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/google/uuid"
 )
@@ -48,220 +48,272 @@ type Tag struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Tag) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&uuid.UUID{},      // uuid
-		&sql.NullString{}, // name
-		&[]byte{},         // description
+func (*Tag) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case tag.FieldDescription:
+			values[i] = &[]byte{}
+		case tag.FieldID:
+			values[i] = &sql.NullInt64{}
+		case tag.FieldName:
+			values[i] = &sql.NullString{}
+		case tag.FieldUUID:
+			values[i] = &uuid.UUID{}
+		case tag.ForeignKeys[0]: // agent_status_agent_status_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[1]: // build_build_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[2]: // command_command_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[3]: // competition_competition_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[4]: // dns_dns_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[5]: // dns_record_dns_record_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[6]: // disk_disk_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[7]: // environment_environment_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[8]: // file_delete_file_delete_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[9]: // file_download_file_download_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[10]: // file_extract_file_extract_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[11]: // finding_finding_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[12]: // host_host_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[13]: // included_network_included_network_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[14]: // network_network_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[15]: // provisioned_host_provisioned_host_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[16]: // provisioned_network_provisioned_network_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[17]: // provisioning_step_provisioning_step_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[18]: // script_script_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[19]: // status_status_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[20]: // team_team_to_tag
+			values[i] = &sql.NullInt64{}
+		case tag.ForeignKeys[21]: // user_user_to_tag
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Tag) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // agent_status_agent_status_to_tag
-		&sql.NullInt64{}, // build_build_to_tag
-		&sql.NullInt64{}, // command_command_to_tag
-		&sql.NullInt64{}, // competition_competition_to_tag
-		&sql.NullInt64{}, // dns_dns_to_tag
-		&sql.NullInt64{}, // dns_record_dns_record_to_tag
-		&sql.NullInt64{}, // disk_disk_to_tag
-		&sql.NullInt64{}, // environment_environment_to_tag
-		&sql.NullInt64{}, // file_delete_file_delete_to_tag
-		&sql.NullInt64{}, // file_download_file_download_to_tag
-		&sql.NullInt64{}, // file_extract_file_extract_to_tag
-		&sql.NullInt64{}, // finding_finding_to_tag
-		&sql.NullInt64{}, // host_host_to_tag
-		&sql.NullInt64{}, // included_network_included_network_to_tag
-		&sql.NullInt64{}, // network_network_to_tag
-		&sql.NullInt64{}, // provisioned_host_provisioned_host_to_tag
-		&sql.NullInt64{}, // provisioned_network_provisioned_network_to_tag
-		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_tag
-		&sql.NullInt64{}, // script_script_to_tag
-		&sql.NullInt64{}, // status_status_to_tag
-		&sql.NullInt64{}, // team_team_to_tag
-		&sql.NullInt64{}, // user_user_to_tag
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Tag fields.
-func (t *Tag) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(tag.Columns); m < n {
+func (t *Tag) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	t.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*uuid.UUID); !ok {
-		return fmt.Errorf("unexpected type %T for field uuid", values[0])
-	} else if value != nil {
-		t.UUID = *value
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[1])
-	} else if value.Valid {
-		t.Name = value.String
-	}
+	for i := range columns {
+		switch columns[i] {
+		case tag.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			t.ID = int(value.Int64)
+		case tag.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				t.UUID = *value
+			}
+		case tag.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				t.Name = value.String
+			}
+		case tag.FieldDescription:
 
-	if value, ok := values[2].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &t.Description); err != nil {
-			return fmt.Errorf("unmarshal field description: %v", err)
-		}
-	}
-	values = values[3:]
-	if len(values) == len(tag.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field agent_status_agent_status_to_tag", value)
-		} else if value.Valid {
-			t.agent_status_agent_status_to_tag = new(int)
-			*t.agent_status_agent_status_to_tag = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_build_to_tag", value)
-		} else if value.Valid {
-			t.build_build_to_tag = new(int)
-			*t.build_build_to_tag = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field command_command_to_tag", value)
-		} else if value.Valid {
-			t.command_command_to_tag = new(int)
-			*t.command_command_to_tag = int(value.Int64)
-		}
-		if value, ok := values[3].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field competition_competition_to_tag", value)
-		} else if value.Valid {
-			t.competition_competition_to_tag = new(int)
-			*t.competition_competition_to_tag = int(value.Int64)
-		}
-		if value, ok := values[4].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field dns_dns_to_tag", value)
-		} else if value.Valid {
-			t.dns_dns_to_tag = new(int)
-			*t.dns_dns_to_tag = int(value.Int64)
-		}
-		if value, ok := values[5].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field dns_record_dns_record_to_tag", value)
-		} else if value.Valid {
-			t.dns_record_dns_record_to_tag = new(int)
-			*t.dns_record_dns_record_to_tag = int(value.Int64)
-		}
-		if value, ok := values[6].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field disk_disk_to_tag", value)
-		} else if value.Valid {
-			t.disk_disk_to_tag = new(int)
-			*t.disk_disk_to_tag = int(value.Int64)
-		}
-		if value, ok := values[7].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_tag", value)
-		} else if value.Valid {
-			t.environment_environment_to_tag = new(int)
-			*t.environment_environment_to_tag = int(value.Int64)
-		}
-		if value, ok := values[8].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_delete_file_delete_to_tag", value)
-		} else if value.Valid {
-			t.file_delete_file_delete_to_tag = new(int)
-			*t.file_delete_file_delete_to_tag = int(value.Int64)
-		}
-		if value, ok := values[9].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_download_file_download_to_tag", value)
-		} else if value.Valid {
-			t.file_download_file_download_to_tag = new(int)
-			*t.file_download_file_download_to_tag = int(value.Int64)
-		}
-		if value, ok := values[10].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field file_extract_file_extract_to_tag", value)
-		} else if value.Valid {
-			t.file_extract_file_extract_to_tag = new(int)
-			*t.file_extract_file_extract_to_tag = int(value.Int64)
-		}
-		if value, ok := values[11].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_tag", value)
-		} else if value.Valid {
-			t.finding_finding_to_tag = new(int)
-			*t.finding_finding_to_tag = int(value.Int64)
-		}
-		if value, ok := values[12].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_host_to_tag", value)
-		} else if value.Valid {
-			t.host_host_to_tag = new(int)
-			*t.host_host_to_tag = int(value.Int64)
-		}
-		if value, ok := values[13].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field included_network_included_network_to_tag", value)
-		} else if value.Valid {
-			t.included_network_included_network_to_tag = new(int)
-			*t.included_network_included_network_to_tag = int(value.Int64)
-		}
-		if value, ok := values[14].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field network_network_to_tag", value)
-		} else if value.Valid {
-			t.network_network_to_tag = new(int)
-			*t.network_network_to_tag = int(value.Int64)
-		}
-		if value, ok := values[15].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_tag", value)
-		} else if value.Valid {
-			t.provisioned_host_provisioned_host_to_tag = new(int)
-			*t.provisioned_host_provisioned_host_to_tag = int(value.Int64)
-		}
-		if value, ok := values[16].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_tag", value)
-		} else if value.Valid {
-			t.provisioned_network_provisioned_network_to_tag = new(int)
-			*t.provisioned_network_provisioned_network_to_tag = int(value.Int64)
-		}
-		if value, ok := values[17].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_tag", value)
-		} else if value.Valid {
-			t.provisioning_step_provisioning_step_to_tag = new(int)
-			*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
-		}
-		if value, ok := values[18].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
-		} else if value.Valid {
-			t.script_script_to_tag = new(int)
-			*t.script_script_to_tag = int(value.Int64)
-		}
-		if value, ok := values[19].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field status_status_to_tag", value)
-		} else if value.Valid {
-			t.status_status_to_tag = new(int)
-			*t.status_status_to_tag = int(value.Int64)
-		}
-		if value, ok := values[20].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_team_to_tag", value)
-		} else if value.Valid {
-			t.team_team_to_tag = new(int)
-			*t.team_team_to_tag = int(value.Int64)
-		}
-		if value, ok := values[21].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
-		} else if value.Valid {
-			t.user_user_to_tag = new(int)
-			*t.user_user_to_tag = int(value.Int64)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &t.Description); err != nil {
+					return fmt.Errorf("unmarshal field description: %v", err)
+				}
+			}
+		case tag.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field agent_status_agent_status_to_tag", value)
+			} else if value.Valid {
+				t.agent_status_agent_status_to_tag = new(int)
+				*t.agent_status_agent_status_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field build_build_to_tag", value)
+			} else if value.Valid {
+				t.build_build_to_tag = new(int)
+				*t.build_build_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field command_command_to_tag", value)
+			} else if value.Valid {
+				t.command_command_to_tag = new(int)
+				*t.command_command_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field competition_competition_to_tag", value)
+			} else if value.Valid {
+				t.competition_competition_to_tag = new(int)
+				*t.competition_competition_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[4]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field dns_dns_to_tag", value)
+			} else if value.Valid {
+				t.dns_dns_to_tag = new(int)
+				*t.dns_dns_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[5]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field dns_record_dns_record_to_tag", value)
+			} else if value.Valid {
+				t.dns_record_dns_record_to_tag = new(int)
+				*t.dns_record_dns_record_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[6]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field disk_disk_to_tag", value)
+			} else if value.Valid {
+				t.disk_disk_to_tag = new(int)
+				*t.disk_disk_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[7]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_tag", value)
+			} else if value.Valid {
+				t.environment_environment_to_tag = new(int)
+				*t.environment_environment_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[8]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field file_delete_file_delete_to_tag", value)
+			} else if value.Valid {
+				t.file_delete_file_delete_to_tag = new(int)
+				*t.file_delete_file_delete_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[9]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field file_download_file_download_to_tag", value)
+			} else if value.Valid {
+				t.file_download_file_download_to_tag = new(int)
+				*t.file_download_file_download_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[10]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field file_extract_file_extract_to_tag", value)
+			} else if value.Valid {
+				t.file_extract_file_extract_to_tag = new(int)
+				*t.file_extract_file_extract_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[11]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_tag", value)
+			} else if value.Valid {
+				t.finding_finding_to_tag = new(int)
+				*t.finding_finding_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[12]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_host_to_tag", value)
+			} else if value.Valid {
+				t.host_host_to_tag = new(int)
+				*t.host_host_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[13]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field included_network_included_network_to_tag", value)
+			} else if value.Valid {
+				t.included_network_included_network_to_tag = new(int)
+				*t.included_network_included_network_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[14]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field network_network_to_tag", value)
+			} else if value.Valid {
+				t.network_network_to_tag = new(int)
+				*t.network_network_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[15]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_tag", value)
+			} else if value.Valid {
+				t.provisioned_host_provisioned_host_to_tag = new(int)
+				*t.provisioned_host_provisioned_host_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[16]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_tag", value)
+			} else if value.Valid {
+				t.provisioned_network_provisioned_network_to_tag = new(int)
+				*t.provisioned_network_provisioned_network_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[17]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_tag", value)
+			} else if value.Valid {
+				t.provisioning_step_provisioning_step_to_tag = new(int)
+				*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[18]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
+			} else if value.Valid {
+				t.script_script_to_tag = new(int)
+				*t.script_script_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[19]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field status_status_to_tag", value)
+			} else if value.Valid {
+				t.status_status_to_tag = new(int)
+				*t.status_status_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[20]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field team_team_to_tag", value)
+			} else if value.Valid {
+				t.team_team_to_tag = new(int)
+				*t.team_team_to_tag = int(value.Int64)
+			}
+		case tag.ForeignKeys[21]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
+			} else if value.Valid {
+				t.user_user_to_tag = new(int)
+				*t.user_user_to_tag = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
 // Update returns a builder for updating this Tag.
-// Note that, you need to call Tag.Unwrap() before calling this method, if this Tag
+// Note that you need to call Tag.Unwrap() before calling this method if this Tag
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (t *Tag) Update() *TagUpdateOne {
 	return (&TagClient{config: t.config}).UpdateOne(t)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Tag entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (t *Tag) Unwrap() *Tag {
 	tx, ok := t.config.driver.(*txDriver)
 	if !ok {

@@ -73,7 +73,7 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-// State defines the type for the state enum field.
+// State defines the type for the "state" enum field.
 type State string
 
 // State values.

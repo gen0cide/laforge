@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,43 +21,43 @@ type NetworkCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (nc *NetworkCreate) SetName(s string) *NetworkCreate {
 	nc.mutation.SetName(s)
 	return nc
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nc *NetworkCreate) SetCidr(s string) *NetworkCreate {
 	nc.mutation.SetCidr(s)
 	return nc
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nc *NetworkCreate) SetVdiVisible(b bool) *NetworkCreate {
 	nc.mutation.SetVdiVisible(b)
 	return nc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
 	nc.mutation.SetVars(m)
 	return nc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (nc *NetworkCreate) SetTags(m map[string]string) *NetworkCreate {
 	nc.mutation.SetTags(m)
 	return nc
 }
 
-// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by IDs.
 func (nc *NetworkCreate) AddNetworkToTagIDs(ids ...int) *NetworkCreate {
 	nc.mutation.AddNetworkToTagIDs(ids...)
 	return nc
 }
 
-// AddNetworkToTag adds the NetworkToTag edges to Tag.
+// AddNetworkToTag adds the "NetworkToTag" edges to the Tag entity.
 func (nc *NetworkCreate) AddNetworkToTag(t ...*Tag) *NetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -66,13 +66,13 @@ func (nc *NetworkCreate) AddNetworkToTag(t ...*Tag) *NetworkCreate {
 	return nc.AddNetworkToTagIDs(ids...)
 }
 
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
+// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by IDs.
 func (nc *NetworkCreate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkCreate {
 	nc.mutation.AddNetworkToEnvironmentIDs(ids...)
 	return nc
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
+// AddNetworkToEnvironment adds the "NetworkToEnvironment" edges to the Environment entity.
 func (nc *NetworkCreate) AddNetworkToEnvironment(e ...*Environment) *NetworkCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -255,7 +255,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// NetworkCreateBulk is the builder for creating a bulk of Network entities.
+// NetworkCreateBulk is the builder for creating many Network entities in bulk.
 type NetworkCreateBulk struct {
 	config
 	builders []*NetworkCreate
@@ -312,7 +312,7 @@ func (ncb *NetworkCreateBulk) Save(ctx context.Context) ([]*Network, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ncb *NetworkCreateBulk) SaveX(ctx context.Context) []*Network {
 	v, err := ncb.Save(ctx)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,67 +20,67 @@ type FileDownloadCreate struct {
 	hooks    []Hook
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (fdc *FileDownloadCreate) SetSourceType(s string) *FileDownloadCreate {
 	fdc.mutation.SetSourceType(s)
 	return fdc
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fdc *FileDownloadCreate) SetSource(s string) *FileDownloadCreate {
 	fdc.mutation.SetSource(s)
 	return fdc
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fdc *FileDownloadCreate) SetDestination(s string) *FileDownloadCreate {
 	fdc.mutation.SetDestination(s)
 	return fdc
 }
 
-// SetTemplate sets the template field.
+// SetTemplate sets the "template" field.
 func (fdc *FileDownloadCreate) SetTemplate(b bool) *FileDownloadCreate {
 	fdc.mutation.SetTemplate(b)
 	return fdc
 }
 
-// SetPerms sets the perms field.
+// SetPerms sets the "perms" field.
 func (fdc *FileDownloadCreate) SetPerms(s string) *FileDownloadCreate {
 	fdc.mutation.SetPerms(s)
 	return fdc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (fdc *FileDownloadCreate) SetDisabled(b bool) *FileDownloadCreate {
 	fdc.mutation.SetDisabled(b)
 	return fdc
 }
 
-// SetMd5 sets the md5 field.
+// SetMd5 sets the "md5" field.
 func (fdc *FileDownloadCreate) SetMd5(s string) *FileDownloadCreate {
 	fdc.mutation.SetMd5(s)
 	return fdc
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (fdc *FileDownloadCreate) SetAbsPath(s string) *FileDownloadCreate {
 	fdc.mutation.SetAbsPath(s)
 	return fdc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fdc *FileDownloadCreate) SetTags(m map[string]string) *FileDownloadCreate {
 	fdc.mutation.SetTags(m)
 	return fdc
 }
 
-// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+// AddFileDownloadToTagIDs adds the "FileDownloadToTag" edge to the Tag entity by IDs.
 func (fdc *FileDownloadCreate) AddFileDownloadToTagIDs(ids ...int) *FileDownloadCreate {
 	fdc.mutation.AddFileDownloadToTagIDs(ids...)
 	return fdc
 }
 
-// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+// AddFileDownloadToTag adds the "FileDownloadToTag" edges to the Tag entity.
 func (fdc *FileDownloadCreate) AddFileDownloadToTag(t ...*Tag) *FileDownloadCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -288,7 +288,7 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 	return _node, _spec
 }
 
-// FileDownloadCreateBulk is the builder for creating a bulk of FileDownload entities.
+// FileDownloadCreateBulk is the builder for creating many FileDownload entities in bulk.
 type FileDownloadCreateBulk struct {
 	config
 	builders []*FileDownloadCreate
@@ -345,7 +345,7 @@ func (fdcb *FileDownloadCreateBulk) Save(ctx context.Context) ([]*FileDownload, 
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fdcb *FileDownloadCreateBulk) SaveX(ctx context.Context) []*FileDownload {
 	v, err := fdcb.Save(ctx)
 	if err != nil {

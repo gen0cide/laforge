@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -25,38 +25,38 @@ type BuildUpdate struct {
 	mutation *BuildMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the BuildUpdate builder.
 func (bu *BuildUpdate) Where(ps ...predicate.Build) *BuildUpdate {
 	bu.mutation.predicates = append(bu.mutation.predicates, ps...)
 	return bu
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (bu *BuildUpdate) SetRevision(i int) *BuildUpdate {
 	bu.mutation.ResetRevision()
 	bu.mutation.SetRevision(i)
 	return bu
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 	bu.mutation.AddRevision(i)
 	return bu
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (bu *BuildUpdate) SetConfig(m map[string]string) *BuildUpdate {
 	bu.mutation.SetConfig(m)
 	return bu
 }
 
-// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by IDs.
 func (bu *BuildUpdate) AddBuildToUserIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToUserIDs(ids...)
 	return bu
 }
 
-// AddBuildToUser adds the BuildToUser edges to User.
+// AddBuildToUser adds the "BuildToUser" edges to the User entity.
 func (bu *BuildUpdate) AddBuildToUser(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -65,13 +65,13 @@ func (bu *BuildUpdate) AddBuildToUser(u ...*User) *BuildUpdate {
 	return bu.AddBuildToUserIDs(ids...)
 }
 
-// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by IDs.
 func (bu *BuildUpdate) AddBuildToTagIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToTagIDs(ids...)
 	return bu
 }
 
-// AddBuildToTag adds the BuildToTag edges to Tag.
+// AddBuildToTag adds the "BuildToTag" edges to the Tag entity.
 func (bu *BuildUpdate) AddBuildToTag(t ...*Tag) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -80,13 +80,13 @@ func (bu *BuildUpdate) AddBuildToTag(t ...*Tag) *BuildUpdate {
 	return bu.AddBuildToTagIDs(ids...)
 }
 
-// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (bu *BuildUpdate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
-// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+// AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (bu *BuildUpdate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -95,13 +95,13 @@ func (bu *BuildUpdate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *B
 	return bu.AddBuildToProvisionedNetworkIDs(ids...)
 }
 
-// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+// AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
 func (bu *BuildUpdate) AddBuildToTeamIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToTeamIDs(ids...)
 	return bu
 }
 
-// AddBuildToTeam adds the BuildToTeam edges to Team.
+// AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -110,13 +110,13 @@ func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
 	return bu.AddBuildToTeamIDs(ids...)
 }
 
-// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by IDs.
 func (bu *BuildUpdate) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToEnvironmentIDs(ids...)
 	return bu
 }
 
-// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+// AddBuildToEnvironment adds the "BuildToEnvironment" edges to the Environment entity.
 func (bu *BuildUpdate) AddBuildToEnvironment(e ...*Environment) *BuildUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -130,19 +130,19 @@ func (bu *BuildUpdate) Mutation() *BuildMutation {
 	return bu.mutation
 }
 
-// ClearBuildToUser clears all "BuildToUser" edges to type User.
+// ClearBuildToUser clears all "BuildToUser" edges to the User entity.
 func (bu *BuildUpdate) ClearBuildToUser() *BuildUpdate {
 	bu.mutation.ClearBuildToUser()
 	return bu
 }
 
-// RemoveBuildToUserIDs removes the BuildToUser edge to User by ids.
+// RemoveBuildToUserIDs removes the "BuildToUser" edge to User entities by IDs.
 func (bu *BuildUpdate) RemoveBuildToUserIDs(ids ...int) *BuildUpdate {
 	bu.mutation.RemoveBuildToUserIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToUser removes BuildToUser edges to User.
+// RemoveBuildToUser removes "BuildToUser" edges to User entities.
 func (bu *BuildUpdate) RemoveBuildToUser(u ...*User) *BuildUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -151,19 +151,19 @@ func (bu *BuildUpdate) RemoveBuildToUser(u ...*User) *BuildUpdate {
 	return bu.RemoveBuildToUserIDs(ids...)
 }
 
-// ClearBuildToTag clears all "BuildToTag" edges to type Tag.
+// ClearBuildToTag clears all "BuildToTag" edges to the Tag entity.
 func (bu *BuildUpdate) ClearBuildToTag() *BuildUpdate {
 	bu.mutation.ClearBuildToTag()
 	return bu
 }
 
-// RemoveBuildToTagIDs removes the BuildToTag edge to Tag by ids.
+// RemoveBuildToTagIDs removes the "BuildToTag" edge to Tag entities by IDs.
 func (bu *BuildUpdate) RemoveBuildToTagIDs(ids ...int) *BuildUpdate {
 	bu.mutation.RemoveBuildToTagIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToTag removes BuildToTag edges to Tag.
+// RemoveBuildToTag removes "BuildToTag" edges to Tag entities.
 func (bu *BuildUpdate) RemoveBuildToTag(t ...*Tag) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -172,19 +172,19 @@ func (bu *BuildUpdate) RemoveBuildToTag(t ...*Tag) *BuildUpdate {
 	return bu.RemoveBuildToTagIDs(ids...)
 }
 
-// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (bu *BuildUpdate) ClearBuildToProvisionedNetwork() *BuildUpdate {
 	bu.mutation.ClearBuildToProvisionedNetwork()
 	return bu
 }
 
-// RemoveBuildToProvisionedNetworkIDs removes the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveBuildToProvisionedNetworkIDs removes the "BuildToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (bu *BuildUpdate) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
 	bu.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToProvisionedNetwork removes BuildToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveBuildToProvisionedNetwork removes "BuildToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (bu *BuildUpdate) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -193,19 +193,19 @@ func (bu *BuildUpdate) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork)
 	return bu.RemoveBuildToProvisionedNetworkIDs(ids...)
 }
 
-// ClearBuildToTeam clears all "BuildToTeam" edges to type Team.
+// ClearBuildToTeam clears all "BuildToTeam" edges to the Team entity.
 func (bu *BuildUpdate) ClearBuildToTeam() *BuildUpdate {
 	bu.mutation.ClearBuildToTeam()
 	return bu
 }
 
-// RemoveBuildToTeamIDs removes the BuildToTeam edge to Team by ids.
+// RemoveBuildToTeamIDs removes the "BuildToTeam" edge to Team entities by IDs.
 func (bu *BuildUpdate) RemoveBuildToTeamIDs(ids ...int) *BuildUpdate {
 	bu.mutation.RemoveBuildToTeamIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToTeam removes BuildToTeam edges to Team.
+// RemoveBuildToTeam removes "BuildToTeam" edges to Team entities.
 func (bu *BuildUpdate) RemoveBuildToTeam(t ...*Team) *BuildUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -214,19 +214,19 @@ func (bu *BuildUpdate) RemoveBuildToTeam(t ...*Team) *BuildUpdate {
 	return bu.RemoveBuildToTeamIDs(ids...)
 }
 
-// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to type Environment.
+// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to the Environment entity.
 func (bu *BuildUpdate) ClearBuildToEnvironment() *BuildUpdate {
 	bu.mutation.ClearBuildToEnvironment()
 	return bu
 }
 
-// RemoveBuildToEnvironmentIDs removes the BuildToEnvironment edge to Environment by ids.
+// RemoveBuildToEnvironmentIDs removes the "BuildToEnvironment" edge to Environment entities by IDs.
 func (bu *BuildUpdate) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
 	bu.mutation.RemoveBuildToEnvironmentIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToEnvironment removes BuildToEnvironment edges to Environment.
+// RemoveBuildToEnvironment removes "BuildToEnvironment" edges to Environment entities.
 func (bu *BuildUpdate) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -613,32 +613,32 @@ type BuildUpdateOne struct {
 	mutation *BuildMutation
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (buo *BuildUpdateOne) SetRevision(i int) *BuildUpdateOne {
 	buo.mutation.ResetRevision()
 	buo.mutation.SetRevision(i)
 	return buo
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 	buo.mutation.AddRevision(i)
 	return buo
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (buo *BuildUpdateOne) SetConfig(m map[string]string) *BuildUpdateOne {
 	buo.mutation.SetConfig(m)
 	return buo
 }
 
-// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToUserIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToUserIDs(ids...)
 	return buo
 }
 
-// AddBuildToUser adds the BuildToUser edges to User.
+// AddBuildToUser adds the "BuildToUser" edges to the User entity.
 func (buo *BuildUpdateOne) AddBuildToUser(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -647,13 +647,13 @@ func (buo *BuildUpdateOne) AddBuildToUser(u ...*User) *BuildUpdateOne {
 	return buo.AddBuildToUserIDs(ids...)
 }
 
-// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToTagIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToTagIDs(ids...)
 	return buo
 }
 
-// AddBuildToTag adds the BuildToTag edges to Tag.
+// AddBuildToTag adds the "BuildToTag" edges to the Tag entity.
 func (buo *BuildUpdateOne) AddBuildToTag(t ...*Tag) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -662,13 +662,13 @@ func (buo *BuildUpdateOne) AddBuildToTag(t ...*Tag) *BuildUpdateOne {
 	return buo.AddBuildToTagIDs(ids...)
 }
 
-// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
-// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+// AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (buo *BuildUpdateOne) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -677,13 +677,13 @@ func (buo *BuildUpdateOne) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork
 	return buo.AddBuildToProvisionedNetworkIDs(ids...)
 }
 
-// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+// AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToTeamIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToTeamIDs(ids...)
 	return buo
 }
 
-// AddBuildToTeam adds the BuildToTeam edges to Team.
+// AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -692,13 +692,13 @@ func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
 	return buo.AddBuildToTeamIDs(ids...)
 }
 
-// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToEnvironmentIDs(ids...)
 	return buo
 }
 
-// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+// AddBuildToEnvironment adds the "BuildToEnvironment" edges to the Environment entity.
 func (buo *BuildUpdateOne) AddBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -712,19 +712,19 @@ func (buo *BuildUpdateOne) Mutation() *BuildMutation {
 	return buo.mutation
 }
 
-// ClearBuildToUser clears all "BuildToUser" edges to type User.
+// ClearBuildToUser clears all "BuildToUser" edges to the User entity.
 func (buo *BuildUpdateOne) ClearBuildToUser() *BuildUpdateOne {
 	buo.mutation.ClearBuildToUser()
 	return buo
 }
 
-// RemoveBuildToUserIDs removes the BuildToUser edge to User by ids.
+// RemoveBuildToUserIDs removes the "BuildToUser" edge to User entities by IDs.
 func (buo *BuildUpdateOne) RemoveBuildToUserIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToUserIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToUser removes BuildToUser edges to User.
+// RemoveBuildToUser removes "BuildToUser" edges to User entities.
 func (buo *BuildUpdateOne) RemoveBuildToUser(u ...*User) *BuildUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -733,19 +733,19 @@ func (buo *BuildUpdateOne) RemoveBuildToUser(u ...*User) *BuildUpdateOne {
 	return buo.RemoveBuildToUserIDs(ids...)
 }
 
-// ClearBuildToTag clears all "BuildToTag" edges to type Tag.
+// ClearBuildToTag clears all "BuildToTag" edges to the Tag entity.
 func (buo *BuildUpdateOne) ClearBuildToTag() *BuildUpdateOne {
 	buo.mutation.ClearBuildToTag()
 	return buo
 }
 
-// RemoveBuildToTagIDs removes the BuildToTag edge to Tag by ids.
+// RemoveBuildToTagIDs removes the "BuildToTag" edge to Tag entities by IDs.
 func (buo *BuildUpdateOne) RemoveBuildToTagIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToTagIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToTag removes BuildToTag edges to Tag.
+// RemoveBuildToTag removes "BuildToTag" edges to Tag entities.
 func (buo *BuildUpdateOne) RemoveBuildToTag(t ...*Tag) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -754,19 +754,19 @@ func (buo *BuildUpdateOne) RemoveBuildToTag(t ...*Tag) *BuildUpdateOne {
 	return buo.RemoveBuildToTagIDs(ids...)
 }
 
-// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (buo *BuildUpdateOne) ClearBuildToProvisionedNetwork() *BuildUpdateOne {
 	buo.mutation.ClearBuildToProvisionedNetwork()
 	return buo
 }
 
-// RemoveBuildToProvisionedNetworkIDs removes the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveBuildToProvisionedNetworkIDs removes the "BuildToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToProvisionedNetwork removes BuildToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveBuildToProvisionedNetwork removes "BuildToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -775,19 +775,19 @@ func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetw
 	return buo.RemoveBuildToProvisionedNetworkIDs(ids...)
 }
 
-// ClearBuildToTeam clears all "BuildToTeam" edges to type Team.
+// ClearBuildToTeam clears all "BuildToTeam" edges to the Team entity.
 func (buo *BuildUpdateOne) ClearBuildToTeam() *BuildUpdateOne {
 	buo.mutation.ClearBuildToTeam()
 	return buo
 }
 
-// RemoveBuildToTeamIDs removes the BuildToTeam edge to Team by ids.
+// RemoveBuildToTeamIDs removes the "BuildToTeam" edge to Team entities by IDs.
 func (buo *BuildUpdateOne) RemoveBuildToTeamIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToTeamIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToTeam removes BuildToTeam edges to Team.
+// RemoveBuildToTeam removes "BuildToTeam" edges to Team entities.
 func (buo *BuildUpdateOne) RemoveBuildToTeam(t ...*Team) *BuildUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -796,19 +796,19 @@ func (buo *BuildUpdateOne) RemoveBuildToTeam(t ...*Team) *BuildUpdateOne {
 	return buo.RemoveBuildToTeamIDs(ids...)
 }
 
-// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to type Environment.
+// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to the Environment entity.
 func (buo *BuildUpdateOne) ClearBuildToEnvironment() *BuildUpdateOne {
 	buo.mutation.ClearBuildToEnvironment()
 	return buo
 }
 
-// RemoveBuildToEnvironmentIDs removes the BuildToEnvironment edge to Environment by ids.
+// RemoveBuildToEnvironmentIDs removes the "BuildToEnvironment" edge to Environment entities by IDs.
 func (buo *BuildUpdateOne) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToEnvironmentIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToEnvironment removes BuildToEnvironment edges to Environment.
+// RemoveBuildToEnvironment removes "BuildToEnvironment" edges to Environment entities.
 func (buo *BuildUpdateOne) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -817,7 +817,7 @@ func (buo *BuildUpdateOne) RemoveBuildToEnvironment(e ...*Environment) *BuildUpd
 	return buo.RemoveBuildToEnvironmentIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Build entity.
 func (buo *BuildUpdateOne) Save(ctx context.Context) (*Build, error) {
 	var (
 		err  error
@@ -884,6 +884,13 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Build.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := buo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := buo.mutation.Revision(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -1177,7 +1184,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	_node = &Build{config: buo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, buo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{build.Label}

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,32 +21,32 @@ type DiskUpdate struct {
 	mutation *DiskMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the DiskUpdate builder.
 func (du *DiskUpdate) Where(ps ...predicate.Disk) *DiskUpdate {
 	du.mutation.predicates = append(du.mutation.predicates, ps...)
 	return du
 }
 
-// SetSize sets the size field.
+// SetSize sets the "size" field.
 func (du *DiskUpdate) SetSize(i int) *DiskUpdate {
 	du.mutation.ResetSize()
 	du.mutation.SetSize(i)
 	return du
 }
 
-// AddSize adds i to size.
+// AddSize adds i to the "size" field.
 func (du *DiskUpdate) AddSize(i int) *DiskUpdate {
 	du.mutation.AddSize(i)
 	return du
 }
 
-// AddDiskToTagIDs adds the DiskToTag edge to Tag by ids.
+// AddDiskToTagIDs adds the "DiskToTag" edge to the Tag entity by IDs.
 func (du *DiskUpdate) AddDiskToTagIDs(ids ...int) *DiskUpdate {
 	du.mutation.AddDiskToTagIDs(ids...)
 	return du
 }
 
-// AddDiskToTag adds the DiskToTag edges to Tag.
+// AddDiskToTag adds the "DiskToTag" edges to the Tag entity.
 func (du *DiskUpdate) AddDiskToTag(t ...*Tag) *DiskUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -60,19 +60,19 @@ func (du *DiskUpdate) Mutation() *DiskMutation {
 	return du.mutation
 }
 
-// ClearDiskToTag clears all "DiskToTag" edges to type Tag.
+// ClearDiskToTag clears all "DiskToTag" edges to the Tag entity.
 func (du *DiskUpdate) ClearDiskToTag() *DiskUpdate {
 	du.mutation.ClearDiskToTag()
 	return du
 }
 
-// RemoveDiskToTagIDs removes the DiskToTag edge to Tag by ids.
+// RemoveDiskToTagIDs removes the "DiskToTag" edge to Tag entities by IDs.
 func (du *DiskUpdate) RemoveDiskToTagIDs(ids ...int) *DiskUpdate {
 	du.mutation.RemoveDiskToTagIDs(ids...)
 	return du
 }
 
-// RemoveDiskToTag removes DiskToTag edges to Tag.
+// RemoveDiskToTag removes "DiskToTag" edges to Tag entities.
 func (du *DiskUpdate) RemoveDiskToTag(t ...*Tag) *DiskUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -252,26 +252,26 @@ type DiskUpdateOne struct {
 	mutation *DiskMutation
 }
 
-// SetSize sets the size field.
+// SetSize sets the "size" field.
 func (duo *DiskUpdateOne) SetSize(i int) *DiskUpdateOne {
 	duo.mutation.ResetSize()
 	duo.mutation.SetSize(i)
 	return duo
 }
 
-// AddSize adds i to size.
+// AddSize adds i to the "size" field.
 func (duo *DiskUpdateOne) AddSize(i int) *DiskUpdateOne {
 	duo.mutation.AddSize(i)
 	return duo
 }
 
-// AddDiskToTagIDs adds the DiskToTag edge to Tag by ids.
+// AddDiskToTagIDs adds the "DiskToTag" edge to the Tag entity by IDs.
 func (duo *DiskUpdateOne) AddDiskToTagIDs(ids ...int) *DiskUpdateOne {
 	duo.mutation.AddDiskToTagIDs(ids...)
 	return duo
 }
 
-// AddDiskToTag adds the DiskToTag edges to Tag.
+// AddDiskToTag adds the "DiskToTag" edges to the Tag entity.
 func (duo *DiskUpdateOne) AddDiskToTag(t ...*Tag) *DiskUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -285,19 +285,19 @@ func (duo *DiskUpdateOne) Mutation() *DiskMutation {
 	return duo.mutation
 }
 
-// ClearDiskToTag clears all "DiskToTag" edges to type Tag.
+// ClearDiskToTag clears all "DiskToTag" edges to the Tag entity.
 func (duo *DiskUpdateOne) ClearDiskToTag() *DiskUpdateOne {
 	duo.mutation.ClearDiskToTag()
 	return duo
 }
 
-// RemoveDiskToTagIDs removes the DiskToTag edge to Tag by ids.
+// RemoveDiskToTagIDs removes the "DiskToTag" edge to Tag entities by IDs.
 func (duo *DiskUpdateOne) RemoveDiskToTagIDs(ids ...int) *DiskUpdateOne {
 	duo.mutation.RemoveDiskToTagIDs(ids...)
 	return duo
 }
 
-// RemoveDiskToTag removes DiskToTag edges to Tag.
+// RemoveDiskToTag removes "DiskToTag" edges to Tag entities.
 func (duo *DiskUpdateOne) RemoveDiskToTag(t ...*Tag) *DiskUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -306,7 +306,7 @@ func (duo *DiskUpdateOne) RemoveDiskToTag(t ...*Tag) *DiskUpdateOne {
 	return duo.RemoveDiskToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Disk entity.
 func (duo *DiskUpdateOne) Save(ctx context.Context) (*Disk, error) {
 	var (
 		err  error
@@ -389,6 +389,13 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Disk.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := duo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := duo.mutation.Size(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -459,7 +466,7 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 	}
 	_node = &Disk{config: duo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{disk.Label}

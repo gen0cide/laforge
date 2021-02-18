@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -26,25 +26,25 @@ type ProvisionedHostUpdate struct {
 	mutation *ProvisionedHostMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the ProvisionedHostUpdate builder.
 func (phu *ProvisionedHostUpdate) Where(ps ...predicate.ProvisionedHost) *ProvisionedHostUpdate {
 	phu.mutation.predicates = append(phu.mutation.predicates, ps...)
 	return phu
 }
 
-// SetSubnetIP sets the subnet_ip field.
+// SetSubnetIP sets the "subnet_ip" field.
 func (phu *ProvisionedHostUpdate) SetSubnetIP(s string) *ProvisionedHostUpdate {
 	phu.mutation.SetSubnetIP(s)
 	return phu
 }
 
-// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToTagIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToTag adds the ProvisionedHostToTag edges to Tag.
+// AddProvisionedHostToTag adds the "ProvisionedHostToTag" edges to the Tag entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -53,13 +53,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToTag(t ...*Tag) *Provisione
 	return phu.AddProvisionedHostToTagIDs(ids...)
 }
 
-// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToStatuIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToStatus adds the ProvisionedHostToStatus edges to Status.
+// AddProvisionedHostToStatus adds the "ProvisionedHostToStatus" edges to the Status entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -68,13 +68,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToStatus(s ...*Status) *Prov
 	return phu.AddProvisionedHostToStatuIDs(ids...)
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToProvisionedNetwork adds the ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+// AddProvisionedHostToProvisionedNetwork adds the "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -83,13 +83,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisionedNetwork(p ...*P
 	return phu.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToHostIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToHost adds the ProvisionedHostToHost edges to Host.
+// AddProvisionedHostToHost adds the "ProvisionedHostToHost" edges to the Host entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -98,13 +98,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToHost(h ...*Host) *Provisio
 	return phu.AddProvisionedHostToHostIDs(ids...)
 }
 
-// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+// AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToProvisioningStep adds the ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+// AddProvisionedHostToProvisioningStep adds the "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -113,13 +113,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStep(p ...*Pro
 	return phu.AddProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+// AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
-// AddProvisionedHostToAgentStatus adds the ProvisionedHostToAgentStatus edges to AgentStatus.
+// AddProvisionedHostToAgentStatus adds the "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -133,19 +133,19 @@ func (phu *ProvisionedHostUpdate) Mutation() *ProvisionedHostMutation {
 	return phu.mutation
 }
 
-// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to type Tag.
+// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to the Tag entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToTag() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToTag()
 	return phu
 }
 
-// RemoveProvisionedHostToTagIDs removes the ProvisionedHostToTag edge to Tag by ids.
+// RemoveProvisionedHostToTagIDs removes the "ProvisionedHostToTag" edge to Tag entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToTagIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToTag removes ProvisionedHostToTag edges to Tag.
+// RemoveProvisionedHostToTag removes "ProvisionedHostToTag" edges to Tag entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -154,19 +154,19 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToTag(t ...*Tag) *Provisi
 	return phu.RemoveProvisionedHostToTagIDs(ids...)
 }
 
-// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to type Status.
+// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to the Status entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToStatus() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToStatus()
 	return phu
 }
 
-// RemoveProvisionedHostToStatuIDs removes the ProvisionedHostToStatus edge to Status by ids.
+// RemoveProvisionedHostToStatuIDs removes the "ProvisionedHostToStatus" edge to Status entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToStatuIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToStatus removes ProvisionedHostToStatus edges to Status.
+// RemoveProvisionedHostToStatus removes "ProvisionedHostToStatus" edges to Status entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -175,19 +175,19 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToStatus(s ...*Status) *P
 	return phu.RemoveProvisionedHostToStatuIDs(ids...)
 }
 
-// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisionedNetwork() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToProvisionedNetwork()
 	return phu
 }
 
-// RemoveProvisionedHostToProvisionedNetworkIDs removes the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveProvisionedHostToProvisionedNetworkIDs removes the "ProvisionedHostToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToProvisionedNetwork removes ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveProvisionedHostToProvisionedNetwork removes "ProvisionedHostToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -196,19 +196,19 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisionedNetwork(p ..
 	return phu.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to type Host.
+// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to the Host entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToHost() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToHost()
 	return phu
 }
 
-// RemoveProvisionedHostToHostIDs removes the ProvisionedHostToHost edge to Host by ids.
+// RemoveProvisionedHostToHostIDs removes the "ProvisionedHostToHost" edge to Host entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToHostIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToHost removes ProvisionedHostToHost edges to Host.
+// RemoveProvisionedHostToHost removes "ProvisionedHostToHost" edges to Host entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -217,19 +217,19 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToHost(h ...*Host) *Provi
 	return phu.RemoveProvisionedHostToHostIDs(ids...)
 }
 
-// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to type ProvisioningStep.
+// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisioningStep() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToProvisioningStep()
 	return phu
 }
 
-// RemoveProvisionedHostToProvisioningStepIDs removes the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+// RemoveProvisionedHostToProvisioningStepIDs removes the "ProvisionedHostToProvisioningStep" edge to ProvisioningStep entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToProvisioningStep removes ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+// RemoveProvisionedHostToProvisioningStep removes "ProvisionedHostToProvisioningStep" edges to ProvisioningStep entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -238,19 +238,19 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStep(p ...*
 	return phu.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to type AgentStatus.
+// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToAgentStatus() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToAgentStatus()
 	return phu
 }
 
-// RemoveProvisionedHostToAgentStatuIDs removes the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+// RemoveProvisionedHostToAgentStatuIDs removes the "ProvisionedHostToAgentStatus" edge to AgentStatus entities by IDs.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
-// RemoveProvisionedHostToAgentStatus removes ProvisionedHostToAgentStatus edges to AgentStatus.
+// RemoveProvisionedHostToAgentStatus removes "ProvisionedHostToAgentStatus" edges to AgentStatus entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -677,19 +677,19 @@ type ProvisionedHostUpdateOne struct {
 	mutation *ProvisionedHostMutation
 }
 
-// SetSubnetIP sets the subnet_ip field.
+// SetSubnetIP sets the "subnet_ip" field.
 func (phuo *ProvisionedHostUpdateOne) SetSubnetIP(s string) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetSubnetIP(s)
 	return phuo
 }
 
-// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToTagIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToTag adds the ProvisionedHostToTag edges to Tag.
+// AddProvisionedHostToTag adds the "ProvisionedHostToTag" edges to the Tag entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -698,13 +698,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToTag(t ...*Tag) *Provis
 	return phuo.AddProvisionedHostToTagIDs(ids...)
 }
 
-// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToStatuIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToStatus adds the ProvisionedHostToStatus edges to Status.
+// AddProvisionedHostToStatus adds the "ProvisionedHostToStatus" edges to the Status entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -713,13 +713,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToStatus(s ...*Status) *
 	return phuo.AddProvisionedHostToStatuIDs(ids...)
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToProvisionedNetwork adds the ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+// AddProvisionedHostToProvisionedNetwork adds the "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -728,13 +728,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisionedNetwork(p .
 	return phuo.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToHostIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToHost adds the ProvisionedHostToHost edges to Host.
+// AddProvisionedHostToHost adds the "ProvisionedHostToHost" edges to the Host entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -743,13 +743,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToHost(h ...*Host) *Prov
 	return phuo.AddProvisionedHostToHostIDs(ids...)
 }
 
-// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+// AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToProvisioningStep adds the ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+// AddProvisionedHostToProvisioningStep adds the "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -758,13 +758,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStep(p ...
 	return phuo.AddProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+// AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
-// AddProvisionedHostToAgentStatus adds the ProvisionedHostToAgentStatus edges to AgentStatus.
+// AddProvisionedHostToAgentStatus adds the "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -778,19 +778,19 @@ func (phuo *ProvisionedHostUpdateOne) Mutation() *ProvisionedHostMutation {
 	return phuo.mutation
 }
 
-// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to type Tag.
+// ClearProvisionedHostToTag clears all "ProvisionedHostToTag" edges to the Tag entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToTag() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToTag()
 	return phuo
 }
 
-// RemoveProvisionedHostToTagIDs removes the ProvisionedHostToTag edge to Tag by ids.
+// RemoveProvisionedHostToTagIDs removes the "ProvisionedHostToTag" edge to Tag entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToTagIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToTagIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToTag removes ProvisionedHostToTag edges to Tag.
+// RemoveProvisionedHostToTag removes "ProvisionedHostToTag" edges to Tag entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToTag(t ...*Tag) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -799,19 +799,19 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToTag(t ...*Tag) *Pro
 	return phuo.RemoveProvisionedHostToTagIDs(ids...)
 }
 
-// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to type Status.
+// ClearProvisionedHostToStatus clears all "ProvisionedHostToStatus" edges to the Status entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToStatus() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToStatus()
 	return phuo
 }
 
-// RemoveProvisionedHostToStatuIDs removes the ProvisionedHostToStatus edge to Status by ids.
+// RemoveProvisionedHostToStatuIDs removes the "ProvisionedHostToStatus" edge to Status entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToStatuIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToStatus removes ProvisionedHostToStatus edges to Status.
+// RemoveProvisionedHostToStatus removes "ProvisionedHostToStatus" edges to Status entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToStatus(s ...*Status) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -820,19 +820,19 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToStatus(s ...*Status
 	return phuo.RemoveProvisionedHostToStatuIDs(ids...)
 }
 
-// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearProvisionedHostToProvisionedNetwork clears all "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisionedNetwork() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToProvisionedNetwork()
 	return phuo
 }
 
-// RemoveProvisionedHostToProvisionedNetworkIDs removes the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveProvisionedHostToProvisionedNetworkIDs removes the "ProvisionedHostToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToProvisionedNetwork removes ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveProvisionedHostToProvisionedNetwork removes "ProvisionedHostToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -841,19 +841,19 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisionedNetwork(
 	return phuo.RemoveProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to type Host.
+// ClearProvisionedHostToHost clears all "ProvisionedHostToHost" edges to the Host entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToHost() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToHost()
 	return phuo
 }
 
-// RemoveProvisionedHostToHostIDs removes the ProvisionedHostToHost edge to Host by ids.
+// RemoveProvisionedHostToHostIDs removes the "ProvisionedHostToHost" edge to Host entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToHostIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToHostIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToHost removes ProvisionedHostToHost edges to Host.
+// RemoveProvisionedHostToHost removes "ProvisionedHostToHost" edges to Host entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToHost(h ...*Host) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -862,19 +862,19 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToHost(h ...*Host) *P
 	return phuo.RemoveProvisionedHostToHostIDs(ids...)
 }
 
-// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to type ProvisioningStep.
+// ClearProvisionedHostToProvisioningStep clears all "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisioningStep() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToProvisioningStep()
 	return phuo
 }
 
-// RemoveProvisionedHostToProvisioningStepIDs removes the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+// RemoveProvisionedHostToProvisioningStepIDs removes the "ProvisionedHostToProvisioningStep" edge to ProvisioningStep entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToProvisioningStep removes ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+// RemoveProvisionedHostToProvisioningStep removes "ProvisionedHostToProvisioningStep" edges to ProvisioningStep entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -883,19 +883,19 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStep(p 
 	return phuo.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to type AgentStatus.
+// ClearProvisionedHostToAgentStatus clears all "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToAgentStatus() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToAgentStatus()
 	return phuo
 }
 
-// RemoveProvisionedHostToAgentStatuIDs removes the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+// RemoveProvisionedHostToAgentStatuIDs removes the "ProvisionedHostToAgentStatus" edge to AgentStatus entities by IDs.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
-// RemoveProvisionedHostToAgentStatus removes ProvisionedHostToAgentStatus edges to AgentStatus.
+// RemoveProvisionedHostToAgentStatus removes "ProvisionedHostToAgentStatus" edges to AgentStatus entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -904,7 +904,7 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*A
 	return phuo.RemoveProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated ProvisionedHost entity.
 func (phuo *ProvisionedHostUpdateOne) Save(ctx context.Context) (*ProvisionedHost, error) {
 	var (
 		err  error
@@ -971,6 +971,13 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing ProvisionedHost.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := phuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := phuo.mutation.SubnetIP(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1304,7 +1311,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	_node = &ProvisionedHost{config: phuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, phuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionedhost.Label}

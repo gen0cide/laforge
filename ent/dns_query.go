@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,6 +23,7 @@ type DNSQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.DNS
 	// eager-loading edges.
 	withDNSToTag *TagQuery
@@ -32,7 +33,7 @@ type DNSQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the DNSQuery builder.
 func (dq *DNSQuery) Where(ps ...predicate.DNS) *DNSQuery {
 	dq.predicates = append(dq.predicates, ps...)
 	return dq
@@ -56,14 +57,14 @@ func (dq *DNSQuery) Order(o ...OrderFunc) *DNSQuery {
 	return dq
 }
 
-// QueryDNSToTag chains the current query on the DNSToTag edge.
+// QueryDNSToTag chains the current query on the "DNSToTag" edge.
 func (dq *DNSQuery) QueryDNSToTag() *TagQuery {
 	query := &TagQuery{config: dq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := dq.sqlQuery()
+		selector := dq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -78,7 +79,8 @@ func (dq *DNSQuery) QueryDNSToTag() *TagQuery {
 	return query
 }
 
-// First returns the first DNS entity in the query. Returns *NotFoundError when no dns was found.
+// First returns the first DNS entity from the query.
+// Returns a *NotFoundError when no DNS was found.
 func (dq *DNSQuery) First(ctx context.Context) (*DNS, error) {
 	nodes, err := dq.Limit(1).All(ctx)
 	if err != nil {
@@ -99,7 +101,8 @@ func (dq *DNSQuery) FirstX(ctx context.Context) *DNS {
 	return node
 }
 
-// FirstID returns the first DNS id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first DNS ID from the query.
+// Returns a *NotFoundError when no DNS ID was found.
 func (dq *DNSQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
@@ -121,7 +124,9 @@ func (dq *DNSQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only DNS entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single DNS entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one DNS entity is not found.
+// Returns a *NotFoundError when no DNS entities are found.
 func (dq *DNSQuery) Only(ctx context.Context) (*DNS, error) {
 	nodes, err := dq.Limit(2).All(ctx)
 	if err != nil {
@@ -146,7 +151,9 @@ func (dq *DNSQuery) OnlyX(ctx context.Context) *DNS {
 	return node
 }
 
-// OnlyID returns the only DNS id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only DNS ID in the query.
+// Returns a *NotSingularError when exactly one DNS ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (dq *DNSQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
@@ -189,7 +196,7 @@ func (dq *DNSQuery) AllX(ctx context.Context) []*DNS {
 	return nodes
 }
 
-// IDs executes the query and returns a list of DNS ids.
+// IDs executes the query and returns a list of DNS IDs.
 func (dq *DNSQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := dq.Select(dns.FieldID).Scan(ctx, &ids); err != nil {
@@ -241,7 +248,7 @@ func (dq *DNSQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the DNSQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (dq *DNSQuery) Clone() *DNSQuery {
 	if dq == nil {
@@ -260,8 +267,8 @@ func (dq *DNSQuery) Clone() *DNSQuery {
 	}
 }
 
-//  WithDNSToTag tells the query-builder to eager-loads the nodes that are connected to
-// the "DNSToTag" edge. The optional arguments used to configure the query builder of the edge.
+// WithDNSToTag tells the query-builder to eager-load the nodes that are connected to
+// the "DNSToTag" edge. The optional arguments are used to configure the query builder of the edge.
 func (dq *DNSQuery) WithDNSToTag(opts ...func(*TagQuery)) *DNSQuery {
 	query := &TagQuery{config: dq.config}
 	for _, opt := range opts {
@@ -271,7 +278,7 @@ func (dq *DNSQuery) WithDNSToTag(opts ...func(*TagQuery)) *DNSQuery {
 	return dq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -293,12 +300,13 @@ func (dq *DNSQuery) GroupBy(field string, fields ...string) *DNSGroupBy {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return dq.sqlQuery(), nil
+		return dq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -311,18 +319,16 @@ func (dq *DNSQuery) GroupBy(field string, fields ...string) *DNSGroupBy {
 //		Scan(ctx, &v)
 //
 func (dq *DNSQuery) Select(field string, fields ...string) *DNSSelect {
-	selector := &DNSSelect{config: dq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return dq.sqlQuery(), nil
-	}
-	return selector
+	dq.fields = append([]string{field}, fields...)
+	return &DNSSelect{DNSQuery: dq}
 }
 
 func (dq *DNSQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range dq.fields {
+		if !dns.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if dq.path != nil {
 		prev, err := dq.path(ctx)
 		if err != nil {
@@ -345,22 +351,18 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, dns.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &DNS{config: dq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, dq.driver, _spec); err != nil {
 		return nil, err
@@ -427,6 +429,15 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   dq.sql,
 		Unique: true,
 	}
+	if fields := dq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, dns.FieldID)
+		for i := range fields {
+			if fields[i] != dns.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := dq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -450,7 +461,7 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (dq *DNSQuery) sqlQuery() *sql.Selector {
+func (dq *DNSQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(dq.driver.Dialect())
 	t1 := builder.Table(dns.Table)
 	selector := builder.Select(t1.Columns(dns.Columns...)...).From(t1)
@@ -475,7 +486,7 @@ func (dq *DNSQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// DNSGroupBy is the builder for group-by DNS entities.
+// DNSGroupBy is the group-by builder for DNS entities.
 type DNSGroupBy struct {
 	config
 	fields []string
@@ -491,7 +502,7 @@ func (dgb *DNSGroupBy) Aggregate(fns ...AggregateFunc) *DNSGroupBy {
 	return dgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (dgb *DNSGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := dgb.path(ctx)
 	if err != nil {
@@ -508,7 +519,8 @@ func (dgb *DNSGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DNSGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -529,7 +541,8 @@ func (dgb *DNSGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = dgb.Strings(ctx); err != nil {
@@ -555,7 +568,8 @@ func (dgb *DNSGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DNSGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -576,7 +590,8 @@ func (dgb *DNSGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = dgb.Ints(ctx); err != nil {
@@ -602,7 +617,8 @@ func (dgb *DNSGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DNSGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -623,7 +639,8 @@ func (dgb *DNSGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = dgb.Float64s(ctx); err != nil {
@@ -649,7 +666,8 @@ func (dgb *DNSGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DNSGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -670,7 +688,8 @@ func (dgb *DNSGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DNSGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = dgb.Bools(ctx); err != nil {
@@ -725,22 +744,19 @@ func (dgb *DNSGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(dgb.fields...)
 }
 
-// DNSSelect is the builder for select fields of DNS entities.
+// DNSSelect is the builder for selecting fields of DNS entities.
 type DNSSelect struct {
-	config
-	fields []string
+	*DNSQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ds *DNSSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ds.path(ctx)
-	if err != nil {
+	if err := ds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ds.sql = query
+	ds.sql = ds.DNSQuery.sqlQuery(ctx)
 	return ds.sqlScan(ctx, v)
 }
 
@@ -751,7 +767,7 @@ func (ds *DNSSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DNSSelect.Strings is not achievable when selecting more than 1 field")
@@ -772,7 +788,7 @@ func (ds *DNSSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ds.Strings(ctx); err != nil {
@@ -798,7 +814,7 @@ func (ds *DNSSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DNSSelect.Ints is not achievable when selecting more than 1 field")
@@ -819,7 +835,7 @@ func (ds *DNSSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ds.Ints(ctx); err != nil {
@@ -845,7 +861,7 @@ func (ds *DNSSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DNSSelect.Float64s is not achievable when selecting more than 1 field")
@@ -866,7 +882,7 @@ func (ds *DNSSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ds.Float64s(ctx); err != nil {
@@ -892,7 +908,7 @@ func (ds *DNSSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DNSSelect.Bools is not achievable when selecting more than 1 field")
@@ -913,7 +929,7 @@ func (ds *DNSSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ds *DNSSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ds.Bools(ctx); err != nil {
@@ -940,11 +956,6 @@ func (ds *DNSSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ds *DNSSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ds.fields {
-		if !dns.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := ds.sqlQuery().Query()
 	if err := ds.driver.Query(ctx, query, args, rows); err != nil {

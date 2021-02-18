@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -24,31 +24,31 @@ type TeamCreate struct {
 	hooks    []Hook
 }
 
-// SetTeamNumber sets the team_number field.
+// SetTeamNumber sets the "team_number" field.
 func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 	tc.mutation.SetTeamNumber(i)
 	return tc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (tc *TeamCreate) SetConfig(m map[string]string) *TeamCreate {
 	tc.mutation.SetConfig(m)
 	return tc
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (tc *TeamCreate) SetRevision(i int64) *TeamCreate {
 	tc.mutation.SetRevision(i)
 	return tc
 }
 
-// AddTeamToUserIDs adds the TeamToUser edge to User by ids.
+// AddTeamToUserIDs adds the "TeamToUser" edge to the User entity by IDs.
 func (tc *TeamCreate) AddTeamToUserIDs(ids ...int) *TeamCreate {
 	tc.mutation.AddTeamToUserIDs(ids...)
 	return tc
 }
 
-// AddTeamToUser adds the TeamToUser edges to User.
+// AddTeamToUser adds the "TeamToUser" edges to the User entity.
 func (tc *TeamCreate) AddTeamToUser(u ...*User) *TeamCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -57,13 +57,13 @@ func (tc *TeamCreate) AddTeamToUser(u ...*User) *TeamCreate {
 	return tc.AddTeamToUserIDs(ids...)
 }
 
-// AddTeamToBuildIDs adds the TeamToBuild edge to Build by ids.
+// AddTeamToBuildIDs adds the "TeamToBuild" edge to the Build entity by IDs.
 func (tc *TeamCreate) AddTeamToBuildIDs(ids ...int) *TeamCreate {
 	tc.mutation.AddTeamToBuildIDs(ids...)
 	return tc
 }
 
-// AddTeamToBuild adds the TeamToBuild edges to Build.
+// AddTeamToBuild adds the "TeamToBuild" edges to the Build entity.
 func (tc *TeamCreate) AddTeamToBuild(b ...*Build) *TeamCreate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -72,13 +72,13 @@ func (tc *TeamCreate) AddTeamToBuild(b ...*Build) *TeamCreate {
 	return tc.AddTeamToBuildIDs(ids...)
 }
 
-// AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
+// AddTeamToEnvironmentIDs adds the "TeamToEnvironment" edge to the Environment entity by IDs.
 func (tc *TeamCreate) AddTeamToEnvironmentIDs(ids ...int) *TeamCreate {
 	tc.mutation.AddTeamToEnvironmentIDs(ids...)
 	return tc
 }
 
-// AddTeamToEnvironment adds the TeamToEnvironment edges to Environment.
+// AddTeamToEnvironment adds the "TeamToEnvironment" edges to the Environment entity.
 func (tc *TeamCreate) AddTeamToEnvironment(e ...*Environment) *TeamCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -87,13 +87,13 @@ func (tc *TeamCreate) AddTeamToEnvironment(e ...*Environment) *TeamCreate {
 	return tc.AddTeamToEnvironmentIDs(ids...)
 }
 
-// AddTeamToTagIDs adds the TeamToTag edge to Tag by ids.
+// AddTeamToTagIDs adds the "TeamToTag" edge to the Tag entity by IDs.
 func (tc *TeamCreate) AddTeamToTagIDs(ids ...int) *TeamCreate {
 	tc.mutation.AddTeamToTagIDs(ids...)
 	return tc
 }
 
-// AddTeamToTag adds the TeamToTag edges to Tag.
+// AddTeamToTag adds the "TeamToTag" edges to the Tag entity.
 func (tc *TeamCreate) AddTeamToTag(t ...*Tag) *TeamCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -102,13 +102,13 @@ func (tc *TeamCreate) AddTeamToTag(t ...*Tag) *TeamCreate {
 	return tc.AddTeamToTagIDs(ids...)
 }
 
-// AddTeamToProvisionedNetworkIDs adds the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (tc *TeamCreate) AddTeamToProvisionedNetworkIDs(ids ...int) *TeamCreate {
 	tc.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tc
 }
 
-// AddTeamToProvisionedNetwork adds the TeamToProvisionedNetwork edges to ProvisionedNetwork.
+// AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tc *TeamCreate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamCreate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -326,7 +326,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// TeamCreateBulk is the builder for creating a bulk of Team entities.
+// TeamCreateBulk is the builder for creating many Team entities in bulk.
 type TeamCreateBulk struct {
 	config
 	builders []*TeamCreate
@@ -383,7 +383,7 @@ func (tcb *TeamCreateBulk) Save(ctx context.Context) ([]*Team, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (tcb *TeamCreateBulk) SaveX(ctx context.Context) []*Team {
 	v, err := tcb.Save(ctx)
 	if err != nil {

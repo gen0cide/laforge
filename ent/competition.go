@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/competition"
 )
 
@@ -26,17 +26,17 @@ type Competition struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
-	Edges CompetitionEdges `json:"edges"`
+	Edges CompetitionEdges `hcl:"edges,block" json:"edges"`
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
 type CompetitionEdges struct {
 	// CompetitionToTag holds the value of the CompetitionToTag edge.
-	CompetitionToTag []*Tag
+	CompetitionToTag []*Tag `json:"CompetitionToTag,omitempty"`
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
-	CompetitionToDNS []*DNS `hcl:"dns,block"`
+	CompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
-	CompetitionToEnvironment []*Environment
+	CompetitionToEnvironment []*Environment `json:"CompetitionToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -70,81 +70,96 @@ func (e CompetitionEdges) CompetitionToEnvironmentOrErr() ([]*Environment, error
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Competition) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // hcl_id
-		&sql.NullString{}, // root_password
-		&[]byte{},         // config
-		&[]byte{},         // tags
+func (*Competition) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case competition.FieldConfig, competition.FieldTags:
+			values[i] = &[]byte{}
+		case competition.FieldID:
+			values[i] = &sql.NullInt64{}
+		case competition.FieldHclID, competition.FieldRootPassword:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Competition", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Competition fields.
-func (c *Competition) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(competition.Columns); m < n {
+func (c *Competition) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	c.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field hcl_id", values[0])
-	} else if value.Valid {
-		c.HclID = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field root_password", values[1])
-	} else if value.Valid {
-		c.RootPassword = value.String
-	}
+	for i := range columns {
+		switch columns[i] {
+		case competition.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			c.ID = int(value.Int64)
+		case competition.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				c.HclID = value.String
+			}
+		case competition.FieldRootPassword:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field root_password", values[i])
+			} else if value.Valid {
+				c.RootPassword = value.String
+			}
+		case competition.FieldConfig:
 
-	if value, ok := values[2].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[2])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &c.Config); err != nil {
-			return fmt.Errorf("unmarshal field config: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &c.Config); err != nil {
+					return fmt.Errorf("unmarshal field config: %v", err)
+				}
+			}
+		case competition.FieldTags:
 
-	if value, ok := values[3].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[3])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &c.Tags); err != nil {
-			return fmt.Errorf("unmarshal field tags: %v", err)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &c.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
 		}
 	}
 	return nil
 }
 
-// QueryCompetitionToTag queries the CompetitionToTag edge of the Competition.
+// QueryCompetitionToTag queries the "CompetitionToTag" edge of the Competition entity.
 func (c *Competition) QueryCompetitionToTag() *TagQuery {
 	return (&CompetitionClient{config: c.config}).QueryCompetitionToTag(c)
 }
 
-// QueryCompetitionToDNS queries the CompetitionToDNS edge of the Competition.
+// QueryCompetitionToDNS queries the "CompetitionToDNS" edge of the Competition entity.
 func (c *Competition) QueryCompetitionToDNS() *DNSQuery {
 	return (&CompetitionClient{config: c.config}).QueryCompetitionToDNS(c)
 }
 
-// QueryCompetitionToEnvironment queries the CompetitionToEnvironment edge of the Competition.
+// QueryCompetitionToEnvironment queries the "CompetitionToEnvironment" edge of the Competition entity.
 func (c *Competition) QueryCompetitionToEnvironment() *EnvironmentQuery {
 	return (&CompetitionClient{config: c.config}).QueryCompetitionToEnvironment(c)
 }
 
 // Update returns a builder for updating this Competition.
-// Note that, you need to call Competition.Unwrap() before calling this method, if this Competition
+// Note that you need to call Competition.Unwrap() before calling this method if this Competition
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (c *Competition) Update() *CompetitionUpdateOne {
 	return (&CompetitionClient{config: c.config}).UpdateOne(c)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Competition entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (c *Competition) Unwrap() *Competition {
 	tx, ok := c.config.driver.(*txDriver)
 	if !ok {

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -22,49 +22,49 @@ type NetworkUpdate struct {
 	mutation *NetworkMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the NetworkUpdate builder.
 func (nu *NetworkUpdate) Where(ps ...predicate.Network) *NetworkUpdate {
 	nu.mutation.predicates = append(nu.mutation.predicates, ps...)
 	return nu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (nu *NetworkUpdate) SetName(s string) *NetworkUpdate {
 	nu.mutation.SetName(s)
 	return nu
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nu *NetworkUpdate) SetCidr(s string) *NetworkUpdate {
 	nu.mutation.SetCidr(s)
 	return nu
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nu *NetworkUpdate) SetVdiVisible(b bool) *NetworkUpdate {
 	nu.mutation.SetVdiVisible(b)
 	return nu
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nu *NetworkUpdate) SetVars(m map[string]string) *NetworkUpdate {
 	nu.mutation.SetVars(m)
 	return nu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (nu *NetworkUpdate) SetTags(m map[string]string) *NetworkUpdate {
 	nu.mutation.SetTags(m)
 	return nu
 }
 
-// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by IDs.
 func (nu *NetworkUpdate) AddNetworkToTagIDs(ids ...int) *NetworkUpdate {
 	nu.mutation.AddNetworkToTagIDs(ids...)
 	return nu
 }
 
-// AddNetworkToTag adds the NetworkToTag edges to Tag.
+// AddNetworkToTag adds the "NetworkToTag" edges to the Tag entity.
 func (nu *NetworkUpdate) AddNetworkToTag(t ...*Tag) *NetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -73,13 +73,13 @@ func (nu *NetworkUpdate) AddNetworkToTag(t ...*Tag) *NetworkUpdate {
 	return nu.AddNetworkToTagIDs(ids...)
 }
 
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
+// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by IDs.
 func (nu *NetworkUpdate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkUpdate {
 	nu.mutation.AddNetworkToEnvironmentIDs(ids...)
 	return nu
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
+// AddNetworkToEnvironment adds the "NetworkToEnvironment" edges to the Environment entity.
 func (nu *NetworkUpdate) AddNetworkToEnvironment(e ...*Environment) *NetworkUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -93,19 +93,19 @@ func (nu *NetworkUpdate) Mutation() *NetworkMutation {
 	return nu.mutation
 }
 
-// ClearNetworkToTag clears all "NetworkToTag" edges to type Tag.
+// ClearNetworkToTag clears all "NetworkToTag" edges to the Tag entity.
 func (nu *NetworkUpdate) ClearNetworkToTag() *NetworkUpdate {
 	nu.mutation.ClearNetworkToTag()
 	return nu
 }
 
-// RemoveNetworkToTagIDs removes the NetworkToTag edge to Tag by ids.
+// RemoveNetworkToTagIDs removes the "NetworkToTag" edge to Tag entities by IDs.
 func (nu *NetworkUpdate) RemoveNetworkToTagIDs(ids ...int) *NetworkUpdate {
 	nu.mutation.RemoveNetworkToTagIDs(ids...)
 	return nu
 }
 
-// RemoveNetworkToTag removes NetworkToTag edges to Tag.
+// RemoveNetworkToTag removes "NetworkToTag" edges to Tag entities.
 func (nu *NetworkUpdate) RemoveNetworkToTag(t ...*Tag) *NetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -114,19 +114,19 @@ func (nu *NetworkUpdate) RemoveNetworkToTag(t ...*Tag) *NetworkUpdate {
 	return nu.RemoveNetworkToTagIDs(ids...)
 }
 
-// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
+// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to the Environment entity.
 func (nu *NetworkUpdate) ClearNetworkToEnvironment() *NetworkUpdate {
 	nu.mutation.ClearNetworkToEnvironment()
 	return nu
 }
 
-// RemoveNetworkToEnvironmentIDs removes the NetworkToEnvironment edge to Environment by ids.
+// RemoveNetworkToEnvironmentIDs removes the "NetworkToEnvironment" edge to Environment entities by IDs.
 func (nu *NetworkUpdate) RemoveNetworkToEnvironmentIDs(ids ...int) *NetworkUpdate {
 	nu.mutation.RemoveNetworkToEnvironmentIDs(ids...)
 	return nu
 }
 
-// RemoveNetworkToEnvironment removes NetworkToEnvironment edges to Environment.
+// RemoveNetworkToEnvironment removes "NetworkToEnvironment" edges to Environment entities.
 func (nu *NetworkUpdate) RemoveNetworkToEnvironment(e ...*Environment) *NetworkUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -365,43 +365,43 @@ type NetworkUpdateOne struct {
 	mutation *NetworkMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (nuo *NetworkUpdateOne) SetName(s string) *NetworkUpdateOne {
 	nuo.mutation.SetName(s)
 	return nuo
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nuo *NetworkUpdateOne) SetCidr(s string) *NetworkUpdateOne {
 	nuo.mutation.SetCidr(s)
 	return nuo
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nuo *NetworkUpdateOne) SetVdiVisible(b bool) *NetworkUpdateOne {
 	nuo.mutation.SetVdiVisible(b)
 	return nuo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nuo *NetworkUpdateOne) SetVars(m map[string]string) *NetworkUpdateOne {
 	nuo.mutation.SetVars(m)
 	return nuo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (nuo *NetworkUpdateOne) SetTags(m map[string]string) *NetworkUpdateOne {
 	nuo.mutation.SetTags(m)
 	return nuo
 }
 
-// AddNetworkToTagIDs adds the NetworkToTag edge to Tag by ids.
+// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by IDs.
 func (nuo *NetworkUpdateOne) AddNetworkToTagIDs(ids ...int) *NetworkUpdateOne {
 	nuo.mutation.AddNetworkToTagIDs(ids...)
 	return nuo
 }
 
-// AddNetworkToTag adds the NetworkToTag edges to Tag.
+// AddNetworkToTag adds the "NetworkToTag" edges to the Tag entity.
 func (nuo *NetworkUpdateOne) AddNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -410,13 +410,13 @@ func (nuo *NetworkUpdateOne) AddNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	return nuo.AddNetworkToTagIDs(ids...)
 }
 
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
+// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by IDs.
 func (nuo *NetworkUpdateOne) AddNetworkToEnvironmentIDs(ids ...int) *NetworkUpdateOne {
 	nuo.mutation.AddNetworkToEnvironmentIDs(ids...)
 	return nuo
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
+// AddNetworkToEnvironment adds the "NetworkToEnvironment" edges to the Environment entity.
 func (nuo *NetworkUpdateOne) AddNetworkToEnvironment(e ...*Environment) *NetworkUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -430,19 +430,19 @@ func (nuo *NetworkUpdateOne) Mutation() *NetworkMutation {
 	return nuo.mutation
 }
 
-// ClearNetworkToTag clears all "NetworkToTag" edges to type Tag.
+// ClearNetworkToTag clears all "NetworkToTag" edges to the Tag entity.
 func (nuo *NetworkUpdateOne) ClearNetworkToTag() *NetworkUpdateOne {
 	nuo.mutation.ClearNetworkToTag()
 	return nuo
 }
 
-// RemoveNetworkToTagIDs removes the NetworkToTag edge to Tag by ids.
+// RemoveNetworkToTagIDs removes the "NetworkToTag" edge to Tag entities by IDs.
 func (nuo *NetworkUpdateOne) RemoveNetworkToTagIDs(ids ...int) *NetworkUpdateOne {
 	nuo.mutation.RemoveNetworkToTagIDs(ids...)
 	return nuo
 }
 
-// RemoveNetworkToTag removes NetworkToTag edges to Tag.
+// RemoveNetworkToTag removes "NetworkToTag" edges to Tag entities.
 func (nuo *NetworkUpdateOne) RemoveNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -451,19 +451,19 @@ func (nuo *NetworkUpdateOne) RemoveNetworkToTag(t ...*Tag) *NetworkUpdateOne {
 	return nuo.RemoveNetworkToTagIDs(ids...)
 }
 
-// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
+// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to the Environment entity.
 func (nuo *NetworkUpdateOne) ClearNetworkToEnvironment() *NetworkUpdateOne {
 	nuo.mutation.ClearNetworkToEnvironment()
 	return nuo
 }
 
-// RemoveNetworkToEnvironmentIDs removes the NetworkToEnvironment edge to Environment by ids.
+// RemoveNetworkToEnvironmentIDs removes the "NetworkToEnvironment" edge to Environment entities by IDs.
 func (nuo *NetworkUpdateOne) RemoveNetworkToEnvironmentIDs(ids ...int) *NetworkUpdateOne {
 	nuo.mutation.RemoveNetworkToEnvironmentIDs(ids...)
 	return nuo
 }
 
-// RemoveNetworkToEnvironment removes NetworkToEnvironment edges to Environment.
+// RemoveNetworkToEnvironment removes "NetworkToEnvironment" edges to Environment entities.
 func (nuo *NetworkUpdateOne) RemoveNetworkToEnvironment(e ...*Environment) *NetworkUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -472,7 +472,7 @@ func (nuo *NetworkUpdateOne) RemoveNetworkToEnvironment(e ...*Environment) *Netw
 	return nuo.RemoveNetworkToEnvironmentIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Network entity.
 func (nuo *NetworkUpdateOne) Save(ctx context.Context) (*Network, error) {
 	var (
 		err  error
@@ -539,6 +539,13 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Network.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := nuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := nuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -684,7 +691,7 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	_node = &Network{config: nuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, nuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{network.Label}

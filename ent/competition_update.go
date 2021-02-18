@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -23,43 +23,43 @@ type CompetitionUpdate struct {
 	mutation *CompetitionMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the CompetitionUpdate builder.
 func (cu *CompetitionUpdate) Where(ps ...predicate.Competition) *CompetitionUpdate {
 	cu.mutation.predicates = append(cu.mutation.predicates, ps...)
 	return cu
 }
 
-// SetHclID sets the hcl_id field.
+// SetHclID sets the "hcl_id" field.
 func (cu *CompetitionUpdate) SetHclID(s string) *CompetitionUpdate {
 	cu.mutation.SetHclID(s)
 	return cu
 }
 
-// SetRootPassword sets the root_password field.
+// SetRootPassword sets the "root_password" field.
 func (cu *CompetitionUpdate) SetRootPassword(s string) *CompetitionUpdate {
 	cu.mutation.SetRootPassword(s)
 	return cu
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (cu *CompetitionUpdate) SetConfig(m map[string]string) *CompetitionUpdate {
 	cu.mutation.SetConfig(m)
 	return cu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cu *CompetitionUpdate) SetTags(m map[string]string) *CompetitionUpdate {
 	cu.mutation.SetTags(m)
 	return cu
 }
 
-// AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
+// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by IDs.
 func (cu *CompetitionUpdate) AddCompetitionToTagIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.AddCompetitionToTagIDs(ids...)
 	return cu
 }
 
-// AddCompetitionToTag adds the CompetitionToTag edges to Tag.
+// AddCompetitionToTag adds the "CompetitionToTag" edges to the Tag entity.
 func (cu *CompetitionUpdate) AddCompetitionToTag(t ...*Tag) *CompetitionUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -68,13 +68,13 @@ func (cu *CompetitionUpdate) AddCompetitionToTag(t ...*Tag) *CompetitionUpdate {
 	return cu.AddCompetitionToTagIDs(ids...)
 }
 
-// AddCompetitionToDNSIDs adds the CompetitionToDNS edge to DNS by ids.
+// AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by IDs.
 func (cu *CompetitionUpdate) AddCompetitionToDNSIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.AddCompetitionToDNSIDs(ids...)
 	return cu
 }
 
-// AddCompetitionToDNS adds the CompetitionToDNS edges to DNS.
+// AddCompetitionToDNS adds the "CompetitionToDNS" edges to the DNS entity.
 func (cu *CompetitionUpdate) AddCompetitionToDNS(d ...*DNS) *CompetitionUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -83,13 +83,13 @@ func (cu *CompetitionUpdate) AddCompetitionToDNS(d ...*DNS) *CompetitionUpdate {
 	return cu.AddCompetitionToDNSIDs(ids...)
 }
 
-// AddCompetitionToEnvironmentIDs adds the CompetitionToEnvironment edge to Environment by ids.
+// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
 func (cu *CompetitionUpdate) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.AddCompetitionToEnvironmentIDs(ids...)
 	return cu
 }
 
-// AddCompetitionToEnvironment adds the CompetitionToEnvironment edges to Environment.
+// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
 func (cu *CompetitionUpdate) AddCompetitionToEnvironment(e ...*Environment) *CompetitionUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -103,19 +103,19 @@ func (cu *CompetitionUpdate) Mutation() *CompetitionMutation {
 	return cu.mutation
 }
 
-// ClearCompetitionToTag clears all "CompetitionToTag" edges to type Tag.
+// ClearCompetitionToTag clears all "CompetitionToTag" edges to the Tag entity.
 func (cu *CompetitionUpdate) ClearCompetitionToTag() *CompetitionUpdate {
 	cu.mutation.ClearCompetitionToTag()
 	return cu
 }
 
-// RemoveCompetitionToTagIDs removes the CompetitionToTag edge to Tag by ids.
+// RemoveCompetitionToTagIDs removes the "CompetitionToTag" edge to Tag entities by IDs.
 func (cu *CompetitionUpdate) RemoveCompetitionToTagIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.RemoveCompetitionToTagIDs(ids...)
 	return cu
 }
 
-// RemoveCompetitionToTag removes CompetitionToTag edges to Tag.
+// RemoveCompetitionToTag removes "CompetitionToTag" edges to Tag entities.
 func (cu *CompetitionUpdate) RemoveCompetitionToTag(t ...*Tag) *CompetitionUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -124,19 +124,19 @@ func (cu *CompetitionUpdate) RemoveCompetitionToTag(t ...*Tag) *CompetitionUpdat
 	return cu.RemoveCompetitionToTagIDs(ids...)
 }
 
-// ClearCompetitionToDNS clears all "CompetitionToDNS" edges to type DNS.
+// ClearCompetitionToDNS clears all "CompetitionToDNS" edges to the DNS entity.
 func (cu *CompetitionUpdate) ClearCompetitionToDNS() *CompetitionUpdate {
 	cu.mutation.ClearCompetitionToDNS()
 	return cu
 }
 
-// RemoveCompetitionToDNSIDs removes the CompetitionToDNS edge to DNS by ids.
+// RemoveCompetitionToDNSIDs removes the "CompetitionToDNS" edge to DNS entities by IDs.
 func (cu *CompetitionUpdate) RemoveCompetitionToDNSIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.RemoveCompetitionToDNSIDs(ids...)
 	return cu
 }
 
-// RemoveCompetitionToDNS removes CompetitionToDNS edges to DNS.
+// RemoveCompetitionToDNS removes "CompetitionToDNS" edges to DNS entities.
 func (cu *CompetitionUpdate) RemoveCompetitionToDNS(d ...*DNS) *CompetitionUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -145,19 +145,19 @@ func (cu *CompetitionUpdate) RemoveCompetitionToDNS(d ...*DNS) *CompetitionUpdat
 	return cu.RemoveCompetitionToDNSIDs(ids...)
 }
 
-// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to type Environment.
+// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to the Environment entity.
 func (cu *CompetitionUpdate) ClearCompetitionToEnvironment() *CompetitionUpdate {
 	cu.mutation.ClearCompetitionToEnvironment()
 	return cu
 }
 
-// RemoveCompetitionToEnvironmentIDs removes the CompetitionToEnvironment edge to Environment by ids.
+// RemoveCompetitionToEnvironmentIDs removes the "CompetitionToEnvironment" edge to Environment entities by IDs.
 func (cu *CompetitionUpdate) RemoveCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdate {
 	cu.mutation.RemoveCompetitionToEnvironmentIDs(ids...)
 	return cu
 }
 
-// RemoveCompetitionToEnvironment removes CompetitionToEnvironment edges to Environment.
+// RemoveCompetitionToEnvironment removes "CompetitionToEnvironment" edges to Environment entities.
 func (cu *CompetitionUpdate) RemoveCompetitionToEnvironment(e ...*Environment) *CompetitionUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -443,37 +443,37 @@ type CompetitionUpdateOne struct {
 	mutation *CompetitionMutation
 }
 
-// SetHclID sets the hcl_id field.
+// SetHclID sets the "hcl_id" field.
 func (cuo *CompetitionUpdateOne) SetHclID(s string) *CompetitionUpdateOne {
 	cuo.mutation.SetHclID(s)
 	return cuo
 }
 
-// SetRootPassword sets the root_password field.
+// SetRootPassword sets the "root_password" field.
 func (cuo *CompetitionUpdateOne) SetRootPassword(s string) *CompetitionUpdateOne {
 	cuo.mutation.SetRootPassword(s)
 	return cuo
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (cuo *CompetitionUpdateOne) SetConfig(m map[string]string) *CompetitionUpdateOne {
 	cuo.mutation.SetConfig(m)
 	return cuo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cuo *CompetitionUpdateOne) SetTags(m map[string]string) *CompetitionUpdateOne {
 	cuo.mutation.SetTags(m)
 	return cuo
 }
 
-// AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
+// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by IDs.
 func (cuo *CompetitionUpdateOne) AddCompetitionToTagIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.AddCompetitionToTagIDs(ids...)
 	return cuo
 }
 
-// AddCompetitionToTag adds the CompetitionToTag edges to Tag.
+// AddCompetitionToTag adds the "CompetitionToTag" edges to the Tag entity.
 func (cuo *CompetitionUpdateOne) AddCompetitionToTag(t ...*Tag) *CompetitionUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -482,13 +482,13 @@ func (cuo *CompetitionUpdateOne) AddCompetitionToTag(t ...*Tag) *CompetitionUpda
 	return cuo.AddCompetitionToTagIDs(ids...)
 }
 
-// AddCompetitionToDNSIDs adds the CompetitionToDNS edge to DNS by ids.
+// AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by IDs.
 func (cuo *CompetitionUpdateOne) AddCompetitionToDNSIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.AddCompetitionToDNSIDs(ids...)
 	return cuo
 }
 
-// AddCompetitionToDNS adds the CompetitionToDNS edges to DNS.
+// AddCompetitionToDNS adds the "CompetitionToDNS" edges to the DNS entity.
 func (cuo *CompetitionUpdateOne) AddCompetitionToDNS(d ...*DNS) *CompetitionUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -497,13 +497,13 @@ func (cuo *CompetitionUpdateOne) AddCompetitionToDNS(d ...*DNS) *CompetitionUpda
 	return cuo.AddCompetitionToDNSIDs(ids...)
 }
 
-// AddCompetitionToEnvironmentIDs adds the CompetitionToEnvironment edge to Environment by ids.
+// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
 func (cuo *CompetitionUpdateOne) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.AddCompetitionToEnvironmentIDs(ids...)
 	return cuo
 }
 
-// AddCompetitionToEnvironment adds the CompetitionToEnvironment edges to Environment.
+// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
 func (cuo *CompetitionUpdateOne) AddCompetitionToEnvironment(e ...*Environment) *CompetitionUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -517,19 +517,19 @@ func (cuo *CompetitionUpdateOne) Mutation() *CompetitionMutation {
 	return cuo.mutation
 }
 
-// ClearCompetitionToTag clears all "CompetitionToTag" edges to type Tag.
+// ClearCompetitionToTag clears all "CompetitionToTag" edges to the Tag entity.
 func (cuo *CompetitionUpdateOne) ClearCompetitionToTag() *CompetitionUpdateOne {
 	cuo.mutation.ClearCompetitionToTag()
 	return cuo
 }
 
-// RemoveCompetitionToTagIDs removes the CompetitionToTag edge to Tag by ids.
+// RemoveCompetitionToTagIDs removes the "CompetitionToTag" edge to Tag entities by IDs.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToTagIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.RemoveCompetitionToTagIDs(ids...)
 	return cuo
 }
 
-// RemoveCompetitionToTag removes CompetitionToTag edges to Tag.
+// RemoveCompetitionToTag removes "CompetitionToTag" edges to Tag entities.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToTag(t ...*Tag) *CompetitionUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -538,19 +538,19 @@ func (cuo *CompetitionUpdateOne) RemoveCompetitionToTag(t ...*Tag) *CompetitionU
 	return cuo.RemoveCompetitionToTagIDs(ids...)
 }
 
-// ClearCompetitionToDNS clears all "CompetitionToDNS" edges to type DNS.
+// ClearCompetitionToDNS clears all "CompetitionToDNS" edges to the DNS entity.
 func (cuo *CompetitionUpdateOne) ClearCompetitionToDNS() *CompetitionUpdateOne {
 	cuo.mutation.ClearCompetitionToDNS()
 	return cuo
 }
 
-// RemoveCompetitionToDNSIDs removes the CompetitionToDNS edge to DNS by ids.
+// RemoveCompetitionToDNSIDs removes the "CompetitionToDNS" edge to DNS entities by IDs.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToDNSIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.RemoveCompetitionToDNSIDs(ids...)
 	return cuo
 }
 
-// RemoveCompetitionToDNS removes CompetitionToDNS edges to DNS.
+// RemoveCompetitionToDNS removes "CompetitionToDNS" edges to DNS entities.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToDNS(d ...*DNS) *CompetitionUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -559,19 +559,19 @@ func (cuo *CompetitionUpdateOne) RemoveCompetitionToDNS(d ...*DNS) *CompetitionU
 	return cuo.RemoveCompetitionToDNSIDs(ids...)
 }
 
-// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to type Environment.
+// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to the Environment entity.
 func (cuo *CompetitionUpdateOne) ClearCompetitionToEnvironment() *CompetitionUpdateOne {
 	cuo.mutation.ClearCompetitionToEnvironment()
 	return cuo
 }
 
-// RemoveCompetitionToEnvironmentIDs removes the CompetitionToEnvironment edge to Environment by ids.
+// RemoveCompetitionToEnvironmentIDs removes the "CompetitionToEnvironment" edge to Environment entities by IDs.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdateOne {
 	cuo.mutation.RemoveCompetitionToEnvironmentIDs(ids...)
 	return cuo
 }
 
-// RemoveCompetitionToEnvironment removes CompetitionToEnvironment edges to Environment.
+// RemoveCompetitionToEnvironment removes "CompetitionToEnvironment" edges to Environment entities.
 func (cuo *CompetitionUpdateOne) RemoveCompetitionToEnvironment(e ...*Environment) *CompetitionUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -580,7 +580,7 @@ func (cuo *CompetitionUpdateOne) RemoveCompetitionToEnvironment(e ...*Environmen
 	return cuo.RemoveCompetitionToEnvironmentIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Competition entity.
 func (cuo *CompetitionUpdateOne) Save(ctx context.Context) (*Competition, error) {
 	var (
 		err  error
@@ -647,6 +647,13 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Competition.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := cuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := cuo.mutation.HclID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -839,7 +846,7 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 	}
 	_node = &Competition{config: cuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, cuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{competition.Label}

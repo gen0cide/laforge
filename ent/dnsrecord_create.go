@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,55 +20,55 @@ type DNSRecordCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (drc *DNSRecordCreate) SetName(s string) *DNSRecordCreate {
 	drc.mutation.SetName(s)
 	return drc
 }
 
-// SetValues sets the values field.
+// SetValues sets the "values" field.
 func (drc *DNSRecordCreate) SetValues(s []string) *DNSRecordCreate {
 	drc.mutation.SetValues(s)
 	return drc
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (drc *DNSRecordCreate) SetType(s string) *DNSRecordCreate {
 	drc.mutation.SetType(s)
 	return drc
 }
 
-// SetZone sets the zone field.
+// SetZone sets the "zone" field.
 func (drc *DNSRecordCreate) SetZone(s string) *DNSRecordCreate {
 	drc.mutation.SetZone(s)
 	return drc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (drc *DNSRecordCreate) SetVars(m map[string]string) *DNSRecordCreate {
 	drc.mutation.SetVars(m)
 	return drc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (drc *DNSRecordCreate) SetDisabled(b bool) *DNSRecordCreate {
 	drc.mutation.SetDisabled(b)
 	return drc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (drc *DNSRecordCreate) SetTags(m map[string]string) *DNSRecordCreate {
 	drc.mutation.SetTags(m)
 	return drc
 }
 
-// AddDNSRecordToTagIDs adds the DNSRecordToTag edge to Tag by ids.
+// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by IDs.
 func (drc *DNSRecordCreate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordCreate {
 	drc.mutation.AddDNSRecordToTagIDs(ids...)
 	return drc
 }
 
-// AddDNSRecordToTag adds the DNSRecordToTag edges to Tag.
+// AddDNSRecordToTag adds the "DNSRecordToTag" edges to the Tag entity.
 func (drc *DNSRecordCreate) AddDNSRecordToTag(t ...*Tag) *DNSRecordCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -254,7 +254,7 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// DNSRecordCreateBulk is the builder for creating a bulk of DNSRecord entities.
+// DNSRecordCreateBulk is the builder for creating many DNSRecord entities in bulk.
 type DNSRecordCreateBulk struct {
 	config
 	builders []*DNSRecordCreate
@@ -311,7 +311,7 @@ func (drcb *DNSRecordCreateBulk) Save(ctx context.Context) ([]*DNSRecord, error)
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (drcb *DNSRecordCreateBulk) SaveX(ctx context.Context) []*DNSRecord {
 	v, err := drcb.Save(ctx)
 	if err != nil {

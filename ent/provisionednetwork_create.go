@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -25,25 +25,25 @@ type ProvisionedNetworkCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (pnc *ProvisionedNetworkCreate) SetName(s string) *ProvisionedNetworkCreate {
 	pnc.mutation.SetName(s)
 	return pnc
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (pnc *ProvisionedNetworkCreate) SetCidr(s string) *ProvisionedNetworkCreate {
 	pnc.mutation.SetCidr(s)
 	return pnc
 }
 
-// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+// AddProvisionedNetworkToTagIDs adds the "ProvisionedNetworkToTag" edge to the Tag entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+// AddProvisionedNetworkToTag adds the "ProvisionedNetworkToTag" edges to the Tag entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -52,13 +52,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTag(t ...*Tag) *Prov
 	return pnc.AddProvisionedNetworkToTagIDs(ids...)
 }
 
-// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+// AddProvisionedNetworkToStatuIDs adds the "ProvisionedNetworkToStatus" edge to the Status entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToStatuIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+// AddProvisionedNetworkToStatus adds the "ProvisionedNetworkToStatus" edges to the Status entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkCreate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -67,13 +67,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToStatus(s ...*Status)
 	return pnc.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+// AddProvisionedNetworkToNetworkIDs adds the "ProvisionedNetworkToNetwork" edge to the Network entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+// AddProvisionedNetworkToNetwork adds the "ProvisionedNetworkToNetwork" edges to the Network entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkCreate {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -82,13 +82,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToNetwork(n ...*Networ
 	return pnc.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+// AddProvisionedNetworkToBuildIDs adds the "ProvisionedNetworkToBuild" edge to the Build entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+// AddProvisionedNetworkToBuild adds the "ProvisionedNetworkToBuild" edges to the Build entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkCreate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -97,13 +97,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToBuild(b ...*Build) *
 	return pnc.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
-// AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
+// AddProvisionedNetworkToTeamIDs adds the "ProvisionedNetworkToTeam" edge to the Team entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTeamIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToTeamIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToTeam adds the ProvisionedNetworkToTeam edges to Team.
+// AddProvisionedNetworkToTeam adds the "ProvisionedNetworkToTeam" edges to the Team entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTeam(t ...*Team) *ProvisionedNetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -112,13 +112,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToTeam(t ...*Team) *Pr
 	return pnc.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+// AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnc
 }
 
-// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+// AddProvisionedNetworkToProvisionedHost adds the "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkCreate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -344,7 +344,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 	return _node, _spec
 }
 
-// ProvisionedNetworkCreateBulk is the builder for creating a bulk of ProvisionedNetwork entities.
+// ProvisionedNetworkCreateBulk is the builder for creating many ProvisionedNetwork entities in bulk.
 type ProvisionedNetworkCreateBulk struct {
 	config
 	builders []*ProvisionedNetworkCreate
@@ -401,7 +401,7 @@ func (pncb *ProvisionedNetworkCreateBulk) Save(ctx context.Context) ([]*Provisio
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (pncb *ProvisionedNetworkCreateBulk) SaveX(ctx context.Context) []*ProvisionedNetwork {
 	v, err := pncb.Save(ctx)
 	if err != nil {

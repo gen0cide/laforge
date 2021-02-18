@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -25,51 +25,51 @@ type TeamUpdate struct {
 	mutation *TeamMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the TeamUpdate builder.
 func (tu *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
 	tu.mutation.predicates = append(tu.mutation.predicates, ps...)
 	return tu
 }
 
-// SetTeamNumber sets the team_number field.
+// SetTeamNumber sets the "team_number" field.
 func (tu *TeamUpdate) SetTeamNumber(i int) *TeamUpdate {
 	tu.mutation.ResetTeamNumber()
 	tu.mutation.SetTeamNumber(i)
 	return tu
 }
 
-// AddTeamNumber adds i to team_number.
+// AddTeamNumber adds i to the "team_number" field.
 func (tu *TeamUpdate) AddTeamNumber(i int) *TeamUpdate {
 	tu.mutation.AddTeamNumber(i)
 	return tu
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (tu *TeamUpdate) SetConfig(m map[string]string) *TeamUpdate {
 	tu.mutation.SetConfig(m)
 	return tu
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (tu *TeamUpdate) SetRevision(i int64) *TeamUpdate {
 	tu.mutation.ResetRevision()
 	tu.mutation.SetRevision(i)
 	return tu
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (tu *TeamUpdate) AddRevision(i int64) *TeamUpdate {
 	tu.mutation.AddRevision(i)
 	return tu
 }
 
-// AddTeamToUserIDs adds the TeamToUser edge to User by ids.
+// AddTeamToUserIDs adds the "TeamToUser" edge to the User entity by IDs.
 func (tu *TeamUpdate) AddTeamToUserIDs(ids ...int) *TeamUpdate {
 	tu.mutation.AddTeamToUserIDs(ids...)
 	return tu
 }
 
-// AddTeamToUser adds the TeamToUser edges to User.
+// AddTeamToUser adds the "TeamToUser" edges to the User entity.
 func (tu *TeamUpdate) AddTeamToUser(u ...*User) *TeamUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -78,13 +78,13 @@ func (tu *TeamUpdate) AddTeamToUser(u ...*User) *TeamUpdate {
 	return tu.AddTeamToUserIDs(ids...)
 }
 
-// AddTeamToBuildIDs adds the TeamToBuild edge to Build by ids.
+// AddTeamToBuildIDs adds the "TeamToBuild" edge to the Build entity by IDs.
 func (tu *TeamUpdate) AddTeamToBuildIDs(ids ...int) *TeamUpdate {
 	tu.mutation.AddTeamToBuildIDs(ids...)
 	return tu
 }
 
-// AddTeamToBuild adds the TeamToBuild edges to Build.
+// AddTeamToBuild adds the "TeamToBuild" edges to the Build entity.
 func (tu *TeamUpdate) AddTeamToBuild(b ...*Build) *TeamUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -93,13 +93,13 @@ func (tu *TeamUpdate) AddTeamToBuild(b ...*Build) *TeamUpdate {
 	return tu.AddTeamToBuildIDs(ids...)
 }
 
-// AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
+// AddTeamToEnvironmentIDs adds the "TeamToEnvironment" edge to the Environment entity by IDs.
 func (tu *TeamUpdate) AddTeamToEnvironmentIDs(ids ...int) *TeamUpdate {
 	tu.mutation.AddTeamToEnvironmentIDs(ids...)
 	return tu
 }
 
-// AddTeamToEnvironment adds the TeamToEnvironment edges to Environment.
+// AddTeamToEnvironment adds the "TeamToEnvironment" edges to the Environment entity.
 func (tu *TeamUpdate) AddTeamToEnvironment(e ...*Environment) *TeamUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -108,13 +108,13 @@ func (tu *TeamUpdate) AddTeamToEnvironment(e ...*Environment) *TeamUpdate {
 	return tu.AddTeamToEnvironmentIDs(ids...)
 }
 
-// AddTeamToTagIDs adds the TeamToTag edge to Tag by ids.
+// AddTeamToTagIDs adds the "TeamToTag" edge to the Tag entity by IDs.
 func (tu *TeamUpdate) AddTeamToTagIDs(ids ...int) *TeamUpdate {
 	tu.mutation.AddTeamToTagIDs(ids...)
 	return tu
 }
 
-// AddTeamToTag adds the TeamToTag edges to Tag.
+// AddTeamToTag adds the "TeamToTag" edges to the Tag entity.
 func (tu *TeamUpdate) AddTeamToTag(t ...*Tag) *TeamUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -123,13 +123,13 @@ func (tu *TeamUpdate) AddTeamToTag(t ...*Tag) *TeamUpdate {
 	return tu.AddTeamToTagIDs(ids...)
 }
 
-// AddTeamToProvisionedNetworkIDs adds the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (tu *TeamUpdate) AddTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdate {
 	tu.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tu
 }
 
-// AddTeamToProvisionedNetwork adds the TeamToProvisionedNetwork edges to ProvisionedNetwork.
+// AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tu *TeamUpdate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -143,19 +143,19 @@ func (tu *TeamUpdate) Mutation() *TeamMutation {
 	return tu.mutation
 }
 
-// ClearTeamToUser clears all "TeamToUser" edges to type User.
+// ClearTeamToUser clears all "TeamToUser" edges to the User entity.
 func (tu *TeamUpdate) ClearTeamToUser() *TeamUpdate {
 	tu.mutation.ClearTeamToUser()
 	return tu
 }
 
-// RemoveTeamToUserIDs removes the TeamToUser edge to User by ids.
+// RemoveTeamToUserIDs removes the "TeamToUser" edge to User entities by IDs.
 func (tu *TeamUpdate) RemoveTeamToUserIDs(ids ...int) *TeamUpdate {
 	tu.mutation.RemoveTeamToUserIDs(ids...)
 	return tu
 }
 
-// RemoveTeamToUser removes TeamToUser edges to User.
+// RemoveTeamToUser removes "TeamToUser" edges to User entities.
 func (tu *TeamUpdate) RemoveTeamToUser(u ...*User) *TeamUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -164,19 +164,19 @@ func (tu *TeamUpdate) RemoveTeamToUser(u ...*User) *TeamUpdate {
 	return tu.RemoveTeamToUserIDs(ids...)
 }
 
-// ClearTeamToBuild clears all "TeamToBuild" edges to type Build.
+// ClearTeamToBuild clears all "TeamToBuild" edges to the Build entity.
 func (tu *TeamUpdate) ClearTeamToBuild() *TeamUpdate {
 	tu.mutation.ClearTeamToBuild()
 	return tu
 }
 
-// RemoveTeamToBuildIDs removes the TeamToBuild edge to Build by ids.
+// RemoveTeamToBuildIDs removes the "TeamToBuild" edge to Build entities by IDs.
 func (tu *TeamUpdate) RemoveTeamToBuildIDs(ids ...int) *TeamUpdate {
 	tu.mutation.RemoveTeamToBuildIDs(ids...)
 	return tu
 }
 
-// RemoveTeamToBuild removes TeamToBuild edges to Build.
+// RemoveTeamToBuild removes "TeamToBuild" edges to Build entities.
 func (tu *TeamUpdate) RemoveTeamToBuild(b ...*Build) *TeamUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -185,19 +185,19 @@ func (tu *TeamUpdate) RemoveTeamToBuild(b ...*Build) *TeamUpdate {
 	return tu.RemoveTeamToBuildIDs(ids...)
 }
 
-// ClearTeamToEnvironment clears all "TeamToEnvironment" edges to type Environment.
+// ClearTeamToEnvironment clears all "TeamToEnvironment" edges to the Environment entity.
 func (tu *TeamUpdate) ClearTeamToEnvironment() *TeamUpdate {
 	tu.mutation.ClearTeamToEnvironment()
 	return tu
 }
 
-// RemoveTeamToEnvironmentIDs removes the TeamToEnvironment edge to Environment by ids.
+// RemoveTeamToEnvironmentIDs removes the "TeamToEnvironment" edge to Environment entities by IDs.
 func (tu *TeamUpdate) RemoveTeamToEnvironmentIDs(ids ...int) *TeamUpdate {
 	tu.mutation.RemoveTeamToEnvironmentIDs(ids...)
 	return tu
 }
 
-// RemoveTeamToEnvironment removes TeamToEnvironment edges to Environment.
+// RemoveTeamToEnvironment removes "TeamToEnvironment" edges to Environment entities.
 func (tu *TeamUpdate) RemoveTeamToEnvironment(e ...*Environment) *TeamUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -206,19 +206,19 @@ func (tu *TeamUpdate) RemoveTeamToEnvironment(e ...*Environment) *TeamUpdate {
 	return tu.RemoveTeamToEnvironmentIDs(ids...)
 }
 
-// ClearTeamToTag clears all "TeamToTag" edges to type Tag.
+// ClearTeamToTag clears all "TeamToTag" edges to the Tag entity.
 func (tu *TeamUpdate) ClearTeamToTag() *TeamUpdate {
 	tu.mutation.ClearTeamToTag()
 	return tu
 }
 
-// RemoveTeamToTagIDs removes the TeamToTag edge to Tag by ids.
+// RemoveTeamToTagIDs removes the "TeamToTag" edge to Tag entities by IDs.
 func (tu *TeamUpdate) RemoveTeamToTagIDs(ids ...int) *TeamUpdate {
 	tu.mutation.RemoveTeamToTagIDs(ids...)
 	return tu
 }
 
-// RemoveTeamToTag removes TeamToTag edges to Tag.
+// RemoveTeamToTag removes "TeamToTag" edges to Tag entities.
 func (tu *TeamUpdate) RemoveTeamToTag(t ...*Tag) *TeamUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -227,19 +227,19 @@ func (tu *TeamUpdate) RemoveTeamToTag(t ...*Tag) *TeamUpdate {
 	return tu.RemoveTeamToTagIDs(ids...)
 }
 
-// ClearTeamToProvisionedNetwork clears all "TeamToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearTeamToProvisionedNetwork clears all "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tu *TeamUpdate) ClearTeamToProvisionedNetwork() *TeamUpdate {
 	tu.mutation.ClearTeamToProvisionedNetwork()
 	return tu
 }
 
-// RemoveTeamToProvisionedNetworkIDs removes the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveTeamToProvisionedNetworkIDs removes the "TeamToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (tu *TeamUpdate) RemoveTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdate {
 	tu.mutation.RemoveTeamToProvisionedNetworkIDs(ids...)
 	return tu
 }
 
-// RemoveTeamToProvisionedNetwork removes TeamToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveTeamToProvisionedNetwork removes "TeamToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (tu *TeamUpdate) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -640,45 +640,45 @@ type TeamUpdateOne struct {
 	mutation *TeamMutation
 }
 
-// SetTeamNumber sets the team_number field.
+// SetTeamNumber sets the "team_number" field.
 func (tuo *TeamUpdateOne) SetTeamNumber(i int) *TeamUpdateOne {
 	tuo.mutation.ResetTeamNumber()
 	tuo.mutation.SetTeamNumber(i)
 	return tuo
 }
 
-// AddTeamNumber adds i to team_number.
+// AddTeamNumber adds i to the "team_number" field.
 func (tuo *TeamUpdateOne) AddTeamNumber(i int) *TeamUpdateOne {
 	tuo.mutation.AddTeamNumber(i)
 	return tuo
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (tuo *TeamUpdateOne) SetConfig(m map[string]string) *TeamUpdateOne {
 	tuo.mutation.SetConfig(m)
 	return tuo
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (tuo *TeamUpdateOne) SetRevision(i int64) *TeamUpdateOne {
 	tuo.mutation.ResetRevision()
 	tuo.mutation.SetRevision(i)
 	return tuo
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (tuo *TeamUpdateOne) AddRevision(i int64) *TeamUpdateOne {
 	tuo.mutation.AddRevision(i)
 	return tuo
 }
 
-// AddTeamToUserIDs adds the TeamToUser edge to User by ids.
+// AddTeamToUserIDs adds the "TeamToUser" edge to the User entity by IDs.
 func (tuo *TeamUpdateOne) AddTeamToUserIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.AddTeamToUserIDs(ids...)
 	return tuo
 }
 
-// AddTeamToUser adds the TeamToUser edges to User.
+// AddTeamToUser adds the "TeamToUser" edges to the User entity.
 func (tuo *TeamUpdateOne) AddTeamToUser(u ...*User) *TeamUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -687,13 +687,13 @@ func (tuo *TeamUpdateOne) AddTeamToUser(u ...*User) *TeamUpdateOne {
 	return tuo.AddTeamToUserIDs(ids...)
 }
 
-// AddTeamToBuildIDs adds the TeamToBuild edge to Build by ids.
+// AddTeamToBuildIDs adds the "TeamToBuild" edge to the Build entity by IDs.
 func (tuo *TeamUpdateOne) AddTeamToBuildIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.AddTeamToBuildIDs(ids...)
 	return tuo
 }
 
-// AddTeamToBuild adds the TeamToBuild edges to Build.
+// AddTeamToBuild adds the "TeamToBuild" edges to the Build entity.
 func (tuo *TeamUpdateOne) AddTeamToBuild(b ...*Build) *TeamUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -702,13 +702,13 @@ func (tuo *TeamUpdateOne) AddTeamToBuild(b ...*Build) *TeamUpdateOne {
 	return tuo.AddTeamToBuildIDs(ids...)
 }
 
-// AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
+// AddTeamToEnvironmentIDs adds the "TeamToEnvironment" edge to the Environment entity by IDs.
 func (tuo *TeamUpdateOne) AddTeamToEnvironmentIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.AddTeamToEnvironmentIDs(ids...)
 	return tuo
 }
 
-// AddTeamToEnvironment adds the TeamToEnvironment edges to Environment.
+// AddTeamToEnvironment adds the "TeamToEnvironment" edges to the Environment entity.
 func (tuo *TeamUpdateOne) AddTeamToEnvironment(e ...*Environment) *TeamUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -717,13 +717,13 @@ func (tuo *TeamUpdateOne) AddTeamToEnvironment(e ...*Environment) *TeamUpdateOne
 	return tuo.AddTeamToEnvironmentIDs(ids...)
 }
 
-// AddTeamToTagIDs adds the TeamToTag edge to Tag by ids.
+// AddTeamToTagIDs adds the "TeamToTag" edge to the Tag entity by IDs.
 func (tuo *TeamUpdateOne) AddTeamToTagIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.AddTeamToTagIDs(ids...)
 	return tuo
 }
 
-// AddTeamToTag adds the TeamToTag edges to Tag.
+// AddTeamToTag adds the "TeamToTag" edges to the Tag entity.
 func (tuo *TeamUpdateOne) AddTeamToTag(t ...*Tag) *TeamUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -732,13 +732,13 @@ func (tuo *TeamUpdateOne) AddTeamToTag(t ...*Tag) *TeamUpdateOne {
 	return tuo.AddTeamToTagIDs(ids...)
 }
 
-// AddTeamToProvisionedNetworkIDs adds the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (tuo *TeamUpdateOne) AddTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tuo
 }
 
-// AddTeamToProvisionedNetwork adds the TeamToProvisionedNetwork edges to ProvisionedNetwork.
+// AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tuo *TeamUpdateOne) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -752,19 +752,19 @@ func (tuo *TeamUpdateOne) Mutation() *TeamMutation {
 	return tuo.mutation
 }
 
-// ClearTeamToUser clears all "TeamToUser" edges to type User.
+// ClearTeamToUser clears all "TeamToUser" edges to the User entity.
 func (tuo *TeamUpdateOne) ClearTeamToUser() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToUser()
 	return tuo
 }
 
-// RemoveTeamToUserIDs removes the TeamToUser edge to User by ids.
+// RemoveTeamToUserIDs removes the "TeamToUser" edge to User entities by IDs.
 func (tuo *TeamUpdateOne) RemoveTeamToUserIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToUserIDs(ids...)
 	return tuo
 }
 
-// RemoveTeamToUser removes TeamToUser edges to User.
+// RemoveTeamToUser removes "TeamToUser" edges to User entities.
 func (tuo *TeamUpdateOne) RemoveTeamToUser(u ...*User) *TeamUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -773,19 +773,19 @@ func (tuo *TeamUpdateOne) RemoveTeamToUser(u ...*User) *TeamUpdateOne {
 	return tuo.RemoveTeamToUserIDs(ids...)
 }
 
-// ClearTeamToBuild clears all "TeamToBuild" edges to type Build.
+// ClearTeamToBuild clears all "TeamToBuild" edges to the Build entity.
 func (tuo *TeamUpdateOne) ClearTeamToBuild() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToBuild()
 	return tuo
 }
 
-// RemoveTeamToBuildIDs removes the TeamToBuild edge to Build by ids.
+// RemoveTeamToBuildIDs removes the "TeamToBuild" edge to Build entities by IDs.
 func (tuo *TeamUpdateOne) RemoveTeamToBuildIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToBuildIDs(ids...)
 	return tuo
 }
 
-// RemoveTeamToBuild removes TeamToBuild edges to Build.
+// RemoveTeamToBuild removes "TeamToBuild" edges to Build entities.
 func (tuo *TeamUpdateOne) RemoveTeamToBuild(b ...*Build) *TeamUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -794,19 +794,19 @@ func (tuo *TeamUpdateOne) RemoveTeamToBuild(b ...*Build) *TeamUpdateOne {
 	return tuo.RemoveTeamToBuildIDs(ids...)
 }
 
-// ClearTeamToEnvironment clears all "TeamToEnvironment" edges to type Environment.
+// ClearTeamToEnvironment clears all "TeamToEnvironment" edges to the Environment entity.
 func (tuo *TeamUpdateOne) ClearTeamToEnvironment() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToEnvironment()
 	return tuo
 }
 
-// RemoveTeamToEnvironmentIDs removes the TeamToEnvironment edge to Environment by ids.
+// RemoveTeamToEnvironmentIDs removes the "TeamToEnvironment" edge to Environment entities by IDs.
 func (tuo *TeamUpdateOne) RemoveTeamToEnvironmentIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToEnvironmentIDs(ids...)
 	return tuo
 }
 
-// RemoveTeamToEnvironment removes TeamToEnvironment edges to Environment.
+// RemoveTeamToEnvironment removes "TeamToEnvironment" edges to Environment entities.
 func (tuo *TeamUpdateOne) RemoveTeamToEnvironment(e ...*Environment) *TeamUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -815,19 +815,19 @@ func (tuo *TeamUpdateOne) RemoveTeamToEnvironment(e ...*Environment) *TeamUpdate
 	return tuo.RemoveTeamToEnvironmentIDs(ids...)
 }
 
-// ClearTeamToTag clears all "TeamToTag" edges to type Tag.
+// ClearTeamToTag clears all "TeamToTag" edges to the Tag entity.
 func (tuo *TeamUpdateOne) ClearTeamToTag() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToTag()
 	return tuo
 }
 
-// RemoveTeamToTagIDs removes the TeamToTag edge to Tag by ids.
+// RemoveTeamToTagIDs removes the "TeamToTag" edge to Tag entities by IDs.
 func (tuo *TeamUpdateOne) RemoveTeamToTagIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToTagIDs(ids...)
 	return tuo
 }
 
-// RemoveTeamToTag removes TeamToTag edges to Tag.
+// RemoveTeamToTag removes "TeamToTag" edges to Tag entities.
 func (tuo *TeamUpdateOne) RemoveTeamToTag(t ...*Tag) *TeamUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -836,19 +836,19 @@ func (tuo *TeamUpdateOne) RemoveTeamToTag(t ...*Tag) *TeamUpdateOne {
 	return tuo.RemoveTeamToTagIDs(ids...)
 }
 
-// ClearTeamToProvisionedNetwork clears all "TeamToProvisionedNetwork" edges to type ProvisionedNetwork.
+// ClearTeamToProvisionedNetwork clears all "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tuo *TeamUpdateOne) ClearTeamToProvisionedNetwork() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToProvisionedNetwork()
 	return tuo
 }
 
-// RemoveTeamToProvisionedNetworkIDs removes the TeamToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// RemoveTeamToProvisionedNetworkIDs removes the "TeamToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
 func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToProvisionedNetworkIDs(ids...)
 	return tuo
 }
 
-// RemoveTeamToProvisionedNetwork removes TeamToProvisionedNetwork edges to ProvisionedNetwork.
+// RemoveTeamToProvisionedNetwork removes "TeamToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -857,7 +857,7 @@ func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwor
 	return tuo.RemoveTeamToProvisionedNetworkIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Team entity.
 func (tuo *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
 	var (
 		err  error
@@ -924,6 +924,13 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Team.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := tuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := tuo.mutation.TeamNumber(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -1231,7 +1238,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	}
 	_node = &Team{config: tuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -22,37 +22,37 @@ type CompetitionCreate struct {
 	hooks    []Hook
 }
 
-// SetHclID sets the hcl_id field.
+// SetHclID sets the "hcl_id" field.
 func (cc *CompetitionCreate) SetHclID(s string) *CompetitionCreate {
 	cc.mutation.SetHclID(s)
 	return cc
 }
 
-// SetRootPassword sets the root_password field.
+// SetRootPassword sets the "root_password" field.
 func (cc *CompetitionCreate) SetRootPassword(s string) *CompetitionCreate {
 	cc.mutation.SetRootPassword(s)
 	return cc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
 	cc.mutation.SetConfig(m)
 	return cc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cc *CompetitionCreate) SetTags(m map[string]string) *CompetitionCreate {
 	cc.mutation.SetTags(m)
 	return cc
 }
 
-// AddCompetitionToTagIDs adds the CompetitionToTag edge to Tag by ids.
+// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by IDs.
 func (cc *CompetitionCreate) AddCompetitionToTagIDs(ids ...int) *CompetitionCreate {
 	cc.mutation.AddCompetitionToTagIDs(ids...)
 	return cc
 }
 
-// AddCompetitionToTag adds the CompetitionToTag edges to Tag.
+// AddCompetitionToTag adds the "CompetitionToTag" edges to the Tag entity.
 func (cc *CompetitionCreate) AddCompetitionToTag(t ...*Tag) *CompetitionCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -61,13 +61,13 @@ func (cc *CompetitionCreate) AddCompetitionToTag(t ...*Tag) *CompetitionCreate {
 	return cc.AddCompetitionToTagIDs(ids...)
 }
 
-// AddCompetitionToDNSIDs adds the CompetitionToDNS edge to DNS by ids.
+// AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by IDs.
 func (cc *CompetitionCreate) AddCompetitionToDNSIDs(ids ...int) *CompetitionCreate {
 	cc.mutation.AddCompetitionToDNSIDs(ids...)
 	return cc
 }
 
-// AddCompetitionToDNS adds the CompetitionToDNS edges to DNS.
+// AddCompetitionToDNS adds the "CompetitionToDNS" edges to the DNS entity.
 func (cc *CompetitionCreate) AddCompetitionToDNS(d ...*DNS) *CompetitionCreate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -76,13 +76,13 @@ func (cc *CompetitionCreate) AddCompetitionToDNS(d ...*DNS) *CompetitionCreate {
 	return cc.AddCompetitionToDNSIDs(ids...)
 }
 
-// AddCompetitionToEnvironmentIDs adds the CompetitionToEnvironment edge to Environment by ids.
+// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
 func (cc *CompetitionCreate) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionCreate {
 	cc.mutation.AddCompetitionToEnvironmentIDs(ids...)
 	return cc
 }
 
-// AddCompetitionToEnvironment adds the CompetitionToEnvironment edges to Environment.
+// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
 func (cc *CompetitionCreate) AddCompetitionToEnvironment(e ...*Environment) *CompetitionCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -273,7 +273,7 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// CompetitionCreateBulk is the builder for creating a bulk of Competition entities.
+// CompetitionCreateBulk is the builder for creating many Competition entities in bulk.
 type CompetitionCreateBulk struct {
 	config
 	builders []*CompetitionCreate
@@ -330,7 +330,7 @@ func (ccb *CompetitionCreateBulk) Save(ctx context.Context) ([]*Competition, err
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ccb *CompetitionCreateBulk) SaveX(ctx context.Context) []*Competition {
 	v, err := ccb.Save(ctx)
 	if err != nil {

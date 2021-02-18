@@ -13,6 +13,8 @@ const (
 	FieldUUID = "uuid"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 
 	// EdgeUserToTag holds the string denoting the usertotag edge name in mutations.
 	EdgeUserToTag = "UserToTag"
@@ -41,6 +43,7 @@ var Columns = []string{
 	FieldName,
 	FieldUUID,
 	FieldEmail,
+	FieldHclID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the User type.

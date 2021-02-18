@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
@@ -23,43 +23,43 @@ type FindingCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (fc *FindingCreate) SetName(s string) *FindingCreate {
 	fc.mutation.SetName(s)
 	return fc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (fc *FindingCreate) SetDescription(s string) *FindingCreate {
 	fc.mutation.SetDescription(s)
 	return fc
 }
 
-// SetSeverity sets the severity field.
+// SetSeverity sets the "severity" field.
 func (fc *FindingCreate) SetSeverity(f finding.Severity) *FindingCreate {
 	fc.mutation.SetSeverity(f)
 	return fc
 }
 
-// SetDifficulty sets the difficulty field.
+// SetDifficulty sets the "difficulty" field.
 func (fc *FindingCreate) SetDifficulty(f finding.Difficulty) *FindingCreate {
 	fc.mutation.SetDifficulty(f)
 	return fc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fc *FindingCreate) SetTags(m map[string]string) *FindingCreate {
 	fc.mutation.SetTags(m)
 	return fc
 }
 
-// AddFindingToUserIDs adds the FindingToUser edge to User by ids.
+// AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
 func (fc *FindingCreate) AddFindingToUserIDs(ids ...int) *FindingCreate {
 	fc.mutation.AddFindingToUserIDs(ids...)
 	return fc
 }
 
-// AddFindingToUser adds the FindingToUser edges to User.
+// AddFindingToUser adds the "FindingToUser" edges to the User entity.
 func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -68,13 +68,13 @@ func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
 	return fc.AddFindingToUserIDs(ids...)
 }
 
-// AddFindingToTagIDs adds the FindingToTag edge to Tag by ids.
+// AddFindingToTagIDs adds the "FindingToTag" edge to the Tag entity by IDs.
 func (fc *FindingCreate) AddFindingToTagIDs(ids ...int) *FindingCreate {
 	fc.mutation.AddFindingToTagIDs(ids...)
 	return fc
 }
 
-// AddFindingToTag adds the FindingToTag edges to Tag.
+// AddFindingToTag adds the "FindingToTag" edges to the Tag entity.
 func (fc *FindingCreate) AddFindingToTag(t ...*Tag) *FindingCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -83,13 +83,13 @@ func (fc *FindingCreate) AddFindingToTag(t ...*Tag) *FindingCreate {
 	return fc.AddFindingToTagIDs(ids...)
 }
 
-// AddFindingToHostIDs adds the FindingToHost edge to Host by ids.
+// AddFindingToHostIDs adds the "FindingToHost" edge to the Host entity by IDs.
 func (fc *FindingCreate) AddFindingToHostIDs(ids ...int) *FindingCreate {
 	fc.mutation.AddFindingToHostIDs(ids...)
 	return fc
 }
 
-// AddFindingToHost adds the FindingToHost edges to Host.
+// AddFindingToHost adds the "FindingToHost" edges to the Host entity.
 func (fc *FindingCreate) AddFindingToHost(h ...*Host) *FindingCreate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -98,13 +98,13 @@ func (fc *FindingCreate) AddFindingToHost(h ...*Host) *FindingCreate {
 	return fc.AddFindingToHostIDs(ids...)
 }
 
-// AddFindingToScriptIDs adds the FindingToScript edge to Script by ids.
+// AddFindingToScriptIDs adds the "FindingToScript" edge to the Script entity by IDs.
 func (fc *FindingCreate) AddFindingToScriptIDs(ids ...int) *FindingCreate {
 	fc.mutation.AddFindingToScriptIDs(ids...)
 	return fc
 }
 
-// AddFindingToScript adds the FindingToScript edges to Script.
+// AddFindingToScript adds the "FindingToScript" edges to the Script entity.
 func (fc *FindingCreate) AddFindingToScript(s ...*Script) *FindingCreate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -335,7 +335,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// FindingCreateBulk is the builder for creating a bulk of Finding entities.
+// FindingCreateBulk is the builder for creating many Finding entities in bulk.
 type FindingCreateBulk struct {
 	config
 	builders []*FindingCreate
@@ -392,7 +392,7 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fcb *FindingCreateBulk) SaveX(ctx context.Context) []*Finding {
 	v, err := fcb.Save(ctx)
 	if err != nil {

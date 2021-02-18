@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -20,7 +20,7 @@ type UserDelete struct {
 	mutation *UserMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the UserDelete builder.
 func (ud *UserDelete) Where(ps ...predicate.User) *UserDelete {
 	ud.mutation.predicates = append(ud.mutation.predicates, ps...)
 	return ud

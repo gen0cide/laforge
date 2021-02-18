@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -24,25 +24,25 @@ type BuildCreate struct {
 	hooks    []Hook
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (bc *BuildCreate) SetRevision(i int) *BuildCreate {
 	bc.mutation.SetRevision(i)
 	return bc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (bc *BuildCreate) SetConfig(m map[string]string) *BuildCreate {
 	bc.mutation.SetConfig(m)
 	return bc
 }
 
-// AddBuildToUserIDs adds the BuildToUser edge to User by ids.
+// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by IDs.
 func (bc *BuildCreate) AddBuildToUserIDs(ids ...int) *BuildCreate {
 	bc.mutation.AddBuildToUserIDs(ids...)
 	return bc
 }
 
-// AddBuildToUser adds the BuildToUser edges to User.
+// AddBuildToUser adds the "BuildToUser" edges to the User entity.
 func (bc *BuildCreate) AddBuildToUser(u ...*User) *BuildCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -51,13 +51,13 @@ func (bc *BuildCreate) AddBuildToUser(u ...*User) *BuildCreate {
 	return bc.AddBuildToUserIDs(ids...)
 }
 
-// AddBuildToTagIDs adds the BuildToTag edge to Tag by ids.
+// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by IDs.
 func (bc *BuildCreate) AddBuildToTagIDs(ids ...int) *BuildCreate {
 	bc.mutation.AddBuildToTagIDs(ids...)
 	return bc
 }
 
-// AddBuildToTag adds the BuildToTag edges to Tag.
+// AddBuildToTag adds the "BuildToTag" edges to the Tag entity.
 func (bc *BuildCreate) AddBuildToTag(t ...*Tag) *BuildCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -66,13 +66,13 @@ func (bc *BuildCreate) AddBuildToTag(t ...*Tag) *BuildCreate {
 	return bc.AddBuildToTagIDs(ids...)
 }
 
-// AddBuildToProvisionedNetworkIDs adds the BuildToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (bc *BuildCreate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildCreate {
 	bc.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bc
 }
 
-// AddBuildToProvisionedNetwork adds the BuildToProvisionedNetwork edges to ProvisionedNetwork.
+// AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (bc *BuildCreate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildCreate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -81,13 +81,13 @@ func (bc *BuildCreate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *B
 	return bc.AddBuildToProvisionedNetworkIDs(ids...)
 }
 
-// AddBuildToTeamIDs adds the BuildToTeam edge to Team by ids.
+// AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
 func (bc *BuildCreate) AddBuildToTeamIDs(ids ...int) *BuildCreate {
 	bc.mutation.AddBuildToTeamIDs(ids...)
 	return bc
 }
 
-// AddBuildToTeam adds the BuildToTeam edges to Team.
+// AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (bc *BuildCreate) AddBuildToTeam(t ...*Team) *BuildCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -96,13 +96,13 @@ func (bc *BuildCreate) AddBuildToTeam(t ...*Team) *BuildCreate {
 	return bc.AddBuildToTeamIDs(ids...)
 }
 
-// AddBuildToEnvironmentIDs adds the BuildToEnvironment edge to Environment by ids.
+// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by IDs.
 func (bc *BuildCreate) AddBuildToEnvironmentIDs(ids ...int) *BuildCreate {
 	bc.mutation.AddBuildToEnvironmentIDs(ids...)
 	return bc
 }
 
-// AddBuildToEnvironment adds the BuildToEnvironment edges to Environment.
+// AddBuildToEnvironment adds the "BuildToEnvironment" edges to the Environment entity.
 func (bc *BuildCreate) AddBuildToEnvironment(e ...*Environment) *BuildCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -309,7 +309,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// BuildCreateBulk is the builder for creating a bulk of Build entities.
+// BuildCreateBulk is the builder for creating many Build entities in bulk.
 type BuildCreateBulk struct {
 	config
 	builders []*BuildCreate
@@ -366,7 +366,7 @@ func (bcb *BuildCreateBulk) Save(ctx context.Context) ([]*Build, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (bcb *BuildCreateBulk) SaveX(ctx context.Context) []*Build {
 	v, err := bcb.Save(ctx)
 	if err != nil {

@@ -3,14 +3,14 @@ module github.com/gen0cide/laforge
 go 1.15
 
 require (
+	entgo.io/contrib v0.0.0-20210203093509-662381940150
+	entgo.io/ent v0.6.0
 	github.com/99designs/gqlgen v0.13.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/briandowns/formatifier v0.0.0-20150226010542-6d068a6ce63a
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/facebook/ent v0.5.4-0.20201219064708-3b4b94b6bef9
-	github.com/facebookincubator/ent-contrib v0.0.0-20201221124235-47969f6e6e4d
 	github.com/fatih/color v1.9.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.3
@@ -19,7 +19,7 @@ require (
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a
@@ -27,7 +27,7 @@ require (
 	github.com/kardianos/service v1.1.0
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/mattn/go-sqlite3 v1.14.5
+	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect

@@ -9,11 +9,11 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"entgo.io/contrib/entgql"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/facebook/ent/dialect"
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/schema"
-	"github.com/facebookincubator/ent-contrib/entgql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -1986,7 +1986,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
 		Type:   "User",
-		Fields: make([]*Field, 3),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -2012,6 +2012,14 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "email",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.HclID); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -2366,6 +2374,8 @@ func (c *Client) Noders(ctx context.Context, ids []int, opts ...NodeOption) ([]N
 				continue
 			}
 			errors[i] = entgql.ErrNodeNotFound(id)
+		} else if IsNotFound(errors[i]) {
+			errors[i] = multierror.Append(errors[i], entgql.ErrNodeNotFound(id))
 		}
 		ctx := graphql.WithPathContext(ctx,
 			graphql.NewPathWithIndex(i),

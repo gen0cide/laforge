@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/command"
 )
 
@@ -45,9 +45,9 @@ type Command struct {
 // CommandEdges holds the relations/edges for other nodes in the graph.
 type CommandEdges struct {
 	// CommandToUser holds the value of the CommandToUser edge.
-	CommandToUser []*User `hcl:"maintainer,block"`
+	CommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
 	// CommandToTag holds the value of the CommandToTag edge.
-	CommandToTag []*Tag
+	CommandToTag []*Tag `json:"CommandToTag,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -72,131 +72,141 @@ func (e CommandEdges) CommandToTagOrErr() ([]*Tag, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Command) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // description
-		&sql.NullString{}, // program
-		&[]byte{},         // args
-		&sql.NullBool{},   // ignore_errors
-		&sql.NullBool{},   // disabled
-		&sql.NullInt64{},  // cooldown
-		&sql.NullInt64{},  // timeout
-		&[]byte{},         // vars
-		&[]byte{},         // tags
+func (*Command) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case command.FieldArgs, command.FieldVars, command.FieldTags:
+			values[i] = &[]byte{}
+		case command.FieldIgnoreErrors, command.FieldDisabled:
+			values[i] = &sql.NullBool{}
+		case command.FieldID, command.FieldCooldown, command.FieldTimeout:
+			values[i] = &sql.NullInt64{}
+		case command.FieldName, command.FieldDescription, command.FieldProgram:
+			values[i] = &sql.NullString{}
+		case command.ForeignKeys[0]: // provisioning_step_provisioning_step_to_command
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Command", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Command) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_command
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Command fields.
-func (c *Command) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(command.Columns); m < n {
+func (c *Command) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	c.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		c.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[1])
-	} else if value.Valid {
-		c.Description = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field program", values[2])
-	} else if value.Valid {
-		c.Program = value.String
-	}
+	for i := range columns {
+		switch columns[i] {
+		case command.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			c.ID = int(value.Int64)
+		case command.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				c.Name = value.String
+			}
+		case command.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				c.Description = value.String
+			}
+		case command.FieldProgram:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field program", values[i])
+			} else if value.Valid {
+				c.Program = value.String
+			}
+		case command.FieldArgs:
 
-	if value, ok := values[3].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field args", values[3])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &c.Args); err != nil {
-			return fmt.Errorf("unmarshal field args: %v", err)
-		}
-	}
-	if value, ok := values[4].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field ignore_errors", values[4])
-	} else if value.Valid {
-		c.IgnoreErrors = value.Bool
-	}
-	if value, ok := values[5].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field disabled", values[5])
-	} else if value.Valid {
-		c.Disabled = value.Bool
-	}
-	if value, ok := values[6].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field cooldown", values[6])
-	} else if value.Valid {
-		c.Cooldown = int(value.Int64)
-	}
-	if value, ok := values[7].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field timeout", values[7])
-	} else if value.Valid {
-		c.Timeout = int(value.Int64)
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field args", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &c.Args); err != nil {
+					return fmt.Errorf("unmarshal field args: %v", err)
+				}
+			}
+		case command.FieldIgnoreErrors:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field ignore_errors", values[i])
+			} else if value.Valid {
+				c.IgnoreErrors = value.Bool
+			}
+		case command.FieldDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field disabled", values[i])
+			} else if value.Valid {
+				c.Disabled = value.Bool
+			}
+		case command.FieldCooldown:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cooldown", values[i])
+			} else if value.Valid {
+				c.Cooldown = int(value.Int64)
+			}
+		case command.FieldTimeout:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field timeout", values[i])
+			} else if value.Valid {
+				c.Timeout = int(value.Int64)
+			}
+		case command.FieldVars:
 
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &c.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &c.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %v", err)
+				}
+			}
+		case command.FieldTags:
 
-	if value, ok := values[9].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[9])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &c.Tags); err != nil {
-			return fmt.Errorf("unmarshal field tags: %v", err)
-		}
-	}
-	values = values[10:]
-	if len(values) == len(command.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_command", value)
-		} else if value.Valid {
-			c.provisioning_step_provisioning_step_to_command = new(int)
-			*c.provisioning_step_provisioning_step_to_command = int(value.Int64)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &c.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		case command.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_command", value)
+			} else if value.Valid {
+				c.provisioning_step_provisioning_step_to_command = new(int)
+				*c.provisioning_step_provisioning_step_to_command = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryCommandToUser queries the CommandToUser edge of the Command.
+// QueryCommandToUser queries the "CommandToUser" edge of the Command entity.
 func (c *Command) QueryCommandToUser() *UserQuery {
 	return (&CommandClient{config: c.config}).QueryCommandToUser(c)
 }
 
-// QueryCommandToTag queries the CommandToTag edge of the Command.
+// QueryCommandToTag queries the "CommandToTag" edge of the Command entity.
 func (c *Command) QueryCommandToTag() *TagQuery {
 	return (&CommandClient{config: c.config}).QueryCommandToTag(c)
 }
 
 // Update returns a builder for updating this Command.
-// Note that, you need to call Command.Unwrap() before calling this method, if this Command
+// Note that you need to call Command.Unwrap() before calling this method if this Command
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (c *Command) Update() *CommandUpdateOne {
 	return (&CommandClient{config: c.config}).UpdateOne(c)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Command entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (c *Command) Unwrap() *Command {
 	tx, ok := c.config.driver.(*txDriver)
 	if !ok {

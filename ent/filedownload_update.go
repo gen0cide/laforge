@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,73 +21,73 @@ type FileDownloadUpdate struct {
 	mutation *FileDownloadMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FileDownloadUpdate builder.
 func (fdu *FileDownloadUpdate) Where(ps ...predicate.FileDownload) *FileDownloadUpdate {
 	fdu.mutation.predicates = append(fdu.mutation.predicates, ps...)
 	return fdu
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (fdu *FileDownloadUpdate) SetSourceType(s string) *FileDownloadUpdate {
 	fdu.mutation.SetSourceType(s)
 	return fdu
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fdu *FileDownloadUpdate) SetSource(s string) *FileDownloadUpdate {
 	fdu.mutation.SetSource(s)
 	return fdu
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fdu *FileDownloadUpdate) SetDestination(s string) *FileDownloadUpdate {
 	fdu.mutation.SetDestination(s)
 	return fdu
 }
 
-// SetTemplate sets the template field.
+// SetTemplate sets the "template" field.
 func (fdu *FileDownloadUpdate) SetTemplate(b bool) *FileDownloadUpdate {
 	fdu.mutation.SetTemplate(b)
 	return fdu
 }
 
-// SetPerms sets the perms field.
+// SetPerms sets the "perms" field.
 func (fdu *FileDownloadUpdate) SetPerms(s string) *FileDownloadUpdate {
 	fdu.mutation.SetPerms(s)
 	return fdu
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (fdu *FileDownloadUpdate) SetDisabled(b bool) *FileDownloadUpdate {
 	fdu.mutation.SetDisabled(b)
 	return fdu
 }
 
-// SetMd5 sets the md5 field.
+// SetMd5 sets the "md5" field.
 func (fdu *FileDownloadUpdate) SetMd5(s string) *FileDownloadUpdate {
 	fdu.mutation.SetMd5(s)
 	return fdu
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (fdu *FileDownloadUpdate) SetAbsPath(s string) *FileDownloadUpdate {
 	fdu.mutation.SetAbsPath(s)
 	return fdu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fdu *FileDownloadUpdate) SetTags(m map[string]string) *FileDownloadUpdate {
 	fdu.mutation.SetTags(m)
 	return fdu
 }
 
-// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+// AddFileDownloadToTagIDs adds the "FileDownloadToTag" edge to the Tag entity by IDs.
 func (fdu *FileDownloadUpdate) AddFileDownloadToTagIDs(ids ...int) *FileDownloadUpdate {
 	fdu.mutation.AddFileDownloadToTagIDs(ids...)
 	return fdu
 }
 
-// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+// AddFileDownloadToTag adds the "FileDownloadToTag" edges to the Tag entity.
 func (fdu *FileDownloadUpdate) AddFileDownloadToTag(t ...*Tag) *FileDownloadUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -101,19 +101,19 @@ func (fdu *FileDownloadUpdate) Mutation() *FileDownloadMutation {
 	return fdu.mutation
 }
 
-// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to type Tag.
+// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to the Tag entity.
 func (fdu *FileDownloadUpdate) ClearFileDownloadToTag() *FileDownloadUpdate {
 	fdu.mutation.ClearFileDownloadToTag()
 	return fdu
 }
 
-// RemoveFileDownloadToTagIDs removes the FileDownloadToTag edge to Tag by ids.
+// RemoveFileDownloadToTagIDs removes the "FileDownloadToTag" edge to Tag entities by IDs.
 func (fdu *FileDownloadUpdate) RemoveFileDownloadToTagIDs(ids ...int) *FileDownloadUpdate {
 	fdu.mutation.RemoveFileDownloadToTagIDs(ids...)
 	return fdu
 }
 
-// RemoveFileDownloadToTag removes FileDownloadToTag edges to Tag.
+// RemoveFileDownloadToTag removes "FileDownloadToTag" edges to Tag entities.
 func (fdu *FileDownloadUpdate) RemoveFileDownloadToTag(t ...*Tag) *FileDownloadUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -326,67 +326,67 @@ type FileDownloadUpdateOne struct {
 	mutation *FileDownloadMutation
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (fduo *FileDownloadUpdateOne) SetSourceType(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetSourceType(s)
 	return fduo
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fduo *FileDownloadUpdateOne) SetSource(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetSource(s)
 	return fduo
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fduo *FileDownloadUpdateOne) SetDestination(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetDestination(s)
 	return fduo
 }
 
-// SetTemplate sets the template field.
+// SetTemplate sets the "template" field.
 func (fduo *FileDownloadUpdateOne) SetTemplate(b bool) *FileDownloadUpdateOne {
 	fduo.mutation.SetTemplate(b)
 	return fduo
 }
 
-// SetPerms sets the perms field.
+// SetPerms sets the "perms" field.
 func (fduo *FileDownloadUpdateOne) SetPerms(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetPerms(s)
 	return fduo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (fduo *FileDownloadUpdateOne) SetDisabled(b bool) *FileDownloadUpdateOne {
 	fduo.mutation.SetDisabled(b)
 	return fduo
 }
 
-// SetMd5 sets the md5 field.
+// SetMd5 sets the "md5" field.
 func (fduo *FileDownloadUpdateOne) SetMd5(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetMd5(s)
 	return fduo
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (fduo *FileDownloadUpdateOne) SetAbsPath(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetAbsPath(s)
 	return fduo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fduo *FileDownloadUpdateOne) SetTags(m map[string]string) *FileDownloadUpdateOne {
 	fduo.mutation.SetTags(m)
 	return fduo
 }
 
-// AddFileDownloadToTagIDs adds the FileDownloadToTag edge to Tag by ids.
+// AddFileDownloadToTagIDs adds the "FileDownloadToTag" edge to the Tag entity by IDs.
 func (fduo *FileDownloadUpdateOne) AddFileDownloadToTagIDs(ids ...int) *FileDownloadUpdateOne {
 	fduo.mutation.AddFileDownloadToTagIDs(ids...)
 	return fduo
 }
 
-// AddFileDownloadToTag adds the FileDownloadToTag edges to Tag.
+// AddFileDownloadToTag adds the "FileDownloadToTag" edges to the Tag entity.
 func (fduo *FileDownloadUpdateOne) AddFileDownloadToTag(t ...*Tag) *FileDownloadUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -400,19 +400,19 @@ func (fduo *FileDownloadUpdateOne) Mutation() *FileDownloadMutation {
 	return fduo.mutation
 }
 
-// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to type Tag.
+// ClearFileDownloadToTag clears all "FileDownloadToTag" edges to the Tag entity.
 func (fduo *FileDownloadUpdateOne) ClearFileDownloadToTag() *FileDownloadUpdateOne {
 	fduo.mutation.ClearFileDownloadToTag()
 	return fduo
 }
 
-// RemoveFileDownloadToTagIDs removes the FileDownloadToTag edge to Tag by ids.
+// RemoveFileDownloadToTagIDs removes the "FileDownloadToTag" edge to Tag entities by IDs.
 func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTagIDs(ids ...int) *FileDownloadUpdateOne {
 	fduo.mutation.RemoveFileDownloadToTagIDs(ids...)
 	return fduo
 }
 
-// RemoveFileDownloadToTag removes FileDownloadToTag edges to Tag.
+// RemoveFileDownloadToTag removes "FileDownloadToTag" edges to Tag entities.
 func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTag(t ...*Tag) *FileDownloadUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -421,7 +421,7 @@ func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTag(t ...*Tag) *FileDownl
 	return fduo.RemoveFileDownloadToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated FileDownload entity.
 func (fduo *FileDownloadUpdateOne) Save(ctx context.Context) (*FileDownload, error) {
 	var (
 		err  error
@@ -488,6 +488,13 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing FileDownload.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := fduo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := fduo.mutation.SourceType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -607,7 +614,7 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 	}
 	_node = &FileDownload{config: fduo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, fduo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedownload.Label}

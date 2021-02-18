@@ -3,12 +3,12 @@
 package provisionednetwork
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.ProvisionedNetwork {
 	return predicate.ProvisionedNetwork(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -495,7 +495,7 @@ func HasProvisionedNetworkToProvisionedHostWith(preds ...predicate.ProvisionedHo
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisionedNetwork) predicate.ProvisionedNetwork {
 	return predicate.ProvisionedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -506,7 +506,7 @@ func And(predicates ...predicate.ProvisionedNetwork) predicate.ProvisionedNetwor
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.ProvisionedNetwork) predicate.ProvisionedNetwork {
 	return predicate.ProvisionedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

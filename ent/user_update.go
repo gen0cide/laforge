@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -22,37 +22,43 @@ type UserUpdate struct {
 	mutation *UserMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the UserUpdate builder.
 func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	uu.mutation.predicates = append(uu.mutation.predicates, ps...)
 	return uu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (uu *UserUpdate) SetName(s string) *UserUpdate {
 	uu.mutation.SetName(s)
 	return uu
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (uu *UserUpdate) SetUUID(s string) *UserUpdate {
 	uu.mutation.SetUUID(s)
 	return uu
 }
 
-// SetEmail sets the email field.
+// SetEmail sets the "email" field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
 	return uu
 }
 
-// AddUserToTagIDs adds the UserToTag edge to Tag by ids.
+// SetHclID sets the "hcl_id" field.
+func (uu *UserUpdate) SetHclID(s string) *UserUpdate {
+	uu.mutation.SetHclID(s)
+	return uu
+}
+
+// AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by IDs.
 func (uu *UserUpdate) AddUserToTagIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddUserToTagIDs(ids...)
 	return uu
 }
 
-// AddUserToTag adds the UserToTag edges to Tag.
+// AddUserToTag adds the "UserToTag" edges to the Tag entity.
 func (uu *UserUpdate) AddUserToTag(t ...*Tag) *UserUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -61,13 +67,13 @@ func (uu *UserUpdate) AddUserToTag(t ...*Tag) *UserUpdate {
 	return uu.AddUserToTagIDs(ids...)
 }
 
-// AddUserToEnvironmentIDs adds the UserToEnvironment edge to Environment by ids.
+// AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by IDs.
 func (uu *UserUpdate) AddUserToEnvironmentIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddUserToEnvironmentIDs(ids...)
 	return uu
 }
 
-// AddUserToEnvironment adds the UserToEnvironment edges to Environment.
+// AddUserToEnvironment adds the "UserToEnvironment" edges to the Environment entity.
 func (uu *UserUpdate) AddUserToEnvironment(e ...*Environment) *UserUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -81,19 +87,19 @@ func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
 }
 
-// ClearUserToTag clears all "UserToTag" edges to type Tag.
+// ClearUserToTag clears all "UserToTag" edges to the Tag entity.
 func (uu *UserUpdate) ClearUserToTag() *UserUpdate {
 	uu.mutation.ClearUserToTag()
 	return uu
 }
 
-// RemoveUserToTagIDs removes the UserToTag edge to Tag by ids.
+// RemoveUserToTagIDs removes the "UserToTag" edge to Tag entities by IDs.
 func (uu *UserUpdate) RemoveUserToTagIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveUserToTagIDs(ids...)
 	return uu
 }
 
-// RemoveUserToTag removes UserToTag edges to Tag.
+// RemoveUserToTag removes "UserToTag" edges to Tag entities.
 func (uu *UserUpdate) RemoveUserToTag(t ...*Tag) *UserUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -102,19 +108,19 @@ func (uu *UserUpdate) RemoveUserToTag(t ...*Tag) *UserUpdate {
 	return uu.RemoveUserToTagIDs(ids...)
 }
 
-// ClearUserToEnvironment clears all "UserToEnvironment" edges to type Environment.
+// ClearUserToEnvironment clears all "UserToEnvironment" edges to the Environment entity.
 func (uu *UserUpdate) ClearUserToEnvironment() *UserUpdate {
 	uu.mutation.ClearUserToEnvironment()
 	return uu
 }
 
-// RemoveUserToEnvironmentIDs removes the UserToEnvironment edge to Environment by ids.
+// RemoveUserToEnvironmentIDs removes the "UserToEnvironment" edge to Environment entities by IDs.
 func (uu *UserUpdate) RemoveUserToEnvironmentIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveUserToEnvironmentIDs(ids...)
 	return uu
 }
 
-// RemoveUserToEnvironment removes UserToEnvironment edges to Environment.
+// RemoveUserToEnvironment removes "UserToEnvironment" edges to Environment entities.
 func (uu *UserUpdate) RemoveUserToEnvironment(e ...*Environment) *UserUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -211,6 +217,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldEmail,
+		})
+	}
+	if value, ok := uu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldHclID,
 		})
 	}
 	if uu.mutation.UserToTagCleared() {
@@ -339,31 +352,37 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 	uuo.mutation.SetName(s)
 	return uuo
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (uuo *UserUpdateOne) SetUUID(s string) *UserUpdateOne {
 	uuo.mutation.SetUUID(s)
 	return uuo
 }
 
-// SetEmail sets the email field.
+// SetEmail sets the "email" field.
 func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	uuo.mutation.SetEmail(s)
 	return uuo
 }
 
-// AddUserToTagIDs adds the UserToTag edge to Tag by ids.
+// SetHclID sets the "hcl_id" field.
+func (uuo *UserUpdateOne) SetHclID(s string) *UserUpdateOne {
+	uuo.mutation.SetHclID(s)
+	return uuo
+}
+
+// AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by IDs.
 func (uuo *UserUpdateOne) AddUserToTagIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddUserToTagIDs(ids...)
 	return uuo
 }
 
-// AddUserToTag adds the UserToTag edges to Tag.
+// AddUserToTag adds the "UserToTag" edges to the Tag entity.
 func (uuo *UserUpdateOne) AddUserToTag(t ...*Tag) *UserUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -372,13 +391,13 @@ func (uuo *UserUpdateOne) AddUserToTag(t ...*Tag) *UserUpdateOne {
 	return uuo.AddUserToTagIDs(ids...)
 }
 
-// AddUserToEnvironmentIDs adds the UserToEnvironment edge to Environment by ids.
+// AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by IDs.
 func (uuo *UserUpdateOne) AddUserToEnvironmentIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddUserToEnvironmentIDs(ids...)
 	return uuo
 }
 
-// AddUserToEnvironment adds the UserToEnvironment edges to Environment.
+// AddUserToEnvironment adds the "UserToEnvironment" edges to the Environment entity.
 func (uuo *UserUpdateOne) AddUserToEnvironment(e ...*Environment) *UserUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -392,19 +411,19 @@ func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
 }
 
-// ClearUserToTag clears all "UserToTag" edges to type Tag.
+// ClearUserToTag clears all "UserToTag" edges to the Tag entity.
 func (uuo *UserUpdateOne) ClearUserToTag() *UserUpdateOne {
 	uuo.mutation.ClearUserToTag()
 	return uuo
 }
 
-// RemoveUserToTagIDs removes the UserToTag edge to Tag by ids.
+// RemoveUserToTagIDs removes the "UserToTag" edge to Tag entities by IDs.
 func (uuo *UserUpdateOne) RemoveUserToTagIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveUserToTagIDs(ids...)
 	return uuo
 }
 
-// RemoveUserToTag removes UserToTag edges to Tag.
+// RemoveUserToTag removes "UserToTag" edges to Tag entities.
 func (uuo *UserUpdateOne) RemoveUserToTag(t ...*Tag) *UserUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -413,19 +432,19 @@ func (uuo *UserUpdateOne) RemoveUserToTag(t ...*Tag) *UserUpdateOne {
 	return uuo.RemoveUserToTagIDs(ids...)
 }
 
-// ClearUserToEnvironment clears all "UserToEnvironment" edges to type Environment.
+// ClearUserToEnvironment clears all "UserToEnvironment" edges to the Environment entity.
 func (uuo *UserUpdateOne) ClearUserToEnvironment() *UserUpdateOne {
 	uuo.mutation.ClearUserToEnvironment()
 	return uuo
 }
 
-// RemoveUserToEnvironmentIDs removes the UserToEnvironment edge to Environment by ids.
+// RemoveUserToEnvironmentIDs removes the "UserToEnvironment" edge to Environment entities by IDs.
 func (uuo *UserUpdateOne) RemoveUserToEnvironmentIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveUserToEnvironmentIDs(ids...)
 	return uuo
 }
 
-// RemoveUserToEnvironment removes UserToEnvironment edges to Environment.
+// RemoveUserToEnvironment removes "UserToEnvironment" edges to Environment entities.
 func (uuo *UserUpdateOne) RemoveUserToEnvironment(e ...*Environment) *UserUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -434,7 +453,7 @@ func (uuo *UserUpdateOne) RemoveUserToEnvironment(e ...*Environment) *UserUpdate
 	return uuo.RemoveUserToEnvironmentIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated User entity.
 func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 	var (
 		err  error
@@ -501,6 +520,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing User.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := uuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := uuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -520,6 +546,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldEmail,
+		})
+	}
+	if value, ok := uuo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldHclID,
 		})
 	}
 	if uuo.mutation.UserToTagCleared() {
@@ -632,7 +665,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, uuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}

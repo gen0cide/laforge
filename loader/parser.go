@@ -198,12 +198,20 @@ func (l *Loader) Bind() (*DefinedConfigs, error) {
 	return l.ConfigMap[filenames[0]], nil
 }
 
-func main() {
-	tloader := &Loader{
+// NewLoader returns a default Loader type
+func NewLoader() *Loader {
+	return &Loader{
 		Parser:     hcl2parse.NewParser(),
+		ConfigMap:  map[string]*DefinedConfigs{},
 		SourceFile: "",
 	}
-	tloader.ParseConfigFile("/home/red/Documents/infra/envs/lucas/env.laforge")
+}
+
+func main() {
+	tloader := NewLoader()
+	test := gohcl2.EncodeAsBlock(&ent.Environment{}, "enviroment")
+	fmt.Println(test)
+	tloader.ParseConfigFile("/home/red/Documents/infra/envs/fred/env.laforge")
 	tloader.Bind()
 	fmt.Println(tloader)
 }

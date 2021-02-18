@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/google/uuid"
@@ -21,25 +21,25 @@ type TagUpdate struct {
 	mutation *TagMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the TagUpdate builder.
 func (tu *TagUpdate) Where(ps ...predicate.Tag) *TagUpdate {
 	tu.mutation.predicates = append(tu.mutation.predicates, ps...)
 	return tu
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (tu *TagUpdate) SetUUID(u uuid.UUID) *TagUpdate {
 	tu.mutation.SetUUID(u)
 	return tu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (tu *TagUpdate) SetName(s string) *TagUpdate {
 	tu.mutation.SetName(s)
 	return tu
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (tu *TagUpdate) SetDescription(m map[string]string) *TagUpdate {
 	tu.mutation.SetDescription(m)
 	return tu
@@ -158,19 +158,19 @@ type TagUpdateOne struct {
 	mutation *TagMutation
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (tuo *TagUpdateOne) SetUUID(u uuid.UUID) *TagUpdateOne {
 	tuo.mutation.SetUUID(u)
 	return tuo
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (tuo *TagUpdateOne) SetName(s string) *TagUpdateOne {
 	tuo.mutation.SetName(s)
 	return tuo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (tuo *TagUpdateOne) SetDescription(m map[string]string) *TagUpdateOne {
 	tuo.mutation.SetDescription(m)
 	return tuo
@@ -181,7 +181,7 @@ func (tuo *TagUpdateOne) Mutation() *TagMutation {
 	return tuo.mutation
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Tag entity.
 func (tuo *TagUpdateOne) Save(ctx context.Context) (*Tag, error) {
 	var (
 		err  error
@@ -248,6 +248,13 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Tag.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := tuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := tuo.mutation.UUID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
@@ -271,7 +278,7 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	_node = &Tag{config: tuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{tag.Label}

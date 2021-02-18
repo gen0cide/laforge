@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -22,173 +22,173 @@ type AgentStatusUpdate struct {
 	mutation *AgentStatusMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the AgentStatusUpdate builder.
 func (asu *AgentStatusUpdate) Where(ps ...predicate.AgentStatus) *AgentStatusUpdate {
 	asu.mutation.predicates = append(asu.mutation.predicates, ps...)
 	return asu
 }
 
-// SetClientID sets the ClientID field.
+// SetClientID sets the "ClientID" field.
 func (asu *AgentStatusUpdate) SetClientID(s string) *AgentStatusUpdate {
 	asu.mutation.SetClientID(s)
 	return asu
 }
 
-// SetHostname sets the Hostname field.
+// SetHostname sets the "Hostname" field.
 func (asu *AgentStatusUpdate) SetHostname(s string) *AgentStatusUpdate {
 	asu.mutation.SetHostname(s)
 	return asu
 }
 
-// SetUpTime sets the UpTime field.
+// SetUpTime sets the "UpTime" field.
 func (asu *AgentStatusUpdate) SetUpTime(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetUpTime()
 	asu.mutation.SetUpTime(i)
 	return asu
 }
 
-// AddUpTime adds i to UpTime.
+// AddUpTime adds i to the "UpTime" field.
 func (asu *AgentStatusUpdate) AddUpTime(i int64) *AgentStatusUpdate {
 	asu.mutation.AddUpTime(i)
 	return asu
 }
 
-// SetBootTime sets the BootTime field.
+// SetBootTime sets the "BootTime" field.
 func (asu *AgentStatusUpdate) SetBootTime(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetBootTime()
 	asu.mutation.SetBootTime(i)
 	return asu
 }
 
-// AddBootTime adds i to BootTime.
+// AddBootTime adds i to the "BootTime" field.
 func (asu *AgentStatusUpdate) AddBootTime(i int64) *AgentStatusUpdate {
 	asu.mutation.AddBootTime(i)
 	return asu
 }
 
-// SetNumProcs sets the NumProcs field.
+// SetNumProcs sets the "NumProcs" field.
 func (asu *AgentStatusUpdate) SetNumProcs(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetNumProcs()
 	asu.mutation.SetNumProcs(i)
 	return asu
 }
 
-// AddNumProcs adds i to NumProcs.
+// AddNumProcs adds i to the "NumProcs" field.
 func (asu *AgentStatusUpdate) AddNumProcs(i int64) *AgentStatusUpdate {
 	asu.mutation.AddNumProcs(i)
 	return asu
 }
 
-// SetOs sets the Os field.
+// SetOs sets the "Os" field.
 func (asu *AgentStatusUpdate) SetOs(s string) *AgentStatusUpdate {
 	asu.mutation.SetOs(s)
 	return asu
 }
 
-// SetHostID sets the HostID field.
+// SetHostID sets the "HostID" field.
 func (asu *AgentStatusUpdate) SetHostID(s string) *AgentStatusUpdate {
 	asu.mutation.SetHostID(s)
 	return asu
 }
 
-// SetLoad1 sets the Load1 field.
+// SetLoad1 sets the "Load1" field.
 func (asu *AgentStatusUpdate) SetLoad1(f float64) *AgentStatusUpdate {
 	asu.mutation.ResetLoad1()
 	asu.mutation.SetLoad1(f)
 	return asu
 }
 
-// AddLoad1 adds f to Load1.
+// AddLoad1 adds f to the "Load1" field.
 func (asu *AgentStatusUpdate) AddLoad1(f float64) *AgentStatusUpdate {
 	asu.mutation.AddLoad1(f)
 	return asu
 }
 
-// SetLoad5 sets the Load5 field.
+// SetLoad5 sets the "Load5" field.
 func (asu *AgentStatusUpdate) SetLoad5(f float64) *AgentStatusUpdate {
 	asu.mutation.ResetLoad5()
 	asu.mutation.SetLoad5(f)
 	return asu
 }
 
-// AddLoad5 adds f to Load5.
+// AddLoad5 adds f to the "Load5" field.
 func (asu *AgentStatusUpdate) AddLoad5(f float64) *AgentStatusUpdate {
 	asu.mutation.AddLoad5(f)
 	return asu
 }
 
-// SetLoad15 sets the Load15 field.
+// SetLoad15 sets the "Load15" field.
 func (asu *AgentStatusUpdate) SetLoad15(f float64) *AgentStatusUpdate {
 	asu.mutation.ResetLoad15()
 	asu.mutation.SetLoad15(f)
 	return asu
 }
 
-// AddLoad15 adds f to Load15.
+// AddLoad15 adds f to the "Load15" field.
 func (asu *AgentStatusUpdate) AddLoad15(f float64) *AgentStatusUpdate {
 	asu.mutation.AddLoad15(f)
 	return asu
 }
 
-// SetTotalMem sets the TotalMem field.
+// SetTotalMem sets the "TotalMem" field.
 func (asu *AgentStatusUpdate) SetTotalMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetTotalMem()
 	asu.mutation.SetTotalMem(i)
 	return asu
 }
 
-// AddTotalMem adds i to TotalMem.
+// AddTotalMem adds i to the "TotalMem" field.
 func (asu *AgentStatusUpdate) AddTotalMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddTotalMem(i)
 	return asu
 }
 
-// SetFreeMem sets the FreeMem field.
+// SetFreeMem sets the "FreeMem" field.
 func (asu *AgentStatusUpdate) SetFreeMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetFreeMem()
 	asu.mutation.SetFreeMem(i)
 	return asu
 }
 
-// AddFreeMem adds i to FreeMem.
+// AddFreeMem adds i to the "FreeMem" field.
 func (asu *AgentStatusUpdate) AddFreeMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddFreeMem(i)
 	return asu
 }
 
-// SetUsedMem sets the UsedMem field.
+// SetUsedMem sets the "UsedMem" field.
 func (asu *AgentStatusUpdate) SetUsedMem(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetUsedMem()
 	asu.mutation.SetUsedMem(i)
 	return asu
 }
 
-// AddUsedMem adds i to UsedMem.
+// AddUsedMem adds i to the "UsedMem" field.
 func (asu *AgentStatusUpdate) AddUsedMem(i int64) *AgentStatusUpdate {
 	asu.mutation.AddUsedMem(i)
 	return asu
 }
 
-// SetTimestamp sets the Timestamp field.
+// SetTimestamp sets the "Timestamp" field.
 func (asu *AgentStatusUpdate) SetTimestamp(i int64) *AgentStatusUpdate {
 	asu.mutation.ResetTimestamp()
 	asu.mutation.SetTimestamp(i)
 	return asu
 }
 
-// AddTimestamp adds i to Timestamp.
+// AddTimestamp adds i to the "Timestamp" field.
 func (asu *AgentStatusUpdate) AddTimestamp(i int64) *AgentStatusUpdate {
 	asu.mutation.AddTimestamp(i)
 	return asu
 }
 
-// AddAgentStatusToTagIDs adds the AgentStatusToTag edge to Tag by ids.
+// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
 func (asu *AgentStatusUpdate) AddAgentStatusToTagIDs(ids ...int) *AgentStatusUpdate {
 	asu.mutation.AddAgentStatusToTagIDs(ids...)
 	return asu
 }
 
-// AddAgentStatusToTag adds the AgentStatusToTag edges to Tag.
+// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
 func (asu *AgentStatusUpdate) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -197,13 +197,13 @@ func (asu *AgentStatusUpdate) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpdate 
 	return asu.AddAgentStatusToTagIDs(ids...)
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdate {
 	asu.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
 	return asu
 }
 
-// AddAgentStatusToProvisionedHost adds the AgentStatusToProvisionedHost edges to ProvisionedHost.
+// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -217,19 +217,19 @@ func (asu *AgentStatusUpdate) Mutation() *AgentStatusMutation {
 	return asu.mutation
 }
 
-// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to type Tag.
+// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to the Tag entity.
 func (asu *AgentStatusUpdate) ClearAgentStatusToTag() *AgentStatusUpdate {
 	asu.mutation.ClearAgentStatusToTag()
 	return asu
 }
 
-// RemoveAgentStatusToTagIDs removes the AgentStatusToTag edge to Tag by ids.
+// RemoveAgentStatusToTagIDs removes the "AgentStatusToTag" edge to Tag entities by IDs.
 func (asu *AgentStatusUpdate) RemoveAgentStatusToTagIDs(ids ...int) *AgentStatusUpdate {
 	asu.mutation.RemoveAgentStatusToTagIDs(ids...)
 	return asu
 }
 
-// RemoveAgentStatusToTag removes AgentStatusToTag edges to Tag.
+// RemoveAgentStatusToTag removes "AgentStatusToTag" edges to Tag entities.
 func (asu *AgentStatusUpdate) RemoveAgentStatusToTag(t ...*Tag) *AgentStatusUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -238,19 +238,19 @@ func (asu *AgentStatusUpdate) RemoveAgentStatusToTag(t ...*Tag) *AgentStatusUpda
 	return asu.RemoveAgentStatusToTagIDs(ids...)
 }
 
-// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to type ProvisionedHost.
+// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asu *AgentStatusUpdate) ClearAgentStatusToProvisionedHost() *AgentStatusUpdate {
 	asu.mutation.ClearAgentStatusToProvisionedHost()
 	return asu
 }
 
-// RemoveAgentStatusToProvisionedHostIDs removes the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+// RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
 func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdate {
 	asu.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
 	return asu
 }
 
-// RemoveAgentStatusToProvisionedHost removes AgentStatusToProvisionedHost edges to ProvisionedHost.
+// RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
 func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -622,167 +622,167 @@ type AgentStatusUpdateOne struct {
 	mutation *AgentStatusMutation
 }
 
-// SetClientID sets the ClientID field.
+// SetClientID sets the "ClientID" field.
 func (asuo *AgentStatusUpdateOne) SetClientID(s string) *AgentStatusUpdateOne {
 	asuo.mutation.SetClientID(s)
 	return asuo
 }
 
-// SetHostname sets the Hostname field.
+// SetHostname sets the "Hostname" field.
 func (asuo *AgentStatusUpdateOne) SetHostname(s string) *AgentStatusUpdateOne {
 	asuo.mutation.SetHostname(s)
 	return asuo
 }
 
-// SetUpTime sets the UpTime field.
+// SetUpTime sets the "UpTime" field.
 func (asuo *AgentStatusUpdateOne) SetUpTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetUpTime()
 	asuo.mutation.SetUpTime(i)
 	return asuo
 }
 
-// AddUpTime adds i to UpTime.
+// AddUpTime adds i to the "UpTime" field.
 func (asuo *AgentStatusUpdateOne) AddUpTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddUpTime(i)
 	return asuo
 }
 
-// SetBootTime sets the BootTime field.
+// SetBootTime sets the "BootTime" field.
 func (asuo *AgentStatusUpdateOne) SetBootTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetBootTime()
 	asuo.mutation.SetBootTime(i)
 	return asuo
 }
 
-// AddBootTime adds i to BootTime.
+// AddBootTime adds i to the "BootTime" field.
 func (asuo *AgentStatusUpdateOne) AddBootTime(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddBootTime(i)
 	return asuo
 }
 
-// SetNumProcs sets the NumProcs field.
+// SetNumProcs sets the "NumProcs" field.
 func (asuo *AgentStatusUpdateOne) SetNumProcs(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetNumProcs()
 	asuo.mutation.SetNumProcs(i)
 	return asuo
 }
 
-// AddNumProcs adds i to NumProcs.
+// AddNumProcs adds i to the "NumProcs" field.
 func (asuo *AgentStatusUpdateOne) AddNumProcs(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddNumProcs(i)
 	return asuo
 }
 
-// SetOs sets the Os field.
+// SetOs sets the "Os" field.
 func (asuo *AgentStatusUpdateOne) SetOs(s string) *AgentStatusUpdateOne {
 	asuo.mutation.SetOs(s)
 	return asuo
 }
 
-// SetHostID sets the HostID field.
+// SetHostID sets the "HostID" field.
 func (asuo *AgentStatusUpdateOne) SetHostID(s string) *AgentStatusUpdateOne {
 	asuo.mutation.SetHostID(s)
 	return asuo
 }
 
-// SetLoad1 sets the Load1 field.
+// SetLoad1 sets the "Load1" field.
 func (asuo *AgentStatusUpdateOne) SetLoad1(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetLoad1()
 	asuo.mutation.SetLoad1(f)
 	return asuo
 }
 
-// AddLoad1 adds f to Load1.
+// AddLoad1 adds f to the "Load1" field.
 func (asuo *AgentStatusUpdateOne) AddLoad1(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.AddLoad1(f)
 	return asuo
 }
 
-// SetLoad5 sets the Load5 field.
+// SetLoad5 sets the "Load5" field.
 func (asuo *AgentStatusUpdateOne) SetLoad5(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetLoad5()
 	asuo.mutation.SetLoad5(f)
 	return asuo
 }
 
-// AddLoad5 adds f to Load5.
+// AddLoad5 adds f to the "Load5" field.
 func (asuo *AgentStatusUpdateOne) AddLoad5(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.AddLoad5(f)
 	return asuo
 }
 
-// SetLoad15 sets the Load15 field.
+// SetLoad15 sets the "Load15" field.
 func (asuo *AgentStatusUpdateOne) SetLoad15(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetLoad15()
 	asuo.mutation.SetLoad15(f)
 	return asuo
 }
 
-// AddLoad15 adds f to Load15.
+// AddLoad15 adds f to the "Load15" field.
 func (asuo *AgentStatusUpdateOne) AddLoad15(f float64) *AgentStatusUpdateOne {
 	asuo.mutation.AddLoad15(f)
 	return asuo
 }
 
-// SetTotalMem sets the TotalMem field.
+// SetTotalMem sets the "TotalMem" field.
 func (asuo *AgentStatusUpdateOne) SetTotalMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetTotalMem()
 	asuo.mutation.SetTotalMem(i)
 	return asuo
 }
 
-// AddTotalMem adds i to TotalMem.
+// AddTotalMem adds i to the "TotalMem" field.
 func (asuo *AgentStatusUpdateOne) AddTotalMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddTotalMem(i)
 	return asuo
 }
 
-// SetFreeMem sets the FreeMem field.
+// SetFreeMem sets the "FreeMem" field.
 func (asuo *AgentStatusUpdateOne) SetFreeMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetFreeMem()
 	asuo.mutation.SetFreeMem(i)
 	return asuo
 }
 
-// AddFreeMem adds i to FreeMem.
+// AddFreeMem adds i to the "FreeMem" field.
 func (asuo *AgentStatusUpdateOne) AddFreeMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddFreeMem(i)
 	return asuo
 }
 
-// SetUsedMem sets the UsedMem field.
+// SetUsedMem sets the "UsedMem" field.
 func (asuo *AgentStatusUpdateOne) SetUsedMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetUsedMem()
 	asuo.mutation.SetUsedMem(i)
 	return asuo
 }
 
-// AddUsedMem adds i to UsedMem.
+// AddUsedMem adds i to the "UsedMem" field.
 func (asuo *AgentStatusUpdateOne) AddUsedMem(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddUsedMem(i)
 	return asuo
 }
 
-// SetTimestamp sets the Timestamp field.
+// SetTimestamp sets the "Timestamp" field.
 func (asuo *AgentStatusUpdateOne) SetTimestamp(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.ResetTimestamp()
 	asuo.mutation.SetTimestamp(i)
 	return asuo
 }
 
-// AddTimestamp adds i to Timestamp.
+// AddTimestamp adds i to the "Timestamp" field.
 func (asuo *AgentStatusUpdateOne) AddTimestamp(i int64) *AgentStatusUpdateOne {
 	asuo.mutation.AddTimestamp(i)
 	return asuo
 }
 
-// AddAgentStatusToTagIDs adds the AgentStatusToTag edge to Tag by ids.
+// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToTagIDs(ids ...int) *AgentStatusUpdateOne {
 	asuo.mutation.AddAgentStatusToTagIDs(ids...)
 	return asuo
 }
 
-// AddAgentStatusToTag adds the AgentStatusToTag edges to Tag.
+// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -791,13 +791,13 @@ func (asuo *AgentStatusUpdateOne) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpd
 	return asuo.AddAgentStatusToTagIDs(ids...)
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdateOne {
 	asuo.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
 	return asuo
 }
 
-// AddAgentStatusToProvisionedHost adds the AgentStatusToProvisionedHost edges to ProvisionedHost.
+// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -811,19 +811,19 @@ func (asuo *AgentStatusUpdateOne) Mutation() *AgentStatusMutation {
 	return asuo.mutation
 }
 
-// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to type Tag.
+// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to the Tag entity.
 func (asuo *AgentStatusUpdateOne) ClearAgentStatusToTag() *AgentStatusUpdateOne {
 	asuo.mutation.ClearAgentStatusToTag()
 	return asuo
 }
 
-// RemoveAgentStatusToTagIDs removes the AgentStatusToTag edge to Tag by ids.
+// RemoveAgentStatusToTagIDs removes the "AgentStatusToTag" edge to Tag entities by IDs.
 func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToTagIDs(ids ...int) *AgentStatusUpdateOne {
 	asuo.mutation.RemoveAgentStatusToTagIDs(ids...)
 	return asuo
 }
 
-// RemoveAgentStatusToTag removes AgentStatusToTag edges to Tag.
+// RemoveAgentStatusToTag removes "AgentStatusToTag" edges to Tag entities.
 func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToTag(t ...*Tag) *AgentStatusUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -832,19 +832,19 @@ func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToTag(t ...*Tag) *AgentStatus
 	return asuo.RemoveAgentStatusToTagIDs(ids...)
 }
 
-// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to type ProvisionedHost.
+// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asuo *AgentStatusUpdateOne) ClearAgentStatusToProvisionedHost() *AgentStatusUpdateOne {
 	asuo.mutation.ClearAgentStatusToProvisionedHost()
 	return asuo
 }
 
-// RemoveAgentStatusToProvisionedHostIDs removes the AgentStatusToProvisionedHost edge to ProvisionedHost by ids.
+// RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
 func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdateOne {
 	asuo.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
 	return asuo
 }
 
-// RemoveAgentStatusToProvisionedHost removes AgentStatusToProvisionedHost edges to ProvisionedHost.
+// RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
 func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -853,7 +853,7 @@ func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHost(p ...*Provi
 	return asuo.RemoveAgentStatusToProvisionedHostIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated AgentStatus entity.
 func (asuo *AgentStatusUpdateOne) Save(ctx context.Context) (*AgentStatus, error) {
 	var (
 		err  error
@@ -920,6 +920,13 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing AgentStatus.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := asuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := asuo.mutation.ClientID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1198,7 +1205,7 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	_node = &AgentStatus{config: asuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, asuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentstatus.Label}

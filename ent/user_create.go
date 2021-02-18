@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
@@ -21,31 +21,37 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (uc *UserCreate) SetName(s string) *UserCreate {
 	uc.mutation.SetName(s)
 	return uc
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (uc *UserCreate) SetUUID(s string) *UserCreate {
 	uc.mutation.SetUUID(s)
 	return uc
 }
 
-// SetEmail sets the email field.
+// SetEmail sets the "email" field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
 	return uc
 }
 
-// AddUserToTagIDs adds the UserToTag edge to Tag by ids.
+// SetHclID sets the "hcl_id" field.
+func (uc *UserCreate) SetHclID(s string) *UserCreate {
+	uc.mutation.SetHclID(s)
+	return uc
+}
+
+// AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by IDs.
 func (uc *UserCreate) AddUserToTagIDs(ids ...int) *UserCreate {
 	uc.mutation.AddUserToTagIDs(ids...)
 	return uc
 }
 
-// AddUserToTag adds the UserToTag edges to Tag.
+// AddUserToTag adds the "UserToTag" edges to the Tag entity.
 func (uc *UserCreate) AddUserToTag(t ...*Tag) *UserCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -54,13 +60,13 @@ func (uc *UserCreate) AddUserToTag(t ...*Tag) *UserCreate {
 	return uc.AddUserToTagIDs(ids...)
 }
 
-// AddUserToEnvironmentIDs adds the UserToEnvironment edge to Environment by ids.
+// AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by IDs.
 func (uc *UserCreate) AddUserToEnvironmentIDs(ids ...int) *UserCreate {
 	uc.mutation.AddUserToEnvironmentIDs(ids...)
 	return uc
 }
 
-// AddUserToEnvironment adds the UserToEnvironment edges to Environment.
+// AddUserToEnvironment adds the "UserToEnvironment" edges to the Environment entity.
 func (uc *UserCreate) AddUserToEnvironment(e ...*Environment) *UserCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -129,6 +135,9 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
 	}
+	if _, ok := uc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	return nil
 }
 
@@ -180,6 +189,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.Email = value
 	}
+	if value, ok := uc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if nodes := uc.mutation.UserToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -221,7 +238,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// UserCreateBulk is the builder for creating a bulk of User entities.
+// UserCreateBulk is the builder for creating many User entities in bulk.
 type UserCreateBulk struct {
 	config
 	builders []*UserCreate
@@ -278,7 +295,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ucb *UserCreateBulk) SaveX(ctx context.Context) []*User {
 	v, err := ucb.Save(ctx)
 	if err != nil {

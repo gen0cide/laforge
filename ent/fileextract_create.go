@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,37 +20,37 @@ type FileExtractCreate struct {
 	hooks    []Hook
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fec *FileExtractCreate) SetSource(s string) *FileExtractCreate {
 	fec.mutation.SetSource(s)
 	return fec
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fec *FileExtractCreate) SetDestination(s string) *FileExtractCreate {
 	fec.mutation.SetDestination(s)
 	return fec
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (fec *FileExtractCreate) SetType(s string) *FileExtractCreate {
 	fec.mutation.SetType(s)
 	return fec
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
 	fec.mutation.SetTags(m)
 	return fec
 }
 
-// AddFileExtractToTagIDs adds the FileExtractToTag edge to Tag by ids.
+// AddFileExtractToTagIDs adds the "FileExtractToTag" edge to the Tag entity by IDs.
 func (fec *FileExtractCreate) AddFileExtractToTagIDs(ids ...int) *FileExtractCreate {
 	fec.mutation.AddFileExtractToTagIDs(ids...)
 	return fec
 }
 
-// AddFileExtractToTag adds the FileExtractToTag edges to Tag.
+// AddFileExtractToTag adds the "FileExtractToTag" edges to the Tag entity.
 func (fec *FileExtractCreate) AddFileExtractToTag(t ...*Tag) *FileExtractCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -203,7 +203,7 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 	return _node, _spec
 }
 
-// FileExtractCreateBulk is the builder for creating a bulk of FileExtract entities.
+// FileExtractCreateBulk is the builder for creating many FileExtract entities in bulk.
 type FileExtractCreateBulk struct {
 	config
 	builders []*FileExtractCreate
@@ -260,7 +260,7 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fecb *FileExtractCreateBulk) SaveX(ctx context.Context) []*FileExtract {
 	v, err := fecb.Save(ctx)
 	if err != nil {

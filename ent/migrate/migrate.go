@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/facebook/ent/dialect"
-	"github.com/facebook/ent/dialect/sql/schema"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql/schema"
 )
 
 var (

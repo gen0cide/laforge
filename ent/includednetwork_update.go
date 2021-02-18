@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -22,31 +22,31 @@ type IncludedNetworkUpdate struct {
 	mutation *IncludedNetworkMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the IncludedNetworkUpdate builder.
 func (inu *IncludedNetworkUpdate) Where(ps ...predicate.IncludedNetwork) *IncludedNetworkUpdate {
 	inu.mutation.predicates = append(inu.mutation.predicates, ps...)
 	return inu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (inu *IncludedNetworkUpdate) SetName(s string) *IncludedNetworkUpdate {
 	inu.mutation.SetName(s)
 	return inu
 }
 
-// SetHosts sets the hosts field.
+// SetHosts sets the "hosts" field.
 func (inu *IncludedNetworkUpdate) SetHosts(s []string) *IncludedNetworkUpdate {
 	inu.mutation.SetHosts(s)
 	return inu
 }
 
-// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+// AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by IDs.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
-// AddIncludedNetworkToTag adds the IncludedNetworkToTag edges to Tag.
+// AddIncludedNetworkToTag adds the "IncludedNetworkToTag" edges to the Tag entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -55,13 +55,13 @@ func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNe
 	return inu.AddIncludedNetworkToTagIDs(ids...)
 }
 
-// AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
+// AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
 	return inu
 }
 
-// AddIncludedNetworkToEnvironment adds the IncludedNetworkToEnvironment edges to Environment.
+// AddIncludedNetworkToEnvironment adds the "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -75,19 +75,19 @@ func (inu *IncludedNetworkUpdate) Mutation() *IncludedNetworkMutation {
 	return inu.mutation
 }
 
-// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to type Tag.
+// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to the Tag entity.
 func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToTag() *IncludedNetworkUpdate {
 	inu.mutation.ClearIncludedNetworkToTag()
 	return inu
 }
 
-// RemoveIncludedNetworkToTagIDs removes the IncludedNetworkToTag edge to Tag by ids.
+// RemoveIncludedNetworkToTagIDs removes the "IncludedNetworkToTag" edge to Tag entities by IDs.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
-// RemoveIncludedNetworkToTag removes IncludedNetworkToTag edges to Tag.
+// RemoveIncludedNetworkToTag removes "IncludedNetworkToTag" edges to Tag entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -96,19 +96,19 @@ func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTag(t ...*Tag) *Include
 	return inu.RemoveIncludedNetworkToTagIDs(ids...)
 }
 
-// ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to type Environment.
+// ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToEnvironment() *IncludedNetworkUpdate {
 	inu.mutation.ClearIncludedNetworkToEnvironment()
 	return inu
 }
 
-// RemoveIncludedNetworkToEnvironmentIDs removes the IncludedNetworkToEnvironment edge to Environment by ids.
+// RemoveIncludedNetworkToEnvironmentIDs removes the "IncludedNetworkToEnvironment" edge to Environment entities by IDs.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 	return inu
 }
 
-// RemoveIncludedNetworkToEnvironment removes IncludedNetworkToEnvironment edges to Environment.
+// RemoveIncludedNetworkToEnvironment removes "IncludedNetworkToEnvironment" edges to Environment entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -326,25 +326,25 @@ type IncludedNetworkUpdateOne struct {
 	mutation *IncludedNetworkMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (inuo *IncludedNetworkUpdateOne) SetName(s string) *IncludedNetworkUpdateOne {
 	inuo.mutation.SetName(s)
 	return inuo
 }
 
-// SetHosts sets the hosts field.
+// SetHosts sets the "hosts" field.
 func (inuo *IncludedNetworkUpdateOne) SetHosts(s []string) *IncludedNetworkUpdateOne {
 	inuo.mutation.SetHosts(s)
 	return inuo
 }
 
-// AddIncludedNetworkToTagIDs adds the IncludedNetworkToTag edge to Tag by ids.
+// AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by IDs.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
-// AddIncludedNetworkToTag adds the IncludedNetworkToTag edges to Tag.
+// AddIncludedNetworkToTag adds the "IncludedNetworkToTag" edges to the Tag entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -353,13 +353,13 @@ func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTag(t ...*Tag) *Includ
 	return inuo.AddIncludedNetworkToTagIDs(ids...)
 }
 
-// AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
+// AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
 	return inuo
 }
 
-// AddIncludedNetworkToEnvironment adds the IncludedNetworkToEnvironment edges to Environment.
+// AddIncludedNetworkToEnvironment adds the "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -373,19 +373,19 @@ func (inuo *IncludedNetworkUpdateOne) Mutation() *IncludedNetworkMutation {
 	return inuo.mutation
 }
 
-// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to type Tag.
+// ClearIncludedNetworkToTag clears all "IncludedNetworkToTag" edges to the Tag entity.
 func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToTag() *IncludedNetworkUpdateOne {
 	inuo.mutation.ClearIncludedNetworkToTag()
 	return inuo
 }
 
-// RemoveIncludedNetworkToTagIDs removes the IncludedNetworkToTag edge to Tag by ids.
+// RemoveIncludedNetworkToTagIDs removes the "IncludedNetworkToTag" edge to Tag entities by IDs.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
-// RemoveIncludedNetworkToTag removes IncludedNetworkToTag edges to Tag.
+// RemoveIncludedNetworkToTag removes "IncludedNetworkToTag" edges to Tag entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -394,19 +394,19 @@ func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTag(t ...*Tag) *Inc
 	return inuo.RemoveIncludedNetworkToTagIDs(ids...)
 }
 
-// ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to type Environment.
+// ClearIncludedNetworkToEnvironment clears all "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToEnvironment() *IncludedNetworkUpdateOne {
 	inuo.mutation.ClearIncludedNetworkToEnvironment()
 	return inuo
 }
 
-// RemoveIncludedNetworkToEnvironmentIDs removes the IncludedNetworkToEnvironment edge to Environment by ids.
+// RemoveIncludedNetworkToEnvironmentIDs removes the "IncludedNetworkToEnvironment" edge to Environment entities by IDs.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 	return inuo
 }
 
-// RemoveIncludedNetworkToEnvironment removes IncludedNetworkToEnvironment edges to Environment.
+// RemoveIncludedNetworkToEnvironment removes "IncludedNetworkToEnvironment" edges to Environment entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdateOne {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -415,7 +415,7 @@ func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironment(e ...*E
 	return inuo.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated IncludedNetwork entity.
 func (inuo *IncludedNetworkUpdateOne) Save(ctx context.Context) (*IncludedNetwork, error) {
 	var (
 		err  error
@@ -482,6 +482,13 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing IncludedNetwork.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := inuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := inuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -606,7 +613,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 	}
 	_node = &IncludedNetwork{config: inuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, inuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{includednetwork.Label}

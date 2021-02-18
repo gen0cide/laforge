@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,6 +23,7 @@ type FileExtractQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.FileExtract
 	// eager-loading edges.
 	withFileExtractToTag *TagQuery
@@ -32,7 +33,7 @@ type FileExtractQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FileExtractQuery builder.
 func (feq *FileExtractQuery) Where(ps ...predicate.FileExtract) *FileExtractQuery {
 	feq.predicates = append(feq.predicates, ps...)
 	return feq
@@ -56,14 +57,14 @@ func (feq *FileExtractQuery) Order(o ...OrderFunc) *FileExtractQuery {
 	return feq
 }
 
-// QueryFileExtractToTag chains the current query on the FileExtractToTag edge.
+// QueryFileExtractToTag chains the current query on the "FileExtractToTag" edge.
 func (feq *FileExtractQuery) QueryFileExtractToTag() *TagQuery {
 	query := &TagQuery{config: feq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := feq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := feq.sqlQuery()
+		selector := feq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -78,7 +79,8 @@ func (feq *FileExtractQuery) QueryFileExtractToTag() *TagQuery {
 	return query
 }
 
-// First returns the first FileExtract entity in the query. Returns *NotFoundError when no fileextract was found.
+// First returns the first FileExtract entity from the query.
+// Returns a *NotFoundError when no FileExtract was found.
 func (feq *FileExtractQuery) First(ctx context.Context) (*FileExtract, error) {
 	nodes, err := feq.Limit(1).All(ctx)
 	if err != nil {
@@ -99,7 +101,8 @@ func (feq *FileExtractQuery) FirstX(ctx context.Context) *FileExtract {
 	return node
 }
 
-// FirstID returns the first FileExtract id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first FileExtract ID from the query.
+// Returns a *NotFoundError when no FileExtract ID was found.
 func (feq *FileExtractQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = feq.Limit(1).IDs(ctx); err != nil {
@@ -121,7 +124,9 @@ func (feq *FileExtractQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only FileExtract entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single FileExtract entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one FileExtract entity is not found.
+// Returns a *NotFoundError when no FileExtract entities are found.
 func (feq *FileExtractQuery) Only(ctx context.Context) (*FileExtract, error) {
 	nodes, err := feq.Limit(2).All(ctx)
 	if err != nil {
@@ -146,7 +151,9 @@ func (feq *FileExtractQuery) OnlyX(ctx context.Context) *FileExtract {
 	return node
 }
 
-// OnlyID returns the only FileExtract id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only FileExtract ID in the query.
+// Returns a *NotSingularError when exactly one FileExtract ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (feq *FileExtractQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = feq.Limit(2).IDs(ctx); err != nil {
@@ -189,7 +196,7 @@ func (feq *FileExtractQuery) AllX(ctx context.Context) []*FileExtract {
 	return nodes
 }
 
-// IDs executes the query and returns a list of FileExtract ids.
+// IDs executes the query and returns a list of FileExtract IDs.
 func (feq *FileExtractQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := feq.Select(fileextract.FieldID).Scan(ctx, &ids); err != nil {
@@ -241,7 +248,7 @@ func (feq *FileExtractQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the FileExtractQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (feq *FileExtractQuery) Clone() *FileExtractQuery {
 	if feq == nil {
@@ -260,8 +267,8 @@ func (feq *FileExtractQuery) Clone() *FileExtractQuery {
 	}
 }
 
-//  WithFileExtractToTag tells the query-builder to eager-loads the nodes that are connected to
-// the "FileExtractToTag" edge. The optional arguments used to configure the query builder of the edge.
+// WithFileExtractToTag tells the query-builder to eager-load the nodes that are connected to
+// the "FileExtractToTag" edge. The optional arguments are used to configure the query builder of the edge.
 func (feq *FileExtractQuery) WithFileExtractToTag(opts ...func(*TagQuery)) *FileExtractQuery {
 	query := &TagQuery{config: feq.config}
 	for _, opt := range opts {
@@ -271,7 +278,7 @@ func (feq *FileExtractQuery) WithFileExtractToTag(opts ...func(*TagQuery)) *File
 	return feq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -293,12 +300,13 @@ func (feq *FileExtractQuery) GroupBy(field string, fields ...string) *FileExtrac
 		if err := feq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return feq.sqlQuery(), nil
+		return feq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -311,18 +319,16 @@ func (feq *FileExtractQuery) GroupBy(field string, fields ...string) *FileExtrac
 //		Scan(ctx, &v)
 //
 func (feq *FileExtractQuery) Select(field string, fields ...string) *FileExtractSelect {
-	selector := &FileExtractSelect{config: feq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := feq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return feq.sqlQuery(), nil
-	}
-	return selector
+	feq.fields = append([]string{field}, fields...)
+	return &FileExtractSelect{FileExtractQuery: feq}
 }
 
 func (feq *FileExtractQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range feq.fields {
+		if !fileextract.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if feq.path != nil {
 		prev, err := feq.path(ctx)
 		if err != nil {
@@ -345,22 +351,18 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, fileextract.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileExtract{config: feq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, feq.driver, _spec); err != nil {
 		return nil, err
@@ -427,6 +429,15 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   feq.sql,
 		Unique: true,
 	}
+	if fields := feq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, fileextract.FieldID)
+		for i := range fields {
+			if fields[i] != fileextract.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := feq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -450,7 +461,7 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (feq *FileExtractQuery) sqlQuery() *sql.Selector {
+func (feq *FileExtractQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(feq.driver.Dialect())
 	t1 := builder.Table(fileextract.Table)
 	selector := builder.Select(t1.Columns(fileextract.Columns...)...).From(t1)
@@ -475,7 +486,7 @@ func (feq *FileExtractQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// FileExtractGroupBy is the builder for group-by FileExtract entities.
+// FileExtractGroupBy is the group-by builder for FileExtract entities.
 type FileExtractGroupBy struct {
 	config
 	fields []string
@@ -491,7 +502,7 @@ func (fegb *FileExtractGroupBy) Aggregate(fns ...AggregateFunc) *FileExtractGrou
 	return fegb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (fegb *FileExtractGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := fegb.path(ctx)
 	if err != nil {
@@ -508,7 +519,8 @@ func (fegb *FileExtractGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(fegb.fields) > 1 {
 		return nil, errors.New("ent: FileExtractGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -529,7 +541,8 @@ func (fegb *FileExtractGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fegb.Strings(ctx); err != nil {
@@ -555,7 +568,8 @@ func (fegb *FileExtractGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(fegb.fields) > 1 {
 		return nil, errors.New("ent: FileExtractGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -576,7 +590,8 @@ func (fegb *FileExtractGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fegb.Ints(ctx); err != nil {
@@ -602,7 +617,8 @@ func (fegb *FileExtractGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fegb.fields) > 1 {
 		return nil, errors.New("ent: FileExtractGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -623,7 +639,8 @@ func (fegb *FileExtractGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fegb.Float64s(ctx); err != nil {
@@ -649,7 +666,8 @@ func (fegb *FileExtractGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(fegb.fields) > 1 {
 		return nil, errors.New("ent: FileExtractGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -670,7 +688,8 @@ func (fegb *FileExtractGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fegb *FileExtractGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fegb.Bools(ctx); err != nil {
@@ -725,22 +744,19 @@ func (fegb *FileExtractGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(fegb.fields...)
 }
 
-// FileExtractSelect is the builder for select fields of FileExtract entities.
+// FileExtractSelect is the builder for selecting fields of FileExtract entities.
 type FileExtractSelect struct {
-	config
-	fields []string
+	*FileExtractQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (fes *FileExtractSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := fes.path(ctx)
-	if err != nil {
+	if err := fes.prepareQuery(ctx); err != nil {
 		return err
 	}
-	fes.sql = query
+	fes.sql = fes.FileExtractQuery.sqlQuery(ctx)
 	return fes.sqlScan(ctx, v)
 }
 
@@ -751,7 +767,7 @@ func (fes *FileExtractSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(fes.fields) > 1 {
 		return nil, errors.New("ent: FileExtractSelect.Strings is not achievable when selecting more than 1 field")
@@ -772,7 +788,7 @@ func (fes *FileExtractSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fes.Strings(ctx); err != nil {
@@ -798,7 +814,7 @@ func (fes *FileExtractSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(fes.fields) > 1 {
 		return nil, errors.New("ent: FileExtractSelect.Ints is not achievable when selecting more than 1 field")
@@ -819,7 +835,7 @@ func (fes *FileExtractSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fes.Ints(ctx); err != nil {
@@ -845,7 +861,7 @@ func (fes *FileExtractSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fes.fields) > 1 {
 		return nil, errors.New("ent: FileExtractSelect.Float64s is not achievable when selecting more than 1 field")
@@ -866,7 +882,7 @@ func (fes *FileExtractSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fes.Float64s(ctx); err != nil {
@@ -892,7 +908,7 @@ func (fes *FileExtractSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(fes.fields) > 1 {
 		return nil, errors.New("ent: FileExtractSelect.Bools is not achievable when selecting more than 1 field")
@@ -913,7 +929,7 @@ func (fes *FileExtractSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (fes *FileExtractSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fes.Bools(ctx); err != nil {
@@ -940,11 +956,6 @@ func (fes *FileExtractSelect) BoolX(ctx context.Context) bool {
 }
 
 func (fes *FileExtractSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range fes.fields {
-		if !fileextract.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := fes.sqlQuery().Query()
 	if err := fes.driver.Query(ctx, query, args, rows); err != nil {

@@ -3,12 +3,12 @@
 package includednetwork
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -265,7 +265,7 @@ func HasIncludedNetworkToEnvironmentWith(preds ...predicate.Environment) predica
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -276,7 +276,7 @@ func And(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

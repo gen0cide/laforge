@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -22,91 +22,91 @@ type ScriptCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (sc *ScriptCreate) SetName(s string) *ScriptCreate {
 	sc.mutation.SetName(s)
 	return sc
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (sc *ScriptCreate) SetLanguage(s string) *ScriptCreate {
 	sc.mutation.SetLanguage(s)
 	return sc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (sc *ScriptCreate) SetDescription(s string) *ScriptCreate {
 	sc.mutation.SetDescription(s)
 	return sc
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (sc *ScriptCreate) SetSource(s string) *ScriptCreate {
 	sc.mutation.SetSource(s)
 	return sc
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (sc *ScriptCreate) SetSourceType(s string) *ScriptCreate {
 	sc.mutation.SetSourceType(s)
 	return sc
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (sc *ScriptCreate) SetCooldown(i int) *ScriptCreate {
 	sc.mutation.SetCooldown(i)
 	return sc
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (sc *ScriptCreate) SetTimeout(i int) *ScriptCreate {
 	sc.mutation.SetTimeout(i)
 	return sc
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (sc *ScriptCreate) SetIgnoreErrors(b bool) *ScriptCreate {
 	sc.mutation.SetIgnoreErrors(b)
 	return sc
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (sc *ScriptCreate) SetArgs(s []string) *ScriptCreate {
 	sc.mutation.SetArgs(s)
 	return sc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (sc *ScriptCreate) SetDisabled(b bool) *ScriptCreate {
 	sc.mutation.SetDisabled(b)
 	return sc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (sc *ScriptCreate) SetVars(m map[string]string) *ScriptCreate {
 	sc.mutation.SetVars(m)
 	return sc
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (sc *ScriptCreate) SetAbsPath(s string) *ScriptCreate {
 	sc.mutation.SetAbsPath(s)
 	return sc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (sc *ScriptCreate) SetTags(m map[string]string) *ScriptCreate {
 	sc.mutation.SetTags(m)
 	return sc
 }
 
-// AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
+// AddScriptToTagIDs adds the "ScriptToTag" edge to the Tag entity by IDs.
 func (sc *ScriptCreate) AddScriptToTagIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddScriptToTagIDs(ids...)
 	return sc
 }
 
-// AddScriptToTag adds the ScriptToTag edges to Tag.
+// AddScriptToTag adds the "ScriptToTag" edges to the Tag entity.
 func (sc *ScriptCreate) AddScriptToTag(t ...*Tag) *ScriptCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -115,13 +115,13 @@ func (sc *ScriptCreate) AddScriptToTag(t ...*Tag) *ScriptCreate {
 	return sc.AddScriptToTagIDs(ids...)
 }
 
-// AddScriptToUserIDs adds the ScriptToUser edge to User by ids.
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
 func (sc *ScriptCreate) AddScriptToUserIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddScriptToUserIDs(ids...)
 	return sc
 }
 
-// AddScriptToUser adds the ScriptToUser edges to User.
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -130,13 +130,13 @@ func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
 	return sc.AddScriptToUserIDs(ids...)
 }
 
-// AddScriptToFindingIDs adds the ScriptToFinding edge to Finding by ids.
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
 func (sc *ScriptCreate) AddScriptToFindingIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddScriptToFindingIDs(ids...)
 	return sc
 }
 
-// AddScriptToFinding adds the ScriptToFinding edges to Finding.
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -426,7 +426,7 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// ScriptCreateBulk is the builder for creating a bulk of Script entities.
+// ScriptCreateBulk is the builder for creating many Script entities in bulk.
 type ScriptCreateBulk struct {
 	config
 	builders []*ScriptCreate
@@ -483,7 +483,7 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (scb *ScriptCreateBulk) SaveX(ctx context.Context) []*Script {
 	v, err := scb.Save(ctx)
 	if err != nil {

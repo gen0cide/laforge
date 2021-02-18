@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
@@ -26,6 +26,7 @@ type HostQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Host
 	// eager-loading edges.
 	withHostToDisk        *DiskQuery
@@ -38,7 +39,7 @@ type HostQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the HostQuery builder.
 func (hq *HostQuery) Where(ps ...predicate.Host) *HostQuery {
 	hq.predicates = append(hq.predicates, ps...)
 	return hq
@@ -62,14 +63,14 @@ func (hq *HostQuery) Order(o ...OrderFunc) *HostQuery {
 	return hq
 }
 
-// QueryHostToDisk chains the current query on the HostToDisk edge.
+// QueryHostToDisk chains the current query on the "HostToDisk" edge.
 func (hq *HostQuery) QueryHostToDisk() *DiskQuery {
 	query := &DiskQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := hq.sqlQuery()
+		selector := hq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,14 +85,14 @@ func (hq *HostQuery) QueryHostToDisk() *DiskQuery {
 	return query
 }
 
-// QueryHostToUser chains the current query on the HostToUser edge.
+// QueryHostToUser chains the current query on the "HostToUser" edge.
 func (hq *HostQuery) QueryHostToUser() *UserQuery {
 	query := &UserQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := hq.sqlQuery()
+		selector := hq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,14 +107,14 @@ func (hq *HostQuery) QueryHostToUser() *UserQuery {
 	return query
 }
 
-// QueryHostToTag chains the current query on the HostToTag edge.
+// QueryHostToTag chains the current query on the "HostToTag" edge.
 func (hq *HostQuery) QueryHostToTag() *TagQuery {
 	query := &TagQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := hq.sqlQuery()
+		selector := hq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,14 +129,14 @@ func (hq *HostQuery) QueryHostToTag() *TagQuery {
 	return query
 }
 
-// QueryHostToEnvironment chains the current query on the HostToEnvironment edge.
+// QueryHostToEnvironment chains the current query on the "HostToEnvironment" edge.
 func (hq *HostQuery) QueryHostToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: hq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := hq.sqlQuery()
+		selector := hq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -150,7 +151,8 @@ func (hq *HostQuery) QueryHostToEnvironment() *EnvironmentQuery {
 	return query
 }
 
-// First returns the first Host entity in the query. Returns *NotFoundError when no host was found.
+// First returns the first Host entity from the query.
+// Returns a *NotFoundError when no Host was found.
 func (hq *HostQuery) First(ctx context.Context) (*Host, error) {
 	nodes, err := hq.Limit(1).All(ctx)
 	if err != nil {
@@ -171,7 +173,8 @@ func (hq *HostQuery) FirstX(ctx context.Context) *Host {
 	return node
 }
 
-// FirstID returns the first Host id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Host ID from the query.
+// Returns a *NotFoundError when no Host ID was found.
 func (hq *HostQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = hq.Limit(1).IDs(ctx); err != nil {
@@ -193,7 +196,9 @@ func (hq *HostQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Host entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Host entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Host entity is not found.
+// Returns a *NotFoundError when no Host entities are found.
 func (hq *HostQuery) Only(ctx context.Context) (*Host, error) {
 	nodes, err := hq.Limit(2).All(ctx)
 	if err != nil {
@@ -218,7 +223,9 @@ func (hq *HostQuery) OnlyX(ctx context.Context) *Host {
 	return node
 }
 
-// OnlyID returns the only Host id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Host ID in the query.
+// Returns a *NotSingularError when exactly one Host ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (hq *HostQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = hq.Limit(2).IDs(ctx); err != nil {
@@ -261,7 +268,7 @@ func (hq *HostQuery) AllX(ctx context.Context) []*Host {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Host ids.
+// IDs executes the query and returns a list of Host IDs.
 func (hq *HostQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := hq.Select(host.FieldID).Scan(ctx, &ids); err != nil {
@@ -313,7 +320,7 @@ func (hq *HostQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the HostQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (hq *HostQuery) Clone() *HostQuery {
 	if hq == nil {
@@ -335,8 +342,8 @@ func (hq *HostQuery) Clone() *HostQuery {
 	}
 }
 
-//  WithHostToDisk tells the query-builder to eager-loads the nodes that are connected to
-// the "HostToDisk" edge. The optional arguments used to configure the query builder of the edge.
+// WithHostToDisk tells the query-builder to eager-load the nodes that are connected to
+// the "HostToDisk" edge. The optional arguments are used to configure the query builder of the edge.
 func (hq *HostQuery) WithHostToDisk(opts ...func(*DiskQuery)) *HostQuery {
 	query := &DiskQuery{config: hq.config}
 	for _, opt := range opts {
@@ -346,8 +353,8 @@ func (hq *HostQuery) WithHostToDisk(opts ...func(*DiskQuery)) *HostQuery {
 	return hq
 }
 
-//  WithHostToUser tells the query-builder to eager-loads the nodes that are connected to
-// the "HostToUser" edge. The optional arguments used to configure the query builder of the edge.
+// WithHostToUser tells the query-builder to eager-load the nodes that are connected to
+// the "HostToUser" edge. The optional arguments are used to configure the query builder of the edge.
 func (hq *HostQuery) WithHostToUser(opts ...func(*UserQuery)) *HostQuery {
 	query := &UserQuery{config: hq.config}
 	for _, opt := range opts {
@@ -357,8 +364,8 @@ func (hq *HostQuery) WithHostToUser(opts ...func(*UserQuery)) *HostQuery {
 	return hq
 }
 
-//  WithHostToTag tells the query-builder to eager-loads the nodes that are connected to
-// the "HostToTag" edge. The optional arguments used to configure the query builder of the edge.
+// WithHostToTag tells the query-builder to eager-load the nodes that are connected to
+// the "HostToTag" edge. The optional arguments are used to configure the query builder of the edge.
 func (hq *HostQuery) WithHostToTag(opts ...func(*TagQuery)) *HostQuery {
 	query := &TagQuery{config: hq.config}
 	for _, opt := range opts {
@@ -368,8 +375,8 @@ func (hq *HostQuery) WithHostToTag(opts ...func(*TagQuery)) *HostQuery {
 	return hq
 }
 
-//  WithHostToEnvironment tells the query-builder to eager-loads the nodes that are connected to
-// the "HostToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+// WithHostToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "HostToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
 func (hq *HostQuery) WithHostToEnvironment(opts ...func(*EnvironmentQuery)) *HostQuery {
 	query := &EnvironmentQuery{config: hq.config}
 	for _, opt := range opts {
@@ -379,7 +386,7 @@ func (hq *HostQuery) WithHostToEnvironment(opts ...func(*EnvironmentQuery)) *Hos
 	return hq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -401,12 +408,13 @@ func (hq *HostQuery) GroupBy(field string, fields ...string) *HostGroupBy {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return hq.sqlQuery(), nil
+		return hq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -419,18 +427,16 @@ func (hq *HostQuery) GroupBy(field string, fields ...string) *HostGroupBy {
 //		Scan(ctx, &v)
 //
 func (hq *HostQuery) Select(field string, fields ...string) *HostSelect {
-	selector := &HostSelect{config: hq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := hq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return hq.sqlQuery(), nil
-	}
-	return selector
+	hq.fields = append([]string{field}, fields...)
+	return &HostSelect{HostQuery: hq}
 }
 
 func (hq *HostQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range hq.fields {
+		if !host.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if hq.path != nil {
 		prev, err := hq.path(ctx)
 		if err != nil {
@@ -456,22 +462,18 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, host.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Host{config: hq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, hq.driver, _spec); err != nil {
 		return nil, err
@@ -660,6 +662,15 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   hq.sql,
 		Unique: true,
 	}
+	if fields := hq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, host.FieldID)
+		for i := range fields {
+			if fields[i] != host.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := hq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -683,7 +694,7 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (hq *HostQuery) sqlQuery() *sql.Selector {
+func (hq *HostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(hq.driver.Dialect())
 	t1 := builder.Table(host.Table)
 	selector := builder.Select(t1.Columns(host.Columns...)...).From(t1)
@@ -708,7 +719,7 @@ func (hq *HostQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// HostGroupBy is the builder for group-by Host entities.
+// HostGroupBy is the group-by builder for Host entities.
 type HostGroupBy struct {
 	config
 	fields []string
@@ -724,7 +735,7 @@ func (hgb *HostGroupBy) Aggregate(fns ...AggregateFunc) *HostGroupBy {
 	return hgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (hgb *HostGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := hgb.path(ctx)
 	if err != nil {
@@ -741,7 +752,8 @@ func (hgb *HostGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(hgb.fields) > 1 {
 		return nil, errors.New("ent: HostGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -762,7 +774,8 @@ func (hgb *HostGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = hgb.Strings(ctx); err != nil {
@@ -788,7 +801,8 @@ func (hgb *HostGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(hgb.fields) > 1 {
 		return nil, errors.New("ent: HostGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -809,7 +823,8 @@ func (hgb *HostGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = hgb.Ints(ctx); err != nil {
@@ -835,7 +850,8 @@ func (hgb *HostGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(hgb.fields) > 1 {
 		return nil, errors.New("ent: HostGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -856,7 +872,8 @@ func (hgb *HostGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = hgb.Float64s(ctx); err != nil {
@@ -882,7 +899,8 @@ func (hgb *HostGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(hgb.fields) > 1 {
 		return nil, errors.New("ent: HostGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -903,7 +921,8 @@ func (hgb *HostGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (hgb *HostGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = hgb.Bools(ctx); err != nil {
@@ -958,22 +977,19 @@ func (hgb *HostGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(hgb.fields...)
 }
 
-// HostSelect is the builder for select fields of Host entities.
+// HostSelect is the builder for selecting fields of Host entities.
 type HostSelect struct {
-	config
-	fields []string
+	*HostQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (hs *HostSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := hs.path(ctx)
-	if err != nil {
+	if err := hs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	hs.sql = query
+	hs.sql = hs.HostQuery.sqlQuery(ctx)
 	return hs.sqlScan(ctx, v)
 }
 
@@ -984,7 +1000,7 @@ func (hs *HostSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(hs.fields) > 1 {
 		return nil, errors.New("ent: HostSelect.Strings is not achievable when selecting more than 1 field")
@@ -1005,7 +1021,7 @@ func (hs *HostSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = hs.Strings(ctx); err != nil {
@@ -1031,7 +1047,7 @@ func (hs *HostSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(hs.fields) > 1 {
 		return nil, errors.New("ent: HostSelect.Ints is not achievable when selecting more than 1 field")
@@ -1052,7 +1068,7 @@ func (hs *HostSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = hs.Ints(ctx); err != nil {
@@ -1078,7 +1094,7 @@ func (hs *HostSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(hs.fields) > 1 {
 		return nil, errors.New("ent: HostSelect.Float64s is not achievable when selecting more than 1 field")
@@ -1099,7 +1115,7 @@ func (hs *HostSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = hs.Float64s(ctx); err != nil {
@@ -1125,7 +1141,7 @@ func (hs *HostSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(hs.fields) > 1 {
 		return nil, errors.New("ent: HostSelect.Bools is not achievable when selecting more than 1 field")
@@ -1146,7 +1162,7 @@ func (hs *HostSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (hs *HostSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = hs.Bools(ctx); err != nil {
@@ -1173,11 +1189,6 @@ func (hs *HostSelect) BoolX(ctx context.Context) bool {
 }
 
 func (hs *HostSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range hs.fields {
-		if !host.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := hs.sqlQuery().Query()
 	if err := hs.driver.Query(ctx, query, args, rows); err != nil {

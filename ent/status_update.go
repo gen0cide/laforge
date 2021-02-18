@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -22,55 +22,55 @@ type StatusUpdate struct {
 	mutation *StatusMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the StatusUpdate builder.
 func (su *StatusUpdate) Where(ps ...predicate.Status) *StatusUpdate {
 	su.mutation.predicates = append(su.mutation.predicates, ps...)
 	return su
 }
 
-// SetState sets the state field.
+// SetState sets the "state" field.
 func (su *StatusUpdate) SetState(s status.State) *StatusUpdate {
 	su.mutation.SetState(s)
 	return su
 }
 
-// SetStartedAt sets the started_at field.
+// SetStartedAt sets the "started_at" field.
 func (su *StatusUpdate) SetStartedAt(t time.Time) *StatusUpdate {
 	su.mutation.SetStartedAt(t)
 	return su
 }
 
-// SetEndedAt sets the ended_at field.
+// SetEndedAt sets the "ended_at" field.
 func (su *StatusUpdate) SetEndedAt(t time.Time) *StatusUpdate {
 	su.mutation.SetEndedAt(t)
 	return su
 }
 
-// SetFailed sets the failed field.
+// SetFailed sets the "failed" field.
 func (su *StatusUpdate) SetFailed(b bool) *StatusUpdate {
 	su.mutation.SetFailed(b)
 	return su
 }
 
-// SetCompleted sets the completed field.
+// SetCompleted sets the "completed" field.
 func (su *StatusUpdate) SetCompleted(b bool) *StatusUpdate {
 	su.mutation.SetCompleted(b)
 	return su
 }
 
-// SetError sets the error field.
+// SetError sets the "error" field.
 func (su *StatusUpdate) SetError(s string) *StatusUpdate {
 	su.mutation.SetError(s)
 	return su
 }
 
-// AddStatusToTagIDs adds the StatusToTag edge to Tag by ids.
+// AddStatusToTagIDs adds the "StatusToTag" edge to the Tag entity by IDs.
 func (su *StatusUpdate) AddStatusToTagIDs(ids ...int) *StatusUpdate {
 	su.mutation.AddStatusToTagIDs(ids...)
 	return su
 }
 
-// AddStatusToTag adds the StatusToTag edges to Tag.
+// AddStatusToTag adds the "StatusToTag" edges to the Tag entity.
 func (su *StatusUpdate) AddStatusToTag(t ...*Tag) *StatusUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -84,19 +84,19 @@ func (su *StatusUpdate) Mutation() *StatusMutation {
 	return su.mutation
 }
 
-// ClearStatusToTag clears all "StatusToTag" edges to type Tag.
+// ClearStatusToTag clears all "StatusToTag" edges to the Tag entity.
 func (su *StatusUpdate) ClearStatusToTag() *StatusUpdate {
 	su.mutation.ClearStatusToTag()
 	return su
 }
 
-// RemoveStatusToTagIDs removes the StatusToTag edge to Tag by ids.
+// RemoveStatusToTagIDs removes the "StatusToTag" edge to Tag entities by IDs.
 func (su *StatusUpdate) RemoveStatusToTagIDs(ids ...int) *StatusUpdate {
 	su.mutation.RemoveStatusToTagIDs(ids...)
 	return su
 }
 
-// RemoveStatusToTag removes StatusToTag edges to Tag.
+// RemoveStatusToTag removes "StatusToTag" edges to Tag entities.
 func (su *StatusUpdate) RemoveStatusToTag(t ...*Tag) *StatusUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -304,49 +304,49 @@ type StatusUpdateOne struct {
 	mutation *StatusMutation
 }
 
-// SetState sets the state field.
+// SetState sets the "state" field.
 func (suo *StatusUpdateOne) SetState(s status.State) *StatusUpdateOne {
 	suo.mutation.SetState(s)
 	return suo
 }
 
-// SetStartedAt sets the started_at field.
+// SetStartedAt sets the "started_at" field.
 func (suo *StatusUpdateOne) SetStartedAt(t time.Time) *StatusUpdateOne {
 	suo.mutation.SetStartedAt(t)
 	return suo
 }
 
-// SetEndedAt sets the ended_at field.
+// SetEndedAt sets the "ended_at" field.
 func (suo *StatusUpdateOne) SetEndedAt(t time.Time) *StatusUpdateOne {
 	suo.mutation.SetEndedAt(t)
 	return suo
 }
 
-// SetFailed sets the failed field.
+// SetFailed sets the "failed" field.
 func (suo *StatusUpdateOne) SetFailed(b bool) *StatusUpdateOne {
 	suo.mutation.SetFailed(b)
 	return suo
 }
 
-// SetCompleted sets the completed field.
+// SetCompleted sets the "completed" field.
 func (suo *StatusUpdateOne) SetCompleted(b bool) *StatusUpdateOne {
 	suo.mutation.SetCompleted(b)
 	return suo
 }
 
-// SetError sets the error field.
+// SetError sets the "error" field.
 func (suo *StatusUpdateOne) SetError(s string) *StatusUpdateOne {
 	suo.mutation.SetError(s)
 	return suo
 }
 
-// AddStatusToTagIDs adds the StatusToTag edge to Tag by ids.
+// AddStatusToTagIDs adds the "StatusToTag" edge to the Tag entity by IDs.
 func (suo *StatusUpdateOne) AddStatusToTagIDs(ids ...int) *StatusUpdateOne {
 	suo.mutation.AddStatusToTagIDs(ids...)
 	return suo
 }
 
-// AddStatusToTag adds the StatusToTag edges to Tag.
+// AddStatusToTag adds the "StatusToTag" edges to the Tag entity.
 func (suo *StatusUpdateOne) AddStatusToTag(t ...*Tag) *StatusUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -360,19 +360,19 @@ func (suo *StatusUpdateOne) Mutation() *StatusMutation {
 	return suo.mutation
 }
 
-// ClearStatusToTag clears all "StatusToTag" edges to type Tag.
+// ClearStatusToTag clears all "StatusToTag" edges to the Tag entity.
 func (suo *StatusUpdateOne) ClearStatusToTag() *StatusUpdateOne {
 	suo.mutation.ClearStatusToTag()
 	return suo
 }
 
-// RemoveStatusToTagIDs removes the StatusToTag edge to Tag by ids.
+// RemoveStatusToTagIDs removes the "StatusToTag" edge to Tag entities by IDs.
 func (suo *StatusUpdateOne) RemoveStatusToTagIDs(ids ...int) *StatusUpdateOne {
 	suo.mutation.RemoveStatusToTagIDs(ids...)
 	return suo
 }
 
-// RemoveStatusToTag removes StatusToTag edges to Tag.
+// RemoveStatusToTag removes "StatusToTag" edges to Tag entities.
 func (suo *StatusUpdateOne) RemoveStatusToTag(t ...*Tag) *StatusUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -381,7 +381,7 @@ func (suo *StatusUpdateOne) RemoveStatusToTag(t ...*Tag) *StatusUpdateOne {
 	return suo.RemoveStatusToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Status entity.
 func (suo *StatusUpdateOne) Save(ctx context.Context) (*Status, error) {
 	var (
 		err  error
@@ -464,6 +464,13 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Status.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := suo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := suo.mutation.State(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -562,7 +569,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 	}
 	_node = &Status{config: suo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, suo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{status.Label}

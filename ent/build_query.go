@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -27,6 +27,7 @@ type BuildQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Build
 	// eager-loading edges.
 	withBuildToUser               *UserQuery
@@ -39,7 +40,7 @@ type BuildQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the BuildQuery builder.
 func (bq *BuildQuery) Where(ps ...predicate.Build) *BuildQuery {
 	bq.predicates = append(bq.predicates, ps...)
 	return bq
@@ -63,14 +64,14 @@ func (bq *BuildQuery) Order(o ...OrderFunc) *BuildQuery {
 	return bq
 }
 
-// QueryBuildToUser chains the current query on the BuildToUser edge.
+// QueryBuildToUser chains the current query on the "BuildToUser" edge.
 func (bq *BuildQuery) QueryBuildToUser() *UserQuery {
 	query := &UserQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := bq.sqlQuery()
+		selector := bq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -85,14 +86,14 @@ func (bq *BuildQuery) QueryBuildToUser() *UserQuery {
 	return query
 }
 
-// QueryBuildToTag chains the current query on the BuildToTag edge.
+// QueryBuildToTag chains the current query on the "BuildToTag" edge.
 func (bq *BuildQuery) QueryBuildToTag() *TagQuery {
 	query := &TagQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := bq.sqlQuery()
+		selector := bq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -107,14 +108,14 @@ func (bq *BuildQuery) QueryBuildToTag() *TagQuery {
 	return query
 }
 
-// QueryBuildToProvisionedNetwork chains the current query on the BuildToProvisionedNetwork edge.
+// QueryBuildToProvisionedNetwork chains the current query on the "BuildToProvisionedNetwork" edge.
 func (bq *BuildQuery) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := bq.sqlQuery()
+		selector := bq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -129,14 +130,14 @@ func (bq *BuildQuery) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery 
 	return query
 }
 
-// QueryBuildToTeam chains the current query on the BuildToTeam edge.
+// QueryBuildToTeam chains the current query on the "BuildToTeam" edge.
 func (bq *BuildQuery) QueryBuildToTeam() *TeamQuery {
 	query := &TeamQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := bq.sqlQuery()
+		selector := bq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -151,14 +152,14 @@ func (bq *BuildQuery) QueryBuildToTeam() *TeamQuery {
 	return query
 }
 
-// QueryBuildToEnvironment chains the current query on the BuildToEnvironment edge.
+// QueryBuildToEnvironment chains the current query on the "BuildToEnvironment" edge.
 func (bq *BuildQuery) QueryBuildToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := bq.sqlQuery()
+		selector := bq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -173,7 +174,8 @@ func (bq *BuildQuery) QueryBuildToEnvironment() *EnvironmentQuery {
 	return query
 }
 
-// First returns the first Build entity in the query. Returns *NotFoundError when no build was found.
+// First returns the first Build entity from the query.
+// Returns a *NotFoundError when no Build was found.
 func (bq *BuildQuery) First(ctx context.Context) (*Build, error) {
 	nodes, err := bq.Limit(1).All(ctx)
 	if err != nil {
@@ -194,7 +196,8 @@ func (bq *BuildQuery) FirstX(ctx context.Context) *Build {
 	return node
 }
 
-// FirstID returns the first Build id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Build ID from the query.
+// Returns a *NotFoundError when no Build ID was found.
 func (bq *BuildQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = bq.Limit(1).IDs(ctx); err != nil {
@@ -216,7 +219,9 @@ func (bq *BuildQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Build entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Build entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Build entity is not found.
+// Returns a *NotFoundError when no Build entities are found.
 func (bq *BuildQuery) Only(ctx context.Context) (*Build, error) {
 	nodes, err := bq.Limit(2).All(ctx)
 	if err != nil {
@@ -241,7 +246,9 @@ func (bq *BuildQuery) OnlyX(ctx context.Context) *Build {
 	return node
 }
 
-// OnlyID returns the only Build id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Build ID in the query.
+// Returns a *NotSingularError when exactly one Build ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (bq *BuildQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = bq.Limit(2).IDs(ctx); err != nil {
@@ -284,7 +291,7 @@ func (bq *BuildQuery) AllX(ctx context.Context) []*Build {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Build ids.
+// IDs executes the query and returns a list of Build IDs.
 func (bq *BuildQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := bq.Select(build.FieldID).Scan(ctx, &ids); err != nil {
@@ -336,7 +343,7 @@ func (bq *BuildQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the BuildQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (bq *BuildQuery) Clone() *BuildQuery {
 	if bq == nil {
@@ -359,8 +366,8 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 	}
 }
 
-//  WithBuildToUser tells the query-builder to eager-loads the nodes that are connected to
-// the "BuildToUser" edge. The optional arguments used to configure the query builder of the edge.
+// WithBuildToUser tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToUser" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BuildQuery) WithBuildToUser(opts ...func(*UserQuery)) *BuildQuery {
 	query := &UserQuery{config: bq.config}
 	for _, opt := range opts {
@@ -370,8 +377,8 @@ func (bq *BuildQuery) WithBuildToUser(opts ...func(*UserQuery)) *BuildQuery {
 	return bq
 }
 
-//  WithBuildToTag tells the query-builder to eager-loads the nodes that are connected to
-// the "BuildToTag" edge. The optional arguments used to configure the query builder of the edge.
+// WithBuildToTag tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToTag" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BuildQuery) WithBuildToTag(opts ...func(*TagQuery)) *BuildQuery {
 	query := &TagQuery{config: bq.config}
 	for _, opt := range opts {
@@ -381,8 +388,8 @@ func (bq *BuildQuery) WithBuildToTag(opts ...func(*TagQuery)) *BuildQuery {
 	return bq
 }
 
-//  WithBuildToProvisionedNetwork tells the query-builder to eager-loads the nodes that are connected to
-// the "BuildToProvisionedNetwork" edge. The optional arguments used to configure the query builder of the edge.
+// WithBuildToProvisionedNetwork tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToProvisionedNetwork" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BuildQuery) WithBuildToProvisionedNetwork(opts ...func(*ProvisionedNetworkQuery)) *BuildQuery {
 	query := &ProvisionedNetworkQuery{config: bq.config}
 	for _, opt := range opts {
@@ -392,8 +399,8 @@ func (bq *BuildQuery) WithBuildToProvisionedNetwork(opts ...func(*ProvisionedNet
 	return bq
 }
 
-//  WithBuildToTeam tells the query-builder to eager-loads the nodes that are connected to
-// the "BuildToTeam" edge. The optional arguments used to configure the query builder of the edge.
+// WithBuildToTeam tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToTeam" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BuildQuery) WithBuildToTeam(opts ...func(*TeamQuery)) *BuildQuery {
 	query := &TeamQuery{config: bq.config}
 	for _, opt := range opts {
@@ -403,8 +410,8 @@ func (bq *BuildQuery) WithBuildToTeam(opts ...func(*TeamQuery)) *BuildQuery {
 	return bq
 }
 
-//  WithBuildToEnvironment tells the query-builder to eager-loads the nodes that are connected to
-// the "BuildToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+// WithBuildToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *BuildQuery {
 	query := &EnvironmentQuery{config: bq.config}
 	for _, opt := range opts {
@@ -414,7 +421,7 @@ func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *B
 	return bq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -436,12 +443,13 @@ func (bq *BuildQuery) GroupBy(field string, fields ...string) *BuildGroupBy {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return bq.sqlQuery(), nil
+		return bq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -454,18 +462,16 @@ func (bq *BuildQuery) GroupBy(field string, fields ...string) *BuildGroupBy {
 //		Scan(ctx, &v)
 //
 func (bq *BuildQuery) Select(field string, fields ...string) *BuildSelect {
-	selector := &BuildSelect{config: bq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return bq.sqlQuery(), nil
-	}
-	return selector
+	bq.fields = append([]string{field}, fields...)
+	return &BuildSelect{BuildQuery: bq}
 }
 
 func (bq *BuildQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range bq.fields {
+		if !build.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if bq.path != nil {
 		prev, err := bq.path(ctx)
 		if err != nil {
@@ -488,19 +494,18 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 			bq.withBuildToEnvironment != nil,
 		}
 	)
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Build{config: bq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, bq.driver, _spec); err != nil {
 		return nil, err
@@ -788,6 +793,15 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   bq.sql,
 		Unique: true,
 	}
+	if fields := bq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, build.FieldID)
+		for i := range fields {
+			if fields[i] != build.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := bq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -811,7 +825,7 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (bq *BuildQuery) sqlQuery() *sql.Selector {
+func (bq *BuildQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(bq.driver.Dialect())
 	t1 := builder.Table(build.Table)
 	selector := builder.Select(t1.Columns(build.Columns...)...).From(t1)
@@ -836,7 +850,7 @@ func (bq *BuildQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// BuildGroupBy is the builder for group-by Build entities.
+// BuildGroupBy is the group-by builder for Build entities.
 type BuildGroupBy struct {
 	config
 	fields []string
@@ -852,7 +866,7 @@ func (bgb *BuildGroupBy) Aggregate(fns ...AggregateFunc) *BuildGroupBy {
 	return bgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (bgb *BuildGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := bgb.path(ctx)
 	if err != nil {
@@ -869,7 +883,8 @@ func (bgb *BuildGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(bgb.fields) > 1 {
 		return nil, errors.New("ent: BuildGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -890,7 +905,8 @@ func (bgb *BuildGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = bgb.Strings(ctx); err != nil {
@@ -916,7 +932,8 @@ func (bgb *BuildGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(bgb.fields) > 1 {
 		return nil, errors.New("ent: BuildGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -937,7 +954,8 @@ func (bgb *BuildGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = bgb.Ints(ctx); err != nil {
@@ -963,7 +981,8 @@ func (bgb *BuildGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(bgb.fields) > 1 {
 		return nil, errors.New("ent: BuildGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -984,7 +1003,8 @@ func (bgb *BuildGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = bgb.Float64s(ctx); err != nil {
@@ -1010,7 +1030,8 @@ func (bgb *BuildGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(bgb.fields) > 1 {
 		return nil, errors.New("ent: BuildGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -1031,7 +1052,8 @@ func (bgb *BuildGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (bgb *BuildGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = bgb.Bools(ctx); err != nil {
@@ -1086,22 +1108,19 @@ func (bgb *BuildGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(bgb.fields...)
 }
 
-// BuildSelect is the builder for select fields of Build entities.
+// BuildSelect is the builder for selecting fields of Build entities.
 type BuildSelect struct {
-	config
-	fields []string
+	*BuildQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (bs *BuildSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := bs.path(ctx)
-	if err != nil {
+	if err := bs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	bs.sql = query
+	bs.sql = bs.BuildQuery.sqlQuery(ctx)
 	return bs.sqlScan(ctx, v)
 }
 
@@ -1112,7 +1131,7 @@ func (bs *BuildSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(bs.fields) > 1 {
 		return nil, errors.New("ent: BuildSelect.Strings is not achievable when selecting more than 1 field")
@@ -1133,7 +1152,7 @@ func (bs *BuildSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = bs.Strings(ctx); err != nil {
@@ -1159,7 +1178,7 @@ func (bs *BuildSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(bs.fields) > 1 {
 		return nil, errors.New("ent: BuildSelect.Ints is not achievable when selecting more than 1 field")
@@ -1180,7 +1199,7 @@ func (bs *BuildSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = bs.Ints(ctx); err != nil {
@@ -1206,7 +1225,7 @@ func (bs *BuildSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(bs.fields) > 1 {
 		return nil, errors.New("ent: BuildSelect.Float64s is not achievable when selecting more than 1 field")
@@ -1227,7 +1246,7 @@ func (bs *BuildSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = bs.Float64s(ctx); err != nil {
@@ -1253,7 +1272,7 @@ func (bs *BuildSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(bs.fields) > 1 {
 		return nil, errors.New("ent: BuildSelect.Bools is not achievable when selecting more than 1 field")
@@ -1274,7 +1293,7 @@ func (bs *BuildSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (bs *BuildSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = bs.Bools(ctx); err != nil {
@@ -1301,11 +1320,6 @@ func (bs *BuildSelect) BoolX(ctx context.Context) bool {
 }
 
 func (bs *BuildSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range bs.fields {
-		if !build.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := bs.sqlQuery().Query()
 	if err := bs.driver.Query(ctx, query, args, rows); err != nil {

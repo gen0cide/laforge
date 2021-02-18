@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type FileExtractDelete struct {
 	mutation *FileExtractMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the FileExtractDelete builder.
 func (fed *FileExtractDelete) Where(ps ...predicate.FileExtract) *FileExtractDelete {
 	fed.mutation.predicates = append(fed.mutation.predicates, ps...)
 	return fed

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -25,19 +25,19 @@ type ProvisionedHostCreate struct {
 	hooks    []Hook
 }
 
-// SetSubnetIP sets the subnet_ip field.
+// SetSubnetIP sets the "subnet_ip" field.
 func (phc *ProvisionedHostCreate) SetSubnetIP(s string) *ProvisionedHostCreate {
 	phc.mutation.SetSubnetIP(s)
 	return phc
 }
 
-// AddProvisionedHostToTagIDs adds the ProvisionedHostToTag edge to Tag by ids.
+// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToTagIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToTag adds the ProvisionedHostToTag edges to Tag.
+// AddProvisionedHostToTag adds the "ProvisionedHostToTag" edges to the Tag entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -46,13 +46,13 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToTag(t ...*Tag) *Provisione
 	return phc.AddProvisionedHostToTagIDs(ids...)
 }
 
-// AddProvisionedHostToStatuIDs adds the ProvisionedHostToStatus edge to Status by ids.
+// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToStatuIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToStatus adds the ProvisionedHostToStatus edges to Status.
+// AddProvisionedHostToStatus adds the "ProvisionedHostToStatus" edges to the Status entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostCreate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -61,13 +61,13 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToStatus(s ...*Status) *Prov
 	return phc.AddProvisionedHostToStatuIDs(ids...)
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the ProvisionedHostToProvisionedNetwork edge to ProvisionedNetwork by ids.
+// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToProvisionedNetwork adds the ProvisionedHostToProvisionedNetwork edges to ProvisionedNetwork.
+// AddProvisionedHostToProvisionedNetwork adds the "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostCreate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -76,13 +76,13 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisionedNetwork(p ...*P
 	return phc.AddProvisionedHostToProvisionedNetworkIDs(ids...)
 }
 
-// AddProvisionedHostToHostIDs adds the ProvisionedHostToHost edge to Host by ids.
+// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToHostIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToHost adds the ProvisionedHostToHost edges to Host.
+// AddProvisionedHostToHost adds the "ProvisionedHostToHost" edges to the Host entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostCreate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -91,13 +91,13 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToHost(h ...*Host) *Provisio
 	return phc.AddProvisionedHostToHostIDs(ids...)
 }
 
-// AddProvisionedHostToProvisioningStepIDs adds the ProvisionedHostToProvisioningStep edge to ProvisioningStep by ids.
+// AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToProvisioningStep adds the ProvisionedHostToProvisioningStep edges to ProvisioningStep.
+// AddProvisionedHostToProvisioningStep adds the "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostCreate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -106,13 +106,13 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisioningStep(p ...*Pro
 	return phc.AddProvisionedHostToProvisioningStepIDs(ids...)
 }
 
-// AddProvisionedHostToAgentStatuIDs adds the ProvisionedHostToAgentStatus edge to AgentStatus by ids.
+// AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phc
 }
 
-// AddProvisionedHostToAgentStatus adds the ProvisionedHostToAgentStatus edges to AgentStatus.
+// AddProvisionedHostToAgentStatus adds the "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostCreate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -327,7 +327,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	return _node, _spec
 }
 
-// ProvisionedHostCreateBulk is the builder for creating a bulk of ProvisionedHost entities.
+// ProvisionedHostCreateBulk is the builder for creating many ProvisionedHost entities in bulk.
 type ProvisionedHostCreateBulk struct {
 	config
 	builders []*ProvisionedHostCreate
@@ -384,7 +384,7 @@ func (phcb *ProvisionedHostCreateBulk) Save(ctx context.Context) ([]*Provisioned
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (phcb *ProvisionedHostCreateBulk) SaveX(ctx context.Context) []*ProvisionedHost {
 	v, err := phcb.Save(ctx)
 	if err != nil {

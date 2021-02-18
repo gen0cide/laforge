@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
@@ -21,73 +21,73 @@ type CommandCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (cc *CommandCreate) SetName(s string) *CommandCreate {
 	cc.mutation.SetName(s)
 	return cc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (cc *CommandCreate) SetDescription(s string) *CommandCreate {
 	cc.mutation.SetDescription(s)
 	return cc
 }
 
-// SetProgram sets the program field.
+// SetProgram sets the "program" field.
 func (cc *CommandCreate) SetProgram(s string) *CommandCreate {
 	cc.mutation.SetProgram(s)
 	return cc
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (cc *CommandCreate) SetArgs(s []string) *CommandCreate {
 	cc.mutation.SetArgs(s)
 	return cc
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (cc *CommandCreate) SetIgnoreErrors(b bool) *CommandCreate {
 	cc.mutation.SetIgnoreErrors(b)
 	return cc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (cc *CommandCreate) SetDisabled(b bool) *CommandCreate {
 	cc.mutation.SetDisabled(b)
 	return cc
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (cc *CommandCreate) SetCooldown(i int) *CommandCreate {
 	cc.mutation.SetCooldown(i)
 	return cc
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (cc *CommandCreate) SetTimeout(i int) *CommandCreate {
 	cc.mutation.SetTimeout(i)
 	return cc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (cc *CommandCreate) SetVars(m map[string]string) *CommandCreate {
 	cc.mutation.SetVars(m)
 	return cc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cc *CommandCreate) SetTags(m map[string]string) *CommandCreate {
 	cc.mutation.SetTags(m)
 	return cc
 }
 
-// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+// AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
 func (cc *CommandCreate) AddCommandToUserIDs(ids ...int) *CommandCreate {
 	cc.mutation.AddCommandToUserIDs(ids...)
 	return cc
 }
 
-// AddCommandToUser adds the CommandToUser edges to User.
+// AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -96,13 +96,13 @@ func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
 	return cc.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
 func (cc *CommandCreate) AddCommandToTagIDs(ids ...int) *CommandCreate {
 	cc.mutation.AddCommandToTagIDs(ids...)
 	return cc
 }
 
-// AddCommandToTag adds the CommandToTag edges to Tag.
+// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
 func (cc *CommandCreate) AddCommandToTag(t ...*Tag) *CommandCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -350,7 +350,7 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// CommandCreateBulk is the builder for creating a bulk of Command entities.
+// CommandCreateBulk is the builder for creating many Command entities in bulk.
 type CommandCreateBulk struct {
 	config
 	builders []*CommandCreate
@@ -407,7 +407,7 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ccb *CommandCreateBulk) SaveX(ctx context.Context) []*Command {
 	v, err := ccb.Save(ctx)
 	if err != nil {

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -22,93 +22,93 @@ type CommandUpdate struct {
 	mutation *CommandMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the CommandUpdate builder.
 func (cu *CommandUpdate) Where(ps ...predicate.Command) *CommandUpdate {
 	cu.mutation.predicates = append(cu.mutation.predicates, ps...)
 	return cu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (cu *CommandUpdate) SetName(s string) *CommandUpdate {
 	cu.mutation.SetName(s)
 	return cu
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (cu *CommandUpdate) SetDescription(s string) *CommandUpdate {
 	cu.mutation.SetDescription(s)
 	return cu
 }
 
-// SetProgram sets the program field.
+// SetProgram sets the "program" field.
 func (cu *CommandUpdate) SetProgram(s string) *CommandUpdate {
 	cu.mutation.SetProgram(s)
 	return cu
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (cu *CommandUpdate) SetArgs(s []string) *CommandUpdate {
 	cu.mutation.SetArgs(s)
 	return cu
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (cu *CommandUpdate) SetIgnoreErrors(b bool) *CommandUpdate {
 	cu.mutation.SetIgnoreErrors(b)
 	return cu
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (cu *CommandUpdate) SetDisabled(b bool) *CommandUpdate {
 	cu.mutation.SetDisabled(b)
 	return cu
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (cu *CommandUpdate) SetCooldown(i int) *CommandUpdate {
 	cu.mutation.ResetCooldown()
 	cu.mutation.SetCooldown(i)
 	return cu
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (cu *CommandUpdate) AddCooldown(i int) *CommandUpdate {
 	cu.mutation.AddCooldown(i)
 	return cu
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (cu *CommandUpdate) SetTimeout(i int) *CommandUpdate {
 	cu.mutation.ResetTimeout()
 	cu.mutation.SetTimeout(i)
 	return cu
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (cu *CommandUpdate) AddTimeout(i int) *CommandUpdate {
 	cu.mutation.AddTimeout(i)
 	return cu
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (cu *CommandUpdate) SetVars(m map[string]string) *CommandUpdate {
 	cu.mutation.SetVars(m)
 	return cu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cu *CommandUpdate) SetTags(m map[string]string) *CommandUpdate {
 	cu.mutation.SetTags(m)
 	return cu
 }
 
-// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+// AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
 func (cu *CommandUpdate) AddCommandToUserIDs(ids ...int) *CommandUpdate {
 	cu.mutation.AddCommandToUserIDs(ids...)
 	return cu
 }
 
-// AddCommandToUser adds the CommandToUser edges to User.
+// AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -117,13 +117,13 @@ func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
 	return cu.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
 func (cu *CommandUpdate) AddCommandToTagIDs(ids ...int) *CommandUpdate {
 	cu.mutation.AddCommandToTagIDs(ids...)
 	return cu
 }
 
-// AddCommandToTag adds the CommandToTag edges to Tag.
+// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
 func (cu *CommandUpdate) AddCommandToTag(t ...*Tag) *CommandUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -137,19 +137,19 @@ func (cu *CommandUpdate) Mutation() *CommandMutation {
 	return cu.mutation
 }
 
-// ClearCommandToUser clears all "CommandToUser" edges to type User.
+// ClearCommandToUser clears all "CommandToUser" edges to the User entity.
 func (cu *CommandUpdate) ClearCommandToUser() *CommandUpdate {
 	cu.mutation.ClearCommandToUser()
 	return cu
 }
 
-// RemoveCommandToUserIDs removes the CommandToUser edge to User by ids.
+// RemoveCommandToUserIDs removes the "CommandToUser" edge to User entities by IDs.
 func (cu *CommandUpdate) RemoveCommandToUserIDs(ids ...int) *CommandUpdate {
 	cu.mutation.RemoveCommandToUserIDs(ids...)
 	return cu
 }
 
-// RemoveCommandToUser removes CommandToUser edges to User.
+// RemoveCommandToUser removes "CommandToUser" edges to User entities.
 func (cu *CommandUpdate) RemoveCommandToUser(u ...*User) *CommandUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -158,19 +158,19 @@ func (cu *CommandUpdate) RemoveCommandToUser(u ...*User) *CommandUpdate {
 	return cu.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearCommandToTag clears all "CommandToTag" edges to type Tag.
+// ClearCommandToTag clears all "CommandToTag" edges to the Tag entity.
 func (cu *CommandUpdate) ClearCommandToTag() *CommandUpdate {
 	cu.mutation.ClearCommandToTag()
 	return cu
 }
 
-// RemoveCommandToTagIDs removes the CommandToTag edge to Tag by ids.
+// RemoveCommandToTagIDs removes the "CommandToTag" edge to Tag entities by IDs.
 func (cu *CommandUpdate) RemoveCommandToTagIDs(ids ...int) *CommandUpdate {
 	cu.mutation.RemoveCommandToTagIDs(ids...)
 	return cu
 }
 
-// RemoveCommandToTag removes CommandToTag edges to Tag.
+// RemoveCommandToTag removes "CommandToTag" edges to Tag entities.
 func (cu *CommandUpdate) RemoveCommandToTag(t ...*Tag) *CommandUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -479,87 +479,87 @@ type CommandUpdateOne struct {
 	mutation *CommandMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (cuo *CommandUpdateOne) SetName(s string) *CommandUpdateOne {
 	cuo.mutation.SetName(s)
 	return cuo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (cuo *CommandUpdateOne) SetDescription(s string) *CommandUpdateOne {
 	cuo.mutation.SetDescription(s)
 	return cuo
 }
 
-// SetProgram sets the program field.
+// SetProgram sets the "program" field.
 func (cuo *CommandUpdateOne) SetProgram(s string) *CommandUpdateOne {
 	cuo.mutation.SetProgram(s)
 	return cuo
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (cuo *CommandUpdateOne) SetArgs(s []string) *CommandUpdateOne {
 	cuo.mutation.SetArgs(s)
 	return cuo
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (cuo *CommandUpdateOne) SetIgnoreErrors(b bool) *CommandUpdateOne {
 	cuo.mutation.SetIgnoreErrors(b)
 	return cuo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (cuo *CommandUpdateOne) SetDisabled(b bool) *CommandUpdateOne {
 	cuo.mutation.SetDisabled(b)
 	return cuo
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (cuo *CommandUpdateOne) SetCooldown(i int) *CommandUpdateOne {
 	cuo.mutation.ResetCooldown()
 	cuo.mutation.SetCooldown(i)
 	return cuo
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (cuo *CommandUpdateOne) AddCooldown(i int) *CommandUpdateOne {
 	cuo.mutation.AddCooldown(i)
 	return cuo
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (cuo *CommandUpdateOne) SetTimeout(i int) *CommandUpdateOne {
 	cuo.mutation.ResetTimeout()
 	cuo.mutation.SetTimeout(i)
 	return cuo
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (cuo *CommandUpdateOne) AddTimeout(i int) *CommandUpdateOne {
 	cuo.mutation.AddTimeout(i)
 	return cuo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (cuo *CommandUpdateOne) SetVars(m map[string]string) *CommandUpdateOne {
 	cuo.mutation.SetVars(m)
 	return cuo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (cuo *CommandUpdateOne) SetTags(m map[string]string) *CommandUpdateOne {
 	cuo.mutation.SetTags(m)
 	return cuo
 }
 
-// AddCommandToUserIDs adds the CommandToUser edge to User by ids.
+// AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
 func (cuo *CommandUpdateOne) AddCommandToUserIDs(ids ...int) *CommandUpdateOne {
 	cuo.mutation.AddCommandToUserIDs(ids...)
 	return cuo
 }
 
-// AddCommandToUser adds the CommandToUser edges to User.
+// AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -568,13 +568,13 @@ func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
 	return cuo.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the CommandToTag edge to Tag by ids.
+// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
 func (cuo *CommandUpdateOne) AddCommandToTagIDs(ids ...int) *CommandUpdateOne {
 	cuo.mutation.AddCommandToTagIDs(ids...)
 	return cuo
 }
 
-// AddCommandToTag adds the CommandToTag edges to Tag.
+// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
 func (cuo *CommandUpdateOne) AddCommandToTag(t ...*Tag) *CommandUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -588,19 +588,19 @@ func (cuo *CommandUpdateOne) Mutation() *CommandMutation {
 	return cuo.mutation
 }
 
-// ClearCommandToUser clears all "CommandToUser" edges to type User.
+// ClearCommandToUser clears all "CommandToUser" edges to the User entity.
 func (cuo *CommandUpdateOne) ClearCommandToUser() *CommandUpdateOne {
 	cuo.mutation.ClearCommandToUser()
 	return cuo
 }
 
-// RemoveCommandToUserIDs removes the CommandToUser edge to User by ids.
+// RemoveCommandToUserIDs removes the "CommandToUser" edge to User entities by IDs.
 func (cuo *CommandUpdateOne) RemoveCommandToUserIDs(ids ...int) *CommandUpdateOne {
 	cuo.mutation.RemoveCommandToUserIDs(ids...)
 	return cuo
 }
 
-// RemoveCommandToUser removes CommandToUser edges to User.
+// RemoveCommandToUser removes "CommandToUser" edges to User entities.
 func (cuo *CommandUpdateOne) RemoveCommandToUser(u ...*User) *CommandUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -609,19 +609,19 @@ func (cuo *CommandUpdateOne) RemoveCommandToUser(u ...*User) *CommandUpdateOne {
 	return cuo.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearCommandToTag clears all "CommandToTag" edges to type Tag.
+// ClearCommandToTag clears all "CommandToTag" edges to the Tag entity.
 func (cuo *CommandUpdateOne) ClearCommandToTag() *CommandUpdateOne {
 	cuo.mutation.ClearCommandToTag()
 	return cuo
 }
 
-// RemoveCommandToTagIDs removes the CommandToTag edge to Tag by ids.
+// RemoveCommandToTagIDs removes the "CommandToTag" edge to Tag entities by IDs.
 func (cuo *CommandUpdateOne) RemoveCommandToTagIDs(ids ...int) *CommandUpdateOne {
 	cuo.mutation.RemoveCommandToTagIDs(ids...)
 	return cuo
 }
 
-// RemoveCommandToTag removes CommandToTag edges to Tag.
+// RemoveCommandToTag removes "CommandToTag" edges to Tag entities.
 func (cuo *CommandUpdateOne) RemoveCommandToTag(t ...*Tag) *CommandUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -630,7 +630,7 @@ func (cuo *CommandUpdateOne) RemoveCommandToTag(t ...*Tag) *CommandUpdateOne {
 	return cuo.RemoveCommandToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Command entity.
 func (cuo *CommandUpdateOne) Save(ctx context.Context) (*Command, error) {
 	var (
 		err  error
@@ -718,6 +718,13 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Command.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := cuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -912,7 +919,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 	}
 	_node = &Command{config: cuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, cuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{command.Label}

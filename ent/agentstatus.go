@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 )
 
@@ -51,9 +51,9 @@ type AgentStatus struct {
 // AgentStatusEdges holds the relations/edges for other nodes in the graph.
 type AgentStatusEdges struct {
 	// AgentStatusToTag holds the value of the AgentStatusToTag edge.
-	AgentStatusToTag []*Tag
+	AgentStatusToTag []*Tag `json:"AgentStatusToTag,omitempty"`
 	// AgentStatusToProvisionedHost holds the value of the AgentStatusToProvisionedHost edge.
-	AgentStatusToProvisionedHost []*ProvisionedHost
+	AgentStatusToProvisionedHost []*ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -78,130 +78,145 @@ func (e AgentStatusEdges) AgentStatusToProvisionedHostOrErr() ([]*ProvisionedHos
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*AgentStatus) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},   // id
-		&sql.NullString{},  // ClientID
-		&sql.NullString{},  // Hostname
-		&sql.NullInt64{},   // UpTime
-		&sql.NullInt64{},   // BootTime
-		&sql.NullInt64{},   // NumProcs
-		&sql.NullString{},  // Os
-		&sql.NullString{},  // HostID
-		&sql.NullFloat64{}, // Load1
-		&sql.NullFloat64{}, // Load5
-		&sql.NullFloat64{}, // Load15
-		&sql.NullInt64{},   // TotalMem
-		&sql.NullInt64{},   // FreeMem
-		&sql.NullInt64{},   // UsedMem
-		&sql.NullInt64{},   // Timestamp
+func (*AgentStatus) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case agentstatus.FieldLoad1, agentstatus.FieldLoad5, agentstatus.FieldLoad15:
+			values[i] = &sql.NullFloat64{}
+		case agentstatus.FieldID, agentstatus.FieldUpTime, agentstatus.FieldBootTime, agentstatus.FieldNumProcs, agentstatus.FieldTotalMem, agentstatus.FieldFreeMem, agentstatus.FieldUsedMem, agentstatus.FieldTimestamp:
+			values[i] = &sql.NullInt64{}
+		case agentstatus.FieldClientID, agentstatus.FieldHostname, agentstatus.FieldOs, agentstatus.FieldHostID:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type AgentStatus", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the AgentStatus fields.
-func (as *AgentStatus) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(agentstatus.Columns); m < n {
+func (as *AgentStatus) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	as.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field ClientID", values[0])
-	} else if value.Valid {
-		as.ClientID = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field Hostname", values[1])
-	} else if value.Valid {
-		as.Hostname = value.String
-	}
-	if value, ok := values[2].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field UpTime", values[2])
-	} else if value.Valid {
-		as.UpTime = value.Int64
-	}
-	if value, ok := values[3].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field BootTime", values[3])
-	} else if value.Valid {
-		as.BootTime = value.Int64
-	}
-	if value, ok := values[4].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field NumProcs", values[4])
-	} else if value.Valid {
-		as.NumProcs = value.Int64
-	}
-	if value, ok := values[5].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field Os", values[5])
-	} else if value.Valid {
-		as.Os = value.String
-	}
-	if value, ok := values[6].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field HostID", values[6])
-	} else if value.Valid {
-		as.HostID = value.String
-	}
-	if value, ok := values[7].(*sql.NullFloat64); !ok {
-		return fmt.Errorf("unexpected type %T for field Load1", values[7])
-	} else if value.Valid {
-		as.Load1 = value.Float64
-	}
-	if value, ok := values[8].(*sql.NullFloat64); !ok {
-		return fmt.Errorf("unexpected type %T for field Load5", values[8])
-	} else if value.Valid {
-		as.Load5 = value.Float64
-	}
-	if value, ok := values[9].(*sql.NullFloat64); !ok {
-		return fmt.Errorf("unexpected type %T for field Load15", values[9])
-	} else if value.Valid {
-		as.Load15 = value.Float64
-	}
-	if value, ok := values[10].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field TotalMem", values[10])
-	} else if value.Valid {
-		as.TotalMem = value.Int64
-	}
-	if value, ok := values[11].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field FreeMem", values[11])
-	} else if value.Valid {
-		as.FreeMem = value.Int64
-	}
-	if value, ok := values[12].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field UsedMem", values[12])
-	} else if value.Valid {
-		as.UsedMem = value.Int64
-	}
-	if value, ok := values[13].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field Timestamp", values[13])
-	} else if value.Valid {
-		as.Timestamp = value.Int64
+	for i := range columns {
+		switch columns[i] {
+		case agentstatus.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			as.ID = int(value.Int64)
+		case agentstatus.FieldClientID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ClientID", values[i])
+			} else if value.Valid {
+				as.ClientID = value.String
+			}
+		case agentstatus.FieldHostname:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field Hostname", values[i])
+			} else if value.Valid {
+				as.Hostname = value.String
+			}
+		case agentstatus.FieldUpTime:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field UpTime", values[i])
+			} else if value.Valid {
+				as.UpTime = value.Int64
+			}
+		case agentstatus.FieldBootTime:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field BootTime", values[i])
+			} else if value.Valid {
+				as.BootTime = value.Int64
+			}
+		case agentstatus.FieldNumProcs:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field NumProcs", values[i])
+			} else if value.Valid {
+				as.NumProcs = value.Int64
+			}
+		case agentstatus.FieldOs:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field Os", values[i])
+			} else if value.Valid {
+				as.Os = value.String
+			}
+		case agentstatus.FieldHostID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field HostID", values[i])
+			} else if value.Valid {
+				as.HostID = value.String
+			}
+		case agentstatus.FieldLoad1:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field Load1", values[i])
+			} else if value.Valid {
+				as.Load1 = value.Float64
+			}
+		case agentstatus.FieldLoad5:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field Load5", values[i])
+			} else if value.Valid {
+				as.Load5 = value.Float64
+			}
+		case agentstatus.FieldLoad15:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field Load15", values[i])
+			} else if value.Valid {
+				as.Load15 = value.Float64
+			}
+		case agentstatus.FieldTotalMem:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field TotalMem", values[i])
+			} else if value.Valid {
+				as.TotalMem = value.Int64
+			}
+		case agentstatus.FieldFreeMem:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field FreeMem", values[i])
+			} else if value.Valid {
+				as.FreeMem = value.Int64
+			}
+		case agentstatus.FieldUsedMem:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field UsedMem", values[i])
+			} else if value.Valid {
+				as.UsedMem = value.Int64
+			}
+		case agentstatus.FieldTimestamp:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field Timestamp", values[i])
+			} else if value.Valid {
+				as.Timestamp = value.Int64
+			}
+		}
 	}
 	return nil
 }
 
-// QueryAgentStatusToTag queries the AgentStatusToTag edge of the AgentStatus.
+// QueryAgentStatusToTag queries the "AgentStatusToTag" edge of the AgentStatus entity.
 func (as *AgentStatus) QueryAgentStatusToTag() *TagQuery {
 	return (&AgentStatusClient{config: as.config}).QueryAgentStatusToTag(as)
 }
 
-// QueryAgentStatusToProvisionedHost queries the AgentStatusToProvisionedHost edge of the AgentStatus.
+// QueryAgentStatusToProvisionedHost queries the "AgentStatusToProvisionedHost" edge of the AgentStatus entity.
 func (as *AgentStatus) QueryAgentStatusToProvisionedHost() *ProvisionedHostQuery {
 	return (&AgentStatusClient{config: as.config}).QueryAgentStatusToProvisionedHost(as)
 }
 
 // Update returns a builder for updating this AgentStatus.
-// Note that, you need to call AgentStatus.Unwrap() before calling this method, if this AgentStatus
+// Note that you need to call AgentStatus.Unwrap() before calling this method if this AgentStatus
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (as *AgentStatus) Update() *AgentStatusUpdateOne {
 	return (&AgentStatusClient{config: as.config}).UpdateOne(as)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the AgentStatus entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (as *AgentStatus) Unwrap() *AgentStatus {
 	tx, ok := as.config.driver.(*txDriver)
 	if !ok {

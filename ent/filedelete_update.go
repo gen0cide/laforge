@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,31 +21,31 @@ type FileDeleteUpdate struct {
 	mutation *FileDeleteMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FileDeleteUpdate builder.
 func (fdu *FileDeleteUpdate) Where(ps ...predicate.FileDelete) *FileDeleteUpdate {
 	fdu.mutation.predicates = append(fdu.mutation.predicates, ps...)
 	return fdu
 }
 
-// SetPath sets the path field.
+// SetPath sets the "path" field.
 func (fdu *FileDeleteUpdate) SetPath(s string) *FileDeleteUpdate {
 	fdu.mutation.SetPath(s)
 	return fdu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fdu *FileDeleteUpdate) SetTags(m map[string]string) *FileDeleteUpdate {
 	fdu.mutation.SetTags(m)
 	return fdu
 }
 
-// AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
+// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
 func (fdu *FileDeleteUpdate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteUpdate {
 	fdu.mutation.AddFileDeleteToTagIDs(ids...)
 	return fdu
 }
 
-// AddFileDeleteToTag adds the FileDeleteToTag edges to Tag.
+// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
 func (fdu *FileDeleteUpdate) AddFileDeleteToTag(t ...*Tag) *FileDeleteUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -59,19 +59,19 @@ func (fdu *FileDeleteUpdate) Mutation() *FileDeleteMutation {
 	return fdu.mutation
 }
 
-// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to type Tag.
+// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to the Tag entity.
 func (fdu *FileDeleteUpdate) ClearFileDeleteToTag() *FileDeleteUpdate {
 	fdu.mutation.ClearFileDeleteToTag()
 	return fdu
 }
 
-// RemoveFileDeleteToTagIDs removes the FileDeleteToTag edge to Tag by ids.
+// RemoveFileDeleteToTagIDs removes the "FileDeleteToTag" edge to Tag entities by IDs.
 func (fdu *FileDeleteUpdate) RemoveFileDeleteToTagIDs(ids ...int) *FileDeleteUpdate {
 	fdu.mutation.RemoveFileDeleteToTagIDs(ids...)
 	return fdu
 }
 
-// RemoveFileDeleteToTag removes FileDeleteToTag edges to Tag.
+// RemoveFileDeleteToTag removes "FileDeleteToTag" edges to Tag entities.
 func (fdu *FileDeleteUpdate) RemoveFileDeleteToTag(t ...*Tag) *FileDeleteUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -235,25 +235,25 @@ type FileDeleteUpdateOne struct {
 	mutation *FileDeleteMutation
 }
 
-// SetPath sets the path field.
+// SetPath sets the "path" field.
 func (fduo *FileDeleteUpdateOne) SetPath(s string) *FileDeleteUpdateOne {
 	fduo.mutation.SetPath(s)
 	return fduo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (fduo *FileDeleteUpdateOne) SetTags(m map[string]string) *FileDeleteUpdateOne {
 	fduo.mutation.SetTags(m)
 	return fduo
 }
 
-// AddFileDeleteToTagIDs adds the FileDeleteToTag edge to Tag by ids.
+// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
 func (fduo *FileDeleteUpdateOne) AddFileDeleteToTagIDs(ids ...int) *FileDeleteUpdateOne {
 	fduo.mutation.AddFileDeleteToTagIDs(ids...)
 	return fduo
 }
 
-// AddFileDeleteToTag adds the FileDeleteToTag edges to Tag.
+// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
 func (fduo *FileDeleteUpdateOne) AddFileDeleteToTag(t ...*Tag) *FileDeleteUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -267,19 +267,19 @@ func (fduo *FileDeleteUpdateOne) Mutation() *FileDeleteMutation {
 	return fduo.mutation
 }
 
-// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to type Tag.
+// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to the Tag entity.
 func (fduo *FileDeleteUpdateOne) ClearFileDeleteToTag() *FileDeleteUpdateOne {
 	fduo.mutation.ClearFileDeleteToTag()
 	return fduo
 }
 
-// RemoveFileDeleteToTagIDs removes the FileDeleteToTag edge to Tag by ids.
+// RemoveFileDeleteToTagIDs removes the "FileDeleteToTag" edge to Tag entities by IDs.
 func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToTagIDs(ids ...int) *FileDeleteUpdateOne {
 	fduo.mutation.RemoveFileDeleteToTagIDs(ids...)
 	return fduo
 }
 
-// RemoveFileDeleteToTag removes FileDeleteToTag edges to Tag.
+// RemoveFileDeleteToTag removes "FileDeleteToTag" edges to Tag entities.
 func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToTag(t ...*Tag) *FileDeleteUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -288,7 +288,7 @@ func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToTag(t ...*Tag) *FileDeleteUpd
 	return fduo.RemoveFileDeleteToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated FileDelete entity.
 func (fduo *FileDeleteUpdateOne) Save(ctx context.Context) (*FileDelete, error) {
 	var (
 		err  error
@@ -355,6 +355,13 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing FileDelete.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := fduo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := fduo.mutation.Path(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -425,7 +432,7 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 	}
 	_node = &FileDelete{config: fduo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, fduo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedelete.Label}

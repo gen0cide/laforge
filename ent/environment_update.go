@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -28,99 +28,99 @@ type EnvironmentUpdate struct {
 	mutation *EnvironmentMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the EnvironmentUpdate builder.
 func (eu *EnvironmentUpdate) Where(ps ...predicate.Environment) *EnvironmentUpdate {
 	eu.mutation.predicates = append(eu.mutation.predicates, ps...)
 	return eu
 }
 
-// SetHclID sets the hcl_id field.
+// SetHclID sets the "hcl_id" field.
 func (eu *EnvironmentUpdate) SetHclID(s string) *EnvironmentUpdate {
 	eu.mutation.SetHclID(s)
 	return eu
 }
 
-// SetCompetitionID sets the competition_id field.
+// SetCompetitionID sets the "competition_id" field.
 func (eu *EnvironmentUpdate) SetCompetitionID(s string) *EnvironmentUpdate {
 	eu.mutation.SetCompetitionID(s)
 	return eu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (eu *EnvironmentUpdate) SetName(s string) *EnvironmentUpdate {
 	eu.mutation.SetName(s)
 	return eu
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (eu *EnvironmentUpdate) SetDescription(s string) *EnvironmentUpdate {
 	eu.mutation.SetDescription(s)
 	return eu
 }
 
-// SetBuilder sets the builder field.
+// SetBuilder sets the "builder" field.
 func (eu *EnvironmentUpdate) SetBuilder(s string) *EnvironmentUpdate {
 	eu.mutation.SetBuilder(s)
 	return eu
 }
 
-// SetTeamCount sets the team_count field.
+// SetTeamCount sets the "team_count" field.
 func (eu *EnvironmentUpdate) SetTeamCount(i int) *EnvironmentUpdate {
 	eu.mutation.ResetTeamCount()
 	eu.mutation.SetTeamCount(i)
 	return eu
 }
 
-// AddTeamCount adds i to team_count.
+// AddTeamCount adds i to the "team_count" field.
 func (eu *EnvironmentUpdate) AddTeamCount(i int) *EnvironmentUpdate {
 	eu.mutation.AddTeamCount(i)
 	return eu
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (eu *EnvironmentUpdate) SetRevision(i int) *EnvironmentUpdate {
 	eu.mutation.ResetRevision()
 	eu.mutation.SetRevision(i)
 	return eu
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (eu *EnvironmentUpdate) AddRevision(i int) *EnvironmentUpdate {
 	eu.mutation.AddRevision(i)
 	return eu
 }
 
-// SetAdminCidrs sets the admin_cidrs field.
+// SetAdminCidrs sets the "admin_cidrs" field.
 func (eu *EnvironmentUpdate) SetAdminCidrs(s []string) *EnvironmentUpdate {
 	eu.mutation.SetAdminCidrs(s)
 	return eu
 }
 
-// SetExposedVdiPorts sets the exposed_vdi_ports field.
+// SetExposedVdiPorts sets the "exposed_vdi_ports" field.
 func (eu *EnvironmentUpdate) SetExposedVdiPorts(s []string) *EnvironmentUpdate {
 	eu.mutation.SetExposedVdiPorts(s)
 	return eu
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (eu *EnvironmentUpdate) SetConfig(m map[string]string) *EnvironmentUpdate {
 	eu.mutation.SetConfig(m)
 	return eu
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (eu *EnvironmentUpdate) SetTags(m map[string]string) *EnvironmentUpdate {
 	eu.mutation.SetTags(m)
 	return eu
 }
 
-// AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
+// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToTagIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToTag adds the EnvironmentToTag edges to Tag.
+// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -129,13 +129,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpdate {
 	return eu.AddEnvironmentToTagIDs(ids...)
 }
 
-// AddEnvironmentToUserIDs adds the EnvironmentToUser edge to User by ids.
+// AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToUserIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToUserIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToUser adds the EnvironmentToUser edges to User.
+// AddEnvironmentToUser adds the "EnvironmentToUser" edges to the User entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToUser(u ...*User) *EnvironmentUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -144,13 +144,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToUser(u ...*User) *EnvironmentUpdate
 	return eu.AddEnvironmentToUserIDs(ids...)
 }
 
-// AddEnvironmentToHostIDs adds the EnvironmentToHost edge to Host by ids.
+// AddEnvironmentToHostIDs adds the "EnvironmentToHost" edge to the Host entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToHostIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToHostIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToHost adds the EnvironmentToHost edges to Host.
+// AddEnvironmentToHost adds the "EnvironmentToHost" edges to the Host entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToHost(h ...*Host) *EnvironmentUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -159,13 +159,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToHost(h ...*Host) *EnvironmentUpdate
 	return eu.AddEnvironmentToHostIDs(ids...)
 }
 
-// AddEnvironmentToCompetitionIDs adds the EnvironmentToCompetition edge to Competition by ids.
+// AddEnvironmentToCompetitionIDs adds the "EnvironmentToCompetition" edge to the Competition entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToCompetitionIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToCompetitionIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToCompetition adds the EnvironmentToCompetition edges to Competition.
+// AddEnvironmentToCompetition adds the "EnvironmentToCompetition" edges to the Competition entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToCompetition(c ...*Competition) *EnvironmentUpdate {
 	ids := make([]int, len(c))
 	for i := range c {
@@ -174,13 +174,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToCompetition(c ...*Competition) *Env
 	return eu.AddEnvironmentToCompetitionIDs(ids...)
 }
 
-// AddEnvironmentToBuildIDs adds the EnvironmentToBuild edge to Build by ids.
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToBuildIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToBuild adds the EnvironmentToBuild edges to Build.
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -189,13 +189,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpda
 	return eu.AddEnvironmentToBuildIDs(ids...)
 }
 
-// AddEnvironmentToIncludedNetworkIDs adds the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+// AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToIncludedNetwork adds the EnvironmentToIncludedNetwork edges to IncludedNetwork.
+// AddEnvironmentToIncludedNetwork adds the "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
 	ids := make([]int, len(i))
 	for j := range i {
@@ -204,13 +204,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwo
 	return eu.AddEnvironmentToIncludedNetworkIDs(ids...)
 }
 
-// AddEnvironmentToNetworkIDs adds the EnvironmentToNetwork edge to Network by ids.
+// AddEnvironmentToNetworkIDs adds the "EnvironmentToNetwork" edge to the Network entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToNetworkIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToNetwork adds the EnvironmentToNetwork edges to Network.
+// AddEnvironmentToNetwork adds the "EnvironmentToNetwork" edges to the Network entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToNetwork(n ...*Network) *EnvironmentUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -219,13 +219,13 @@ func (eu *EnvironmentUpdate) AddEnvironmentToNetwork(n ...*Network) *Environment
 	return eu.AddEnvironmentToNetworkIDs(ids...)
 }
 
-// AddEnvironmentToTeamIDs adds the EnvironmentToTeam edge to Team by ids.
+// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToTeamIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToTeam adds the EnvironmentToTeam edges to Team.
+// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
 func (eu *EnvironmentUpdate) AddEnvironmentToTeam(t ...*Team) *EnvironmentUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -239,19 +239,19 @@ func (eu *EnvironmentUpdate) Mutation() *EnvironmentMutation {
 	return eu.mutation
 }
 
-// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to type Tag.
+// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to the Tag entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToTag() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToTag()
 	return eu
 }
 
-// RemoveEnvironmentToTagIDs removes the EnvironmentToTag edge to Tag by ids.
+// RemoveEnvironmentToTagIDs removes the "EnvironmentToTag" edge to Tag entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToTagIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToTagIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToTag removes EnvironmentToTag edges to Tag.
+// RemoveEnvironmentToTag removes "EnvironmentToTag" edges to Tag entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -260,19 +260,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentUpdat
 	return eu.RemoveEnvironmentToTagIDs(ids...)
 }
 
-// ClearEnvironmentToUser clears all "EnvironmentToUser" edges to type User.
+// ClearEnvironmentToUser clears all "EnvironmentToUser" edges to the User entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToUser() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToUser()
 	return eu
 }
 
-// RemoveEnvironmentToUserIDs removes the EnvironmentToUser edge to User by ids.
+// RemoveEnvironmentToUserIDs removes the "EnvironmentToUser" edge to User entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToUserIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToUserIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToUser removes EnvironmentToUser edges to User.
+// RemoveEnvironmentToUser removes "EnvironmentToUser" edges to User entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToUser(u ...*User) *EnvironmentUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -281,19 +281,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToUser(u ...*User) *EnvironmentUpd
 	return eu.RemoveEnvironmentToUserIDs(ids...)
 }
 
-// ClearEnvironmentToHost clears all "EnvironmentToHost" edges to type Host.
+// ClearEnvironmentToHost clears all "EnvironmentToHost" edges to the Host entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToHost() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToHost()
 	return eu
 }
 
-// RemoveEnvironmentToHostIDs removes the EnvironmentToHost edge to Host by ids.
+// RemoveEnvironmentToHostIDs removes the "EnvironmentToHost" edge to Host entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToHostIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToHostIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToHost removes EnvironmentToHost edges to Host.
+// RemoveEnvironmentToHost removes "EnvironmentToHost" edges to Host entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToHost(h ...*Host) *EnvironmentUpdate {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -302,19 +302,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToHost(h ...*Host) *EnvironmentUpd
 	return eu.RemoveEnvironmentToHostIDs(ids...)
 }
 
-// ClearEnvironmentToCompetition clears all "EnvironmentToCompetition" edges to type Competition.
+// ClearEnvironmentToCompetition clears all "EnvironmentToCompetition" edges to the Competition entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToCompetition() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToCompetition()
 	return eu
 }
 
-// RemoveEnvironmentToCompetitionIDs removes the EnvironmentToCompetition edge to Competition by ids.
+// RemoveEnvironmentToCompetitionIDs removes the "EnvironmentToCompetition" edge to Competition entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToCompetitionIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToCompetitionIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToCompetition removes EnvironmentToCompetition edges to Competition.
+// RemoveEnvironmentToCompetition removes "EnvironmentToCompetition" edges to Competition entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToCompetition(c ...*Competition) *EnvironmentUpdate {
 	ids := make([]int, len(c))
 	for i := range c {
@@ -323,19 +323,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToCompetition(c ...*Competition) *
 	return eu.RemoveEnvironmentToCompetitionIDs(ids...)
 }
 
-// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to type Build.
+// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToBuild() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToBuild()
 	return eu
 }
 
-// RemoveEnvironmentToBuildIDs removes the EnvironmentToBuild edge to Build by ids.
+// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToBuildIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToBuild removes EnvironmentToBuild edges to Build.
+// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -344,19 +344,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentU
 	return eu.RemoveEnvironmentToBuildIDs(ids...)
 }
 
-// ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to type IncludedNetwork.
+// ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToIncludedNetwork() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToIncludedNetwork()
 	return eu
 }
 
-// RemoveEnvironmentToIncludedNetworkIDs removes the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+// RemoveEnvironmentToIncludedNetworkIDs removes the "EnvironmentToIncludedNetwork" edge to IncludedNetwork entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToIncludedNetworkIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToIncludedNetwork removes EnvironmentToIncludedNetwork edges to IncludedNetwork.
+// RemoveEnvironmentToIncludedNetwork removes "EnvironmentToIncludedNetwork" edges to IncludedNetwork entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdate {
 	ids := make([]int, len(i))
 	for j := range i {
@@ -365,19 +365,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToIncludedNetwork(i ...*IncludedNe
 	return eu.RemoveEnvironmentToIncludedNetworkIDs(ids...)
 }
 
-// ClearEnvironmentToNetwork clears all "EnvironmentToNetwork" edges to type Network.
+// ClearEnvironmentToNetwork clears all "EnvironmentToNetwork" edges to the Network entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToNetwork() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToNetwork()
 	return eu
 }
 
-// RemoveEnvironmentToNetworkIDs removes the EnvironmentToNetwork edge to Network by ids.
+// RemoveEnvironmentToNetworkIDs removes the "EnvironmentToNetwork" edge to Network entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToNetworkIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToNetwork removes EnvironmentToNetwork edges to Network.
+// RemoveEnvironmentToNetwork removes "EnvironmentToNetwork" edges to Network entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToNetwork(n ...*Network) *EnvironmentUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -386,19 +386,19 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToNetwork(n ...*Network) *Environm
 	return eu.RemoveEnvironmentToNetworkIDs(ids...)
 }
 
-// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to type Team.
+// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to the Team entity.
 func (eu *EnvironmentUpdate) ClearEnvironmentToTeam() *EnvironmentUpdate {
 	eu.mutation.ClearEnvironmentToTeam()
 	return eu
 }
 
-// RemoveEnvironmentToTeamIDs removes the EnvironmentToTeam edge to Team by ids.
+// RemoveEnvironmentToTeamIDs removes the "EnvironmentToTeam" edge to Team entities by IDs.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.RemoveEnvironmentToTeamIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToTeam removes EnvironmentToTeam edges to Team.
+// RemoveEnvironmentToTeam removes "EnvironmentToTeam" edges to Team entities.
 func (eu *EnvironmentUpdate) RemoveEnvironmentToTeam(t ...*Team) *EnvironmentUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -1017,93 +1017,93 @@ type EnvironmentUpdateOne struct {
 	mutation *EnvironmentMutation
 }
 
-// SetHclID sets the hcl_id field.
+// SetHclID sets the "hcl_id" field.
 func (euo *EnvironmentUpdateOne) SetHclID(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetHclID(s)
 	return euo
 }
 
-// SetCompetitionID sets the competition_id field.
+// SetCompetitionID sets the "competition_id" field.
 func (euo *EnvironmentUpdateOne) SetCompetitionID(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetCompetitionID(s)
 	return euo
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (euo *EnvironmentUpdateOne) SetName(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetName(s)
 	return euo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (euo *EnvironmentUpdateOne) SetDescription(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetDescription(s)
 	return euo
 }
 
-// SetBuilder sets the builder field.
+// SetBuilder sets the "builder" field.
 func (euo *EnvironmentUpdateOne) SetBuilder(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetBuilder(s)
 	return euo
 }
 
-// SetTeamCount sets the team_count field.
+// SetTeamCount sets the "team_count" field.
 func (euo *EnvironmentUpdateOne) SetTeamCount(i int) *EnvironmentUpdateOne {
 	euo.mutation.ResetTeamCount()
 	euo.mutation.SetTeamCount(i)
 	return euo
 }
 
-// AddTeamCount adds i to team_count.
+// AddTeamCount adds i to the "team_count" field.
 func (euo *EnvironmentUpdateOne) AddTeamCount(i int) *EnvironmentUpdateOne {
 	euo.mutation.AddTeamCount(i)
 	return euo
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (euo *EnvironmentUpdateOne) SetRevision(i int) *EnvironmentUpdateOne {
 	euo.mutation.ResetRevision()
 	euo.mutation.SetRevision(i)
 	return euo
 }
 
-// AddRevision adds i to revision.
+// AddRevision adds i to the "revision" field.
 func (euo *EnvironmentUpdateOne) AddRevision(i int) *EnvironmentUpdateOne {
 	euo.mutation.AddRevision(i)
 	return euo
 }
 
-// SetAdminCidrs sets the admin_cidrs field.
+// SetAdminCidrs sets the "admin_cidrs" field.
 func (euo *EnvironmentUpdateOne) SetAdminCidrs(s []string) *EnvironmentUpdateOne {
 	euo.mutation.SetAdminCidrs(s)
 	return euo
 }
 
-// SetExposedVdiPorts sets the exposed_vdi_ports field.
+// SetExposedVdiPorts sets the "exposed_vdi_ports" field.
 func (euo *EnvironmentUpdateOne) SetExposedVdiPorts(s []string) *EnvironmentUpdateOne {
 	euo.mutation.SetExposedVdiPorts(s)
 	return euo
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (euo *EnvironmentUpdateOne) SetConfig(m map[string]string) *EnvironmentUpdateOne {
 	euo.mutation.SetConfig(m)
 	return euo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (euo *EnvironmentUpdateOne) SetTags(m map[string]string) *EnvironmentUpdateOne {
 	euo.mutation.SetTags(m)
 	return euo
 }
 
-// AddEnvironmentToTagIDs adds the EnvironmentToTag edge to Tag by ids.
+// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToTagIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToTag adds the EnvironmentToTag edges to Tag.
+// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -1112,13 +1112,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpda
 	return euo.AddEnvironmentToTagIDs(ids...)
 }
 
-// AddEnvironmentToUserIDs adds the EnvironmentToUser edge to User by ids.
+// AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToUserIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToUserIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToUser adds the EnvironmentToUser edges to User.
+// AddEnvironmentToUser adds the "EnvironmentToUser" edges to the User entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToUser(u ...*User) *EnvironmentUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -1127,13 +1127,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToUser(u ...*User) *EnvironmentUp
 	return euo.AddEnvironmentToUserIDs(ids...)
 }
 
-// AddEnvironmentToHostIDs adds the EnvironmentToHost edge to Host by ids.
+// AddEnvironmentToHostIDs adds the "EnvironmentToHost" edge to the Host entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToHostIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToHostIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToHost adds the EnvironmentToHost edges to Host.
+// AddEnvironmentToHost adds the "EnvironmentToHost" edges to the Host entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToHost(h ...*Host) *EnvironmentUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -1142,13 +1142,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToHost(h ...*Host) *EnvironmentUp
 	return euo.AddEnvironmentToHostIDs(ids...)
 }
 
-// AddEnvironmentToCompetitionIDs adds the EnvironmentToCompetition edge to Competition by ids.
+// AddEnvironmentToCompetitionIDs adds the "EnvironmentToCompetition" edge to the Competition entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToCompetitionIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToCompetitionIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToCompetition adds the EnvironmentToCompetition edges to Competition.
+// AddEnvironmentToCompetition adds the "EnvironmentToCompetition" edges to the Competition entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToCompetition(c ...*Competition) *EnvironmentUpdateOne {
 	ids := make([]int, len(c))
 	for i := range c {
@@ -1157,13 +1157,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToCompetition(c ...*Competition) 
 	return euo.AddEnvironmentToCompetitionIDs(ids...)
 }
 
-// AddEnvironmentToBuildIDs adds the EnvironmentToBuild edge to Build by ids.
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToBuildIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToBuild adds the EnvironmentToBuild edges to Build.
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -1172,13 +1172,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *Environment
 	return euo.AddEnvironmentToBuildIDs(ids...)
 }
 
-// AddEnvironmentToIncludedNetworkIDs adds the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+// AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToIncludedNetwork adds the EnvironmentToIncludedNetwork edges to IncludedNetwork.
+// AddEnvironmentToIncludedNetwork adds the "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
 	ids := make([]int, len(i))
 	for j := range i {
@@ -1187,13 +1187,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToIncludedNetwork(i ...*IncludedN
 	return euo.AddEnvironmentToIncludedNetworkIDs(ids...)
 }
 
-// AddEnvironmentToNetworkIDs adds the EnvironmentToNetwork edge to Network by ids.
+// AddEnvironmentToNetworkIDs adds the "EnvironmentToNetwork" edge to the Network entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToNetworkIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToNetwork adds the EnvironmentToNetwork edges to Network.
+// AddEnvironmentToNetwork adds the "EnvironmentToNetwork" edges to the Network entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToNetwork(n ...*Network) *EnvironmentUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -1202,13 +1202,13 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToNetwork(n ...*Network) *Environ
 	return euo.AddEnvironmentToNetworkIDs(ids...)
 }
 
-// AddEnvironmentToTeamIDs adds the EnvironmentToTeam edge to Team by ids.
+// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToTeamIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToTeam adds the EnvironmentToTeam edges to Team.
+// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToTeam(t ...*Team) *EnvironmentUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -1222,19 +1222,19 @@ func (euo *EnvironmentUpdateOne) Mutation() *EnvironmentMutation {
 	return euo.mutation
 }
 
-// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to type Tag.
+// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to the Tag entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToTag() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToTag()
 	return euo
 }
 
-// RemoveEnvironmentToTagIDs removes the EnvironmentToTag edge to Tag by ids.
+// RemoveEnvironmentToTagIDs removes the "EnvironmentToTag" edge to Tag entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTagIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToTagIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToTag removes EnvironmentToTag edges to Tag.
+// RemoveEnvironmentToTag removes "EnvironmentToTag" edges to Tag entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -1243,19 +1243,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentU
 	return euo.RemoveEnvironmentToTagIDs(ids...)
 }
 
-// ClearEnvironmentToUser clears all "EnvironmentToUser" edges to type User.
+// ClearEnvironmentToUser clears all "EnvironmentToUser" edges to the User entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToUser() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToUser()
 	return euo
 }
 
-// RemoveEnvironmentToUserIDs removes the EnvironmentToUser edge to User by ids.
+// RemoveEnvironmentToUserIDs removes the "EnvironmentToUser" edge to User entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToUserIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToUserIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToUser removes EnvironmentToUser edges to User.
+// RemoveEnvironmentToUser removes "EnvironmentToUser" edges to User entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToUser(u ...*User) *EnvironmentUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -1264,19 +1264,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToUser(u ...*User) *Environmen
 	return euo.RemoveEnvironmentToUserIDs(ids...)
 }
 
-// ClearEnvironmentToHost clears all "EnvironmentToHost" edges to type Host.
+// ClearEnvironmentToHost clears all "EnvironmentToHost" edges to the Host entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToHost() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToHost()
 	return euo
 }
 
-// RemoveEnvironmentToHostIDs removes the EnvironmentToHost edge to Host by ids.
+// RemoveEnvironmentToHostIDs removes the "EnvironmentToHost" edge to Host entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToHostIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToHostIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToHost removes EnvironmentToHost edges to Host.
+// RemoveEnvironmentToHost removes "EnvironmentToHost" edges to Host entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToHost(h ...*Host) *EnvironmentUpdateOne {
 	ids := make([]int, len(h))
 	for i := range h {
@@ -1285,19 +1285,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToHost(h ...*Host) *Environmen
 	return euo.RemoveEnvironmentToHostIDs(ids...)
 }
 
-// ClearEnvironmentToCompetition clears all "EnvironmentToCompetition" edges to type Competition.
+// ClearEnvironmentToCompetition clears all "EnvironmentToCompetition" edges to the Competition entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToCompetition() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToCompetition()
 	return euo
 }
 
-// RemoveEnvironmentToCompetitionIDs removes the EnvironmentToCompetition edge to Competition by ids.
+// RemoveEnvironmentToCompetitionIDs removes the "EnvironmentToCompetition" edge to Competition entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToCompetitionIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToCompetitionIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToCompetition removes EnvironmentToCompetition edges to Competition.
+// RemoveEnvironmentToCompetition removes "EnvironmentToCompetition" edges to Competition entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToCompetition(c ...*Competition) *EnvironmentUpdateOne {
 	ids := make([]int, len(c))
 	for i := range c {
@@ -1306,19 +1306,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToCompetition(c ...*Competitio
 	return euo.RemoveEnvironmentToCompetitionIDs(ids...)
 }
 
-// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to type Build.
+// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToBuild() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToBuild()
 	return euo
 }
 
-// RemoveEnvironmentToBuildIDs removes the EnvironmentToBuild edge to Build by ids.
+// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToBuildIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToBuild removes EnvironmentToBuild edges to Build.
+// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -1327,19 +1327,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *Environm
 	return euo.RemoveEnvironmentToBuildIDs(ids...)
 }
 
-// ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to type IncludedNetwork.
+// ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToIncludedNetwork() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToIncludedNetwork()
 	return euo
 }
 
-// RemoveEnvironmentToIncludedNetworkIDs removes the EnvironmentToIncludedNetwork edge to IncludedNetwork by ids.
+// RemoveEnvironmentToIncludedNetworkIDs removes the "EnvironmentToIncludedNetwork" edge to IncludedNetwork entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToIncludedNetworkIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToIncludedNetwork removes EnvironmentToIncludedNetwork edges to IncludedNetwork.
+// RemoveEnvironmentToIncludedNetwork removes "EnvironmentToIncludedNetwork" edges to IncludedNetwork entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentUpdateOne {
 	ids := make([]int, len(i))
 	for j := range i {
@@ -1348,19 +1348,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIncludedNetwork(i ...*Includ
 	return euo.RemoveEnvironmentToIncludedNetworkIDs(ids...)
 }
 
-// ClearEnvironmentToNetwork clears all "EnvironmentToNetwork" edges to type Network.
+// ClearEnvironmentToNetwork clears all "EnvironmentToNetwork" edges to the Network entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToNetwork() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToNetwork()
 	return euo
 }
 
-// RemoveEnvironmentToNetworkIDs removes the EnvironmentToNetwork edge to Network by ids.
+// RemoveEnvironmentToNetworkIDs removes the "EnvironmentToNetwork" edge to Network entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToNetworkIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToNetwork removes EnvironmentToNetwork edges to Network.
+// RemoveEnvironmentToNetwork removes "EnvironmentToNetwork" edges to Network entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToNetwork(n ...*Network) *EnvironmentUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -1369,19 +1369,19 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToNetwork(n ...*Network) *Envi
 	return euo.RemoveEnvironmentToNetworkIDs(ids...)
 }
 
-// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to type Team.
+// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to the Team entity.
 func (euo *EnvironmentUpdateOne) ClearEnvironmentToTeam() *EnvironmentUpdateOne {
 	euo.mutation.ClearEnvironmentToTeam()
 	return euo
 }
 
-// RemoveEnvironmentToTeamIDs removes the EnvironmentToTeam edge to Team by ids.
+// RemoveEnvironmentToTeamIDs removes the "EnvironmentToTeam" edge to Team entities by IDs.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.RemoveEnvironmentToTeamIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToTeam removes EnvironmentToTeam edges to Team.
+// RemoveEnvironmentToTeam removes "EnvironmentToTeam" edges to Team entities.
 func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTeam(t ...*Team) *EnvironmentUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -1390,7 +1390,7 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTeam(t ...*Team) *Environmen
 	return euo.RemoveEnvironmentToTeamIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Environment entity.
 func (euo *EnvironmentUpdateOne) Save(ctx context.Context) (*Environment, error) {
 	var (
 		err  error
@@ -1457,6 +1457,13 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Environment.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := euo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := euo.mutation.HclID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1982,7 +1989,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	_node = &Environment{config: euo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, euo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{environment.Label}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/script"
 )
 
@@ -51,11 +51,11 @@ type Script struct {
 // ScriptEdges holds the relations/edges for other nodes in the graph.
 type ScriptEdges struct {
 	// ScriptToTag holds the value of the ScriptToTag edge.
-	ScriptToTag []*Tag
+	ScriptToTag []*Tag `json:"ScriptToTag,omitempty"`
 	// ScriptToUser holds the value of the ScriptToUser edge.
-	ScriptToUser []*User `hcl:"maintainer,block"`
+	ScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
-	ScriptToFinding []*Finding `hcl:"finding,block"`
+	ScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -89,154 +89,164 @@ func (e ScriptEdges) ScriptToFindingOrErr() ([]*Finding, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Script) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // language
-		&sql.NullString{}, // description
-		&sql.NullString{}, // source
-		&sql.NullString{}, // source_type
-		&sql.NullInt64{},  // cooldown
-		&sql.NullInt64{},  // timeout
-		&sql.NullBool{},   // ignore_errors
-		&[]byte{},         // args
-		&sql.NullBool{},   // disabled
-		&[]byte{},         // vars
-		&sql.NullString{}, // abs_path
-		&[]byte{},         // tags
+func (*Script) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case script.FieldArgs, script.FieldVars, script.FieldTags:
+			values[i] = &[]byte{}
+		case script.FieldIgnoreErrors, script.FieldDisabled:
+			values[i] = &sql.NullBool{}
+		case script.FieldID, script.FieldCooldown, script.FieldTimeout:
+			values[i] = &sql.NullInt64{}
+		case script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
+			values[i] = &sql.NullString{}
+		case script.ForeignKeys[0]: // provisioning_step_provisioning_step_to_script
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Script) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_provisioning_step_to_script
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Script fields.
-func (s *Script) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(script.Columns); m < n {
+func (s *Script) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	s.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		s.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field language", values[1])
-	} else if value.Valid {
-		s.Language = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
-	} else if value.Valid {
-		s.Description = value.String
-	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field source", values[3])
-	} else if value.Valid {
-		s.Source = value.String
-	}
-	if value, ok := values[4].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field source_type", values[4])
-	} else if value.Valid {
-		s.SourceType = value.String
-	}
-	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field cooldown", values[5])
-	} else if value.Valid {
-		s.Cooldown = int(value.Int64)
-	}
-	if value, ok := values[6].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field timeout", values[6])
-	} else if value.Valid {
-		s.Timeout = int(value.Int64)
-	}
-	if value, ok := values[7].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field ignore_errors", values[7])
-	} else if value.Valid {
-		s.IgnoreErrors = value.Bool
-	}
+	for i := range columns {
+		switch columns[i] {
+		case script.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			s.ID = int(value.Int64)
+		case script.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				s.Name = value.String
+			}
+		case script.FieldLanguage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field language", values[i])
+			} else if value.Valid {
+				s.Language = value.String
+			}
+		case script.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				s.Description = value.String
+			}
+		case script.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value.Valid {
+				s.Source = value.String
+			}
+		case script.FieldSourceType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source_type", values[i])
+			} else if value.Valid {
+				s.SourceType = value.String
+			}
+		case script.FieldCooldown:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cooldown", values[i])
+			} else if value.Valid {
+				s.Cooldown = int(value.Int64)
+			}
+		case script.FieldTimeout:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field timeout", values[i])
+			} else if value.Valid {
+				s.Timeout = int(value.Int64)
+			}
+		case script.FieldIgnoreErrors:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field ignore_errors", values[i])
+			} else if value.Valid {
+				s.IgnoreErrors = value.Bool
+			}
+		case script.FieldArgs:
 
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field args", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &s.Args); err != nil {
-			return fmt.Errorf("unmarshal field args: %v", err)
-		}
-	}
-	if value, ok := values[9].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field disabled", values[9])
-	} else if value.Valid {
-		s.Disabled = value.Bool
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field args", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Args); err != nil {
+					return fmt.Errorf("unmarshal field args: %v", err)
+				}
+			}
+		case script.FieldDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field disabled", values[i])
+			} else if value.Valid {
+				s.Disabled = value.Bool
+			}
+		case script.FieldVars:
 
-	if value, ok := values[10].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[10])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &s.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
-	if value, ok := values[11].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field abs_path", values[11])
-	} else if value.Valid {
-		s.AbsPath = value.String
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %v", err)
+				}
+			}
+		case script.FieldAbsPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field abs_path", values[i])
+			} else if value.Valid {
+				s.AbsPath = value.String
+			}
+		case script.FieldTags:
 
-	if value, ok := values[12].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[12])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &s.Tags); err != nil {
-			return fmt.Errorf("unmarshal field tags: %v", err)
-		}
-	}
-	values = values[13:]
-	if len(values) == len(script.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_script", value)
-		} else if value.Valid {
-			s.provisioning_step_provisioning_step_to_script = new(int)
-			*s.provisioning_step_provisioning_step_to_script = int(value.Int64)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		case script.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_script", value)
+			} else if value.Valid {
+				s.provisioning_step_provisioning_step_to_script = new(int)
+				*s.provisioning_step_provisioning_step_to_script = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryScriptToTag queries the ScriptToTag edge of the Script.
+// QueryScriptToTag queries the "ScriptToTag" edge of the Script entity.
 func (s *Script) QueryScriptToTag() *TagQuery {
 	return (&ScriptClient{config: s.config}).QueryScriptToTag(s)
 }
 
-// QueryScriptToUser queries the ScriptToUser edge of the Script.
+// QueryScriptToUser queries the "ScriptToUser" edge of the Script entity.
 func (s *Script) QueryScriptToUser() *UserQuery {
 	return (&ScriptClient{config: s.config}).QueryScriptToUser(s)
 }
 
-// QueryScriptToFinding queries the ScriptToFinding edge of the Script.
+// QueryScriptToFinding queries the "ScriptToFinding" edge of the Script entity.
 func (s *Script) QueryScriptToFinding() *FindingQuery {
 	return (&ScriptClient{config: s.config}).QueryScriptToFinding(s)
 }
 
 // Update returns a builder for updating this Script.
-// Note that, you need to call Script.Unwrap() before calling this method, if this Script
+// Note that you need to call Script.Unwrap() before calling this method if this Script
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (s *Script) Update() *ScriptUpdateOne {
 	return (&ScriptClient{config: s.config}).UpdateOne(s)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Script entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (s *Script) Unwrap() *Script {
 	tx, ok := s.config.driver.(*txDriver)
 	if !ok {

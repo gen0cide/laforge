@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
@@ -23,91 +23,91 @@ type HostCreate struct {
 	hooks    []Hook
 }
 
-// SetHostname sets the hostname field.
+// SetHostname sets the "hostname" field.
 func (hc *HostCreate) SetHostname(s string) *HostCreate {
 	hc.mutation.SetHostname(s)
 	return hc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (hc *HostCreate) SetDescription(s string) *HostCreate {
 	hc.mutation.SetDescription(s)
 	return hc
 }
 
-// SetOS sets the OS field.
+// SetOS sets the "OS" field.
 func (hc *HostCreate) SetOS(s string) *HostCreate {
 	hc.mutation.SetOS(s)
 	return hc
 }
 
-// SetLastOctet sets the last_octet field.
+// SetLastOctet sets the "last_octet" field.
 func (hc *HostCreate) SetLastOctet(i int) *HostCreate {
 	hc.mutation.SetLastOctet(i)
 	return hc
 }
 
-// SetAllowMACChanges sets the allow_mac_changes field.
+// SetAllowMACChanges sets the "allow_mac_changes" field.
 func (hc *HostCreate) SetAllowMACChanges(b bool) *HostCreate {
 	hc.mutation.SetAllowMACChanges(b)
 	return hc
 }
 
-// SetExposedTCPPorts sets the exposed_tcp_ports field.
+// SetExposedTCPPorts sets the "exposed_tcp_ports" field.
 func (hc *HostCreate) SetExposedTCPPorts(s []string) *HostCreate {
 	hc.mutation.SetExposedTCPPorts(s)
 	return hc
 }
 
-// SetExposedUDPPorts sets the exposed_udp_ports field.
+// SetExposedUDPPorts sets the "exposed_udp_ports" field.
 func (hc *HostCreate) SetExposedUDPPorts(s []string) *HostCreate {
 	hc.mutation.SetExposedUDPPorts(s)
 	return hc
 }
 
-// SetOverridePassword sets the override_password field.
+// SetOverridePassword sets the "override_password" field.
 func (hc *HostCreate) SetOverridePassword(s string) *HostCreate {
 	hc.mutation.SetOverridePassword(s)
 	return hc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (hc *HostCreate) SetVars(m map[string]string) *HostCreate {
 	hc.mutation.SetVars(m)
 	return hc
 }
 
-// SetUserGroups sets the user_groups field.
+// SetUserGroups sets the "user_groups" field.
 func (hc *HostCreate) SetUserGroups(s []string) *HostCreate {
 	hc.mutation.SetUserGroups(s)
 	return hc
 }
 
-// SetDependsOn sets the depends_on field.
+// SetDependsOn sets the "depends_on" field.
 func (hc *HostCreate) SetDependsOn(m map[string]string) *HostCreate {
 	hc.mutation.SetDependsOn(m)
 	return hc
 }
 
-// SetProvisionSteps sets the provision_steps field.
+// SetProvisionSteps sets the "provision_steps" field.
 func (hc *HostCreate) SetProvisionSteps(s []string) *HostCreate {
 	hc.mutation.SetProvisionSteps(s)
 	return hc
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (hc *HostCreate) SetTags(m map[string]string) *HostCreate {
 	hc.mutation.SetTags(m)
 	return hc
 }
 
-// AddHostToDiskIDs adds the HostToDisk edge to Disk by ids.
+// AddHostToDiskIDs adds the "HostToDisk" edge to the Disk entity by IDs.
 func (hc *HostCreate) AddHostToDiskIDs(ids ...int) *HostCreate {
 	hc.mutation.AddHostToDiskIDs(ids...)
 	return hc
 }
 
-// AddHostToDisk adds the HostToDisk edges to Disk.
+// AddHostToDisk adds the "HostToDisk" edges to the Disk entity.
 func (hc *HostCreate) AddHostToDisk(d ...*Disk) *HostCreate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -116,13 +116,13 @@ func (hc *HostCreate) AddHostToDisk(d ...*Disk) *HostCreate {
 	return hc.AddHostToDiskIDs(ids...)
 }
 
-// AddHostToUserIDs adds the HostToUser edge to User by ids.
+// AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
 func (hc *HostCreate) AddHostToUserIDs(ids ...int) *HostCreate {
 	hc.mutation.AddHostToUserIDs(ids...)
 	return hc
 }
 
-// AddHostToUser adds the HostToUser edges to User.
+// AddHostToUser adds the "HostToUser" edges to the User entity.
 func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -131,13 +131,13 @@ func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
 	return hc.AddHostToUserIDs(ids...)
 }
 
-// AddHostToTagIDs adds the HostToTag edge to Tag by ids.
+// AddHostToTagIDs adds the "HostToTag" edge to the Tag entity by IDs.
 func (hc *HostCreate) AddHostToTagIDs(ids ...int) *HostCreate {
 	hc.mutation.AddHostToTagIDs(ids...)
 	return hc
 }
 
-// AddHostToTag adds the HostToTag edges to Tag.
+// AddHostToTag adds the "HostToTag" edges to the Tag entity.
 func (hc *HostCreate) AddHostToTag(t ...*Tag) *HostCreate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -146,13 +146,13 @@ func (hc *HostCreate) AddHostToTag(t ...*Tag) *HostCreate {
 	return hc.AddHostToTagIDs(ids...)
 }
 
-// AddHostToEnvironmentIDs adds the HostToEnvironment edge to Environment by ids.
+// AddHostToEnvironmentIDs adds the "HostToEnvironment" edge to the Environment entity by IDs.
 func (hc *HostCreate) AddHostToEnvironmentIDs(ids ...int) *HostCreate {
 	hc.mutation.AddHostToEnvironmentIDs(ids...)
 	return hc
 }
 
-// AddHostToEnvironment adds the HostToEnvironment edges to Environment.
+// AddHostToEnvironment adds the "HostToEnvironment" edges to the Environment entity.
 func (hc *HostCreate) AddHostToEnvironment(e ...*Environment) *HostCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -455,7 +455,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// HostCreateBulk is the builder for creating a bulk of Host entities.
+// HostCreateBulk is the builder for creating many Host entities in bulk.
 type HostCreateBulk struct {
 	config
 	builders []*HostCreate
@@ -512,7 +512,7 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (hcb *HostCreateBulk) SaveX(ctx context.Context) []*Host {
 	v, err := hcb.Save(ctx)
 	if err != nil {

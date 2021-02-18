@@ -89,7 +89,7 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-// Severity defines the type for the severity enum field.
+// Severity defines the type for the "severity" enum field.
 type Severity string
 
 // Severity values.
@@ -116,7 +116,7 @@ func SeverityValidator(s Severity) error {
 	}
 }
 
-// Difficulty defines the type for the difficulty enum field.
+// Difficulty defines the type for the "difficulty" enum field.
 type Difficulty string
 
 // Difficulty values.

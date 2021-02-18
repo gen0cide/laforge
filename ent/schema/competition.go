@@ -1,14 +1,24 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // Competition holds the schema definition for the Competition entity.
 type Competition struct {
 	ent.Schema
+}
+
+// Annotations of the Competition.
+func (Competition) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		edge.Annotation{
+			StructTag: `hcl:"edges,block" json:"edges"`,
+		},
+	}
 }
 
 // Fields of the Competition.

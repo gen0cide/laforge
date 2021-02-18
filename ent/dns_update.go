@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,49 +21,49 @@ type DNSUpdate struct {
 	mutation *DNSMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the DNSUpdate builder.
 func (du *DNSUpdate) Where(ps ...predicate.DNS) *DNSUpdate {
 	du.mutation.predicates = append(du.mutation.predicates, ps...)
 	return du
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (du *DNSUpdate) SetType(s string) *DNSUpdate {
 	du.mutation.SetType(s)
 	return du
 }
 
-// SetRootDomain sets the root_domain field.
+// SetRootDomain sets the "root_domain" field.
 func (du *DNSUpdate) SetRootDomain(s string) *DNSUpdate {
 	du.mutation.SetRootDomain(s)
 	return du
 }
 
-// SetDNSServers sets the dns_servers field.
+// SetDNSServers sets the "dns_servers" field.
 func (du *DNSUpdate) SetDNSServers(s []string) *DNSUpdate {
 	du.mutation.SetDNSServers(s)
 	return du
 }
 
-// SetNtpServers sets the ntp_servers field.
+// SetNtpServers sets the "ntp_servers" field.
 func (du *DNSUpdate) SetNtpServers(s []string) *DNSUpdate {
 	du.mutation.SetNtpServers(s)
 	return du
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (du *DNSUpdate) SetConfig(m map[string]string) *DNSUpdate {
 	du.mutation.SetConfig(m)
 	return du
 }
 
-// AddDNSToTagIDs adds the DNSToTag edge to Tag by ids.
+// AddDNSToTagIDs adds the "DNSToTag" edge to the Tag entity by IDs.
 func (du *DNSUpdate) AddDNSToTagIDs(ids ...int) *DNSUpdate {
 	du.mutation.AddDNSToTagIDs(ids...)
 	return du
 }
 
-// AddDNSToTag adds the DNSToTag edges to Tag.
+// AddDNSToTag adds the "DNSToTag" edges to the Tag entity.
 func (du *DNSUpdate) AddDNSToTag(t ...*Tag) *DNSUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -77,19 +77,19 @@ func (du *DNSUpdate) Mutation() *DNSMutation {
 	return du.mutation
 }
 
-// ClearDNSToTag clears all "DNSToTag" edges to type Tag.
+// ClearDNSToTag clears all "DNSToTag" edges to the Tag entity.
 func (du *DNSUpdate) ClearDNSToTag() *DNSUpdate {
 	du.mutation.ClearDNSToTag()
 	return du
 }
 
-// RemoveDNSToTagIDs removes the DNSToTag edge to Tag by ids.
+// RemoveDNSToTagIDs removes the "DNSToTag" edge to Tag entities by IDs.
 func (du *DNSUpdate) RemoveDNSToTagIDs(ids ...int) *DNSUpdate {
 	du.mutation.RemoveDNSToTagIDs(ids...)
 	return du
 }
 
-// RemoveDNSToTag removes DNSToTag edges to Tag.
+// RemoveDNSToTag removes "DNSToTag" edges to Tag entities.
 func (du *DNSUpdate) RemoveDNSToTag(t ...*Tag) *DNSUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -274,43 +274,43 @@ type DNSUpdateOne struct {
 	mutation *DNSMutation
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (duo *DNSUpdateOne) SetType(s string) *DNSUpdateOne {
 	duo.mutation.SetType(s)
 	return duo
 }
 
-// SetRootDomain sets the root_domain field.
+// SetRootDomain sets the "root_domain" field.
 func (duo *DNSUpdateOne) SetRootDomain(s string) *DNSUpdateOne {
 	duo.mutation.SetRootDomain(s)
 	return duo
 }
 
-// SetDNSServers sets the dns_servers field.
+// SetDNSServers sets the "dns_servers" field.
 func (duo *DNSUpdateOne) SetDNSServers(s []string) *DNSUpdateOne {
 	duo.mutation.SetDNSServers(s)
 	return duo
 }
 
-// SetNtpServers sets the ntp_servers field.
+// SetNtpServers sets the "ntp_servers" field.
 func (duo *DNSUpdateOne) SetNtpServers(s []string) *DNSUpdateOne {
 	duo.mutation.SetNtpServers(s)
 	return duo
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (duo *DNSUpdateOne) SetConfig(m map[string]string) *DNSUpdateOne {
 	duo.mutation.SetConfig(m)
 	return duo
 }
 
-// AddDNSToTagIDs adds the DNSToTag edge to Tag by ids.
+// AddDNSToTagIDs adds the "DNSToTag" edge to the Tag entity by IDs.
 func (duo *DNSUpdateOne) AddDNSToTagIDs(ids ...int) *DNSUpdateOne {
 	duo.mutation.AddDNSToTagIDs(ids...)
 	return duo
 }
 
-// AddDNSToTag adds the DNSToTag edges to Tag.
+// AddDNSToTag adds the "DNSToTag" edges to the Tag entity.
 func (duo *DNSUpdateOne) AddDNSToTag(t ...*Tag) *DNSUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -324,19 +324,19 @@ func (duo *DNSUpdateOne) Mutation() *DNSMutation {
 	return duo.mutation
 }
 
-// ClearDNSToTag clears all "DNSToTag" edges to type Tag.
+// ClearDNSToTag clears all "DNSToTag" edges to the Tag entity.
 func (duo *DNSUpdateOne) ClearDNSToTag() *DNSUpdateOne {
 	duo.mutation.ClearDNSToTag()
 	return duo
 }
 
-// RemoveDNSToTagIDs removes the DNSToTag edge to Tag by ids.
+// RemoveDNSToTagIDs removes the "DNSToTag" edge to Tag entities by IDs.
 func (duo *DNSUpdateOne) RemoveDNSToTagIDs(ids ...int) *DNSUpdateOne {
 	duo.mutation.RemoveDNSToTagIDs(ids...)
 	return duo
 }
 
-// RemoveDNSToTag removes DNSToTag edges to Tag.
+// RemoveDNSToTag removes "DNSToTag" edges to Tag entities.
 func (duo *DNSUpdateOne) RemoveDNSToTag(t ...*Tag) *DNSUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -345,7 +345,7 @@ func (duo *DNSUpdateOne) RemoveDNSToTag(t ...*Tag) *DNSUpdateOne {
 	return duo.RemoveDNSToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated DNS entity.
 func (duo *DNSUpdateOne) Save(ctx context.Context) (*DNS, error) {
 	var (
 		err  error
@@ -412,6 +412,13 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNS.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := duo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := duo.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -503,7 +510,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 	}
 	_node = &DNS{config: duo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dns.Label}

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type CommandDelete struct {
 	mutation *CommandMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the CommandDelete builder.
 func (cd *CommandDelete) Where(ps ...predicate.Command) *CommandDelete {
 	cd.mutation.predicates = append(cd.mutation.predicates, ps...)
 	return cd

@@ -5,12 +5,12 @@ package status
 import (
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -495,7 +495,7 @@ func HasStatusToTagWith(preds ...predicate.Tag) predicate.Status {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -506,7 +506,7 @@ func And(predicates ...predicate.Status) predicate.Status {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

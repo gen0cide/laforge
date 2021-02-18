@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
@@ -23,111 +23,111 @@ type ScriptUpdate struct {
 	mutation *ScriptMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the ScriptUpdate builder.
 func (su *ScriptUpdate) Where(ps ...predicate.Script) *ScriptUpdate {
 	su.mutation.predicates = append(su.mutation.predicates, ps...)
 	return su
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (su *ScriptUpdate) SetName(s string) *ScriptUpdate {
 	su.mutation.SetName(s)
 	return su
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (su *ScriptUpdate) SetLanguage(s string) *ScriptUpdate {
 	su.mutation.SetLanguage(s)
 	return su
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (su *ScriptUpdate) SetDescription(s string) *ScriptUpdate {
 	su.mutation.SetDescription(s)
 	return su
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (su *ScriptUpdate) SetSource(s string) *ScriptUpdate {
 	su.mutation.SetSource(s)
 	return su
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (su *ScriptUpdate) SetSourceType(s string) *ScriptUpdate {
 	su.mutation.SetSourceType(s)
 	return su
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (su *ScriptUpdate) SetCooldown(i int) *ScriptUpdate {
 	su.mutation.ResetCooldown()
 	su.mutation.SetCooldown(i)
 	return su
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (su *ScriptUpdate) AddCooldown(i int) *ScriptUpdate {
 	su.mutation.AddCooldown(i)
 	return su
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (su *ScriptUpdate) SetTimeout(i int) *ScriptUpdate {
 	su.mutation.ResetTimeout()
 	su.mutation.SetTimeout(i)
 	return su
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (su *ScriptUpdate) AddTimeout(i int) *ScriptUpdate {
 	su.mutation.AddTimeout(i)
 	return su
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (su *ScriptUpdate) SetIgnoreErrors(b bool) *ScriptUpdate {
 	su.mutation.SetIgnoreErrors(b)
 	return su
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (su *ScriptUpdate) SetArgs(s []string) *ScriptUpdate {
 	su.mutation.SetArgs(s)
 	return su
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (su *ScriptUpdate) SetDisabled(b bool) *ScriptUpdate {
 	su.mutation.SetDisabled(b)
 	return su
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (su *ScriptUpdate) SetVars(m map[string]string) *ScriptUpdate {
 	su.mutation.SetVars(m)
 	return su
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (su *ScriptUpdate) SetAbsPath(s string) *ScriptUpdate {
 	su.mutation.SetAbsPath(s)
 	return su
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (su *ScriptUpdate) SetTags(m map[string]string) *ScriptUpdate {
 	su.mutation.SetTags(m)
 	return su
 }
 
-// AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
+// AddScriptToTagIDs adds the "ScriptToTag" edge to the Tag entity by IDs.
 func (su *ScriptUpdate) AddScriptToTagIDs(ids ...int) *ScriptUpdate {
 	su.mutation.AddScriptToTagIDs(ids...)
 	return su
 }
 
-// AddScriptToTag adds the ScriptToTag edges to Tag.
+// AddScriptToTag adds the "ScriptToTag" edges to the Tag entity.
 func (su *ScriptUpdate) AddScriptToTag(t ...*Tag) *ScriptUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -136,13 +136,13 @@ func (su *ScriptUpdate) AddScriptToTag(t ...*Tag) *ScriptUpdate {
 	return su.AddScriptToTagIDs(ids...)
 }
 
-// AddScriptToUserIDs adds the ScriptToUser edge to User by ids.
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
 func (su *ScriptUpdate) AddScriptToUserIDs(ids ...int) *ScriptUpdate {
 	su.mutation.AddScriptToUserIDs(ids...)
 	return su
 }
 
-// AddScriptToUser adds the ScriptToUser edges to User.
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (su *ScriptUpdate) AddScriptToUser(u ...*User) *ScriptUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -151,13 +151,13 @@ func (su *ScriptUpdate) AddScriptToUser(u ...*User) *ScriptUpdate {
 	return su.AddScriptToUserIDs(ids...)
 }
 
-// AddScriptToFindingIDs adds the ScriptToFinding edge to Finding by ids.
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
 func (su *ScriptUpdate) AddScriptToFindingIDs(ids ...int) *ScriptUpdate {
 	su.mutation.AddScriptToFindingIDs(ids...)
 	return su
 }
 
-// AddScriptToFinding adds the ScriptToFinding edges to Finding.
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (su *ScriptUpdate) AddScriptToFinding(f ...*Finding) *ScriptUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -171,19 +171,19 @@ func (su *ScriptUpdate) Mutation() *ScriptMutation {
 	return su.mutation
 }
 
-// ClearScriptToTag clears all "ScriptToTag" edges to type Tag.
+// ClearScriptToTag clears all "ScriptToTag" edges to the Tag entity.
 func (su *ScriptUpdate) ClearScriptToTag() *ScriptUpdate {
 	su.mutation.ClearScriptToTag()
 	return su
 }
 
-// RemoveScriptToTagIDs removes the ScriptToTag edge to Tag by ids.
+// RemoveScriptToTagIDs removes the "ScriptToTag" edge to Tag entities by IDs.
 func (su *ScriptUpdate) RemoveScriptToTagIDs(ids ...int) *ScriptUpdate {
 	su.mutation.RemoveScriptToTagIDs(ids...)
 	return su
 }
 
-// RemoveScriptToTag removes ScriptToTag edges to Tag.
+// RemoveScriptToTag removes "ScriptToTag" edges to Tag entities.
 func (su *ScriptUpdate) RemoveScriptToTag(t ...*Tag) *ScriptUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -192,19 +192,19 @@ func (su *ScriptUpdate) RemoveScriptToTag(t ...*Tag) *ScriptUpdate {
 	return su.RemoveScriptToTagIDs(ids...)
 }
 
-// ClearScriptToUser clears all "ScriptToUser" edges to type User.
+// ClearScriptToUser clears all "ScriptToUser" edges to the User entity.
 func (su *ScriptUpdate) ClearScriptToUser() *ScriptUpdate {
 	su.mutation.ClearScriptToUser()
 	return su
 }
 
-// RemoveScriptToUserIDs removes the ScriptToUser edge to User by ids.
+// RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
 func (su *ScriptUpdate) RemoveScriptToUserIDs(ids ...int) *ScriptUpdate {
 	su.mutation.RemoveScriptToUserIDs(ids...)
 	return su
 }
 
-// RemoveScriptToUser removes ScriptToUser edges to User.
+// RemoveScriptToUser removes "ScriptToUser" edges to User entities.
 func (su *ScriptUpdate) RemoveScriptToUser(u ...*User) *ScriptUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -213,19 +213,19 @@ func (su *ScriptUpdate) RemoveScriptToUser(u ...*User) *ScriptUpdate {
 	return su.RemoveScriptToUserIDs(ids...)
 }
 
-// ClearScriptToFinding clears all "ScriptToFinding" edges to type Finding.
+// ClearScriptToFinding clears all "ScriptToFinding" edges to the Finding entity.
 func (su *ScriptUpdate) ClearScriptToFinding() *ScriptUpdate {
 	su.mutation.ClearScriptToFinding()
 	return su
 }
 
-// RemoveScriptToFindingIDs removes the ScriptToFinding edge to Finding by ids.
+// RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
 func (su *ScriptUpdate) RemoveScriptToFindingIDs(ids ...int) *ScriptUpdate {
 	su.mutation.RemoveScriptToFindingIDs(ids...)
 	return su
 }
 
-// RemoveScriptToFinding removes ScriptToFinding edges to Finding.
+// RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
 func (su *ScriptUpdate) RemoveScriptToFinding(f ...*Finding) *ScriptUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -588,105 +588,105 @@ type ScriptUpdateOne struct {
 	mutation *ScriptMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (suo *ScriptUpdateOne) SetName(s string) *ScriptUpdateOne {
 	suo.mutation.SetName(s)
 	return suo
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (suo *ScriptUpdateOne) SetLanguage(s string) *ScriptUpdateOne {
 	suo.mutation.SetLanguage(s)
 	return suo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (suo *ScriptUpdateOne) SetDescription(s string) *ScriptUpdateOne {
 	suo.mutation.SetDescription(s)
 	return suo
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (suo *ScriptUpdateOne) SetSource(s string) *ScriptUpdateOne {
 	suo.mutation.SetSource(s)
 	return suo
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (suo *ScriptUpdateOne) SetSourceType(s string) *ScriptUpdateOne {
 	suo.mutation.SetSourceType(s)
 	return suo
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (suo *ScriptUpdateOne) SetCooldown(i int) *ScriptUpdateOne {
 	suo.mutation.ResetCooldown()
 	suo.mutation.SetCooldown(i)
 	return suo
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (suo *ScriptUpdateOne) AddCooldown(i int) *ScriptUpdateOne {
 	suo.mutation.AddCooldown(i)
 	return suo
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (suo *ScriptUpdateOne) SetTimeout(i int) *ScriptUpdateOne {
 	suo.mutation.ResetTimeout()
 	suo.mutation.SetTimeout(i)
 	return suo
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (suo *ScriptUpdateOne) AddTimeout(i int) *ScriptUpdateOne {
 	suo.mutation.AddTimeout(i)
 	return suo
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (suo *ScriptUpdateOne) SetIgnoreErrors(b bool) *ScriptUpdateOne {
 	suo.mutation.SetIgnoreErrors(b)
 	return suo
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (suo *ScriptUpdateOne) SetArgs(s []string) *ScriptUpdateOne {
 	suo.mutation.SetArgs(s)
 	return suo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (suo *ScriptUpdateOne) SetDisabled(b bool) *ScriptUpdateOne {
 	suo.mutation.SetDisabled(b)
 	return suo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (suo *ScriptUpdateOne) SetVars(m map[string]string) *ScriptUpdateOne {
 	suo.mutation.SetVars(m)
 	return suo
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (suo *ScriptUpdateOne) SetAbsPath(s string) *ScriptUpdateOne {
 	suo.mutation.SetAbsPath(s)
 	return suo
 }
 
-// SetTags sets the tags field.
+// SetTags sets the "tags" field.
 func (suo *ScriptUpdateOne) SetTags(m map[string]string) *ScriptUpdateOne {
 	suo.mutation.SetTags(m)
 	return suo
 }
 
-// AddScriptToTagIDs adds the ScriptToTag edge to Tag by ids.
+// AddScriptToTagIDs adds the "ScriptToTag" edge to the Tag entity by IDs.
 func (suo *ScriptUpdateOne) AddScriptToTagIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.AddScriptToTagIDs(ids...)
 	return suo
 }
 
-// AddScriptToTag adds the ScriptToTag edges to Tag.
+// AddScriptToTag adds the "ScriptToTag" edges to the Tag entity.
 func (suo *ScriptUpdateOne) AddScriptToTag(t ...*Tag) *ScriptUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -695,13 +695,13 @@ func (suo *ScriptUpdateOne) AddScriptToTag(t ...*Tag) *ScriptUpdateOne {
 	return suo.AddScriptToTagIDs(ids...)
 }
 
-// AddScriptToUserIDs adds the ScriptToUser edge to User by ids.
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
 func (suo *ScriptUpdateOne) AddScriptToUserIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.AddScriptToUserIDs(ids...)
 	return suo
 }
 
-// AddScriptToUser adds the ScriptToUser edges to User.
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (suo *ScriptUpdateOne) AddScriptToUser(u ...*User) *ScriptUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -710,13 +710,13 @@ func (suo *ScriptUpdateOne) AddScriptToUser(u ...*User) *ScriptUpdateOne {
 	return suo.AddScriptToUserIDs(ids...)
 }
 
-// AddScriptToFindingIDs adds the ScriptToFinding edge to Finding by ids.
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
 func (suo *ScriptUpdateOne) AddScriptToFindingIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.AddScriptToFindingIDs(ids...)
 	return suo
 }
 
-// AddScriptToFinding adds the ScriptToFinding edges to Finding.
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (suo *ScriptUpdateOne) AddScriptToFinding(f ...*Finding) *ScriptUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -730,19 +730,19 @@ func (suo *ScriptUpdateOne) Mutation() *ScriptMutation {
 	return suo.mutation
 }
 
-// ClearScriptToTag clears all "ScriptToTag" edges to type Tag.
+// ClearScriptToTag clears all "ScriptToTag" edges to the Tag entity.
 func (suo *ScriptUpdateOne) ClearScriptToTag() *ScriptUpdateOne {
 	suo.mutation.ClearScriptToTag()
 	return suo
 }
 
-// RemoveScriptToTagIDs removes the ScriptToTag edge to Tag by ids.
+// RemoveScriptToTagIDs removes the "ScriptToTag" edge to Tag entities by IDs.
 func (suo *ScriptUpdateOne) RemoveScriptToTagIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.RemoveScriptToTagIDs(ids...)
 	return suo
 }
 
-// RemoveScriptToTag removes ScriptToTag edges to Tag.
+// RemoveScriptToTag removes "ScriptToTag" edges to Tag entities.
 func (suo *ScriptUpdateOne) RemoveScriptToTag(t ...*Tag) *ScriptUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -751,19 +751,19 @@ func (suo *ScriptUpdateOne) RemoveScriptToTag(t ...*Tag) *ScriptUpdateOne {
 	return suo.RemoveScriptToTagIDs(ids...)
 }
 
-// ClearScriptToUser clears all "ScriptToUser" edges to type User.
+// ClearScriptToUser clears all "ScriptToUser" edges to the User entity.
 func (suo *ScriptUpdateOne) ClearScriptToUser() *ScriptUpdateOne {
 	suo.mutation.ClearScriptToUser()
 	return suo
 }
 
-// RemoveScriptToUserIDs removes the ScriptToUser edge to User by ids.
+// RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
 func (suo *ScriptUpdateOne) RemoveScriptToUserIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.RemoveScriptToUserIDs(ids...)
 	return suo
 }
 
-// RemoveScriptToUser removes ScriptToUser edges to User.
+// RemoveScriptToUser removes "ScriptToUser" edges to User entities.
 func (suo *ScriptUpdateOne) RemoveScriptToUser(u ...*User) *ScriptUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
@@ -772,19 +772,19 @@ func (suo *ScriptUpdateOne) RemoveScriptToUser(u ...*User) *ScriptUpdateOne {
 	return suo.RemoveScriptToUserIDs(ids...)
 }
 
-// ClearScriptToFinding clears all "ScriptToFinding" edges to type Finding.
+// ClearScriptToFinding clears all "ScriptToFinding" edges to the Finding entity.
 func (suo *ScriptUpdateOne) ClearScriptToFinding() *ScriptUpdateOne {
 	suo.mutation.ClearScriptToFinding()
 	return suo
 }
 
-// RemoveScriptToFindingIDs removes the ScriptToFinding edge to Finding by ids.
+// RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
 func (suo *ScriptUpdateOne) RemoveScriptToFindingIDs(ids ...int) *ScriptUpdateOne {
 	suo.mutation.RemoveScriptToFindingIDs(ids...)
 	return suo
 }
 
-// RemoveScriptToFinding removes ScriptToFinding edges to Finding.
+// RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
 func (suo *ScriptUpdateOne) RemoveScriptToFinding(f ...*Finding) *ScriptUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -793,7 +793,7 @@ func (suo *ScriptUpdateOne) RemoveScriptToFinding(f ...*Finding) *ScriptUpdateOn
 	return suo.RemoveScriptToFindingIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Script entity.
 func (suo *ScriptUpdateOne) Save(ctx context.Context) (*Script, error) {
 	var (
 		err  error
@@ -860,6 +860,13 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Script.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := suo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1129,7 +1136,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	}
 	_node = &Script{config: suo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, suo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{script.Label}

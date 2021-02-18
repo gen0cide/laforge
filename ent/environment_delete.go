@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type EnvironmentDelete struct {
 	mutation *EnvironmentMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the EnvironmentDelete builder.
 func (ed *EnvironmentDelete) Where(ps ...predicate.Environment) *EnvironmentDelete {
 	ed.mutation.predicates = append(ed.mutation.predicates, ps...)
 	return ed

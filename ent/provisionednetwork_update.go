@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -26,31 +26,31 @@ type ProvisionedNetworkUpdate struct {
 	mutation *ProvisionedNetworkMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the ProvisionedNetworkUpdate builder.
 func (pnu *ProvisionedNetworkUpdate) Where(ps ...predicate.ProvisionedNetwork) *ProvisionedNetworkUpdate {
 	pnu.mutation.predicates = append(pnu.mutation.predicates, ps...)
 	return pnu
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (pnu *ProvisionedNetworkUpdate) SetName(s string) *ProvisionedNetworkUpdate {
 	pnu.mutation.SetName(s)
 	return pnu
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (pnu *ProvisionedNetworkUpdate) SetCidr(s string) *ProvisionedNetworkUpdate {
 	pnu.mutation.SetCidr(s)
 	return pnu
 }
 
-// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+// AddProvisionedNetworkToTagIDs adds the "ProvisionedNetworkToTag" edge to the Tag entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+// AddProvisionedNetworkToTag adds the "ProvisionedNetworkToTag" edges to the Tag entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -59,13 +59,13 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTag(t ...*Tag) *Prov
 	return pnu.AddProvisionedNetworkToTagIDs(ids...)
 }
 
-// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+// AddProvisionedNetworkToStatuIDs adds the "ProvisionedNetworkToStatus" edge to the Status entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToStatuIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+// AddProvisionedNetworkToStatus adds the "ProvisionedNetworkToStatus" edges to the Status entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -74,13 +74,13 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToStatus(s ...*Status)
 	return pnu.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+// AddProvisionedNetworkToNetworkIDs adds the "ProvisionedNetworkToNetwork" edge to the Network entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+// AddProvisionedNetworkToNetwork adds the "ProvisionedNetworkToNetwork" edges to the Network entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -89,13 +89,13 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToNetwork(n ...*Networ
 	return pnu.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+// AddProvisionedNetworkToBuildIDs adds the "ProvisionedNetworkToBuild" edge to the Build entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+// AddProvisionedNetworkToBuild adds the "ProvisionedNetworkToBuild" edges to the Build entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -104,13 +104,13 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToBuild(b ...*Build) *
 	return pnu.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
-// AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
+// AddProvisionedNetworkToTeamIDs adds the "ProvisionedNetworkToTeam" edge to the Team entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTeamIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToTeamIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToTeam adds the ProvisionedNetworkToTeam edges to Team.
+// AddProvisionedNetworkToTeam adds the "ProvisionedNetworkToTeam" edges to the Team entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTeam(t ...*Team) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -119,13 +119,13 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToTeam(t ...*Team) *Pr
 	return pnu.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+// AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnu
 }
 
-// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+// AddProvisionedNetworkToProvisionedHost adds the "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -139,19 +139,19 @@ func (pnu *ProvisionedNetworkUpdate) Mutation() *ProvisionedNetworkMutation {
 	return pnu.mutation
 }
 
-// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to type Tag.
+// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to the Tag entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToTag() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToTag()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToTagIDs removes the ProvisionedNetworkToTag edge to Tag by ids.
+// RemoveProvisionedNetworkToTagIDs removes the "ProvisionedNetworkToTag" edge to Tag entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToTagIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToTag removes ProvisionedNetworkToTag edges to Tag.
+// RemoveProvisionedNetworkToTag removes "ProvisionedNetworkToTag" edges to Tag entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -160,19 +160,19 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTag(t ...*Tag) *P
 	return pnu.RemoveProvisionedNetworkToTagIDs(ids...)
 }
 
-// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to type Status.
+// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to the Status entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToStatus() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToStatus()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToStatuIDs removes the ProvisionedNetworkToStatus edge to Status by ids.
+// RemoveProvisionedNetworkToStatuIDs removes the "ProvisionedNetworkToStatus" edge to Status entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToStatuIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToStatus removes ProvisionedNetworkToStatus edges to Status.
+// RemoveProvisionedNetworkToStatus removes "ProvisionedNetworkToStatus" edges to Status entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -181,19 +181,19 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToStatus(s ...*Stat
 	return pnu.RemoveProvisionedNetworkToStatuIDs(ids...)
 }
 
-// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to type Network.
+// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to the Network entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToNetwork() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToNetwork()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToNetworkIDs removes the ProvisionedNetworkToNetwork edge to Network by ids.
+// RemoveProvisionedNetworkToNetworkIDs removes the "ProvisionedNetworkToNetwork" edge to Network entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToNetworkIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToNetwork removes ProvisionedNetworkToNetwork edges to Network.
+// RemoveProvisionedNetworkToNetwork removes "ProvisionedNetworkToNetwork" edges to Network entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -202,19 +202,19 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToNetwork(n ...*Net
 	return pnu.RemoveProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type Build.
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to the Build entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToBuild() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToBuild()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to Build by ids.
+// RemoveProvisionedNetworkToBuildIDs removes the "ProvisionedNetworkToBuild" edge to Build entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to Build.
+// RemoveProvisionedNetworkToBuild removes "ProvisionedNetworkToBuild" edges to Build entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -223,19 +223,19 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToBuild(b ...*Build
 	return pnu.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
-// ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to type Team.
+// ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to the Team entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToTeam() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToTeam()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToTeamIDs removes the ProvisionedNetworkToTeam edge to Team by ids.
+// RemoveProvisionedNetworkToTeamIDs removes the "ProvisionedNetworkToTeam" edge to Team entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTeamIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToTeamIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToTeam removes ProvisionedNetworkToTeam edges to Team.
+// RemoveProvisionedNetworkToTeam removes "ProvisionedNetworkToTeam" edges to Team entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTeam(t ...*Team) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -244,19 +244,19 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToTeam(t ...*Team) 
 	return pnu.RemoveProvisionedNetworkToTeamIDs(ids...)
 }
 
-// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to type ProvisionedHost.
+// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToProvisionedHost() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToProvisionedHost()
 	return pnu
 }
 
-// RemoveProvisionedNetworkToProvisionedHostIDs removes the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+// RemoveProvisionedNetworkToProvisionedHostIDs removes the "ProvisionedNetworkToProvisionedHost" edge to ProvisionedHost entities by IDs.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdate {
 	pnu.mutation.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnu
 }
 
-// RemoveProvisionedNetworkToProvisionedHost removes ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+// RemoveProvisionedNetworkToProvisionedHost removes "ProvisionedNetworkToProvisionedHost" edges to ProvisionedHost entities.
 func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -690,25 +690,25 @@ type ProvisionedNetworkUpdateOne struct {
 	mutation *ProvisionedNetworkMutation
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (pnuo *ProvisionedNetworkUpdateOne) SetName(s string) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.SetName(s)
 	return pnuo
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (pnuo *ProvisionedNetworkUpdateOne) SetCidr(s string) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.SetCidr(s)
 	return pnuo
 }
 
-// AddProvisionedNetworkToTagIDs adds the ProvisionedNetworkToTag edge to Tag by ids.
+// AddProvisionedNetworkToTagIDs adds the "ProvisionedNetworkToTag" edge to the Tag entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToTagIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToTag adds the ProvisionedNetworkToTag edges to Tag.
+// AddProvisionedNetworkToTag adds the "ProvisionedNetworkToTag" edges to the Tag entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -717,13 +717,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTag(t ...*Tag) *
 	return pnuo.AddProvisionedNetworkToTagIDs(ids...)
 }
 
-// AddProvisionedNetworkToStatuIDs adds the ProvisionedNetworkToStatus edge to Status by ids.
+// AddProvisionedNetworkToStatuIDs adds the "ProvisionedNetworkToStatus" edge to the Status entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToStatuIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToStatus adds the ProvisionedNetworkToStatus edges to Status.
+// AddProvisionedNetworkToStatus adds the "ProvisionedNetworkToStatus" edges to the Status entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -732,13 +732,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToStatus(s ...*Sta
 	return pnuo.AddProvisionedNetworkToStatuIDs(ids...)
 }
 
-// AddProvisionedNetworkToNetworkIDs adds the ProvisionedNetworkToNetwork edge to Network by ids.
+// AddProvisionedNetworkToNetworkIDs adds the "ProvisionedNetworkToNetwork" edge to the Network entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToNetworkIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToNetwork adds the ProvisionedNetworkToNetwork edges to Network.
+// AddProvisionedNetworkToNetwork adds the "ProvisionedNetworkToNetwork" edges to the Network entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -747,13 +747,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToNetwork(n ...*Ne
 	return pnuo.AddProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// AddProvisionedNetworkToBuildIDs adds the ProvisionedNetworkToBuild edge to Build by ids.
+// AddProvisionedNetworkToBuildIDs adds the "ProvisionedNetworkToBuild" edge to the Build entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToBuildIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToBuild adds the ProvisionedNetworkToBuild edges to Build.
+// AddProvisionedNetworkToBuild adds the "ProvisionedNetworkToBuild" edges to the Build entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -762,13 +762,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToBuild(b ...*Buil
 	return pnuo.AddProvisionedNetworkToBuildIDs(ids...)
 }
 
-// AddProvisionedNetworkToTeamIDs adds the ProvisionedNetworkToTeam edge to Team by ids.
+// AddProvisionedNetworkToTeamIDs adds the "ProvisionedNetworkToTeam" edge to the Team entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTeamIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToTeamIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToTeam adds the ProvisionedNetworkToTeam edges to Team.
+// AddProvisionedNetworkToTeam adds the "ProvisionedNetworkToTeam" edges to the Team entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTeam(t ...*Team) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -777,13 +777,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToTeam(t ...*Team)
 	return pnuo.AddProvisionedNetworkToTeamIDs(ids...)
 }
 
-// AddProvisionedNetworkToProvisionedHostIDs adds the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+// AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnuo
 }
 
-// AddProvisionedNetworkToProvisionedHost adds the ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+// AddProvisionedNetworkToProvisionedHost adds the "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -797,19 +797,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) Mutation() *ProvisionedNetworkMutation 
 	return pnuo.mutation
 }
 
-// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to type Tag.
+// ClearProvisionedNetworkToTag clears all "ProvisionedNetworkToTag" edges to the Tag entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToTag() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToTag()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToTagIDs removes the ProvisionedNetworkToTag edge to Tag by ids.
+// RemoveProvisionedNetworkToTagIDs removes the "ProvisionedNetworkToTag" edge to Tag entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTagIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToTagIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToTag removes ProvisionedNetworkToTag edges to Tag.
+// RemoveProvisionedNetworkToTag removes "ProvisionedNetworkToTag" edges to Tag entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTag(t ...*Tag) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -818,19 +818,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTag(t ...*Tag
 	return pnuo.RemoveProvisionedNetworkToTagIDs(ids...)
 }
 
-// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to type Status.
+// ClearProvisionedNetworkToStatus clears all "ProvisionedNetworkToStatus" edges to the Status entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToStatus() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToStatus()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToStatuIDs removes the ProvisionedNetworkToStatus edge to Status by ids.
+// RemoveProvisionedNetworkToStatuIDs removes the "ProvisionedNetworkToStatus" edge to Status entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToStatuIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToStatuIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToStatus removes ProvisionedNetworkToStatus edges to Status.
+// RemoveProvisionedNetworkToStatus removes "ProvisionedNetworkToStatus" edges to Status entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToStatus(s ...*Status) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -839,19 +839,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToStatus(s ...*
 	return pnuo.RemoveProvisionedNetworkToStatuIDs(ids...)
 }
 
-// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to type Network.
+// ClearProvisionedNetworkToNetwork clears all "ProvisionedNetworkToNetwork" edges to the Network entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToNetwork() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToNetwork()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToNetworkIDs removes the ProvisionedNetworkToNetwork edge to Network by ids.
+// RemoveProvisionedNetworkToNetworkIDs removes the "ProvisionedNetworkToNetwork" edge to Network entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToNetworkIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToNetworkIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToNetwork removes ProvisionedNetworkToNetwork edges to Network.
+// RemoveProvisionedNetworkToNetwork removes "ProvisionedNetworkToNetwork" edges to Network entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToNetwork(n ...*Network) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
@@ -860,19 +860,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToNetwork(n ...
 	return pnuo.RemoveProvisionedNetworkToNetworkIDs(ids...)
 }
 
-// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to type Build.
+// ClearProvisionedNetworkToBuild clears all "ProvisionedNetworkToBuild" edges to the Build entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToBuild() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToBuild()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToBuildIDs removes the ProvisionedNetworkToBuild edge to Build by ids.
+// RemoveProvisionedNetworkToBuildIDs removes the "ProvisionedNetworkToBuild" edge to Build entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToBuildIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToBuildIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToBuild removes ProvisionedNetworkToBuild edges to Build.
+// RemoveProvisionedNetworkToBuild removes "ProvisionedNetworkToBuild" edges to Build entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToBuild(b ...*Build) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(b))
 	for i := range b {
@@ -881,19 +881,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToBuild(b ...*B
 	return pnuo.RemoveProvisionedNetworkToBuildIDs(ids...)
 }
 
-// ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to type Team.
+// ClearProvisionedNetworkToTeam clears all "ProvisionedNetworkToTeam" edges to the Team entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToTeam() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToTeam()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToTeamIDs removes the ProvisionedNetworkToTeam edge to Team by ids.
+// RemoveProvisionedNetworkToTeamIDs removes the "ProvisionedNetworkToTeam" edge to Team entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTeamIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToTeamIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToTeam removes ProvisionedNetworkToTeam edges to Team.
+// RemoveProvisionedNetworkToTeam removes "ProvisionedNetworkToTeam" edges to Team entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTeam(t ...*Team) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
@@ -902,19 +902,19 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToTeam(t ...*Te
 	return pnuo.RemoveProvisionedNetworkToTeamIDs(ids...)
 }
 
-// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to type ProvisionedHost.
+// ClearProvisionedNetworkToProvisionedHost clears all "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToProvisionedHost() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToProvisionedHost()
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToProvisionedHostIDs removes the ProvisionedNetworkToProvisionedHost edge to ProvisionedHost by ids.
+// RemoveProvisionedNetworkToProvisionedHostIDs removes the "ProvisionedNetworkToProvisionedHost" edge to ProvisionedHost entities by IDs.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnuo
 }
 
-// RemoveProvisionedNetworkToProvisionedHost removes ProvisionedNetworkToProvisionedHost edges to ProvisionedHost.
+// RemoveProvisionedNetworkToProvisionedHost removes "ProvisionedNetworkToProvisionedHost" edges to ProvisionedHost entities.
 func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
@@ -923,7 +923,7 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHo
 	return pnuo.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated ProvisionedNetwork entity.
 func (pnuo *ProvisionedNetworkUpdateOne) Save(ctx context.Context) (*ProvisionedNetwork, error) {
 	var (
 		err  error
@@ -990,6 +990,13 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing ProvisionedNetwork.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := pnuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := pnuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1330,7 +1337,7 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	_node = &ProvisionedNetwork{config: pnuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, pnuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionednetwork.Label}
