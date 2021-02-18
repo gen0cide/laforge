@@ -14,6 +14,8 @@ type Environment struct {
 // Fields of the Environment.
 func (Environment) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("competition_id").
 			StructTag(`hcl:"competition_id,attr"`),
 		field.String("name").
@@ -33,7 +35,7 @@ func (Environment) Fields() []ent.Field {
 		field.JSON("config", map[string]string{}).
 			StructTag(`hcl:"config,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

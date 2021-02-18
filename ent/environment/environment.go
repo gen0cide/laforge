@@ -7,6 +7,8 @@ const (
 	Label = "environment"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldCompetitionID holds the string denoting the competition_id field in the database.
 	FieldCompetitionID = "competition_id"
 	// FieldName holds the string denoting the name field in the database.
@@ -94,6 +96,7 @@ const (
 // Columns holds all SQL columns for environment fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldCompetitionID,
 	FieldName,
 	FieldDescription,

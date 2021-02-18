@@ -39,7 +39,7 @@ func (Host) Fields() []ent.Field {
 		field.JSON("provision_steps", []string{}).Optional().
 			StructTag(`hcl:"provision_steps,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

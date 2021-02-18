@@ -79,6 +79,7 @@ var (
 	// CompetitionsColumns holds the columns for the "competitions" table.
 	CompetitionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "root_password", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
@@ -166,6 +167,7 @@ var (
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "competition_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},

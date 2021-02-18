@@ -17,7 +17,7 @@ func (FileDelete) Fields() []ent.Field {
 		field.String("path").
 			StructTag(`hcl:"path,attr"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

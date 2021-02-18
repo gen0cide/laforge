@@ -7,6 +7,8 @@ const (
 	Label = "competition"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldRootPassword holds the string denoting the root_password field in the database.
 	FieldRootPassword = "root_password"
 	// FieldConfig holds the string denoting the config field in the database.
@@ -47,6 +49,7 @@ const (
 // Columns holds all SQL columns for competition fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldRootPassword,
 	FieldConfig,
 	FieldTags,

@@ -348,12 +348,12 @@ func (cq *CompetitionQuery) WithCompetitionToEnvironment(opts ...func(*Environme
 // Example:
 //
 //	var v []struct {
-//		RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Competition.Query().
-//		GroupBy(competition.FieldRootPassword).
+//		GroupBy(competition.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -374,11 +374,11 @@ func (cq *CompetitionQuery) GroupBy(field string, fields ...string) *Competition
 // Example:
 //
 //	var v []struct {
-//		RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Competition.Query().
-//		Select(competition.FieldRootPassword).
+//		Select(competition.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (cq *CompetitionQuery) Select(field string, fields ...string) *CompetitionSelect {

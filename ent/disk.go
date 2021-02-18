@@ -12,7 +12,7 @@ import (
 
 // Disk is the model entity for the Disk schema.
 type Disk struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Size holds the value of the "size" field.

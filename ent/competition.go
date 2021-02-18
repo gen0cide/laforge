@@ -13,15 +13,17 @@ import (
 
 // Competition is the model entity for the Competition schema.
 type Competition struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// RootPassword holds the value of the "root_password" field.
 	RootPassword string `json:"root_password,omitempty" hcl:"root_password,attr"`
 	// Config holds the value of the "config" field.
 	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
 	Edges CompetitionEdges `json:"edges"`
@@ -71,6 +73,7 @@ func (e CompetitionEdges) CompetitionToEnvironmentOrErr() ([]*Environment, error
 func (*Competition) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
+		&sql.NullString{}, // hcl_id
 		&sql.NullString{}, // root_password
 		&[]byte{},         // config
 		&[]byte{},         // tags
@@ -90,21 +93,26 @@ func (c *Competition) assignValues(values ...interface{}) error {
 	c.ID = int(value.Int64)
 	values = values[1:]
 	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field root_password", values[0])
+		return fmt.Errorf("unexpected type %T for field hcl_id", values[0])
+	} else if value.Valid {
+		c.HclID = value.String
+	}
+	if value, ok := values[1].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field root_password", values[1])
 	} else if value.Valid {
 		c.RootPassword = value.String
 	}
 
-	if value, ok := values[1].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[1])
+	if value, ok := values[2].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field config", values[2])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &c.Config); err != nil {
 			return fmt.Errorf("unmarshal field config: %v", err)
 		}
 	}
 
-	if value, ok := values[2].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[2])
+	if value, ok := values[3].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[3])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &c.Tags); err != nil {
 			return fmt.Errorf("unmarshal field tags: %v", err)
@@ -151,6 +159,8 @@ func (c *Competition) String() string {
 	var builder strings.Builder
 	builder.WriteString("Competition(")
 	builder.WriteString(fmt.Sprintf("id=%v", c.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(c.HclID)
 	builder.WriteString(", root_password=")
 	builder.WriteString(c.RootPassword)
 	builder.WriteString(", config=")

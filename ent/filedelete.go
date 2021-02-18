@@ -13,13 +13,13 @@ import (
 
 // FileDelete is the model entity for the FileDelete schema.
 type FileDelete struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty" hcl:"path,attr"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDeleteQuery when eager-loading is set.
 	Edges                                              FileDeleteEdges `json:"edges"`

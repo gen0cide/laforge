@@ -11,10 +11,13 @@ import (
 )
 
 func main() {
-    err := entc.Generate("./schema", &gen.Config{
-        Templates: entgql.AllTemplates,
-    })
-    if err != nil {
-        log.Fatalf("running ent codegen: %v", err)
-    }
+	opts := []entc.Option{
+		entc.TemplateFiles("template/ent.tmpl"),
+	}
+	err := entc.Generate("./schema", &gen.Config{
+		Templates: entgql.AllTemplates,
+	}, opts...)
+	if err != nil {
+		log.Fatalf("running ent codegen: %v", err)
+	}
 }

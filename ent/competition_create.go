@@ -22,6 +22,12 @@ type CompetitionCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the hcl_id field.
+func (cc *CompetitionCreate) SetHclID(s string) *CompetitionCreate {
+	cc.mutation.SetHclID(s)
+	return cc
+}
+
 // SetRootPassword sets the root_password field.
 func (cc *CompetitionCreate) SetRootPassword(s string) *CompetitionCreate {
 	cc.mutation.SetRootPassword(s)
@@ -136,6 +142,9 @@ func (cc *CompetitionCreate) SaveX(ctx context.Context) *Competition {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *CompetitionCreate) check() error {
+	if _, ok := cc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := cc.mutation.RootPassword(); !ok {
 		return &ValidationError{Name: "root_password", err: errors.New("ent: missing required field \"root_password\"")}
 	}
@@ -172,6 +181,14 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := cc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: competition.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := cc.mutation.RootPassword(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

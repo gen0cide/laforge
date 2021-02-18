@@ -528,12 +528,12 @@ func (eq *EnvironmentQuery) WithEnvironmentToTeam(opts ...func(*TeamQuery)) *Env
 // Example:
 //
 //	var v []struct {
-//		CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Environment.Query().
-//		GroupBy(environment.FieldCompetitionID).
+//		GroupBy(environment.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -554,11 +554,11 @@ func (eq *EnvironmentQuery) GroupBy(field string, fields ...string) *Environment
 // Example:
 //
 //	var v []struct {
-//		CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Environment.Query().
-//		Select(environment.FieldCompetitionID).
+//		Select(environment.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (eq *EnvironmentQuery) Select(field string, fields ...string) *EnvironmentSelect {

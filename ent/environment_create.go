@@ -27,6 +27,12 @@ type EnvironmentCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the hcl_id field.
+func (ec *EnvironmentCreate) SetHclID(s string) *EnvironmentCreate {
+	ec.mutation.SetHclID(s)
+	return ec
+}
+
 // SetCompetitionID sets the competition_id field.
 func (ec *EnvironmentCreate) SetCompetitionID(s string) *EnvironmentCreate {
 	ec.mutation.SetCompetitionID(s)
@@ -258,6 +264,9 @@ func (ec *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
 
 // check runs all checks and user-defined validators on the builder.
 func (ec *EnvironmentCreate) check() error {
+	if _, ok := ec.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := ec.mutation.CompetitionID(); !ok {
 		return &ValidationError{Name: "competition_id", err: errors.New("ent: missing required field \"competition_id\"")}
 	}
@@ -315,6 +324,14 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := ec.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: environment.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := ec.mutation.CompetitionID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

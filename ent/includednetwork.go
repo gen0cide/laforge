@@ -13,7 +13,7 @@ import (
 
 // IncludedNetwork is the model entity for the IncludedNetwork schema.
 type IncludedNetwork struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.

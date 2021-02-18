@@ -23,7 +23,7 @@ func (Network) Fields() []ent.Field {
 		field.JSON("vars", map[string]string{}).
 			StructTag(`hcl:"vars,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

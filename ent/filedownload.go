@@ -13,7 +13,7 @@ import (
 
 // FileDownload is the model entity for the FileDownload schema.
 type FileDownload struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// SourceType holds the value of the "source_type" field.
@@ -33,7 +33,7 @@ type FileDownload struct {
 	// AbsPath holds the value of the "abs_path" field.
 	AbsPath string `json:"abs_path,omitempty" hcl:"abs_path,optional"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDownloadQuery when eager-loading is set.
 	Edges                                                FileDownloadEdges `json:"edges"`

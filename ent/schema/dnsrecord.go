@@ -27,7 +27,7 @@ func (DNSRecord) Fields() []ent.Field {
 		field.Bool("disabled").
 			StructTag(`hcl:"disabled,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 
 // Script is the model entity for the Script schema.
 type Script struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -41,7 +41,7 @@ type Script struct {
 	// AbsPath holds the value of the "abs_path" field.
 	AbsPath string `json:"abs_path,omitempty" hcl:"abs_path,optional"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScriptQuery when eager-loading is set.
 	Edges                                         ScriptEdges `json:"edges"`

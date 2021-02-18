@@ -13,7 +13,7 @@ import (
 
 // DNSRecord is the model entity for the DNSRecord schema.
 type DNSRecord struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -29,7 +29,7 @@ type DNSRecord struct {
 	// Disabled holds the value of the "disabled" field.
 	Disabled bool `json:"disabled,omitempty" hcl:"disabled,optional"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSRecordQuery when eager-loading is set.
 	Edges                                             DNSRecordEdges `json:"edges"`

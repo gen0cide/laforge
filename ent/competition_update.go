@@ -29,6 +29,12 @@ func (cu *CompetitionUpdate) Where(ps ...predicate.Competition) *CompetitionUpda
 	return cu
 }
 
+// SetHclID sets the hcl_id field.
+func (cu *CompetitionUpdate) SetHclID(s string) *CompetitionUpdate {
+	cu.mutation.SetHclID(s)
+	return cu
+}
+
 // SetRootPassword sets the root_password field.
 func (cu *CompetitionUpdate) SetRootPassword(s string) *CompetitionUpdate {
 	cu.mutation.SetRootPassword(s)
@@ -228,6 +234,13 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: competition.FieldHclID,
+		})
 	}
 	if value, ok := cu.mutation.RootPassword(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -430,6 +443,12 @@ type CompetitionUpdateOne struct {
 	mutation *CompetitionMutation
 }
 
+// SetHclID sets the hcl_id field.
+func (cuo *CompetitionUpdateOne) SetHclID(s string) *CompetitionUpdateOne {
+	cuo.mutation.SetHclID(s)
+	return cuo
+}
+
 // SetRootPassword sets the root_password field.
 func (cuo *CompetitionUpdateOne) SetRootPassword(s string) *CompetitionUpdateOne {
 	cuo.mutation.SetRootPassword(s)
@@ -628,6 +647,13 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Competition.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if value, ok := cuo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: competition.FieldHclID,
+		})
+	}
 	if value, ok := cuo.mutation.RootPassword(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

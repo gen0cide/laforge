@@ -3431,6 +3431,7 @@ type CompetitionMutation struct {
 	op                               Op
 	typ                              string
 	id                               *int
+	hcl_id                           *string
 	root_password                    *string
 	_config                          *map[string]string
 	tags                             *map[string]string
@@ -3526,6 +3527,43 @@ func (m *CompetitionMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the hcl_id field.
+func (m *CompetitionMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the hcl_id value in the mutation.
+func (m *CompetitionMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old hcl_id value of the Competition.
+// If the Competition object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CompetitionMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID reset all changes of the "hcl_id" field.
+func (m *CompetitionMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetRootPassword sets the root_password field.
@@ -3812,7 +3850,10 @@ func (m *CompetitionMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *CompetitionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.hcl_id != nil {
+		fields = append(fields, competition.FieldHclID)
+	}
 	if m.root_password != nil {
 		fields = append(fields, competition.FieldRootPassword)
 	}
@@ -3830,6 +3871,8 @@ func (m *CompetitionMutation) Fields() []string {
 // not set, or was not define in the schema.
 func (m *CompetitionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case competition.FieldHclID:
+		return m.HclID()
 	case competition.FieldRootPassword:
 		return m.RootPassword()
 	case competition.FieldConfig:
@@ -3845,6 +3888,8 @@ func (m *CompetitionMutation) Field(name string) (ent.Value, bool) {
 // or the query to the database was failed.
 func (m *CompetitionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case competition.FieldHclID:
+		return m.OldHclID(ctx)
 	case competition.FieldRootPassword:
 		return m.OldRootPassword(ctx)
 	case competition.FieldConfig:
@@ -3860,6 +3905,13 @@ func (m *CompetitionMutation) OldField(ctx context.Context, name string) (ent.Va
 // type mismatch the field type.
 func (m *CompetitionMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case competition.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case competition.FieldRootPassword:
 		v, ok := value.(string)
 		if !ok {
@@ -3931,6 +3983,9 @@ func (m *CompetitionMutation) ClearField(name string) error {
 // defined in the schema.
 func (m *CompetitionMutation) ResetField(name string) error {
 	switch name {
+	case competition.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case competition.FieldRootPassword:
 		m.ResetRootPassword()
 		return nil
@@ -5835,6 +5890,7 @@ type EnvironmentMutation struct {
 	op                                   Op
 	typ                                  string
 	id                                   *int
+	hcl_id                               *string
 	competition_id                       *string
 	name                                 *string
 	description                          *string
@@ -5954,6 +6010,43 @@ func (m *EnvironmentMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the hcl_id field.
+func (m *EnvironmentMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the hcl_id value in the mutation.
+func (m *EnvironmentMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old hcl_id value of the Environment.
+// If the Environment object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *EnvironmentMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID reset all changes of the "hcl_id" field.
+func (m *EnvironmentMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetCompetitionID sets the competition_id field.
@@ -6804,7 +6897,10 @@ func (m *EnvironmentMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *EnvironmentMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
+	if m.hcl_id != nil {
+		fields = append(fields, environment.FieldHclID)
+	}
 	if m.competition_id != nil {
 		fields = append(fields, environment.FieldCompetitionID)
 	}
@@ -6843,6 +6939,8 @@ func (m *EnvironmentMutation) Fields() []string {
 // not set, or was not define in the schema.
 func (m *EnvironmentMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case environment.FieldHclID:
+		return m.HclID()
 	case environment.FieldCompetitionID:
 		return m.CompetitionID()
 	case environment.FieldName:
@@ -6872,6 +6970,8 @@ func (m *EnvironmentMutation) Field(name string) (ent.Value, bool) {
 // or the query to the database was failed.
 func (m *EnvironmentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case environment.FieldHclID:
+		return m.OldHclID(ctx)
 	case environment.FieldCompetitionID:
 		return m.OldCompetitionID(ctx)
 	case environment.FieldName:
@@ -6901,6 +7001,13 @@ func (m *EnvironmentMutation) OldField(ctx context.Context, name string) (ent.Va
 // type mismatch the field type.
 func (m *EnvironmentMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case environment.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case environment.FieldCompetitionID:
 		v, ok := value.(string)
 		if !ok {
@@ -7048,6 +7155,9 @@ func (m *EnvironmentMutation) ClearField(name string) error {
 // defined in the schema.
 func (m *EnvironmentMutation) ResetField(name string) error {
 	switch name {
+	case environment.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case environment.FieldCompetitionID:
 		m.ResetCompetitionID()
 		return nil

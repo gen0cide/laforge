@@ -13,9 +13,11 @@ import (
 
 // Environment is the model entity for the Environment schema.
 type Environment struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// CompetitionID holds the value of the "competition_id" field.
 	CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 	// Name holds the value of the "name" field.
@@ -35,7 +37,7 @@ type Environment struct {
 	// Config holds the value of the "config" field.
 	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
 	Edges EnvironmentEdges `json:"edges"`
@@ -140,6 +142,7 @@ func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
 func (*Environment) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
+		&sql.NullString{}, // hcl_id
 		&sql.NullString{}, // competition_id
 		&sql.NullString{}, // name
 		&sql.NullString{}, // description
@@ -166,62 +169,67 @@ func (e *Environment) assignValues(values ...interface{}) error {
 	e.ID = int(value.Int64)
 	values = values[1:]
 	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field competition_id", values[0])
+		return fmt.Errorf("unexpected type %T for field hcl_id", values[0])
+	} else if value.Valid {
+		e.HclID = value.String
+	}
+	if value, ok := values[1].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field competition_id", values[1])
 	} else if value.Valid {
 		e.CompetitionID = value.String
 	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[1])
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field name", values[2])
 	} else if value.Valid {
 		e.Name = value.String
 	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
+	if value, ok := values[3].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field description", values[3])
 	} else if value.Valid {
 		e.Description = value.String
 	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field builder", values[3])
+	if value, ok := values[4].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field builder", values[4])
 	} else if value.Valid {
 		e.Builder = value.String
 	}
-	if value, ok := values[4].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field team_count", values[4])
+	if value, ok := values[5].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field team_count", values[5])
 	} else if value.Valid {
 		e.TeamCount = int(value.Int64)
 	}
-	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field revision", values[5])
+	if value, ok := values[6].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field revision", values[6])
 	} else if value.Valid {
 		e.Revision = int(value.Int64)
 	}
 
-	if value, ok := values[6].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field admin_cidrs", values[6])
+	if value, ok := values[7].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field admin_cidrs", values[7])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
 			return fmt.Errorf("unmarshal field admin_cidrs: %v", err)
 		}
 	}
 
-	if value, ok := values[7].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[7])
+	if value, ok := values[8].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[8])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
 			return fmt.Errorf("unmarshal field exposed_vdi_ports: %v", err)
 		}
 	}
 
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[8])
+	if value, ok := values[9].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field config", values[9])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &e.Config); err != nil {
 			return fmt.Errorf("unmarshal field config: %v", err)
 		}
 	}
 
-	if value, ok := values[9].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[9])
+	if value, ok := values[10].(*[]byte); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[10])
 	} else if value != nil && len(*value) > 0 {
 		if err := json.Unmarshal(*value, &e.Tags); err != nil {
 			return fmt.Errorf("unmarshal field tags: %v", err)
@@ -293,6 +301,8 @@ func (e *Environment) String() string {
 	var builder strings.Builder
 	builder.WriteString("Environment(")
 	builder.WriteString(fmt.Sprintf("id=%v", e.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(e.HclID)
 	builder.WriteString(", competition_id=")
 	builder.WriteString(e.CompetitionID)
 	builder.WriteString(", name=")

@@ -13,7 +13,7 @@ import (
 
 // Finding is the model entity for the Finding schema.
 type Finding struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -25,7 +25,7 @@ type Finding struct {
 	// Difficulty holds the value of the "difficulty" field.
 	Difficulty finding.Difficulty `json:"difficulty,omitempty" hcl:"difficulty,attr"`
 	// Tags holds the value of the "tags" field.
-	Tags map[string]string `json:"tags,omitempty" hcl:"tags,attr"`
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FindingQuery when eager-loading is set.
 	Edges FindingEdges `json:"edges"`

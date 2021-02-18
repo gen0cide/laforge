@@ -23,7 +23,7 @@ func (Finding) Fields() []ent.Field {
 		field.Enum("difficulty").Values("ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty").
 			StructTag(`hcl:"difficulty,attr"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

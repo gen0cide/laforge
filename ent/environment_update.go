@@ -34,6 +34,12 @@ func (eu *EnvironmentUpdate) Where(ps ...predicate.Environment) *EnvironmentUpda
 	return eu
 }
 
+// SetHclID sets the hcl_id field.
+func (eu *EnvironmentUpdate) SetHclID(s string) *EnvironmentUpdate {
+	eu.mutation.SetHclID(s)
+	return eu
+}
+
 // SetCompetitionID sets the competition_id field.
 func (eu *EnvironmentUpdate) SetCompetitionID(s string) *EnvironmentUpdate {
 	eu.mutation.SetCompetitionID(s)
@@ -469,6 +475,13 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := eu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: environment.FieldHclID,
+		})
 	}
 	if value, ok := eu.mutation.CompetitionID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -1004,6 +1017,12 @@ type EnvironmentUpdateOne struct {
 	mutation *EnvironmentMutation
 }
 
+// SetHclID sets the hcl_id field.
+func (euo *EnvironmentUpdateOne) SetHclID(s string) *EnvironmentUpdateOne {
+	euo.mutation.SetHclID(s)
+	return euo
+}
+
 // SetCompetitionID sets the competition_id field.
 func (euo *EnvironmentUpdateOne) SetCompetitionID(s string) *EnvironmentUpdateOne {
 	euo.mutation.SetCompetitionID(s)
@@ -1438,6 +1457,13 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Environment.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if value, ok := euo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: environment.FieldHclID,
+		})
+	}
 	if value, ok := euo.mutation.CompetitionID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

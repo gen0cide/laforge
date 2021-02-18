@@ -21,7 +21,7 @@ func (FileExtract) Fields() []ent.Field {
 		field.String("type").
 			StructTag(`hcl:"type,attr"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

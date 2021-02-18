@@ -14,12 +14,14 @@ type Competition struct {
 // Fields of the Competition.
 func (Competition) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("root_password").
 			StructTag(`hcl:"root_password,attr"`),
 		field.JSON("config", map[string]string{}).
 			StructTag(`hcl:"config,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

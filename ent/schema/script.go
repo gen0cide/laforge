@@ -39,7 +39,7 @@ func (Script) Fields() []ent.Field {
 		field.String("abs_path").
 			StructTag(`hcl:"abs_path,optional"`),
 		field.JSON("tags", map[string]string{}).
-			StructTag(`hcl:"tags,attr"`),
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 

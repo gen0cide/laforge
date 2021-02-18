@@ -13,7 +13,7 @@ import (
 
 // DNS is the model entity for the DNS schema.
 type DNS struct {
-	config `hcl:"-" json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
