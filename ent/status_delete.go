@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/status"
 )
@@ -20,7 +20,7 @@ type StatusDelete struct {
 	mutation *StatusMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the StatusDelete builder.
 func (sd *StatusDelete) Where(ps ...predicate.Status) *StatusDelete {
 	sd.mutation.predicates = append(sd.mutation.predicates, ps...)
 	return sd

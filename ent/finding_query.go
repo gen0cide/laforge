@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -26,18 +26,19 @@ type FindingQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Finding
 	// eager-loading edges.
-	withUser   *UserQuery
-	withTag    *TagQuery
-	withHost   *HostQuery
-	withScript *ScriptQuery
+	withFindingToUser   *UserQuery
+	withFindingToTag    *TagQuery
+	withFindingToHost   *HostQuery
+	withFindingToScript *ScriptQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FindingQuery builder.
 func (fq *FindingQuery) Where(ps ...predicate.Finding) *FindingQuery {
 	fq.predicates = append(fq.predicates, ps...)
 	return fq
@@ -61,21 +62,21 @@ func (fq *FindingQuery) Order(o ...OrderFunc) *FindingQuery {
 	return fq
 }
 
-// QueryUser chains the current query on the user edge.
-func (fq *FindingQuery) QueryUser() *UserQuery {
+// QueryFindingToUser chains the current query on the "FindingToUser" edge.
+func (fq *FindingQuery) QueryFindingToUser() *UserQuery {
 	query := &UserQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fq.sqlQuery()
+		selector := fq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.UserTable, finding.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToUserTable, finding.FindingToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -83,21 +84,21 @@ func (fq *FindingQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fq *FindingQuery) QueryTag() *TagQuery {
+// QueryFindingToTag chains the current query on the "FindingToTag" edge.
+func (fq *FindingQuery) QueryFindingToTag() *TagQuery {
 	query := &TagQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fq.sqlQuery()
+		selector := fq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.TagTable, finding.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToTagTable, finding.FindingToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -105,21 +106,21 @@ func (fq *FindingQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// QueryHost chains the current query on the host edge.
-func (fq *FindingQuery) QueryHost() *HostQuery {
+// QueryFindingToHost chains the current query on the "FindingToHost" edge.
+func (fq *FindingQuery) QueryFindingToHost() *HostQuery {
 	query := &HostQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fq.sqlQuery()
+		selector := fq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.HostTable, finding.HostColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToHostTable, finding.FindingToHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -127,21 +128,21 @@ func (fq *FindingQuery) QueryHost() *HostQuery {
 	return query
 }
 
-// QueryScript chains the current query on the script edge.
-func (fq *FindingQuery) QueryScript() *ScriptQuery {
+// QueryFindingToScript chains the current query on the "FindingToScript" edge.
+func (fq *FindingQuery) QueryFindingToScript() *ScriptQuery {
 	query := &ScriptQuery{config: fq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fq.sqlQuery()
+		selector := fq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, finding.ScriptTable, finding.ScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -149,7 +150,8 @@ func (fq *FindingQuery) QueryScript() *ScriptQuery {
 	return query
 }
 
-// First returns the first Finding entity in the query. Returns *NotFoundError when no finding was found.
+// First returns the first Finding entity from the query.
+// Returns a *NotFoundError when no Finding was found.
 func (fq *FindingQuery) First(ctx context.Context) (*Finding, error) {
 	nodes, err := fq.Limit(1).All(ctx)
 	if err != nil {
@@ -170,7 +172,8 @@ func (fq *FindingQuery) FirstX(ctx context.Context) *Finding {
 	return node
 }
 
-// FirstID returns the first Finding id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Finding ID from the query.
+// Returns a *NotFoundError when no Finding ID was found.
 func (fq *FindingQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fq.Limit(1).IDs(ctx); err != nil {
@@ -192,7 +195,9 @@ func (fq *FindingQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Finding entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Finding entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Finding entity is not found.
+// Returns a *NotFoundError when no Finding entities are found.
 func (fq *FindingQuery) Only(ctx context.Context) (*Finding, error) {
 	nodes, err := fq.Limit(2).All(ctx)
 	if err != nil {
@@ -217,7 +222,9 @@ func (fq *FindingQuery) OnlyX(ctx context.Context) *Finding {
 	return node
 }
 
-// OnlyID returns the only Finding id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Finding ID in the query.
+// Returns a *NotSingularError when exactly one Finding ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (fq *FindingQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fq.Limit(2).IDs(ctx); err != nil {
@@ -260,7 +267,7 @@ func (fq *FindingQuery) AllX(ctx context.Context) []*Finding {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Finding ids.
+// IDs executes the query and returns a list of Finding IDs.
 func (fq *FindingQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := fq.Select(finding.FieldID).Scan(ctx, &ids); err != nil {
@@ -312,79 +319,79 @@ func (fq *FindingQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the FindingQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (fq *FindingQuery) Clone() *FindingQuery {
 	if fq == nil {
 		return nil
 	}
 	return &FindingQuery{
-		config:     fq.config,
-		limit:      fq.limit,
-		offset:     fq.offset,
-		order:      append([]OrderFunc{}, fq.order...),
-		predicates: append([]predicate.Finding{}, fq.predicates...),
-		withUser:   fq.withUser.Clone(),
-		withTag:    fq.withTag.Clone(),
-		withHost:   fq.withHost.Clone(),
-		withScript: fq.withScript.Clone(),
+		config:              fq.config,
+		limit:               fq.limit,
+		offset:              fq.offset,
+		order:               append([]OrderFunc{}, fq.order...),
+		predicates:          append([]predicate.Finding{}, fq.predicates...),
+		withFindingToUser:   fq.withFindingToUser.Clone(),
+		withFindingToTag:    fq.withFindingToTag.Clone(),
+		withFindingToHost:   fq.withFindingToHost.Clone(),
+		withFindingToScript: fq.withFindingToScript.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
 	}
 }
 
-//  WithUser tells the query-builder to eager-loads the nodes that are connected to
-// the "user" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithUser(opts ...func(*UserQuery)) *FindingQuery {
+// WithFindingToUser tells the query-builder to eager-load the nodes that are connected to
+// the "FindingToUser" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToUser(opts ...func(*UserQuery)) *FindingQuery {
 	query := &UserQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withUser = query
+	fq.withFindingToUser = query
 	return fq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithTag(opts ...func(*TagQuery)) *FindingQuery {
+// WithFindingToTag tells the query-builder to eager-load the nodes that are connected to
+// the "FindingToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToTag(opts ...func(*TagQuery)) *FindingQuery {
 	query := &TagQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withTag = query
+	fq.withFindingToTag = query
 	return fq
 }
 
-//  WithHost tells the query-builder to eager-loads the nodes that are connected to
-// the "host" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithHost(opts ...func(*HostQuery)) *FindingQuery {
+// WithFindingToHost tells the query-builder to eager-load the nodes that are connected to
+// the "FindingToHost" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToHost(opts ...func(*HostQuery)) *FindingQuery {
 	query := &HostQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withHost = query
+	fq.withFindingToHost = query
 	return fq
 }
 
-//  WithScript tells the query-builder to eager-loads the nodes that are connected to
-// the "script" edge. The optional arguments used to configure the query builder of the edge.
-func (fq *FindingQuery) WithScript(opts ...func(*ScriptQuery)) *FindingQuery {
+// WithFindingToScript tells the query-builder to eager-load the nodes that are connected to
+// the "FindingToScript" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToScript(opts ...func(*ScriptQuery)) *FindingQuery {
 	query := &ScriptQuery{config: fq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withScript = query
+	fq.withFindingToScript = query
 	return fq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -400,17 +407,18 @@ func (fq *FindingQuery) GroupBy(field string, fields ...string) *FindingGroupBy 
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return fq.sqlQuery(), nil
+		return fq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Finding.Query().
@@ -418,18 +426,16 @@ func (fq *FindingQuery) GroupBy(field string, fields ...string) *FindingGroupBy 
 //		Scan(ctx, &v)
 //
 func (fq *FindingQuery) Select(field string, fields ...string) *FindingSelect {
-	selector := &FindingSelect{config: fq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := fq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return fq.sqlQuery(), nil
-	}
-	return selector
+	fq.fields = append([]string{field}, fields...)
+	return &FindingSelect{FindingQuery: fq}
 }
 
 func (fq *FindingQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range fq.fields {
+		if !finding.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if fq.path != nil {
 		prev, err := fq.path(ctx)
 		if err != nil {
@@ -445,25 +451,24 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		nodes       = []*Finding{}
 		_spec       = fq.querySpec()
 		loadedTypes = [4]bool{
-			fq.withUser != nil,
-			fq.withTag != nil,
-			fq.withHost != nil,
-			fq.withScript != nil,
+			fq.withFindingToUser != nil,
+			fq.withFindingToTag != nil,
+			fq.withFindingToHost != nil,
+			fq.withFindingToScript != nil,
 		}
 	)
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Finding{config: fq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, fq.driver, _spec); err != nil {
 		return nil, err
@@ -472,100 +477,100 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		return nodes, nil
 	}
 
-	if query := fq.withUser; query != nil {
+	if query := fq.withFindingToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
+			nodes[i].Edges.FindingToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.UserColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_user
+			fk := n.finding_finding_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.User = append(node.Edges.User, n)
+			node.Edges.FindingToUser = append(node.Edges.FindingToUser, n)
 		}
 	}
 
-	if query := fq.withTag; query != nil {
+	if query := fq.withFindingToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FindingToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.TagColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_tag
+			fk := n.finding_finding_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FindingToTag = append(node.Edges.FindingToTag, n)
 		}
 	}
 
-	if query := fq.withHost; query != nil {
+	if query := fq.withFindingToHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Host = []*Host{}
+			nodes[i].Edges.FindingToHost = []*Host{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Host(func(s *sql.Selector) {
-			s.Where(sql.InValues(finding.HostColumn, fks...))
+			s.Where(sql.InValues(finding.FindingToHostColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.finding_host
+			fk := n.finding_finding_to_host
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "finding_host" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "finding_finding_to_host" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "finding_host" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "finding_finding_to_host" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Host = append(node.Edges.Host, n)
+			node.Edges.FindingToHost = append(node.Edges.FindingToHost, n)
 		}
 	}
 
-	if query := fq.withScript; query != nil {
+	if query := fq.withFindingToScript; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		ids := make(map[int]*Finding, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
-			node.Edges.Script = []*Script{}
+			node.Edges.FindingToScript = []*Script{}
 		}
 		var (
 			edgeids []int
@@ -574,11 +579,11 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
 				Inverse: false,
-				Table:   finding.ScriptTable,
-				Columns: finding.ScriptPrimaryKey,
+				Table:   finding.FindingToScriptTable,
+				Columns: finding.FindingToScriptPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(finding.ScriptPrimaryKey[0], fks...))
+				s.Where(sql.InValues(finding.FindingToScriptPrimaryKey[0], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {
@@ -605,7 +610,7 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, fq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "script": %v`, err)
+			return nil, fmt.Errorf(`query edges "FindingToScript": %v`, err)
 		}
 		query.Where(script.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -615,10 +620,10 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		for _, n := range neighbors {
 			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "script" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected "FindingToScript" node returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Script = append(nodes[i].Edges.Script, n)
+				nodes[i].Edges.FindingToScript = append(nodes[i].Edges.FindingToScript, n)
 			}
 		}
 	}
@@ -652,6 +657,15 @@ func (fq *FindingQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   fq.sql,
 		Unique: true,
 	}
+	if fields := fq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, finding.FieldID)
+		for i := range fields {
+			if fields[i] != finding.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := fq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -675,7 +689,7 @@ func (fq *FindingQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (fq *FindingQuery) sqlQuery() *sql.Selector {
+func (fq *FindingQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(fq.driver.Dialect())
 	t1 := builder.Table(finding.Table)
 	selector := builder.Select(t1.Columns(finding.Columns...)...).From(t1)
@@ -700,7 +714,7 @@ func (fq *FindingQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// FindingGroupBy is the builder for group-by Finding entities.
+// FindingGroupBy is the group-by builder for Finding entities.
 type FindingGroupBy struct {
 	config
 	fields []string
@@ -716,7 +730,7 @@ func (fgb *FindingGroupBy) Aggregate(fns ...AggregateFunc) *FindingGroupBy {
 	return fgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (fgb *FindingGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := fgb.path(ctx)
 	if err != nil {
@@ -733,7 +747,8 @@ func (fgb *FindingGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(fgb.fields) > 1 {
 		return nil, errors.New("ent: FindingGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -754,7 +769,8 @@ func (fgb *FindingGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fgb.Strings(ctx); err != nil {
@@ -780,7 +796,8 @@ func (fgb *FindingGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(fgb.fields) > 1 {
 		return nil, errors.New("ent: FindingGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -801,7 +818,8 @@ func (fgb *FindingGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fgb.Ints(ctx); err != nil {
@@ -827,7 +845,8 @@ func (fgb *FindingGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fgb.fields) > 1 {
 		return nil, errors.New("ent: FindingGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -848,7 +867,8 @@ func (fgb *FindingGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fgb.Float64s(ctx); err != nil {
@@ -874,7 +894,8 @@ func (fgb *FindingGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(fgb.fields) > 1 {
 		return nil, errors.New("ent: FindingGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -895,7 +916,8 @@ func (fgb *FindingGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fgb *FindingGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fgb.Bools(ctx); err != nil {
@@ -950,22 +972,19 @@ func (fgb *FindingGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(fgb.fields...)
 }
 
-// FindingSelect is the builder for select fields of Finding entities.
+// FindingSelect is the builder for selecting fields of Finding entities.
 type FindingSelect struct {
-	config
-	fields []string
+	*FindingQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (fs *FindingSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := fs.path(ctx)
-	if err != nil {
+	if err := fs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	fs.sql = query
+	fs.sql = fs.FindingQuery.sqlQuery(ctx)
 	return fs.sqlScan(ctx, v)
 }
 
@@ -976,7 +995,7 @@ func (fs *FindingSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(fs.fields) > 1 {
 		return nil, errors.New("ent: FindingSelect.Strings is not achievable when selecting more than 1 field")
@@ -997,7 +1016,7 @@ func (fs *FindingSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fs.Strings(ctx); err != nil {
@@ -1023,7 +1042,7 @@ func (fs *FindingSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(fs.fields) > 1 {
 		return nil, errors.New("ent: FindingSelect.Ints is not achievable when selecting more than 1 field")
@@ -1044,7 +1063,7 @@ func (fs *FindingSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fs.Ints(ctx); err != nil {
@@ -1070,7 +1089,7 @@ func (fs *FindingSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fs.fields) > 1 {
 		return nil, errors.New("ent: FindingSelect.Float64s is not achievable when selecting more than 1 field")
@@ -1091,7 +1110,7 @@ func (fs *FindingSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fs.Float64s(ctx); err != nil {
@@ -1117,7 +1136,7 @@ func (fs *FindingSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(fs.fields) > 1 {
 		return nil, errors.New("ent: FindingSelect.Bools is not achievable when selecting more than 1 field")
@@ -1138,7 +1157,7 @@ func (fs *FindingSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (fs *FindingSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fs.Bools(ctx); err != nil {
@@ -1165,11 +1184,6 @@ func (fs *FindingSelect) BoolX(ctx context.Context) bool {
 }
 
 func (fs *FindingSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range fs.fields {
-		if !finding.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := fs.sqlQuery().Query()
 	if err := fs.driver.Query(ctx, query, args, rows); err != nil {

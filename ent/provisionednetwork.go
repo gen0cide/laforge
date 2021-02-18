@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 )
 
@@ -26,134 +26,163 @@ type ProvisionedNetwork struct {
 
 // ProvisionedNetworkEdges holds the relations/edges for other nodes in the graph.
 type ProvisionedNetworkEdges struct {
-	// Status holds the value of the status edge.
-	Status []*Status
-	// Network holds the value of the network edge.
-	Network []*Network
-	// Build holds the value of the build edge.
-	Build []*Build
+	// ProvisionedNetworkToTag holds the value of the ProvisionedNetworkToTag edge.
+	ProvisionedNetworkToTag []*Tag `json:"ProvisionedNetworkToTag,omitempty"`
+	// ProvisionedNetworkToStatus holds the value of the ProvisionedNetworkToStatus edge.
+	ProvisionedNetworkToStatus []*Status `json:"ProvisionedNetworkToStatus,omitempty"`
+	// ProvisionedNetworkToNetwork holds the value of the ProvisionedNetworkToNetwork edge.
+	ProvisionedNetworkToNetwork []*Network `json:"ProvisionedNetworkToNetwork,omitempty"`
+	// ProvisionedNetworkToBuild holds the value of the ProvisionedNetworkToBuild edge.
+	ProvisionedNetworkToBuild []*Build `json:"ProvisionedNetworkToBuild,omitempty"`
 	// ProvisionedNetworkToTeam holds the value of the ProvisionedNetworkToTeam edge.
-	ProvisionedNetworkToTeam []*Team
-	// ProvisionedHosts holds the value of the provisioned_hosts edge.
-	ProvisionedHosts []*ProvisionedHost
+	ProvisionedNetworkToTeam []*Team `json:"ProvisionedNetworkToTeam,omitempty"`
+	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
+	ProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
-// StatusOrErr returns the Status value or an error if the edge
+// ProvisionedNetworkToTagOrErr returns the ProvisionedNetworkToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) StatusOrErr() ([]*Status, error) {
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Status, nil
+		return e.ProvisionedNetworkToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "status"}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToTag"}
 }
 
-// NetworkOrErr returns the Network value or an error if the edge
+// ProvisionedNetworkToStatusOrErr returns the ProvisionedNetworkToStatus value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) NetworkOrErr() ([]*Network, error) {
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToStatusOrErr() ([]*Status, error) {
 	if e.loadedTypes[1] {
-		return e.Network, nil
+		return e.ProvisionedNetworkToStatus, nil
 	}
-	return nil, &NotLoadedError{edge: "network"}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToStatus"}
 }
 
-// BuildOrErr returns the Build value or an error if the edge
+// ProvisionedNetworkToNetworkOrErr returns the ProvisionedNetworkToNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) BuildOrErr() ([]*Build, error) {
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToNetworkOrErr() ([]*Network, error) {
 	if e.loadedTypes[2] {
-		return e.Build, nil
+		return e.ProvisionedNetworkToNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "build"}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToNetwork"}
+}
+
+// ProvisionedNetworkToBuildOrErr returns the ProvisionedNetworkToBuild value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToBuildOrErr() ([]*Build, error) {
+	if e.loadedTypes[3] {
+		return e.ProvisionedNetworkToBuild, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToBuild"}
 }
 
 // ProvisionedNetworkToTeamOrErr returns the ProvisionedNetworkToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedNetworkEdges) ProvisionedNetworkToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.ProvisionedNetworkToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedNetworkToTeam"}
 }
 
-// ProvisionedHostsOrErr returns the ProvisionedHosts value or an error if the edge
+// ProvisionedNetworkToProvisionedHostOrErr returns the ProvisionedNetworkToProvisionedHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) ProvisionedHostsOrErr() ([]*ProvisionedHost, error) {
-	if e.loadedTypes[4] {
-		return e.ProvisionedHosts, nil
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToProvisionedHostOrErr() ([]*ProvisionedHost, error) {
+	if e.loadedTypes[5] {
+		return e.ProvisionedNetworkToProvisionedHost, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_hosts"}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToProvisionedHost"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ProvisionedNetwork) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // cidr
+func (*ProvisionedNetwork) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case provisionednetwork.FieldID:
+			values[i] = &sql.NullInt64{}
+		case provisionednetwork.FieldName, provisionednetwork.FieldCidr:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type ProvisionedNetwork", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ProvisionedNetwork fields.
-func (pn *ProvisionedNetwork) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(provisionednetwork.Columns); m < n {
+func (pn *ProvisionedNetwork) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	pn.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		pn.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field cidr", values[1])
-	} else if value.Valid {
-		pn.Cidr = value.String
+	for i := range columns {
+		switch columns[i] {
+		case provisionednetwork.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			pn.ID = int(value.Int64)
+		case provisionednetwork.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				pn.Name = value.String
+			}
+		case provisionednetwork.FieldCidr:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cidr", values[i])
+			} else if value.Valid {
+				pn.Cidr = value.String
+			}
+		}
 	}
 	return nil
 }
 
-// QueryStatus queries the status edge of the ProvisionedNetwork.
-func (pn *ProvisionedNetwork) QueryStatus() *StatusQuery {
-	return (&ProvisionedNetworkClient{config: pn.config}).QueryStatus(pn)
+// QueryProvisionedNetworkToTag queries the "ProvisionedNetworkToTag" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToTag() *TagQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToTag(pn)
 }
 
-// QueryNetwork queries the network edge of the ProvisionedNetwork.
-func (pn *ProvisionedNetwork) QueryNetwork() *NetworkQuery {
-	return (&ProvisionedNetworkClient{config: pn.config}).QueryNetwork(pn)
+// QueryProvisionedNetworkToStatus queries the "ProvisionedNetworkToStatus" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToStatus() *StatusQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToStatus(pn)
 }
 
-// QueryBuild queries the build edge of the ProvisionedNetwork.
-func (pn *ProvisionedNetwork) QueryBuild() *BuildQuery {
-	return (&ProvisionedNetworkClient{config: pn.config}).QueryBuild(pn)
+// QueryProvisionedNetworkToNetwork queries the "ProvisionedNetworkToNetwork" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToNetwork() *NetworkQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToNetwork(pn)
 }
 
-// QueryProvisionedNetworkToTeam queries the ProvisionedNetworkToTeam edge of the ProvisionedNetwork.
+// QueryProvisionedNetworkToBuild queries the "ProvisionedNetworkToBuild" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToBuild() *BuildQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToBuild(pn)
+}
+
+// QueryProvisionedNetworkToTeam queries the "ProvisionedNetworkToTeam" edge of the ProvisionedNetwork entity.
 func (pn *ProvisionedNetwork) QueryProvisionedNetworkToTeam() *TeamQuery {
 	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToTeam(pn)
 }
 
-// QueryProvisionedHosts queries the provisioned_hosts edge of the ProvisionedNetwork.
-func (pn *ProvisionedNetwork) QueryProvisionedHosts() *ProvisionedHostQuery {
-	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedHosts(pn)
+// QueryProvisionedNetworkToProvisionedHost queries the "ProvisionedNetworkToProvisionedHost" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToProvisionedHost() *ProvisionedHostQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToProvisionedHost(pn)
 }
 
 // Update returns a builder for updating this ProvisionedNetwork.
-// Note that, you need to call ProvisionedNetwork.Unwrap() before calling this method, if this ProvisionedNetwork
+// Note that you need to call ProvisionedNetwork.Unwrap() before calling this method if this ProvisionedNetwork
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (pn *ProvisionedNetwork) Update() *ProvisionedNetworkUpdateOne {
 	return (&ProvisionedNetworkClient{config: pn.config}).UpdateOne(pn)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the ProvisionedNetwork entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (pn *ProvisionedNetwork) Unwrap() *ProvisionedNetwork {
 	tx, ok := pn.config.driver.(*txDriver)
 	if !ok {

@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // IncludedNetwork holds the schema definition for the IncludedNetwork entity.
@@ -14,15 +14,17 @@ type IncludedNetwork struct {
 // Fields of the IncludedNetwork.
 func (IncludedNetwork) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.JSON("hosts", []string{}),
+		field.String("name").
+			StructTag(`hcl:"name,label"`),
+		field.JSON("hosts", []string{}).
+			StructTag(`hcl:"included_hosts,attr"`),
 	}
 }
 
 // Edges of the IncludedNetwork.
 func (IncludedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("IncludedNetworkToTag", Tag.Type),
 		edge.To("IncludedNetworkToEnvironment", Environment.Type),
 	}
 }

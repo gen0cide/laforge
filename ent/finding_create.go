@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
@@ -23,88 +23,94 @@ type FindingCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (fc *FindingCreate) SetName(s string) *FindingCreate {
 	fc.mutation.SetName(s)
 	return fc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (fc *FindingCreate) SetDescription(s string) *FindingCreate {
 	fc.mutation.SetDescription(s)
 	return fc
 }
 
-// SetSeverity sets the severity field.
+// SetSeverity sets the "severity" field.
 func (fc *FindingCreate) SetSeverity(f finding.Severity) *FindingCreate {
 	fc.mutation.SetSeverity(f)
 	return fc
 }
 
-// SetDifficulty sets the difficulty field.
+// SetDifficulty sets the "difficulty" field.
 func (fc *FindingCreate) SetDifficulty(f finding.Difficulty) *FindingCreate {
 	fc.mutation.SetDifficulty(f)
 	return fc
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (fc *FindingCreate) AddUserIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddUserIDs(ids...)
+// SetTags sets the "tags" field.
+func (fc *FindingCreate) SetTags(m map[string]string) *FindingCreate {
+	fc.mutation.SetTags(m)
 	return fc
 }
 
-// AddUser adds the user edges to User.
-func (fc *FindingCreate) AddUser(u ...*User) *FindingCreate {
+// AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
+func (fc *FindingCreate) AddFindingToUserIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddFindingToUserIDs(ids...)
+	return fc
+}
+
+// AddFindingToUser adds the "FindingToUser" edges to the User entity.
+func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return fc.AddUserIDs(ids...)
+	return fc.AddFindingToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fc *FindingCreate) AddTagIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddTagIDs(ids...)
+// AddFindingToTagIDs adds the "FindingToTag" edge to the Tag entity by IDs.
+func (fc *FindingCreate) AddFindingToTagIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddFindingToTagIDs(ids...)
 	return fc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fc *FindingCreate) AddTag(t ...*Tag) *FindingCreate {
+// AddFindingToTag adds the "FindingToTag" edges to the Tag entity.
+func (fc *FindingCreate) AddFindingToTag(t ...*Tag) *FindingCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fc.AddTagIDs(ids...)
+	return fc.AddFindingToTagIDs(ids...)
 }
 
-// AddHostIDs adds the host edge to Host by ids.
-func (fc *FindingCreate) AddHostIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddHostIDs(ids...)
+// AddFindingToHostIDs adds the "FindingToHost" edge to the Host entity by IDs.
+func (fc *FindingCreate) AddFindingToHostIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddFindingToHostIDs(ids...)
 	return fc
 }
 
-// AddHost adds the host edges to Host.
-func (fc *FindingCreate) AddHost(h ...*Host) *FindingCreate {
+// AddFindingToHost adds the "FindingToHost" edges to the Host entity.
+func (fc *FindingCreate) AddFindingToHost(h ...*Host) *FindingCreate {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return fc.AddHostIDs(ids...)
+	return fc.AddFindingToHostIDs(ids...)
 }
 
-// AddScriptIDs adds the script edge to Script by ids.
-func (fc *FindingCreate) AddScriptIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddScriptIDs(ids...)
+// AddFindingToScriptIDs adds the "FindingToScript" edge to the Script entity by IDs.
+func (fc *FindingCreate) AddFindingToScriptIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddFindingToScriptIDs(ids...)
 	return fc
 }
 
-// AddScript adds the script edges to Script.
-func (fc *FindingCreate) AddScript(s ...*Script) *FindingCreate {
+// AddFindingToScript adds the "FindingToScript" edges to the Script entity.
+func (fc *FindingCreate) AddFindingToScript(s ...*Script) *FindingCreate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return fc.AddScriptIDs(ids...)
+	return fc.AddFindingToScriptIDs(ids...)
 }
 
 // Mutation returns the FindingMutation object of the builder.
@@ -180,6 +186,9 @@ func (fc *FindingCreate) check() error {
 			return &ValidationError{Name: "difficulty", err: fmt.Errorf("ent: validator failed for field \"difficulty\": %w", err)}
 		}
 	}
+	if _, ok := fc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -239,12 +248,20 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		})
 		_node.Difficulty = value
 	}
-	if nodes := fc.mutation.UserIDs(); len(nodes) > 0 {
+	if value, ok := fc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: finding.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fc.mutation.FindingToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   finding.UserTable,
-			Columns: []string{finding.UserColumn},
+			Table:   finding.FindingToUserTable,
+			Columns: []string{finding.FindingToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -258,12 +275,12 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FindingToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   finding.TagTable,
-			Columns: []string{finding.TagColumn},
+			Table:   finding.FindingToTagTable,
+			Columns: []string{finding.FindingToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -277,12 +294,12 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FindingToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   finding.HostTable,
-			Columns: []string{finding.HostColumn},
+			Table:   finding.FindingToHostTable,
+			Columns: []string{finding.FindingToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -296,12 +313,12 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.ScriptIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   finding.ScriptTable,
-			Columns: finding.ScriptPrimaryKey,
+			Table:   finding.FindingToScriptTable,
+			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -318,7 +335,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// FindingCreateBulk is the builder for creating a bulk of Finding entities.
+// FindingCreateBulk is the builder for creating many Finding entities in bulk.
 type FindingCreateBulk struct {
 	config
 	builders []*FindingCreate
@@ -375,7 +392,7 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fcb *FindingCreateBulk) SaveX(ctx context.Context) []*Finding {
 	v, err := fcb.Save(ctx)
 	if err != nil {

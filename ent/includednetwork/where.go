@@ -3,12 +3,12 @@
 package includednetwork
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -209,25 +209,25 @@ func NameContainsFold(v string) predicate.IncludedNetwork {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.IncludedNetwork {
+// HasIncludedNetworkToTag applies the HasEdge predicate on the "IncludedNetworkToTag" edge.
+func HasIncludedNetworkToTag() predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(IncludedNetworkToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IncludedNetworkToTagTable, IncludedNetworkToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.IncludedNetwork {
+// HasIncludedNetworkToTagWith applies the HasEdge predicate on the "IncludedNetworkToTag" edge with a given conditions (other predicates).
+func HasIncludedNetworkToTagWith(preds ...predicate.Tag) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(IncludedNetworkToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IncludedNetworkToTagTable, IncludedNetworkToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -265,7 +265,7 @@ func HasIncludedNetworkToEnvironmentWith(preds ...predicate.Environment) predica
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -276,7 +276,7 @@ func And(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.IncludedNetwork) predicate.IncludedNetwork {
 	return predicate.IncludedNetwork(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

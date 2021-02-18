@@ -3,12 +3,12 @@
 package dnsrecord
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -466,25 +466,25 @@ func DisabledNEQ(v bool) predicate.DNSRecord {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.DNSRecord {
+// HasDNSRecordToTag applies the HasEdge predicate on the "DNSRecordToTag" edge.
+func HasDNSRecordToTag() predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DNSRecordToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.DNSRecord {
+// HasDNSRecordToTagWith applies the HasEdge predicate on the "DNSRecordToTag" edge with a given conditions (other predicates).
+func HasDNSRecordToTagWith(preds ...predicate.Tag) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(DNSRecordToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -494,7 +494,7 @@ func HasTagWith(preds ...predicate.Tag) predicate.DNSRecord {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DNSRecord) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -505,7 +505,7 @@ func And(predicates ...predicate.DNSRecord) predicate.DNSRecord {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.DNSRecord) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

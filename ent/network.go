@@ -7,47 +7,49 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/network"
 )
 
 // Network is the model entity for the Network schema.
 type Network struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Cidr holds the value of the "cidr" field.
-	Cidr string `json:"cidr,omitempty"`
+	Cidr string `json:"cidr,omitempty" hcl:"cidr,attr"`
 	// VdiVisible holds the value of the "vdi_visible" field.
-	VdiVisible bool `json:"vdi_visible,omitempty"`
+	VdiVisible bool `json:"vdi_visible,omitempty" hcl:"vdi_visible,optional"`
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NetworkQuery when eager-loading is set.
-	Edges                       NetworkEdges `json:"edges"`
-	provisioned_network_network *int
+	Edges                                              NetworkEdges `json:"edges"`
+	provisioned_network_provisioned_network_to_network *int
 }
 
 // NetworkEdges holds the relations/edges for other nodes in the graph.
 type NetworkEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// NetworkToTag holds the value of the NetworkToTag edge.
+	NetworkToTag []*Tag `json:"NetworkToTag,omitempty"`
 	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
-	NetworkToEnvironment []*Environment
+	NetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// NetworkToTagOrErr returns the NetworkToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e NetworkEdges) TagOrErr() ([]*Tag, error) {
+func (e NetworkEdges) NetworkToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.NetworkToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "NetworkToTag"}
 }
 
 // NetworkToEnvironmentOrErr returns the NetworkToEnvironment value or an error if the edge
@@ -60,89 +62,108 @@ func (e NetworkEdges) NetworkToEnvironmentOrErr() ([]*Environment, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Network) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // cidr
-		&sql.NullBool{},   // vdi_visible
-		&[]byte{},         // vars
+func (*Network) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case network.FieldVars, network.FieldTags:
+			values[i] = &[]byte{}
+		case network.FieldVdiVisible:
+			values[i] = &sql.NullBool{}
+		case network.FieldID:
+			values[i] = &sql.NullInt64{}
+		case network.FieldName, network.FieldCidr:
+			values[i] = &sql.NullString{}
+		case network.ForeignKeys[0]: // provisioned_network_provisioned_network_to_network
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Network) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioned_network_network
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Network fields.
-func (n *Network) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(network.Columns); m < n {
+func (n *Network) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	n.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		n.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field cidr", values[1])
-	} else if value.Valid {
-		n.Cidr = value.String
-	}
-	if value, ok := values[2].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field vdi_visible", values[2])
-	} else if value.Valid {
-		n.VdiVisible = value.Bool
-	}
+	for i := range columns {
+		switch columns[i] {
+		case network.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			n.ID = int(value.Int64)
+		case network.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				n.Name = value.String
+			}
+		case network.FieldCidr:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cidr", values[i])
+			} else if value.Valid {
+				n.Cidr = value.String
+			}
+		case network.FieldVdiVisible:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field vdi_visible", values[i])
+			} else if value.Valid {
+				n.VdiVisible = value.Bool
+			}
+		case network.FieldVars:
 
-	if value, ok := values[3].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[3])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &n.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
-	values = values[4:]
-	if len(values) == len(network.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_network", value)
-		} else if value.Valid {
-			n.provisioned_network_network = new(int)
-			*n.provisioned_network_network = int(value.Int64)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &n.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %v", err)
+				}
+			}
+		case network.FieldTags:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &n.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		case network.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
+			} else if value.Valid {
+				n.provisioned_network_provisioned_network_to_network = new(int)
+				*n.provisioned_network_provisioned_network_to_network = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Network.
-func (n *Network) QueryTag() *TagQuery {
-	return (&NetworkClient{config: n.config}).QueryTag(n)
+// QueryNetworkToTag queries the "NetworkToTag" edge of the Network entity.
+func (n *Network) QueryNetworkToTag() *TagQuery {
+	return (&NetworkClient{config: n.config}).QueryNetworkToTag(n)
 }
 
-// QueryNetworkToEnvironment queries the NetworkToEnvironment edge of the Network.
+// QueryNetworkToEnvironment queries the "NetworkToEnvironment" edge of the Network entity.
 func (n *Network) QueryNetworkToEnvironment() *EnvironmentQuery {
 	return (&NetworkClient{config: n.config}).QueryNetworkToEnvironment(n)
 }
 
 // Update returns a builder for updating this Network.
-// Note that, you need to call Network.Unwrap() before calling this method, if this Network
+// Note that you need to call Network.Unwrap() before calling this method if this Network
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (n *Network) Update() *NetworkUpdateOne {
 	return (&NetworkClient{config: n.config}).UpdateOne(n)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Network entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (n *Network) Unwrap() *Network {
 	tx, ok := n.config.driver.(*txDriver)
 	if !ok {
@@ -165,6 +186,8 @@ func (n *Network) String() string {
 	builder.WriteString(fmt.Sprintf("%v", n.VdiVisible))
 	builder.WriteString(", vars=")
 	builder.WriteString(fmt.Sprintf("%v", n.Vars))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", n.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

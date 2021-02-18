@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // Finding holds the schema definition for the Finding entity.
@@ -14,19 +14,26 @@ type Finding struct {
 // Fields of the Finding.
 func (Finding) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.String("description"),
-		field.Enum("severity").Values("ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity"),
-		field.Enum("difficulty").Values("ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty"),
+		field.String("name").
+			StructTag(`hcl:"name,attr"`),
+		field.String("description").
+			StructTag(`hcl:"description,optional"`),
+		field.Enum("severity").Values("ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity").
+			StructTag(`hcl:"severity,attr"`),
+		field.Enum("difficulty").Values("ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty").
+			StructTag(`hcl:"difficulty,attr"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 
 // Edges of the Finding.
 func (Finding) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user", User.Type),
-		edge.To("tag", Tag.Type),
-		edge.To("host", Host.Type),
-		edge.To("script", Script.Type),
+		edge.To("FindingToUser", User.Type).
+			StructTag(`hcl:"maintainer,block"`),
+		edge.To("FindingToTag", Tag.Type),
+		edge.To("FindingToHost", Host.Type),
+		edge.To("FindingToScript", Script.Type),
 	}
 }

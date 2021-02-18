@@ -7,19 +7,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 )
 
 // IncludedNetwork is the model entity for the IncludedNetwork schema.
 type IncludedNetwork struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,label"`
 	// Hosts holds the value of the "hosts" field.
-	Hosts []string `json:"hosts,omitempty"`
+	Hosts []string `json:"hosts,omitempty" hcl:"included_hosts,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncludedNetworkQuery when eager-loading is set.
 	Edges IncludedNetworkEdges `json:"edges"`
@@ -27,22 +27,22 @@ type IncludedNetwork struct {
 
 // IncludedNetworkEdges holds the relations/edges for other nodes in the graph.
 type IncludedNetworkEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// IncludedNetworkToTag holds the value of the IncludedNetworkToTag edge.
+	IncludedNetworkToTag []*Tag `json:"IncludedNetworkToTag,omitempty"`
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
-	IncludedNetworkToEnvironment []*Environment
+	IncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// IncludedNetworkToTagOrErr returns the IncludedNetworkToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e IncludedNetworkEdges) TagOrErr() ([]*Tag, error) {
+func (e IncludedNetworkEdges) IncludedNetworkToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.IncludedNetworkToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "IncludedNetworkToTag"}
 }
 
 // IncludedNetworkToEnvironmentOrErr returns the IncludedNetworkToEnvironment value or an error if the edge
@@ -55,61 +55,76 @@ func (e IncludedNetworkEdges) IncludedNetworkToEnvironmentOrErr() ([]*Environmen
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*IncludedNetwork) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&[]byte{},         // hosts
+func (*IncludedNetwork) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case includednetwork.FieldHosts:
+			values[i] = &[]byte{}
+		case includednetwork.FieldID:
+			values[i] = &sql.NullInt64{}
+		case includednetwork.FieldName:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type IncludedNetwork", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncludedNetwork fields.
-func (in *IncludedNetwork) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(includednetwork.Columns); m < n {
+func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	in.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		in.Name = value.String
-	}
+	for i := range columns {
+		switch columns[i] {
+		case includednetwork.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			in.ID = int(value.Int64)
+		case includednetwork.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				in.Name = value.String
+			}
+		case includednetwork.FieldHosts:
 
-	if value, ok := values[1].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field hosts", values[1])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &in.Hosts); err != nil {
-			return fmt.Errorf("unmarshal field hosts: %v", err)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field hosts", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &in.Hosts); err != nil {
+					return fmt.Errorf("unmarshal field hosts: %v", err)
+				}
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the IncludedNetwork.
-func (in *IncludedNetwork) QueryTag() *TagQuery {
-	return (&IncludedNetworkClient{config: in.config}).QueryTag(in)
+// QueryIncludedNetworkToTag queries the "IncludedNetworkToTag" edge of the IncludedNetwork entity.
+func (in *IncludedNetwork) QueryIncludedNetworkToTag() *TagQuery {
+	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToTag(in)
 }
 
-// QueryIncludedNetworkToEnvironment queries the IncludedNetworkToEnvironment edge of the IncludedNetwork.
+// QueryIncludedNetworkToEnvironment queries the "IncludedNetworkToEnvironment" edge of the IncludedNetwork entity.
 func (in *IncludedNetwork) QueryIncludedNetworkToEnvironment() *EnvironmentQuery {
 	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToEnvironment(in)
 }
 
 // Update returns a builder for updating this IncludedNetwork.
-// Note that, you need to call IncludedNetwork.Unwrap() before calling this method, if this IncludedNetwork
+// Note that you need to call IncludedNetwork.Unwrap() before calling this method if this IncludedNetwork
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (in *IncludedNetwork) Update() *IncludedNetworkUpdateOne {
 	return (&IncludedNetworkClient{config: in.config}).UpdateOne(in)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the IncludedNetwork entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (in *IncludedNetwork) Unwrap() *IncludedNetwork {
 	tx, ok := in.config.driver.(*txDriver)
 	if !ok {

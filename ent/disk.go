@@ -6,99 +6,103 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/disk"
 )
 
 // Disk is the model entity for the Disk schema.
 type Disk struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Size holds the value of the "size" field.
-	Size int `json:"size,omitempty"`
+	Size int `json:"size,omitempty" hcl:"size,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiskQuery when eager-loading is set.
-	Edges     DiskEdges `json:"edges"`
-	host_disk *int
+	Edges             DiskEdges `json:"edges"`
+	host_host_to_disk *int
 }
 
 // DiskEdges holds the relations/edges for other nodes in the graph.
 type DiskEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// DiskToTag holds the value of the DiskToTag edge.
+	DiskToTag []*Tag `json:"DiskToTag,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// DiskToTagOrErr returns the DiskToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e DiskEdges) TagOrErr() ([]*Tag, error) {
+func (e DiskEdges) DiskToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.DiskToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "DiskToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Disk) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // id
-		&sql.NullInt64{}, // size
+func (*Disk) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case disk.FieldID, disk.FieldSize:
+			values[i] = &sql.NullInt64{}
+		case disk.ForeignKeys[0]: // host_host_to_disk
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Disk", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Disk) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // host_disk
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Disk fields.
-func (d *Disk) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(disk.Columns); m < n {
+func (d *Disk) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	d.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field size", values[0])
-	} else if value.Valid {
-		d.Size = int(value.Int64)
-	}
-	values = values[1:]
-	if len(values) == len(disk.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_disk", value)
-		} else if value.Valid {
-			d.host_disk = new(int)
-			*d.host_disk = int(value.Int64)
+	for i := range columns {
+		switch columns[i] {
+		case disk.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			d.ID = int(value.Int64)
+		case disk.FieldSize:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field size", values[i])
+			} else if value.Valid {
+				d.Size = int(value.Int64)
+			}
+		case disk.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_host_to_disk", value)
+			} else if value.Valid {
+				d.host_host_to_disk = new(int)
+				*d.host_host_to_disk = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Disk.
-func (d *Disk) QueryTag() *TagQuery {
-	return (&DiskClient{config: d.config}).QueryTag(d)
+// QueryDiskToTag queries the "DiskToTag" edge of the Disk entity.
+func (d *Disk) QueryDiskToTag() *TagQuery {
+	return (&DiskClient{config: d.config}).QueryDiskToTag(d)
 }
 
 // Update returns a builder for updating this Disk.
-// Note that, you need to call Disk.Unwrap() before calling this method, if this Disk
+// Note that you need to call Disk.Unwrap() before calling this method if this Disk
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (d *Disk) Update() *DiskUpdateOne {
 	return (&DiskClient{config: d.config}).UpdateOne(d)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Disk entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (d *Disk) Unwrap() *Disk {
 	tx, ok := d.config.driver.(*txDriver)
 	if !ok {

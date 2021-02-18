@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // AgentStatus holds the schema definition for the AgentStatus entity.
@@ -34,6 +34,7 @@ func (AgentStatus) Fields() []ent.Field {
 // Edges of the AgentStatus.
 func (AgentStatus) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("host", ProvisionedHost.Type),
+		edge.To("AgentStatusToTag", Tag.Type),
+		edge.To("AgentStatusToProvisionedHost", ProvisionedHost.Type),
 	}
 }

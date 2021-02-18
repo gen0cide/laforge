@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 )
 
@@ -24,128 +24,157 @@ type ProvisionedHost struct {
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
 type ProvisionedHostEdges struct {
-	// Status holds the value of the status edge.
-	Status []*Status
-	// ProvisionedNetwork holds the value of the provisioned_network edge.
-	ProvisionedNetwork []*ProvisionedNetwork
-	// Host holds the value of the host edge.
-	Host []*Host
-	// ProvisionedSteps holds the value of the provisioned_steps edge.
-	ProvisionedSteps []*ProvisioningStep
-	// AgentStatus holds the value of the agent_status edge.
-	AgentStatus []*AgentStatus
+	// ProvisionedHostToTag holds the value of the ProvisionedHostToTag edge.
+	ProvisionedHostToTag []*Tag `json:"ProvisionedHostToTag,omitempty"`
+	// ProvisionedHostToStatus holds the value of the ProvisionedHostToStatus edge.
+	ProvisionedHostToStatus []*Status `json:"ProvisionedHostToStatus,omitempty"`
+	// ProvisionedHostToProvisionedNetwork holds the value of the ProvisionedHostToProvisionedNetwork edge.
+	ProvisionedHostToProvisionedNetwork []*ProvisionedNetwork `json:"ProvisionedHostToProvisionedNetwork,omitempty"`
+	// ProvisionedHostToHost holds the value of the ProvisionedHostToHost edge.
+	ProvisionedHostToHost []*Host `json:"ProvisionedHostToHost,omitempty"`
+	// ProvisionedHostToProvisioningStep holds the value of the ProvisionedHostToProvisioningStep edge.
+	ProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
+	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
+	ProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
-// StatusOrErr returns the Status value or an error if the edge
+// ProvisionedHostToTagOrErr returns the ProvisionedHostToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) StatusOrErr() ([]*Status, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Status, nil
+		return e.ProvisionedHostToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "status"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToTag"}
 }
 
-// ProvisionedNetworkOrErr returns the ProvisionedNetwork value or an error if the edge
+// ProvisionedHostToStatusOrErr returns the ProvisionedHostToStatus value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToStatusOrErr() ([]*Status, error) {
 	if e.loadedTypes[1] {
-		return e.ProvisionedNetwork, nil
+		return e.ProvisionedHostToStatus, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_network"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToStatus"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// ProvisionedHostToProvisionedNetworkOrErr returns the ProvisionedHostToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) HostOrErr() ([]*Host, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.ProvisionedHostToProvisionedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToProvisionedNetwork"}
 }
 
-// ProvisionedStepsOrErr returns the ProvisionedSteps value or an error if the edge
+// ProvisionedHostToHostOrErr returns the ProvisionedHostToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisionedStepsOrErr() ([]*ProvisioningStep, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[3] {
-		return e.ProvisionedSteps, nil
+		return e.ProvisionedHostToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_steps"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToHost"}
 }
 
-// AgentStatusOrErr returns the AgentStatus value or an error if the edge
+// ProvisionedHostToProvisioningStepOrErr returns the ProvisionedHostToProvisioningStep value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProvisionedHostEdges) AgentStatusOrErr() ([]*AgentStatus, error) {
+func (e ProvisionedHostEdges) ProvisionedHostToProvisioningStepOrErr() ([]*ProvisioningStep, error) {
 	if e.loadedTypes[4] {
-		return e.AgentStatus, nil
+		return e.ProvisionedHostToProvisioningStep, nil
 	}
-	return nil, &NotLoadedError{edge: "agent_status"}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToProvisioningStep"}
+}
+
+// ProvisionedHostToAgentStatusOrErr returns the ProvisionedHostToAgentStatus value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatus, error) {
+	if e.loadedTypes[5] {
+		return e.ProvisionedHostToAgentStatus, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentStatus"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ProvisionedHost) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // subnet_ip
+func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case provisionedhost.FieldID:
+			values[i] = &sql.NullInt64{}
+		case provisionedhost.FieldSubnetIP:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ProvisionedHost fields.
-func (ph *ProvisionedHost) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(provisionedhost.Columns); m < n {
+func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	ph.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field subnet_ip", values[0])
-	} else if value.Valid {
-		ph.SubnetIP = value.String
+	for i := range columns {
+		switch columns[i] {
+		case provisionedhost.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			ph.ID = int(value.Int64)
+		case provisionedhost.FieldSubnetIP:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field subnet_ip", values[i])
+			} else if value.Valid {
+				ph.SubnetIP = value.String
+			}
+		}
 	}
 	return nil
 }
 
-// QueryStatus queries the status edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryStatus() *StatusQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryStatus(ph)
+// QueryProvisionedHostToTag queries the "ProvisionedHostToTag" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToTag() *TagQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToTag(ph)
 }
 
-// QueryProvisionedNetwork queries the provisioned_network edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryProvisionedNetwork() *ProvisionedNetworkQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedNetwork(ph)
+// QueryProvisionedHostToStatus queries the "ProvisionedHostToStatus" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToStatus() *StatusQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToStatus(ph)
 }
 
-// QueryHost queries the host edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryHost() *HostQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryHost(ph)
+// QueryProvisionedHostToProvisionedNetwork queries the "ProvisionedHostToProvisionedNetwork" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToProvisionedNetwork(ph)
 }
 
-// QueryProvisionedSteps queries the provisioned_steps edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryProvisionedSteps() *ProvisioningStepQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedSteps(ph)
+// QueryProvisionedHostToHost queries the "ProvisionedHostToHost" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToHost() *HostQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToHost(ph)
 }
 
-// QueryAgentStatus queries the agent_status edge of the ProvisionedHost.
-func (ph *ProvisionedHost) QueryAgentStatus() *AgentStatusQuery {
-	return (&ProvisionedHostClient{config: ph.config}).QueryAgentStatus(ph)
+// QueryProvisionedHostToProvisioningStep queries the "ProvisionedHostToProvisioningStep" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToProvisioningStep() *ProvisioningStepQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToProvisioningStep(ph)
+}
+
+// QueryProvisionedHostToAgentStatus queries the "ProvisionedHostToAgentStatus" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToAgentStatus() *AgentStatusQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToAgentStatus(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.
-// Note that, you need to call ProvisionedHost.Unwrap() before calling this method, if this ProvisionedHost
+// Note that you need to call ProvisionedHost.Unwrap() before calling this method if this ProvisionedHost
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (ph *ProvisionedHost) Update() *ProvisionedHostUpdateOne {
 	return (&ProvisionedHostClient{config: ph.config}).UpdateOne(ph)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the ProvisionedHost entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (ph *ProvisionedHost) Unwrap() *ProvisionedHost {
 	tx, ok := ph.config.driver.(*txDriver)
 	if !ok {

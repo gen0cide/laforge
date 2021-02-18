@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // Team holds the schema definition for the Team entity.
@@ -23,10 +23,10 @@ func (Team) Fields() []ent.Field {
 // Edges of the Team.
 func (Team) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("maintainer", User.Type),
-		edge.To("build", Build.Type),
+		edge.To("TeamToUser", User.Type),
+		edge.To("TeamToBuild", Build.Type),
 		edge.To("TeamToEnvironment", Environment.Type),
-		edge.To("tag", Tag.Type),
-		edge.From("provisioned_networks", ProvisionedNetwork.Type).Ref("ProvisionedNetworkToTeam"),
+		edge.To("TeamToTag", Tag.Type),
+		edge.From("TeamToProvisionedNetwork", ProvisionedNetwork.Type).Ref("ProvisionedNetworkToTeam"),
 	}
 }

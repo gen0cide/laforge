@@ -3,12 +3,12 @@
 package host
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -681,81 +681,39 @@ func DependsOnNotNil() predicate.Host {
 	})
 }
 
-// ScriptsIsNil applies the IsNil predicate on the "scripts" field.
-func ScriptsIsNil() predicate.Host {
+// ProvisionStepsIsNil applies the IsNil predicate on the "provision_steps" field.
+func ProvisionStepsIsNil() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldScripts)))
+		s.Where(sql.IsNull(s.C(FieldProvisionSteps)))
 	})
 }
 
-// ScriptsNotNil applies the NotNil predicate on the "scripts" field.
-func ScriptsNotNil() predicate.Host {
+// ProvisionStepsNotNil applies the NotNil predicate on the "provision_steps" field.
+func ProvisionStepsNotNil() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldScripts)))
+		s.Where(sql.NotNull(s.C(FieldProvisionSteps)))
 	})
 }
 
-// CommandsIsNil applies the IsNil predicate on the "commands" field.
-func CommandsIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldCommands)))
-	})
-}
-
-// CommandsNotNil applies the NotNil predicate on the "commands" field.
-func CommandsNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldCommands)))
-	})
-}
-
-// RemoteFilesIsNil applies the IsNil predicate on the "remote_files" field.
-func RemoteFilesIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldRemoteFiles)))
-	})
-}
-
-// RemoteFilesNotNil applies the NotNil predicate on the "remote_files" field.
-func RemoteFilesNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldRemoteFiles)))
-	})
-}
-
-// DNSRecordsIsNil applies the IsNil predicate on the "dns_records" field.
-func DNSRecordsIsNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldDNSRecords)))
-	})
-}
-
-// DNSRecordsNotNil applies the NotNil predicate on the "dns_records" field.
-func DNSRecordsNotNil() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldDNSRecords)))
-	})
-}
-
-// HasDisk applies the HasEdge predicate on the "disk" edge.
-func HasDisk() predicate.Host {
+// HasHostToDisk applies the HasEdge predicate on the "HostToDisk" edge.
+func HasHostToDisk() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DiskTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DiskTable, DiskColumn),
+			sqlgraph.To(HostToDiskTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToDiskTable, HostToDiskColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDiskWith applies the HasEdge predicate on the "disk" edge with a given conditions (other predicates).
-func HasDiskWith(preds ...predicate.Disk) predicate.Host {
+// HasHostToDiskWith applies the HasEdge predicate on the "HostToDisk" edge with a given conditions (other predicates).
+func HasHostToDiskWith(preds ...predicate.Disk) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DiskInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DiskTable, DiskColumn),
+			sqlgraph.To(HostToDiskInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToDiskTable, HostToDiskColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -765,25 +723,25 @@ func HasDiskWith(preds ...predicate.Disk) predicate.Host {
 	})
 }
 
-// HasMaintainer applies the HasEdge predicate on the "maintainer" edge.
-func HasMaintainer() predicate.Host {
+// HasHostToUser applies the HasEdge predicate on the "HostToUser" edge.
+func HasHostToUser() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(HostToUserTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToUserTable, HostToUserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasMaintainerWith applies the HasEdge predicate on the "maintainer" edge with a given conditions (other predicates).
-func HasMaintainerWith(preds ...predicate.User) predicate.Host {
+// HasHostToUserWith applies the HasEdge predicate on the "HostToUser" edge with a given conditions (other predicates).
+func HasHostToUserWith(preds ...predicate.User) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(HostToUserInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToUserTable, HostToUserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -793,25 +751,25 @@ func HasMaintainerWith(preds ...predicate.User) predicate.Host {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Host {
+// HasHostToTag applies the HasEdge predicate on the "HostToTag" edge.
+func HasHostToTag() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(HostToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToTagTable, HostToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Host {
+// HasHostToTagWith applies the HasEdge predicate on the "HostToTag" edge with a given conditions (other predicates).
+func HasHostToTagWith(preds ...predicate.Tag) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(HostToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HostToTagTable, HostToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -821,7 +779,35 @@ func HasTagWith(preds ...predicate.Tag) predicate.Host {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasHostToEnvironment applies the HasEdge predicate on the "HostToEnvironment" edge.
+func HasHostToEnvironment() predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HostToEnvironmentTable, HostToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHostToEnvironmentWith applies the HasEdge predicate on the "HostToEnvironment" edge with a given conditions (other predicates).
+func HasHostToEnvironmentWith(preds ...predicate.Environment) predicate.Host {
+	return predicate.Host(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HostToEnvironmentTable, HostToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Host) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -832,7 +818,7 @@ func And(predicates ...predicate.Host) predicate.Host {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Host) predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

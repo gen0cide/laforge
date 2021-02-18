@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,52 +21,58 @@ type NetworkCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (nc *NetworkCreate) SetName(s string) *NetworkCreate {
 	nc.mutation.SetName(s)
 	return nc
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nc *NetworkCreate) SetCidr(s string) *NetworkCreate {
 	nc.mutation.SetCidr(s)
 	return nc
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nc *NetworkCreate) SetVdiVisible(b bool) *NetworkCreate {
 	nc.mutation.SetVdiVisible(b)
 	return nc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nc *NetworkCreate) SetVars(m map[string]string) *NetworkCreate {
 	nc.mutation.SetVars(m)
 	return nc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nc *NetworkCreate) AddTagIDs(ids ...int) *NetworkCreate {
-	nc.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (nc *NetworkCreate) SetTags(m map[string]string) *NetworkCreate {
+	nc.mutation.SetTags(m)
 	return nc
 }
 
-// AddTag adds the tag edges to Tag.
-func (nc *NetworkCreate) AddTag(t ...*Tag) *NetworkCreate {
+// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by IDs.
+func (nc *NetworkCreate) AddNetworkToTagIDs(ids ...int) *NetworkCreate {
+	nc.mutation.AddNetworkToTagIDs(ids...)
+	return nc
+}
+
+// AddNetworkToTag adds the "NetworkToTag" edges to the Tag entity.
+func (nc *NetworkCreate) AddNetworkToTag(t ...*Tag) *NetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return nc.AddTagIDs(ids...)
+	return nc.AddNetworkToTagIDs(ids...)
 }
 
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
+// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by IDs.
 func (nc *NetworkCreate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkCreate {
 	nc.mutation.AddNetworkToEnvironmentIDs(ids...)
 	return nc
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
+// AddNetworkToEnvironment adds the "NetworkToEnvironment" edges to the Environment entity.
 func (nc *NetworkCreate) AddNetworkToEnvironment(e ...*Environment) *NetworkCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -138,6 +144,9 @@ func (nc *NetworkCreate) check() error {
 	if _, ok := nc.mutation.Vars(); !ok {
 		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
 	}
+	if _, ok := nc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -197,12 +206,20 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 		})
 		_node.Vars = value
 	}
-	if nodes := nc.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := nc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := nc.mutation.NetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Table:   network.NetworkToTagTable,
+			Columns: []string{network.NetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -238,7 +255,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// NetworkCreateBulk is the builder for creating a bulk of Network entities.
+// NetworkCreateBulk is the builder for creating many Network entities in bulk.
 type NetworkCreateBulk struct {
 	config
 	builders []*NetworkCreate
@@ -295,7 +312,7 @@ func (ncb *NetworkCreateBulk) Save(ctx context.Context) ([]*Network, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ncb *NetworkCreateBulk) SaveX(ctx context.Context) []*Network {
 	v, err := ncb.Save(ctx)
 	if err != nil {

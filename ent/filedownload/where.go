@@ -3,12 +3,12 @@
 package filedownload
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -119,10 +119,10 @@ func Template(v bool) predicate.FileDownload {
 	})
 }
 
-// Mode applies equality check predicate on the "mode" field. It's identical to ModeEQ.
-func Mode(v string) predicate.FileDownload {
+// Perms applies equality check predicate on the "perms" field. It's identical to PermsEQ.
+func Perms(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldMode), v))
+		s.Where(sql.EQ(s.C(FieldPerms), v))
 	})
 }
 
@@ -494,22 +494,22 @@ func TemplateNEQ(v bool) predicate.FileDownload {
 	})
 }
 
-// ModeEQ applies the EQ predicate on the "mode" field.
-func ModeEQ(v string) predicate.FileDownload {
+// PermsEQ applies the EQ predicate on the "perms" field.
+func PermsEQ(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldMode), v))
+		s.Where(sql.EQ(s.C(FieldPerms), v))
 	})
 }
 
-// ModeNEQ applies the NEQ predicate on the "mode" field.
-func ModeNEQ(v string) predicate.FileDownload {
+// PermsNEQ applies the NEQ predicate on the "perms" field.
+func PermsNEQ(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldMode), v))
+		s.Where(sql.NEQ(s.C(FieldPerms), v))
 	})
 }
 
-// ModeIn applies the In predicate on the "mode" field.
-func ModeIn(vs ...string) predicate.FileDownload {
+// PermsIn applies the In predicate on the "perms" field.
+func PermsIn(vs ...string) predicate.FileDownload {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -521,12 +521,12 @@ func ModeIn(vs ...string) predicate.FileDownload {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldMode), v...))
+		s.Where(sql.In(s.C(FieldPerms), v...))
 	})
 }
 
-// ModeNotIn applies the NotIn predicate on the "mode" field.
-func ModeNotIn(vs ...string) predicate.FileDownload {
+// PermsNotIn applies the NotIn predicate on the "perms" field.
+func PermsNotIn(vs ...string) predicate.FileDownload {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -538,70 +538,70 @@ func ModeNotIn(vs ...string) predicate.FileDownload {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldMode), v...))
+		s.Where(sql.NotIn(s.C(FieldPerms), v...))
 	})
 }
 
-// ModeGT applies the GT predicate on the "mode" field.
-func ModeGT(v string) predicate.FileDownload {
+// PermsGT applies the GT predicate on the "perms" field.
+func PermsGT(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldMode), v))
+		s.Where(sql.GT(s.C(FieldPerms), v))
 	})
 }
 
-// ModeGTE applies the GTE predicate on the "mode" field.
-func ModeGTE(v string) predicate.FileDownload {
+// PermsGTE applies the GTE predicate on the "perms" field.
+func PermsGTE(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldMode), v))
+		s.Where(sql.GTE(s.C(FieldPerms), v))
 	})
 }
 
-// ModeLT applies the LT predicate on the "mode" field.
-func ModeLT(v string) predicate.FileDownload {
+// PermsLT applies the LT predicate on the "perms" field.
+func PermsLT(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldMode), v))
+		s.Where(sql.LT(s.C(FieldPerms), v))
 	})
 }
 
-// ModeLTE applies the LTE predicate on the "mode" field.
-func ModeLTE(v string) predicate.FileDownload {
+// PermsLTE applies the LTE predicate on the "perms" field.
+func PermsLTE(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldMode), v))
+		s.Where(sql.LTE(s.C(FieldPerms), v))
 	})
 }
 
-// ModeContains applies the Contains predicate on the "mode" field.
-func ModeContains(v string) predicate.FileDownload {
+// PermsContains applies the Contains predicate on the "perms" field.
+func PermsContains(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldMode), v))
+		s.Where(sql.Contains(s.C(FieldPerms), v))
 	})
 }
 
-// ModeHasPrefix applies the HasPrefix predicate on the "mode" field.
-func ModeHasPrefix(v string) predicate.FileDownload {
+// PermsHasPrefix applies the HasPrefix predicate on the "perms" field.
+func PermsHasPrefix(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldMode), v))
+		s.Where(sql.HasPrefix(s.C(FieldPerms), v))
 	})
 }
 
-// ModeHasSuffix applies the HasSuffix predicate on the "mode" field.
-func ModeHasSuffix(v string) predicate.FileDownload {
+// PermsHasSuffix applies the HasSuffix predicate on the "perms" field.
+func PermsHasSuffix(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldMode), v))
+		s.Where(sql.HasSuffix(s.C(FieldPerms), v))
 	})
 }
 
-// ModeEqualFold applies the EqualFold predicate on the "mode" field.
-func ModeEqualFold(v string) predicate.FileDownload {
+// PermsEqualFold applies the EqualFold predicate on the "perms" field.
+func PermsEqualFold(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldMode), v))
+		s.Where(sql.EqualFold(s.C(FieldPerms), v))
 	})
 }
 
-// ModeContainsFold applies the ContainsFold predicate on the "mode" field.
-func ModeContainsFold(v string) predicate.FileDownload {
+// PermsContainsFold applies the ContainsFold predicate on the "perms" field.
+func PermsContainsFold(v string) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldMode), v))
+		s.Where(sql.ContainsFold(s.C(FieldPerms), v))
 	})
 }
 
@@ -841,25 +841,25 @@ func AbsPathContainsFold(v string) predicate.FileDownload {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.FileDownload {
+// HasFileDownloadToTag applies the HasEdge predicate on the "FileDownloadToTag" edge.
+func HasFileDownloadToTag() predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDownloadToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadToTagTable, FileDownloadToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.FileDownload {
+// HasFileDownloadToTagWith applies the HasEdge predicate on the "FileDownloadToTag" edge with a given conditions (other predicates).
+func HasFileDownloadToTagWith(preds ...predicate.Tag) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDownloadToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDownloadToTagTable, FileDownloadToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -869,7 +869,7 @@ func HasTagWith(preds ...predicate.Tag) predicate.FileDownload {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.FileDownload) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -880,7 +880,7 @@ func And(predicates ...predicate.FileDownload) predicate.FileDownload {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.FileDownload) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

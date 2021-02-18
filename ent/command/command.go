@@ -25,28 +25,30 @@ const (
 	FieldTimeout = "timeout"
 	// FieldVars holds the string denoting the vars field in the database.
 	FieldVars = "vars"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeCommandToUser holds the string denoting the commandtouser edge name in mutations.
+	EdgeCommandToUser = "CommandToUser"
+	// EdgeCommandToTag holds the string denoting the commandtotag edge name in mutations.
+	EdgeCommandToTag = "CommandToTag"
 
 	// Table holds the table name of the command in the database.
 	Table = "commands"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	// CommandToUserTable is the table the holds the CommandToUser relation/edge.
+	CommandToUserTable = "users"
+	// CommandToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "command_user"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	CommandToUserInverseTable = "users"
+	// CommandToUserColumn is the table column denoting the CommandToUser relation/edge.
+	CommandToUserColumn = "command_command_to_user"
+	// CommandToTagTable is the table the holds the CommandToTag relation/edge.
+	CommandToTagTable = "tags"
+	// CommandToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "command_tag"
+	CommandToTagInverseTable = "tags"
+	// CommandToTagColumn is the table column denoting the CommandToTag relation/edge.
+	CommandToTagColumn = "command_command_to_tag"
 )
 
 // Columns holds all SQL columns for command fields.
@@ -61,11 +63,12 @@ var Columns = []string{
 	FieldCooldown,
 	FieldTimeout,
 	FieldVars,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Command type.
 var ForeignKeys = []string{
-	"provisioning_step_command",
+	"provisioning_step_provisioning_step_to_command",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

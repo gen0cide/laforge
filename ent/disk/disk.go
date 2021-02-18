@@ -10,18 +10,18 @@ const (
 	// FieldSize holds the string denoting the size field in the database.
 	FieldSize = "size"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeDiskToTag holds the string denoting the disktotag edge name in mutations.
+	EdgeDiskToTag = "DiskToTag"
 
 	// Table holds the table name of the disk in the database.
 	Table = "disks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// DiskToTagTable is the table the holds the DiskToTag relation/edge.
+	DiskToTagTable = "tags"
+	// DiskToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "disk_tag"
+	DiskToTagInverseTable = "tags"
+	// DiskToTagColumn is the table column denoting the DiskToTag relation/edge.
+	DiskToTagColumn = "disk_disk_to_tag"
 )
 
 // Columns holds all SQL columns for disk fields.
@@ -32,7 +32,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Disk type.
 var ForeignKeys = []string{
-	"host_disk",
+	"host_host_to_disk",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

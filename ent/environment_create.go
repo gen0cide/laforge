@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -27,178 +27,190 @@ type EnvironmentCreate struct {
 	hooks    []Hook
 }
 
-// SetCompetitionID sets the competition_id field.
+// SetHclID sets the "hcl_id" field.
+func (ec *EnvironmentCreate) SetHclID(s string) *EnvironmentCreate {
+	ec.mutation.SetHclID(s)
+	return ec
+}
+
+// SetCompetitionID sets the "competition_id" field.
 func (ec *EnvironmentCreate) SetCompetitionID(s string) *EnvironmentCreate {
 	ec.mutation.SetCompetitionID(s)
 	return ec
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (ec *EnvironmentCreate) SetName(s string) *EnvironmentCreate {
 	ec.mutation.SetName(s)
 	return ec
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (ec *EnvironmentCreate) SetDescription(s string) *EnvironmentCreate {
 	ec.mutation.SetDescription(s)
 	return ec
 }
 
-// SetBuilder sets the builder field.
+// SetBuilder sets the "builder" field.
 func (ec *EnvironmentCreate) SetBuilder(s string) *EnvironmentCreate {
 	ec.mutation.SetBuilder(s)
 	return ec
 }
 
-// SetTeamCount sets the team_count field.
+// SetTeamCount sets the "team_count" field.
 func (ec *EnvironmentCreate) SetTeamCount(i int) *EnvironmentCreate {
 	ec.mutation.SetTeamCount(i)
 	return ec
 }
 
-// SetRevision sets the revision field.
+// SetRevision sets the "revision" field.
 func (ec *EnvironmentCreate) SetRevision(i int) *EnvironmentCreate {
 	ec.mutation.SetRevision(i)
 	return ec
 }
 
-// SetAdminCidrs sets the admin_cidrs field.
+// SetAdminCidrs sets the "admin_cidrs" field.
 func (ec *EnvironmentCreate) SetAdminCidrs(s []string) *EnvironmentCreate {
 	ec.mutation.SetAdminCidrs(s)
 	return ec
 }
 
-// SetExposedVdiPorts sets the exposed_vdi_ports field.
+// SetExposedVdiPorts sets the "exposed_vdi_ports" field.
 func (ec *EnvironmentCreate) SetExposedVdiPorts(s []string) *EnvironmentCreate {
 	ec.mutation.SetExposedVdiPorts(s)
 	return ec
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (ec *EnvironmentCreate) SetConfig(m map[string]string) *EnvironmentCreate {
 	ec.mutation.SetConfig(m)
 	return ec
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (ec *EnvironmentCreate) AddTagIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (ec *EnvironmentCreate) SetTags(m map[string]string) *EnvironmentCreate {
+	ec.mutation.SetTags(m)
 	return ec
 }
 
-// AddTag adds the tag edges to Tag.
-func (ec *EnvironmentCreate) AddTag(t ...*Tag) *EnvironmentCreate {
+// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToTagIDs(ids...)
+	return ec
+}
+
+// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
+func (ec *EnvironmentCreate) AddEnvironmentToTag(t ...*Tag) *EnvironmentCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return ec.AddTagIDs(ids...)
+	return ec.AddEnvironmentToTagIDs(ids...)
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (ec *EnvironmentCreate) AddUserIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddUserIDs(ids...)
+// AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToUserIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToUserIDs(ids...)
 	return ec
 }
 
-// AddUser adds the user edges to User.
-func (ec *EnvironmentCreate) AddUser(u ...*User) *EnvironmentCreate {
+// AddEnvironmentToUser adds the "EnvironmentToUser" edges to the User entity.
+func (ec *EnvironmentCreate) AddEnvironmentToUser(u ...*User) *EnvironmentCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return ec.AddUserIDs(ids...)
+	return ec.AddEnvironmentToUserIDs(ids...)
 }
 
-// AddHostIDs adds the host edge to Host by ids.
-func (ec *EnvironmentCreate) AddHostIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddHostIDs(ids...)
+// AddEnvironmentToHostIDs adds the "EnvironmentToHost" edge to the Host entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToHostIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToHostIDs(ids...)
 	return ec
 }
 
-// AddHost adds the host edges to Host.
-func (ec *EnvironmentCreate) AddHost(h ...*Host) *EnvironmentCreate {
+// AddEnvironmentToHost adds the "EnvironmentToHost" edges to the Host entity.
+func (ec *EnvironmentCreate) AddEnvironmentToHost(h ...*Host) *EnvironmentCreate {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return ec.AddHostIDs(ids...)
+	return ec.AddEnvironmentToHostIDs(ids...)
 }
 
-// AddCompetitionIDs adds the competition edge to Competition by ids.
-func (ec *EnvironmentCreate) AddCompetitionIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddCompetitionIDs(ids...)
+// AddEnvironmentToCompetitionIDs adds the "EnvironmentToCompetition" edge to the Competition entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToCompetitionIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToCompetitionIDs(ids...)
 	return ec
 }
 
-// AddCompetition adds the competition edges to Competition.
-func (ec *EnvironmentCreate) AddCompetition(c ...*Competition) *EnvironmentCreate {
+// AddEnvironmentToCompetition adds the "EnvironmentToCompetition" edges to the Competition entity.
+func (ec *EnvironmentCreate) AddEnvironmentToCompetition(c ...*Competition) *EnvironmentCreate {
 	ids := make([]int, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
-	return ec.AddCompetitionIDs(ids...)
+	return ec.AddEnvironmentToCompetitionIDs(ids...)
 }
 
-// AddBuildIDs adds the build edge to Build by ids.
-func (ec *EnvironmentCreate) AddBuildIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddBuildIDs(ids...)
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToBuildIDs(ids...)
 	return ec
 }
 
-// AddBuild adds the build edges to Build.
-func (ec *EnvironmentCreate) AddBuild(b ...*Build) *EnvironmentCreate {
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
+func (ec *EnvironmentCreate) AddEnvironmentToBuild(b ...*Build) *EnvironmentCreate {
 	ids := make([]int, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
-	return ec.AddBuildIDs(ids...)
+	return ec.AddEnvironmentToBuildIDs(ids...)
 }
 
-// AddIncludedNetworkIDs adds the included_network edge to IncludedNetwork by ids.
-func (ec *EnvironmentCreate) AddIncludedNetworkIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddIncludedNetworkIDs(ids...)
+// AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
 	return ec
 }
 
-// AddIncludedNetwork adds the included_network edges to IncludedNetwork.
-func (ec *EnvironmentCreate) AddIncludedNetwork(i ...*IncludedNetwork) *EnvironmentCreate {
+// AddEnvironmentToIncludedNetwork adds the "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
+func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentCreate {
 	ids := make([]int, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return ec.AddIncludedNetworkIDs(ids...)
+	return ec.AddEnvironmentToIncludedNetworkIDs(ids...)
 }
 
-// AddNetworkIDs adds the network edge to Network by ids.
-func (ec *EnvironmentCreate) AddNetworkIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddNetworkIDs(ids...)
+// AddEnvironmentToNetworkIDs adds the "EnvironmentToNetwork" edge to the Network entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToNetworkIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToNetworkIDs(ids...)
 	return ec
 }
 
-// AddNetwork adds the network edges to Network.
-func (ec *EnvironmentCreate) AddNetwork(n ...*Network) *EnvironmentCreate {
+// AddEnvironmentToNetwork adds the "EnvironmentToNetwork" edges to the Network entity.
+func (ec *EnvironmentCreate) AddEnvironmentToNetwork(n ...*Network) *EnvironmentCreate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
-	return ec.AddNetworkIDs(ids...)
+	return ec.AddEnvironmentToNetworkIDs(ids...)
 }
 
-// AddTeamIDs adds the team edge to Team by ids.
-func (ec *EnvironmentCreate) AddTeamIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddTeamIDs(ids...)
+// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToTeamIDs(ids...)
 	return ec
 }
 
-// AddTeam adds the team edges to Team.
-func (ec *EnvironmentCreate) AddTeam(t ...*Team) *EnvironmentCreate {
+// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
+func (ec *EnvironmentCreate) AddEnvironmentToTeam(t ...*Team) *EnvironmentCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return ec.AddTeamIDs(ids...)
+	return ec.AddEnvironmentToTeamIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -252,6 +264,9 @@ func (ec *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
 
 // check runs all checks and user-defined validators on the builder.
 func (ec *EnvironmentCreate) check() error {
+	if _, ok := ec.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := ec.mutation.CompetitionID(); !ok {
 		return &ValidationError{Name: "competition_id", err: errors.New("ent: missing required field \"competition_id\"")}
 	}
@@ -278,6 +293,9 @@ func (ec *EnvironmentCreate) check() error {
 	}
 	if _, ok := ec.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+	}
+	if _, ok := ec.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
 	}
 	return nil
 }
@@ -306,6 +324,14 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := ec.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: environment.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := ec.mutation.CompetitionID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -378,12 +404,20 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
-	if nodes := ec.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := ec.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: environment.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := ec.mutation.EnvironmentToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   environment.TagTable,
-			Columns: []string{environment.TagColumn},
+			Table:   environment.EnvironmentToTagTable,
+			Columns: []string{environment.EnvironmentToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -397,12 +431,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   environment.UserTable,
-			Columns: []string{environment.UserColumn},
+			Table:   environment.EnvironmentToUserTable,
+			Columns: environment.EnvironmentToUserPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -416,12 +450,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   environment.HostTable,
-			Columns: []string{environment.HostColumn},
+			Table:   environment.EnvironmentToHostTable,
+			Columns: environment.EnvironmentToHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -435,12 +469,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.CompetitionIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToCompetitionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   environment.CompetitionTable,
-			Columns: []string{environment.CompetitionColumn},
+			Table:   environment.EnvironmentToCompetitionTable,
+			Columns: environment.EnvironmentToCompetitionPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -454,12 +488,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.BuildIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   environment.BuildTable,
-			Columns: []string{environment.BuildColumn},
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: environment.EnvironmentToBuildPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -473,12 +507,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.IncludedNetworkIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   environment.IncludedNetworkTable,
-			Columns: environment.IncludedNetworkPrimaryKey,
+			Table:   environment.EnvironmentToIncludedNetworkTable,
+			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -492,12 +526,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.NetworkIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   environment.NetworkTable,
-			Columns: environment.NetworkPrimaryKey,
+			Table:   environment.EnvironmentToNetworkTable,
+			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -511,12 +545,12 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   environment.TeamTable,
-			Columns: environment.TeamPrimaryKey,
+			Table:   environment.EnvironmentToTeamTable,
+			Columns: environment.EnvironmentToTeamPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -533,7 +567,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// EnvironmentCreateBulk is the builder for creating a bulk of Environment entities.
+// EnvironmentCreateBulk is the builder for creating many Environment entities in bulk.
 type EnvironmentCreateBulk struct {
 	config
 	builders []*EnvironmentCreate
@@ -590,7 +624,7 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ecb *EnvironmentCreateBulk) SaveX(ctx context.Context) []*Environment {
 	v, err := ecb.Save(ctx)
 	if err != nil {

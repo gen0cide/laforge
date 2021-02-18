@@ -7,286 +7,284 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/host"
 )
 
 // Host is the model entity for the Host schema.
 type Host struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Hostname holds the value of the "hostname" field.
-	Hostname string `json:"hostname,omitempty"`
+	Hostname string `json:"hostname,omitempty" hcl:"hostname,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional" `
 	// OS holds the value of the "OS" field.
-	OS string `json:"OS,omitempty"`
+	OS string `json:"OS,omitempty" hcl:"os,attr"`
 	// LastOctet holds the value of the "last_octet" field.
-	LastOctet int `json:"last_octet,omitempty"`
+	LastOctet int `json:"last_octet,omitempty" hcl:"last_octet,attr"`
 	// AllowMACChanges holds the value of the "allow_mac_changes" field.
-	AllowMACChanges bool `json:"allow_mac_changes,omitempty"`
+	AllowMACChanges bool `json:"allow_mac_changes,omitempty" hcl:"allow_mac_changes,optional"`
 	// ExposedTCPPorts holds the value of the "exposed_tcp_ports" field.
-	ExposedTCPPorts []string `json:"exposed_tcp_ports,omitempty"`
+	ExposedTCPPorts []string `json:"exposed_tcp_ports,omitempty" hcl:"exposed_tcp_ports,optional"`
 	// ExposedUDPPorts holds the value of the "exposed_udp_ports" field.
-	ExposedUDPPorts []string `json:"exposed_udp_ports,omitempty"`
+	ExposedUDPPorts []string `json:"exposed_udp_ports,omitempty" hcl:"exposed_udp_ports,optional"`
 	// OverridePassword holds the value of the "override_password" field.
-	OverridePassword string `json:"override_password,omitempty"`
+	OverridePassword string `json:"override_password,omitempty" hcl:"override_password,optional"`
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// UserGroups holds the value of the "user_groups" field.
-	UserGroups []string `json:"user_groups,omitempty"`
+	UserGroups []string `json:"user_groups,omitempty" hcl:"user_groups,optional"`
 	// DependsOn holds the value of the "depends_on" field.
-	DependsOn []string `json:"depends_on,omitempty"`
-	// Scripts holds the value of the "scripts" field.
-	Scripts []string `json:"scripts,omitempty"`
-	// Commands holds the value of the "commands" field.
-	Commands []string `json:"commands,omitempty"`
-	// RemoteFiles holds the value of the "remote_files" field.
-	RemoteFiles []string `json:"remote_files,omitempty"`
-	// DNSRecords holds the value of the "dns_records" field.
-	DNSRecords []string `json:"dns_records,omitempty"`
+	DependsOn map[string]string `json:"depends_on,omitempty" hcl:"depends_on,optional"`
+	// ProvisionSteps holds the value of the "provision_steps" field.
+	ProvisionSteps []string `json:"provision_steps,omitempty" hcl:"provision_steps,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HostQuery when eager-loading is set.
-	Edges                 HostEdges `json:"edges"`
-	environment_host      *int
-	finding_host          *int
-	provisioned_host_host *int
+	Edges                                     HostEdges `json:"edges"`
+	finding_finding_to_host                   *int
+	provisioned_host_provisioned_host_to_host *int
 }
 
 // HostEdges holds the relations/edges for other nodes in the graph.
 type HostEdges struct {
-	// Disk holds the value of the disk edge.
-	Disk []*Disk
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// HostToDisk holds the value of the HostToDisk edge.
+	HostToDisk []*Disk `json:"HostToDisk,omitempty" hcl:"disk,block"`
+	// HostToUser holds the value of the HostToUser edge.
+	HostToUser []*User `json:"HostToUser,omitempty" hcl:"maintainer,block"`
+	// HostToTag holds the value of the HostToTag edge.
+	HostToTag []*Tag `json:"HostToTag,omitempty"`
+	// HostToEnvironment holds the value of the HostToEnvironment edge.
+	HostToEnvironment []*Environment `json:"HostToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
-// DiskOrErr returns the Disk value or an error if the edge
+// HostToDiskOrErr returns the HostToDisk value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) DiskOrErr() ([]*Disk, error) {
+func (e HostEdges) HostToDiskOrErr() ([]*Disk, error) {
 	if e.loadedTypes[0] {
-		return e.Disk, nil
+		return e.HostToDisk, nil
 	}
-	return nil, &NotLoadedError{edge: "disk"}
+	return nil, &NotLoadedError{edge: "HostToDisk"}
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// HostToUserOrErr returns the HostToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) MaintainerOrErr() ([]*User, error) {
+func (e HostEdges) HostToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[1] {
-		return e.Maintainer, nil
+		return e.HostToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "HostToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// HostToTagOrErr returns the HostToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e HostEdges) TagOrErr() ([]*Tag, error) {
+func (e HostEdges) HostToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[2] {
-		return e.Tag, nil
+		return e.HostToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "HostToTag"}
+}
+
+// HostToEnvironmentOrErr returns the HostToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e HostEdges) HostToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[3] {
+		return e.HostToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "HostToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Host) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // hostname
-		&sql.NullString{}, // description
-		&sql.NullString{}, // OS
-		&sql.NullInt64{},  // last_octet
-		&sql.NullBool{},   // allow_mac_changes
-		&[]byte{},         // exposed_tcp_ports
-		&[]byte{},         // exposed_udp_ports
-		&sql.NullString{}, // override_password
-		&[]byte{},         // vars
-		&[]byte{},         // user_groups
-		&[]byte{},         // depends_on
-		&[]byte{},         // scripts
-		&[]byte{},         // commands
-		&[]byte{},         // remote_files
-		&[]byte{},         // dns_records
+func (*Host) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case host.FieldExposedTCPPorts, host.FieldExposedUDPPorts, host.FieldVars, host.FieldUserGroups, host.FieldDependsOn, host.FieldProvisionSteps, host.FieldTags:
+			values[i] = &[]byte{}
+		case host.FieldAllowMACChanges:
+			values[i] = &sql.NullBool{}
+		case host.FieldID, host.FieldLastOctet:
+			values[i] = &sql.NullInt64{}
+		case host.FieldHostname, host.FieldDescription, host.FieldOS, host.FieldOverridePassword:
+			values[i] = &sql.NullString{}
+		case host.ForeignKeys[0]: // finding_finding_to_host
+			values[i] = &sql.NullInt64{}
+		case host.ForeignKeys[1]: // provisioned_host_provisioned_host_to_host
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Host", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Host) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // environment_host
-		&sql.NullInt64{}, // finding_host
-		&sql.NullInt64{}, // provisioned_host_host
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Host fields.
-func (h *Host) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(host.Columns); m < n {
+func (h *Host) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	h.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field hostname", values[0])
-	} else if value.Valid {
-		h.Hostname = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[1])
-	} else if value.Valid {
-		h.Description = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field OS", values[2])
-	} else if value.Valid {
-		h.OS = value.String
-	}
-	if value, ok := values[3].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field last_octet", values[3])
-	} else if value.Valid {
-		h.LastOctet = int(value.Int64)
-	}
-	if value, ok := values[4].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field allow_mac_changes", values[4])
-	} else if value.Valid {
-		h.AllowMACChanges = value.Bool
-	}
+	for i := range columns {
+		switch columns[i] {
+		case host.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			h.ID = int(value.Int64)
+		case host.FieldHostname:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hostname", values[i])
+			} else if value.Valid {
+				h.Hostname = value.String
+			}
+		case host.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				h.Description = value.String
+			}
+		case host.FieldOS:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field OS", values[i])
+			} else if value.Valid {
+				h.OS = value.String
+			}
+		case host.FieldLastOctet:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field last_octet", values[i])
+			} else if value.Valid {
+				h.LastOctet = int(value.Int64)
+			}
+		case host.FieldAllowMACChanges:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field allow_mac_changes", values[i])
+			} else if value.Valid {
+				h.AllowMACChanges = value.Bool
+			}
+		case host.FieldExposedTCPPorts:
 
-	if value, ok := values[5].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field exposed_tcp_ports", values[5])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.ExposedTCPPorts); err != nil {
-			return fmt.Errorf("unmarshal field exposed_tcp_ports: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field exposed_tcp_ports", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.ExposedTCPPorts); err != nil {
+					return fmt.Errorf("unmarshal field exposed_tcp_ports: %v", err)
+				}
+			}
+		case host.FieldExposedUDPPorts:
 
-	if value, ok := values[6].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field exposed_udp_ports", values[6])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.ExposedUDPPorts); err != nil {
-			return fmt.Errorf("unmarshal field exposed_udp_ports: %v", err)
-		}
-	}
-	if value, ok := values[7].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field override_password", values[7])
-	} else if value.Valid {
-		h.OverridePassword = value.String
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field exposed_udp_ports", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.ExposedUDPPorts); err != nil {
+					return fmt.Errorf("unmarshal field exposed_udp_ports: %v", err)
+				}
+			}
+		case host.FieldOverridePassword:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field override_password", values[i])
+			} else if value.Valid {
+				h.OverridePassword = value.String
+			}
+		case host.FieldVars:
 
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %v", err)
+				}
+			}
+		case host.FieldUserGroups:
 
-	if value, ok := values[9].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field user_groups", values[9])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.UserGroups); err != nil {
-			return fmt.Errorf("unmarshal field user_groups: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field user_groups", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.UserGroups); err != nil {
+					return fmt.Errorf("unmarshal field user_groups: %v", err)
+				}
+			}
+		case host.FieldDependsOn:
 
-	if value, ok := values[10].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field depends_on", values[10])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.DependsOn); err != nil {
-			return fmt.Errorf("unmarshal field depends_on: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field depends_on", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.DependsOn); err != nil {
+					return fmt.Errorf("unmarshal field depends_on: %v", err)
+				}
+			}
+		case host.FieldProvisionSteps:
 
-	if value, ok := values[11].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field scripts", values[11])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.Scripts); err != nil {
-			return fmt.Errorf("unmarshal field scripts: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field provision_steps", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.ProvisionSteps); err != nil {
+					return fmt.Errorf("unmarshal field provision_steps: %v", err)
+				}
+			}
+		case host.FieldTags:
 
-	if value, ok := values[12].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field commands", values[12])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.Commands); err != nil {
-			return fmt.Errorf("unmarshal field commands: %v", err)
-		}
-	}
-
-	if value, ok := values[13].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field remote_files", values[13])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.RemoteFiles); err != nil {
-			return fmt.Errorf("unmarshal field remote_files: %v", err)
-		}
-	}
-
-	if value, ok := values[14].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field dns_records", values[14])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &h.DNSRecords); err != nil {
-			return fmt.Errorf("unmarshal field dns_records: %v", err)
-		}
-	}
-	values = values[15:]
-	if len(values) == len(host.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_host", value)
-		} else if value.Valid {
-			h.environment_host = new(int)
-			*h.environment_host = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_host", value)
-		} else if value.Valid {
-			h.finding_host = new(int)
-			*h.finding_host = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_host", value)
-		} else if value.Valid {
-			h.provisioned_host_host = new(int)
-			*h.provisioned_host_host = int(value.Int64)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &h.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		case host.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_host", value)
+			} else if value.Valid {
+				h.finding_finding_to_host = new(int)
+				*h.finding_finding_to_host = int(value.Int64)
+			}
+		case host.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_host", value)
+			} else if value.Valid {
+				h.provisioned_host_provisioned_host_to_host = new(int)
+				*h.provisioned_host_provisioned_host_to_host = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryDisk queries the disk edge of the Host.
-func (h *Host) QueryDisk() *DiskQuery {
-	return (&HostClient{config: h.config}).QueryDisk(h)
+// QueryHostToDisk queries the "HostToDisk" edge of the Host entity.
+func (h *Host) QueryHostToDisk() *DiskQuery {
+	return (&HostClient{config: h.config}).QueryHostToDisk(h)
 }
 
-// QueryMaintainer queries the maintainer edge of the Host.
-func (h *Host) QueryMaintainer() *UserQuery {
-	return (&HostClient{config: h.config}).QueryMaintainer(h)
+// QueryHostToUser queries the "HostToUser" edge of the Host entity.
+func (h *Host) QueryHostToUser() *UserQuery {
+	return (&HostClient{config: h.config}).QueryHostToUser(h)
 }
 
-// QueryTag queries the tag edge of the Host.
-func (h *Host) QueryTag() *TagQuery {
-	return (&HostClient{config: h.config}).QueryTag(h)
+// QueryHostToTag queries the "HostToTag" edge of the Host entity.
+func (h *Host) QueryHostToTag() *TagQuery {
+	return (&HostClient{config: h.config}).QueryHostToTag(h)
+}
+
+// QueryHostToEnvironment queries the "HostToEnvironment" edge of the Host entity.
+func (h *Host) QueryHostToEnvironment() *EnvironmentQuery {
+	return (&HostClient{config: h.config}).QueryHostToEnvironment(h)
 }
 
 // Update returns a builder for updating this Host.
-// Note that, you need to call Host.Unwrap() before calling this method, if this Host
+// Note that you need to call Host.Unwrap() before calling this method if this Host
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (h *Host) Update() *HostUpdateOne {
 	return (&HostClient{config: h.config}).UpdateOne(h)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Host entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (h *Host) Unwrap() *Host {
 	tx, ok := h.config.driver.(*txDriver)
 	if !ok {
@@ -323,14 +321,10 @@ func (h *Host) String() string {
 	builder.WriteString(fmt.Sprintf("%v", h.UserGroups))
 	builder.WriteString(", depends_on=")
 	builder.WriteString(fmt.Sprintf("%v", h.DependsOn))
-	builder.WriteString(", scripts=")
-	builder.WriteString(fmt.Sprintf("%v", h.Scripts))
-	builder.WriteString(", commands=")
-	builder.WriteString(fmt.Sprintf("%v", h.Commands))
-	builder.WriteString(", remote_files=")
-	builder.WriteString(fmt.Sprintf("%v", h.RemoteFiles))
-	builder.WriteString(", dns_records=")
-	builder.WriteString(fmt.Sprintf("%v", h.DNSRecords))
+	builder.WriteString(", provision_steps=")
+	builder.WriteString(fmt.Sprintf("%v", h.ProvisionSteps))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", h.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

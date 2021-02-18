@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -21,55 +21,55 @@ type StatusCreate struct {
 	hooks    []Hook
 }
 
-// SetState sets the state field.
+// SetState sets the "state" field.
 func (sc *StatusCreate) SetState(s status.State) *StatusCreate {
 	sc.mutation.SetState(s)
 	return sc
 }
 
-// SetStartedAt sets the started_at field.
+// SetStartedAt sets the "started_at" field.
 func (sc *StatusCreate) SetStartedAt(t time.Time) *StatusCreate {
 	sc.mutation.SetStartedAt(t)
 	return sc
 }
 
-// SetEndedAt sets the ended_at field.
+// SetEndedAt sets the "ended_at" field.
 func (sc *StatusCreate) SetEndedAt(t time.Time) *StatusCreate {
 	sc.mutation.SetEndedAt(t)
 	return sc
 }
 
-// SetFailed sets the failed field.
+// SetFailed sets the "failed" field.
 func (sc *StatusCreate) SetFailed(b bool) *StatusCreate {
 	sc.mutation.SetFailed(b)
 	return sc
 }
 
-// SetCompleted sets the completed field.
+// SetCompleted sets the "completed" field.
 func (sc *StatusCreate) SetCompleted(b bool) *StatusCreate {
 	sc.mutation.SetCompleted(b)
 	return sc
 }
 
-// SetError sets the error field.
+// SetError sets the "error" field.
 func (sc *StatusCreate) SetError(s string) *StatusCreate {
 	sc.mutation.SetError(s)
 	return sc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (sc *StatusCreate) AddTagIDs(ids ...int) *StatusCreate {
-	sc.mutation.AddTagIDs(ids...)
+// AddStatusToTagIDs adds the "StatusToTag" edge to the Tag entity by IDs.
+func (sc *StatusCreate) AddStatusToTagIDs(ids ...int) *StatusCreate {
+	sc.mutation.AddStatusToTagIDs(ids...)
 	return sc
 }
 
-// AddTag adds the tag edges to Tag.
-func (sc *StatusCreate) AddTag(t ...*Tag) *StatusCreate {
+// AddStatusToTag adds the "StatusToTag" edges to the Tag entity.
+func (sc *StatusCreate) AddStatusToTag(t ...*Tag) *StatusCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return sc.AddTagIDs(ids...)
+	return sc.AddStatusToTagIDs(ids...)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -221,12 +221,12 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 		})
 		_node.Error = value
 	}
-	if nodes := sc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.StatusToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   status.TagTable,
-			Columns: []string{status.TagColumn},
+			Table:   status.StatusToTagTable,
+			Columns: []string{status.StatusToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -243,7 +243,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// StatusCreateBulk is the builder for creating a bulk of Status entities.
+// StatusCreateBulk is the builder for creating many Status entities in bulk.
 type StatusCreateBulk struct {
 	config
 	builders []*StatusCreate
@@ -300,7 +300,7 @@ func (scb *StatusCreateBulk) Save(ctx context.Context) ([]*Status, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (scb *StatusCreateBulk) SaveX(ctx context.Context) []*Status {
 	v, err := scb.Save(ctx)
 	if err != nil {

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type HostDelete struct {
 	mutation *HostMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the HostDelete builder.
 func (hd *HostDelete) Where(ps ...predicate.Host) *HostDelete {
 	hd.mutation.predicates = append(hd.mutation.predicates, ps...)
 	return hd

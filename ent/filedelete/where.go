@@ -3,12 +3,12 @@
 package filedelete
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -209,25 +209,25 @@ func PathContainsFold(v string) predicate.FileDelete {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.FileDelete {
+// HasFileDeleteToTag applies the HasEdge predicate on the "FileDeleteToTag" edge.
+func HasFileDeleteToTag() predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDeleteToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.FileDelete {
+// HasFileDeleteToTagWith applies the HasEdge predicate on the "FileDeleteToTag" edge with a given conditions (other predicates).
+func HasFileDeleteToTagWith(preds ...predicate.Tag) predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(FileDeleteToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -237,7 +237,7 @@ func HasTagWith(preds ...predicate.Tag) predicate.FileDelete {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.FileDelete) predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -248,7 +248,7 @@ func And(predicates ...predicate.FileDelete) predicate.FileDelete {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.FileDelete) predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

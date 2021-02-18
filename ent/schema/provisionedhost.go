@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // ProvisionedHost holds the schema definition for the ProvisionedHost entity.
@@ -21,10 +21,11 @@ func (ProvisionedHost) Fields() []ent.Field {
 // Edges of the ProvisionedHost.
 func (ProvisionedHost) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("status", Status.Type),
-		edge.To("provisioned_network", ProvisionedNetwork.Type),
-		edge.To("host", Host.Type),
-		edge.From("provisioned_steps", ProvisioningStep.Type).Ref("provisioned_host"),
-		edge.From("agent_status", AgentStatus.Type).Ref("host"),
+		edge.To("ProvisionedHostToTag", Tag.Type),
+		edge.To("ProvisionedHostToStatus", Status.Type),
+		edge.To("ProvisionedHostToProvisionedNetwork", ProvisionedNetwork.Type),
+		edge.To("ProvisionedHostToHost", Host.Type),
+		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).Ref("ProvisioningStepToProvisionedHost"),
+		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).Ref("AgentStatusToProvisionedHost"),
 	}
 }

@@ -3,12 +3,12 @@
 package network
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -348,25 +348,25 @@ func VdiVisibleNEQ(v bool) predicate.Network {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Network {
+// HasNetworkToTag applies the HasEdge predicate on the "NetworkToTag" edge.
+func HasNetworkToTag() predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(NetworkToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NetworkToTagTable, NetworkToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Network {
+// HasNetworkToTagWith applies the HasEdge predicate on the "NetworkToTag" edge with a given conditions (other predicates).
+func HasNetworkToTagWith(preds ...predicate.Tag) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(NetworkToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NetworkToTagTable, NetworkToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -404,7 +404,7 @@ func HasNetworkToEnvironmentWith(preds ...predicate.Environment) predicate.Netwo
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Network) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -415,7 +415,7 @@ func And(predicates ...predicate.Network) predicate.Network {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Network) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

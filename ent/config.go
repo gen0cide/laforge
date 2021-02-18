@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/dialect"
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 )
 
 // Option function to configure the client.
@@ -42,7 +42,6 @@ type hooks struct {
 	ProvisionedHost    []ent.Hook
 	ProvisionedNetwork []ent.Hook
 	ProvisioningStep   []ent.Hook
-	RemoteFile         []ent.Hook
 	Script             []ent.Hook
 	Status             []ent.Hook
 	Tag                []ent.Hook

@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
@@ -25,18 +25,19 @@ type ScriptQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Script
 	// eager-loading edges.
-	withTag        *TagQuery
-	withMaintainer *UserQuery
-	withFinding    *FindingQuery
-	withFKs        bool
+	withScriptToTag     *TagQuery
+	withScriptToUser    *UserQuery
+	withScriptToFinding *FindingQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the ScriptQuery builder.
 func (sq *ScriptQuery) Where(ps ...predicate.Script) *ScriptQuery {
 	sq.predicates = append(sq.predicates, ps...)
 	return sq
@@ -60,21 +61,21 @@ func (sq *ScriptQuery) Order(o ...OrderFunc) *ScriptQuery {
 	return sq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (sq *ScriptQuery) QueryTag() *TagQuery {
+// QueryScriptToTag chains the current query on the "ScriptToTag" edge.
+func (sq *ScriptQuery) QueryScriptToTag() *TagQuery {
 	query := &TagQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sq.sqlQuery()
+		selector := sq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.TagTable, script.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToTagTable, script.ScriptToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -82,21 +83,21 @@ func (sq *ScriptQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// QueryMaintainer chains the current query on the maintainer edge.
-func (sq *ScriptQuery) QueryMaintainer() *UserQuery {
+// QueryScriptToUser chains the current query on the "ScriptToUser" edge.
+func (sq *ScriptQuery) QueryScriptToUser() *UserQuery {
 	query := &UserQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sq.sqlQuery()
+		selector := sq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.MaintainerTable, script.MaintainerColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToUserTable, script.ScriptToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -104,21 +105,21 @@ func (sq *ScriptQuery) QueryMaintainer() *UserQuery {
 	return query
 }
 
-// QueryFinding chains the current query on the finding edge.
-func (sq *ScriptQuery) QueryFinding() *FindingQuery {
+// QueryScriptToFinding chains the current query on the "ScriptToFinding" edge.
+func (sq *ScriptQuery) QueryScriptToFinding() *FindingQuery {
 	query := &FindingQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sq.sqlQuery()
+		selector := sq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, selector),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, script.FindingTable, script.FindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, script.ScriptToFindingTable, script.ScriptToFindingPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -126,7 +127,8 @@ func (sq *ScriptQuery) QueryFinding() *FindingQuery {
 	return query
 }
 
-// First returns the first Script entity in the query. Returns *NotFoundError when no script was found.
+// First returns the first Script entity from the query.
+// Returns a *NotFoundError when no Script was found.
 func (sq *ScriptQuery) First(ctx context.Context) (*Script, error) {
 	nodes, err := sq.Limit(1).All(ctx)
 	if err != nil {
@@ -147,7 +149,8 @@ func (sq *ScriptQuery) FirstX(ctx context.Context) *Script {
 	return node
 }
 
-// FirstID returns the first Script id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Script ID from the query.
+// Returns a *NotFoundError when no Script ID was found.
 func (sq *ScriptQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
@@ -169,7 +172,9 @@ func (sq *ScriptQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Script entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Script entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Script entity is not found.
+// Returns a *NotFoundError when no Script entities are found.
 func (sq *ScriptQuery) Only(ctx context.Context) (*Script, error) {
 	nodes, err := sq.Limit(2).All(ctx)
 	if err != nil {
@@ -194,7 +199,9 @@ func (sq *ScriptQuery) OnlyX(ctx context.Context) *Script {
 	return node
 }
 
-// OnlyID returns the only Script id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Script ID in the query.
+// Returns a *NotSingularError when exactly one Script ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (sq *ScriptQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
@@ -237,7 +244,7 @@ func (sq *ScriptQuery) AllX(ctx context.Context) []*Script {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Script ids.
+// IDs executes the query and returns a list of Script IDs.
 func (sq *ScriptQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := sq.Select(script.FieldID).Scan(ctx, &ids); err != nil {
@@ -289,67 +296,67 @@ func (sq *ScriptQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the ScriptQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (sq *ScriptQuery) Clone() *ScriptQuery {
 	if sq == nil {
 		return nil
 	}
 	return &ScriptQuery{
-		config:         sq.config,
-		limit:          sq.limit,
-		offset:         sq.offset,
-		order:          append([]OrderFunc{}, sq.order...),
-		predicates:     append([]predicate.Script{}, sq.predicates...),
-		withTag:        sq.withTag.Clone(),
-		withMaintainer: sq.withMaintainer.Clone(),
-		withFinding:    sq.withFinding.Clone(),
+		config:              sq.config,
+		limit:               sq.limit,
+		offset:              sq.offset,
+		order:               append([]OrderFunc{}, sq.order...),
+		predicates:          append([]predicate.Script{}, sq.predicates...),
+		withScriptToTag:     sq.withScriptToTag.Clone(),
+		withScriptToUser:    sq.withScriptToUser.Clone(),
+		withScriptToFinding: sq.withScriptToFinding.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (sq *ScriptQuery) WithTag(opts ...func(*TagQuery)) *ScriptQuery {
+// WithScriptToTag tells the query-builder to eager-load the nodes that are connected to
+// the "ScriptToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ScriptQuery) WithScriptToTag(opts ...func(*TagQuery)) *ScriptQuery {
 	query := &TagQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withTag = query
+	sq.withScriptToTag = query
 	return sq
 }
 
-//  WithMaintainer tells the query-builder to eager-loads the nodes that are connected to
-// the "maintainer" edge. The optional arguments used to configure the query builder of the edge.
-func (sq *ScriptQuery) WithMaintainer(opts ...func(*UserQuery)) *ScriptQuery {
+// WithScriptToUser tells the query-builder to eager-load the nodes that are connected to
+// the "ScriptToUser" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ScriptQuery) WithScriptToUser(opts ...func(*UserQuery)) *ScriptQuery {
 	query := &UserQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withMaintainer = query
+	sq.withScriptToUser = query
 	return sq
 }
 
-//  WithFinding tells the query-builder to eager-loads the nodes that are connected to
-// the "finding" edge. The optional arguments used to configure the query builder of the edge.
-func (sq *ScriptQuery) WithFinding(opts ...func(*FindingQuery)) *ScriptQuery {
+// WithScriptToFinding tells the query-builder to eager-load the nodes that are connected to
+// the "ScriptToFinding" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ScriptQuery) WithScriptToFinding(opts ...func(*FindingQuery)) *ScriptQuery {
 	query := &FindingQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withFinding = query
+	sq.withScriptToFinding = query
 	return sq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -365,17 +372,18 @@ func (sq *ScriptQuery) GroupBy(field string, fields ...string) *ScriptGroupBy {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return sq.sqlQuery(), nil
+		return sq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Script.Query().
@@ -383,18 +391,16 @@ func (sq *ScriptQuery) GroupBy(field string, fields ...string) *ScriptGroupBy {
 //		Scan(ctx, &v)
 //
 func (sq *ScriptQuery) Select(field string, fields ...string) *ScriptSelect {
-	selector := &ScriptSelect{config: sq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return sq.sqlQuery(), nil
-	}
-	return selector
+	sq.fields = append([]string{field}, fields...)
+	return &ScriptSelect{ScriptQuery: sq}
 }
 
 func (sq *ScriptQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range sq.fields {
+		if !script.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if sq.path != nil {
 		prev, err := sq.path(ctx)
 		if err != nil {
@@ -411,30 +417,26 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [3]bool{
-			sq.withTag != nil,
-			sq.withMaintainer != nil,
-			sq.withFinding != nil,
+			sq.withScriptToTag != nil,
+			sq.withScriptToUser != nil,
+			sq.withScriptToFinding != nil,
 		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, script.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Script{config: sq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, sq.driver, _spec); err != nil {
 		return nil, err
@@ -443,71 +445,71 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 		return nodes, nil
 	}
 
-	if query := sq.withTag; query != nil {
+	if query := sq.withScriptToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Script)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.ScriptToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(script.TagColumn, fks...))
+			s.Where(sql.InValues(script.ScriptToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.script_tag
+			fk := n.script_script_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "script_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "script_script_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "script_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "script_script_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.ScriptToTag = append(node.Edges.ScriptToTag, n)
 		}
 	}
 
-	if query := sq.withMaintainer; query != nil {
+	if query := sq.withScriptToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Script)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Maintainer = []*User{}
+			nodes[i].Edges.ScriptToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(script.MaintainerColumn, fks...))
+			s.Where(sql.InValues(script.ScriptToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.script_maintainer
+			fk := n.script_script_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "script_maintainer" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "script_script_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "script_maintainer" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "script_script_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Maintainer = append(node.Edges.Maintainer, n)
+			node.Edges.ScriptToUser = append(node.Edges.ScriptToUser, n)
 		}
 	}
 
-	if query := sq.withFinding; query != nil {
+	if query := sq.withScriptToFinding; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		ids := make(map[int]*Script, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
-			node.Edges.Finding = []*Finding{}
+			node.Edges.ScriptToFinding = []*Finding{}
 		}
 		var (
 			edgeids []int
@@ -516,11 +518,11 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
 				Inverse: true,
-				Table:   script.FindingTable,
-				Columns: script.FindingPrimaryKey,
+				Table:   script.ScriptToFindingTable,
+				Columns: script.ScriptToFindingPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(script.FindingPrimaryKey[1], fks...))
+				s.Where(sql.InValues(script.ScriptToFindingPrimaryKey[1], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {
@@ -547,7 +549,7 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, sq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "finding": %v`, err)
+			return nil, fmt.Errorf(`query edges "ScriptToFinding": %v`, err)
 		}
 		query.Where(finding.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -557,10 +559,10 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 		for _, n := range neighbors {
 			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "finding" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected "ScriptToFinding" node returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Finding = append(nodes[i].Edges.Finding, n)
+				nodes[i].Edges.ScriptToFinding = append(nodes[i].Edges.ScriptToFinding, n)
 			}
 		}
 	}
@@ -594,6 +596,15 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   sq.sql,
 		Unique: true,
 	}
+	if fields := sq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, script.FieldID)
+		for i := range fields {
+			if fields[i] != script.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := sq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -617,7 +628,7 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sq *ScriptQuery) sqlQuery() *sql.Selector {
+func (sq *ScriptQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(sq.driver.Dialect())
 	t1 := builder.Table(script.Table)
 	selector := builder.Select(t1.Columns(script.Columns...)...).From(t1)
@@ -642,7 +653,7 @@ func (sq *ScriptQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// ScriptGroupBy is the builder for group-by Script entities.
+// ScriptGroupBy is the group-by builder for Script entities.
 type ScriptGroupBy struct {
 	config
 	fields []string
@@ -658,7 +669,7 @@ func (sgb *ScriptGroupBy) Aggregate(fns ...AggregateFunc) *ScriptGroupBy {
 	return sgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (sgb *ScriptGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := sgb.path(ctx)
 	if err != nil {
@@ -675,7 +686,8 @@ func (sgb *ScriptGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: ScriptGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -696,7 +708,8 @@ func (sgb *ScriptGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = sgb.Strings(ctx); err != nil {
@@ -722,7 +735,8 @@ func (sgb *ScriptGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: ScriptGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -743,7 +757,8 @@ func (sgb *ScriptGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = sgb.Ints(ctx); err != nil {
@@ -769,7 +784,8 @@ func (sgb *ScriptGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: ScriptGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -790,7 +806,8 @@ func (sgb *ScriptGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = sgb.Float64s(ctx); err != nil {
@@ -816,7 +833,8 @@ func (sgb *ScriptGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: ScriptGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -837,7 +855,8 @@ func (sgb *ScriptGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *ScriptGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = sgb.Bools(ctx); err != nil {
@@ -892,22 +911,19 @@ func (sgb *ScriptGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(sgb.fields...)
 }
 
-// ScriptSelect is the builder for select fields of Script entities.
+// ScriptSelect is the builder for selecting fields of Script entities.
 type ScriptSelect struct {
-	config
-	fields []string
+	*ScriptQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ss *ScriptSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ss.path(ctx)
-	if err != nil {
+	if err := ss.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ss.sql = query
+	ss.sql = ss.ScriptQuery.sqlQuery(ctx)
 	return ss.sqlScan(ctx, v)
 }
 
@@ -918,7 +934,7 @@ func (ss *ScriptSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: ScriptSelect.Strings is not achievable when selecting more than 1 field")
@@ -939,7 +955,7 @@ func (ss *ScriptSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ss.Strings(ctx); err != nil {
@@ -965,7 +981,7 @@ func (ss *ScriptSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: ScriptSelect.Ints is not achievable when selecting more than 1 field")
@@ -986,7 +1002,7 @@ func (ss *ScriptSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ss.Ints(ctx); err != nil {
@@ -1012,7 +1028,7 @@ func (ss *ScriptSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: ScriptSelect.Float64s is not achievable when selecting more than 1 field")
@@ -1033,7 +1049,7 @@ func (ss *ScriptSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ss.Float64s(ctx); err != nil {
@@ -1059,7 +1075,7 @@ func (ss *ScriptSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: ScriptSelect.Bools is not achievable when selecting more than 1 field")
@@ -1080,7 +1096,7 @@ func (ss *ScriptSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ss *ScriptSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ss.Bools(ctx); err != nil {
@@ -1107,11 +1123,6 @@ func (ss *ScriptSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ss *ScriptSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ss.fields {
-		if !script.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := ss.sqlQuery().Query()
 	if err := ss.driver.Query(ctx, query, args, rows); err != nil {

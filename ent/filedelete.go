@@ -3,85 +3,122 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/filedelete"
 )
 
 // FileDelete is the model entity for the FileDelete schema.
 type FileDelete struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Path holds the value of the "path" field.
-	Path string `json:"path,omitempty"`
+	Path string `json:"path,omitempty" hcl:"path,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDeleteQuery when eager-loading is set.
-	Edges FileDeleteEdges `json:"edges"`
+	Edges                                              FileDeleteEdges `json:"edges"`
+	provisioning_step_provisioning_step_to_file_delete *int
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
 type FileDeleteEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
+	FileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FileDeleteToTagOrErr returns the FileDeleteToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FileDeleteEdges) TagOrErr() ([]*Tag, error) {
+func (e FileDeleteEdges) FileDeleteToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.FileDeleteToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FileDeleteToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*FileDelete) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // path
+func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case filedelete.FieldTags:
+			values[i] = &[]byte{}
+		case filedelete.FieldID:
+			values[i] = &sql.NullInt64{}
+		case filedelete.FieldPath:
+			values[i] = &sql.NullString{}
+		case filedelete.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_delete
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type FileDelete", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the FileDelete fields.
-func (fd *FileDelete) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(filedelete.Columns); m < n {
+func (fd *FileDelete) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	fd.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field path", values[0])
-	} else if value.Valid {
-		fd.Path = value.String
+	for i := range columns {
+		switch columns[i] {
+		case filedelete.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			fd.ID = int(value.Int64)
+		case filedelete.FieldPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field path", values[i])
+			} else if value.Valid {
+				fd.Path = value.String
+			}
+		case filedelete.FieldTags:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &fd.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		case filedelete.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_delete", value)
+			} else if value.Valid {
+				fd.provisioning_step_provisioning_step_to_file_delete = new(int)
+				*fd.provisioning_step_provisioning_step_to_file_delete = int(value.Int64)
+			}
+		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the FileDelete.
-func (fd *FileDelete) QueryTag() *TagQuery {
-	return (&FileDeleteClient{config: fd.config}).QueryTag(fd)
+// QueryFileDeleteToTag queries the "FileDeleteToTag" edge of the FileDelete entity.
+func (fd *FileDelete) QueryFileDeleteToTag() *TagQuery {
+	return (&FileDeleteClient{config: fd.config}).QueryFileDeleteToTag(fd)
 }
 
 // Update returns a builder for updating this FileDelete.
-// Note that, you need to call FileDelete.Unwrap() before calling this method, if this FileDelete
+// Note that you need to call FileDelete.Unwrap() before calling this method if this FileDelete
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (fd *FileDelete) Update() *FileDeleteUpdateOne {
 	return (&FileDeleteClient{config: fd.config}).UpdateOne(fd)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the FileDelete entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (fd *FileDelete) Unwrap() *FileDelete {
 	tx, ok := fd.config.driver.(*txDriver)
 	if !ok {
@@ -98,6 +135,8 @@ func (fd *FileDelete) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", fd.ID))
 	builder.WriteString(", path=")
 	builder.WriteString(fd.Path)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", fd.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -3,12 +3,12 @@
 package competition
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -91,10 +91,128 @@ func IDLTE(id int) predicate.Competition {
 	})
 }
 
+// HclID applies equality check predicate on the "hcl_id" field. It's identical to HclIDEQ.
+func HclID(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
 // RootPassword applies equality check predicate on the "root_password" field. It's identical to RootPasswordEQ.
 func RootPassword(v string) predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRootPassword), v))
+	})
+}
+
+// HclIDEQ applies the EQ predicate on the "hcl_id" field.
+func HclIDEQ(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDNEQ applies the NEQ predicate on the "hcl_id" field.
+func HclIDNEQ(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDIn applies the In predicate on the "hcl_id" field.
+func HclIDIn(vs ...string) predicate.Competition {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Competition(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDNotIn applies the NotIn predicate on the "hcl_id" field.
+func HclIDNotIn(vs ...string) predicate.Competition {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Competition(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDGT applies the GT predicate on the "hcl_id" field.
+func HclIDGT(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDGTE applies the GTE predicate on the "hcl_id" field.
+func HclIDGTE(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLT applies the LT predicate on the "hcl_id" field.
+func HclIDLT(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLTE applies the LTE predicate on the "hcl_id" field.
+func HclIDLTE(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContains applies the Contains predicate on the "hcl_id" field.
+func HclIDContains(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasPrefix applies the HasPrefix predicate on the "hcl_id" field.
+func HclIDHasPrefix(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasSuffix applies the HasSuffix predicate on the "hcl_id" field.
+func HclIDHasSuffix(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDEqualFold applies the EqualFold predicate on the "hcl_id" field.
+func HclIDEqualFold(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContainsFold applies the ContainsFold predicate on the "hcl_id" field.
+func HclIDContainsFold(v string) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHclID), v))
 	})
 }
 
@@ -209,25 +327,25 @@ func RootPasswordContainsFold(v string) predicate.Competition {
 	})
 }
 
-// HasDNS applies the HasEdge predicate on the "dns" edge.
-func HasDNS() predicate.Competition {
+// HasCompetitionToTag applies the HasEdge predicate on the "CompetitionToTag" edge.
+func HasCompetitionToTag() predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSTable, DNSColumn),
+			sqlgraph.To(CompetitionToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToTagTable, CompetitionToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDNSWith applies the HasEdge predicate on the "dns" edge with a given conditions (other predicates).
-func HasDNSWith(preds ...predicate.DNS) predicate.Competition {
+// HasCompetitionToTagWith applies the HasEdge predicate on the "CompetitionToTag" edge with a given conditions (other predicates).
+func HasCompetitionToTagWith(preds ...predicate.Tag) predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSTable, DNSColumn),
+			sqlgraph.To(CompetitionToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToTagTable, CompetitionToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -237,7 +355,63 @@ func HasDNSWith(preds ...predicate.DNS) predicate.Competition {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasCompetitionToDNS applies the HasEdge predicate on the "CompetitionToDNS" edge.
+func HasCompetitionToDNS() predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToDNSTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToDNSTable, CompetitionToDNSColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompetitionToDNSWith applies the HasEdge predicate on the "CompetitionToDNS" edge with a given conditions (other predicates).
+func HasCompetitionToDNSWith(preds ...predicate.DNS) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToDNSInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToDNSTable, CompetitionToDNSColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCompetitionToEnvironment applies the HasEdge predicate on the "CompetitionToEnvironment" edge.
+func HasCompetitionToEnvironment() predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompetitionToEnvironmentWith applies the HasEdge predicate on the "CompetitionToEnvironment" edge with a given conditions (other predicates).
+func HasCompetitionToEnvironmentWith(preds ...predicate.Environment) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Competition) predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -248,7 +422,7 @@ func And(predicates ...predicate.Competition) predicate.Competition {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Competition) predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

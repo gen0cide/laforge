@@ -14,48 +14,48 @@ const (
 	// FieldRevision holds the string denoting the revision field in the database.
 	FieldRevision = "revision"
 
-	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
-	EdgeMaintainer = "maintainer"
-	// EdgeBuild holds the string denoting the build edge name in mutations.
-	EdgeBuild = "build"
+	// EdgeTeamToUser holds the string denoting the teamtouser edge name in mutations.
+	EdgeTeamToUser = "TeamToUser"
+	// EdgeTeamToBuild holds the string denoting the teamtobuild edge name in mutations.
+	EdgeTeamToBuild = "TeamToBuild"
 	// EdgeTeamToEnvironment holds the string denoting the teamtoenvironment edge name in mutations.
 	EdgeTeamToEnvironment = "TeamToEnvironment"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeProvisionedNetworks holds the string denoting the provisioned_networks edge name in mutations.
-	EdgeProvisionedNetworks = "provisioned_networks"
+	// EdgeTeamToTag holds the string denoting the teamtotag edge name in mutations.
+	EdgeTeamToTag = "TeamToTag"
+	// EdgeTeamToProvisionedNetwork holds the string denoting the teamtoprovisionednetwork edge name in mutations.
+	EdgeTeamToProvisionedNetwork = "TeamToProvisionedNetwork"
 
 	// Table holds the table name of the team in the database.
 	Table = "teams"
-	// MaintainerTable is the table the holds the maintainer relation/edge.
-	MaintainerTable = "users"
-	// MaintainerInverseTable is the table name for the User entity.
+	// TeamToUserTable is the table the holds the TeamToUser relation/edge.
+	TeamToUserTable = "users"
+	// TeamToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	MaintainerInverseTable = "users"
-	// MaintainerColumn is the table column denoting the maintainer relation/edge.
-	MaintainerColumn = "team_maintainer"
-	// BuildTable is the table the holds the build relation/edge. The primary key declared below.
-	BuildTable = "team_build"
-	// BuildInverseTable is the table name for the Build entity.
+	TeamToUserInverseTable = "users"
+	// TeamToUserColumn is the table column denoting the TeamToUser relation/edge.
+	TeamToUserColumn = "team_team_to_user"
+	// TeamToBuildTable is the table the holds the TeamToBuild relation/edge. The primary key declared below.
+	TeamToBuildTable = "team_TeamToBuild"
+	// TeamToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
-	BuildInverseTable = "builds"
+	TeamToBuildInverseTable = "builds"
 	// TeamToEnvironmentTable is the table the holds the TeamToEnvironment relation/edge. The primary key declared below.
 	TeamToEnvironmentTable = "team_TeamToEnvironment"
 	// TeamToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	TeamToEnvironmentInverseTable = "environments"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// TeamToTagTable is the table the holds the TeamToTag relation/edge.
+	TeamToTagTable = "tags"
+	// TeamToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "team_tag"
-	// ProvisionedNetworksTable is the table the holds the provisioned_networks relation/edge. The primary key declared below.
-	ProvisionedNetworksTable = "provisioned_network_ProvisionedNetworkToTeam"
-	// ProvisionedNetworksInverseTable is the table name for the ProvisionedNetwork entity.
+	TeamToTagInverseTable = "tags"
+	// TeamToTagColumn is the table column denoting the TeamToTag relation/edge.
+	TeamToTagColumn = "team_team_to_tag"
+	// TeamToProvisionedNetworkTable is the table the holds the TeamToProvisionedNetwork relation/edge. The primary key declared below.
+	TeamToProvisionedNetworkTable = "provisioned_network_ProvisionedNetworkToTeam"
+	// TeamToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
-	ProvisionedNetworksInverseTable = "provisioned_networks"
+	TeamToProvisionedNetworkInverseTable = "provisioned_networks"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -67,15 +67,15 @@ var Columns = []string{
 }
 
 var (
-	// BuildPrimaryKey and BuildColumn2 are the table columns denoting the
-	// primary key for the build relation (M2M).
-	BuildPrimaryKey = []string{"team_id", "build_id"}
+	// TeamToBuildPrimaryKey and TeamToBuildColumn2 are the table columns denoting the
+	// primary key for the TeamToBuild relation (M2M).
+	TeamToBuildPrimaryKey = []string{"team_id", "build_id"}
 	// TeamToEnvironmentPrimaryKey and TeamToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the TeamToEnvironment relation (M2M).
 	TeamToEnvironmentPrimaryKey = []string{"team_id", "environment_id"}
-	// ProvisionedNetworksPrimaryKey and ProvisionedNetworksColumn2 are the table columns denoting the
-	// primary key for the provisioned_networks relation (M2M).
-	ProvisionedNetworksPrimaryKey = []string{"provisioned_network_id", "team_id"}
+	// TeamToProvisionedNetworkPrimaryKey and TeamToProvisionedNetworkColumn2 are the table columns denoting the
+	// primary key for the TeamToProvisionedNetwork relation (M2M).
+	TeamToProvisionedNetworkPrimaryKey = []string{"provisioned_network_id", "team_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

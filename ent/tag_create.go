@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/google/uuid"
 )
@@ -20,19 +20,19 @@ type TagCreate struct {
 	hooks    []Hook
 }
 
-// SetUUID sets the uuid field.
+// SetUUID sets the "uuid" field.
 func (tc *TagCreate) SetUUID(u uuid.UUID) *TagCreate {
 	tc.mutation.SetUUID(u)
 	return tc
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (tc *TagCreate) SetName(s string) *TagCreate {
 	tc.mutation.SetName(s)
 	return tc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (tc *TagCreate) SetDescription(m map[string]string) *TagCreate {
 	tc.mutation.SetDescription(m)
 	return tc
@@ -152,7 +152,7 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// TagCreateBulk is the builder for creating a bulk of Tag entities.
+// TagCreateBulk is the builder for creating many Tag entities in bulk.
 type TagCreateBulk struct {
 	config
 	builders []*TagCreate
@@ -209,7 +209,7 @@ func (tcb *TagCreateBulk) Save(ctx context.Context) ([]*Tag, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (tcb *TagCreateBulk) SaveX(ctx context.Context) []*Tag {
 	v, err := tcb.Save(ctx)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,25 +20,25 @@ type DiskCreate struct {
 	hooks    []Hook
 }
 
-// SetSize sets the size field.
+// SetSize sets the "size" field.
 func (dc *DiskCreate) SetSize(i int) *DiskCreate {
 	dc.mutation.SetSize(i)
 	return dc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (dc *DiskCreate) AddTagIDs(ids ...int) *DiskCreate {
-	dc.mutation.AddTagIDs(ids...)
+// AddDiskToTagIDs adds the "DiskToTag" edge to the Tag entity by IDs.
+func (dc *DiskCreate) AddDiskToTagIDs(ids ...int) *DiskCreate {
+	dc.mutation.AddDiskToTagIDs(ids...)
 	return dc
 }
 
-// AddTag adds the tag edges to Tag.
-func (dc *DiskCreate) AddTag(t ...*Tag) *DiskCreate {
+// AddDiskToTag adds the "DiskToTag" edges to the Tag entity.
+func (dc *DiskCreate) AddDiskToTag(t ...*Tag) *DiskCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return dc.AddTagIDs(ids...)
+	return dc.AddDiskToTagIDs(ids...)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -135,12 +135,12 @@ func (dc *DiskCreate) createSpec() (*Disk, *sqlgraph.CreateSpec) {
 		})
 		_node.Size = value
 	}
-	if nodes := dc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := dc.mutation.DiskToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Table:   disk.DiskToTagTable,
+			Columns: []string{disk.DiskToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -157,7 +157,7 @@ func (dc *DiskCreate) createSpec() (*Disk, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// DiskCreateBulk is the builder for creating a bulk of Disk entities.
+// DiskCreateBulk is the builder for creating many Disk entities in bulk.
 type DiskCreateBulk struct {
 	config
 	builders []*DiskCreate
@@ -214,7 +214,7 @@ func (dcb *DiskCreateBulk) Save(ctx context.Context) ([]*Disk, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (dcb *DiskCreateBulk) SaveX(ctx context.Context) []*Disk {
 	v, err := dcb.Save(ctx)
 	if err != nil {

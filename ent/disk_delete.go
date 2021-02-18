@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type DiskDelete struct {
 	mutation *DiskMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the DiskDelete builder.
 func (dd *DiskDelete) Where(ps ...predicate.Disk) *DiskDelete {
 	dd.mutation.predicates = append(dd.mutation.predicates, ps...)
 	return dd

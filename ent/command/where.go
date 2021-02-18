@@ -3,12 +3,12 @@
 package command
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
 
-// ID filters vertices based on their identifier.
+// ID filters vertices based on their ID field.
 func ID(id int) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
@@ -653,25 +653,25 @@ func TimeoutLTE(v int) predicate.Command {
 	})
 }
 
-// HasUser applies the HasEdge predicate on the "user" edge.
-func HasUser() predicate.Command {
+// HasCommandToUser applies the HasEdge predicate on the "CommandToUser" edge.
+func HasCommandToUser() predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(CommandToUserTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CommandToUserTable, CommandToUserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
-func HasUserWith(preds ...predicate.User) predicate.Command {
+// HasCommandToUserWith applies the HasEdge predicate on the "CommandToUser" edge with a given conditions (other predicates).
+func HasCommandToUserWith(preds ...predicate.User) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UserInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserTable, UserColumn),
+			sqlgraph.To(CommandToUserInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CommandToUserTable, CommandToUserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -681,25 +681,25 @@ func HasUserWith(preds ...predicate.User) predicate.Command {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Command {
+// HasCommandToTag applies the HasEdge predicate on the "CommandToTag" edge.
+func HasCommandToTag() predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(CommandToTagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CommandToTagTable, CommandToTagColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Command {
+// HasCommandToTagWith applies the HasEdge predicate on the "CommandToTag" edge with a given conditions (other predicates).
+func HasCommandToTagWith(preds ...predicate.Tag) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(CommandToTagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CommandToTagTable, CommandToTagColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -709,7 +709,7 @@ func HasTagWith(preds ...predicate.Tag) predicate.Command {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Command) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -720,7 +720,7 @@ func And(predicates ...predicate.Command) predicate.Command {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Command) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

@@ -26,18 +26,18 @@ const (
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeStatusToTag holds the string denoting the statustotag edge name in mutations.
+	EdgeStatusToTag = "StatusToTag"
 
 	// Table holds the table name of the status in the database.
 	Table = "status"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// StatusToTagTable is the table the holds the StatusToTag relation/edge.
+	StatusToTagTable = "tags"
+	// StatusToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "status_tag"
+	StatusToTagInverseTable = "tags"
+	// StatusToTagColumn is the table column denoting the StatusToTag relation/edge.
+	StatusToTagColumn = "status_status_to_tag"
 )
 
 // Columns holds all SQL columns for status fields.
@@ -53,9 +53,9 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Status type.
 var ForeignKeys = []string{
-	"provisioned_host_status",
-	"provisioned_network_status",
-	"provisioning_step_status",
+	"provisioned_host_provisioned_host_to_status",
+	"provisioned_network_provisioned_network_to_status",
+	"provisioning_step_provisioning_step_to_status",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -73,7 +73,7 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-// State defines the type for the state enum field.
+// State defines the type for the "state" enum field.
 type State string
 
 // State values.

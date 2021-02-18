@@ -12,20 +12,20 @@ const (
 	// FieldHosts holds the string denoting the hosts field in the database.
 	FieldHosts = "hosts"
 
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeIncludedNetworkToTag holds the string denoting the includednetworktotag edge name in mutations.
+	EdgeIncludedNetworkToTag = "IncludedNetworkToTag"
 	// EdgeIncludedNetworkToEnvironment holds the string denoting the includednetworktoenvironment edge name in mutations.
 	EdgeIncludedNetworkToEnvironment = "IncludedNetworkToEnvironment"
 
 	// Table holds the table name of the includednetwork in the database.
 	Table = "included_networks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// IncludedNetworkToTagTable is the table the holds the IncludedNetworkToTag relation/edge.
+	IncludedNetworkToTagTable = "tags"
+	// IncludedNetworkToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "included_network_tag"
+	IncludedNetworkToTagInverseTable = "tags"
+	// IncludedNetworkToTagColumn is the table column denoting the IncludedNetworkToTag relation/edge.
+	IncludedNetworkToTagColumn = "included_network_included_network_to_tag"
 	// IncludedNetworkToEnvironmentTable is the table the holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
 	IncludedNetworkToEnvironmentTable = "included_network_IncludedNetworkToEnvironment"
 	// IncludedNetworkToEnvironmentInverseTable is the table name for the Environment entity.

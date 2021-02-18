@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,15 +23,17 @@ type FileDownloadQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.FileDownload
 	// eager-loading edges.
-	withTag *TagQuery
+	withFileDownloadToTag *TagQuery
+	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FileDownloadQuery builder.
 func (fdq *FileDownloadQuery) Where(ps ...predicate.FileDownload) *FileDownloadQuery {
 	fdq.predicates = append(fdq.predicates, ps...)
 	return fdq
@@ -55,21 +57,21 @@ func (fdq *FileDownloadQuery) Order(o ...OrderFunc) *FileDownloadQuery {
 	return fdq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fdq *FileDownloadQuery) QueryTag() *TagQuery {
+// QueryFileDownloadToTag chains the current query on the "FileDownloadToTag" edge.
+func (fdq *FileDownloadQuery) QueryFileDownloadToTag() *TagQuery {
 	query := &TagQuery{config: fdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fdq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fdq.sqlQuery()
+		selector := fdq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedownload.Table, filedownload.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.TagTable, filedownload.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.FileDownloadToTagTable, filedownload.FileDownloadToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -77,7 +79,8 @@ func (fdq *FileDownloadQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// First returns the first FileDownload entity in the query. Returns *NotFoundError when no filedownload was found.
+// First returns the first FileDownload entity from the query.
+// Returns a *NotFoundError when no FileDownload was found.
 func (fdq *FileDownloadQuery) First(ctx context.Context) (*FileDownload, error) {
 	nodes, err := fdq.Limit(1).All(ctx)
 	if err != nil {
@@ -98,7 +101,8 @@ func (fdq *FileDownloadQuery) FirstX(ctx context.Context) *FileDownload {
 	return node
 }
 
-// FirstID returns the first FileDownload id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first FileDownload ID from the query.
+// Returns a *NotFoundError when no FileDownload ID was found.
 func (fdq *FileDownloadQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fdq.Limit(1).IDs(ctx); err != nil {
@@ -120,7 +124,9 @@ func (fdq *FileDownloadQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only FileDownload entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single FileDownload entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one FileDownload entity is not found.
+// Returns a *NotFoundError when no FileDownload entities are found.
 func (fdq *FileDownloadQuery) Only(ctx context.Context) (*FileDownload, error) {
 	nodes, err := fdq.Limit(2).All(ctx)
 	if err != nil {
@@ -145,7 +151,9 @@ func (fdq *FileDownloadQuery) OnlyX(ctx context.Context) *FileDownload {
 	return node
 }
 
-// OnlyID returns the only FileDownload id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only FileDownload ID in the query.
+// Returns a *NotSingularError when exactly one FileDownload ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (fdq *FileDownloadQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fdq.Limit(2).IDs(ctx); err != nil {
@@ -188,7 +196,7 @@ func (fdq *FileDownloadQuery) AllX(ctx context.Context) []*FileDownload {
 	return nodes
 }
 
-// IDs executes the query and returns a list of FileDownload ids.
+// IDs executes the query and returns a list of FileDownload IDs.
 func (fdq *FileDownloadQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := fdq.Select(filedownload.FieldID).Scan(ctx, &ids); err != nil {
@@ -240,43 +248,43 @@ func (fdq *FileDownloadQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the FileDownloadQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (fdq *FileDownloadQuery) Clone() *FileDownloadQuery {
 	if fdq == nil {
 		return nil
 	}
 	return &FileDownloadQuery{
-		config:     fdq.config,
-		limit:      fdq.limit,
-		offset:     fdq.offset,
-		order:      append([]OrderFunc{}, fdq.order...),
-		predicates: append([]predicate.FileDownload{}, fdq.predicates...),
-		withTag:    fdq.withTag.Clone(),
+		config:                fdq.config,
+		limit:                 fdq.limit,
+		offset:                fdq.offset,
+		order:                 append([]OrderFunc{}, fdq.order...),
+		predicates:            append([]predicate.FileDownload{}, fdq.predicates...),
+		withFileDownloadToTag: fdq.withFileDownloadToTag.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fdq *FileDownloadQuery) WithTag(opts ...func(*TagQuery)) *FileDownloadQuery {
+// WithFileDownloadToTag tells the query-builder to eager-load the nodes that are connected to
+// the "FileDownloadToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (fdq *FileDownloadQuery) WithFileDownloadToTag(opts ...func(*TagQuery)) *FileDownloadQuery {
 	query := &TagQuery{config: fdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fdq.withTag = query
+	fdq.withFileDownloadToTag = query
 	return fdq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty"`
+//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -292,17 +300,18 @@ func (fdq *FileDownloadQuery) GroupBy(field string, fields ...string) *FileDownl
 		if err := fdq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return fdq.sqlQuery(), nil
+		return fdq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty"`
+//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 //	}
 //
 //	client.FileDownload.Query().
@@ -310,18 +319,16 @@ func (fdq *FileDownloadQuery) GroupBy(field string, fields ...string) *FileDownl
 //		Scan(ctx, &v)
 //
 func (fdq *FileDownloadQuery) Select(field string, fields ...string) *FileDownloadSelect {
-	selector := &FileDownloadSelect{config: fdq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := fdq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return fdq.sqlQuery(), nil
-	}
-	return selector
+	fdq.fields = append([]string{field}, fields...)
+	return &FileDownloadSelect{FileDownloadQuery: fdq}
 }
 
 func (fdq *FileDownloadQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range fdq.fields {
+		if !filedownload.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if fdq.path != nil {
 		prev, err := fdq.path(ctx)
 		if err != nil {
@@ -335,24 +342,27 @@ func (fdq *FileDownloadQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, error) {
 	var (
 		nodes       = []*FileDownload{}
+		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
-			fdq.withTag != nil,
+			fdq.withFileDownloadToTag != nil,
 		}
 	)
-	_spec.ScanValues = func() []interface{} {
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.ForeignKeys...)
+	}
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileDownload{config: fdq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, fdq.driver, _spec); err != nil {
 		return nil, err
@@ -361,32 +371,32 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 		return nodes, nil
 	}
 
-	if query := fdq.withTag; query != nil {
+	if query := fdq.withFileDownloadToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*FileDownload)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FileDownloadToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(filedownload.TagColumn, fks...))
+			s.Where(sql.InValues(filedownload.FileDownloadToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.file_download_tag
+			fk := n.file_download_file_download_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_download_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "file_download_file_download_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_download_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "file_download_file_download_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FileDownloadToTag = append(node.Edges.FileDownloadToTag, n)
 		}
 	}
 
@@ -419,6 +429,15 @@ func (fdq *FileDownloadQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   fdq.sql,
 		Unique: true,
 	}
+	if fields := fdq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.FieldID)
+		for i := range fields {
+			if fields[i] != filedownload.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := fdq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -442,7 +461,7 @@ func (fdq *FileDownloadQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (fdq *FileDownloadQuery) sqlQuery() *sql.Selector {
+func (fdq *FileDownloadQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(fdq.driver.Dialect())
 	t1 := builder.Table(filedownload.Table)
 	selector := builder.Select(t1.Columns(filedownload.Columns...)...).From(t1)
@@ -467,7 +486,7 @@ func (fdq *FileDownloadQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// FileDownloadGroupBy is the builder for group-by FileDownload entities.
+// FileDownloadGroupBy is the group-by builder for FileDownload entities.
 type FileDownloadGroupBy struct {
 	config
 	fields []string
@@ -483,7 +502,7 @@ func (fdgb *FileDownloadGroupBy) Aggregate(fns ...AggregateFunc) *FileDownloadGr
 	return fdgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (fdgb *FileDownloadGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := fdgb.path(ctx)
 	if err != nil {
@@ -500,7 +519,8 @@ func (fdgb *FileDownloadGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -521,7 +541,8 @@ func (fdgb *FileDownloadGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fdgb.Strings(ctx); err != nil {
@@ -547,7 +568,8 @@ func (fdgb *FileDownloadGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -568,7 +590,8 @@ func (fdgb *FileDownloadGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fdgb.Ints(ctx); err != nil {
@@ -594,7 +617,8 @@ func (fdgb *FileDownloadGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -615,7 +639,8 @@ func (fdgb *FileDownloadGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fdgb.Float64s(ctx); err != nil {
@@ -641,7 +666,8 @@ func (fdgb *FileDownloadGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -662,7 +688,8 @@ func (fdgb *FileDownloadGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDownloadGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fdgb.Bools(ctx); err != nil {
@@ -717,22 +744,19 @@ func (fdgb *FileDownloadGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(fdgb.fields...)
 }
 
-// FileDownloadSelect is the builder for select fields of FileDownload entities.
+// FileDownloadSelect is the builder for selecting fields of FileDownload entities.
 type FileDownloadSelect struct {
-	config
-	fields []string
+	*FileDownloadQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (fds *FileDownloadSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := fds.path(ctx)
-	if err != nil {
+	if err := fds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	fds.sql = query
+	fds.sql = fds.FileDownloadQuery.sqlQuery(ctx)
 	return fds.sqlScan(ctx, v)
 }
 
@@ -743,7 +767,7 @@ func (fds *FileDownloadSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadSelect.Strings is not achievable when selecting more than 1 field")
@@ -764,7 +788,7 @@ func (fds *FileDownloadSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fds.Strings(ctx); err != nil {
@@ -790,7 +814,7 @@ func (fds *FileDownloadSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadSelect.Ints is not achievable when selecting more than 1 field")
@@ -811,7 +835,7 @@ func (fds *FileDownloadSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fds.Ints(ctx); err != nil {
@@ -837,7 +861,7 @@ func (fds *FileDownloadSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadSelect.Float64s is not achievable when selecting more than 1 field")
@@ -858,7 +882,7 @@ func (fds *FileDownloadSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fds.Float64s(ctx); err != nil {
@@ -884,7 +908,7 @@ func (fds *FileDownloadSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDownloadSelect.Bools is not achievable when selecting more than 1 field")
@@ -905,7 +929,7 @@ func (fds *FileDownloadSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (fds *FileDownloadSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fds.Bools(ctx); err != nil {
@@ -932,11 +956,6 @@ func (fds *FileDownloadSelect) BoolX(ctx context.Context) bool {
 }
 
 func (fds *FileDownloadSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range fds.fields {
-		if !filedownload.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := fds.sqlQuery().Query()
 	if err := fds.driver.Query(ctx, query, args, rows); err != nil {

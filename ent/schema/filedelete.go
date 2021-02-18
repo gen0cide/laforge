@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // FileDelete holds the schema definition for the FileDelete entity.
@@ -14,13 +14,16 @@ type FileDelete struct {
 // Fields of the FileDelete.
 func (FileDelete) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("path"),
+		field.String("path").
+			StructTag(`hcl:"path,attr"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 
 // Edges of the FileDelete.
 func (FileDelete) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("FileDeleteToTag", Tag.Type),
 	}
 }

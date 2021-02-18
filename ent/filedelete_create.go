@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,25 +20,31 @@ type FileDeleteCreate struct {
 	hooks    []Hook
 }
 
-// SetPath sets the path field.
+// SetPath sets the "path" field.
 func (fdc *FileDeleteCreate) SetPath(s string) *FileDeleteCreate {
 	fdc.mutation.SetPath(s)
 	return fdc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdc *FileDeleteCreate) AddTagIDs(ids ...int) *FileDeleteCreate {
-	fdc.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fdc *FileDeleteCreate) SetTags(m map[string]string) *FileDeleteCreate {
+	fdc.mutation.SetTags(m)
 	return fdc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdc *FileDeleteCreate) AddTag(t ...*Tag) *FileDeleteCreate {
+// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
+func (fdc *FileDeleteCreate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteCreate {
+	fdc.mutation.AddFileDeleteToTagIDs(ids...)
+	return fdc
+}
+
+// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
+func (fdc *FileDeleteCreate) AddFileDeleteToTag(t ...*Tag) *FileDeleteCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fdc.AddTagIDs(ids...)
+	return fdc.AddFileDeleteToTagIDs(ids...)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -95,6 +101,9 @@ func (fdc *FileDeleteCreate) check() error {
 	if _, ok := fdc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
 	}
+	if _, ok := fdc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -130,12 +139,20 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		})
 		_node.Path = value
 	}
-	if nodes := fdc.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := fdc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedelete.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fdc.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   filedelete.TagTable,
-			Columns: []string{filedelete.TagColumn},
+			Table:   filedelete.FileDeleteToTagTable,
+			Columns: []string{filedelete.FileDeleteToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -152,7 +169,7 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// FileDeleteCreateBulk is the builder for creating a bulk of FileDelete entities.
+// FileDeleteCreateBulk is the builder for creating many FileDelete entities in bulk.
 type FileDeleteCreateBulk struct {
 	config
 	builders []*FileDeleteCreate
@@ -209,7 +226,7 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fdcb *FileDeleteCreateBulk) SaveX(ctx context.Context) []*FileDelete {
 	v, err := fdcb.Save(ctx)
 	if err != nil {

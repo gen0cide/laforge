@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,16 +23,17 @@ type DiskQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Disk
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withDiskToTag *TagQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the DiskQuery builder.
 func (dq *DiskQuery) Where(ps ...predicate.Disk) *DiskQuery {
 	dq.predicates = append(dq.predicates, ps...)
 	return dq
@@ -56,21 +57,21 @@ func (dq *DiskQuery) Order(o ...OrderFunc) *DiskQuery {
 	return dq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (dq *DiskQuery) QueryTag() *TagQuery {
+// QueryDiskToTag chains the current query on the "DiskToTag" edge.
+func (dq *DiskQuery) QueryDiskToTag() *TagQuery {
 	query := &TagQuery{config: dq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := dq.sqlQuery()
+		selector := dq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(disk.Table, disk.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, disk.TagTable, disk.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, disk.DiskToTagTable, disk.DiskToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -78,7 +79,8 @@ func (dq *DiskQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// First returns the first Disk entity in the query. Returns *NotFoundError when no disk was found.
+// First returns the first Disk entity from the query.
+// Returns a *NotFoundError when no Disk was found.
 func (dq *DiskQuery) First(ctx context.Context) (*Disk, error) {
 	nodes, err := dq.Limit(1).All(ctx)
 	if err != nil {
@@ -99,7 +101,8 @@ func (dq *DiskQuery) FirstX(ctx context.Context) *Disk {
 	return node
 }
 
-// FirstID returns the first Disk id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Disk ID from the query.
+// Returns a *NotFoundError when no Disk ID was found.
 func (dq *DiskQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
@@ -121,7 +124,9 @@ func (dq *DiskQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Disk entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Disk entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Disk entity is not found.
+// Returns a *NotFoundError when no Disk entities are found.
 func (dq *DiskQuery) Only(ctx context.Context) (*Disk, error) {
 	nodes, err := dq.Limit(2).All(ctx)
 	if err != nil {
@@ -146,7 +151,9 @@ func (dq *DiskQuery) OnlyX(ctx context.Context) *Disk {
 	return node
 }
 
-// OnlyID returns the only Disk id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Disk ID in the query.
+// Returns a *NotSingularError when exactly one Disk ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (dq *DiskQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
@@ -189,7 +196,7 @@ func (dq *DiskQuery) AllX(ctx context.Context) []*Disk {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Disk ids.
+// IDs executes the query and returns a list of Disk IDs.
 func (dq *DiskQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := dq.Select(disk.FieldID).Scan(ctx, &ids); err != nil {
@@ -241,43 +248,43 @@ func (dq *DiskQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the DiskQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (dq *DiskQuery) Clone() *DiskQuery {
 	if dq == nil {
 		return nil
 	}
 	return &DiskQuery{
-		config:     dq.config,
-		limit:      dq.limit,
-		offset:     dq.offset,
-		order:      append([]OrderFunc{}, dq.order...),
-		predicates: append([]predicate.Disk{}, dq.predicates...),
-		withTag:    dq.withTag.Clone(),
+		config:        dq.config,
+		limit:         dq.limit,
+		offset:        dq.offset,
+		order:         append([]OrderFunc{}, dq.order...),
+		predicates:    append([]predicate.Disk{}, dq.predicates...),
+		withDiskToTag: dq.withDiskToTag.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (dq *DiskQuery) WithTag(opts ...func(*TagQuery)) *DiskQuery {
+// WithDiskToTag tells the query-builder to eager-load the nodes that are connected to
+// the "DiskToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DiskQuery) WithDiskToTag(opts ...func(*TagQuery)) *DiskQuery {
 	query := &TagQuery{config: dq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	dq.withTag = query
+	dq.withDiskToTag = query
 	return dq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Size int `json:"size,omitempty"`
+//		Size int `json:"size,omitempty" hcl:"size,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -293,17 +300,18 @@ func (dq *DiskQuery) GroupBy(field string, fields ...string) *DiskGroupBy {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return dq.sqlQuery(), nil
+		return dq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Size int `json:"size,omitempty"`
+//		Size int `json:"size,omitempty" hcl:"size,attr"`
 //	}
 //
 //	client.Disk.Query().
@@ -311,18 +319,16 @@ func (dq *DiskQuery) GroupBy(field string, fields ...string) *DiskGroupBy {
 //		Scan(ctx, &v)
 //
 func (dq *DiskQuery) Select(field string, fields ...string) *DiskSelect {
-	selector := &DiskSelect{config: dq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return dq.sqlQuery(), nil
-	}
-	return selector
+	dq.fields = append([]string{field}, fields...)
+	return &DiskSelect{DiskQuery: dq}
 }
 
 func (dq *DiskQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range dq.fields {
+		if !disk.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if dq.path != nil {
 		prev, err := dq.path(ctx)
 		if err != nil {
@@ -339,28 +345,24 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
 		loadedTypes = [1]bool{
-			dq.withTag != nil,
+			dq.withDiskToTag != nil,
 		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, disk.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Disk{config: dq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, dq.driver, _spec); err != nil {
 		return nil, err
@@ -369,32 +371,32 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		return nodes, nil
 	}
 
-	if query := dq.withTag; query != nil {
+	if query := dq.withDiskToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Disk)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.DiskToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(disk.TagColumn, fks...))
+			s.Where(sql.InValues(disk.DiskToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.disk_tag
+			fk := n.disk_disk_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "disk_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "disk_disk_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "disk_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "disk_disk_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.DiskToTag = append(node.Edges.DiskToTag, n)
 		}
 	}
 
@@ -427,6 +429,15 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   dq.sql,
 		Unique: true,
 	}
+	if fields := dq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, disk.FieldID)
+		for i := range fields {
+			if fields[i] != disk.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := dq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -450,7 +461,7 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (dq *DiskQuery) sqlQuery() *sql.Selector {
+func (dq *DiskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(dq.driver.Dialect())
 	t1 := builder.Table(disk.Table)
 	selector := builder.Select(t1.Columns(disk.Columns...)...).From(t1)
@@ -475,7 +486,7 @@ func (dq *DiskQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// DiskGroupBy is the builder for group-by Disk entities.
+// DiskGroupBy is the group-by builder for Disk entities.
 type DiskGroupBy struct {
 	config
 	fields []string
@@ -491,7 +502,7 @@ func (dgb *DiskGroupBy) Aggregate(fns ...AggregateFunc) *DiskGroupBy {
 	return dgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (dgb *DiskGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := dgb.path(ctx)
 	if err != nil {
@@ -508,7 +519,8 @@ func (dgb *DiskGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DiskGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -529,7 +541,8 @@ func (dgb *DiskGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = dgb.Strings(ctx); err != nil {
@@ -555,7 +568,8 @@ func (dgb *DiskGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DiskGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -576,7 +590,8 @@ func (dgb *DiskGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = dgb.Ints(ctx); err != nil {
@@ -602,7 +617,8 @@ func (dgb *DiskGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DiskGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -623,7 +639,8 @@ func (dgb *DiskGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = dgb.Float64s(ctx); err != nil {
@@ -649,7 +666,8 @@ func (dgb *DiskGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(dgb.fields) > 1 {
 		return nil, errors.New("ent: DiskGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -670,7 +688,8 @@ func (dgb *DiskGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (dgb *DiskGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = dgb.Bools(ctx); err != nil {
@@ -725,22 +744,19 @@ func (dgb *DiskGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(dgb.fields...)
 }
 
-// DiskSelect is the builder for select fields of Disk entities.
+// DiskSelect is the builder for selecting fields of Disk entities.
 type DiskSelect struct {
-	config
-	fields []string
+	*DiskQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ds *DiskSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ds.path(ctx)
-	if err != nil {
+	if err := ds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ds.sql = query
+	ds.sql = ds.DiskQuery.sqlQuery(ctx)
 	return ds.sqlScan(ctx, v)
 }
 
@@ -751,7 +767,7 @@ func (ds *DiskSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DiskSelect.Strings is not achievable when selecting more than 1 field")
@@ -772,7 +788,7 @@ func (ds *DiskSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ds.Strings(ctx); err != nil {
@@ -798,7 +814,7 @@ func (ds *DiskSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DiskSelect.Ints is not achievable when selecting more than 1 field")
@@ -819,7 +835,7 @@ func (ds *DiskSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ds.Ints(ctx); err != nil {
@@ -845,7 +861,7 @@ func (ds *DiskSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DiskSelect.Float64s is not achievable when selecting more than 1 field")
@@ -866,7 +882,7 @@ func (ds *DiskSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ds.Float64s(ctx); err != nil {
@@ -892,7 +908,7 @@ func (ds *DiskSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ds.fields) > 1 {
 		return nil, errors.New("ent: DiskSelect.Bools is not achievable when selecting more than 1 field")
@@ -913,7 +929,7 @@ func (ds *DiskSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ds *DiskSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ds.Bools(ctx); err != nil {
@@ -940,11 +956,6 @@ func (ds *DiskSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ds *DiskSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ds.fields {
-		if !disk.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := ds.sqlQuery().Query()
 	if err := ds.driver.Query(ctx, query, args, rows); err != nil {

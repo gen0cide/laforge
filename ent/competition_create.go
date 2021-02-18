@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionCreate is the builder for creating a Competition entity.
@@ -20,31 +22,73 @@ type CompetitionCreate struct {
 	hooks    []Hook
 }
 
-// SetRootPassword sets the root_password field.
+// SetHclID sets the "hcl_id" field.
+func (cc *CompetitionCreate) SetHclID(s string) *CompetitionCreate {
+	cc.mutation.SetHclID(s)
+	return cc
+}
+
+// SetRootPassword sets the "root_password" field.
 func (cc *CompetitionCreate) SetRootPassword(s string) *CompetitionCreate {
 	cc.mutation.SetRootPassword(s)
 	return cc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
 	cc.mutation.SetConfig(m)
 	return cc
 }
 
-// AddDnIDs adds the dns edge to DNS by ids.
-func (cc *CompetitionCreate) AddDnIDs(ids ...int) *CompetitionCreate {
-	cc.mutation.AddDnIDs(ids...)
+// SetTags sets the "tags" field.
+func (cc *CompetitionCreate) SetTags(m map[string]string) *CompetitionCreate {
+	cc.mutation.SetTags(m)
 	return cc
 }
 
-// AddDNS adds the dns edges to DNS.
-func (cc *CompetitionCreate) AddDNS(d ...*DNS) *CompetitionCreate {
+// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by IDs.
+func (cc *CompetitionCreate) AddCompetitionToTagIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToTagIDs(ids...)
+	return cc
+}
+
+// AddCompetitionToTag adds the "CompetitionToTag" edges to the Tag entity.
+func (cc *CompetitionCreate) AddCompetitionToTag(t ...*Tag) *CompetitionCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cc.AddCompetitionToTagIDs(ids...)
+}
+
+// AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by IDs.
+func (cc *CompetitionCreate) AddCompetitionToDNSIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToDNSIDs(ids...)
+	return cc
+}
+
+// AddCompetitionToDNS adds the "CompetitionToDNS" edges to the DNS entity.
+func (cc *CompetitionCreate) AddCompetitionToDNS(d ...*DNS) *CompetitionCreate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return cc.AddDnIDs(ids...)
+	return cc.AddCompetitionToDNSIDs(ids...)
+}
+
+// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
+func (cc *CompetitionCreate) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionCreate {
+	cc.mutation.AddCompetitionToEnvironmentIDs(ids...)
+	return cc
+}
+
+// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
+func (cc *CompetitionCreate) AddCompetitionToEnvironment(e ...*Environment) *CompetitionCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cc.AddCompetitionToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -98,11 +142,17 @@ func (cc *CompetitionCreate) SaveX(ctx context.Context) *Competition {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *CompetitionCreate) check() error {
+	if _, ok := cc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := cc.mutation.RootPassword(); !ok {
 		return &ValidationError{Name: "root_password", err: errors.New("ent: missing required field \"root_password\"")}
 	}
 	if _, ok := cc.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+	}
+	if _, ok := cc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
 	}
 	return nil
 }
@@ -131,6 +181,14 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := cc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: competition.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := cc.mutation.RootPassword(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -147,12 +205,39 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
-	if nodes := cc.mutation.DNSIDs(); len(nodes) > 0 {
+	if value, ok := cc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: competition.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := cc.mutation.CompetitionToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   competition.DNSTable,
-			Columns: []string{competition.DNSColumn},
+			Table:   competition.CompetitionToTagTable,
+			Columns: []string{competition.CompetitionToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   competition.CompetitionToDNSTable,
+			Columns: []string{competition.CompetitionToDNSColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -166,10 +251,29 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := cc.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   competition.CompetitionToEnvironmentTable,
+			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
-// CompetitionCreateBulk is the builder for creating a bulk of Competition entities.
+// CompetitionCreateBulk is the builder for creating many Competition entities in bulk.
 type CompetitionCreateBulk struct {
 	config
 	builders []*CompetitionCreate
@@ -226,7 +330,7 @@ func (ccb *CompetitionCreateBulk) Save(ctx context.Context) ([]*Competition, err
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ccb *CompetitionCreateBulk) SaveX(ctx context.Context) []*Competition {
 	v, err := ccb.Save(ctx)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,55 +20,61 @@ type DNSRecordCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (drc *DNSRecordCreate) SetName(s string) *DNSRecordCreate {
 	drc.mutation.SetName(s)
 	return drc
 }
 
-// SetValues sets the values field.
+// SetValues sets the "values" field.
 func (drc *DNSRecordCreate) SetValues(s []string) *DNSRecordCreate {
 	drc.mutation.SetValues(s)
 	return drc
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (drc *DNSRecordCreate) SetType(s string) *DNSRecordCreate {
 	drc.mutation.SetType(s)
 	return drc
 }
 
-// SetZone sets the zone field.
+// SetZone sets the "zone" field.
 func (drc *DNSRecordCreate) SetZone(s string) *DNSRecordCreate {
 	drc.mutation.SetZone(s)
 	return drc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (drc *DNSRecordCreate) SetVars(m map[string]string) *DNSRecordCreate {
 	drc.mutation.SetVars(m)
 	return drc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (drc *DNSRecordCreate) SetDisabled(b bool) *DNSRecordCreate {
 	drc.mutation.SetDisabled(b)
 	return drc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (drc *DNSRecordCreate) AddTagIDs(ids ...int) *DNSRecordCreate {
-	drc.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (drc *DNSRecordCreate) SetTags(m map[string]string) *DNSRecordCreate {
+	drc.mutation.SetTags(m)
 	return drc
 }
 
-// AddTag adds the tag edges to Tag.
-func (drc *DNSRecordCreate) AddTag(t ...*Tag) *DNSRecordCreate {
+// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by IDs.
+func (drc *DNSRecordCreate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordCreate {
+	drc.mutation.AddDNSRecordToTagIDs(ids...)
+	return drc
+}
+
+// AddDNSRecordToTag adds the "DNSRecordToTag" edges to the Tag entity.
+func (drc *DNSRecordCreate) AddDNSRecordToTag(t ...*Tag) *DNSRecordCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return drc.AddTagIDs(ids...)
+	return drc.AddDNSRecordToTagIDs(ids...)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -139,6 +145,9 @@ func (drc *DNSRecordCreate) check() error {
 	}
 	if _, ok := drc.mutation.Disabled(); !ok {
 		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+	}
+	if _, ok := drc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
 	}
 	return nil
 }
@@ -215,12 +224,20 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 		})
 		_node.Disabled = value
 	}
-	if nodes := drc.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := drc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := drc.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Table:   dnsrecord.DNSRecordToTagTable,
+			Columns: []string{dnsrecord.DNSRecordToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -237,7 +254,7 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// DNSRecordCreateBulk is the builder for creating a bulk of DNSRecord entities.
+// DNSRecordCreateBulk is the builder for creating many DNSRecord entities in bulk.
 type DNSRecordCreateBulk struct {
 	config
 	builders []*DNSRecordCreate
@@ -294,7 +311,7 @@ func (drcb *DNSRecordCreateBulk) Save(ctx context.Context) ([]*DNSRecord, error)
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (drcb *DNSRecordCreateBulk) SaveX(ctx context.Context) []*DNSRecord {
 	v, err := drcb.Save(ctx)
 	if err != nil {

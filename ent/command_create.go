@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
@@ -21,88 +21,94 @@ type CommandCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (cc *CommandCreate) SetName(s string) *CommandCreate {
 	cc.mutation.SetName(s)
 	return cc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (cc *CommandCreate) SetDescription(s string) *CommandCreate {
 	cc.mutation.SetDescription(s)
 	return cc
 }
 
-// SetProgram sets the program field.
+// SetProgram sets the "program" field.
 func (cc *CommandCreate) SetProgram(s string) *CommandCreate {
 	cc.mutation.SetProgram(s)
 	return cc
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (cc *CommandCreate) SetArgs(s []string) *CommandCreate {
 	cc.mutation.SetArgs(s)
 	return cc
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (cc *CommandCreate) SetIgnoreErrors(b bool) *CommandCreate {
 	cc.mutation.SetIgnoreErrors(b)
 	return cc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (cc *CommandCreate) SetDisabled(b bool) *CommandCreate {
 	cc.mutation.SetDisabled(b)
 	return cc
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (cc *CommandCreate) SetCooldown(i int) *CommandCreate {
 	cc.mutation.SetCooldown(i)
 	return cc
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (cc *CommandCreate) SetTimeout(i int) *CommandCreate {
 	cc.mutation.SetTimeout(i)
 	return cc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (cc *CommandCreate) SetVars(m map[string]string) *CommandCreate {
 	cc.mutation.SetVars(m)
 	return cc
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (cc *CommandCreate) AddUserIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddUserIDs(ids...)
+// SetTags sets the "tags" field.
+func (cc *CommandCreate) SetTags(m map[string]string) *CommandCreate {
+	cc.mutation.SetTags(m)
 	return cc
 }
 
-// AddUser adds the user edges to User.
-func (cc *CommandCreate) AddUser(u ...*User) *CommandCreate {
+// AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
+func (cc *CommandCreate) AddCommandToUserIDs(ids ...int) *CommandCreate {
+	cc.mutation.AddCommandToUserIDs(ids...)
+	return cc
+}
+
+// AddCommandToUser adds the "CommandToUser" edges to the User entity.
+func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cc.AddUserIDs(ids...)
+	return cc.AddCommandToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cc *CommandCreate) AddTagIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddTagIDs(ids...)
+// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
+func (cc *CommandCreate) AddCommandToTagIDs(ids ...int) *CommandCreate {
+	cc.mutation.AddCommandToTagIDs(ids...)
 	return cc
 }
 
-// AddTag adds the tag edges to Tag.
-func (cc *CommandCreate) AddTag(t ...*Tag) *CommandCreate {
+// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
+func (cc *CommandCreate) AddCommandToTag(t ...*Tag) *CommandCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return cc.AddTagIDs(ids...)
+	return cc.AddCommandToTagIDs(ids...)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -192,6 +198,9 @@ func (cc *CommandCreate) check() error {
 	}
 	if _, ok := cc.mutation.Vars(); !ok {
 		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+	}
+	if _, ok := cc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
 	}
 	return nil
 }
@@ -292,12 +301,20 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		})
 		_node.Vars = value
 	}
-	if nodes := cc.mutation.UserIDs(); len(nodes) > 0 {
+	if value, ok := cc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: command.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := cc.mutation.CommandToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -311,12 +328,12 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := cc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.CommandToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Table:   command.CommandToTagTable,
+			Columns: []string{command.CommandToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -333,7 +350,7 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// CommandCreateBulk is the builder for creating a bulk of Command entities.
+// CommandCreateBulk is the builder for creating many Command entities in bulk.
 type CommandCreateBulk struct {
 	config
 	builders []*CommandCreate
@@ -390,7 +407,7 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ccb *CommandCreateBulk) SaveX(ctx context.Context) []*Command {
 	v, err := ccb.Save(ctx)
 	if err != nil {

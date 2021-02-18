@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,15 +23,17 @@ type FileDeleteQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.FileDelete
 	// eager-loading edges.
-	withTag *TagQuery
+	withFileDeleteToTag *TagQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the FileDeleteQuery builder.
 func (fdq *FileDeleteQuery) Where(ps ...predicate.FileDelete) *FileDeleteQuery {
 	fdq.predicates = append(fdq.predicates, ps...)
 	return fdq
@@ -55,21 +57,21 @@ func (fdq *FileDeleteQuery) Order(o ...OrderFunc) *FileDeleteQuery {
 	return fdq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (fdq *FileDeleteQuery) QueryTag() *TagQuery {
+// QueryFileDeleteToTag chains the current query on the "FileDeleteToTag" edge.
+func (fdq *FileDeleteQuery) QueryFileDeleteToTag() *TagQuery {
 	query := &TagQuery{config: fdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fdq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := fdq.sqlQuery()
+		selector := fdq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedelete.Table, filedelete.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.TagTable, filedelete.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.FileDeleteToTagTable, filedelete.FileDeleteToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -77,7 +79,8 @@ func (fdq *FileDeleteQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// First returns the first FileDelete entity in the query. Returns *NotFoundError when no filedelete was found.
+// First returns the first FileDelete entity from the query.
+// Returns a *NotFoundError when no FileDelete was found.
 func (fdq *FileDeleteQuery) First(ctx context.Context) (*FileDelete, error) {
 	nodes, err := fdq.Limit(1).All(ctx)
 	if err != nil {
@@ -98,7 +101,8 @@ func (fdq *FileDeleteQuery) FirstX(ctx context.Context) *FileDelete {
 	return node
 }
 
-// FirstID returns the first FileDelete id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first FileDelete ID from the query.
+// Returns a *NotFoundError when no FileDelete ID was found.
 func (fdq *FileDeleteQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fdq.Limit(1).IDs(ctx); err != nil {
@@ -120,7 +124,9 @@ func (fdq *FileDeleteQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only FileDelete entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single FileDelete entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one FileDelete entity is not found.
+// Returns a *NotFoundError when no FileDelete entities are found.
 func (fdq *FileDeleteQuery) Only(ctx context.Context) (*FileDelete, error) {
 	nodes, err := fdq.Limit(2).All(ctx)
 	if err != nil {
@@ -145,7 +151,9 @@ func (fdq *FileDeleteQuery) OnlyX(ctx context.Context) *FileDelete {
 	return node
 }
 
-// OnlyID returns the only FileDelete id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only FileDelete ID in the query.
+// Returns a *NotSingularError when exactly one FileDelete ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (fdq *FileDeleteQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = fdq.Limit(2).IDs(ctx); err != nil {
@@ -188,7 +196,7 @@ func (fdq *FileDeleteQuery) AllX(ctx context.Context) []*FileDelete {
 	return nodes
 }
 
-// IDs executes the query and returns a list of FileDelete ids.
+// IDs executes the query and returns a list of FileDelete IDs.
 func (fdq *FileDeleteQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := fdq.Select(filedelete.FieldID).Scan(ctx, &ids); err != nil {
@@ -240,43 +248,43 @@ func (fdq *FileDeleteQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the FileDeleteQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (fdq *FileDeleteQuery) Clone() *FileDeleteQuery {
 	if fdq == nil {
 		return nil
 	}
 	return &FileDeleteQuery{
-		config:     fdq.config,
-		limit:      fdq.limit,
-		offset:     fdq.offset,
-		order:      append([]OrderFunc{}, fdq.order...),
-		predicates: append([]predicate.FileDelete{}, fdq.predicates...),
-		withTag:    fdq.withTag.Clone(),
+		config:              fdq.config,
+		limit:               fdq.limit,
+		offset:              fdq.offset,
+		order:               append([]OrderFunc{}, fdq.order...),
+		predicates:          append([]predicate.FileDelete{}, fdq.predicates...),
+		withFileDeleteToTag: fdq.withFileDeleteToTag.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (fdq *FileDeleteQuery) WithTag(opts ...func(*TagQuery)) *FileDeleteQuery {
+// WithFileDeleteToTag tells the query-builder to eager-load the nodes that are connected to
+// the "FileDeleteToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (fdq *FileDeleteQuery) WithFileDeleteToTag(opts ...func(*TagQuery)) *FileDeleteQuery {
 	query := &TagQuery{config: fdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	fdq.withTag = query
+	fdq.withFileDeleteToTag = query
 	return fdq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Path string `json:"path,omitempty" hcl:"path,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -292,17 +300,18 @@ func (fdq *FileDeleteQuery) GroupBy(field string, fields ...string) *FileDeleteG
 		if err := fdq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return fdq.sqlQuery(), nil
+		return fdq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Path string `json:"path,omitempty" hcl:"path,attr"`
 //	}
 //
 //	client.FileDelete.Query().
@@ -310,18 +319,16 @@ func (fdq *FileDeleteQuery) GroupBy(field string, fields ...string) *FileDeleteG
 //		Scan(ctx, &v)
 //
 func (fdq *FileDeleteQuery) Select(field string, fields ...string) *FileDeleteSelect {
-	selector := &FileDeleteSelect{config: fdq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := fdq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return fdq.sqlQuery(), nil
-	}
-	return selector
+	fdq.fields = append([]string{field}, fields...)
+	return &FileDeleteSelect{FileDeleteQuery: fdq}
 }
 
 func (fdq *FileDeleteQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range fdq.fields {
+		if !filedelete.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if fdq.path != nil {
 		prev, err := fdq.path(ctx)
 		if err != nil {
@@ -335,24 +342,27 @@ func (fdq *FileDeleteQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 	var (
 		nodes       = []*FileDelete{}
+		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [1]bool{
-			fdq.withTag != nil,
+			fdq.withFileDeleteToTag != nil,
 		}
 	)
-	_spec.ScanValues = func() []interface{} {
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, filedelete.ForeignKeys...)
+	}
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileDelete{config: fdq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, fdq.driver, _spec); err != nil {
 		return nil, err
@@ -361,32 +371,32 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 		return nodes, nil
 	}
 
-	if query := fdq.withTag; query != nil {
+	if query := fdq.withFileDeleteToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*FileDelete)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.FileDeleteToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(filedelete.TagColumn, fks...))
+			s.Where(sql.InValues(filedelete.FileDeleteToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.file_delete_tag
+			fk := n.file_delete_file_delete_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_delete_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "file_delete_file_delete_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_delete_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "file_delete_file_delete_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.FileDeleteToTag = append(node.Edges.FileDeleteToTag, n)
 		}
 	}
 
@@ -419,6 +429,15 @@ func (fdq *FileDeleteQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   fdq.sql,
 		Unique: true,
 	}
+	if fields := fdq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, filedelete.FieldID)
+		for i := range fields {
+			if fields[i] != filedelete.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := fdq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -442,7 +461,7 @@ func (fdq *FileDeleteQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (fdq *FileDeleteQuery) sqlQuery() *sql.Selector {
+func (fdq *FileDeleteQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(fdq.driver.Dialect())
 	t1 := builder.Table(filedelete.Table)
 	selector := builder.Select(t1.Columns(filedelete.Columns...)...).From(t1)
@@ -467,7 +486,7 @@ func (fdq *FileDeleteQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// FileDeleteGroupBy is the builder for group-by FileDelete entities.
+// FileDeleteGroupBy is the group-by builder for FileDelete entities.
 type FileDeleteGroupBy struct {
 	config
 	fields []string
@@ -483,7 +502,7 @@ func (fdgb *FileDeleteGroupBy) Aggregate(fns ...AggregateFunc) *FileDeleteGroupB
 	return fdgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (fdgb *FileDeleteGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := fdgb.path(ctx)
 	if err != nil {
@@ -500,7 +519,8 @@ func (fdgb *FileDeleteGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -521,7 +541,8 @@ func (fdgb *FileDeleteGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fdgb.Strings(ctx); err != nil {
@@ -547,7 +568,8 @@ func (fdgb *FileDeleteGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -568,7 +590,8 @@ func (fdgb *FileDeleteGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fdgb.Ints(ctx); err != nil {
@@ -594,7 +617,8 @@ func (fdgb *FileDeleteGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -615,7 +639,8 @@ func (fdgb *FileDeleteGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fdgb.Float64s(ctx); err != nil {
@@ -641,7 +666,8 @@ func (fdgb *FileDeleteGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(fdgb.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -662,7 +688,8 @@ func (fdgb *FileDeleteGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (fdgb *FileDeleteGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fdgb.Bools(ctx); err != nil {
@@ -717,22 +744,19 @@ func (fdgb *FileDeleteGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(fdgb.fields...)
 }
 
-// FileDeleteSelect is the builder for select fields of FileDelete entities.
+// FileDeleteSelect is the builder for selecting fields of FileDelete entities.
 type FileDeleteSelect struct {
-	config
-	fields []string
+	*FileDeleteQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (fds *FileDeleteSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := fds.path(ctx)
-	if err != nil {
+	if err := fds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	fds.sql = query
+	fds.sql = fds.FileDeleteQuery.sqlQuery(ctx)
 	return fds.sqlScan(ctx, v)
 }
 
@@ -743,7 +767,7 @@ func (fds *FileDeleteSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteSelect.Strings is not achievable when selecting more than 1 field")
@@ -764,7 +788,7 @@ func (fds *FileDeleteSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = fds.Strings(ctx); err != nil {
@@ -790,7 +814,7 @@ func (fds *FileDeleteSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteSelect.Ints is not achievable when selecting more than 1 field")
@@ -811,7 +835,7 @@ func (fds *FileDeleteSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = fds.Ints(ctx); err != nil {
@@ -837,7 +861,7 @@ func (fds *FileDeleteSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteSelect.Float64s is not achievable when selecting more than 1 field")
@@ -858,7 +882,7 @@ func (fds *FileDeleteSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = fds.Float64s(ctx); err != nil {
@@ -884,7 +908,7 @@ func (fds *FileDeleteSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(fds.fields) > 1 {
 		return nil, errors.New("ent: FileDeleteSelect.Bools is not achievable when selecting more than 1 field")
@@ -905,7 +929,7 @@ func (fds *FileDeleteSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (fds *FileDeleteSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = fds.Bools(ctx); err != nil {
@@ -932,11 +956,6 @@ func (fds *FileDeleteSelect) BoolX(ctx context.Context) bool {
 }
 
 func (fds *FileDeleteSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range fds.fields {
-		if !filedelete.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := fds.sqlQuery().Query()
 	if err := fds.driver.Query(ctx, query, args, rows); err != nil {

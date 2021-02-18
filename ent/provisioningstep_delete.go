@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 )
@@ -20,7 +20,7 @@ type ProvisioningStepDelete struct {
 	mutation *ProvisioningStepMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the ProvisioningStepDelete builder.
 func (psd *ProvisioningStepDelete) Where(ps ...predicate.ProvisioningStep) *ProvisioningStepDelete {
 	psd.mutation.predicates = append(psd.mutation.predicates, ps...)
 	return psd

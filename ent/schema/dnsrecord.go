@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // DNSRecord holds the schema definition for the DNSRecord entity.
@@ -14,18 +14,26 @@ type DNSRecord struct {
 // Fields of the DNSRecord.
 func (DNSRecord) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.JSON("values", []string{}),
-		field.String("type"),
-		field.String("zone"),
-		field.JSON("vars", map[string]string{}),
-		field.Bool("disabled"),
+		field.String("name").
+			StructTag(`hcl:"name,attr"`),
+		field.JSON("values", []string{}).
+			StructTag(`hcl:"values,optional"`),
+		field.String("type").
+			StructTag(`hcl:"type,attr"`),
+		field.String("zone").
+			StructTag(`hcl:"zone,attr" `),
+		field.JSON("vars", map[string]string{}).
+			StructTag(`hcl:"vars,optional"`),
+		field.Bool("disabled").
+			StructTag(`hcl:"disabled,optional"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 
 // Edges of the DNSRecord.
 func (DNSRecord) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("DNSRecordToTag", Tag.Type),
 	}
 }

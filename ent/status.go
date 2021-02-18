@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/status"
 )
 
@@ -30,132 +30,146 @@ type Status struct {
 	Error string `json:"error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StatusQuery when eager-loading is set.
-	Edges                      StatusEdges `json:"edges"`
-	provisioned_host_status    *int
-	provisioned_network_status *int
-	provisioning_step_status   *int
+	Edges                                             StatusEdges `json:"edges"`
+	provisioned_host_provisioned_host_to_status       *int
+	provisioned_network_provisioned_network_to_status *int
+	provisioning_step_provisioning_step_to_status     *int
 }
 
 // StatusEdges holds the relations/edges for other nodes in the graph.
 type StatusEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// StatusToTag holds the value of the StatusToTag edge.
+	StatusToTag []*Tag `json:"StatusToTag,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// StatusToTagOrErr returns the StatusToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e StatusEdges) TagOrErr() ([]*Tag, error) {
+func (e StatusEdges) StatusToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.StatusToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "StatusToTag"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Status) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // state
-		&sql.NullTime{},   // started_at
-		&sql.NullTime{},   // ended_at
-		&sql.NullBool{},   // failed
-		&sql.NullBool{},   // completed
-		&sql.NullString{}, // error
+func (*Status) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case status.FieldFailed, status.FieldCompleted:
+			values[i] = &sql.NullBool{}
+		case status.FieldID:
+			values[i] = &sql.NullInt64{}
+		case status.FieldState, status.FieldError:
+			values[i] = &sql.NullString{}
+		case status.FieldStartedAt, status.FieldEndedAt:
+			values[i] = &sql.NullTime{}
+		case status.ForeignKeys[0]: // provisioned_host_provisioned_host_to_status
+			values[i] = &sql.NullInt64{}
+		case status.ForeignKeys[1]: // provisioned_network_provisioned_network_to_status
+			values[i] = &sql.NullInt64{}
+		case status.ForeignKeys[2]: // provisioning_step_provisioning_step_to_status
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Status) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioned_host_status
-		&sql.NullInt64{}, // provisioned_network_status
-		&sql.NullInt64{}, // provisioning_step_status
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Status fields.
-func (s *Status) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(status.Columns); m < n {
+func (s *Status) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	s.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field state", values[0])
-	} else if value.Valid {
-		s.State = status.State(value.String)
-	}
-	if value, ok := values[1].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field started_at", values[1])
-	} else if value.Valid {
-		s.StartedAt = value.Time
-	}
-	if value, ok := values[2].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field ended_at", values[2])
-	} else if value.Valid {
-		s.EndedAt = value.Time
-	}
-	if value, ok := values[3].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field failed", values[3])
-	} else if value.Valid {
-		s.Failed = value.Bool
-	}
-	if value, ok := values[4].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field completed", values[4])
-	} else if value.Valid {
-		s.Completed = value.Bool
-	}
-	if value, ok := values[5].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field error", values[5])
-	} else if value.Valid {
-		s.Error = value.String
-	}
-	values = values[6:]
-	if len(values) == len(status.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_host_status", value)
-		} else if value.Valid {
-			s.provisioned_host_status = new(int)
-			*s.provisioned_host_status = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioned_network_status", value)
-		} else if value.Valid {
-			s.provisioned_network_status = new(int)
-			*s.provisioned_network_status = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_status", value)
-		} else if value.Valid {
-			s.provisioning_step_status = new(int)
-			*s.provisioning_step_status = int(value.Int64)
+	for i := range columns {
+		switch columns[i] {
+		case status.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			s.ID = int(value.Int64)
+		case status.FieldState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value.Valid {
+				s.State = status.State(value.String)
+			}
+		case status.FieldStartedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field started_at", values[i])
+			} else if value.Valid {
+				s.StartedAt = value.Time
+			}
+		case status.FieldEndedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field ended_at", values[i])
+			} else if value.Valid {
+				s.EndedAt = value.Time
+			}
+		case status.FieldFailed:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field failed", values[i])
+			} else if value.Valid {
+				s.Failed = value.Bool
+			}
+		case status.FieldCompleted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field completed", values[i])
+			} else if value.Valid {
+				s.Completed = value.Bool
+			}
+		case status.FieldError:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error", values[i])
+			} else if value.Valid {
+				s.Error = value.String
+			}
+		case status.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_status", value)
+			} else if value.Valid {
+				s.provisioned_host_provisioned_host_to_status = new(int)
+				*s.provisioned_host_provisioned_host_to_status = int(value.Int64)
+			}
+		case status.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_status", value)
+			} else if value.Valid {
+				s.provisioned_network_provisioned_network_to_status = new(int)
+				*s.provisioned_network_provisioned_network_to_status = int(value.Int64)
+			}
+		case status.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_status", value)
+			} else if value.Valid {
+				s.provisioning_step_provisioning_step_to_status = new(int)
+				*s.provisioning_step_provisioning_step_to_status = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Status.
-func (s *Status) QueryTag() *TagQuery {
-	return (&StatusClient{config: s.config}).QueryTag(s)
+// QueryStatusToTag queries the "StatusToTag" edge of the Status entity.
+func (s *Status) QueryStatusToTag() *TagQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToTag(s)
 }
 
 // Update returns a builder for updating this Status.
-// Note that, you need to call Status.Unwrap() before calling this method, if this Status
+// Note that you need to call Status.Unwrap() before calling this method if this Status
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (s *Status) Update() *StatusUpdateOne {
 	return (&StatusClient{config: s.config}).UpdateOne(s)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Status entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (s *Status) Unwrap() *Status {
 	tx, ok := s.config.driver.(*txDriver)
 	if !ok {

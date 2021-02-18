@@ -7,9 +7,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSCreate is the builder for creating a DNS entity.
@@ -19,34 +20,49 @@ type DNSCreate struct {
 	hooks    []Hook
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (dc *DNSCreate) SetType(s string) *DNSCreate {
 	dc.mutation.SetType(s)
 	return dc
 }
 
-// SetRootDomain sets the root_domain field.
+// SetRootDomain sets the "root_domain" field.
 func (dc *DNSCreate) SetRootDomain(s string) *DNSCreate {
 	dc.mutation.SetRootDomain(s)
 	return dc
 }
 
-// SetDNSServers sets the dns_servers field.
+// SetDNSServers sets the "dns_servers" field.
 func (dc *DNSCreate) SetDNSServers(s []string) *DNSCreate {
 	dc.mutation.SetDNSServers(s)
 	return dc
 }
 
-// SetNtpServers sets the ntp_servers field.
+// SetNtpServers sets the "ntp_servers" field.
 func (dc *DNSCreate) SetNtpServers(s []string) *DNSCreate {
 	dc.mutation.SetNtpServers(s)
 	return dc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (dc *DNSCreate) SetConfig(m map[string]string) *DNSCreate {
 	dc.mutation.SetConfig(m)
 	return dc
+}
+
+// AddDNSToTagIDs adds the "DNSToTag" edge to the Tag entity by IDs.
+func (dc *DNSCreate) AddDNSToTagIDs(ids ...int) *DNSCreate {
+	dc.mutation.AddDNSToTagIDs(ids...)
+	return dc
+}
+
+// AddDNSToTag adds the "DNSToTag" edges to the Tag entity.
+func (dc *DNSCreate) AddDNSToTag(t ...*Tag) *DNSCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return dc.AddDNSToTagIDs(ids...)
 }
 
 // Mutation returns the DNSMutation object of the builder.
@@ -182,10 +198,29 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
+	if nodes := dc.mutation.DNSToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dns.DNSToTagTable,
+			Columns: []string{dns.DNSToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
-// DNSCreateBulk is the builder for creating a bulk of DNS entities.
+// DNSCreateBulk is the builder for creating many DNS entities in bulk.
 type DNSCreateBulk struct {
 	config
 	builders []*DNSCreate
@@ -242,7 +277,7 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (dcb *DNSCreateBulk) SaveX(ctx context.Context) []*DNS {
 	v, err := dcb.Save(ctx)
 	if err != nil {

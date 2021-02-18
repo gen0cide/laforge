@@ -7,267 +7,301 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 )
 
 // Environment is the model entity for the Environment schema.
 type Environment struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// CompetitionID holds the value of the "competition_id" field.
-	CompetitionID string `json:"competition_id,omitempty"`
+	CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,attr"`
 	// Builder holds the value of the "builder" field.
-	Builder string `json:"builder,omitempty"`
+	Builder string `json:"builder,omitempty" hcl:"builder,attr"`
 	// TeamCount holds the value of the "team_count" field.
-	TeamCount int `json:"team_count,omitempty"`
+	TeamCount int `json:"team_count,omitempty" hcl:"team_count,attr"`
 	// Revision holds the value of the "revision" field.
-	Revision int `json:"revision,omitempty"`
+	Revision int `json:"revision,omitempty" hcl:"revision,optional"`
 	// AdminCidrs holds the value of the "admin_cidrs" field.
-	AdminCidrs []string `json:"admin_cidrs,omitempty"`
+	AdminCidrs []string `json:"admin_cidrs,omitempty" hcl:"admin_ranges,attr"`
 	// ExposedVdiPorts holds the value of the "exposed_vdi_ports" field.
-	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty"`
+	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty" hcl:"vdi_allowed_tcp_ports"`
 	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
-	Edges EnvironmentEdges `json:"edges"`
+	Edges EnvironmentEdges `hcl:"edges,block" json:"edges"`
 }
 
 // EnvironmentEdges holds the relations/edges for other nodes in the graph.
 type EnvironmentEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// User holds the value of the user edge.
-	User []*User
-	// Host holds the value of the host edge.
-	Host []*Host
-	// Competition holds the value of the competition edge.
-	Competition []*Competition
-	// Build holds the value of the build edge.
-	Build []*Build
-	// IncludedNetwork holds the value of the included_network edge.
-	IncludedNetwork []*IncludedNetwork
-	// Network holds the value of the network edge.
-	Network []*Network
-	// Team holds the value of the team edge.
-	Team []*Team
+	// EnvironmentToTag holds the value of the EnvironmentToTag edge.
+	EnvironmentToTag []*Tag `json:"EnvironmentToTag,omitempty"`
+	// EnvironmentToUser holds the value of the EnvironmentToUser edge.
+	EnvironmentToUser []*User `json:"EnvironmentToUser,omitempty" hcl:"maintainer,block"`
+	// EnvironmentToHost holds the value of the EnvironmentToHost edge.
+	EnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
+	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
+	EnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
+	EnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
+	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
+	EnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
+	// EnvironmentToTeam holds the value of the EnvironmentToTeam edge.
+	EnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [8]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// EnvironmentToTagOrErr returns the EnvironmentToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) TagOrErr() ([]*Tag, error) {
+func (e EnvironmentEdges) EnvironmentToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.EnvironmentToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "EnvironmentToTag"}
 }
 
-// UserOrErr returns the User value or an error if the edge
+// EnvironmentToUserOrErr returns the EnvironmentToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) UserOrErr() ([]*User, error) {
+func (e EnvironmentEdges) EnvironmentToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[1] {
-		return e.User, nil
+		return e.EnvironmentToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "EnvironmentToUser"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// EnvironmentToHostOrErr returns the EnvironmentToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) HostOrErr() ([]*Host, error) {
+func (e EnvironmentEdges) EnvironmentToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.EnvironmentToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "EnvironmentToHost"}
 }
 
-// CompetitionOrErr returns the Competition value or an error if the edge
+// EnvironmentToCompetitionOrErr returns the EnvironmentToCompetition value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) CompetitionOrErr() ([]*Competition, error) {
+func (e EnvironmentEdges) EnvironmentToCompetitionOrErr() ([]*Competition, error) {
 	if e.loadedTypes[3] {
-		return e.Competition, nil
+		return e.EnvironmentToCompetition, nil
 	}
-	return nil, &NotLoadedError{edge: "competition"}
+	return nil, &NotLoadedError{edge: "EnvironmentToCompetition"}
 }
 
-// BuildOrErr returns the Build value or an error if the edge
+// EnvironmentToBuildOrErr returns the EnvironmentToBuild value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) BuildOrErr() ([]*Build, error) {
+func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
 	if e.loadedTypes[4] {
-		return e.Build, nil
+		return e.EnvironmentToBuild, nil
 	}
-	return nil, &NotLoadedError{edge: "build"}
+	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
 }
 
-// IncludedNetworkOrErr returns the IncludedNetwork value or an error if the edge
+// EnvironmentToIncludedNetworkOrErr returns the EnvironmentToIncludedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) IncludedNetworkOrErr() ([]*IncludedNetwork, error) {
+func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
 	if e.loadedTypes[5] {
-		return e.IncludedNetwork, nil
+		return e.EnvironmentToIncludedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "included_network"}
+	return nil, &NotLoadedError{edge: "EnvironmentToIncludedNetwork"}
 }
 
-// NetworkOrErr returns the Network value or an error if the edge
+// EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) NetworkOrErr() ([]*Network, error) {
+func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
 	if e.loadedTypes[6] {
-		return e.Network, nil
+		return e.EnvironmentToNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "network"}
+	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
 }
 
-// TeamOrErr returns the Team value or an error if the edge
+// EnvironmentToTeamOrErr returns the EnvironmentToTeam value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) TeamOrErr() ([]*Team, error) {
+func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
 	if e.loadedTypes[7] {
-		return e.Team, nil
+		return e.EnvironmentToTeam, nil
 	}
-	return nil, &NotLoadedError{edge: "team"}
+	return nil, &NotLoadedError{edge: "EnvironmentToTeam"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Environment) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // competition_id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // description
-		&sql.NullString{}, // builder
-		&sql.NullInt64{},  // team_count
-		&sql.NullInt64{},  // revision
-		&[]byte{},         // admin_cidrs
-		&[]byte{},         // exposed_vdi_ports
-		&[]byte{},         // config
+func (*Environment) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case environment.FieldAdminCidrs, environment.FieldExposedVdiPorts, environment.FieldConfig, environment.FieldTags:
+			values[i] = &[]byte{}
+		case environment.FieldID, environment.FieldTeamCount, environment.FieldRevision:
+			values[i] = &sql.NullInt64{}
+		case environment.FieldHclID, environment.FieldCompetitionID, environment.FieldName, environment.FieldDescription, environment.FieldBuilder:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Environment", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Environment fields.
-func (e *Environment) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(environment.Columns); m < n {
+func (e *Environment) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	e.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field competition_id", values[0])
-	} else if value.Valid {
-		e.CompetitionID = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[1])
-	} else if value.Valid {
-		e.Name = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
-	} else if value.Valid {
-		e.Description = value.String
-	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field builder", values[3])
-	} else if value.Valid {
-		e.Builder = value.String
-	}
-	if value, ok := values[4].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field team_count", values[4])
-	} else if value.Valid {
-		e.TeamCount = int(value.Int64)
-	}
-	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field revision", values[5])
-	} else if value.Valid {
-		e.Revision = int(value.Int64)
-	}
+	for i := range columns {
+		switch columns[i] {
+		case environment.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			e.ID = int(value.Int64)
+		case environment.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				e.HclID = value.String
+			}
+		case environment.FieldCompetitionID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field competition_id", values[i])
+			} else if value.Valid {
+				e.CompetitionID = value.String
+			}
+		case environment.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				e.Name = value.String
+			}
+		case environment.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				e.Description = value.String
+			}
+		case environment.FieldBuilder:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field builder", values[i])
+			} else if value.Valid {
+				e.Builder = value.String
+			}
+		case environment.FieldTeamCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field team_count", values[i])
+			} else if value.Valid {
+				e.TeamCount = int(value.Int64)
+			}
+		case environment.FieldRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field revision", values[i])
+			} else if value.Valid {
+				e.Revision = int(value.Int64)
+			}
+		case environment.FieldAdminCidrs:
 
-	if value, ok := values[6].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field admin_cidrs", values[6])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
-			return fmt.Errorf("unmarshal field admin_cidrs: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field admin_cidrs", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
+					return fmt.Errorf("unmarshal field admin_cidrs: %v", err)
+				}
+			}
+		case environment.FieldExposedVdiPorts:
 
-	if value, ok := values[7].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[7])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
-			return fmt.Errorf("unmarshal field exposed_vdi_ports: %v", err)
-		}
-	}
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
+					return fmt.Errorf("unmarshal field exposed_vdi_ports: %v", err)
+				}
+			}
+		case environment.FieldConfig:
 
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.Config); err != nil {
-			return fmt.Errorf("unmarshal field config: %v", err)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.Config); err != nil {
+					return fmt.Errorf("unmarshal field config: %v", err)
+				}
+			}
+		case environment.FieldTags:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Environment.
-func (e *Environment) QueryTag() *TagQuery {
-	return (&EnvironmentClient{config: e.config}).QueryTag(e)
+// QueryEnvironmentToTag queries the "EnvironmentToTag" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToTag() *TagQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToTag(e)
 }
 
-// QueryUser queries the user edge of the Environment.
-func (e *Environment) QueryUser() *UserQuery {
-	return (&EnvironmentClient{config: e.config}).QueryUser(e)
+// QueryEnvironmentToUser queries the "EnvironmentToUser" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToUser() *UserQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToUser(e)
 }
 
-// QueryHost queries the host edge of the Environment.
-func (e *Environment) QueryHost() *HostQuery {
-	return (&EnvironmentClient{config: e.config}).QueryHost(e)
+// QueryEnvironmentToHost queries the "EnvironmentToHost" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToHost() *HostQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToHost(e)
 }
 
-// QueryCompetition queries the competition edge of the Environment.
-func (e *Environment) QueryCompetition() *CompetitionQuery {
-	return (&EnvironmentClient{config: e.config}).QueryCompetition(e)
+// QueryEnvironmentToCompetition queries the "EnvironmentToCompetition" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToCompetition() *CompetitionQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToCompetition(e)
 }
 
-// QueryBuild queries the build edge of the Environment.
-func (e *Environment) QueryBuild() *BuildQuery {
-	return (&EnvironmentClient{config: e.config}).QueryBuild(e)
+// QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
 }
 
-// QueryIncludedNetwork queries the included_network edge of the Environment.
-func (e *Environment) QueryIncludedNetwork() *IncludedNetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryIncludedNetwork(e)
+// QueryEnvironmentToIncludedNetwork queries the "EnvironmentToIncludedNetwork" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToIncludedNetwork() *IncludedNetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIncludedNetwork(e)
 }
 
-// QueryNetwork queries the network edge of the Environment.
-func (e *Environment) QueryNetwork() *NetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryNetwork(e)
+// QueryEnvironmentToNetwork queries the "EnvironmentToNetwork" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToNetwork() *NetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToNetwork(e)
 }
 
-// QueryTeam queries the team edge of the Environment.
-func (e *Environment) QueryTeam() *TeamQuery {
-	return (&EnvironmentClient{config: e.config}).QueryTeam(e)
+// QueryEnvironmentToTeam queries the "EnvironmentToTeam" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToTeam() *TeamQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToTeam(e)
 }
 
 // Update returns a builder for updating this Environment.
-// Note that, you need to call Environment.Unwrap() before calling this method, if this Environment
+// Note that you need to call Environment.Unwrap() before calling this method if this Environment
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (e *Environment) Update() *EnvironmentUpdateOne {
 	return (&EnvironmentClient{config: e.config}).UpdateOne(e)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Environment entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (e *Environment) Unwrap() *Environment {
 	tx, ok := e.config.driver.(*txDriver)
 	if !ok {
@@ -282,6 +316,8 @@ func (e *Environment) String() string {
 	var builder strings.Builder
 	builder.WriteString("Environment(")
 	builder.WriteString(fmt.Sprintf("id=%v", e.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(e.HclID)
 	builder.WriteString(", competition_id=")
 	builder.WriteString(e.CompetitionID)
 	builder.WriteString(", name=")
@@ -300,6 +336,8 @@ func (e *Environment) String() string {
 	builder.WriteString(fmt.Sprintf("%v", e.ExposedVdiPorts))
 	builder.WriteString(", config=")
 	builder.WriteString(fmt.Sprintf("%v", e.Config))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", e.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

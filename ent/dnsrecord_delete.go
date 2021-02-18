@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type DNSRecordDelete struct {
 	mutation *DNSRecordMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the DNSRecordDelete builder.
 func (drd *DNSRecordDelete) Where(ps ...predicate.DNSRecord) *DNSRecordDelete {
 	drd.mutation.predicates = append(drd.mutation.predicates, ps...)
 	return drd

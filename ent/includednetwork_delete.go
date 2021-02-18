@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type IncludedNetworkDelete struct {
 	mutation *IncludedNetworkMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the IncludedNetworkDelete builder.
 func (ind *IncludedNetworkDelete) Where(ps ...predicate.IncludedNetwork) *IncludedNetworkDelete {
 	ind.mutation.predicates = append(ind.mutation.predicates, ps...)
 	return ind

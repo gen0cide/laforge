@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // Host holds the schema definition for the Host entity.
@@ -14,29 +14,43 @@ type Host struct {
 // Fields of the Host.
 func (Host) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("hostname"),
-		field.String("description"),
-		field.String("OS"),
-		field.Int("last_octet"),
-		field.Bool("allow_mac_changes"),
-		field.JSON("exposed_tcp_ports", []string{}),
-		field.JSON("exposed_udp_ports", []string{}),
-		field.String("override_password"),
-		field.JSON("vars", map[string]string{}),
-		field.JSON("user_groups", []string{}),
-		field.JSON("depends_on", []string{}).Optional(),
-		field.JSON("scripts", []string{}).Optional(),
-		field.JSON("commands", []string{}).Optional(),
-		field.JSON("remote_files", []string{}).Optional(),
-		field.JSON("dns_records", []string{}).Optional(),
+		field.String("hostname").
+			StructTag(`hcl:"hostname,attr"`),
+		field.String("description").
+			StructTag(`hcl:"description,optional" `),
+		field.String("OS").
+			StructTag(`hcl:"os,attr"`),
+		field.Int("last_octet").
+			StructTag(`hcl:"last_octet,attr"`),
+		field.Bool("allow_mac_changes").
+			StructTag(`hcl:"allow_mac_changes,optional"`),
+		field.JSON("exposed_tcp_ports", []string{}).
+			StructTag(`hcl:"exposed_tcp_ports,optional"`),
+		field.JSON("exposed_udp_ports", []string{}).
+			StructTag(`hcl:"exposed_udp_ports,optional"`),
+		field.String("override_password").
+			StructTag(`hcl:"override_password,optional"`),
+		field.JSON("vars", map[string]string{}).
+			StructTag(`hcl:"vars,optional"`),
+		field.JSON("user_groups", []string{}).
+			StructTag(`hcl:"user_groups,optional"`),
+		field.JSON("depends_on", map[string]string{}).Optional().
+			StructTag(`hcl:"depends_on,optional"`),
+		field.JSON("provision_steps", []string{}).Optional().
+			StructTag(`hcl:"provision_steps,optional"`),
+		field.JSON("tags", map[string]string{}).
+			StructTag(`hcl:"tags,optional"`),
 	}
 }
 
 // Edges of the Host.
 func (Host) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("disk", Disk.Type),
-		edge.To("maintainer", User.Type),
-		edge.To("tag", Tag.Type),
+		edge.To("HostToDisk", Disk.Type).
+			StructTag(`hcl:"disk,block"`),
+		edge.To("HostToUser", User.Type).
+			StructTag(`hcl:"maintainer,block"`),
+		edge.To("HostToTag", Tag.Type),
+		edge.From("HostToEnvironment", Environment.Type).Ref("EnvironmentToHost"),
 	}
 }

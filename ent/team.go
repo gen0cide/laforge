@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -29,37 +29,37 @@ type Team struct {
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
 type TeamEdges struct {
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Build holds the value of the build edge.
-	Build []*Build
+	// TeamToUser holds the value of the TeamToUser edge.
+	TeamToUser []*User `json:"TeamToUser,omitempty"`
+	// TeamToBuild holds the value of the TeamToBuild edge.
+	TeamToBuild []*Build `json:"TeamToBuild,omitempty"`
 	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
-	TeamToEnvironment []*Environment
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// ProvisionedNetworks holds the value of the provisioned_networks edge.
-	ProvisionedNetworks []*ProvisionedNetwork
+	TeamToEnvironment []*Environment `json:"TeamToEnvironment,omitempty"`
+	// TeamToTag holds the value of the TeamToTag edge.
+	TeamToTag []*Tag `json:"TeamToTag,omitempty"`
+	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
+	TeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// TeamToUserOrErr returns the TeamToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) MaintainerOrErr() ([]*User, error) {
+func (e TeamEdges) TeamToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.Maintainer, nil
+		return e.TeamToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "TeamToUser"}
 }
 
-// BuildOrErr returns the Build value or an error if the edge
+// TeamToBuildOrErr returns the TeamToBuild value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) BuildOrErr() ([]*Build, error) {
+func (e TeamEdges) TeamToBuildOrErr() ([]*Build, error) {
 	if e.loadedTypes[1] {
-		return e.Build, nil
+		return e.TeamToBuild, nil
 	}
-	return nil, &NotLoadedError{edge: "build"}
+	return nil, &NotLoadedError{edge: "TeamToBuild"}
 }
 
 // TeamToEnvironmentOrErr returns the TeamToEnvironment value or an error if the edge
@@ -71,101 +71,114 @@ func (e TeamEdges) TeamToEnvironmentOrErr() ([]*Environment, error) {
 	return nil, &NotLoadedError{edge: "TeamToEnvironment"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// TeamToTagOrErr returns the TeamToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) TagOrErr() ([]*Tag, error) {
+func (e TeamEdges) TeamToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[3] {
-		return e.Tag, nil
+		return e.TeamToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "TeamToTag"}
 }
 
-// ProvisionedNetworksOrErr returns the ProvisionedNetworks value or an error if the edge
+// TeamToProvisionedNetworkOrErr returns the TeamToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
-func (e TeamEdges) ProvisionedNetworksOrErr() ([]*ProvisionedNetwork, error) {
+func (e TeamEdges) TeamToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
 	if e.loadedTypes[4] {
-		return e.ProvisionedNetworks, nil
+		return e.TeamToProvisionedNetwork, nil
 	}
-	return nil, &NotLoadedError{edge: "provisioned_networks"}
+	return nil, &NotLoadedError{edge: "TeamToProvisionedNetwork"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Team) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // id
-		&sql.NullInt64{}, // team_number
-		&[]byte{},        // config
-		&sql.NullInt64{}, // revision
+func (*Team) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case team.FieldConfig:
+			values[i] = &[]byte{}
+		case team.FieldID, team.FieldTeamNumber, team.FieldRevision:
+			values[i] = &sql.NullInt64{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Team fields.
-func (t *Team) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(team.Columns); m < n {
+func (t *Team) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	t.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field team_number", values[0])
-	} else if value.Valid {
-		t.TeamNumber = int(value.Int64)
-	}
+	for i := range columns {
+		switch columns[i] {
+		case team.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			t.ID = int(value.Int64)
+		case team.FieldTeamNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field team_number", values[i])
+			} else if value.Valid {
+				t.TeamNumber = int(value.Int64)
+			}
+		case team.FieldConfig:
 
-	if value, ok := values[1].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[1])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &t.Config); err != nil {
-			return fmt.Errorf("unmarshal field config: %v", err)
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &t.Config); err != nil {
+					return fmt.Errorf("unmarshal field config: %v", err)
+				}
+			}
+		case team.FieldRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field revision", values[i])
+			} else if value.Valid {
+				t.Revision = value.Int64
+			}
 		}
-	}
-	if value, ok := values[2].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field revision", values[2])
-	} else if value.Valid {
-		t.Revision = value.Int64
 	}
 	return nil
 }
 
-// QueryMaintainer queries the maintainer edge of the Team.
-func (t *Team) QueryMaintainer() *UserQuery {
-	return (&TeamClient{config: t.config}).QueryMaintainer(t)
+// QueryTeamToUser queries the "TeamToUser" edge of the Team entity.
+func (t *Team) QueryTeamToUser() *UserQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToUser(t)
 }
 
-// QueryBuild queries the build edge of the Team.
-func (t *Team) QueryBuild() *BuildQuery {
-	return (&TeamClient{config: t.config}).QueryBuild(t)
+// QueryTeamToBuild queries the "TeamToBuild" edge of the Team entity.
+func (t *Team) QueryTeamToBuild() *BuildQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToBuild(t)
 }
 
-// QueryTeamToEnvironment queries the TeamToEnvironment edge of the Team.
+// QueryTeamToEnvironment queries the "TeamToEnvironment" edge of the Team entity.
 func (t *Team) QueryTeamToEnvironment() *EnvironmentQuery {
 	return (&TeamClient{config: t.config}).QueryTeamToEnvironment(t)
 }
 
-// QueryTag queries the tag edge of the Team.
-func (t *Team) QueryTag() *TagQuery {
-	return (&TeamClient{config: t.config}).QueryTag(t)
+// QueryTeamToTag queries the "TeamToTag" edge of the Team entity.
+func (t *Team) QueryTeamToTag() *TagQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToTag(t)
 }
 
-// QueryProvisionedNetworks queries the provisioned_networks edge of the Team.
-func (t *Team) QueryProvisionedNetworks() *ProvisionedNetworkQuery {
-	return (&TeamClient{config: t.config}).QueryProvisionedNetworks(t)
+// QueryTeamToProvisionedNetwork queries the "TeamToProvisionedNetwork" edge of the Team entity.
+func (t *Team) QueryTeamToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToProvisionedNetwork(t)
 }
 
 // Update returns a builder for updating this Team.
-// Note that, you need to call Team.Unwrap() before calling this method, if this Team
+// Note that you need to call Team.Unwrap() before calling this method if this Team
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (t *Team) Update() *TeamUpdateOne {
 	return (&TeamClient{config: t.config}).UpdateOne(t)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Team entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (t *Team) Unwrap() *Team {
 	tx, ok := t.config.driver.(*txDriver)
 	if !ok {

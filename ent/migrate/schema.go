@@ -3,8 +3,8 @@
 package migrate
 
 import (
-	"github.com/facebook/ent/dialect/sql/schema"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/schema"
+	"entgo.io/ent/schema/field"
 )
 
 var (
@@ -38,22 +38,13 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "revision", Type: field.TypeInt},
 		{Name: "config", Type: field.TypeJSON},
-		{Name: "environment_build", Type: field.TypeInt, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
-		Name:       "builds",
-		Columns:    BuildsColumns,
-		PrimaryKey: []*schema.Column{BuildsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "builds_environments_build",
-				Columns: []*schema.Column{BuildsColumns[3]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "builds",
+		Columns:     BuildsColumns,
+		PrimaryKey:  []*schema.Column{BuildsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// CommandsColumns holds the columns for the "commands" table.
 	CommandsColumns = []*schema.Column{
@@ -67,7 +58,8 @@ var (
 		{Name: "cooldown", Type: field.TypeInt},
 		{Name: "timeout", Type: field.TypeInt},
 		{Name: "vars", Type: field.TypeJSON},
-		{Name: "provisioning_step_command", Type: field.TypeInt, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_command", Type: field.TypeInt, Nullable: true},
 	}
 	// CommandsTable holds the schema information for the "commands" table.
 	CommandsTable = &schema.Table{
@@ -76,8 +68,8 @@ var (
 		PrimaryKey: []*schema.Column{CommandsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "commands_provisioning_steps_command",
-				Columns: []*schema.Column{CommandsColumns[10]},
+				Symbol:  "commands_provisioning_steps_ProvisioningStepToCommand",
+				Columns: []*schema.Column{CommandsColumns[11]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -87,24 +79,17 @@ var (
 	// CompetitionsColumns holds the columns for the "competitions" table.
 	CompetitionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "root_password", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON},
-		{Name: "environment_competition", Type: field.TypeInt, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// CompetitionsTable holds the schema information for the "competitions" table.
 	CompetitionsTable = &schema.Table{
-		Name:       "competitions",
-		Columns:    CompetitionsColumns,
-		PrimaryKey: []*schema.Column{CompetitionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "competitions_environments_competition",
-				Columns: []*schema.Column{CompetitionsColumns[3]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "competitions",
+		Columns:     CompetitionsColumns,
+		PrimaryKey:  []*schema.Column{CompetitionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// DnSsColumns holds the columns for the "dn_ss" table.
 	DnSsColumns = []*schema.Column{
@@ -114,7 +99,7 @@ var (
 		{Name: "dns_servers", Type: field.TypeJSON},
 		{Name: "ntp_servers", Type: field.TypeJSON},
 		{Name: "config", Type: field.TypeJSON},
-		{Name: "competition_dns", Type: field.TypeInt, Nullable: true},
+		{Name: "competition_competition_to_dns", Type: field.TypeInt, Nullable: true},
 	}
 	// DnSsTable holds the schema information for the "dn_ss" table.
 	DnSsTable = &schema.Table{
@@ -123,7 +108,7 @@ var (
 		PrimaryKey: []*schema.Column{DnSsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "dn_ss_competitions_dns",
+				Symbol:  "dn_ss_competitions_CompetitionToDNS",
 				Columns: []*schema.Column{DnSsColumns[6]},
 
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
@@ -140,7 +125,8 @@ var (
 		{Name: "zone", Type: field.TypeString},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "disabled", Type: field.TypeBool},
-		{Name: "provisioning_step_dns_record", Type: field.TypeInt, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeInt, Nullable: true},
 	}
 	// DNSRecordsTable holds the schema information for the "dns_records" table.
 	DNSRecordsTable = &schema.Table{
@@ -149,8 +135,8 @@ var (
 		PrimaryKey: []*schema.Column{DNSRecordsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "dns_records_provisioning_steps_dns_record",
-				Columns: []*schema.Column{DNSRecordsColumns[7]},
+				Symbol:  "dns_records_provisioning_steps_ProvisioningStepToDNSRecord",
+				Columns: []*schema.Column{DNSRecordsColumns[8]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -161,7 +147,7 @@ var (
 	DisksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "size", Type: field.TypeInt},
-		{Name: "host_disk", Type: field.TypeInt, Nullable: true},
+		{Name: "host_host_to_disk", Type: field.TypeInt, Nullable: true},
 	}
 	// DisksTable holds the schema information for the "disks" table.
 	DisksTable = &schema.Table{
@@ -170,7 +156,7 @@ var (
 		PrimaryKey: []*schema.Column{DisksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "disks_hosts_disk",
+				Symbol:  "disks_hosts_HostToDisk",
 				Columns: []*schema.Column{DisksColumns[2]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
@@ -181,6 +167,7 @@ var (
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "competition_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
@@ -190,6 +177,7 @@ var (
 		{Name: "admin_cidrs", Type: field.TypeJSON},
 		{Name: "exposed_vdi_ports", Type: field.TypeJSON},
 		{Name: "config", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// EnvironmentsTable holds the schema information for the "environments" table.
 	EnvironmentsTable = &schema.Table{
@@ -202,13 +190,23 @@ var (
 	FileDeletesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "path", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDeletesTable holds the schema information for the "file_deletes" table.
 	FileDeletesTable = &schema.Table{
-		Name:        "file_deletes",
-		Columns:     FileDeletesColumns,
-		PrimaryKey:  []*schema.Column{FileDeletesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_deletes",
+		Columns:    FileDeletesColumns,
+		PrimaryKey: []*schema.Column{FileDeletesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_deletes_provisioning_steps_ProvisioningStepToFileDelete",
+				Columns: []*schema.Column{FileDeletesColumns[3]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileDownloadsColumns holds the columns for the "file_downloads" table.
 	FileDownloadsColumns = []*schema.Column{
@@ -217,17 +215,27 @@ var (
 		{Name: "source", Type: field.TypeString},
 		{Name: "destination", Type: field.TypeString},
 		{Name: "template", Type: field.TypeBool},
-		{Name: "mode", Type: field.TypeString},
+		{Name: "perms", Type: field.TypeString},
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "md5", Type: field.TypeString},
 		{Name: "abs_path", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDownloadsTable holds the schema information for the "file_downloads" table.
 	FileDownloadsTable = &schema.Table{
-		Name:        "file_downloads",
-		Columns:     FileDownloadsColumns,
-		PrimaryKey:  []*schema.Column{FileDownloadsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_downloads",
+		Columns:    FileDownloadsColumns,
+		PrimaryKey: []*schema.Column{FileDownloadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_downloads_provisioning_steps_ProvisioningStepToFileDownload",
+				Columns: []*schema.Column{FileDownloadsColumns[10]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileExtractsColumns holds the columns for the "file_extracts" table.
 	FileExtractsColumns = []*schema.Column{
@@ -235,13 +243,23 @@ var (
 		{Name: "source", Type: field.TypeString},
 		{Name: "destination", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeInt, Nullable: true},
 	}
 	// FileExtractsTable holds the schema information for the "file_extracts" table.
 	FileExtractsTable = &schema.Table{
-		Name:        "file_extracts",
-		Columns:     FileExtractsColumns,
-		PrimaryKey:  []*schema.Column{FileExtractsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_extracts",
+		Columns:    FileExtractsColumns,
+		PrimaryKey: []*schema.Column{FileExtractsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_extracts_provisioning_steps_ProvisioningStepToFileExtract",
+				Columns: []*schema.Column{FileExtractsColumns[5]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FindingsColumns holds the columns for the "findings" table.
 	FindingsColumns = []*schema.Column{
@@ -250,6 +268,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "severity", Type: field.TypeEnum, Enums: []string{"ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity"}},
 		{Name: "difficulty", Type: field.TypeEnum, Enums: []string{"ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty"}},
+		{Name: "tags", Type: field.TypeJSON},
 	}
 	// FindingsTable holds the schema information for the "findings" table.
 	FindingsTable = &schema.Table{
@@ -272,13 +291,10 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "user_groups", Type: field.TypeJSON},
 		{Name: "depends_on", Type: field.TypeJSON, Nullable: true},
-		{Name: "scripts", Type: field.TypeJSON, Nullable: true},
-		{Name: "commands", Type: field.TypeJSON, Nullable: true},
-		{Name: "remote_files", Type: field.TypeJSON, Nullable: true},
-		{Name: "dns_records", Type: field.TypeJSON, Nullable: true},
-		{Name: "environment_host", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_host", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_host_host", Type: field.TypeInt, Nullable: true},
+		{Name: "provision_steps", Type: field.TypeJSON, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "finding_finding_to_host", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeInt, Nullable: true},
 	}
 	// HostsTable holds the schema information for the "hosts" table.
 	HostsTable = &schema.Table{
@@ -287,22 +303,15 @@ var (
 		PrimaryKey: []*schema.Column{HostsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "hosts_environments_host",
-				Columns: []*schema.Column{HostsColumns[16]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "hosts_findings_host",
-				Columns: []*schema.Column{HostsColumns[17]},
+				Symbol:  "hosts_findings_FindingToHost",
+				Columns: []*schema.Column{HostsColumns[14]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "hosts_provisioned_hosts_host",
-				Columns: []*schema.Column{HostsColumns[18]},
+				Symbol:  "hosts_provisioned_hosts_ProvisionedHostToHost",
+				Columns: []*schema.Column{HostsColumns[15]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -329,7 +338,8 @@ var (
 		{Name: "cidr", Type: field.TypeString},
 		{Name: "vdi_visible", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
-		{Name: "provisioned_network_network", Type: field.TypeInt, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeInt, Nullable: true},
 	}
 	// NetworksTable holds the schema information for the "networks" table.
 	NetworksTable = &schema.Table{
@@ -338,8 +348,8 @@ var (
 		PrimaryKey: []*schema.Column{NetworksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "networks_provisioned_networks_network",
-				Columns: []*schema.Column{NetworksColumns[5]},
+				Symbol:  "networks_provisioned_networks_ProvisionedNetworkToNetwork",
+				Columns: []*schema.Column{NetworksColumns[6]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -384,36 +394,6 @@ var (
 		PrimaryKey:  []*schema.Column{ProvisioningStepsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
-	// RemoteFilesColumns holds the columns for the "remote_files" table.
-	RemoteFilesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "source_type", Type: field.TypeString},
-		{Name: "source", Type: field.TypeString},
-		{Name: "destination", Type: field.TypeString},
-		{Name: "vars", Type: field.TypeJSON},
-		{Name: "template", Type: field.TypeBool},
-		{Name: "perms", Type: field.TypeString},
-		{Name: "disabled", Type: field.TypeBool},
-		{Name: "md5", Type: field.TypeString},
-		{Name: "abs_path", Type: field.TypeString},
-		{Name: "ext", Type: field.TypeString},
-		{Name: "provisioning_step_remote_file", Type: field.TypeInt, Nullable: true},
-	}
-	// RemoteFilesTable holds the schema information for the "remote_files" table.
-	RemoteFilesTable = &schema.Table{
-		Name:       "remote_files",
-		Columns:    RemoteFilesColumns,
-		PrimaryKey: []*schema.Column{RemoteFilesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "remote_files_provisioning_steps_remote_file",
-				Columns: []*schema.Column{RemoteFilesColumns[11]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -429,7 +409,8 @@ var (
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "abs_path", Type: field.TypeString},
-		{Name: "provisioning_step_script", Type: field.TypeInt, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeInt, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
 	ScriptsTable = &schema.Table{
@@ -438,8 +419,8 @@ var (
 		PrimaryKey: []*schema.Column{ScriptsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "scripts_provisioning_steps_script",
-				Columns: []*schema.Column{ScriptsColumns[13]},
+				Symbol:  "scripts_provisioning_steps_ProvisioningStepToScript",
+				Columns: []*schema.Column{ScriptsColumns[14]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -455,9 +436,9 @@ var (
 		{Name: "failed", Type: field.TypeBool},
 		{Name: "completed", Type: field.TypeBool},
 		{Name: "error", Type: field.TypeString},
-		{Name: "provisioned_host_status", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_status", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_status", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeInt, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
 	StatusTable = &schema.Table{
@@ -466,21 +447,21 @@ var (
 		PrimaryKey: []*schema.Column{StatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "status_provisioned_hosts_status",
+				Symbol:  "status_provisioned_hosts_ProvisionedHostToStatus",
 				Columns: []*schema.Column{StatusColumns[7]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "status_provisioned_networks_status",
+				Symbol:  "status_provisioned_networks_ProvisionedNetworkToStatus",
 				Columns: []*schema.Column{StatusColumns[8]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "status_provisioning_steps_status",
+				Symbol:  "status_provisioning_steps_ProvisioningStepToStatus",
 				Columns: []*schema.Column{StatusColumns[9]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
@@ -494,23 +475,28 @@ var (
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeJSON},
-		{Name: "build_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "command_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "dns_record_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "disk_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "environment_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_delete_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_download_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_extract_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "host_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "included_network_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "network_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "remote_file_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "script_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "status_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "team_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "user_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "agent_status_agent_status_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "build_build_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "command_command_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "competition_competition_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "dns_dns_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "dns_record_dns_record_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "disk_disk_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "file_delete_file_delete_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "file_download_file_download_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "file_extract_file_extract_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "finding_finding_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "host_host_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "included_network_included_network_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "network_network_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "script_script_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "status_status_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "team_team_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "user_user_to_tag", Type: field.TypeInt, Nullable: true},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{
@@ -519,120 +505,155 @@ var (
 		PrimaryKey: []*schema.Column{TagsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "tags_builds_tag",
+				Symbol:  "tags_agent_status_AgentStatusToTag",
 				Columns: []*schema.Column{TagsColumns[4]},
+
+				RefColumns: []*schema.Column{AgentStatusColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "tags_builds_BuildToTag",
+				Columns: []*schema.Column{TagsColumns[5]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_commands_tag",
-				Columns: []*schema.Column{TagsColumns[5]},
+				Symbol:  "tags_commands_CommandToTag",
+				Columns: []*schema.Column{TagsColumns[6]},
 
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_dns_records_tag",
-				Columns: []*schema.Column{TagsColumns[6]},
+				Symbol:  "tags_competitions_CompetitionToTag",
+				Columns: []*schema.Column{TagsColumns[7]},
+
+				RefColumns: []*schema.Column{CompetitionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "tags_dn_ss_DNSToTag",
+				Columns: []*schema.Column{TagsColumns[8]},
+
+				RefColumns: []*schema.Column{DnSsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "tags_dns_records_DNSRecordToTag",
+				Columns: []*schema.Column{TagsColumns[9]},
 
 				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_disks_tag",
-				Columns: []*schema.Column{TagsColumns[7]},
+				Symbol:  "tags_disks_DiskToTag",
+				Columns: []*schema.Column{TagsColumns[10]},
 
 				RefColumns: []*schema.Column{DisksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_environments_tag",
-				Columns: []*schema.Column{TagsColumns[8]},
+				Symbol:  "tags_environments_EnvironmentToTag",
+				Columns: []*schema.Column{TagsColumns[11]},
 
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_file_deletes_tag",
-				Columns: []*schema.Column{TagsColumns[9]},
+				Symbol:  "tags_file_deletes_FileDeleteToTag",
+				Columns: []*schema.Column{TagsColumns[12]},
 
 				RefColumns: []*schema.Column{FileDeletesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_file_downloads_tag",
-				Columns: []*schema.Column{TagsColumns[10]},
+				Symbol:  "tags_file_downloads_FileDownloadToTag",
+				Columns: []*schema.Column{TagsColumns[13]},
 
 				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_file_extracts_tag",
-				Columns: []*schema.Column{TagsColumns[11]},
+				Symbol:  "tags_file_extracts_FileExtractToTag",
+				Columns: []*schema.Column{TagsColumns[14]},
 
 				RefColumns: []*schema.Column{FileExtractsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_findings_tag",
-				Columns: []*schema.Column{TagsColumns[12]},
+				Symbol:  "tags_findings_FindingToTag",
+				Columns: []*schema.Column{TagsColumns[15]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_hosts_tag",
-				Columns: []*schema.Column{TagsColumns[13]},
+				Symbol:  "tags_hosts_HostToTag",
+				Columns: []*schema.Column{TagsColumns[16]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_included_networks_tag",
-				Columns: []*schema.Column{TagsColumns[14]},
+				Symbol:  "tags_included_networks_IncludedNetworkToTag",
+				Columns: []*schema.Column{TagsColumns[17]},
 
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_networks_tag",
-				Columns: []*schema.Column{TagsColumns[15]},
+				Symbol:  "tags_networks_NetworkToTag",
+				Columns: []*schema.Column{TagsColumns[18]},
 
 				RefColumns: []*schema.Column{NetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_remote_files_tag",
-				Columns: []*schema.Column{TagsColumns[16]},
+				Symbol:  "tags_provisioned_hosts_ProvisionedHostToTag",
+				Columns: []*schema.Column{TagsColumns[19]},
 
-				RefColumns: []*schema.Column{RemoteFilesColumns[0]},
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_scripts_tag",
-				Columns: []*schema.Column{TagsColumns[17]},
+				Symbol:  "tags_provisioned_networks_ProvisionedNetworkToTag",
+				Columns: []*schema.Column{TagsColumns[20]},
+
+				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "tags_provisioning_steps_ProvisioningStepToTag",
+				Columns: []*schema.Column{TagsColumns[21]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "tags_scripts_ScriptToTag",
+				Columns: []*schema.Column{TagsColumns[22]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_status_tag",
-				Columns: []*schema.Column{TagsColumns[18]},
+				Symbol:  "tags_status_StatusToTag",
+				Columns: []*schema.Column{TagsColumns[23]},
 
 				RefColumns: []*schema.Column{StatusColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_teams_tag",
-				Columns: []*schema.Column{TagsColumns[19]},
+				Symbol:  "tags_teams_TeamToTag",
+				Columns: []*schema.Column{TagsColumns[24]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_users_tag",
-				Columns: []*schema.Column{TagsColumns[20]},
+				Symbol:  "tags_users_UserToTag",
+				Columns: []*schema.Column{TagsColumns[25]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -659,13 +680,13 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "uuid", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
-		{Name: "build_maintainer", Type: field.TypeInt, Nullable: true},
-		{Name: "command_user", Type: field.TypeInt, Nullable: true},
-		{Name: "environment_user", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_user", Type: field.TypeInt, Nullable: true},
-		{Name: "host_maintainer", Type: field.TypeInt, Nullable: true},
-		{Name: "script_maintainer", Type: field.TypeInt, Nullable: true},
-		{Name: "team_maintainer", Type: field.TypeInt, Nullable: true},
+		{Name: "hcl_id", Type: field.TypeString},
+		{Name: "build_build_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "command_command_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "finding_finding_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "host_host_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "script_script_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "team_team_to_user", Type: field.TypeInt, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -674,49 +695,42 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_builds_maintainer",
-				Columns: []*schema.Column{UsersColumns[4]},
+				Symbol:  "users_builds_BuildToUser",
+				Columns: []*schema.Column{UsersColumns[5]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_commands_user",
-				Columns: []*schema.Column{UsersColumns[5]},
+				Symbol:  "users_commands_CommandToUser",
+				Columns: []*schema.Column{UsersColumns[6]},
 
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_environments_user",
-				Columns: []*schema.Column{UsersColumns[6]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "users_findings_user",
+				Symbol:  "users_findings_FindingToUser",
 				Columns: []*schema.Column{UsersColumns[7]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_hosts_maintainer",
+				Symbol:  "users_hosts_HostToUser",
 				Columns: []*schema.Column{UsersColumns[8]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_scripts_maintainer",
+				Symbol:  "users_scripts_ScriptToUser",
 				Columns: []*schema.Column{UsersColumns[9]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_teams_maintainer",
+				Symbol:  "users_teams_TeamToUser",
 				Columns: []*schema.Column{UsersColumns[10]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
@@ -724,81 +738,189 @@ var (
 			},
 		},
 	}
-	// AgentStatusHostColumns holds the columns for the "agent_status_host" table.
-	AgentStatusHostColumns = []*schema.Column{
+	// AgentStatusAgentStatusToProvisionedHostColumns holds the columns for the "agent_status_AgentStatusToProvisionedHost" table.
+	AgentStatusAgentStatusToProvisionedHostColumns = []*schema.Column{
 		{Name: "agent_status_id", Type: field.TypeInt},
 		{Name: "provisioned_host_id", Type: field.TypeInt},
 	}
-	// AgentStatusHostTable holds the schema information for the "agent_status_host" table.
-	AgentStatusHostTable = &schema.Table{
-		Name:       "agent_status_host",
-		Columns:    AgentStatusHostColumns,
-		PrimaryKey: []*schema.Column{AgentStatusHostColumns[0], AgentStatusHostColumns[1]},
+	// AgentStatusAgentStatusToProvisionedHostTable holds the schema information for the "agent_status_AgentStatusToProvisionedHost" table.
+	AgentStatusAgentStatusToProvisionedHostTable = &schema.Table{
+		Name:       "agent_status_AgentStatusToProvisionedHost",
+		Columns:    AgentStatusAgentStatusToProvisionedHostColumns,
+		PrimaryKey: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0], AgentStatusAgentStatusToProvisionedHostColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "agent_status_host_agent_status_id",
-				Columns: []*schema.Column{AgentStatusHostColumns[0]},
+				Symbol:  "agent_status_AgentStatusToProvisionedHost_agent_status_id",
+				Columns: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0]},
 
 				RefColumns: []*schema.Column{AgentStatusColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "agent_status_host_provisioned_host_id",
-				Columns: []*schema.Column{AgentStatusHostColumns[1]},
+				Symbol:  "agent_status_AgentStatusToProvisionedHost_provisioned_host_id",
+				Columns: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// BuildProvisionedNetworkToBuildColumns holds the columns for the "build_ProvisionedNetworkToBuild" table.
-	BuildProvisionedNetworkToBuildColumns = []*schema.Column{
+	// BuildBuildToProvisionedNetworkColumns holds the columns for the "build_BuildToProvisionedNetwork" table.
+	BuildBuildToProvisionedNetworkColumns = []*schema.Column{
 		{Name: "build_id", Type: field.TypeInt},
 		{Name: "provisioned_network_id", Type: field.TypeInt},
 	}
-	// BuildProvisionedNetworkToBuildTable holds the schema information for the "build_ProvisionedNetworkToBuild" table.
-	BuildProvisionedNetworkToBuildTable = &schema.Table{
-		Name:       "build_ProvisionedNetworkToBuild",
-		Columns:    BuildProvisionedNetworkToBuildColumns,
-		PrimaryKey: []*schema.Column{BuildProvisionedNetworkToBuildColumns[0], BuildProvisionedNetworkToBuildColumns[1]},
+	// BuildBuildToProvisionedNetworkTable holds the schema information for the "build_BuildToProvisionedNetwork" table.
+	BuildBuildToProvisionedNetworkTable = &schema.Table{
+		Name:       "build_BuildToProvisionedNetwork",
+		Columns:    BuildBuildToProvisionedNetworkColumns,
+		PrimaryKey: []*schema.Column{BuildBuildToProvisionedNetworkColumns[0], BuildBuildToProvisionedNetworkColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "build_ProvisionedNetworkToBuild_build_id",
-				Columns: []*schema.Column{BuildProvisionedNetworkToBuildColumns[0]},
+				Symbol:  "build_BuildToProvisionedNetwork_build_id",
+				Columns: []*schema.Column{BuildBuildToProvisionedNetworkColumns[0]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "build_ProvisionedNetworkToBuild_provisioned_network_id",
-				Columns: []*schema.Column{BuildProvisionedNetworkToBuildColumns[1]},
+				Symbol:  "build_BuildToProvisionedNetwork_provisioned_network_id",
+				Columns: []*schema.Column{BuildBuildToProvisionedNetworkColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// FindingScriptColumns holds the columns for the "finding_script" table.
-	FindingScriptColumns = []*schema.Column{
+	// EnvironmentEnvironmentToUserColumns holds the columns for the "environment_EnvironmentToUser" table.
+	EnvironmentEnvironmentToUserColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToUserTable holds the schema information for the "environment_EnvironmentToUser" table.
+	EnvironmentEnvironmentToUserTable = &schema.Table{
+		Name:       "environment_EnvironmentToUser",
+		Columns:    EnvironmentEnvironmentToUserColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToUserColumns[0], EnvironmentEnvironmentToUserColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToUser_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToUserColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToUser_user_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToUserColumns[1]},
+
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// EnvironmentEnvironmentToHostColumns holds the columns for the "environment_EnvironmentToHost" table.
+	EnvironmentEnvironmentToHostColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "host_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToHostTable holds the schema information for the "environment_EnvironmentToHost" table.
+	EnvironmentEnvironmentToHostTable = &schema.Table{
+		Name:       "environment_EnvironmentToHost",
+		Columns:    EnvironmentEnvironmentToHostColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToHostColumns[0], EnvironmentEnvironmentToHostColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToHost_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToHostColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToHost_host_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToHostColumns[1]},
+
+				RefColumns: []*schema.Column{HostsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// EnvironmentEnvironmentToCompetitionColumns holds the columns for the "environment_EnvironmentToCompetition" table.
+	EnvironmentEnvironmentToCompetitionColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "competition_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToCompetitionTable holds the schema information for the "environment_EnvironmentToCompetition" table.
+	EnvironmentEnvironmentToCompetitionTable = &schema.Table{
+		Name:       "environment_EnvironmentToCompetition",
+		Columns:    EnvironmentEnvironmentToCompetitionColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[0], EnvironmentEnvironmentToCompetitionColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToCompetition_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToCompetition_competition_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[1]},
+
+				RefColumns: []*schema.Column{CompetitionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// EnvironmentEnvironmentToBuildColumns holds the columns for the "environment_EnvironmentToBuild" table.
+	EnvironmentEnvironmentToBuildColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "build_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToBuildTable holds the schema information for the "environment_EnvironmentToBuild" table.
+	EnvironmentEnvironmentToBuildTable = &schema.Table{
+		Name:       "environment_EnvironmentToBuild",
+		Columns:    EnvironmentEnvironmentToBuildColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToBuildColumns[0], EnvironmentEnvironmentToBuildColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToBuild_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToBuildColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToBuild_build_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToBuildColumns[1]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// FindingFindingToScriptColumns holds the columns for the "finding_FindingToScript" table.
+	FindingFindingToScriptColumns = []*schema.Column{
 		{Name: "finding_id", Type: field.TypeInt},
 		{Name: "script_id", Type: field.TypeInt},
 	}
-	// FindingScriptTable holds the schema information for the "finding_script" table.
-	FindingScriptTable = &schema.Table{
-		Name:       "finding_script",
-		Columns:    FindingScriptColumns,
-		PrimaryKey: []*schema.Column{FindingScriptColumns[0], FindingScriptColumns[1]},
+	// FindingFindingToScriptTable holds the schema information for the "finding_FindingToScript" table.
+	FindingFindingToScriptTable = &schema.Table{
+		Name:       "finding_FindingToScript",
+		Columns:    FindingFindingToScriptColumns,
+		PrimaryKey: []*schema.Column{FindingFindingToScriptColumns[0], FindingFindingToScriptColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "finding_script_finding_id",
-				Columns: []*schema.Column{FindingScriptColumns[0]},
+				Symbol:  "finding_FindingToScript_finding_id",
+				Columns: []*schema.Column{FindingFindingToScriptColumns[0]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "finding_script_script_id",
-				Columns: []*schema.Column{FindingScriptColumns[1]},
+				Symbol:  "finding_FindingToScript_script_id",
+				Columns: []*schema.Column{FindingFindingToScriptColumns[1]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.Cascade,
@@ -859,27 +981,27 @@ var (
 			},
 		},
 	}
-	// ProvisionedHostProvisionedNetworkColumns holds the columns for the "provisioned_host_provisioned_network" table.
-	ProvisionedHostProvisionedNetworkColumns = []*schema.Column{
+	// ProvisionedHostProvisionedHostToProvisionedNetworkColumns holds the columns for the "provisioned_host_ProvisionedHostToProvisionedNetwork" table.
+	ProvisionedHostProvisionedHostToProvisionedNetworkColumns = []*schema.Column{
 		{Name: "provisioned_host_id", Type: field.TypeInt},
 		{Name: "provisioned_network_id", Type: field.TypeInt},
 	}
-	// ProvisionedHostProvisionedNetworkTable holds the schema information for the "provisioned_host_provisioned_network" table.
-	ProvisionedHostProvisionedNetworkTable = &schema.Table{
-		Name:       "provisioned_host_provisioned_network",
-		Columns:    ProvisionedHostProvisionedNetworkColumns,
-		PrimaryKey: []*schema.Column{ProvisionedHostProvisionedNetworkColumns[0], ProvisionedHostProvisionedNetworkColumns[1]},
+	// ProvisionedHostProvisionedHostToProvisionedNetworkTable holds the schema information for the "provisioned_host_ProvisionedHostToProvisionedNetwork" table.
+	ProvisionedHostProvisionedHostToProvisionedNetworkTable = &schema.Table{
+		Name:       "provisioned_host_ProvisionedHostToProvisionedNetwork",
+		Columns:    ProvisionedHostProvisionedHostToProvisionedNetworkColumns,
+		PrimaryKey: []*schema.Column{ProvisionedHostProvisionedHostToProvisionedNetworkColumns[0], ProvisionedHostProvisionedHostToProvisionedNetworkColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "provisioned_host_provisioned_network_provisioned_host_id",
-				Columns: []*schema.Column{ProvisionedHostProvisionedNetworkColumns[0]},
+				Symbol:  "provisioned_host_ProvisionedHostToProvisionedNetwork_provisioned_host_id",
+				Columns: []*schema.Column{ProvisionedHostProvisionedHostToProvisionedNetworkColumns[0]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "provisioned_host_provisioned_network_provisioned_network_id",
-				Columns: []*schema.Column{ProvisionedHostProvisionedNetworkColumns[1]},
+				Symbol:  "provisioned_host_ProvisionedHostToProvisionedNetwork_provisioned_network_id",
+				Columns: []*schema.Column{ProvisionedHostProvisionedHostToProvisionedNetworkColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
@@ -913,54 +1035,54 @@ var (
 			},
 		},
 	}
-	// ProvisioningStepProvisionedHostColumns holds the columns for the "provisioning_step_provisioned_host" table.
-	ProvisioningStepProvisionedHostColumns = []*schema.Column{
+	// ProvisioningStepProvisioningStepToProvisionedHostColumns holds the columns for the "provisioning_step_ProvisioningStepToProvisionedHost" table.
+	ProvisioningStepProvisioningStepToProvisionedHostColumns = []*schema.Column{
 		{Name: "provisioning_step_id", Type: field.TypeInt},
 		{Name: "provisioned_host_id", Type: field.TypeInt},
 	}
-	// ProvisioningStepProvisionedHostTable holds the schema information for the "provisioning_step_provisioned_host" table.
-	ProvisioningStepProvisionedHostTable = &schema.Table{
-		Name:       "provisioning_step_provisioned_host",
-		Columns:    ProvisioningStepProvisionedHostColumns,
-		PrimaryKey: []*schema.Column{ProvisioningStepProvisionedHostColumns[0], ProvisioningStepProvisionedHostColumns[1]},
+	// ProvisioningStepProvisioningStepToProvisionedHostTable holds the schema information for the "provisioning_step_ProvisioningStepToProvisionedHost" table.
+	ProvisioningStepProvisioningStepToProvisionedHostTable = &schema.Table{
+		Name:       "provisioning_step_ProvisioningStepToProvisionedHost",
+		Columns:    ProvisioningStepProvisioningStepToProvisionedHostColumns,
+		PrimaryKey: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[0], ProvisioningStepProvisioningStepToProvisionedHostColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "provisioning_step_provisioned_host_provisioning_step_id",
-				Columns: []*schema.Column{ProvisioningStepProvisionedHostColumns[0]},
+				Symbol:  "provisioning_step_ProvisioningStepToProvisionedHost_provisioning_step_id",
+				Columns: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[0]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "provisioning_step_provisioned_host_provisioned_host_id",
-				Columns: []*schema.Column{ProvisioningStepProvisionedHostColumns[1]},
+				Symbol:  "provisioning_step_ProvisioningStepToProvisionedHost_provisioned_host_id",
+				Columns: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// TeamBuildColumns holds the columns for the "team_build" table.
-	TeamBuildColumns = []*schema.Column{
+	// TeamTeamToBuildColumns holds the columns for the "team_TeamToBuild" table.
+	TeamTeamToBuildColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeInt},
 		{Name: "build_id", Type: field.TypeInt},
 	}
-	// TeamBuildTable holds the schema information for the "team_build" table.
-	TeamBuildTable = &schema.Table{
-		Name:       "team_build",
-		Columns:    TeamBuildColumns,
-		PrimaryKey: []*schema.Column{TeamBuildColumns[0], TeamBuildColumns[1]},
+	// TeamTeamToBuildTable holds the schema information for the "team_TeamToBuild" table.
+	TeamTeamToBuildTable = &schema.Table{
+		Name:       "team_TeamToBuild",
+		Columns:    TeamTeamToBuildColumns,
+		PrimaryKey: []*schema.Column{TeamTeamToBuildColumns[0], TeamTeamToBuildColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "team_build_team_id",
-				Columns: []*schema.Column{TeamBuildColumns[0]},
+				Symbol:  "team_TeamToBuild_team_id",
+				Columns: []*schema.Column{TeamTeamToBuildColumns[0]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "team_build_build_id",
-				Columns: []*schema.Column{TeamBuildColumns[1]},
+				Symbol:  "team_TeamToBuild_build_id",
+				Columns: []*schema.Column{TeamTeamToBuildColumns[1]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.Cascade,
@@ -1014,83 +1136,97 @@ var (
 		ProvisionedHostsTable,
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
-		RemoteFilesTable,
 		ScriptsTable,
 		StatusTable,
 		TagsTable,
 		TeamsTable,
 		UsersTable,
-		AgentStatusHostTable,
-		BuildProvisionedNetworkToBuildTable,
-		FindingScriptTable,
+		AgentStatusAgentStatusToProvisionedHostTable,
+		BuildBuildToProvisionedNetworkTable,
+		EnvironmentEnvironmentToUserTable,
+		EnvironmentEnvironmentToHostTable,
+		EnvironmentEnvironmentToCompetitionTable,
+		EnvironmentEnvironmentToBuildTable,
+		FindingFindingToScriptTable,
 		IncludedNetworkIncludedNetworkToEnvironmentTable,
 		NetworkNetworkToEnvironmentTable,
-		ProvisionedHostProvisionedNetworkTable,
+		ProvisionedHostProvisionedHostToProvisionedNetworkTable,
 		ProvisionedNetworkProvisionedNetworkToTeamTable,
-		ProvisioningStepProvisionedHostTable,
-		TeamBuildTable,
+		ProvisioningStepProvisioningStepToProvisionedHostTable,
+		TeamTeamToBuildTable,
 		TeamTeamToEnvironmentTable,
 	}
 )
 
 func init() {
-	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	CommandsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DnSsTable.ForeignKeys[0].RefTable = CompetitionsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	DisksTable.ForeignKeys[0].RefTable = HostsTable
-	HostsTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	HostsTable.ForeignKeys[1].RefTable = FindingsTable
-	HostsTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
+	FileDeletesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	FileDownloadsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	FileExtractsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	HostsTable.ForeignKeys[0].RefTable = FindingsTable
+	HostsTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
-	RemoteFilesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	StatusTable.ForeignKeys[2].RefTable = ProvisioningStepsTable
-	TagsTable.ForeignKeys[0].RefTable = BuildsTable
-	TagsTable.ForeignKeys[1].RefTable = CommandsTable
-	TagsTable.ForeignKeys[2].RefTable = DNSRecordsTable
-	TagsTable.ForeignKeys[3].RefTable = DisksTable
-	TagsTable.ForeignKeys[4].RefTable = EnvironmentsTable
-	TagsTable.ForeignKeys[5].RefTable = FileDeletesTable
-	TagsTable.ForeignKeys[6].RefTable = FileDownloadsTable
-	TagsTable.ForeignKeys[7].RefTable = FileExtractsTable
-	TagsTable.ForeignKeys[8].RefTable = FindingsTable
-	TagsTable.ForeignKeys[9].RefTable = HostsTable
-	TagsTable.ForeignKeys[10].RefTable = IncludedNetworksTable
-	TagsTable.ForeignKeys[11].RefTable = NetworksTable
-	TagsTable.ForeignKeys[12].RefTable = RemoteFilesTable
-	TagsTable.ForeignKeys[13].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[14].RefTable = StatusTable
-	TagsTable.ForeignKeys[15].RefTable = TeamsTable
-	TagsTable.ForeignKeys[16].RefTable = UsersTable
+	TagsTable.ForeignKeys[0].RefTable = AgentStatusTable
+	TagsTable.ForeignKeys[1].RefTable = BuildsTable
+	TagsTable.ForeignKeys[2].RefTable = CommandsTable
+	TagsTable.ForeignKeys[3].RefTable = CompetitionsTable
+	TagsTable.ForeignKeys[4].RefTable = DnSsTable
+	TagsTable.ForeignKeys[5].RefTable = DNSRecordsTable
+	TagsTable.ForeignKeys[6].RefTable = DisksTable
+	TagsTable.ForeignKeys[7].RefTable = EnvironmentsTable
+	TagsTable.ForeignKeys[8].RefTable = FileDeletesTable
+	TagsTable.ForeignKeys[9].RefTable = FileDownloadsTable
+	TagsTable.ForeignKeys[10].RefTable = FileExtractsTable
+	TagsTable.ForeignKeys[11].RefTable = FindingsTable
+	TagsTable.ForeignKeys[12].RefTable = HostsTable
+	TagsTable.ForeignKeys[13].RefTable = IncludedNetworksTable
+	TagsTable.ForeignKeys[14].RefTable = NetworksTable
+	TagsTable.ForeignKeys[15].RefTable = ProvisionedHostsTable
+	TagsTable.ForeignKeys[16].RefTable = ProvisionedNetworksTable
+	TagsTable.ForeignKeys[17].RefTable = ProvisioningStepsTable
+	TagsTable.ForeignKeys[18].RefTable = ScriptsTable
+	TagsTable.ForeignKeys[19].RefTable = StatusTable
+	TagsTable.ForeignKeys[20].RefTable = TeamsTable
+	TagsTable.ForeignKeys[21].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = BuildsTable
 	UsersTable.ForeignKeys[1].RefTable = CommandsTable
-	UsersTable.ForeignKeys[2].RefTable = EnvironmentsTable
-	UsersTable.ForeignKeys[3].RefTable = FindingsTable
-	UsersTable.ForeignKeys[4].RefTable = HostsTable
-	UsersTable.ForeignKeys[5].RefTable = ScriptsTable
-	UsersTable.ForeignKeys[6].RefTable = TeamsTable
-	AgentStatusHostTable.ForeignKeys[0].RefTable = AgentStatusTable
-	AgentStatusHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	BuildProvisionedNetworkToBuildTable.ForeignKeys[0].RefTable = BuildsTable
-	BuildProvisionedNetworkToBuildTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	FindingScriptTable.ForeignKeys[0].RefTable = FindingsTable
-	FindingScriptTable.ForeignKeys[1].RefTable = ScriptsTable
+	UsersTable.ForeignKeys[2].RefTable = FindingsTable
+	UsersTable.ForeignKeys[3].RefTable = HostsTable
+	UsersTable.ForeignKeys[4].RefTable = ScriptsTable
+	UsersTable.ForeignKeys[5].RefTable = TeamsTable
+	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[0].RefTable = AgentStatusTable
+	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
+	BuildBuildToProvisionedNetworkTable.ForeignKeys[0].RefTable = BuildsTable
+	BuildBuildToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
+	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToUserTable.ForeignKeys[1].RefTable = UsersTable
+	EnvironmentEnvironmentToHostTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToHostTable.ForeignKeys[1].RefTable = HostsTable
+	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[1].RefTable = CompetitionsTable
+	EnvironmentEnvironmentToBuildTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToBuildTable.ForeignKeys[1].RefTable = BuildsTable
+	FindingFindingToScriptTable.ForeignKeys[0].RefTable = FindingsTable
+	FindingFindingToScriptTable.ForeignKeys[1].RefTable = ScriptsTable
 	IncludedNetworkIncludedNetworkToEnvironmentTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToEnvironmentTable.ForeignKeys[1].RefTable = EnvironmentsTable
 	NetworkNetworkToEnvironmentTable.ForeignKeys[0].RefTable = NetworksTable
 	NetworkNetworkToEnvironmentTable.ForeignKeys[1].RefTable = EnvironmentsTable
-	ProvisionedHostProvisionedNetworkTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
-	ProvisionedHostProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
+	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
+	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	ProvisionedNetworkProvisionedNetworkToTeamTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
 	ProvisionedNetworkProvisionedNetworkToTeamTable.ForeignKeys[1].RefTable = TeamsTable
-	ProvisioningStepProvisionedHostTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	ProvisioningStepProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	TeamBuildTable.ForeignKeys[0].RefTable = TeamsTable
-	TeamBuildTable.ForeignKeys[1].RefTable = BuildsTable
+	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
+	TeamTeamToBuildTable.ForeignKeys[0].RefTable = TeamsTable
+	TeamTeamToBuildTable.ForeignKeys[1].RefTable = BuildsTable
 	TeamTeamToEnvironmentTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamTeamToEnvironmentTable.ForeignKeys[1].RefTable = EnvironmentsTable
 }

@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,7 +20,7 @@ type FindingDelete struct {
 	mutation *FindingMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where adds a new predicate to the FindingDelete builder.
 func (fd *FindingDelete) Where(ps ...predicate.Finding) *FindingDelete {
 	fd.mutation.predicates = append(fd.mutation.predicates, ps...)
 	return fd

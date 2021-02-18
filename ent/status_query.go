@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,16 +23,17 @@ type StatusQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Status
 	// eager-loading edges.
-	withTag *TagQuery
-	withFKs bool
+	withStatusToTag *TagQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the StatusQuery builder.
 func (sq *StatusQuery) Where(ps ...predicate.Status) *StatusQuery {
 	sq.predicates = append(sq.predicates, ps...)
 	return sq
@@ -56,21 +57,21 @@ func (sq *StatusQuery) Order(o ...OrderFunc) *StatusQuery {
 	return sq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (sq *StatusQuery) QueryTag() *TagQuery {
+// QueryStatusToTag chains the current query on the "StatusToTag" edge.
+func (sq *StatusQuery) QueryStatusToTag() *TagQuery {
 	query := &TagQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sq.sqlQuery()
+		selector := sq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, status.TagTable, status.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, status.StatusToTagTable, status.StatusToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -78,7 +79,8 @@ func (sq *StatusQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// First returns the first Status entity in the query. Returns *NotFoundError when no status was found.
+// First returns the first Status entity from the query.
+// Returns a *NotFoundError when no Status was found.
 func (sq *StatusQuery) First(ctx context.Context) (*Status, error) {
 	nodes, err := sq.Limit(1).All(ctx)
 	if err != nil {
@@ -99,7 +101,8 @@ func (sq *StatusQuery) FirstX(ctx context.Context) *Status {
 	return node
 }
 
-// FirstID returns the first Status id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Status ID from the query.
+// Returns a *NotFoundError when no Status ID was found.
 func (sq *StatusQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
@@ -121,7 +124,9 @@ func (sq *StatusQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Status entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Status entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Status entity is not found.
+// Returns a *NotFoundError when no Status entities are found.
 func (sq *StatusQuery) Only(ctx context.Context) (*Status, error) {
 	nodes, err := sq.Limit(2).All(ctx)
 	if err != nil {
@@ -146,7 +151,9 @@ func (sq *StatusQuery) OnlyX(ctx context.Context) *Status {
 	return node
 }
 
-// OnlyID returns the only Status id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Status ID in the query.
+// Returns a *NotSingularError when exactly one Status ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (sq *StatusQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
@@ -189,7 +196,7 @@ func (sq *StatusQuery) AllX(ctx context.Context) []*Status {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Status ids.
+// IDs executes the query and returns a list of Status IDs.
 func (sq *StatusQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := sq.Select(status.FieldID).Scan(ctx, &ids); err != nil {
@@ -241,37 +248,37 @@ func (sq *StatusQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the StatusQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (sq *StatusQuery) Clone() *StatusQuery {
 	if sq == nil {
 		return nil
 	}
 	return &StatusQuery{
-		config:     sq.config,
-		limit:      sq.limit,
-		offset:     sq.offset,
-		order:      append([]OrderFunc{}, sq.order...),
-		predicates: append([]predicate.Status{}, sq.predicates...),
-		withTag:    sq.withTag.Clone(),
+		config:          sq.config,
+		limit:           sq.limit,
+		offset:          sq.offset,
+		order:           append([]OrderFunc{}, sq.order...),
+		predicates:      append([]predicate.Status{}, sq.predicates...),
+		withStatusToTag: sq.withStatusToTag.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (sq *StatusQuery) WithTag(opts ...func(*TagQuery)) *StatusQuery {
+// WithStatusToTag tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToTag(opts ...func(*TagQuery)) *StatusQuery {
 	query := &TagQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withTag = query
+	sq.withStatusToTag = query
 	return sq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -293,12 +300,13 @@ func (sq *StatusQuery) GroupBy(field string, fields ...string) *StatusGroupBy {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return sq.sqlQuery(), nil
+		return sq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -311,18 +319,16 @@ func (sq *StatusQuery) GroupBy(field string, fields ...string) *StatusGroupBy {
 //		Scan(ctx, &v)
 //
 func (sq *StatusQuery) Select(field string, fields ...string) *StatusSelect {
-	selector := &StatusSelect{config: sq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return sq.sqlQuery(), nil
-	}
-	return selector
+	sq.fields = append([]string{field}, fields...)
+	return &StatusSelect{StatusQuery: sq}
 }
 
 func (sq *StatusQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range sq.fields {
+		if !status.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if sq.path != nil {
 		prev, err := sq.path(ctx)
 		if err != nil {
@@ -339,28 +345,24 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [1]bool{
-			sq.withTag != nil,
+			sq.withStatusToTag != nil,
 		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, status.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Status{config: sq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, sq.driver, _spec); err != nil {
 		return nil, err
@@ -369,32 +371,32 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		return nodes, nil
 	}
 
-	if query := sq.withTag; query != nil {
+	if query := sq.withStatusToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Status)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.StatusToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(status.TagColumn, fks...))
+			s.Where(sql.InValues(status.StatusToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.status_tag
+			fk := n.status_status_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "status_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "status_status_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "status_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "status_status_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.StatusToTag = append(node.Edges.StatusToTag, n)
 		}
 	}
 
@@ -427,6 +429,15 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   sq.sql,
 		Unique: true,
 	}
+	if fields := sq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, status.FieldID)
+		for i := range fields {
+			if fields[i] != status.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := sq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -450,7 +461,7 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sq *StatusQuery) sqlQuery() *sql.Selector {
+func (sq *StatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(sq.driver.Dialect())
 	t1 := builder.Table(status.Table)
 	selector := builder.Select(t1.Columns(status.Columns...)...).From(t1)
@@ -475,7 +486,7 @@ func (sq *StatusQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// StatusGroupBy is the builder for group-by Status entities.
+// StatusGroupBy is the group-by builder for Status entities.
 type StatusGroupBy struct {
 	config
 	fields []string
@@ -491,7 +502,7 @@ func (sgb *StatusGroupBy) Aggregate(fns ...AggregateFunc) *StatusGroupBy {
 	return sgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (sgb *StatusGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := sgb.path(ctx)
 	if err != nil {
@@ -508,7 +519,8 @@ func (sgb *StatusGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: StatusGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -529,7 +541,8 @@ func (sgb *StatusGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = sgb.Strings(ctx); err != nil {
@@ -555,7 +568,8 @@ func (sgb *StatusGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: StatusGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -576,7 +590,8 @@ func (sgb *StatusGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = sgb.Ints(ctx); err != nil {
@@ -602,7 +617,8 @@ func (sgb *StatusGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: StatusGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -623,7 +639,8 @@ func (sgb *StatusGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = sgb.Float64s(ctx); err != nil {
@@ -649,7 +666,8 @@ func (sgb *StatusGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(sgb.fields) > 1 {
 		return nil, errors.New("ent: StatusGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -670,7 +688,8 @@ func (sgb *StatusGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (sgb *StatusGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = sgb.Bools(ctx); err != nil {
@@ -725,22 +744,19 @@ func (sgb *StatusGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(sgb.fields...)
 }
 
-// StatusSelect is the builder for select fields of Status entities.
+// StatusSelect is the builder for selecting fields of Status entities.
 type StatusSelect struct {
-	config
-	fields []string
+	*StatusQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ss *StatusSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ss.path(ctx)
-	if err != nil {
+	if err := ss.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ss.sql = query
+	ss.sql = ss.StatusQuery.sqlQuery(ctx)
 	return ss.sqlScan(ctx, v)
 }
 
@@ -751,7 +767,7 @@ func (ss *StatusSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: StatusSelect.Strings is not achievable when selecting more than 1 field")
@@ -772,7 +788,7 @@ func (ss *StatusSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ss.Strings(ctx); err != nil {
@@ -798,7 +814,7 @@ func (ss *StatusSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: StatusSelect.Ints is not achievable when selecting more than 1 field")
@@ -819,7 +835,7 @@ func (ss *StatusSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ss.Ints(ctx); err != nil {
@@ -845,7 +861,7 @@ func (ss *StatusSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: StatusSelect.Float64s is not achievable when selecting more than 1 field")
@@ -866,7 +882,7 @@ func (ss *StatusSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ss.Float64s(ctx); err != nil {
@@ -892,7 +908,7 @@ func (ss *StatusSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ss.fields) > 1 {
 		return nil, errors.New("ent: StatusSelect.Bools is not achievable when selecting more than 1 field")
@@ -913,7 +929,7 @@ func (ss *StatusSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ss *StatusSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ss.Bools(ctx); err != nil {
@@ -940,11 +956,6 @@ func (ss *StatusSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ss *StatusSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ss.fields {
-		if !status.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := ss.sqlQuery().Query()
 	if err := ss.driver.Query(ctx, query, args, rows); err != nil {

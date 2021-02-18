@@ -3,26 +3,29 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/finding"
 )
 
 // Finding is the model entity for the Finding schema.
 type Finding struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional"`
 	// Severity holds the value of the "severity" field.
-	Severity finding.Severity `json:"severity,omitempty"`
+	Severity finding.Severity `json:"severity,omitempty" hcl:"severity,attr"`
 	// Difficulty holds the value of the "difficulty" field.
-	Difficulty finding.Difficulty `json:"difficulty,omitempty"`
+	Difficulty finding.Difficulty `json:"difficulty,omitempty" hcl:"difficulty,attr"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FindingQuery when eager-loading is set.
 	Edges FindingEdges `json:"edges"`
@@ -30,130 +33,154 @@ type Finding struct {
 
 // FindingEdges holds the relations/edges for other nodes in the graph.
 type FindingEdges struct {
-	// User holds the value of the user edge.
-	User []*User
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// Host holds the value of the host edge.
-	Host []*Host
-	// Script holds the value of the script edge.
-	Script []*Script
+	// FindingToUser holds the value of the FindingToUser edge.
+	FindingToUser []*User `json:"FindingToUser,omitempty" hcl:"maintainer,block"`
+	// FindingToTag holds the value of the FindingToTag edge.
+	FindingToTag []*Tag `json:"FindingToTag,omitempty"`
+	// FindingToHost holds the value of the FindingToHost edge.
+	FindingToHost []*Host `json:"FindingToHost,omitempty"`
+	// FindingToScript holds the value of the FindingToScript edge.
+	FindingToScript []*Script `json:"FindingToScript,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
 }
 
-// UserOrErr returns the User value or an error if the edge
+// FindingToUserOrErr returns the FindingToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) UserOrErr() ([]*User, error) {
+func (e FindingEdges) FindingToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.User, nil
+		return e.FindingToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "FindingToUser"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// FindingToTagOrErr returns the FindingToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) TagOrErr() ([]*Tag, error) {
+func (e FindingEdges) FindingToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[1] {
-		return e.Tag, nil
+		return e.FindingToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "FindingToTag"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// FindingToHostOrErr returns the FindingToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) HostOrErr() ([]*Host, error) {
+func (e FindingEdges) FindingToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.FindingToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "FindingToHost"}
 }
 
-// ScriptOrErr returns the Script value or an error if the edge
+// FindingToScriptOrErr returns the FindingToScript value or an error if the edge
 // was not loaded in eager-loading.
-func (e FindingEdges) ScriptOrErr() ([]*Script, error) {
+func (e FindingEdges) FindingToScriptOrErr() ([]*Script, error) {
 	if e.loadedTypes[3] {
-		return e.Script, nil
+		return e.FindingToScript, nil
 	}
-	return nil, &NotLoadedError{edge: "script"}
+	return nil, &NotLoadedError{edge: "FindingToScript"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Finding) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // description
-		&sql.NullString{}, // severity
-		&sql.NullString{}, // difficulty
+func (*Finding) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case finding.FieldTags:
+			values[i] = &[]byte{}
+		case finding.FieldID:
+			values[i] = &sql.NullInt64{}
+		case finding.FieldName, finding.FieldDescription, finding.FieldSeverity, finding.FieldDifficulty:
+			values[i] = &sql.NullString{}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Finding", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Finding fields.
-func (f *Finding) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(finding.Columns); m < n {
+func (f *Finding) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	f.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		f.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[1])
-	} else if value.Valid {
-		f.Description = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field severity", values[2])
-	} else if value.Valid {
-		f.Severity = finding.Severity(value.String)
-	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field difficulty", values[3])
-	} else if value.Valid {
-		f.Difficulty = finding.Difficulty(value.String)
+	for i := range columns {
+		switch columns[i] {
+		case finding.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			f.ID = int(value.Int64)
+		case finding.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				f.Name = value.String
+			}
+		case finding.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				f.Description = value.String
+			}
+		case finding.FieldSeverity:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field severity", values[i])
+			} else if value.Valid {
+				f.Severity = finding.Severity(value.String)
+			}
+		case finding.FieldDifficulty:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field difficulty", values[i])
+			} else if value.Valid {
+				f.Difficulty = finding.Difficulty(value.String)
+			}
+		case finding.FieldTags:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &f.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %v", err)
+				}
+			}
+		}
 	}
 	return nil
 }
 
-// QueryUser queries the user edge of the Finding.
-func (f *Finding) QueryUser() *UserQuery {
-	return (&FindingClient{config: f.config}).QueryUser(f)
+// QueryFindingToUser queries the "FindingToUser" edge of the Finding entity.
+func (f *Finding) QueryFindingToUser() *UserQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToUser(f)
 }
 
-// QueryTag queries the tag edge of the Finding.
-func (f *Finding) QueryTag() *TagQuery {
-	return (&FindingClient{config: f.config}).QueryTag(f)
+// QueryFindingToTag queries the "FindingToTag" edge of the Finding entity.
+func (f *Finding) QueryFindingToTag() *TagQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToTag(f)
 }
 
-// QueryHost queries the host edge of the Finding.
-func (f *Finding) QueryHost() *HostQuery {
-	return (&FindingClient{config: f.config}).QueryHost(f)
+// QueryFindingToHost queries the "FindingToHost" edge of the Finding entity.
+func (f *Finding) QueryFindingToHost() *HostQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToHost(f)
 }
 
-// QueryScript queries the script edge of the Finding.
-func (f *Finding) QueryScript() *ScriptQuery {
-	return (&FindingClient{config: f.config}).QueryScript(f)
+// QueryFindingToScript queries the "FindingToScript" edge of the Finding entity.
+func (f *Finding) QueryFindingToScript() *ScriptQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToScript(f)
 }
 
 // Update returns a builder for updating this Finding.
-// Note that, you need to call Finding.Unwrap() before calling this method, if this Finding
+// Note that you need to call Finding.Unwrap() before calling this method if this Finding
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (f *Finding) Update() *FindingUpdateOne {
 	return (&FindingClient{config: f.config}).UpdateOne(f)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Finding entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (f *Finding) Unwrap() *Finding {
 	tx, ok := f.config.driver.(*txDriver)
 	if !ok {
@@ -176,6 +203,8 @@ func (f *Finding) String() string {
 	builder.WriteString(fmt.Sprintf("%v", f.Severity))
 	builder.WriteString(", difficulty=")
 	builder.WriteString(fmt.Sprintf("%v", f.Difficulty))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", f.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

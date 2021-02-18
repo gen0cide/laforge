@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,37 +20,43 @@ type FileExtractCreate struct {
 	hooks    []Hook
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fec *FileExtractCreate) SetSource(s string) *FileExtractCreate {
 	fec.mutation.SetSource(s)
 	return fec
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fec *FileExtractCreate) SetDestination(s string) *FileExtractCreate {
 	fec.mutation.SetDestination(s)
 	return fec
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (fec *FileExtractCreate) SetType(s string) *FileExtractCreate {
 	fec.mutation.SetType(s)
 	return fec
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fec *FileExtractCreate) AddTagIDs(ids ...int) *FileExtractCreate {
-	fec.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
+	fec.mutation.SetTags(m)
 	return fec
 }
 
-// AddTag adds the tag edges to Tag.
-func (fec *FileExtractCreate) AddTag(t ...*Tag) *FileExtractCreate {
+// AddFileExtractToTagIDs adds the "FileExtractToTag" edge to the Tag entity by IDs.
+func (fec *FileExtractCreate) AddFileExtractToTagIDs(ids ...int) *FileExtractCreate {
+	fec.mutation.AddFileExtractToTagIDs(ids...)
+	return fec
+}
+
+// AddFileExtractToTag adds the "FileExtractToTag" edges to the Tag entity.
+func (fec *FileExtractCreate) AddFileExtractToTag(t ...*Tag) *FileExtractCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return fec.AddTagIDs(ids...)
+	return fec.AddFileExtractToTagIDs(ids...)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -113,6 +119,9 @@ func (fec *FileExtractCreate) check() error {
 	if _, ok := fec.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
 	}
+	if _, ok := fec.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+	}
 	return nil
 }
 
@@ -164,12 +173,20 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		})
 		_node.Type = value
 	}
-	if nodes := fec.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := fec.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fec.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Table:   fileextract.FileExtractToTagTable,
+			Columns: []string{fileextract.FileExtractToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -186,7 +203,7 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 	return _node, _spec
 }
 
-// FileExtractCreateBulk is the builder for creating a bulk of FileExtract entities.
+// FileExtractCreateBulk is the builder for creating many FileExtract entities in bulk.
 type FileExtractCreateBulk struct {
 	config
 	builders []*FileExtractCreate
@@ -243,7 +260,7 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fecb *FileExtractCreateBulk) SaveX(ctx context.Context) []*FileExtract {
 	v, err := fecb.Save(ctx)
 	if err != nil {

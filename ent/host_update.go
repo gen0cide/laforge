@@ -6,10 +6,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -23,182 +24,167 @@ type HostUpdate struct {
 	mutation *HostMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the HostUpdate builder.
 func (hu *HostUpdate) Where(ps ...predicate.Host) *HostUpdate {
 	hu.mutation.predicates = append(hu.mutation.predicates, ps...)
 	return hu
 }
 
-// SetHostname sets the hostname field.
+// SetHostname sets the "hostname" field.
 func (hu *HostUpdate) SetHostname(s string) *HostUpdate {
 	hu.mutation.SetHostname(s)
 	return hu
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (hu *HostUpdate) SetDescription(s string) *HostUpdate {
 	hu.mutation.SetDescription(s)
 	return hu
 }
 
-// SetOS sets the OS field.
+// SetOS sets the "OS" field.
 func (hu *HostUpdate) SetOS(s string) *HostUpdate {
 	hu.mutation.SetOS(s)
 	return hu
 }
 
-// SetLastOctet sets the last_octet field.
+// SetLastOctet sets the "last_octet" field.
 func (hu *HostUpdate) SetLastOctet(i int) *HostUpdate {
 	hu.mutation.ResetLastOctet()
 	hu.mutation.SetLastOctet(i)
 	return hu
 }
 
-// AddLastOctet adds i to last_octet.
+// AddLastOctet adds i to the "last_octet" field.
 func (hu *HostUpdate) AddLastOctet(i int) *HostUpdate {
 	hu.mutation.AddLastOctet(i)
 	return hu
 }
 
-// SetAllowMACChanges sets the allow_mac_changes field.
+// SetAllowMACChanges sets the "allow_mac_changes" field.
 func (hu *HostUpdate) SetAllowMACChanges(b bool) *HostUpdate {
 	hu.mutation.SetAllowMACChanges(b)
 	return hu
 }
 
-// SetExposedTCPPorts sets the exposed_tcp_ports field.
+// SetExposedTCPPorts sets the "exposed_tcp_ports" field.
 func (hu *HostUpdate) SetExposedTCPPorts(s []string) *HostUpdate {
 	hu.mutation.SetExposedTCPPorts(s)
 	return hu
 }
 
-// SetExposedUDPPorts sets the exposed_udp_ports field.
+// SetExposedUDPPorts sets the "exposed_udp_ports" field.
 func (hu *HostUpdate) SetExposedUDPPorts(s []string) *HostUpdate {
 	hu.mutation.SetExposedUDPPorts(s)
 	return hu
 }
 
-// SetOverridePassword sets the override_password field.
+// SetOverridePassword sets the "override_password" field.
 func (hu *HostUpdate) SetOverridePassword(s string) *HostUpdate {
 	hu.mutation.SetOverridePassword(s)
 	return hu
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (hu *HostUpdate) SetVars(m map[string]string) *HostUpdate {
 	hu.mutation.SetVars(m)
 	return hu
 }
 
-// SetUserGroups sets the user_groups field.
+// SetUserGroups sets the "user_groups" field.
 func (hu *HostUpdate) SetUserGroups(s []string) *HostUpdate {
 	hu.mutation.SetUserGroups(s)
 	return hu
 }
 
-// SetDependsOn sets the depends_on field.
-func (hu *HostUpdate) SetDependsOn(s []string) *HostUpdate {
-	hu.mutation.SetDependsOn(s)
+// SetDependsOn sets the "depends_on" field.
+func (hu *HostUpdate) SetDependsOn(m map[string]string) *HostUpdate {
+	hu.mutation.SetDependsOn(m)
 	return hu
 }
 
-// ClearDependsOn clears the value of depends_on.
+// ClearDependsOn clears the value of the "depends_on" field.
 func (hu *HostUpdate) ClearDependsOn() *HostUpdate {
 	hu.mutation.ClearDependsOn()
 	return hu
 }
 
-// SetScripts sets the scripts field.
-func (hu *HostUpdate) SetScripts(s []string) *HostUpdate {
-	hu.mutation.SetScripts(s)
+// SetProvisionSteps sets the "provision_steps" field.
+func (hu *HostUpdate) SetProvisionSteps(s []string) *HostUpdate {
+	hu.mutation.SetProvisionSteps(s)
 	return hu
 }
 
-// ClearScripts clears the value of scripts.
-func (hu *HostUpdate) ClearScripts() *HostUpdate {
-	hu.mutation.ClearScripts()
+// ClearProvisionSteps clears the value of the "provision_steps" field.
+func (hu *HostUpdate) ClearProvisionSteps() *HostUpdate {
+	hu.mutation.ClearProvisionSteps()
 	return hu
 }
 
-// SetCommands sets the commands field.
-func (hu *HostUpdate) SetCommands(s []string) *HostUpdate {
-	hu.mutation.SetCommands(s)
+// SetTags sets the "tags" field.
+func (hu *HostUpdate) SetTags(m map[string]string) *HostUpdate {
+	hu.mutation.SetTags(m)
 	return hu
 }
 
-// ClearCommands clears the value of commands.
-func (hu *HostUpdate) ClearCommands() *HostUpdate {
-	hu.mutation.ClearCommands()
+// AddHostToDiskIDs adds the "HostToDisk" edge to the Disk entity by IDs.
+func (hu *HostUpdate) AddHostToDiskIDs(ids ...int) *HostUpdate {
+	hu.mutation.AddHostToDiskIDs(ids...)
 	return hu
 }
 
-// SetRemoteFiles sets the remote_files field.
-func (hu *HostUpdate) SetRemoteFiles(s []string) *HostUpdate {
-	hu.mutation.SetRemoteFiles(s)
-	return hu
-}
-
-// ClearRemoteFiles clears the value of remote_files.
-func (hu *HostUpdate) ClearRemoteFiles() *HostUpdate {
-	hu.mutation.ClearRemoteFiles()
-	return hu
-}
-
-// SetDNSRecords sets the dns_records field.
-func (hu *HostUpdate) SetDNSRecords(s []string) *HostUpdate {
-	hu.mutation.SetDNSRecords(s)
-	return hu
-}
-
-// ClearDNSRecords clears the value of dns_records.
-func (hu *HostUpdate) ClearDNSRecords() *HostUpdate {
-	hu.mutation.ClearDNSRecords()
-	return hu
-}
-
-// AddDiskIDs adds the disk edge to Disk by ids.
-func (hu *HostUpdate) AddDiskIDs(ids ...int) *HostUpdate {
-	hu.mutation.AddDiskIDs(ids...)
-	return hu
-}
-
-// AddDisk adds the disk edges to Disk.
-func (hu *HostUpdate) AddDisk(d ...*Disk) *HostUpdate {
+// AddHostToDisk adds the "HostToDisk" edges to the Disk entity.
+func (hu *HostUpdate) AddHostToDisk(d ...*Disk) *HostUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return hu.AddDiskIDs(ids...)
+	return hu.AddHostToDiskIDs(ids...)
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (hu *HostUpdate) AddMaintainerIDs(ids ...int) *HostUpdate {
-	hu.mutation.AddMaintainerIDs(ids...)
+// AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
+func (hu *HostUpdate) AddHostToUserIDs(ids ...int) *HostUpdate {
+	hu.mutation.AddHostToUserIDs(ids...)
 	return hu
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (hu *HostUpdate) AddMaintainer(u ...*User) *HostUpdate {
+// AddHostToUser adds the "HostToUser" edges to the User entity.
+func (hu *HostUpdate) AddHostToUser(u ...*User) *HostUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return hu.AddMaintainerIDs(ids...)
+	return hu.AddHostToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (hu *HostUpdate) AddTagIDs(ids ...int) *HostUpdate {
-	hu.mutation.AddTagIDs(ids...)
+// AddHostToTagIDs adds the "HostToTag" edge to the Tag entity by IDs.
+func (hu *HostUpdate) AddHostToTagIDs(ids ...int) *HostUpdate {
+	hu.mutation.AddHostToTagIDs(ids...)
 	return hu
 }
 
-// AddTag adds the tag edges to Tag.
-func (hu *HostUpdate) AddTag(t ...*Tag) *HostUpdate {
+// AddHostToTag adds the "HostToTag" edges to the Tag entity.
+func (hu *HostUpdate) AddHostToTag(t ...*Tag) *HostUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return hu.AddTagIDs(ids...)
+	return hu.AddHostToTagIDs(ids...)
+}
+
+// AddHostToEnvironmentIDs adds the "HostToEnvironment" edge to the Environment entity by IDs.
+func (hu *HostUpdate) AddHostToEnvironmentIDs(ids ...int) *HostUpdate {
+	hu.mutation.AddHostToEnvironmentIDs(ids...)
+	return hu
+}
+
+// AddHostToEnvironment adds the "HostToEnvironment" edges to the Environment entity.
+func (hu *HostUpdate) AddHostToEnvironment(e ...*Environment) *HostUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return hu.AddHostToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the HostMutation object of the builder.
@@ -206,67 +192,88 @@ func (hu *HostUpdate) Mutation() *HostMutation {
 	return hu.mutation
 }
 
-// ClearDisk clears all "disk" edges to type Disk.
-func (hu *HostUpdate) ClearDisk() *HostUpdate {
-	hu.mutation.ClearDisk()
+// ClearHostToDisk clears all "HostToDisk" edges to the Disk entity.
+func (hu *HostUpdate) ClearHostToDisk() *HostUpdate {
+	hu.mutation.ClearHostToDisk()
 	return hu
 }
 
-// RemoveDiskIDs removes the disk edge to Disk by ids.
-func (hu *HostUpdate) RemoveDiskIDs(ids ...int) *HostUpdate {
-	hu.mutation.RemoveDiskIDs(ids...)
+// RemoveHostToDiskIDs removes the "HostToDisk" edge to Disk entities by IDs.
+func (hu *HostUpdate) RemoveHostToDiskIDs(ids ...int) *HostUpdate {
+	hu.mutation.RemoveHostToDiskIDs(ids...)
 	return hu
 }
 
-// RemoveDisk removes disk edges to Disk.
-func (hu *HostUpdate) RemoveDisk(d ...*Disk) *HostUpdate {
+// RemoveHostToDisk removes "HostToDisk" edges to Disk entities.
+func (hu *HostUpdate) RemoveHostToDisk(d ...*Disk) *HostUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return hu.RemoveDiskIDs(ids...)
+	return hu.RemoveHostToDiskIDs(ids...)
 }
 
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (hu *HostUpdate) ClearMaintainer() *HostUpdate {
-	hu.mutation.ClearMaintainer()
+// ClearHostToUser clears all "HostToUser" edges to the User entity.
+func (hu *HostUpdate) ClearHostToUser() *HostUpdate {
+	hu.mutation.ClearHostToUser()
 	return hu
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (hu *HostUpdate) RemoveMaintainerIDs(ids ...int) *HostUpdate {
-	hu.mutation.RemoveMaintainerIDs(ids...)
+// RemoveHostToUserIDs removes the "HostToUser" edge to User entities by IDs.
+func (hu *HostUpdate) RemoveHostToUserIDs(ids ...int) *HostUpdate {
+	hu.mutation.RemoveHostToUserIDs(ids...)
 	return hu
 }
 
-// RemoveMaintainer removes maintainer edges to User.
-func (hu *HostUpdate) RemoveMaintainer(u ...*User) *HostUpdate {
+// RemoveHostToUser removes "HostToUser" edges to User entities.
+func (hu *HostUpdate) RemoveHostToUser(u ...*User) *HostUpdate {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return hu.RemoveMaintainerIDs(ids...)
+	return hu.RemoveHostToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (hu *HostUpdate) ClearTag() *HostUpdate {
-	hu.mutation.ClearTag()
+// ClearHostToTag clears all "HostToTag" edges to the Tag entity.
+func (hu *HostUpdate) ClearHostToTag() *HostUpdate {
+	hu.mutation.ClearHostToTag()
 	return hu
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (hu *HostUpdate) RemoveTagIDs(ids ...int) *HostUpdate {
-	hu.mutation.RemoveTagIDs(ids...)
+// RemoveHostToTagIDs removes the "HostToTag" edge to Tag entities by IDs.
+func (hu *HostUpdate) RemoveHostToTagIDs(ids ...int) *HostUpdate {
+	hu.mutation.RemoveHostToTagIDs(ids...)
 	return hu
 }
 
-// RemoveTag removes tag edges to Tag.
-func (hu *HostUpdate) RemoveTag(t ...*Tag) *HostUpdate {
+// RemoveHostToTag removes "HostToTag" edges to Tag entities.
+func (hu *HostUpdate) RemoveHostToTag(t ...*Tag) *HostUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return hu.RemoveTagIDs(ids...)
+	return hu.RemoveHostToTagIDs(ids...)
+}
+
+// ClearHostToEnvironment clears all "HostToEnvironment" edges to the Environment entity.
+func (hu *HostUpdate) ClearHostToEnvironment() *HostUpdate {
+	hu.mutation.ClearHostToEnvironment()
+	return hu
+}
+
+// RemoveHostToEnvironmentIDs removes the "HostToEnvironment" edge to Environment entities by IDs.
+func (hu *HostUpdate) RemoveHostToEnvironmentIDs(ids ...int) *HostUpdate {
+	hu.mutation.RemoveHostToEnvironmentIDs(ids...)
+	return hu
+}
+
+// RemoveHostToEnvironment removes "HostToEnvironment" edges to Environment entities.
+func (hu *HostUpdate) RemoveHostToEnvironment(e ...*Environment) *HostUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return hu.RemoveHostToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -428,64 +435,32 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: host.FieldDependsOn,
 		})
 	}
-	if value, ok := hu.mutation.Scripts(); ok {
+	if value, ok := hu.mutation.ProvisionSteps(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if hu.mutation.ScriptsCleared() {
+	if hu.mutation.ProvisionStepsCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if value, ok := hu.mutation.Commands(); ok {
+	if value, ok := hu.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldCommands,
+			Column: host.FieldTags,
 		})
 	}
-	if hu.mutation.CommandsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldCommands,
-		})
-	}
-	if value, ok := hu.mutation.RemoteFiles(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if hu.mutation.RemoteFilesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if value, ok := hu.mutation.DNSRecords(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if hu.mutation.DNSRecordsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if hu.mutation.DiskCleared() {
+	if hu.mutation.HostToDiskCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -496,12 +471,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.RemovedDiskIDs(); len(nodes) > 0 && !hu.mutation.DiskCleared() {
+	if nodes := hu.mutation.RemovedHostToDiskIDs(); len(nodes) > 0 && !hu.mutation.HostToDiskCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -515,12 +490,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.DiskIDs(); len(nodes) > 0 {
+	if nodes := hu.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -534,12 +509,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if hu.mutation.MaintainerCleared() {
+	if hu.mutation.HostToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -550,12 +525,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !hu.mutation.MaintainerCleared() {
+	if nodes := hu.mutation.RemovedHostToUserIDs(); len(nodes) > 0 && !hu.mutation.HostToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -569,12 +544,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := hu.mutation.HostToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -588,12 +563,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if hu.mutation.TagCleared() {
+	if hu.mutation.HostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -604,12 +579,12 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.RemovedTagIDs(); len(nodes) > 0 && !hu.mutation.TagCleared() {
+	if nodes := hu.mutation.RemovedHostToTagIDs(); len(nodes) > 0 && !hu.mutation.HostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -623,17 +598,71 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hu.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := hu.mutation.HostToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if hu.mutation.HostToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hu.mutation.RemovedHostToEnvironmentIDs(); len(nodes) > 0 && !hu.mutation.HostToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hu.mutation.HostToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -660,176 +689,161 @@ type HostUpdateOne struct {
 	mutation *HostMutation
 }
 
-// SetHostname sets the hostname field.
+// SetHostname sets the "hostname" field.
 func (huo *HostUpdateOne) SetHostname(s string) *HostUpdateOne {
 	huo.mutation.SetHostname(s)
 	return huo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (huo *HostUpdateOne) SetDescription(s string) *HostUpdateOne {
 	huo.mutation.SetDescription(s)
 	return huo
 }
 
-// SetOS sets the OS field.
+// SetOS sets the "OS" field.
 func (huo *HostUpdateOne) SetOS(s string) *HostUpdateOne {
 	huo.mutation.SetOS(s)
 	return huo
 }
 
-// SetLastOctet sets the last_octet field.
+// SetLastOctet sets the "last_octet" field.
 func (huo *HostUpdateOne) SetLastOctet(i int) *HostUpdateOne {
 	huo.mutation.ResetLastOctet()
 	huo.mutation.SetLastOctet(i)
 	return huo
 }
 
-// AddLastOctet adds i to last_octet.
+// AddLastOctet adds i to the "last_octet" field.
 func (huo *HostUpdateOne) AddLastOctet(i int) *HostUpdateOne {
 	huo.mutation.AddLastOctet(i)
 	return huo
 }
 
-// SetAllowMACChanges sets the allow_mac_changes field.
+// SetAllowMACChanges sets the "allow_mac_changes" field.
 func (huo *HostUpdateOne) SetAllowMACChanges(b bool) *HostUpdateOne {
 	huo.mutation.SetAllowMACChanges(b)
 	return huo
 }
 
-// SetExposedTCPPorts sets the exposed_tcp_ports field.
+// SetExposedTCPPorts sets the "exposed_tcp_ports" field.
 func (huo *HostUpdateOne) SetExposedTCPPorts(s []string) *HostUpdateOne {
 	huo.mutation.SetExposedTCPPorts(s)
 	return huo
 }
 
-// SetExposedUDPPorts sets the exposed_udp_ports field.
+// SetExposedUDPPorts sets the "exposed_udp_ports" field.
 func (huo *HostUpdateOne) SetExposedUDPPorts(s []string) *HostUpdateOne {
 	huo.mutation.SetExposedUDPPorts(s)
 	return huo
 }
 
-// SetOverridePassword sets the override_password field.
+// SetOverridePassword sets the "override_password" field.
 func (huo *HostUpdateOne) SetOverridePassword(s string) *HostUpdateOne {
 	huo.mutation.SetOverridePassword(s)
 	return huo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (huo *HostUpdateOne) SetVars(m map[string]string) *HostUpdateOne {
 	huo.mutation.SetVars(m)
 	return huo
 }
 
-// SetUserGroups sets the user_groups field.
+// SetUserGroups sets the "user_groups" field.
 func (huo *HostUpdateOne) SetUserGroups(s []string) *HostUpdateOne {
 	huo.mutation.SetUserGroups(s)
 	return huo
 }
 
-// SetDependsOn sets the depends_on field.
-func (huo *HostUpdateOne) SetDependsOn(s []string) *HostUpdateOne {
-	huo.mutation.SetDependsOn(s)
+// SetDependsOn sets the "depends_on" field.
+func (huo *HostUpdateOne) SetDependsOn(m map[string]string) *HostUpdateOne {
+	huo.mutation.SetDependsOn(m)
 	return huo
 }
 
-// ClearDependsOn clears the value of depends_on.
+// ClearDependsOn clears the value of the "depends_on" field.
 func (huo *HostUpdateOne) ClearDependsOn() *HostUpdateOne {
 	huo.mutation.ClearDependsOn()
 	return huo
 }
 
-// SetScripts sets the scripts field.
-func (huo *HostUpdateOne) SetScripts(s []string) *HostUpdateOne {
-	huo.mutation.SetScripts(s)
+// SetProvisionSteps sets the "provision_steps" field.
+func (huo *HostUpdateOne) SetProvisionSteps(s []string) *HostUpdateOne {
+	huo.mutation.SetProvisionSteps(s)
 	return huo
 }
 
-// ClearScripts clears the value of scripts.
-func (huo *HostUpdateOne) ClearScripts() *HostUpdateOne {
-	huo.mutation.ClearScripts()
+// ClearProvisionSteps clears the value of the "provision_steps" field.
+func (huo *HostUpdateOne) ClearProvisionSteps() *HostUpdateOne {
+	huo.mutation.ClearProvisionSteps()
 	return huo
 }
 
-// SetCommands sets the commands field.
-func (huo *HostUpdateOne) SetCommands(s []string) *HostUpdateOne {
-	huo.mutation.SetCommands(s)
+// SetTags sets the "tags" field.
+func (huo *HostUpdateOne) SetTags(m map[string]string) *HostUpdateOne {
+	huo.mutation.SetTags(m)
 	return huo
 }
 
-// ClearCommands clears the value of commands.
-func (huo *HostUpdateOne) ClearCommands() *HostUpdateOne {
-	huo.mutation.ClearCommands()
+// AddHostToDiskIDs adds the "HostToDisk" edge to the Disk entity by IDs.
+func (huo *HostUpdateOne) AddHostToDiskIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.AddHostToDiskIDs(ids...)
 	return huo
 }
 
-// SetRemoteFiles sets the remote_files field.
-func (huo *HostUpdateOne) SetRemoteFiles(s []string) *HostUpdateOne {
-	huo.mutation.SetRemoteFiles(s)
-	return huo
-}
-
-// ClearRemoteFiles clears the value of remote_files.
-func (huo *HostUpdateOne) ClearRemoteFiles() *HostUpdateOne {
-	huo.mutation.ClearRemoteFiles()
-	return huo
-}
-
-// SetDNSRecords sets the dns_records field.
-func (huo *HostUpdateOne) SetDNSRecords(s []string) *HostUpdateOne {
-	huo.mutation.SetDNSRecords(s)
-	return huo
-}
-
-// ClearDNSRecords clears the value of dns_records.
-func (huo *HostUpdateOne) ClearDNSRecords() *HostUpdateOne {
-	huo.mutation.ClearDNSRecords()
-	return huo
-}
-
-// AddDiskIDs adds the disk edge to Disk by ids.
-func (huo *HostUpdateOne) AddDiskIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.AddDiskIDs(ids...)
-	return huo
-}
-
-// AddDisk adds the disk edges to Disk.
-func (huo *HostUpdateOne) AddDisk(d ...*Disk) *HostUpdateOne {
+// AddHostToDisk adds the "HostToDisk" edges to the Disk entity.
+func (huo *HostUpdateOne) AddHostToDisk(d ...*Disk) *HostUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return huo.AddDiskIDs(ids...)
+	return huo.AddHostToDiskIDs(ids...)
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (huo *HostUpdateOne) AddMaintainerIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.AddMaintainerIDs(ids...)
+// AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
+func (huo *HostUpdateOne) AddHostToUserIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.AddHostToUserIDs(ids...)
 	return huo
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (huo *HostUpdateOne) AddMaintainer(u ...*User) *HostUpdateOne {
+// AddHostToUser adds the "HostToUser" edges to the User entity.
+func (huo *HostUpdateOne) AddHostToUser(u ...*User) *HostUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return huo.AddMaintainerIDs(ids...)
+	return huo.AddHostToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (huo *HostUpdateOne) AddTagIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.AddTagIDs(ids...)
+// AddHostToTagIDs adds the "HostToTag" edge to the Tag entity by IDs.
+func (huo *HostUpdateOne) AddHostToTagIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.AddHostToTagIDs(ids...)
 	return huo
 }
 
-// AddTag adds the tag edges to Tag.
-func (huo *HostUpdateOne) AddTag(t ...*Tag) *HostUpdateOne {
+// AddHostToTag adds the "HostToTag" edges to the Tag entity.
+func (huo *HostUpdateOne) AddHostToTag(t ...*Tag) *HostUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return huo.AddTagIDs(ids...)
+	return huo.AddHostToTagIDs(ids...)
+}
+
+// AddHostToEnvironmentIDs adds the "HostToEnvironment" edge to the Environment entity by IDs.
+func (huo *HostUpdateOne) AddHostToEnvironmentIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.AddHostToEnvironmentIDs(ids...)
+	return huo
+}
+
+// AddHostToEnvironment adds the "HostToEnvironment" edges to the Environment entity.
+func (huo *HostUpdateOne) AddHostToEnvironment(e ...*Environment) *HostUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return huo.AddHostToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the HostMutation object of the builder.
@@ -837,70 +851,91 @@ func (huo *HostUpdateOne) Mutation() *HostMutation {
 	return huo.mutation
 }
 
-// ClearDisk clears all "disk" edges to type Disk.
-func (huo *HostUpdateOne) ClearDisk() *HostUpdateOne {
-	huo.mutation.ClearDisk()
+// ClearHostToDisk clears all "HostToDisk" edges to the Disk entity.
+func (huo *HostUpdateOne) ClearHostToDisk() *HostUpdateOne {
+	huo.mutation.ClearHostToDisk()
 	return huo
 }
 
-// RemoveDiskIDs removes the disk edge to Disk by ids.
-func (huo *HostUpdateOne) RemoveDiskIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.RemoveDiskIDs(ids...)
+// RemoveHostToDiskIDs removes the "HostToDisk" edge to Disk entities by IDs.
+func (huo *HostUpdateOne) RemoveHostToDiskIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.RemoveHostToDiskIDs(ids...)
 	return huo
 }
 
-// RemoveDisk removes disk edges to Disk.
-func (huo *HostUpdateOne) RemoveDisk(d ...*Disk) *HostUpdateOne {
+// RemoveHostToDisk removes "HostToDisk" edges to Disk entities.
+func (huo *HostUpdateOne) RemoveHostToDisk(d ...*Disk) *HostUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return huo.RemoveDiskIDs(ids...)
+	return huo.RemoveHostToDiskIDs(ids...)
 }
 
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (huo *HostUpdateOne) ClearMaintainer() *HostUpdateOne {
-	huo.mutation.ClearMaintainer()
+// ClearHostToUser clears all "HostToUser" edges to the User entity.
+func (huo *HostUpdateOne) ClearHostToUser() *HostUpdateOne {
+	huo.mutation.ClearHostToUser()
 	return huo
 }
 
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (huo *HostUpdateOne) RemoveMaintainerIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.RemoveMaintainerIDs(ids...)
+// RemoveHostToUserIDs removes the "HostToUser" edge to User entities by IDs.
+func (huo *HostUpdateOne) RemoveHostToUserIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.RemoveHostToUserIDs(ids...)
 	return huo
 }
 
-// RemoveMaintainer removes maintainer edges to User.
-func (huo *HostUpdateOne) RemoveMaintainer(u ...*User) *HostUpdateOne {
+// RemoveHostToUser removes "HostToUser" edges to User entities.
+func (huo *HostUpdateOne) RemoveHostToUser(u ...*User) *HostUpdateOne {
 	ids := make([]int, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return huo.RemoveMaintainerIDs(ids...)
+	return huo.RemoveHostToUserIDs(ids...)
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (huo *HostUpdateOne) ClearTag() *HostUpdateOne {
-	huo.mutation.ClearTag()
+// ClearHostToTag clears all "HostToTag" edges to the Tag entity.
+func (huo *HostUpdateOne) ClearHostToTag() *HostUpdateOne {
+	huo.mutation.ClearHostToTag()
 	return huo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (huo *HostUpdateOne) RemoveTagIDs(ids ...int) *HostUpdateOne {
-	huo.mutation.RemoveTagIDs(ids...)
+// RemoveHostToTagIDs removes the "HostToTag" edge to Tag entities by IDs.
+func (huo *HostUpdateOne) RemoveHostToTagIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.RemoveHostToTagIDs(ids...)
 	return huo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (huo *HostUpdateOne) RemoveTag(t ...*Tag) *HostUpdateOne {
+// RemoveHostToTag removes "HostToTag" edges to Tag entities.
+func (huo *HostUpdateOne) RemoveHostToTag(t ...*Tag) *HostUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return huo.RemoveTagIDs(ids...)
+	return huo.RemoveHostToTagIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// ClearHostToEnvironment clears all "HostToEnvironment" edges to the Environment entity.
+func (huo *HostUpdateOne) ClearHostToEnvironment() *HostUpdateOne {
+	huo.mutation.ClearHostToEnvironment()
+	return huo
+}
+
+// RemoveHostToEnvironmentIDs removes the "HostToEnvironment" edge to Environment entities by IDs.
+func (huo *HostUpdateOne) RemoveHostToEnvironmentIDs(ids ...int) *HostUpdateOne {
+	huo.mutation.RemoveHostToEnvironmentIDs(ids...)
+	return huo
+}
+
+// RemoveHostToEnvironment removes "HostToEnvironment" edges to Environment entities.
+func (huo *HostUpdateOne) RemoveHostToEnvironment(e ...*Environment) *HostUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return huo.RemoveHostToEnvironmentIDs(ids...)
+}
+
+// Save executes the query and returns the updated Host entity.
 func (huo *HostUpdateOne) Save(ctx context.Context) (*Host, error) {
 	var (
 		err  error
@@ -967,6 +1002,13 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Host.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := huo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := huo.mutation.Hostname(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1057,64 +1099,32 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Column: host.FieldDependsOn,
 		})
 	}
-	if value, ok := huo.mutation.Scripts(); ok {
+	if value, ok := huo.mutation.ProvisionSteps(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if huo.mutation.ScriptsCleared() {
+	if huo.mutation.ProvisionStepsCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
-			Column: host.FieldScripts,
+			Column: host.FieldProvisionSteps,
 		})
 	}
-	if value, ok := huo.mutation.Commands(); ok {
+	if value, ok := huo.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldCommands,
+			Column: host.FieldTags,
 		})
 	}
-	if huo.mutation.CommandsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldCommands,
-		})
-	}
-	if value, ok := huo.mutation.RemoteFiles(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if huo.mutation.RemoteFilesCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldRemoteFiles,
-		})
-	}
-	if value, ok := huo.mutation.DNSRecords(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if huo.mutation.DNSRecordsCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Column: host.FieldDNSRecords,
-		})
-	}
-	if huo.mutation.DiskCleared() {
+	if huo.mutation.HostToDiskCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1125,12 +1135,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.RemovedDiskIDs(); len(nodes) > 0 && !huo.mutation.DiskCleared() {
+	if nodes := huo.mutation.RemovedHostToDiskIDs(); len(nodes) > 0 && !huo.mutation.HostToDiskCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1144,12 +1154,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.DiskIDs(); len(nodes) > 0 {
+	if nodes := huo.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1163,12 +1173,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if huo.mutation.MaintainerCleared() {
+	if huo.mutation.HostToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1179,12 +1189,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !huo.mutation.MaintainerCleared() {
+	if nodes := huo.mutation.RemovedHostToUserIDs(); len(nodes) > 0 && !huo.mutation.HostToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1198,12 +1208,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := huo.mutation.HostToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1217,12 +1227,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if huo.mutation.TagCleared() {
+	if huo.mutation.HostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1233,12 +1243,12 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.RemovedTagIDs(); len(nodes) > 0 && !huo.mutation.TagCleared() {
+	if nodes := huo.mutation.RemovedHostToTagIDs(); len(nodes) > 0 && !huo.mutation.HostToTagCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1252,17 +1262,71 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := huo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := huo.mutation.HostToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Table:   host.HostToTagTable,
+			Columns: []string{host.HostToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if huo.mutation.HostToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := huo.mutation.RemovedHostToEnvironmentIDs(); len(nodes) > 0 && !huo.mutation.HostToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := huo.mutation.HostToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: host.HostToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -1273,7 +1337,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	_node = &Host{config: huo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, huo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{host.Label}

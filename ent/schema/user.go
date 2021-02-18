@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 )
 
 // User holds the schema definition for the User entity.
@@ -14,15 +14,21 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		field.String("uuid"),
-		field.String("email"),
+		field.String("name").
+			StructTag(`hcl:"name,attr"`),
+		field.String("uuid").
+			StructTag(`hcl:"uuid,optional"`),
+		field.String("email").
+			StructTag(`hcl:"email,attr"`),
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.To("UserToTag", Tag.Type),
+		edge.From("UserToEnvironment", Environment.Type).Ref("EnvironmentToUser"),
 	}
 }

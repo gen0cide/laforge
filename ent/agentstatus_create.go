@@ -7,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // AgentStatusCreate is the builder for creating a AgentStatus entity.
@@ -20,103 +21,118 @@ type AgentStatusCreate struct {
 	hooks    []Hook
 }
 
-// SetClientID sets the ClientID field.
+// SetClientID sets the "ClientID" field.
 func (asc *AgentStatusCreate) SetClientID(s string) *AgentStatusCreate {
 	asc.mutation.SetClientID(s)
 	return asc
 }
 
-// SetHostname sets the Hostname field.
+// SetHostname sets the "Hostname" field.
 func (asc *AgentStatusCreate) SetHostname(s string) *AgentStatusCreate {
 	asc.mutation.SetHostname(s)
 	return asc
 }
 
-// SetUpTime sets the UpTime field.
+// SetUpTime sets the "UpTime" field.
 func (asc *AgentStatusCreate) SetUpTime(i int64) *AgentStatusCreate {
 	asc.mutation.SetUpTime(i)
 	return asc
 }
 
-// SetBootTime sets the BootTime field.
+// SetBootTime sets the "BootTime" field.
 func (asc *AgentStatusCreate) SetBootTime(i int64) *AgentStatusCreate {
 	asc.mutation.SetBootTime(i)
 	return asc
 }
 
-// SetNumProcs sets the NumProcs field.
+// SetNumProcs sets the "NumProcs" field.
 func (asc *AgentStatusCreate) SetNumProcs(i int64) *AgentStatusCreate {
 	asc.mutation.SetNumProcs(i)
 	return asc
 }
 
-// SetOs sets the Os field.
+// SetOs sets the "Os" field.
 func (asc *AgentStatusCreate) SetOs(s string) *AgentStatusCreate {
 	asc.mutation.SetOs(s)
 	return asc
 }
 
-// SetHostID sets the HostID field.
+// SetHostID sets the "HostID" field.
 func (asc *AgentStatusCreate) SetHostID(s string) *AgentStatusCreate {
 	asc.mutation.SetHostID(s)
 	return asc
 }
 
-// SetLoad1 sets the Load1 field.
+// SetLoad1 sets the "Load1" field.
 func (asc *AgentStatusCreate) SetLoad1(f float64) *AgentStatusCreate {
 	asc.mutation.SetLoad1(f)
 	return asc
 }
 
-// SetLoad5 sets the Load5 field.
+// SetLoad5 sets the "Load5" field.
 func (asc *AgentStatusCreate) SetLoad5(f float64) *AgentStatusCreate {
 	asc.mutation.SetLoad5(f)
 	return asc
 }
 
-// SetLoad15 sets the Load15 field.
+// SetLoad15 sets the "Load15" field.
 func (asc *AgentStatusCreate) SetLoad15(f float64) *AgentStatusCreate {
 	asc.mutation.SetLoad15(f)
 	return asc
 }
 
-// SetTotalMem sets the TotalMem field.
+// SetTotalMem sets the "TotalMem" field.
 func (asc *AgentStatusCreate) SetTotalMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetTotalMem(i)
 	return asc
 }
 
-// SetFreeMem sets the FreeMem field.
+// SetFreeMem sets the "FreeMem" field.
 func (asc *AgentStatusCreate) SetFreeMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetFreeMem(i)
 	return asc
 }
 
-// SetUsedMem sets the UsedMem field.
+// SetUsedMem sets the "UsedMem" field.
 func (asc *AgentStatusCreate) SetUsedMem(i int64) *AgentStatusCreate {
 	asc.mutation.SetUsedMem(i)
 	return asc
 }
 
-// SetTimestamp sets the Timestamp field.
+// SetTimestamp sets the "Timestamp" field.
 func (asc *AgentStatusCreate) SetTimestamp(i int64) *AgentStatusCreate {
 	asc.mutation.SetTimestamp(i)
 	return asc
 }
 
-// AddHostIDs adds the host edge to ProvisionedHost by ids.
-func (asc *AgentStatusCreate) AddHostIDs(ids ...int) *AgentStatusCreate {
-	asc.mutation.AddHostIDs(ids...)
+// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
+func (asc *AgentStatusCreate) AddAgentStatusToTagIDs(ids ...int) *AgentStatusCreate {
+	asc.mutation.AddAgentStatusToTagIDs(ids...)
 	return asc
 }
 
-// AddHost adds the host edges to ProvisionedHost.
-func (asc *AgentStatusCreate) AddHost(p ...*ProvisionedHost) *AgentStatusCreate {
+// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
+func (asc *AgentStatusCreate) AddAgentStatusToTag(t ...*Tag) *AgentStatusCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return asc.AddAgentStatusToTagIDs(ids...)
+}
+
+// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
+func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusCreate {
+	asc.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
+	return asc
+}
+
+// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
+func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return asc.AddHostIDs(ids...)
+	return asc.AddAgentStatusToProvisionedHostIDs(ids...)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -351,12 +367,31 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 		})
 		_node.Timestamp = value
 	}
-	if nodes := asc.mutation.HostIDs(); len(nodes) > 0 {
+	if nodes := asc.mutation.AgentStatusToTagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToTagTable,
+			Columns: []string{agentstatus.AgentStatusToTagColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := asc.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   agentstatus.HostTable,
-			Columns: agentstatus.HostPrimaryKey,
+			Table:   agentstatus.AgentStatusToProvisionedHostTable,
+			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -373,7 +408,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	return _node, _spec
 }
 
-// AgentStatusCreateBulk is the builder for creating a bulk of AgentStatus entities.
+// AgentStatusCreateBulk is the builder for creating many AgentStatus entities in bulk.
 type AgentStatusCreateBulk struct {
 	config
 	builders []*AgentStatusCreate
@@ -430,7 +465,7 @@ func (ascb *AgentStatusCreateBulk) Save(ctx context.Context) ([]*AgentStatus, er
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ascb *AgentStatusCreateBulk) SaveX(ctx context.Context) []*AgentStatus {
 	v, err := ascb.Save(ctx)
 	if err != nil {

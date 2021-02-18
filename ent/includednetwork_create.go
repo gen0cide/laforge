@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -21,40 +21,40 @@ type IncludedNetworkCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (inc *IncludedNetworkCreate) SetName(s string) *IncludedNetworkCreate {
 	inc.mutation.SetName(s)
 	return inc
 }
 
-// SetHosts sets the hosts field.
+// SetHosts sets the "hosts" field.
 func (inc *IncludedNetworkCreate) SetHosts(s []string) *IncludedNetworkCreate {
 	inc.mutation.SetHosts(s)
 	return inc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (inc *IncludedNetworkCreate) AddTagIDs(ids ...int) *IncludedNetworkCreate {
-	inc.mutation.AddTagIDs(ids...)
+// AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by IDs.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkCreate {
+	inc.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inc
 }
 
-// AddTag adds the tag edges to Tag.
-func (inc *IncludedNetworkCreate) AddTag(t ...*Tag) *IncludedNetworkCreate {
+// AddIncludedNetworkToTag adds the "IncludedNetworkToTag" edges to the Tag entity.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return inc.AddTagIDs(ids...)
+	return inc.AddIncludedNetworkToTagIDs(ids...)
 }
 
-// AddIncludedNetworkToEnvironmentIDs adds the IncludedNetworkToEnvironment edge to Environment by ids.
+// AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
 func (inc *IncludedNetworkCreate) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkCreate {
 	inc.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
 	return inc
 }
 
-// AddIncludedNetworkToEnvironment adds the IncludedNetworkToEnvironment edges to Environment.
+// AddIncludedNetworkToEnvironment adds the "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inc *IncludedNetworkCreate) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkCreate {
 	ids := make([]int, len(e))
 	for i := range e {
@@ -163,12 +163,12 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 		})
 		_node.Hosts = value
 	}
-	if nodes := inc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := inc.mutation.IncludedNetworkToTagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   includednetwork.TagTable,
-			Columns: []string{includednetwork.TagColumn},
+			Table:   includednetwork.IncludedNetworkToTagTable,
+			Columns: []string{includednetwork.IncludedNetworkToTagColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -204,7 +204,7 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 	return _node, _spec
 }
 
-// IncludedNetworkCreateBulk is the builder for creating a bulk of IncludedNetwork entities.
+// IncludedNetworkCreateBulk is the builder for creating many IncludedNetwork entities in bulk.
 type IncludedNetworkCreateBulk struct {
 	config
 	builders []*IncludedNetworkCreate
@@ -261,7 +261,7 @@ func (incb *IncludedNetworkCreateBulk) Save(ctx context.Context) ([]*IncludedNet
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (incb *IncludedNetworkCreateBulk) SaveX(ctx context.Context) []*IncludedNetwork {
 	v, err := incb.Save(ctx)
 	if err != nil {

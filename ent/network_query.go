@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -24,9 +24,10 @@ type NetworkQuery struct {
 	limit      *int
 	offset     *int
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Network
 	// eager-loading edges.
-	withTag                  *TagQuery
+	withNetworkToTag         *TagQuery
 	withNetworkToEnvironment *EnvironmentQuery
 	withFKs                  bool
 	// intermediate query (i.e. traversal path).
@@ -34,7 +35,7 @@ type NetworkQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the NetworkQuery builder.
 func (nq *NetworkQuery) Where(ps ...predicate.Network) *NetworkQuery {
 	nq.predicates = append(nq.predicates, ps...)
 	return nq
@@ -58,21 +59,21 @@ func (nq *NetworkQuery) Order(o ...OrderFunc) *NetworkQuery {
 	return nq
 }
 
-// QueryTag chains the current query on the tag edge.
-func (nq *NetworkQuery) QueryTag() *TagQuery {
+// QueryNetworkToTag chains the current query on the "NetworkToTag" edge.
+func (nq *NetworkQuery) QueryNetworkToTag() *TagQuery {
 	query := &TagQuery{config: nq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := nq.sqlQuery()
+		selector := nq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, network.TagTable, network.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, network.NetworkToTagTable, network.NetworkToTagColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -80,14 +81,14 @@ func (nq *NetworkQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// QueryNetworkToEnvironment chains the current query on the NetworkToEnvironment edge.
+// QueryNetworkToEnvironment chains the current query on the "NetworkToEnvironment" edge.
 func (nq *NetworkQuery) QueryNetworkToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: nq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := nq.sqlQuery()
+		selector := nq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -102,7 +103,8 @@ func (nq *NetworkQuery) QueryNetworkToEnvironment() *EnvironmentQuery {
 	return query
 }
 
-// First returns the first Network entity in the query. Returns *NotFoundError when no network was found.
+// First returns the first Network entity from the query.
+// Returns a *NotFoundError when no Network was found.
 func (nq *NetworkQuery) First(ctx context.Context) (*Network, error) {
 	nodes, err := nq.Limit(1).All(ctx)
 	if err != nil {
@@ -123,7 +125,8 @@ func (nq *NetworkQuery) FirstX(ctx context.Context) *Network {
 	return node
 }
 
-// FirstID returns the first Network id in the query. Returns *NotFoundError when no id was found.
+// FirstID returns the first Network ID from the query.
+// Returns a *NotFoundError when no Network ID was found.
 func (nq *NetworkQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = nq.Limit(1).IDs(ctx); err != nil {
@@ -145,7 +148,9 @@ func (nq *NetworkQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Network entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Network entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Network entity is not found.
+// Returns a *NotFoundError when no Network entities are found.
 func (nq *NetworkQuery) Only(ctx context.Context) (*Network, error) {
 	nodes, err := nq.Limit(2).All(ctx)
 	if err != nil {
@@ -170,7 +175,9 @@ func (nq *NetworkQuery) OnlyX(ctx context.Context) *Network {
 	return node
 }
 
-// OnlyID returns the only Network id in the query, returns an error if not exactly one id was returned.
+// OnlyID is like Only, but returns the only Network ID in the query.
+// Returns a *NotSingularError when exactly one Network ID is not found.
+// Returns a *NotFoundError when no entities are found.
 func (nq *NetworkQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = nq.Limit(2).IDs(ctx); err != nil {
@@ -213,7 +220,7 @@ func (nq *NetworkQuery) AllX(ctx context.Context) []*Network {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Network ids.
+// IDs executes the query and returns a list of Network IDs.
 func (nq *NetworkQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
 	if err := nq.Select(network.FieldID).Scan(ctx, &ids); err != nil {
@@ -265,7 +272,7 @@ func (nq *NetworkQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the NetworkQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (nq *NetworkQuery) Clone() *NetworkQuery {
 	if nq == nil {
@@ -277,7 +284,7 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 		offset:                   nq.offset,
 		order:                    append([]OrderFunc{}, nq.order...),
 		predicates:               append([]predicate.Network{}, nq.predicates...),
-		withTag:                  nq.withTag.Clone(),
+		withNetworkToTag:         nq.withNetworkToTag.Clone(),
 		withNetworkToEnvironment: nq.withNetworkToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  nq.sql.Clone(),
@@ -285,19 +292,19 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 	}
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (nq *NetworkQuery) WithTag(opts ...func(*TagQuery)) *NetworkQuery {
+// WithNetworkToTag tells the query-builder to eager-load the nodes that are connected to
+// the "NetworkToTag" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NetworkQuery) WithNetworkToTag(opts ...func(*TagQuery)) *NetworkQuery {
 	query := &TagQuery{config: nq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	nq.withTag = query
+	nq.withNetworkToTag = query
 	return nq
 }
 
-//  WithNetworkToEnvironment tells the query-builder to eager-loads the nodes that are connected to
-// the "NetworkToEnvironment" edge. The optional arguments used to configure the query builder of the edge.
+// WithNetworkToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "NetworkToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NetworkQuery) WithNetworkToEnvironment(opts ...func(*EnvironmentQuery)) *NetworkQuery {
 	query := &EnvironmentQuery{config: nq.config}
 	for _, opt := range opts {
@@ -307,13 +314,13 @@ func (nq *NetworkQuery) WithNetworkToEnvironment(opts ...func(*EnvironmentQuery)
 	return nq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -329,17 +336,18 @@ func (nq *NetworkQuery) GroupBy(field string, fields ...string) *NetworkGroupBy 
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return nq.sqlQuery(), nil
+		return nq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name,omitempty" hcl:"name,attr"`
 //	}
 //
 //	client.Network.Query().
@@ -347,18 +355,16 @@ func (nq *NetworkQuery) GroupBy(field string, fields ...string) *NetworkGroupBy 
 //		Scan(ctx, &v)
 //
 func (nq *NetworkQuery) Select(field string, fields ...string) *NetworkSelect {
-	selector := &NetworkSelect{config: nq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := nq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return nq.sqlQuery(), nil
-	}
-	return selector
+	nq.fields = append([]string{field}, fields...)
+	return &NetworkSelect{NetworkQuery: nq}
 }
 
 func (nq *NetworkQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range nq.fields {
+		if !network.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if nq.path != nil {
 		prev, err := nq.path(ctx)
 		if err != nil {
@@ -375,29 +381,25 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
 		loadedTypes = [2]bool{
-			nq.withTag != nil,
+			nq.withNetworkToTag != nil,
 			nq.withNetworkToEnvironment != nil,
 		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, network.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Network{config: nq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, nq.driver, _spec); err != nil {
 		return nil, err
@@ -406,32 +408,32 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		return nodes, nil
 	}
 
-	if query := nq.withTag; query != nil {
+	if query := nq.withNetworkToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Network)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			nodes[i].Edges.NetworkToTag = []*Tag{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(network.TagColumn, fks...))
+			s.Where(sql.InValues(network.NetworkToTagColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.network_tag
+			fk := n.network_network_to_tag
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "network_tag" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "network_network_to_tag" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "network_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "network_network_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			node.Edges.NetworkToTag = append(node.Edges.NetworkToTag, n)
 		}
 	}
 
@@ -528,6 +530,15 @@ func (nq *NetworkQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   nq.sql,
 		Unique: true,
 	}
+	if fields := nq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, network.FieldID)
+		for i := range fields {
+			if fields[i] != network.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
+	}
 	if ps := nq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -551,7 +562,7 @@ func (nq *NetworkQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (nq *NetworkQuery) sqlQuery() *sql.Selector {
+func (nq *NetworkQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nq.driver.Dialect())
 	t1 := builder.Table(network.Table)
 	selector := builder.Select(t1.Columns(network.Columns...)...).From(t1)
@@ -576,7 +587,7 @@ func (nq *NetworkQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// NetworkGroupBy is the builder for group-by Network entities.
+// NetworkGroupBy is the group-by builder for Network entities.
 type NetworkGroupBy struct {
 	config
 	fields []string
@@ -592,7 +603,7 @@ func (ngb *NetworkGroupBy) Aggregate(fns ...AggregateFunc) *NetworkGroupBy {
 	return ngb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (ngb *NetworkGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := ngb.path(ctx)
 	if err != nil {
@@ -609,7 +620,8 @@ func (ngb *NetworkGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(ngb.fields) > 1 {
 		return nil, errors.New("ent: NetworkGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -630,7 +642,8 @@ func (ngb *NetworkGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ngb.Strings(ctx); err != nil {
@@ -656,7 +669,8 @@ func (ngb *NetworkGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(ngb.fields) > 1 {
 		return nil, errors.New("ent: NetworkGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -677,7 +691,8 @@ func (ngb *NetworkGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ngb.Ints(ctx); err != nil {
@@ -703,7 +718,8 @@ func (ngb *NetworkGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ngb.fields) > 1 {
 		return nil, errors.New("ent: NetworkGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -724,7 +740,8 @@ func (ngb *NetworkGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ngb.Float64s(ctx); err != nil {
@@ -750,7 +767,8 @@ func (ngb *NetworkGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(ngb.fields) > 1 {
 		return nil, errors.New("ent: NetworkGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -771,7 +789,8 @@ func (ngb *NetworkGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (ngb *NetworkGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ngb.Bools(ctx); err != nil {
@@ -826,22 +845,19 @@ func (ngb *NetworkGroupBy) sqlQuery() *sql.Selector {
 	return selector.Select(columns...).GroupBy(ngb.fields...)
 }
 
-// NetworkSelect is the builder for select fields of Network entities.
+// NetworkSelect is the builder for selecting fields of Network entities.
 type NetworkSelect struct {
-	config
-	fields []string
+	*NetworkQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ns *NetworkSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ns.path(ctx)
-	if err != nil {
+	if err := ns.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ns.sql = query
+	ns.sql = ns.NetworkQuery.sqlQuery(ctx)
 	return ns.sqlScan(ctx, v)
 }
 
@@ -852,7 +868,7 @@ func (ns *NetworkSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ns.fields) > 1 {
 		return nil, errors.New("ent: NetworkSelect.Strings is not achievable when selecting more than 1 field")
@@ -873,7 +889,7 @@ func (ns *NetworkSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ns.Strings(ctx); err != nil {
@@ -899,7 +915,7 @@ func (ns *NetworkSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ns.fields) > 1 {
 		return nil, errors.New("ent: NetworkSelect.Ints is not achievable when selecting more than 1 field")
@@ -920,7 +936,7 @@ func (ns *NetworkSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ns.Ints(ctx); err != nil {
@@ -946,7 +962,7 @@ func (ns *NetworkSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ns.fields) > 1 {
 		return nil, errors.New("ent: NetworkSelect.Float64s is not achievable when selecting more than 1 field")
@@ -967,7 +983,7 @@ func (ns *NetworkSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ns.Float64s(ctx); err != nil {
@@ -993,7 +1009,7 @@ func (ns *NetworkSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ns.fields) > 1 {
 		return nil, errors.New("ent: NetworkSelect.Bools is not achievable when selecting more than 1 field")
@@ -1014,7 +1030,7 @@ func (ns *NetworkSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ns *NetworkSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ns.Bools(ctx); err != nil {
@@ -1041,11 +1057,6 @@ func (ns *NetworkSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ns *NetworkSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ns.fields {
-		if !network.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
 	query, args := ns.sqlQuery().Query()
 	if err := ns.driver.Query(ctx, query, args, rows); err != nil {
