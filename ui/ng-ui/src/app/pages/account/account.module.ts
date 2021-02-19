@@ -8,6 +8,10 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
 import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDividerModule } from '@angular/material/divider';
 
 const routes: Routes = [
   {
@@ -24,8 +28,12 @@ const routes: Routes = [
     ViewComponentsModule,
     MatCardModule,
     MatTableModule,
-    MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
+    MatChipsModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatDividerModule,
+    MatButtonModule
   ]
 })
 export class AccountModule {}

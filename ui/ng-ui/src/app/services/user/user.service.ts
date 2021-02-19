@@ -24,6 +24,10 @@ export class UserService {
     window.location.reload(); // reload window to reset them to auth screen
   }
 
+  public me(): User {
+    return this.user;
+  }
+
   public updateUser(user: User) {
     // TODO: update the user in the DB with new details
   }

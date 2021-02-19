@@ -1,1 +1,48 @@
-<p>account works!</p>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Account - FIRST_NAME LAST_NAME</mat-card-title>
+    <mat-card-subtitle>
+      <mat-chip-list>
+        <mat-chip color="primary" selected disableRipple>Role 1</mat-chip>
+        <mat-chip color="secondary" selected disableRipple>Role 2</mat-chip>
+        <mat-chip color="accent" selected disableRipple>Role 3</mat-chip>
+        <mat-chip color="warn" selected disableRipple>Role 4</mat-chip>
+      </mat-chip-list>
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-divider></mat-divider>
+  <mat-card-content>
+    <form class="user-form" (submit)="onSubmitChanges($event)">
+      <mat-form-field appearance="fill">
+        <mat-label>First Name</mat-label>
+        <input matInput type="text" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Last Name</mat-label>
+        <input matInput type="text" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Phone Number</mat-label>
+        <input matInput type="tel" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Company</mat-label>
+        <input matInput type="text" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Occupation</mat-label>
+        <input matInput type="text" />
+      </mat-form-field>
+      <div class="break"></div>
+      <button color="primary" mat-flat-button>Save Changes</button>
+    </form>
+  </mat-card-content>
+</mat-card>
