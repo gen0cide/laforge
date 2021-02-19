@@ -26,7 +26,7 @@ type Competition struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
-	Edges CompetitionEdges `hcl:"edges,block" json:"edges"`
+	Edges CompetitionEdges `json:"edges"`
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
