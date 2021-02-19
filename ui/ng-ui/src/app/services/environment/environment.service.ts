@@ -30,6 +30,7 @@ export class EnvironmentService {
   }
 
   public setCurrentEnv(id: ID): void {
+    localStorage.setItem('selected_env', `${id}`);
     this.pullEnvironment(id);
   }
 
@@ -93,7 +94,12 @@ export class EnvironmentService {
   }
 
   private initEnvironments() {
-    this.api.pullEnvironments().then((envs) => this.environments.next(envs));
+    this.api.pullEnvironments().then((envs) => {
+      this.environments.next(envs);
+      if (localStorage.getItem('selected_env')) {
+        this.setCurrentEnv(localStorage.getItem('selected_env'));
+      }
+    });
   }
 
   private pullEnvironment(id: ID) {
