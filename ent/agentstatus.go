@@ -46,6 +46,14 @@ type AgentStatus struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentStatusQuery when eager-loading is set.
 	Edges AgentStatusEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// AgentStatusToTag holds the value of the AgentStatusToTag edge.
+	HCLAgentStatusToTag []*Tag `json:"AgentStatusToTag,omitempty"`
+	// AgentStatusToProvisionedHost holds the value of the AgentStatusToProvisionedHost edge.
+	HCLAgentStatusToProvisionedHost []*ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
+	//
+
 }
 
 // AgentStatusEdges holds the relations/edges for other nodes in the graph.

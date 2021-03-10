@@ -27,6 +27,12 @@ func (fdu *FileDownloadUpdate) Where(ps ...predicate.FileDownload) *FileDownload
 	return fdu
 }
 
+// SetHclID sets the "hcl_id" field.
+func (fdu *FileDownloadUpdate) SetHclID(s string) *FileDownloadUpdate {
+	fdu.mutation.SetHclID(s)
+	return fdu
+}
+
 // SetSourceType sets the "source_type" field.
 func (fdu *FileDownloadUpdate) SetSourceType(s string) *FileDownloadUpdate {
 	fdu.mutation.SetSourceType(s)
@@ -191,6 +197,13 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := fdu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedownload.FieldHclID,
+		})
+	}
 	if value, ok := fdu.mutation.SourceType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -324,6 +337,12 @@ type FileDownloadUpdateOne struct {
 	config
 	hooks    []Hook
 	mutation *FileDownloadMutation
+}
+
+// SetHclID sets the "hcl_id" field.
+func (fduo *FileDownloadUpdateOne) SetHclID(s string) *FileDownloadUpdateOne {
+	fduo.mutation.SetHclID(s)
+	return fduo
 }
 
 // SetSourceType sets the "source_type" field.
@@ -494,6 +513,13 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := fduo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedownload.FieldHclID,
+		})
 	}
 	if value, ok := fduo.mutation.SourceType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

@@ -7,6 +7,8 @@ const (
 	Label = "file_download"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldSourceType holds the string denoting the source_type field in the database.
 	FieldSourceType = "source_type"
 	// FieldSource holds the string denoting the source field in the database.
@@ -43,6 +45,7 @@ const (
 // Columns holds all SQL columns for filedownload fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldSourceType,
 	FieldSource,
 	FieldDestination,

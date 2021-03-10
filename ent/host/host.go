@@ -7,6 +7,8 @@ const (
 	Label = "host"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldHostname holds the string denoting the hostname field in the database.
 	FieldHostname = "hostname"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -15,6 +17,8 @@ const (
 	FieldOS = "os"
 	// FieldLastOctet holds the string denoting the last_octet field in the database.
 	FieldLastOctet = "last_octet"
+	// FieldInstanceSize holds the string denoting the instance_size field in the database.
+	FieldInstanceSize = "instance_size"
 	// FieldAllowMACChanges holds the string denoting the allow_mac_changes field in the database.
 	FieldAllowMACChanges = "allow_mac_changes"
 	// FieldExposedTCPPorts holds the string denoting the exposed_tcp_ports field in the database.
@@ -27,8 +31,6 @@ const (
 	FieldVars = "vars"
 	// FieldUserGroups holds the string denoting the user_groups field in the database.
 	FieldUserGroups = "user_groups"
-	// FieldDependsOn holds the string denoting the depends_on field in the database.
-	FieldDependsOn = "depends_on"
 	// FieldProvisionSteps holds the string denoting the provision_steps field in the database.
 	FieldProvisionSteps = "provision_steps"
 	// FieldTags holds the string denoting the tags field in the database.
@@ -42,6 +44,8 @@ const (
 	EdgeHostToTag = "HostToTag"
 	// EdgeHostToEnvironment holds the string denoting the hosttoenvironment edge name in mutations.
 	EdgeHostToEnvironment = "HostToEnvironment"
+	// EdgeHostToHostDependency holds the string denoting the hosttohostdependency edge name in mutations.
+	EdgeHostToHostDependency = "HostToHostDependency"
 
 	// Table holds the table name of the host in the database.
 	Table = "hosts"
@@ -71,22 +75,28 @@ const (
 	// HostToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	HostToEnvironmentInverseTable = "environments"
+	// HostToHostDependencyTable is the table the holds the HostToHostDependency relation/edge. The primary key declared below.
+	HostToHostDependencyTable = "host_dependency_HostDependencyToHost"
+	// HostToHostDependencyInverseTable is the table name for the HostDependency entity.
+	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
+	HostToHostDependencyInverseTable = "host_dependencies"
 )
 
 // Columns holds all SQL columns for host fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldHostname,
 	FieldDescription,
 	FieldOS,
 	FieldLastOctet,
+	FieldInstanceSize,
 	FieldAllowMACChanges,
 	FieldExposedTCPPorts,
 	FieldExposedUDPPorts,
 	FieldOverridePassword,
 	FieldVars,
 	FieldUserGroups,
-	FieldDependsOn,
 	FieldProvisionSteps,
 	FieldTags,
 }
@@ -101,6 +111,9 @@ var (
 	// HostToEnvironmentPrimaryKey and HostToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the HostToEnvironment relation (M2M).
 	HostToEnvironmentPrimaryKey = []string{"environment_id", "host_id"}
+	// HostToHostDependencyPrimaryKey and HostToHostDependencyColumn2 are the table columns denoting the
+	// primary key for the HostToHostDependency relation (M2M).
+	HostToHostDependencyPrimaryKey = []string{"host_dependency_id", "host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

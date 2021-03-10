@@ -25,7 +25,14 @@ type User struct {
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges                   UserEdges `json:"edges"`
+	Edges UserEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// UserToTag holds the value of the UserToTag edge.
+	HCLUserToTag []*Tag `json:"UserToTag,omitempty"`
+	// UserToEnvironment holds the value of the UserToEnvironment edge.
+	HCLUserToEnvironment []*Environment `json:"UserToEnvironment,omitempty"`
+	//
 	build_build_to_user     *int
 	command_command_to_user *int
 	finding_finding_to_user *int

@@ -27,6 +27,16 @@ type Competition struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompetitionQuery when eager-loading is set.
 	Edges CompetitionEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// CompetitionToTag holds the value of the CompetitionToTag edge.
+	HCLCompetitionToTag []*Tag `json:"CompetitionToTag,omitempty"`
+	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
+	HCLCompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
+	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
+	HCLCompetitionToEnvironment []*Environment `json:"CompetitionToEnvironment,omitempty"`
+	//
+
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.

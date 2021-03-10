@@ -19,7 +19,12 @@ type Disk struct {
 	Size int `json:"size,omitempty" hcl:"size,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiskQuery when eager-loading is set.
-	Edges             DiskEdges `json:"edges"`
+	Edges DiskEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// DiskToTag holds the value of the DiskToTag edge.
+	HCLDiskToTag []*Tag `json:"DiskToTag,omitempty"`
+	//
 	host_host_to_disk *int
 }
 

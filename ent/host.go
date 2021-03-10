@@ -16,6 +16,8 @@ type Host struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Hostname holds the value of the "hostname" field.
 	Hostname string `json:"hostname,omitempty" hcl:"hostname,attr"`
 	// Description holds the value of the "description" field.
@@ -24,6 +26,8 @@ type Host struct {
 	OS string `json:"OS,omitempty" hcl:"os,attr"`
 	// LastOctet holds the value of the "last_octet" field.
 	LastOctet int `json:"last_octet,omitempty" hcl:"last_octet,attr"`
+	// InstanceSize holds the value of the "instance_size" field.
+	InstanceSize string `json:"instance_size,omitempty" hcl:"instance_size,attr"`
 	// AllowMACChanges holds the value of the "allow_mac_changes" field.
 	AllowMACChanges bool `json:"allow_mac_changes,omitempty" hcl:"allow_mac_changes,optional"`
 	// ExposedTCPPorts holds the value of the "exposed_tcp_ports" field.
@@ -36,15 +40,26 @@ type Host struct {
 	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// UserGroups holds the value of the "user_groups" field.
 	UserGroups []string `json:"user_groups,omitempty" hcl:"user_groups,optional"`
-	// DependsOn holds the value of the "depends_on" field.
-	DependsOn map[string]string `json:"depends_on,omitempty" hcl:"depends_on,optional"`
 	// ProvisionSteps holds the value of the "provision_steps" field.
 	ProvisionSteps []string `json:"provision_steps,omitempty" hcl:"provision_steps,optional"`
 	// Tags holds the value of the "tags" field.
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HostQuery when eager-loading is set.
-	Edges                                     HostEdges `json:"edges"`
+	Edges HostEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// HostToDisk holds the value of the HostToDisk edge.
+	HCLHostToDisk []*Disk `json:"HostToDisk,omitempty" hcl:"disk,block"`
+	// HostToUser holds the value of the HostToUser edge.
+	HCLHostToUser []*User `json:"HostToUser,omitempty" hcl:"maintainer,block"`
+	// HostToTag holds the value of the HostToTag edge.
+	HCLHostToTag []*Tag `json:"HostToTag,omitempty"`
+	// HostToEnvironment holds the value of the HostToEnvironment edge.
+	HCLHostToEnvironment []*Environment `json:"HostToEnvironment,omitempty"`
+	// HostToHostDependency holds the value of the HostToHostDependency edge.
+	HCLHostToHostDependency []*HostDependency `json:"HostToHostDependency,omitempty" hcl:"depends_on,block"`
+	//
 	finding_finding_to_host                   *int
 	provisioned_host_provisioned_host_to_host *int
 }
@@ -59,9 +74,11 @@ type HostEdges struct {
 	HostToTag []*Tag `json:"HostToTag,omitempty"`
 	// HostToEnvironment holds the value of the HostToEnvironment edge.
 	HostToEnvironment []*Environment `json:"HostToEnvironment,omitempty"`
+	// HostToHostDependency holds the value of the HostToHostDependency edge.
+	HostToHostDependency []*HostDependency `json:"HostToHostDependency,omitempty" hcl:"depends_on,block"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // HostToDiskOrErr returns the HostToDisk value or an error if the edge
@@ -100,18 +117,27 @@ func (e HostEdges) HostToEnvironmentOrErr() ([]*Environment, error) {
 	return nil, &NotLoadedError{edge: "HostToEnvironment"}
 }
 
+// HostToHostDependencyOrErr returns the HostToHostDependency value or an error if the edge
+// was not loaded in eager-loading.
+func (e HostEdges) HostToHostDependencyOrErr() ([]*HostDependency, error) {
+	if e.loadedTypes[4] {
+		return e.HostToHostDependency, nil
+	}
+	return nil, &NotLoadedError{edge: "HostToHostDependency"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Host) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case host.FieldExposedTCPPorts, host.FieldExposedUDPPorts, host.FieldVars, host.FieldUserGroups, host.FieldDependsOn, host.FieldProvisionSteps, host.FieldTags:
+		case host.FieldExposedTCPPorts, host.FieldExposedUDPPorts, host.FieldVars, host.FieldUserGroups, host.FieldProvisionSteps, host.FieldTags:
 			values[i] = &[]byte{}
 		case host.FieldAllowMACChanges:
 			values[i] = &sql.NullBool{}
 		case host.FieldID, host.FieldLastOctet:
 			values[i] = &sql.NullInt64{}
-		case host.FieldHostname, host.FieldDescription, host.FieldOS, host.FieldOverridePassword:
+		case host.FieldHclID, host.FieldHostname, host.FieldDescription, host.FieldOS, host.FieldInstanceSize, host.FieldOverridePassword:
 			values[i] = &sql.NullString{}
 		case host.ForeignKeys[0]: // finding_finding_to_host
 			values[i] = &sql.NullInt64{}
@@ -138,6 +164,12 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			h.ID = int(value.Int64)
+		case host.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				h.HclID = value.String
+			}
 		case host.FieldHostname:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hostname", values[i])
@@ -161,6 +193,12 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field last_octet", values[i])
 			} else if value.Valid {
 				h.LastOctet = int(value.Int64)
+			}
+		case host.FieldInstanceSize:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_size", values[i])
+			} else if value.Valid {
+				h.InstanceSize = value.String
 			}
 		case host.FieldAllowMACChanges:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -208,15 +246,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.UserGroups); err != nil {
 					return fmt.Errorf("unmarshal field user_groups: %v", err)
-				}
-			}
-		case host.FieldDependsOn:
-
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field depends_on", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &h.DependsOn); err != nil {
-					return fmt.Errorf("unmarshal field depends_on: %v", err)
 				}
 			}
 		case host.FieldProvisionSteps:
@@ -276,6 +305,11 @@ func (h *Host) QueryHostToEnvironment() *EnvironmentQuery {
 	return (&HostClient{config: h.config}).QueryHostToEnvironment(h)
 }
 
+// QueryHostToHostDependency queries the "HostToHostDependency" edge of the Host entity.
+func (h *Host) QueryHostToHostDependency() *HostDependencyQuery {
+	return (&HostClient{config: h.config}).QueryHostToHostDependency(h)
+}
+
 // Update returns a builder for updating this Host.
 // Note that you need to call Host.Unwrap() before calling this method if this Host
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -299,6 +333,8 @@ func (h *Host) String() string {
 	var builder strings.Builder
 	builder.WriteString("Host(")
 	builder.WriteString(fmt.Sprintf("id=%v", h.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(h.HclID)
 	builder.WriteString(", hostname=")
 	builder.WriteString(h.Hostname)
 	builder.WriteString(", description=")
@@ -307,6 +343,8 @@ func (h *Host) String() string {
 	builder.WriteString(h.OS)
 	builder.WriteString(", last_octet=")
 	builder.WriteString(fmt.Sprintf("%v", h.LastOctet))
+	builder.WriteString(", instance_size=")
+	builder.WriteString(h.InstanceSize)
 	builder.WriteString(", allow_mac_changes=")
 	builder.WriteString(fmt.Sprintf("%v", h.AllowMACChanges))
 	builder.WriteString(", exposed_tcp_ports=")
@@ -319,8 +357,6 @@ func (h *Host) String() string {
 	builder.WriteString(fmt.Sprintf("%v", h.Vars))
 	builder.WriteString(", user_groups=")
 	builder.WriteString(fmt.Sprintf("%v", h.UserGroups))
-	builder.WriteString(", depends_on=")
-	builder.WriteString(fmt.Sprintf("%v", h.DependsOn))
 	builder.WriteString(", provision_steps=")
 	builder.WriteString(fmt.Sprintf("%v", h.ProvisionSteps))
 	builder.WriteString(", tags=")

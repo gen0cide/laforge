@@ -22,6 +22,12 @@ type ScriptCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the "hcl_id" field.
+func (sc *ScriptCreate) SetHclID(s string) *ScriptCreate {
+	sc.mutation.SetHclID(s)
+	return sc
+}
+
 // SetName sets the "name" field.
 func (sc *ScriptCreate) SetName(s string) *ScriptCreate {
 	sc.mutation.SetName(s)
@@ -196,6 +202,9 @@ func (sc *ScriptCreate) SaveX(ctx context.Context) *Script {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ScriptCreate) check() error {
+	if _, ok := sc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
@@ -262,6 +271,14 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := sc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

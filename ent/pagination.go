@@ -27,6 +27,7 @@ import (
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -3241,6 +3242,236 @@ func (h *Host) ToEdge(order *HostOrder) *HostEdge {
 	return &HostEdge{
 		Node:   h,
 		Cursor: order.Field.toCursor(h),
+	}
+}
+
+// HostDependencyEdge is the edge representation of HostDependency.
+type HostDependencyEdge struct {
+	Node   *HostDependency `json:"node"`
+	Cursor Cursor          `json:"cursor"`
+}
+
+// HostDependencyConnection is the connection containing edges to HostDependency.
+type HostDependencyConnection struct {
+	Edges      []*HostDependencyEdge `json:"edges"`
+	PageInfo   PageInfo              `json:"pageInfo"`
+	TotalCount int                   `json:"totalCount"`
+}
+
+// HostDependencyPaginateOption enables pagination customization.
+type HostDependencyPaginateOption func(*hostDependencyPager) error
+
+// WithHostDependencyOrder configures pagination ordering.
+func WithHostDependencyOrder(order *HostDependencyOrder) HostDependencyPaginateOption {
+	if order == nil {
+		order = DefaultHostDependencyOrder
+	}
+	o := *order
+	return func(pager *hostDependencyPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultHostDependencyOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithHostDependencyFilter configures pagination filter.
+func WithHostDependencyFilter(filter func(*HostDependencyQuery) (*HostDependencyQuery, error)) HostDependencyPaginateOption {
+	return func(pager *hostDependencyPager) error {
+		if filter == nil {
+			return errors.New("HostDependencyQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type hostDependencyPager struct {
+	order  *HostDependencyOrder
+	filter func(*HostDependencyQuery) (*HostDependencyQuery, error)
+}
+
+func newHostDependencyPager(opts []HostDependencyPaginateOption) (*hostDependencyPager, error) {
+	pager := &hostDependencyPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultHostDependencyOrder
+	}
+	return pager, nil
+}
+
+func (p *hostDependencyPager) applyFilter(query *HostDependencyQuery) (*HostDependencyQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *hostDependencyPager) toCursor(hd *HostDependency) Cursor {
+	return p.order.Field.toCursor(hd)
+}
+
+func (p *hostDependencyPager) applyCursors(query *HostDependencyQuery, after, before *Cursor) *HostDependencyQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultHostDependencyOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *hostDependencyPager) applyOrder(query *HostDependencyQuery, reverse bool) *HostDependencyQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultHostDependencyOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultHostDependencyOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to HostDependency.
+func (hd *HostDependencyQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...HostDependencyPaginateOption,
+) (*HostDependencyConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newHostDependencyPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if hd, err = pager.applyFilter(hd); err != nil {
+		return nil, err
+	}
+
+	conn := &HostDependencyConnection{Edges: []*HostDependencyEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := hd.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := hd.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	hd = pager.applyCursors(hd, after, before)
+	hd = pager.applyOrder(hd, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		hd = hd.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		hd = hd.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := hd.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *HostDependency
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *HostDependency {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *HostDependency {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*HostDependencyEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &HostDependencyEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// HostDependencyOrderField defines the ordering field of HostDependency.
+type HostDependencyOrderField struct {
+	field    string
+	toCursor func(*HostDependency) Cursor
+}
+
+// HostDependencyOrder defines the ordering of HostDependency.
+type HostDependencyOrder struct {
+	Direction OrderDirection            `json:"direction"`
+	Field     *HostDependencyOrderField `json:"field"`
+}
+
+// DefaultHostDependencyOrder is the default ordering of HostDependency.
+var DefaultHostDependencyOrder = &HostDependencyOrder{
+	Direction: OrderDirectionAsc,
+	Field: &HostDependencyOrderField{
+		field: hostdependency.FieldID,
+		toCursor: func(hd *HostDependency) Cursor {
+			return Cursor{ID: hd.ID}
+		},
+	},
+}
+
+// ToEdge converts HostDependency into HostDependencyEdge.
+func (hd *HostDependency) ToEdge(order *HostDependencyOrder) *HostDependencyEdge {
+	if order == nil {
+		order = DefaultHostDependencyOrder
+	}
+	return &HostDependencyEdge{
+		Node:   hd,
+		Cursor: order.Field.toCursor(hd),
 	}
 }
 

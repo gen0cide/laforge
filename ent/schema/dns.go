@@ -14,6 +14,8 @@ type DNS struct {
 // Fields of the DNS.
 func (DNS) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("type").
 			StructTag(`hcl:"type,attr"`),
 		field.String("root_domain").

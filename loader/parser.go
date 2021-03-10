@@ -33,18 +33,21 @@ type fileGlobResolver struct {
 // DefinedConfigs is the stuct to hold in all the loading for hcl
 type DefinedConfigs struct {
 	Filename            string
-	BaseDir             string             `hcl:"base_dir,optional" json:"base_dir,omitempty"`
-	User                *ent.User          `hcl:"user,block" json:"user,omitempty"`
-	IncludePaths        []*Include         `hcl:"include,block" json:"include_paths,omitempty"`
-	DefinedCompetitions []*ent.Competition `hcl:"competition,block" json:"competitions,omitempty"`
-	DefinedHosts        []*ent.Host        `hcl:"host,block" json:"hosts,omitempty"`
-	DefinedNetworks     []*ent.Network     `hcl:"network,block" json:"networks,omitempty"`
-	DefinedScripts      []*ent.Script      `hcl:"script,block" json:"scripts,omitempty"`
-	DefinedCommands     []*ent.Command     `hcl:"command,block" json:"defined_commands,omitempty"`
-	DefinedDNSRecords   []*ent.DNSRecord   `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
-	DefinedEnvironments []*ent.Environment `hcl:"environment,block" json:"environments,omitempty"`
-	DefinedBuilds       []*ent.Build       `hcl:"build,block" json:"builds,omitempty"`
-	DefinedTeams        []*ent.Team        `hcl:"team,block" json:"teams,omitempty"`
+	BaseDir             string              `hcl:"base_dir,optional" json:"base_dir,omitempty"`
+	User                *ent.User           `hcl:"user,block" json:"user,omitempty"`
+	IncludePaths        []*Include          `hcl:"include,block" json:"include_paths,omitempty"`
+	DefinedCompetitions []*ent.Competition  `hcl:"competition,block" json:"competitions,omitempty"`
+	DefinedHosts        []*ent.Host         `hcl:"host,block" json:"hosts,omitempty"`
+	DefinedNetworks     []*ent.Network      `hcl:"network,block" json:"networks,omitempty"`
+	DefinedScripts      []*ent.Script       `hcl:"script,block" json:"scripts,omitempty"`
+	DefinedCommands     []*ent.Command      `hcl:"command,block" json:"defined_commands,omitempty"`
+	DefinedDNSRecords   []*ent.DNSRecord    `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
+	DefinedEnvironments []*ent.Environment  `hcl:"environment,block" json:"environments,omitempty"`
+	DefinedFileDownload []*ent.FileDownload `hcl:"file_download,block" json:"file_download,omitempty"`
+	DefinedFileDelete   []*ent.FileDownload `hcl:"file_delete,block" json:"file_delete,omitempty"`
+	DefinedFileExtract  []*ent.FileDownload `hcl:"file_extract,block" json:"file_extract,omitempty"`
+	DefinedBuilds       []*ent.Build        `hcl:"build,block" json:"builds,omitempty"`
+	DefinedTeams        []*ent.Team         `hcl:"team,block" json:"teams,omitempty"`
 }
 
 // Loader defines the Laforge configuration loader object
@@ -245,7 +248,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs []*en
 	returnedEnvironment := []*ent.Environment{}
 	client.Environment.Create()
 	for _, env := range configEnvs {
-		users, err := createUsers(ctx, client, env.Edges.EnvironmentToUser, env.HclID)
+		users, err := createUsers(ctx, client, env.HCLEnvironmentToUser, env.HclID)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err

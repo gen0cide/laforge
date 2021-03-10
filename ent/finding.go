@@ -29,6 +29,18 @@ type Finding struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FindingQuery when eager-loading is set.
 	Edges FindingEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// FindingToUser holds the value of the FindingToUser edge.
+	HCLFindingToUser []*User `json:"FindingToUser,omitempty" hcl:"maintainer,block"`
+	// FindingToTag holds the value of the FindingToTag edge.
+	HCLFindingToTag []*Tag `json:"FindingToTag,omitempty"`
+	// FindingToHost holds the value of the FindingToHost edge.
+	HCLFindingToHost []*Host `json:"FindingToHost,omitempty"`
+	// FindingToScript holds the value of the FindingToScript edge.
+	HCLFindingToScript []*Script `json:"FindingToScript,omitempty"`
+	//
+
 }
 
 // FindingEdges holds the relations/edges for other nodes in the graph.

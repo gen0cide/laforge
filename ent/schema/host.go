@@ -14,6 +14,8 @@ type Host struct {
 // Fields of the Host.
 func (Host) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("hostname").
 			StructTag(`hcl:"hostname,attr"`),
 		field.String("description").
@@ -22,6 +24,8 @@ func (Host) Fields() []ent.Field {
 			StructTag(`hcl:"os,attr"`),
 		field.Int("last_octet").
 			StructTag(`hcl:"last_octet,attr"`),
+		field.String("instance_size").
+			StructTag(`hcl:"instance_size,attr"`),
 		field.Bool("allow_mac_changes").
 			StructTag(`hcl:"allow_mac_changes,optional"`),
 		field.JSON("exposed_tcp_ports", []string{}).
@@ -34,8 +38,6 @@ func (Host) Fields() []ent.Field {
 			StructTag(`hcl:"vars,optional"`),
 		field.JSON("user_groups", []string{}).
 			StructTag(`hcl:"user_groups,optional"`),
-		field.JSON("depends_on", map[string]string{}).Optional().
-			StructTag(`hcl:"depends_on,optional"`),
 		field.JSON("provision_steps", []string{}).Optional().
 			StructTag(`hcl:"provision_steps,optional"`),
 		field.JSON("tags", map[string]string{}).
@@ -52,5 +54,7 @@ func (Host) Edges() []ent.Edge {
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("HostToTag", Tag.Type),
 		edge.From("HostToEnvironment", Environment.Type).Ref("EnvironmentToHost"),
+		edge.From("HostToHostDependency", HostDependency.Type).Ref("HostDependencyToHost").
+			StructTag(`hcl:"depends_on,block"`),
 	}
 }

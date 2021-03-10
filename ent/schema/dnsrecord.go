@@ -14,6 +14,8 @@ type DNSRecord struct {
 // Fields of the DNSRecord.
 func (DNSRecord) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("name").
 			StructTag(`hcl:"name,attr"`),
 		field.JSON("values", []string{}).

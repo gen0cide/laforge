@@ -284,12 +284,12 @@ func (fdq *FileDownloadQuery) WithFileDownloadToTag(opts ...func(*TagQuery)) *Fi
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.FileDownload.Query().
-//		GroupBy(filedownload.FieldSourceType).
+//		GroupBy(filedownload.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -311,11 +311,11 @@ func (fdq *FileDownloadQuery) GroupBy(field string, fields ...string) *FileDownl
 // Example:
 //
 //	var v []struct {
-//		SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.FileDownload.Query().
-//		Select(filedownload.FieldSourceType).
+//		Select(filedownload.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (fdq *FileDownloadQuery) Select(field string, fields ...string) *FileDownloadSelect {

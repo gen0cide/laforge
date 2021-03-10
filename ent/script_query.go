@@ -356,12 +356,12 @@ func (sq *ScriptQuery) WithScriptToFinding(opts ...func(*FindingQuery)) *ScriptQ
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Script.Query().
-//		GroupBy(script.FieldName).
+//		GroupBy(script.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -383,11 +383,11 @@ func (sq *ScriptQuery) GroupBy(field string, fields ...string) *ScriptGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Script.Query().
-//		Select(script.FieldName).
+//		Select(script.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (sq *ScriptQuery) Select(field string, fields ...string) *ScriptSelect {

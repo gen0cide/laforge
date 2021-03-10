@@ -40,7 +40,27 @@ type Environment struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
-	Edges EnvironmentEdges `hcl:"edges,block" json:"edges"`
+	Edges EnvironmentEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// EnvironmentToTag holds the value of the EnvironmentToTag edge.
+	HCLEnvironmentToTag []*Tag `json:"EnvironmentToTag,omitempty"`
+	// EnvironmentToUser holds the value of the EnvironmentToUser edge.
+	HCLEnvironmentToUser []*User `json:"EnvironmentToUser,omitempty" hcl:"maintainer,block"`
+	// EnvironmentToHost holds the value of the EnvironmentToHost edge.
+	HCLEnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
+	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
+	HCLEnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
+	HCLEnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
+	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
+	HCLEnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
+	// EnvironmentToTeam holds the value of the EnvironmentToTeam edge.
+	HCLEnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
+	//
+
 }
 
 // EnvironmentEdges holds the relations/edges for other nodes in the graph.

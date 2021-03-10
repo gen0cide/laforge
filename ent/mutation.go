@@ -21,6 +21,7 @@ import (
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -59,6 +60,7 @@ const (
 	TypeFileExtract        = "FileExtract"
 	TypeFinding            = "Finding"
 	TypeHost               = "Host"
+	TypeHostDependency     = "HostDependency"
 	TypeIncludedNetwork    = "IncludedNetwork"
 	TypeNetwork            = "Network"
 	TypeProvisionedHost    = "ProvisionedHost"
@@ -2370,6 +2372,7 @@ type CommandMutation struct {
 	op                    Op
 	typ                   string
 	id                    *int
+	hcl_id                *string
 	name                  *string
 	description           *string
 	program               *string
@@ -2471,6 +2474,42 @@ func (m *CommandMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *CommandMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *CommandMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the Command entity.
+// If the Command object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommandMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *CommandMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetName sets the "name" field.
@@ -2993,7 +3032,10 @@ func (m *CommandMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CommandMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
+	if m.hcl_id != nil {
+		fields = append(fields, command.FieldHclID)
+	}
 	if m.name != nil {
 		fields = append(fields, command.FieldName)
 	}
@@ -3032,6 +3074,8 @@ func (m *CommandMutation) Fields() []string {
 // schema.
 func (m *CommandMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case command.FieldHclID:
+		return m.HclID()
 	case command.FieldName:
 		return m.Name()
 	case command.FieldDescription:
@@ -3061,6 +3105,8 @@ func (m *CommandMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *CommandMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case command.FieldHclID:
+		return m.OldHclID(ctx)
 	case command.FieldName:
 		return m.OldName(ctx)
 	case command.FieldDescription:
@@ -3090,6 +3136,13 @@ func (m *CommandMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *CommandMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case command.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case command.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -3236,6 +3289,9 @@ func (m *CommandMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *CommandMutation) ResetField(name string) error {
 	switch name {
+	case command.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case command.FieldName:
 		m.ResetName()
 		return nil
@@ -4091,6 +4147,7 @@ type DNSMutation struct {
 	op               Op
 	typ              string
 	id               *int
+	hcl_id           *string
 	_type            *string
 	root_domain      *string
 	dns_servers      *[]string
@@ -4182,6 +4239,42 @@ func (m *DNSMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *DNSMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *DNSMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the DNS entity.
+// If the DNS object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DNSMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *DNSMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetType sets the "type" field.
@@ -4431,7 +4524,10 @@ func (m *DNSMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DNSMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
+	if m.hcl_id != nil {
+		fields = append(fields, dns.FieldHclID)
+	}
 	if m._type != nil {
 		fields = append(fields, dns.FieldType)
 	}
@@ -4455,6 +4551,8 @@ func (m *DNSMutation) Fields() []string {
 // schema.
 func (m *DNSMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case dns.FieldHclID:
+		return m.HclID()
 	case dns.FieldType:
 		return m.GetType()
 	case dns.FieldRootDomain:
@@ -4474,6 +4572,8 @@ func (m *DNSMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *DNSMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case dns.FieldHclID:
+		return m.OldHclID(ctx)
 	case dns.FieldType:
 		return m.OldType(ctx)
 	case dns.FieldRootDomain:
@@ -4493,6 +4593,13 @@ func (m *DNSMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *DNSMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case dns.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case dns.FieldType:
 		v, ok := value.(string)
 		if !ok {
@@ -4577,6 +4684,9 @@ func (m *DNSMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *DNSMutation) ResetField(name string) error {
 	switch name {
+	case dns.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case dns.FieldType:
 		m.ResetType()
 		return nil
@@ -4686,6 +4796,7 @@ type DNSRecordMutation struct {
 	op                     Op
 	typ                    string
 	id                     *int
+	hcl_id                 *string
 	name                   *string
 	values                 *[]string
 	_type                  *string
@@ -4779,6 +4890,42 @@ func (m *DNSRecordMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *DNSRecordMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *DNSRecordMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the DNSRecord entity.
+// If the DNSRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DNSRecordMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *DNSRecordMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetName sets the "name" field.
@@ -5100,7 +5247,10 @@ func (m *DNSRecordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DNSRecordMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
+	if m.hcl_id != nil {
+		fields = append(fields, dnsrecord.FieldHclID)
+	}
 	if m.name != nil {
 		fields = append(fields, dnsrecord.FieldName)
 	}
@@ -5130,6 +5280,8 @@ func (m *DNSRecordMutation) Fields() []string {
 // schema.
 func (m *DNSRecordMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case dnsrecord.FieldHclID:
+		return m.HclID()
 	case dnsrecord.FieldName:
 		return m.Name()
 	case dnsrecord.FieldValues:
@@ -5153,6 +5305,8 @@ func (m *DNSRecordMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *DNSRecordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case dnsrecord.FieldHclID:
+		return m.OldHclID(ctx)
 	case dnsrecord.FieldName:
 		return m.OldName(ctx)
 	case dnsrecord.FieldValues:
@@ -5176,6 +5330,13 @@ func (m *DNSRecordMutation) OldField(ctx context.Context, name string) (ent.Valu
 // type.
 func (m *DNSRecordMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case dnsrecord.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case dnsrecord.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -5274,6 +5435,9 @@ func (m *DNSRecordMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *DNSRecordMutation) ResetField(name string) error {
 	switch name {
+	case dnsrecord.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case dnsrecord.FieldName:
 		m.ResetName()
 		return nil
@@ -7799,6 +7963,7 @@ type FileDownloadMutation struct {
 	op                        Op
 	typ                       string
 	id                        *int
+	hcl_id                    *string
 	source_type               *string
 	source                    *string
 	destination               *string
@@ -7894,6 +8059,42 @@ func (m *FileDownloadMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *FileDownloadMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *FileDownloadMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the FileDownload entity.
+// If the FileDownload object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FileDownloadMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *FileDownloadMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetSourceType sets the "source_type" field.
@@ -8287,7 +8488,10 @@ func (m *FileDownloadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FileDownloadMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
+	if m.hcl_id != nil {
+		fields = append(fields, filedownload.FieldHclID)
+	}
 	if m.source_type != nil {
 		fields = append(fields, filedownload.FieldSourceType)
 	}
@@ -8323,6 +8527,8 @@ func (m *FileDownloadMutation) Fields() []string {
 // schema.
 func (m *FileDownloadMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case filedownload.FieldHclID:
+		return m.HclID()
 	case filedownload.FieldSourceType:
 		return m.SourceType()
 	case filedownload.FieldSource:
@@ -8350,6 +8556,8 @@ func (m *FileDownloadMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *FileDownloadMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case filedownload.FieldHclID:
+		return m.OldHclID(ctx)
 	case filedownload.FieldSourceType:
 		return m.OldSourceType(ctx)
 	case filedownload.FieldSource:
@@ -8377,6 +8585,13 @@ func (m *FileDownloadMutation) OldField(ctx context.Context, name string) (ent.V
 // type.
 func (m *FileDownloadMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case filedownload.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case filedownload.FieldSourceType:
 		v, ok := value.(string)
 		if !ok {
@@ -8489,6 +8704,9 @@ func (m *FileDownloadMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *FileDownloadMutation) ResetField(name string) error {
 	switch name {
+	case filedownload.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case filedownload.FieldSourceType:
 		m.ResetSourceType()
 		return nil
@@ -9989,39 +10207,43 @@ func (m *FindingMutation) ResetEdge(name string) error {
 // HostMutation represents an operation that mutates the Host nodes in the graph.
 type HostMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *int
-	hostname                  *string
-	description               *string
-	_OS                       *string
-	last_octet                *int
-	addlast_octet             *int
-	allow_mac_changes         *bool
-	exposed_tcp_ports         *[]string
-	exposed_udp_ports         *[]string
-	override_password         *string
-	vars                      *map[string]string
-	user_groups               *[]string
-	depends_on                *map[string]string
-	provision_steps           *[]string
-	tags                      *map[string]string
-	clearedFields             map[string]struct{}
-	_HostToDisk               map[int]struct{}
-	removed_HostToDisk        map[int]struct{}
-	cleared_HostToDisk        bool
-	_HostToUser               map[int]struct{}
-	removed_HostToUser        map[int]struct{}
-	cleared_HostToUser        bool
-	_HostToTag                map[int]struct{}
-	removed_HostToTag         map[int]struct{}
-	cleared_HostToTag         bool
-	_HostToEnvironment        map[int]struct{}
-	removed_HostToEnvironment map[int]struct{}
-	cleared_HostToEnvironment bool
-	done                      bool
-	oldValue                  func(context.Context) (*Host, error)
-	predicates                []predicate.Host
+	op                           Op
+	typ                          string
+	id                           *int
+	hcl_id                       *string
+	hostname                     *string
+	description                  *string
+	_OS                          *string
+	last_octet                   *int
+	addlast_octet                *int
+	instance_size                *string
+	allow_mac_changes            *bool
+	exposed_tcp_ports            *[]string
+	exposed_udp_ports            *[]string
+	override_password            *string
+	vars                         *map[string]string
+	user_groups                  *[]string
+	provision_steps              *[]string
+	tags                         *map[string]string
+	clearedFields                map[string]struct{}
+	_HostToDisk                  map[int]struct{}
+	removed_HostToDisk           map[int]struct{}
+	cleared_HostToDisk           bool
+	_HostToUser                  map[int]struct{}
+	removed_HostToUser           map[int]struct{}
+	cleared_HostToUser           bool
+	_HostToTag                   map[int]struct{}
+	removed_HostToTag            map[int]struct{}
+	cleared_HostToTag            bool
+	_HostToEnvironment           map[int]struct{}
+	removed_HostToEnvironment    map[int]struct{}
+	cleared_HostToEnvironment    bool
+	_HostToHostDependency        map[int]struct{}
+	removed_HostToHostDependency map[int]struct{}
+	cleared_HostToHostDependency bool
+	done                         bool
+	oldValue                     func(context.Context) (*Host, error)
+	predicates                   []predicate.Host
 }
 
 var _ ent.Mutation = (*HostMutation)(nil)
@@ -10101,6 +10323,42 @@ func (m *HostMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *HostMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *HostMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the Host entity.
+// If the Host object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HostMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *HostMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetHostname sets the "hostname" field.
@@ -10265,6 +10523,42 @@ func (m *HostMutation) AddedLastOctet() (r int, exists bool) {
 func (m *HostMutation) ResetLastOctet() {
 	m.last_octet = nil
 	m.addlast_octet = nil
+}
+
+// SetInstanceSize sets the "instance_size" field.
+func (m *HostMutation) SetInstanceSize(s string) {
+	m.instance_size = &s
+}
+
+// InstanceSize returns the value of the "instance_size" field in the mutation.
+func (m *HostMutation) InstanceSize() (r string, exists bool) {
+	v := m.instance_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceSize returns the old "instance_size" field's value of the Host entity.
+// If the Host object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HostMutation) OldInstanceSize(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldInstanceSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldInstanceSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceSize: %w", err)
+	}
+	return oldValue.InstanceSize, nil
+}
+
+// ResetInstanceSize resets all changes to the "instance_size" field.
+func (m *HostMutation) ResetInstanceSize() {
+	m.instance_size = nil
 }
 
 // SetAllowMACChanges sets the "allow_mac_changes" field.
@@ -10481,55 +10775,6 @@ func (m *HostMutation) OldUserGroups(ctx context.Context) (v []string, err error
 // ResetUserGroups resets all changes to the "user_groups" field.
 func (m *HostMutation) ResetUserGroups() {
 	m.user_groups = nil
-}
-
-// SetDependsOn sets the "depends_on" field.
-func (m *HostMutation) SetDependsOn(value map[string]string) {
-	m.depends_on = &value
-}
-
-// DependsOn returns the value of the "depends_on" field in the mutation.
-func (m *HostMutation) DependsOn() (r map[string]string, exists bool) {
-	v := m.depends_on
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDependsOn returns the old "depends_on" field's value of the Host entity.
-// If the Host object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HostMutation) OldDependsOn(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldDependsOn is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldDependsOn requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDependsOn: %w", err)
-	}
-	return oldValue.DependsOn, nil
-}
-
-// ClearDependsOn clears the value of the "depends_on" field.
-func (m *HostMutation) ClearDependsOn() {
-	m.depends_on = nil
-	m.clearedFields[host.FieldDependsOn] = struct{}{}
-}
-
-// DependsOnCleared returns if the "depends_on" field was cleared in this mutation.
-func (m *HostMutation) DependsOnCleared() bool {
-	_, ok := m.clearedFields[host.FieldDependsOn]
-	return ok
-}
-
-// ResetDependsOn resets all changes to the "depends_on" field.
-func (m *HostMutation) ResetDependsOn() {
-	m.depends_on = nil
-	delete(m.clearedFields, host.FieldDependsOn)
 }
 
 // SetProvisionSteps sets the "provision_steps" field.
@@ -10829,6 +11074,59 @@ func (m *HostMutation) ResetHostToEnvironment() {
 	m.removed_HostToEnvironment = nil
 }
 
+// AddHostToHostDependencyIDs adds the "HostToHostDependency" edge to the HostDependency entity by ids.
+func (m *HostMutation) AddHostToHostDependencyIDs(ids ...int) {
+	if m._HostToHostDependency == nil {
+		m._HostToHostDependency = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._HostToHostDependency[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHostToHostDependency clears the "HostToHostDependency" edge to the HostDependency entity.
+func (m *HostMutation) ClearHostToHostDependency() {
+	m.cleared_HostToHostDependency = true
+}
+
+// HostToHostDependencyCleared returns if the "HostToHostDependency" edge to the HostDependency entity was cleared.
+func (m *HostMutation) HostToHostDependencyCleared() bool {
+	return m.cleared_HostToHostDependency
+}
+
+// RemoveHostToHostDependencyIDs removes the "HostToHostDependency" edge to the HostDependency entity by IDs.
+func (m *HostMutation) RemoveHostToHostDependencyIDs(ids ...int) {
+	if m.removed_HostToHostDependency == nil {
+		m.removed_HostToHostDependency = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_HostToHostDependency[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHostToHostDependency returns the removed IDs of the "HostToHostDependency" edge to the HostDependency entity.
+func (m *HostMutation) RemovedHostToHostDependencyIDs() (ids []int) {
+	for id := range m.removed_HostToHostDependency {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HostToHostDependencyIDs returns the "HostToHostDependency" edge IDs in the mutation.
+func (m *HostMutation) HostToHostDependencyIDs() (ids []int) {
+	for id := range m._HostToHostDependency {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHostToHostDependency resets all changes to the "HostToHostDependency" edge.
+func (m *HostMutation) ResetHostToHostDependency() {
+	m._HostToHostDependency = nil
+	m.cleared_HostToHostDependency = false
+	m.removed_HostToHostDependency = nil
+}
+
 // Op returns the operation name.
 func (m *HostMutation) Op() Op {
 	return m.op
@@ -10843,7 +11141,10 @@ func (m *HostMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *HostMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
+	if m.hcl_id != nil {
+		fields = append(fields, host.FieldHclID)
+	}
 	if m.hostname != nil {
 		fields = append(fields, host.FieldHostname)
 	}
@@ -10855,6 +11156,9 @@ func (m *HostMutation) Fields() []string {
 	}
 	if m.last_octet != nil {
 		fields = append(fields, host.FieldLastOctet)
+	}
+	if m.instance_size != nil {
+		fields = append(fields, host.FieldInstanceSize)
 	}
 	if m.allow_mac_changes != nil {
 		fields = append(fields, host.FieldAllowMACChanges)
@@ -10874,9 +11178,6 @@ func (m *HostMutation) Fields() []string {
 	if m.user_groups != nil {
 		fields = append(fields, host.FieldUserGroups)
 	}
-	if m.depends_on != nil {
-		fields = append(fields, host.FieldDependsOn)
-	}
 	if m.provision_steps != nil {
 		fields = append(fields, host.FieldProvisionSteps)
 	}
@@ -10891,6 +11192,8 @@ func (m *HostMutation) Fields() []string {
 // schema.
 func (m *HostMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case host.FieldHclID:
+		return m.HclID()
 	case host.FieldHostname:
 		return m.Hostname()
 	case host.FieldDescription:
@@ -10899,6 +11202,8 @@ func (m *HostMutation) Field(name string) (ent.Value, bool) {
 		return m.OS()
 	case host.FieldLastOctet:
 		return m.LastOctet()
+	case host.FieldInstanceSize:
+		return m.InstanceSize()
 	case host.FieldAllowMACChanges:
 		return m.AllowMACChanges()
 	case host.FieldExposedTCPPorts:
@@ -10911,8 +11216,6 @@ func (m *HostMutation) Field(name string) (ent.Value, bool) {
 		return m.Vars()
 	case host.FieldUserGroups:
 		return m.UserGroups()
-	case host.FieldDependsOn:
-		return m.DependsOn()
 	case host.FieldProvisionSteps:
 		return m.ProvisionSteps()
 	case host.FieldTags:
@@ -10926,6 +11229,8 @@ func (m *HostMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case host.FieldHclID:
+		return m.OldHclID(ctx)
 	case host.FieldHostname:
 		return m.OldHostname(ctx)
 	case host.FieldDescription:
@@ -10934,6 +11239,8 @@ func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldOS(ctx)
 	case host.FieldLastOctet:
 		return m.OldLastOctet(ctx)
+	case host.FieldInstanceSize:
+		return m.OldInstanceSize(ctx)
 	case host.FieldAllowMACChanges:
 		return m.OldAllowMACChanges(ctx)
 	case host.FieldExposedTCPPorts:
@@ -10946,8 +11253,6 @@ func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldVars(ctx)
 	case host.FieldUserGroups:
 		return m.OldUserGroups(ctx)
-	case host.FieldDependsOn:
-		return m.OldDependsOn(ctx)
 	case host.FieldProvisionSteps:
 		return m.OldProvisionSteps(ctx)
 	case host.FieldTags:
@@ -10961,6 +11266,13 @@ func (m *HostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *HostMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case host.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case host.FieldHostname:
 		v, ok := value.(string)
 		if !ok {
@@ -10988,6 +11300,13 @@ func (m *HostMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastOctet(v)
+		return nil
+	case host.FieldInstanceSize:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceSize(v)
 		return nil
 	case host.FieldAllowMACChanges:
 		v, ok := value.(bool)
@@ -11030,13 +11349,6 @@ func (m *HostMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserGroups(v)
-		return nil
-	case host.FieldDependsOn:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDependsOn(v)
 		return nil
 	case host.FieldProvisionSteps:
 		v, ok := value.([]string)
@@ -11097,9 +11409,6 @@ func (m *HostMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *HostMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(host.FieldDependsOn) {
-		fields = append(fields, host.FieldDependsOn)
-	}
 	if m.FieldCleared(host.FieldProvisionSteps) {
 		fields = append(fields, host.FieldProvisionSteps)
 	}
@@ -11117,9 +11426,6 @@ func (m *HostMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *HostMutation) ClearField(name string) error {
 	switch name {
-	case host.FieldDependsOn:
-		m.ClearDependsOn()
-		return nil
 	case host.FieldProvisionSteps:
 		m.ClearProvisionSteps()
 		return nil
@@ -11131,6 +11437,9 @@ func (m *HostMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *HostMutation) ResetField(name string) error {
 	switch name {
+	case host.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case host.FieldHostname:
 		m.ResetHostname()
 		return nil
@@ -11142,6 +11451,9 @@ func (m *HostMutation) ResetField(name string) error {
 		return nil
 	case host.FieldLastOctet:
 		m.ResetLastOctet()
+		return nil
+	case host.FieldInstanceSize:
+		m.ResetInstanceSize()
 		return nil
 	case host.FieldAllowMACChanges:
 		m.ResetAllowMACChanges()
@@ -11161,9 +11473,6 @@ func (m *HostMutation) ResetField(name string) error {
 	case host.FieldUserGroups:
 		m.ResetUserGroups()
 		return nil
-	case host.FieldDependsOn:
-		m.ResetDependsOn()
-		return nil
 	case host.FieldProvisionSteps:
 		m.ResetProvisionSteps()
 		return nil
@@ -11176,7 +11485,7 @@ func (m *HostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *HostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m._HostToDisk != nil {
 		edges = append(edges, host.EdgeHostToDisk)
 	}
@@ -11188,6 +11497,9 @@ func (m *HostMutation) AddedEdges() []string {
 	}
 	if m._HostToEnvironment != nil {
 		edges = append(edges, host.EdgeHostToEnvironment)
+	}
+	if m._HostToHostDependency != nil {
+		edges = append(edges, host.EdgeHostToHostDependency)
 	}
 	return edges
 }
@@ -11220,13 +11532,19 @@ func (m *HostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case host.EdgeHostToHostDependency:
+		ids := make([]ent.Value, 0, len(m._HostToHostDependency))
+		for id := range m._HostToHostDependency {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removed_HostToDisk != nil {
 		edges = append(edges, host.EdgeHostToDisk)
 	}
@@ -11238,6 +11556,9 @@ func (m *HostMutation) RemovedEdges() []string {
 	}
 	if m.removed_HostToEnvironment != nil {
 		edges = append(edges, host.EdgeHostToEnvironment)
+	}
+	if m.removed_HostToHostDependency != nil {
+		edges = append(edges, host.EdgeHostToHostDependency)
 	}
 	return edges
 }
@@ -11270,13 +11591,19 @@ func (m *HostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case host.EdgeHostToHostDependency:
+		ids := make([]ent.Value, 0, len(m.removed_HostToHostDependency))
+		for id := range m.removed_HostToHostDependency {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *HostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleared_HostToDisk {
 		edges = append(edges, host.EdgeHostToDisk)
 	}
@@ -11288,6 +11615,9 @@ func (m *HostMutation) ClearedEdges() []string {
 	}
 	if m.cleared_HostToEnvironment {
 		edges = append(edges, host.EdgeHostToEnvironment)
+	}
+	if m.cleared_HostToHostDependency {
+		edges = append(edges, host.EdgeHostToHostDependency)
 	}
 	return edges
 }
@@ -11304,6 +11634,8 @@ func (m *HostMutation) EdgeCleared(name string) bool {
 		return m.cleared_HostToTag
 	case host.EdgeHostToEnvironment:
 		return m.cleared_HostToEnvironment
+	case host.EdgeHostToHostDependency:
+		return m.cleared_HostToHostDependency
 	}
 	return false
 }
@@ -11332,8 +11664,526 @@ func (m *HostMutation) ResetEdge(name string) error {
 	case host.EdgeHostToEnvironment:
 		m.ResetHostToEnvironment()
 		return nil
+	case host.EdgeHostToHostDependency:
+		m.ResetHostToHostDependency()
+		return nil
 	}
 	return fmt.Errorf("unknown Host edge %s", name)
+}
+
+// HostDependencyMutation represents an operation that mutates the HostDependency nodes in the graph.
+type HostDependencyMutation struct {
+	config
+	op                              Op
+	typ                             string
+	id                              *int
+	host_id                         *string
+	network_id                      *string
+	clearedFields                   map[string]struct{}
+	_HostDependencyToHost           map[int]struct{}
+	removed_HostDependencyToHost    map[int]struct{}
+	cleared_HostDependencyToHost    bool
+	_HostDependencyToNetwork        map[int]struct{}
+	removed_HostDependencyToNetwork map[int]struct{}
+	cleared_HostDependencyToNetwork bool
+	done                            bool
+	oldValue                        func(context.Context) (*HostDependency, error)
+	predicates                      []predicate.HostDependency
+}
+
+var _ ent.Mutation = (*HostDependencyMutation)(nil)
+
+// hostdependencyOption allows management of the mutation configuration using functional options.
+type hostdependencyOption func(*HostDependencyMutation)
+
+// newHostDependencyMutation creates new mutation for the HostDependency entity.
+func newHostDependencyMutation(c config, op Op, opts ...hostdependencyOption) *HostDependencyMutation {
+	m := &HostDependencyMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeHostDependency,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withHostDependencyID sets the ID field of the mutation.
+func withHostDependencyID(id int) hostdependencyOption {
+	return func(m *HostDependencyMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *HostDependency
+		)
+		m.oldValue = func(ctx context.Context) (*HostDependency, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().HostDependency.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withHostDependency sets the old HostDependency of the mutation.
+func withHostDependency(node *HostDependency) hostdependencyOption {
+	return func(m *HostDependencyMutation) {
+		m.oldValue = func(context.Context) (*HostDependency, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m HostDependencyMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m HostDependencyMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *HostDependencyMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetHostID sets the "host_id" field.
+func (m *HostDependencyMutation) SetHostID(s string) {
+	m.host_id = &s
+}
+
+// HostID returns the value of the "host_id" field in the mutation.
+func (m *HostDependencyMutation) HostID() (r string, exists bool) {
+	v := m.host_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHostID returns the old "host_id" field's value of the HostDependency entity.
+// If the HostDependency object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HostDependencyMutation) OldHostID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHostID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHostID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHostID: %w", err)
+	}
+	return oldValue.HostID, nil
+}
+
+// ResetHostID resets all changes to the "host_id" field.
+func (m *HostDependencyMutation) ResetHostID() {
+	m.host_id = nil
+}
+
+// SetNetworkID sets the "network_id" field.
+func (m *HostDependencyMutation) SetNetworkID(s string) {
+	m.network_id = &s
+}
+
+// NetworkID returns the value of the "network_id" field in the mutation.
+func (m *HostDependencyMutation) NetworkID() (r string, exists bool) {
+	v := m.network_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNetworkID returns the old "network_id" field's value of the HostDependency entity.
+// If the HostDependency object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HostDependencyMutation) OldNetworkID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldNetworkID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldNetworkID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNetworkID: %w", err)
+	}
+	return oldValue.NetworkID, nil
+}
+
+// ResetNetworkID resets all changes to the "network_id" field.
+func (m *HostDependencyMutation) ResetNetworkID() {
+	m.network_id = nil
+}
+
+// AddHostDependencyToHostIDs adds the "HostDependencyToHost" edge to the Host entity by ids.
+func (m *HostDependencyMutation) AddHostDependencyToHostIDs(ids ...int) {
+	if m._HostDependencyToHost == nil {
+		m._HostDependencyToHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._HostDependencyToHost[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHostDependencyToHost clears the "HostDependencyToHost" edge to the Host entity.
+func (m *HostDependencyMutation) ClearHostDependencyToHost() {
+	m.cleared_HostDependencyToHost = true
+}
+
+// HostDependencyToHostCleared returns if the "HostDependencyToHost" edge to the Host entity was cleared.
+func (m *HostDependencyMutation) HostDependencyToHostCleared() bool {
+	return m.cleared_HostDependencyToHost
+}
+
+// RemoveHostDependencyToHostIDs removes the "HostDependencyToHost" edge to the Host entity by IDs.
+func (m *HostDependencyMutation) RemoveHostDependencyToHostIDs(ids ...int) {
+	if m.removed_HostDependencyToHost == nil {
+		m.removed_HostDependencyToHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_HostDependencyToHost[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHostDependencyToHost returns the removed IDs of the "HostDependencyToHost" edge to the Host entity.
+func (m *HostDependencyMutation) RemovedHostDependencyToHostIDs() (ids []int) {
+	for id := range m.removed_HostDependencyToHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HostDependencyToHostIDs returns the "HostDependencyToHost" edge IDs in the mutation.
+func (m *HostDependencyMutation) HostDependencyToHostIDs() (ids []int) {
+	for id := range m._HostDependencyToHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHostDependencyToHost resets all changes to the "HostDependencyToHost" edge.
+func (m *HostDependencyMutation) ResetHostDependencyToHost() {
+	m._HostDependencyToHost = nil
+	m.cleared_HostDependencyToHost = false
+	m.removed_HostDependencyToHost = nil
+}
+
+// AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by ids.
+func (m *HostDependencyMutation) AddHostDependencyToNetworkIDs(ids ...int) {
+	if m._HostDependencyToNetwork == nil {
+		m._HostDependencyToNetwork = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._HostDependencyToNetwork[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHostDependencyToNetwork clears the "HostDependencyToNetwork" edge to the Network entity.
+func (m *HostDependencyMutation) ClearHostDependencyToNetwork() {
+	m.cleared_HostDependencyToNetwork = true
+}
+
+// HostDependencyToNetworkCleared returns if the "HostDependencyToNetwork" edge to the Network entity was cleared.
+func (m *HostDependencyMutation) HostDependencyToNetworkCleared() bool {
+	return m.cleared_HostDependencyToNetwork
+}
+
+// RemoveHostDependencyToNetworkIDs removes the "HostDependencyToNetwork" edge to the Network entity by IDs.
+func (m *HostDependencyMutation) RemoveHostDependencyToNetworkIDs(ids ...int) {
+	if m.removed_HostDependencyToNetwork == nil {
+		m.removed_HostDependencyToNetwork = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_HostDependencyToNetwork[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHostDependencyToNetwork returns the removed IDs of the "HostDependencyToNetwork" edge to the Network entity.
+func (m *HostDependencyMutation) RemovedHostDependencyToNetworkIDs() (ids []int) {
+	for id := range m.removed_HostDependencyToNetwork {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HostDependencyToNetworkIDs returns the "HostDependencyToNetwork" edge IDs in the mutation.
+func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
+	for id := range m._HostDependencyToNetwork {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHostDependencyToNetwork resets all changes to the "HostDependencyToNetwork" edge.
+func (m *HostDependencyMutation) ResetHostDependencyToNetwork() {
+	m._HostDependencyToNetwork = nil
+	m.cleared_HostDependencyToNetwork = false
+	m.removed_HostDependencyToNetwork = nil
+}
+
+// Op returns the operation name.
+func (m *HostDependencyMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (HostDependency).
+func (m *HostDependencyMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *HostDependencyMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.host_id != nil {
+		fields = append(fields, hostdependency.FieldHostID)
+	}
+	if m.network_id != nil {
+		fields = append(fields, hostdependency.FieldNetworkID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *HostDependencyMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case hostdependency.FieldHostID:
+		return m.HostID()
+	case hostdependency.FieldNetworkID:
+		return m.NetworkID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *HostDependencyMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case hostdependency.FieldHostID:
+		return m.OldHostID(ctx)
+	case hostdependency.FieldNetworkID:
+		return m.OldNetworkID(ctx)
+	}
+	return nil, fmt.Errorf("unknown HostDependency field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HostDependencyMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case hostdependency.FieldHostID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHostID(v)
+		return nil
+	case hostdependency.FieldNetworkID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNetworkID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown HostDependency field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *HostDependencyMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *HostDependencyMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HostDependencyMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown HostDependency numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *HostDependencyMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *HostDependencyMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *HostDependencyMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown HostDependency nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *HostDependencyMutation) ResetField(name string) error {
+	switch name {
+	case hostdependency.FieldHostID:
+		m.ResetHostID()
+		return nil
+	case hostdependency.FieldNetworkID:
+		m.ResetNetworkID()
+		return nil
+	}
+	return fmt.Errorf("unknown HostDependency field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *HostDependencyMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._HostDependencyToHost != nil {
+		edges = append(edges, hostdependency.EdgeHostDependencyToHost)
+	}
+	if m._HostDependencyToNetwork != nil {
+		edges = append(edges, hostdependency.EdgeHostDependencyToNetwork)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *HostDependencyMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case hostdependency.EdgeHostDependencyToHost:
+		ids := make([]ent.Value, 0, len(m._HostDependencyToHost))
+		for id := range m._HostDependencyToHost {
+			ids = append(ids, id)
+		}
+		return ids
+	case hostdependency.EdgeHostDependencyToNetwork:
+		ids := make([]ent.Value, 0, len(m._HostDependencyToNetwork))
+		for id := range m._HostDependencyToNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *HostDependencyMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removed_HostDependencyToHost != nil {
+		edges = append(edges, hostdependency.EdgeHostDependencyToHost)
+	}
+	if m.removed_HostDependencyToNetwork != nil {
+		edges = append(edges, hostdependency.EdgeHostDependencyToNetwork)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *HostDependencyMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case hostdependency.EdgeHostDependencyToHost:
+		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToHost))
+		for id := range m.removed_HostDependencyToHost {
+			ids = append(ids, id)
+		}
+		return ids
+	case hostdependency.EdgeHostDependencyToNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToNetwork))
+		for id := range m.removed_HostDependencyToNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *HostDependencyMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_HostDependencyToHost {
+		edges = append(edges, hostdependency.EdgeHostDependencyToHost)
+	}
+	if m.cleared_HostDependencyToNetwork {
+		edges = append(edges, hostdependency.EdgeHostDependencyToNetwork)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *HostDependencyMutation) EdgeCleared(name string) bool {
+	switch name {
+	case hostdependency.EdgeHostDependencyToHost:
+		return m.cleared_HostDependencyToHost
+	case hostdependency.EdgeHostDependencyToNetwork:
+		return m.cleared_HostDependencyToNetwork
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *HostDependencyMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown HostDependency unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *HostDependencyMutation) ResetEdge(name string) error {
+	switch name {
+	case hostdependency.EdgeHostDependencyToHost:
+		m.ResetHostDependencyToHost()
+		return nil
+	case hostdependency.EdgeHostDependencyToNetwork:
+		m.ResetHostDependencyToNetwork()
+		return nil
+	}
+	return fmt.Errorf("unknown HostDependency edge %s", name)
 }
 
 // IncludedNetworkMutation represents an operation that mutates the IncludedNetwork nodes in the graph.
@@ -11854,24 +12704,28 @@ func (m *IncludedNetworkMutation) ResetEdge(name string) error {
 // NetworkMutation represents an operation that mutates the Network nodes in the graph.
 type NetworkMutation struct {
 	config
-	op                           Op
-	typ                          string
-	id                           *int
-	name                         *string
-	cidr                         *string
-	vdi_visible                  *bool
-	vars                         *map[string]string
-	tags                         *map[string]string
-	clearedFields                map[string]struct{}
-	_NetworkToTag                map[int]struct{}
-	removed_NetworkToTag         map[int]struct{}
-	cleared_NetworkToTag         bool
-	_NetworkToEnvironment        map[int]struct{}
-	removed_NetworkToEnvironment map[int]struct{}
-	cleared_NetworkToEnvironment bool
-	done                         bool
-	oldValue                     func(context.Context) (*Network, error)
-	predicates                   []predicate.Network
+	op                              Op
+	typ                             string
+	id                              *int
+	hcl_id                          *string
+	name                            *string
+	cidr                            *string
+	vdi_visible                     *bool
+	vars                            *map[string]string
+	tags                            *map[string]string
+	clearedFields                   map[string]struct{}
+	_NetworkToTag                   map[int]struct{}
+	removed_NetworkToTag            map[int]struct{}
+	cleared_NetworkToTag            bool
+	_NetworkToEnvironment           map[int]struct{}
+	removed_NetworkToEnvironment    map[int]struct{}
+	cleared_NetworkToEnvironment    bool
+	_NetworkToHostDependency        map[int]struct{}
+	removed_NetworkToHostDependency map[int]struct{}
+	cleared_NetworkToHostDependency bool
+	done                            bool
+	oldValue                        func(context.Context) (*Network, error)
+	predicates                      []predicate.Network
 }
 
 var _ ent.Mutation = (*NetworkMutation)(nil)
@@ -11951,6 +12805,42 @@ func (m *NetworkMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *NetworkMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *NetworkMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the Network entity.
+// If the Network object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NetworkMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *NetworkMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetName sets the "name" field.
@@ -12239,6 +13129,59 @@ func (m *NetworkMutation) ResetNetworkToEnvironment() {
 	m.removed_NetworkToEnvironment = nil
 }
 
+// AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by ids.
+func (m *NetworkMutation) AddNetworkToHostDependencyIDs(ids ...int) {
+	if m._NetworkToHostDependency == nil {
+		m._NetworkToHostDependency = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._NetworkToHostDependency[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNetworkToHostDependency clears the "NetworkToHostDependency" edge to the HostDependency entity.
+func (m *NetworkMutation) ClearNetworkToHostDependency() {
+	m.cleared_NetworkToHostDependency = true
+}
+
+// NetworkToHostDependencyCleared returns if the "NetworkToHostDependency" edge to the HostDependency entity was cleared.
+func (m *NetworkMutation) NetworkToHostDependencyCleared() bool {
+	return m.cleared_NetworkToHostDependency
+}
+
+// RemoveNetworkToHostDependencyIDs removes the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
+func (m *NetworkMutation) RemoveNetworkToHostDependencyIDs(ids ...int) {
+	if m.removed_NetworkToHostDependency == nil {
+		m.removed_NetworkToHostDependency = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_NetworkToHostDependency[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNetworkToHostDependency returns the removed IDs of the "NetworkToHostDependency" edge to the HostDependency entity.
+func (m *NetworkMutation) RemovedNetworkToHostDependencyIDs() (ids []int) {
+	for id := range m.removed_NetworkToHostDependency {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NetworkToHostDependencyIDs returns the "NetworkToHostDependency" edge IDs in the mutation.
+func (m *NetworkMutation) NetworkToHostDependencyIDs() (ids []int) {
+	for id := range m._NetworkToHostDependency {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNetworkToHostDependency resets all changes to the "NetworkToHostDependency" edge.
+func (m *NetworkMutation) ResetNetworkToHostDependency() {
+	m._NetworkToHostDependency = nil
+	m.cleared_NetworkToHostDependency = false
+	m.removed_NetworkToHostDependency = nil
+}
+
 // Op returns the operation name.
 func (m *NetworkMutation) Op() Op {
 	return m.op
@@ -12253,7 +13196,10 @@ func (m *NetworkMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NetworkMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
+	if m.hcl_id != nil {
+		fields = append(fields, network.FieldHclID)
+	}
 	if m.name != nil {
 		fields = append(fields, network.FieldName)
 	}
@@ -12277,6 +13223,8 @@ func (m *NetworkMutation) Fields() []string {
 // schema.
 func (m *NetworkMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case network.FieldHclID:
+		return m.HclID()
 	case network.FieldName:
 		return m.Name()
 	case network.FieldCidr:
@@ -12296,6 +13244,8 @@ func (m *NetworkMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *NetworkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case network.FieldHclID:
+		return m.OldHclID(ctx)
 	case network.FieldName:
 		return m.OldName(ctx)
 	case network.FieldCidr:
@@ -12315,6 +13265,13 @@ func (m *NetworkMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *NetworkMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case network.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case network.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -12399,6 +13356,9 @@ func (m *NetworkMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *NetworkMutation) ResetField(name string) error {
 	switch name {
+	case network.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case network.FieldName:
 		m.ResetName()
 		return nil
@@ -12420,12 +13380,15 @@ func (m *NetworkMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NetworkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m._NetworkToTag != nil {
 		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m._NetworkToEnvironment != nil {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
+	}
+	if m._NetworkToHostDependency != nil {
+		edges = append(edges, network.EdgeNetworkToHostDependency)
 	}
 	return edges
 }
@@ -12446,18 +13409,27 @@ func (m *NetworkMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case network.EdgeNetworkToHostDependency:
+		ids := make([]ent.Value, 0, len(m._NetworkToHostDependency))
+		for id := range m._NetworkToHostDependency {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NetworkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removed_NetworkToTag != nil {
 		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m.removed_NetworkToEnvironment != nil {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
+	}
+	if m.removed_NetworkToHostDependency != nil {
+		edges = append(edges, network.EdgeNetworkToHostDependency)
 	}
 	return edges
 }
@@ -12478,18 +13450,27 @@ func (m *NetworkMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case network.EdgeNetworkToHostDependency:
+		ids := make([]ent.Value, 0, len(m.removed_NetworkToHostDependency))
+		for id := range m.removed_NetworkToHostDependency {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NetworkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.cleared_NetworkToTag {
 		edges = append(edges, network.EdgeNetworkToTag)
 	}
 	if m.cleared_NetworkToEnvironment {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
+	}
+	if m.cleared_NetworkToHostDependency {
+		edges = append(edges, network.EdgeNetworkToHostDependency)
 	}
 	return edges
 }
@@ -12502,6 +13483,8 @@ func (m *NetworkMutation) EdgeCleared(name string) bool {
 		return m.cleared_NetworkToTag
 	case network.EdgeNetworkToEnvironment:
 		return m.cleared_NetworkToEnvironment
+	case network.EdgeNetworkToHostDependency:
+		return m.cleared_NetworkToHostDependency
 	}
 	return false
 }
@@ -12523,6 +13506,9 @@ func (m *NetworkMutation) ResetEdge(name string) error {
 		return nil
 	case network.EdgeNetworkToEnvironment:
 		m.ResetNetworkToEnvironment()
+		return nil
+	case network.EdgeNetworkToHostDependency:
+		m.ResetNetworkToHostDependency()
 		return nil
 	}
 	return fmt.Errorf("unknown Network edge %s", name)
@@ -15291,6 +16277,7 @@ type ScriptMutation struct {
 	op                      Op
 	typ                     string
 	id                      *int
+	hcl_id                  *string
 	name                    *string
 	language                *string
 	description             *string
@@ -15398,6 +16385,42 @@ func (m *ScriptMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *ScriptMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *ScriptMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *ScriptMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetName sets the "name" field.
@@ -16081,7 +17104,10 @@ func (m *ScriptMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ScriptMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
+	if m.hcl_id != nil {
+		fields = append(fields, script.FieldHclID)
+	}
 	if m.name != nil {
 		fields = append(fields, script.FieldName)
 	}
@@ -16129,6 +17155,8 @@ func (m *ScriptMutation) Fields() []string {
 // schema.
 func (m *ScriptMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case script.FieldHclID:
+		return m.HclID()
 	case script.FieldName:
 		return m.Name()
 	case script.FieldLanguage:
@@ -16164,6 +17192,8 @@ func (m *ScriptMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ScriptMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case script.FieldHclID:
+		return m.OldHclID(ctx)
 	case script.FieldName:
 		return m.OldName(ctx)
 	case script.FieldLanguage:
@@ -16199,6 +17229,13 @@ func (m *ScriptMutation) OldField(ctx context.Context, name string) (ent.Value, 
 // type.
 func (m *ScriptMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case script.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case script.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -16366,6 +17403,9 @@ func (m *ScriptMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ScriptMutation) ResetField(name string) error {
 	switch name {
+	case script.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case script.FieldName:
 		m.ResetName()
 		return nil

@@ -23,6 +23,14 @@ type IncludedNetwork struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncludedNetworkQuery when eager-loading is set.
 	Edges IncludedNetworkEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// IncludedNetworkToTag holds the value of the IncludedNetworkToTag edge.
+	HCLIncludedNetworkToTag []*Tag `json:"IncludedNetworkToTag,omitempty"`
+	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
+	HCLIncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
+	//
+
 }
 
 // IncludedNetworkEdges holds the relations/edges for other nodes in the graph.

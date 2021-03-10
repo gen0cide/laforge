@@ -284,12 +284,12 @@ func (dq *DNSQuery) WithDNSToTag(opts ...func(*TagQuery)) *DNSQuery {
 // Example:
 //
 //	var v []struct {
-//		Type string `json:"type,omitempty" hcl:"type,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.DNS.Query().
-//		GroupBy(dns.FieldType).
+//		GroupBy(dns.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -311,11 +311,11 @@ func (dq *DNSQuery) GroupBy(field string, fields ...string) *DNSGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Type string `json:"type,omitempty" hcl:"type,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.DNS.Query().
-//		Select(dns.FieldType).
+//		Select(dns.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (dq *DNSQuery) Select(field string, fields ...string) *DNSSelect {

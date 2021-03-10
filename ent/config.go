@@ -37,6 +37,7 @@ type hooks struct {
 	FileExtract        []ent.Hook
 	Finding            []ent.Hook
 	Host               []ent.Hook
+	HostDependency     []ent.Hook
 	IncludedNetwork    []ent.Hook
 	Network            []ent.Hook
 	ProvisionedHost    []ent.Hook

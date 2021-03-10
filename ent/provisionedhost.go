@@ -20,6 +20,22 @@ type ProvisionedHost struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedHostQuery when eager-loading is set.
 	Edges ProvisionedHostEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// ProvisionedHostToTag holds the value of the ProvisionedHostToTag edge.
+	HCLProvisionedHostToTag []*Tag `json:"ProvisionedHostToTag,omitempty"`
+	// ProvisionedHostToStatus holds the value of the ProvisionedHostToStatus edge.
+	HCLProvisionedHostToStatus []*Status `json:"ProvisionedHostToStatus,omitempty"`
+	// ProvisionedHostToProvisionedNetwork holds the value of the ProvisionedHostToProvisionedNetwork edge.
+	HCLProvisionedHostToProvisionedNetwork []*ProvisionedNetwork `json:"ProvisionedHostToProvisionedNetwork,omitempty"`
+	// ProvisionedHostToHost holds the value of the ProvisionedHostToHost edge.
+	HCLProvisionedHostToHost []*Host `json:"ProvisionedHostToHost,omitempty"`
+	// ProvisionedHostToProvisioningStep holds the value of the ProvisionedHostToProvisioningStep edge.
+	HCLProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
+	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
+	HCLProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
+	//
+
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.

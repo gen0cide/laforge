@@ -23,6 +23,20 @@ type Build struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BuildQuery when eager-loading is set.
 	Edges BuildEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// BuildToUser holds the value of the BuildToUser edge.
+	HCLBuildToUser []*User `json:"BuildToUser,omitempty"`
+	// BuildToTag holds the value of the BuildToTag edge.
+	HCLBuildToTag []*Tag `json:"BuildToTag,omitempty"`
+	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
+	HCLBuildToProvisionedNetwork []*ProvisionedNetwork `json:"BuildToProvisionedNetwork,omitempty"`
+	// BuildToTeam holds the value of the BuildToTeam edge.
+	HCLBuildToTeam []*Team `json:"BuildToTeam,omitempty"`
+	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
+	HCLBuildToEnvironment []*Environment `json:"BuildToEnvironment,omitempty"`
+	//
+
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.

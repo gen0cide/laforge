@@ -22,6 +22,7 @@ import (
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -69,6 +70,8 @@ type Client struct {
 	Finding *FindingClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
+	// HostDependency is the client for interacting with the HostDependency builders.
+	HostDependency *HostDependencyClient
 	// IncludedNetwork is the client for interacting with the IncludedNetwork builders.
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
@@ -117,6 +120,7 @@ func (c *Client) init() {
 	c.FileExtract = NewFileExtractClient(c.config)
 	c.Finding = NewFindingClient(c.config)
 	c.Host = NewHostClient(c.config)
+	c.HostDependency = NewHostDependencyClient(c.config)
 	c.IncludedNetwork = NewIncludedNetworkClient(c.config)
 	c.Network = NewNetworkClient(c.config)
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
@@ -173,6 +177,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
 		Host:               NewHostClient(cfg),
+		HostDependency:     NewHostDependencyClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
@@ -214,6 +219,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
 		Host:               NewHostClient(cfg),
+		HostDependency:     NewHostDependencyClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
@@ -266,6 +272,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.FileExtract.Use(hooks...)
 	c.Finding.Use(hooks...)
 	c.Host.Use(hooks...)
+	c.HostDependency.Use(hooks...)
 	c.IncludedNetwork.Use(hooks...)
 	c.Network.Use(hooks...)
 	c.ProvisionedHost.Use(hooks...)
@@ -1961,9 +1968,145 @@ func (c *HostClient) QueryHostToEnvironment(h *Host) *EnvironmentQuery {
 	return query
 }
 
+// QueryHostToHostDependency queries the HostToHostDependency edge of a Host.
+func (c *HostClient) QueryHostToHostDependency(h *Host) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToHostDependencyTable, host.HostToHostDependencyPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *HostClient) Hooks() []Hook {
 	return c.hooks.Host
+}
+
+// HostDependencyClient is a client for the HostDependency schema.
+type HostDependencyClient struct {
+	config
+}
+
+// NewHostDependencyClient returns a client for the HostDependency from the given config.
+func NewHostDependencyClient(c config) *HostDependencyClient {
+	return &HostDependencyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `hostdependency.Hooks(f(g(h())))`.
+func (c *HostDependencyClient) Use(hooks ...Hook) {
+	c.hooks.HostDependency = append(c.hooks.HostDependency, hooks...)
+}
+
+// Create returns a create builder for HostDependency.
+func (c *HostDependencyClient) Create() *HostDependencyCreate {
+	mutation := newHostDependencyMutation(c.config, OpCreate)
+	return &HostDependencyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of HostDependency entities.
+func (c *HostDependencyClient) CreateBulk(builders ...*HostDependencyCreate) *HostDependencyCreateBulk {
+	return &HostDependencyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for HostDependency.
+func (c *HostDependencyClient) Update() *HostDependencyUpdate {
+	mutation := newHostDependencyMutation(c.config, OpUpdate)
+	return &HostDependencyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *HostDependencyClient) UpdateOne(hd *HostDependency) *HostDependencyUpdateOne {
+	mutation := newHostDependencyMutation(c.config, OpUpdateOne, withHostDependency(hd))
+	return &HostDependencyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *HostDependencyClient) UpdateOneID(id int) *HostDependencyUpdateOne {
+	mutation := newHostDependencyMutation(c.config, OpUpdateOne, withHostDependencyID(id))
+	return &HostDependencyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for HostDependency.
+func (c *HostDependencyClient) Delete() *HostDependencyDelete {
+	mutation := newHostDependencyMutation(c.config, OpDelete)
+	return &HostDependencyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *HostDependencyClient) DeleteOne(hd *HostDependency) *HostDependencyDeleteOne {
+	return c.DeleteOneID(hd.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *HostDependencyClient) DeleteOneID(id int) *HostDependencyDeleteOne {
+	builder := c.Delete().Where(hostdependency.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &HostDependencyDeleteOne{builder}
+}
+
+// Query returns a query builder for HostDependency.
+func (c *HostDependencyClient) Query() *HostDependencyQuery {
+	return &HostDependencyQuery{config: c.config}
+}
+
+// Get returns a HostDependency entity by its id.
+func (c *HostDependencyClient) Get(ctx context.Context, id int) (*HostDependency, error) {
+	return c.Query().Where(hostdependency.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *HostDependencyClient) GetX(ctx context.Context, id int) *HostDependency {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryHostDependencyToHost queries the HostDependencyToHost edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToHost(hd *HostDependency) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToHostTable, hostdependency.HostDependencyToHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToNetwork queries the HostDependencyToNetwork edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToNetwork(hd *HostDependency) *NetworkQuery {
+	query := &NetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(network.Table, network.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToNetworkTable, hostdependency.HostDependencyToNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *HostDependencyClient) Hooks() []Hook {
+	return c.hooks.HostDependency
 }
 
 // IncludedNetworkClient is a client for the IncludedNetwork schema.
@@ -2194,6 +2337,22 @@ func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery 
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetworkToHostDependency queries the NetworkToHostDependency edge of a Network.
+func (c *NetworkClient) QueryNetworkToHostDependency(n *Network) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

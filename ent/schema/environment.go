@@ -16,7 +16,7 @@ type Environment struct {
 func (Environment) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		edge.Annotation{
-			StructTag: `hcl:"edges,block" json:"edges"`,
+			StructTag: `json:"edges"`,
 		},
 	}
 }

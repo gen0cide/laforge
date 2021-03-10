@@ -16,6 +16,8 @@ type Network struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Cidr holds the value of the "cidr" field.
@@ -28,7 +30,16 @@ type Network struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NetworkQuery when eager-loading is set.
-	Edges                                              NetworkEdges `json:"edges"`
+	Edges NetworkEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// NetworkToTag holds the value of the NetworkToTag edge.
+	HCLNetworkToTag []*Tag `json:"NetworkToTag,omitempty"`
+	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
+	HCLNetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
+	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
+	HCLNetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
+	//
 	provisioned_network_provisioned_network_to_network *int
 }
 
@@ -38,9 +49,11 @@ type NetworkEdges struct {
 	NetworkToTag []*Tag `json:"NetworkToTag,omitempty"`
 	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
 	NetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
+	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
+	NetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // NetworkToTagOrErr returns the NetworkToTag value or an error if the edge
@@ -61,6 +74,15 @@ func (e NetworkEdges) NetworkToEnvironmentOrErr() ([]*Environment, error) {
 	return nil, &NotLoadedError{edge: "NetworkToEnvironment"}
 }
 
+// NetworkToHostDependencyOrErr returns the NetworkToHostDependency value or an error if the edge
+// was not loaded in eager-loading.
+func (e NetworkEdges) NetworkToHostDependencyOrErr() ([]*HostDependency, error) {
+	if e.loadedTypes[2] {
+		return e.NetworkToHostDependency, nil
+	}
+	return nil, &NotLoadedError{edge: "NetworkToHostDependency"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Network) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -72,7 +94,7 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case network.FieldID:
 			values[i] = &sql.NullInt64{}
-		case network.FieldName, network.FieldCidr:
+		case network.FieldHclID, network.FieldName, network.FieldCidr:
 			values[i] = &sql.NullString{}
 		case network.ForeignKeys[0]: // provisioned_network_provisioned_network_to_network
 			values[i] = &sql.NullInt64{}
@@ -97,6 +119,12 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			n.ID = int(value.Int64)
+		case network.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				n.HclID = value.String
+			}
 		case network.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -155,6 +183,11 @@ func (n *Network) QueryNetworkToEnvironment() *EnvironmentQuery {
 	return (&NetworkClient{config: n.config}).QueryNetworkToEnvironment(n)
 }
 
+// QueryNetworkToHostDependency queries the "NetworkToHostDependency" edge of the Network entity.
+func (n *Network) QueryNetworkToHostDependency() *HostDependencyQuery {
+	return (&NetworkClient{config: n.config}).QueryNetworkToHostDependency(n)
+}
+
 // Update returns a builder for updating this Network.
 // Note that you need to call Network.Unwrap() before calling this method if this Network
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -178,6 +211,8 @@ func (n *Network) String() string {
 	var builder strings.Builder
 	builder.WriteString("Network(")
 	builder.WriteString(fmt.Sprintf("id=%v", n.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(n.HclID)
 	builder.WriteString(", name=")
 	builder.WriteString(n.Name)
 	builder.WriteString(", cidr=")

@@ -26,7 +26,12 @@ type FileExtract struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileExtractQuery when eager-loading is set.
-	Edges                                               FileExtractEdges `json:"edges"`
+	Edges FileExtractEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// FileExtractToTag holds the value of the FileExtractToTag edge.
+	HCLFileExtractToTag []*Tag `json:"FileExtractToTag,omitempty"`
+	//
 	provisioning_step_provisioning_step_to_file_extract *int
 }
 

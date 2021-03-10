@@ -30,7 +30,12 @@ type Status struct {
 	Error string `json:"error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StatusQuery when eager-loading is set.
-	Edges                                             StatusEdges `json:"edges"`
+	Edges StatusEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// StatusToTag holds the value of the StatusToTag edge.
+	HCLStatusToTag []*Tag `json:"StatusToTag,omitempty"`
+	//
 	provisioned_host_provisioned_host_to_status       *int
 	provisioned_network_provisioned_network_to_status *int
 	provisioning_step_provisioning_step_to_status     *int

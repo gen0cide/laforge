@@ -276,6 +276,30 @@ func (h *Host) HostToEnvironment(ctx context.Context) ([]*Environment, error) {
 	return result, err
 }
 
+func (h *Host) HostToHostDependency(ctx context.Context) ([]*HostDependency, error) {
+	result, err := h.Edges.HostToHostDependencyOrErr()
+	if IsNotLoaded(err) {
+		result, err = h.QueryHostToHostDependency().All(ctx)
+	}
+	return result, err
+}
+
+func (hd *HostDependency) HostDependencyToHost(ctx context.Context) ([]*Host, error) {
+	result, err := hd.Edges.HostDependencyToHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = hd.QueryHostDependencyToHost().All(ctx)
+	}
+	return result, err
+}
+
+func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) ([]*Network, error) {
+	result, err := hd.Edges.HostDependencyToNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = hd.QueryHostDependencyToNetwork().All(ctx)
+	}
+	return result, err
+}
+
 func (in *IncludedNetwork) IncludedNetworkToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := in.Edges.IncludedNetworkToTagOrErr()
 	if IsNotLoaded(err) {
@@ -304,6 +328,14 @@ func (n *Network) NetworkToEnvironment(ctx context.Context) ([]*Environment, err
 	result, err := n.Edges.NetworkToEnvironmentOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryNetworkToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Network) NetworkToHostDependency(ctx context.Context) ([]*HostDependency, error) {
+	result, err := n.Edges.NetworkToHostDependencyOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryNetworkToHostDependency().All(ctx)
 	}
 	return result, err
 }

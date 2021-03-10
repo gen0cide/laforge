@@ -27,6 +27,7 @@ import (
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -292,14 +293,22 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     c.ID,
 		Type:   "Command",
-		Fields: make([]*Field, 10),
+		Fields: make([]*Field, 11),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(c.Name); err != nil {
+	if buf, err = json.Marshal(c.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),
@@ -307,7 +316,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Description); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "description",
 		Value: string(buf),
@@ -315,7 +324,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Program); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "program",
 		Value: string(buf),
@@ -323,7 +332,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Args); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "[]string",
 		Name:  "args",
 		Value: string(buf),
@@ -331,7 +340,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.IgnoreErrors); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "bool",
 		Name:  "ignore_errors",
 		Value: string(buf),
@@ -339,7 +348,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Disabled); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "bool",
 		Name:  "disabled",
 		Value: string(buf),
@@ -347,7 +356,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Cooldown); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "int",
 		Name:  "cooldown",
 		Value: string(buf),
@@ -355,7 +364,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Timeout); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "int",
 		Name:  "timeout",
 		Value: string(buf),
@@ -363,7 +372,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Vars); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
 		Value: string(buf),
@@ -371,7 +380,7 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(c.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -476,14 +485,22 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     d.ID,
 		Type:   "DNS",
-		Fields: make([]*Field, 5),
+		Fields: make([]*Field, 6),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(d.Type); err != nil {
+	if buf, err = json.Marshal(d.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(d.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "type",
 		Value: string(buf),
@@ -491,7 +508,7 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(d.RootDomain); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "root_domain",
 		Value: string(buf),
@@ -499,7 +516,7 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(d.DNSServers); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "[]string",
 		Name:  "dns_servers",
 		Value: string(buf),
@@ -507,7 +524,7 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(d.NtpServers); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "[]string",
 		Name:  "ntp_servers",
 		Value: string(buf),
@@ -515,7 +532,7 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(d.Config); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "map[string]string",
 		Name:  "config",
 		Value: string(buf),
@@ -537,14 +554,22 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     dr.ID,
 		Type:   "DNSRecord",
-		Fields: make([]*Field, 7),
+		Fields: make([]*Field, 8),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(dr.Name); err != nil {
+	if buf, err = json.Marshal(dr.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(dr.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),
@@ -552,7 +577,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Values); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "[]string",
 		Name:  "values",
 		Value: string(buf),
@@ -560,7 +585,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Type); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "type",
 		Value: string(buf),
@@ -568,7 +593,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Zone); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "string",
 		Name:  "zone",
 		Value: string(buf),
@@ -576,7 +601,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Vars); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
 		Value: string(buf),
@@ -584,7 +609,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Disabled); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "bool",
 		Name:  "disabled",
 		Value: string(buf),
@@ -592,7 +617,7 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -859,14 +884,22 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fd.ID,
 		Type:   "FileDownload",
-		Fields: make([]*Field, 9),
+		Fields: make([]*Field, 10),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(fd.SourceType); err != nil {
+	if buf, err = json.Marshal(fd.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(fd.SourceType); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "source_type",
 		Value: string(buf),
@@ -874,7 +907,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Source); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "source",
 		Value: string(buf),
@@ -882,7 +915,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Destination); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "destination",
 		Value: string(buf),
@@ -890,7 +923,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Template); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "bool",
 		Name:  "template",
 		Value: string(buf),
@@ -898,7 +931,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Perms); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "string",
 		Name:  "perms",
 		Value: string(buf),
@@ -906,7 +939,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Disabled); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "bool",
 		Name:  "disabled",
 		Value: string(buf),
@@ -914,7 +947,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Md5); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "md5",
 		Value: string(buf),
@@ -922,7 +955,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.AbsPath); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "abs_path",
 		Value: string(buf),
@@ -930,7 +963,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -1096,14 +1129,22 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     h.ID,
 		Type:   "Host",
-		Fields: make([]*Field, 13),
-		Edges:  make([]*Edge, 4),
+		Fields: make([]*Field, 14),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(h.Hostname); err != nil {
+	if buf, err = json.Marshal(h.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(h.Hostname); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "hostname",
 		Value: string(buf),
@@ -1111,7 +1152,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.Description); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "description",
 		Value: string(buf),
@@ -1119,7 +1160,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.OS); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "OS",
 		Value: string(buf),
@@ -1127,15 +1168,23 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.LastOctet); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "int",
 		Name:  "last_octet",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(h.InstanceSize); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "instance_size",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(h.AllowMACChanges); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "bool",
 		Name:  "allow_mac_changes",
 		Value: string(buf),
@@ -1143,7 +1192,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.ExposedTCPPorts); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "[]string",
 		Name:  "exposed_tcp_ports",
 		Value: string(buf),
@@ -1151,7 +1200,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.ExposedUDPPorts); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "[]string",
 		Name:  "exposed_udp_ports",
 		Value: string(buf),
@@ -1159,7 +1208,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.OverridePassword); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "override_password",
 		Value: string(buf),
@@ -1167,7 +1216,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.Vars); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
 		Value: string(buf),
@@ -1175,23 +1224,15 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.UserGroups); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "[]string",
 		Name:  "user_groups",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(h.DependsOn); err != nil {
-		return nil, err
-	}
-	node.Fields[10] = &Field{
-		Type:  "map[string]string",
-		Name:  "depends_on",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(h.ProvisionSteps); err != nil {
 		return nil, err
 	}
-	node.Fields[11] = &Field{
+	node.Fields[12] = &Field{
 		Type:  "[]string",
 		Name:  "provision_steps",
 		Value: string(buf),
@@ -1199,7 +1240,7 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(h.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[12] = &Field{
+	node.Fields[13] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -1240,6 +1281,63 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[3].IDs, err = h.QueryHostToEnvironment().
 		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "HostDependency",
+		Name: "HostToHostDependency",
+	}
+	node.Edges[4].IDs, err = h.QueryHostToHostDependency().
+		Select(hostdependency.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     hd.ID,
+		Type:   "HostDependency",
+		Fields: make([]*Field, 2),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(hd.HostID); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "host_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(hd.NetworkID); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "network_id",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Host",
+		Name: "HostDependencyToHost",
+	}
+	node.Edges[0].IDs, err = hd.QueryHostDependencyToHost().
+		Select(host.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Network",
+		Name: "HostDependencyToNetwork",
+	}
+	node.Edges[1].IDs, err = hd.QueryHostDependencyToNetwork().
+		Select(network.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -1298,14 +1396,22 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     n.ID,
 		Type:   "Network",
-		Fields: make([]*Field, 5),
-		Edges:  make([]*Edge, 2),
+		Fields: make([]*Field, 6),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(n.Name); err != nil {
+	if buf, err = json.Marshal(n.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(n.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),
@@ -1313,7 +1419,7 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(n.Cidr); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "cidr",
 		Value: string(buf),
@@ -1321,7 +1427,7 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(n.VdiVisible); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "bool",
 		Name:  "vdi_visible",
 		Value: string(buf),
@@ -1329,7 +1435,7 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(n.Vars); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
 		Value: string(buf),
@@ -1337,7 +1443,7 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(n.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -1358,6 +1464,16 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[1].IDs, err = n.QueryNetworkToEnvironment().
 		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "HostDependency",
+		Name: "NetworkToHostDependency",
+	}
+	node.Edges[2].IDs, err = n.QueryNetworkToHostDependency().
+		Select(hostdependency.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -1652,14 +1768,22 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
 		Type:   "Script",
-		Fields: make([]*Field, 13),
+		Fields: make([]*Field, 14),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(s.Name); err != nil {
+	if buf, err = json.Marshal(s.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),
@@ -1667,7 +1791,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Language); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "language",
 		Value: string(buf),
@@ -1675,7 +1799,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Description); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "description",
 		Value: string(buf),
@@ -1683,7 +1807,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Source); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "string",
 		Name:  "source",
 		Value: string(buf),
@@ -1691,7 +1815,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.SourceType); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[5] = &Field{
 		Type:  "string",
 		Name:  "source_type",
 		Value: string(buf),
@@ -1699,7 +1823,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Cooldown); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "int",
 		Name:  "cooldown",
 		Value: string(buf),
@@ -1707,7 +1831,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Timeout); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "int",
 		Name:  "timeout",
 		Value: string(buf),
@@ -1715,7 +1839,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.IgnoreErrors); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "bool",
 		Name:  "ignore_errors",
 		Value: string(buf),
@@ -1723,7 +1847,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Args); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "[]string",
 		Name:  "args",
 		Value: string(buf),
@@ -1731,7 +1855,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Disabled); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "bool",
 		Name:  "disabled",
 		Value: string(buf),
@@ -1739,7 +1863,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Vars); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "map[string]string",
 		Name:  "vars",
 		Value: string(buf),
@@ -1747,7 +1871,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.AbsPath); err != nil {
 		return nil, err
 	}
-	node.Fields[11] = &Field{
+	node.Fields[12] = &Field{
 		Type:  "string",
 		Name:  "abs_path",
 		Value: string(buf),
@@ -1755,7 +1879,7 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[12] = &Field{
+	node.Fields[13] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -2229,6 +2353,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case hostdependency.Table:
+		n, err := c.HostDependency.Query().
+			Where(hostdependency.ID(id)).
+			CollectFields(ctx, "HostDependency").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case includednetwork.Table:
 		n, err := c.IncludedNetwork.Query().
 			Where(includednetwork.ID(id)).
@@ -2552,6 +2685,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Host.Query().
 			Where(host.IDIn(ids...)).
 			CollectFields(ctx, "Host").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case hostdependency.Table:
+		nodes, err := c.HostDependency.Query().
+			Where(hostdependency.IDIn(ids...)).
+			CollectFields(ctx, "HostDependency").
 			All(ctx)
 		if err != nil {
 			return nil, err

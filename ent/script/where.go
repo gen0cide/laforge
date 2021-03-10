@@ -91,6 +91,13 @@ func IDLTE(id int) predicate.Script {
 	})
 }
 
+// HclID applies equality check predicate on the "hcl_id" field. It's identical to HclIDEQ.
+func HclID(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
@@ -158,6 +165,117 @@ func Disabled(v bool) predicate.Script {
 func AbsPath(v string) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAbsPath), v))
+	})
+}
+
+// HclIDEQ applies the EQ predicate on the "hcl_id" field.
+func HclIDEQ(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDNEQ applies the NEQ predicate on the "hcl_id" field.
+func HclIDNEQ(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDIn applies the In predicate on the "hcl_id" field.
+func HclIDIn(vs ...string) predicate.Script {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Script(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDNotIn applies the NotIn predicate on the "hcl_id" field.
+func HclIDNotIn(vs ...string) predicate.Script {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Script(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDGT applies the GT predicate on the "hcl_id" field.
+func HclIDGT(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDGTE applies the GTE predicate on the "hcl_id" field.
+func HclIDGTE(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLT applies the LT predicate on the "hcl_id" field.
+func HclIDLT(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLTE applies the LTE predicate on the "hcl_id" field.
+func HclIDLTE(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContains applies the Contains predicate on the "hcl_id" field.
+func HclIDContains(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasPrefix applies the HasPrefix predicate on the "hcl_id" field.
+func HclIDHasPrefix(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasSuffix applies the HasSuffix predicate on the "hcl_id" field.
+func HclIDHasSuffix(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDEqualFold applies the EqualFold predicate on the "hcl_id" field.
+func HclIDEqualFold(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContainsFold applies the ContainsFold predicate on the "hcl_id" field.
+func HclIDContainsFold(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHclID), v))
 	})
 }
 

@@ -28,6 +28,12 @@ func (cu *CommandUpdate) Where(ps ...predicate.Command) *CommandUpdate {
 	return cu
 }
 
+// SetHclID sets the "hcl_id" field.
+func (cu *CommandUpdate) SetHclID(s string) *CommandUpdate {
+	cu.mutation.SetHclID(s)
+	return cu
+}
+
 // SetName sets the "name" field.
 func (cu *CommandUpdate) SetName(s string) *CommandUpdate {
 	cu.mutation.SetName(s)
@@ -269,6 +275,13 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := cu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: command.FieldHclID,
+		})
+	}
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -477,6 +490,12 @@ type CommandUpdateOne struct {
 	config
 	hooks    []Hook
 	mutation *CommandMutation
+}
+
+// SetHclID sets the "hcl_id" field.
+func (cuo *CommandUpdateOne) SetHclID(s string) *CommandUpdateOne {
+	cuo.mutation.SetHclID(s)
+	return cuo
 }
 
 // SetName sets the "name" field.
@@ -724,6 +743,13 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cuo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: command.FieldHclID,
+		})
 	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

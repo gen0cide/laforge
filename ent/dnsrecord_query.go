@@ -284,12 +284,12 @@ func (drq *DNSRecordQuery) WithDNSRecordToTag(opts ...func(*TagQuery)) *DNSRecor
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.DNSRecord.Query().
-//		GroupBy(dnsrecord.FieldName).
+//		GroupBy(dnsrecord.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -311,11 +311,11 @@ func (drq *DNSRecordQuery) GroupBy(field string, fields ...string) *DNSRecordGro
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.DNSRecord.Query().
-//		Select(dnsrecord.FieldName).
+//		Select(dnsrecord.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (drq *DNSRecordQuery) Select(field string, fields ...string) *DNSRecordSelect {

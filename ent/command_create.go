@@ -21,6 +21,12 @@ type CommandCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the "hcl_id" field.
+func (cc *CommandCreate) SetHclID(s string) *CommandCreate {
+	cc.mutation.SetHclID(s)
+	return cc
+}
+
 // SetName sets the "name" field.
 func (cc *CommandCreate) SetName(s string) *CommandCreate {
 	cc.mutation.SetName(s)
@@ -162,6 +168,9 @@ func (cc *CommandCreate) SaveX(ctx context.Context) *Command {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *CommandCreate) check() error {
+	if _, ok := cc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := cc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
@@ -229,6 +238,14 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := cc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: command.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

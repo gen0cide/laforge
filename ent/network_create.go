@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -19,6 +20,12 @@ type NetworkCreate struct {
 	config
 	mutation *NetworkMutation
 	hooks    []Hook
+}
+
+// SetHclID sets the "hcl_id" field.
+func (nc *NetworkCreate) SetHclID(s string) *NetworkCreate {
+	nc.mutation.SetHclID(s)
+	return nc
 }
 
 // SetName sets the "name" field.
@@ -81,6 +88,21 @@ func (nc *NetworkCreate) AddNetworkToEnvironment(e ...*Environment) *NetworkCrea
 	return nc.AddNetworkToEnvironmentIDs(ids...)
 }
 
+// AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
+func (nc *NetworkCreate) AddNetworkToHostDependencyIDs(ids ...int) *NetworkCreate {
+	nc.mutation.AddNetworkToHostDependencyIDs(ids...)
+	return nc
+}
+
+// AddNetworkToHostDependency adds the "NetworkToHostDependency" edges to the HostDependency entity.
+func (nc *NetworkCreate) AddNetworkToHostDependency(h ...*HostDependency) *NetworkCreate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return nc.AddNetworkToHostDependencyIDs(ids...)
+}
+
 // Mutation returns the NetworkMutation object of the builder.
 func (nc *NetworkCreate) Mutation() *NetworkMutation {
 	return nc.mutation
@@ -132,6 +154,9 @@ func (nc *NetworkCreate) SaveX(ctx context.Context) *Network {
 
 // check runs all checks and user-defined validators on the builder.
 func (nc *NetworkCreate) check() error {
+	if _, ok := nc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := nc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
@@ -174,6 +199,14 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := nc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: network.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := nc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -244,6 +277,25 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}

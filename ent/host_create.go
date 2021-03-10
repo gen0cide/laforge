@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -21,6 +22,12 @@ type HostCreate struct {
 	config
 	mutation *HostMutation
 	hooks    []Hook
+}
+
+// SetHclID sets the "hcl_id" field.
+func (hc *HostCreate) SetHclID(s string) *HostCreate {
+	hc.mutation.SetHclID(s)
+	return hc
 }
 
 // SetHostname sets the "hostname" field.
@@ -44,6 +51,12 @@ func (hc *HostCreate) SetOS(s string) *HostCreate {
 // SetLastOctet sets the "last_octet" field.
 func (hc *HostCreate) SetLastOctet(i int) *HostCreate {
 	hc.mutation.SetLastOctet(i)
+	return hc
+}
+
+// SetInstanceSize sets the "instance_size" field.
+func (hc *HostCreate) SetInstanceSize(s string) *HostCreate {
+	hc.mutation.SetInstanceSize(s)
 	return hc
 }
 
@@ -80,12 +93,6 @@ func (hc *HostCreate) SetVars(m map[string]string) *HostCreate {
 // SetUserGroups sets the "user_groups" field.
 func (hc *HostCreate) SetUserGroups(s []string) *HostCreate {
 	hc.mutation.SetUserGroups(s)
-	return hc
-}
-
-// SetDependsOn sets the "depends_on" field.
-func (hc *HostCreate) SetDependsOn(m map[string]string) *HostCreate {
-	hc.mutation.SetDependsOn(m)
 	return hc
 }
 
@@ -161,6 +168,21 @@ func (hc *HostCreate) AddHostToEnvironment(e ...*Environment) *HostCreate {
 	return hc.AddHostToEnvironmentIDs(ids...)
 }
 
+// AddHostToHostDependencyIDs adds the "HostToHostDependency" edge to the HostDependency entity by IDs.
+func (hc *HostCreate) AddHostToHostDependencyIDs(ids ...int) *HostCreate {
+	hc.mutation.AddHostToHostDependencyIDs(ids...)
+	return hc
+}
+
+// AddHostToHostDependency adds the "HostToHostDependency" edges to the HostDependency entity.
+func (hc *HostCreate) AddHostToHostDependency(h ...*HostDependency) *HostCreate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return hc.AddHostToHostDependencyIDs(ids...)
+}
+
 // Mutation returns the HostMutation object of the builder.
 func (hc *HostCreate) Mutation() *HostMutation {
 	return hc.mutation
@@ -212,6 +234,9 @@ func (hc *HostCreate) SaveX(ctx context.Context) *Host {
 
 // check runs all checks and user-defined validators on the builder.
 func (hc *HostCreate) check() error {
+	if _, ok := hc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := hc.mutation.Hostname(); !ok {
 		return &ValidationError{Name: "hostname", err: errors.New("ent: missing required field \"hostname\"")}
 	}
@@ -223,6 +248,9 @@ func (hc *HostCreate) check() error {
 	}
 	if _, ok := hc.mutation.LastOctet(); !ok {
 		return &ValidationError{Name: "last_octet", err: errors.New("ent: missing required field \"last_octet\"")}
+	}
+	if _, ok := hc.mutation.InstanceSize(); !ok {
+		return &ValidationError{Name: "instance_size", err: errors.New("ent: missing required field \"instance_size\"")}
 	}
 	if _, ok := hc.mutation.AllowMACChanges(); !ok {
 		return &ValidationError{Name: "allow_mac_changes", err: errors.New("ent: missing required field \"allow_mac_changes\"")}
@@ -272,6 +300,14 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := hc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: host.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := hc.mutation.Hostname(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -303,6 +339,14 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Column: host.FieldLastOctet,
 		})
 		_node.LastOctet = value
+	}
+	if value, ok := hc.mutation.InstanceSize(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: host.FieldInstanceSize,
+		})
+		_node.InstanceSize = value
 	}
 	if value, ok := hc.mutation.AllowMACChanges(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -351,14 +395,6 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Column: host.FieldUserGroups,
 		})
 		_node.UserGroups = value
-	}
-	if value, ok := hc.mutation.DependsOn(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDependsOn,
-		})
-		_node.DependsOn = value
 	}
 	if value, ok := hc.mutation.ProvisionSteps(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -444,6 +480,25 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hc.mutation.HostToHostDependencyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToHostDependencyTable,
+			Columns: host.HostToHostDependencyPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}

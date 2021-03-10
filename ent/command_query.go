@@ -320,12 +320,12 @@ func (cq *CommandQuery) WithCommandToTag(opts ...func(*TagQuery)) *CommandQuery 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Command.Query().
-//		GroupBy(command.FieldName).
+//		GroupBy(command.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -347,11 +347,11 @@ func (cq *CommandQuery) GroupBy(field string, fields ...string) *CommandGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Command.Query().
-//		Select(command.FieldName).
+//		Select(command.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (cq *CommandQuery) Select(field string, fields ...string) *CommandSelect {

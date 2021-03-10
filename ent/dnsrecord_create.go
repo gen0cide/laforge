@@ -20,6 +20,12 @@ type DNSRecordCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the "hcl_id" field.
+func (drc *DNSRecordCreate) SetHclID(s string) *DNSRecordCreate {
+	drc.mutation.SetHclID(s)
+	return drc
+}
+
 // SetName sets the "name" field.
 func (drc *DNSRecordCreate) SetName(s string) *DNSRecordCreate {
 	drc.mutation.SetName(s)
@@ -128,6 +134,9 @@ func (drc *DNSRecordCreate) SaveX(ctx context.Context) *DNSRecord {
 
 // check runs all checks and user-defined validators on the builder.
 func (drc *DNSRecordCreate) check() error {
+	if _, ok := drc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := drc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
@@ -176,6 +185,14 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := drc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dnsrecord.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := drc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

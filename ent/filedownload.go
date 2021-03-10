@@ -16,6 +16,8 @@ type FileDownload struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// SourceType holds the value of the "source_type" field.
 	SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 	// Source holds the value of the "source" field.
@@ -36,7 +38,12 @@ type FileDownload struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDownloadQuery when eager-loading is set.
-	Edges                                                FileDownloadEdges `json:"edges"`
+	Edges FileDownloadEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
+	HCLFileDownloadToTag []*Tag `json:"FileDownloadToTag,omitempty"`
+	//
 	provisioning_step_provisioning_step_to_file_download *int
 }
 
@@ -69,7 +76,7 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case filedownload.FieldID:
 			values[i] = &sql.NullInt64{}
-		case filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
+		case filedownload.FieldHclID, filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
 			values[i] = &sql.NullString{}
 		case filedownload.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_download
 			values[i] = &sql.NullInt64{}
@@ -94,6 +101,12 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			fd.ID = int(value.Int64)
+		case filedownload.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				fd.HclID = value.String
+			}
 		case filedownload.FieldSourceType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field source_type", values[i])
@@ -191,6 +204,8 @@ func (fd *FileDownload) String() string {
 	var builder strings.Builder
 	builder.WriteString("FileDownload(")
 	builder.WriteString(fmt.Sprintf("id=%v", fd.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(fd.HclID)
 	builder.WriteString(", source_type=")
 	builder.WriteString(fd.SourceType)
 	builder.WriteString(", source=")

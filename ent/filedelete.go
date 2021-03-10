@@ -22,7 +22,12 @@ type FileDelete struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileDeleteQuery when eager-loading is set.
-	Edges                                              FileDeleteEdges `json:"edges"`
+	Edges FileDeleteEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
+	HCLFileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
+	//
 	provisioning_step_provisioning_step_to_file_delete *int
 }
 

@@ -7,6 +7,8 @@ const (
 	Label = "dns"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldRootDomain holds the string denoting the root_domain field in the database.
@@ -35,6 +37,7 @@ const (
 // Columns holds all SQL columns for dns fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldType,
 	FieldRootDomain,
 	FieldDNSServers,

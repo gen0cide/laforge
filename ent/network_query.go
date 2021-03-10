@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -27,9 +28,10 @@ type NetworkQuery struct {
 	fields     []string
 	predicates []predicate.Network
 	// eager-loading edges.
-	withNetworkToTag         *TagQuery
-	withNetworkToEnvironment *EnvironmentQuery
-	withFKs                  bool
+	withNetworkToTag            *TagQuery
+	withNetworkToEnvironment    *EnvironmentQuery
+	withNetworkToHostDependency *HostDependencyQuery
+	withFKs                     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -96,6 +98,28 @@ func (nq *NetworkQuery) QueryNetworkToEnvironment() *EnvironmentQuery {
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNetworkToHostDependency chains the current query on the "NetworkToHostDependency" edge.
+func (nq *NetworkQuery) QueryNetworkToHostDependency() *HostDependencyQuery {
+	query := &HostDependencyQuery{config: nq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, selector),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -279,13 +303,14 @@ func (nq *NetworkQuery) Clone() *NetworkQuery {
 		return nil
 	}
 	return &NetworkQuery{
-		config:                   nq.config,
-		limit:                    nq.limit,
-		offset:                   nq.offset,
-		order:                    append([]OrderFunc{}, nq.order...),
-		predicates:               append([]predicate.Network{}, nq.predicates...),
-		withNetworkToTag:         nq.withNetworkToTag.Clone(),
-		withNetworkToEnvironment: nq.withNetworkToEnvironment.Clone(),
+		config:                      nq.config,
+		limit:                       nq.limit,
+		offset:                      nq.offset,
+		order:                       append([]OrderFunc{}, nq.order...),
+		predicates:                  append([]predicate.Network{}, nq.predicates...),
+		withNetworkToTag:            nq.withNetworkToTag.Clone(),
+		withNetworkToEnvironment:    nq.withNetworkToEnvironment.Clone(),
+		withNetworkToHostDependency: nq.withNetworkToHostDependency.Clone(),
 		// clone intermediate query.
 		sql:  nq.sql.Clone(),
 		path: nq.path,
@@ -314,18 +339,29 @@ func (nq *NetworkQuery) WithNetworkToEnvironment(opts ...func(*EnvironmentQuery)
 	return nq
 }
 
+// WithNetworkToHostDependency tells the query-builder to eager-load the nodes that are connected to
+// the "NetworkToHostDependency" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NetworkQuery) WithNetworkToHostDependency(opts ...func(*HostDependencyQuery)) *NetworkQuery {
+	query := &HostDependencyQuery{config: nq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withNetworkToHostDependency = query
+	return nq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Network.Query().
-//		GroupBy(network.FieldName).
+//		GroupBy(network.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -347,11 +383,11 @@ func (nq *NetworkQuery) GroupBy(field string, fields ...string) *NetworkGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" hcl:"name,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Network.Query().
-//		Select(network.FieldName).
+//		Select(network.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (nq *NetworkQuery) Select(field string, fields ...string) *NetworkSelect {
@@ -380,9 +416,10 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		nodes       = []*Network{}
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			nq.withNetworkToTag != nil,
 			nq.withNetworkToEnvironment != nil,
+			nq.withNetworkToHostDependency != nil,
 		}
 	)
 	if withFKs {
@@ -497,6 +534,70 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.NetworkToEnvironment = append(nodes[i].Edges.NetworkToEnvironment, n)
+			}
+		}
+	}
+
+	if query := nq.withNetworkToHostDependency; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Network, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.NetworkToHostDependency = []*HostDependency{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Network)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   network.NetworkToHostDependencyTable,
+				Columns: network.NetworkToHostDependencyPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(network.NetworkToHostDependencyPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, nq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "NetworkToHostDependency": %v`, err)
+		}
+		query.Where(hostdependency.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "NetworkToHostDependency" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.NetworkToHostDependency = append(nodes[i].Edges.NetworkToHostDependency, n)
 			}
 		}
 	}

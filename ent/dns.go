@@ -16,6 +16,8 @@ type DNS struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty" hcl:"type,attr"`
 	// RootDomain holds the value of the "root_domain" field.
@@ -28,7 +30,12 @@ type DNS struct {
 	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSQuery when eager-loading is set.
-	Edges                          DNSEdges `json:"edges"`
+	Edges DNSEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// DNSToTag holds the value of the DNSToTag edge.
+	HCLDNSToTag []*Tag `json:"DNSToTag,omitempty"`
+	//
 	competition_competition_to_dns *int
 }
 
@@ -59,7 +66,7 @@ func (*DNS) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &[]byte{}
 		case dns.FieldID:
 			values[i] = &sql.NullInt64{}
-		case dns.FieldType, dns.FieldRootDomain:
+		case dns.FieldHclID, dns.FieldType, dns.FieldRootDomain:
 			values[i] = &sql.NullString{}
 		case dns.ForeignKeys[0]: // competition_competition_to_dns
 			values[i] = &sql.NullInt64{}
@@ -84,6 +91,12 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			d.ID = int(value.Int64)
+		case dns.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				d.HclID = value.String
+			}
 		case dns.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
@@ -163,6 +176,8 @@ func (d *DNS) String() string {
 	var builder strings.Builder
 	builder.WriteString("DNS(")
 	builder.WriteString(fmt.Sprintf("id=%v", d.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(d.HclID)
 	builder.WriteString(", type=")
 	builder.WriteString(d.Type)
 	builder.WriteString(", root_domain=")

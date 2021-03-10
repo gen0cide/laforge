@@ -22,6 +22,28 @@ type ProvisioningStep struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisioningStepQuery when eager-loading is set.
 	Edges ProvisioningStepEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// ProvisioningStepToTag holds the value of the ProvisioningStepToTag edge.
+	HCLProvisioningStepToTag []*Tag `json:"ProvisioningStepToTag,omitempty"`
+	// ProvisioningStepToStatus holds the value of the ProvisioningStepToStatus edge.
+	HCLProvisioningStepToStatus []*Status `json:"ProvisioningStepToStatus,omitempty"`
+	// ProvisioningStepToProvisionedHost holds the value of the ProvisioningStepToProvisionedHost edge.
+	HCLProvisioningStepToProvisionedHost []*ProvisionedHost `json:"ProvisioningStepToProvisionedHost,omitempty"`
+	// ProvisioningStepToScript holds the value of the ProvisioningStepToScript edge.
+	HCLProvisioningStepToScript []*Script `json:"ProvisioningStepToScript,omitempty"`
+	// ProvisioningStepToCommand holds the value of the ProvisioningStepToCommand edge.
+	HCLProvisioningStepToCommand []*Command `json:"ProvisioningStepToCommand,omitempty"`
+	// ProvisioningStepToDNSRecord holds the value of the ProvisioningStepToDNSRecord edge.
+	HCLProvisioningStepToDNSRecord []*DNSRecord `json:"ProvisioningStepToDNSRecord,omitempty"`
+	// ProvisioningStepToFileDelete holds the value of the ProvisioningStepToFileDelete edge.
+	HCLProvisioningStepToFileDelete []*FileDelete `json:"ProvisioningStepToFileDelete,omitempty"`
+	// ProvisioningStepToFileDownload holds the value of the ProvisioningStepToFileDownload edge.
+	HCLProvisioningStepToFileDownload []*FileDownload `json:"ProvisioningStepToFileDownload,omitempty"`
+	// ProvisioningStepToFileExtract holds the value of the ProvisioningStepToFileExtract edge.
+	HCLProvisioningStepToFileExtract []*FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
+	//
+
 }
 
 // ProvisioningStepEdges holds the relations/edges for other nodes in the graph.

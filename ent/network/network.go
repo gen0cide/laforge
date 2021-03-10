@@ -7,6 +7,8 @@ const (
 	Label = "network"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldCidr holds the string denoting the cidr field in the database.
@@ -22,6 +24,8 @@ const (
 	EdgeNetworkToTag = "NetworkToTag"
 	// EdgeNetworkToEnvironment holds the string denoting the networktoenvironment edge name in mutations.
 	EdgeNetworkToEnvironment = "NetworkToEnvironment"
+	// EdgeNetworkToHostDependency holds the string denoting the networktohostdependency edge name in mutations.
+	EdgeNetworkToHostDependency = "NetworkToHostDependency"
 
 	// Table holds the table name of the network in the database.
 	Table = "networks"
@@ -37,11 +41,17 @@ const (
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	NetworkToEnvironmentInverseTable = "environments"
+	// NetworkToHostDependencyTable is the table the holds the NetworkToHostDependency relation/edge. The primary key declared below.
+	NetworkToHostDependencyTable = "host_dependency_HostDependencyToNetwork"
+	// NetworkToHostDependencyInverseTable is the table name for the HostDependency entity.
+	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
+	NetworkToHostDependencyInverseTable = "host_dependencies"
 )
 
 // Columns holds all SQL columns for network fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldName,
 	FieldCidr,
 	FieldVdiVisible,
@@ -58,6 +68,9 @@ var (
 	// NetworkToEnvironmentPrimaryKey and NetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the NetworkToEnvironment relation (M2M).
 	NetworkToEnvironmentPrimaryKey = []string{"network_id", "environment_id"}
+	// NetworkToHostDependencyPrimaryKey and NetworkToHostDependencyColumn2 are the table columns denoting the
+	// primary key for the NetworkToHostDependency relation (M2M).
+	NetworkToHostDependencyPrimaryKey = []string{"host_dependency_id", "network_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -14,6 +14,8 @@ type Command struct {
 // Fields of the Command.
 func (Command) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("name").
 			StructTag(`hcl:"name,attr"`),
 		field.String("description").

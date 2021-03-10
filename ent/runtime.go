@@ -15,11 +15,11 @@ func init() {
 	commandFields := schema.Command{}.Fields()
 	_ = commandFields
 	// commandDescCooldown is the schema descriptor for cooldown field.
-	commandDescCooldown := commandFields[6].Descriptor()
+	commandDescCooldown := commandFields[7].Descriptor()
 	// command.CooldownValidator is a validator for the "cooldown" field. It is called by the builders before save.
 	command.CooldownValidator = commandDescCooldown.Validators[0].(func(int) error)
 	// commandDescTimeout is the schema descriptor for timeout field.
-	commandDescTimeout := commandFields[7].Descriptor()
+	commandDescTimeout := commandFields[8].Descriptor()
 	// command.TimeoutValidator is a validator for the "timeout" field. It is called by the builders before save.
 	command.TimeoutValidator = commandDescTimeout.Validators[0].(func(int) error)
 	diskFields := schema.Disk{}.Fields()

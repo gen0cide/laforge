@@ -25,6 +25,20 @@ type Team struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TeamQuery when eager-loading is set.
 	Edges TeamEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// TeamToUser holds the value of the TeamToUser edge.
+	HCLTeamToUser []*User `json:"TeamToUser,omitempty"`
+	// TeamToBuild holds the value of the TeamToBuild edge.
+	HCLTeamToBuild []*Build `json:"TeamToBuild,omitempty"`
+	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
+	HCLTeamToEnvironment []*Environment `json:"TeamToEnvironment,omitempty"`
+	// TeamToTag holds the value of the TeamToTag edge.
+	HCLTeamToTag []*Tag `json:"TeamToTag,omitempty"`
+	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
+	HCLTeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
+	//
+
 }
 
 // TeamEdges holds the relations/edges for other nodes in the graph.

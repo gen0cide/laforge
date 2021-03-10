@@ -29,6 +29,12 @@ func (su *ScriptUpdate) Where(ps ...predicate.Script) *ScriptUpdate {
 	return su
 }
 
+// SetHclID sets the "hcl_id" field.
+func (su *ScriptUpdate) SetHclID(s string) *ScriptUpdate {
+	su.mutation.SetHclID(s)
+	return su
+}
+
 // SetName sets the "name" field.
 func (su *ScriptUpdate) SetName(s string) *ScriptUpdate {
 	su.mutation.SetName(s)
@@ -302,6 +308,13 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
 	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -588,6 +601,12 @@ type ScriptUpdateOne struct {
 	mutation *ScriptMutation
 }
 
+// SetHclID sets the "hcl_id" field.
+func (suo *ScriptUpdateOne) SetHclID(s string) *ScriptUpdateOne {
+	suo.mutation.SetHclID(s)
+	return suo
+}
+
 // SetName sets the "name" field.
 func (suo *ScriptUpdateOne) SetName(s string) *ScriptUpdateOne {
 	suo.mutation.SetName(s)
@@ -866,6 +885,13 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
 	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

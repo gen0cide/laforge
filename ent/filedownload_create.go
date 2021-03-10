@@ -20,6 +20,12 @@ type FileDownloadCreate struct {
 	hooks    []Hook
 }
 
+// SetHclID sets the "hcl_id" field.
+func (fdc *FileDownloadCreate) SetHclID(s string) *FileDownloadCreate {
+	fdc.mutation.SetHclID(s)
+	return fdc
+}
+
 // SetSourceType sets the "source_type" field.
 func (fdc *FileDownloadCreate) SetSourceType(s string) *FileDownloadCreate {
 	fdc.mutation.SetSourceType(s)
@@ -140,6 +146,9 @@ func (fdc *FileDownloadCreate) SaveX(ctx context.Context) *FileDownload {
 
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDownloadCreate) check() error {
+	if _, ok := fdc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := fdc.mutation.SourceType(); !ok {
 		return &ValidationError{Name: "source_type", err: errors.New("ent: missing required field \"source_type\"")}
 	}
@@ -194,6 +203,14 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 			},
 		}
 	)
+	if value, ok := fdc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedownload.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := fdc.mutation.SourceType(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

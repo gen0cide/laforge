@@ -16,6 +16,8 @@ type Script struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Language holds the value of the "language" field.
@@ -44,7 +46,16 @@ type Script struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScriptQuery when eager-loading is set.
-	Edges                                         ScriptEdges `json:"edges"`
+	Edges ScriptEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// ScriptToTag holds the value of the ScriptToTag edge.
+	HCLScriptToTag []*Tag `json:"ScriptToTag,omitempty"`
+	// ScriptToUser holds the value of the ScriptToUser edge.
+	HCLScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
+	// ScriptToFinding holds the value of the ScriptToFinding edge.
+	HCLScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
+	//
 	provisioning_step_provisioning_step_to_script *int
 }
 
@@ -99,7 +110,7 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case script.FieldID, script.FieldCooldown, script.FieldTimeout:
 			values[i] = &sql.NullInt64{}
-		case script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
+		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
 			values[i] = &sql.NullString{}
 		case script.ForeignKeys[0]: // provisioning_step_provisioning_step_to_script
 			values[i] = &sql.NullInt64{}
@@ -124,6 +135,12 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			s.ID = int(value.Int64)
+		case script.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				s.HclID = value.String
+			}
 		case script.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -261,6 +278,8 @@ func (s *Script) String() string {
 	var builder strings.Builder
 	builder.WriteString("Script(")
 	builder.WriteString(fmt.Sprintf("id=%v", s.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(s.HclID)
 	builder.WriteString(", name=")
 	builder.WriteString(s.Name)
 	builder.WriteString(", language=")

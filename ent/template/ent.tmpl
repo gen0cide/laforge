@@ -46,6 +46,14 @@ type {{ $.Name }} struct {
 		// Edges holds the relations/edges for other nodes in the graph.
 		// The values are being populated by the {{ $.Name }}Query when eager-loading is set.
 		Edges {{ $.Name }}Edges {{ template "model/edgetags" $ }}
+
+		// Edges put into the main struct to be loaded via hcl
+		{{- range $e := . }}
+			// {{ $e.StructField }} holds the value of the {{ $e.Name }} edge.
+			HCL{{ $e.StructField }} {{ if not $e.Unique }}[]{{ end }}*{{ $e.Type.Name }} {{ with $e.StructTag }}`{{ . }}`{{ end }}
+		{{- end }}
+		//
+		
 	{{- end -}}
 	{{- /* Additional fields to add by the storage driver. */}}
 	{{- $tmpl := printf "dialect/%s/model/fields" $.Storage }}

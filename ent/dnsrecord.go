@@ -16,6 +16,8 @@ type DNSRecord struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Values holds the value of the "values" field.
@@ -32,7 +34,12 @@ type DNSRecord struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSRecordQuery when eager-loading is set.
-	Edges                                             DNSRecordEdges `json:"edges"`
+	Edges DNSRecordEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
+	HCLDNSRecordToTag []*Tag `json:"DNSRecordToTag,omitempty"`
+	//
 	provisioning_step_provisioning_step_to_dns_record *int
 }
 
@@ -65,7 +72,7 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case dnsrecord.FieldID:
 			values[i] = &sql.NullInt64{}
-		case dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
+		case dnsrecord.FieldHclID, dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
 			values[i] = &sql.NullString{}
 		case dnsrecord.ForeignKeys[0]: // provisioning_step_provisioning_step_to_dns_record
 			values[i] = &sql.NullInt64{}
@@ -90,6 +97,12 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			dr.ID = int(value.Int64)
+		case dnsrecord.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				dr.HclID = value.String
+			}
 		case dnsrecord.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -181,6 +194,8 @@ func (dr *DNSRecord) String() string {
 	var builder strings.Builder
 	builder.WriteString("DNSRecord(")
 	builder.WriteString(fmt.Sprintf("id=%v", dr.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(dr.HclID)
 	builder.WriteString(", name=")
 	builder.WriteString(dr.Name)
 	builder.WriteString(", values=")

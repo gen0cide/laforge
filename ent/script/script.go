@@ -7,6 +7,8 @@ const (
 	Label = "script"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldLanguage holds the string denoting the language field in the database.
@@ -67,6 +69,7 @@ const (
 // Columns holds all SQL columns for script fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldName,
 	FieldLanguage,
 	FieldDescription,

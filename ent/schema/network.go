@@ -14,6 +14,8 @@ type Network struct {
 // Fields of the Network.
 func (Network) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("name").
 			StructTag(`hcl:"name,attr"`),
 		field.String("cidr").
@@ -32,5 +34,6 @@ func (Network) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("NetworkToTag", Tag.Type),
 		edge.To("NetworkToEnvironment", Environment.Type),
+		edge.From("NetworkToHostDependency", HostDependency.Type).Ref("HostDependencyToNetwork"),
 	}
 }

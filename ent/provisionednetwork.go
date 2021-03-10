@@ -22,6 +22,22 @@ type ProvisionedNetwork struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedNetworkQuery when eager-loading is set.
 	Edges ProvisionedNetworkEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// ProvisionedNetworkToTag holds the value of the ProvisionedNetworkToTag edge.
+	HCLProvisionedNetworkToTag []*Tag `json:"ProvisionedNetworkToTag,omitempty"`
+	// ProvisionedNetworkToStatus holds the value of the ProvisionedNetworkToStatus edge.
+	HCLProvisionedNetworkToStatus []*Status `json:"ProvisionedNetworkToStatus,omitempty"`
+	// ProvisionedNetworkToNetwork holds the value of the ProvisionedNetworkToNetwork edge.
+	HCLProvisionedNetworkToNetwork []*Network `json:"ProvisionedNetworkToNetwork,omitempty"`
+	// ProvisionedNetworkToBuild holds the value of the ProvisionedNetworkToBuild edge.
+	HCLProvisionedNetworkToBuild []*Build `json:"ProvisionedNetworkToBuild,omitempty"`
+	// ProvisionedNetworkToTeam holds the value of the ProvisionedNetworkToTeam edge.
+	HCLProvisionedNetworkToTeam []*Team `json:"ProvisionedNetworkToTeam,omitempty"`
+	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
+	HCLProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
+	//
+
 }
 
 // ProvisionedNetworkEdges holds the relations/edges for other nodes in the graph.

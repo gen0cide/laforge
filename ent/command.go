@@ -16,6 +16,8 @@ type Command struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
@@ -38,7 +40,14 @@ type Command struct {
 	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CommandQuery when eager-loading is set.
-	Edges                                          CommandEdges `json:"edges"`
+	Edges CommandEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// CommandToUser holds the value of the CommandToUser edge.
+	HCLCommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
+	// CommandToTag holds the value of the CommandToTag edge.
+	HCLCommandToTag []*Tag `json:"CommandToTag,omitempty"`
+	//
 	provisioning_step_provisioning_step_to_command *int
 }
 
@@ -82,7 +91,7 @@ func (*Command) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case command.FieldID, command.FieldCooldown, command.FieldTimeout:
 			values[i] = &sql.NullInt64{}
-		case command.FieldName, command.FieldDescription, command.FieldProgram:
+		case command.FieldHclID, command.FieldName, command.FieldDescription, command.FieldProgram:
 			values[i] = &sql.NullString{}
 		case command.ForeignKeys[0]: // provisioning_step_provisioning_step_to_command
 			values[i] = &sql.NullInt64{}
@@ -107,6 +116,12 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = int(value.Int64)
+		case command.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				c.HclID = value.String
+			}
 		case command.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -221,6 +236,8 @@ func (c *Command) String() string {
 	var builder strings.Builder
 	builder.WriteString("Command(")
 	builder.WriteString(fmt.Sprintf("id=%v", c.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(c.HclID)
 	builder.WriteString(", name=")
 	builder.WriteString(c.Name)
 	builder.WriteString(", description=")

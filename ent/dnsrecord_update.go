@@ -27,6 +27,12 @@ func (dru *DNSRecordUpdate) Where(ps ...predicate.DNSRecord) *DNSRecordUpdate {
 	return dru
 }
 
+// SetHclID sets the "hcl_id" field.
+func (dru *DNSRecordUpdate) SetHclID(s string) *DNSRecordUpdate {
+	dru.mutation.SetHclID(s)
+	return dru
+}
+
 // SetName sets the "name" field.
 func (dru *DNSRecordUpdate) SetName(s string) *DNSRecordUpdate {
 	dru.mutation.SetName(s)
@@ -179,6 +185,13 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := dru.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dnsrecord.FieldHclID,
+		})
+	}
 	if value, ok := dru.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -298,6 +311,12 @@ type DNSRecordUpdateOne struct {
 	config
 	hooks    []Hook
 	mutation *DNSRecordMutation
+}
+
+// SetHclID sets the "hcl_id" field.
+func (druo *DNSRecordUpdateOne) SetHclID(s string) *DNSRecordUpdateOne {
+	druo.mutation.SetHclID(s)
+	return druo
 }
 
 // SetName sets the "name" field.
@@ -456,6 +475,13 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := druo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dnsrecord.FieldHclID,
+		})
 	}
 	if value, ok := druo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
