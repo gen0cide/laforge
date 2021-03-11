@@ -28,6 +28,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -3472,6 +3473,236 @@ func (hd *HostDependency) ToEdge(order *HostDependencyOrder) *HostDependencyEdge
 	return &HostDependencyEdge{
 		Node:   hd,
 		Cursor: order.Field.toCursor(hd),
+	}
+}
+
+// IdentityEdge is the edge representation of Identity.
+type IdentityEdge struct {
+	Node   *Identity `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// IdentityConnection is the connection containing edges to Identity.
+type IdentityConnection struct {
+	Edges      []*IdentityEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+// IdentityPaginateOption enables pagination customization.
+type IdentityPaginateOption func(*identityPager) error
+
+// WithIdentityOrder configures pagination ordering.
+func WithIdentityOrder(order *IdentityOrder) IdentityPaginateOption {
+	if order == nil {
+		order = DefaultIdentityOrder
+	}
+	o := *order
+	return func(pager *identityPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultIdentityOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithIdentityFilter configures pagination filter.
+func WithIdentityFilter(filter func(*IdentityQuery) (*IdentityQuery, error)) IdentityPaginateOption {
+	return func(pager *identityPager) error {
+		if filter == nil {
+			return errors.New("IdentityQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type identityPager struct {
+	order  *IdentityOrder
+	filter func(*IdentityQuery) (*IdentityQuery, error)
+}
+
+func newIdentityPager(opts []IdentityPaginateOption) (*identityPager, error) {
+	pager := &identityPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultIdentityOrder
+	}
+	return pager, nil
+}
+
+func (p *identityPager) applyFilter(query *IdentityQuery) (*IdentityQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *identityPager) toCursor(i *Identity) Cursor {
+	return p.order.Field.toCursor(i)
+}
+
+func (p *identityPager) applyCursors(query *IdentityQuery, after, before *Cursor) *IdentityQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultIdentityOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *identityPager) applyOrder(query *IdentityQuery, reverse bool) *IdentityQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultIdentityOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultIdentityOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Identity.
+func (i *IdentityQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...IdentityPaginateOption,
+) (*IdentityConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newIdentityPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if i, err = pager.applyFilter(i); err != nil {
+		return nil, err
+	}
+
+	conn := &IdentityConnection{Edges: []*IdentityEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := i.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := i.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	i = pager.applyCursors(i, after, before)
+	i = pager.applyOrder(i, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		i = i.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		i = i.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := i.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Identity
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Identity {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Identity {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*IdentityEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &IdentityEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// IdentityOrderField defines the ordering field of Identity.
+type IdentityOrderField struct {
+	field    string
+	toCursor func(*Identity) Cursor
+}
+
+// IdentityOrder defines the ordering of Identity.
+type IdentityOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *IdentityOrderField `json:"field"`
+}
+
+// DefaultIdentityOrder is the default ordering of Identity.
+var DefaultIdentityOrder = &IdentityOrder{
+	Direction: OrderDirectionAsc,
+	Field: &IdentityOrderField{
+		field: identity.FieldID,
+		toCursor: func(i *Identity) Cursor {
+			return Cursor{ID: i.ID}
+		},
+	},
+}
+
+// ToEdge converts Identity into IdentityEdge.
+func (i *Identity) ToEdge(order *IdentityOrder) *IdentityEdge {
+	if order == nil {
+		order = DefaultIdentityOrder
+	}
+	return &IdentityEdge{
+		Node:   i,
+		Cursor: order.Field.toCursor(i),
 	}
 }
 

@@ -38,6 +38,7 @@ type hooks struct {
 	Finding            []ent.Hook
 	Host               []ent.Hook
 	HostDependency     []ent.Hook
+	Identity           []ent.Hook
 	IncludedNetwork    []ent.Hook
 	Network            []ent.Hook
 	ProvisionedHost    []ent.Hook

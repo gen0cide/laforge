@@ -177,6 +177,18 @@ func (hd *HostDependencyQuery) collectField(ctx *graphql.OperationContext, field
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (i *IdentityQuery) CollectFields(ctx context.Context, satisfies ...string) *IdentityQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		i = i.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return i
+}
+
+func (i *IdentityQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *IdentityQuery {
+	return i
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (in *IncludedNetworkQuery) CollectFields(ctx context.Context, satisfies ...string) *IncludedNetworkQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		in = in.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

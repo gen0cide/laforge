@@ -48,6 +48,7 @@ type DefinedConfigs struct {
 	DefinedFileExtract  []*ent.FileDownload `hcl:"file_extract,block" json:"file_extract,omitempty"`
 	DefinedBuilds       []*ent.Build        `hcl:"build,block" json:"builds,omitempty"`
 	DefinedTeams        []*ent.Team         `hcl:"team,block" json:"teams,omitempty"`
+	DefinedIdentities   []*ent.Identity     `hcl:"identity,block" json:"identities,omitempty"`
 }
 
 // Loader defines the Laforge configuration loader object

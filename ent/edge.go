@@ -164,6 +164,14 @@ func (e *Environment) EnvironmentToBuild(ctx context.Context) ([]*Build, error) 
 	return result, err
 }
 
+func (e *Environment) EnvironmentToIdentity(ctx context.Context) ([]*Identity, error) {
+	result, err := e.Edges.EnvironmentToIdentityOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToIdentity().All(ctx)
+	}
+	return result, err
+}
+
 func (e *Environment) EnvironmentToIncludedNetwork(ctx context.Context) ([]*IncludedNetwork, error) {
 	result, err := e.Edges.EnvironmentToIncludedNetworkOrErr()
 	if IsNotLoaded(err) {
@@ -296,6 +304,14 @@ func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) ([]*Netwo
 	result, err := hd.Edges.HostDependencyToNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = hd.QueryHostDependencyToNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (i *Identity) IdentityToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := i.Edges.IdentityToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = i.QueryIdentityToEnvironment().All(ctx)
 	}
 	return result, err
 }

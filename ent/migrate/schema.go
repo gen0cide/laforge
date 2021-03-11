@@ -336,6 +336,26 @@ var (
 		PrimaryKey:  []*schema.Column{HostDependenciesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
+	// IdentitiesColumns holds the columns for the "identities" table.
+	IdentitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hcl_id", Type: field.TypeString},
+		{Name: "first_name", Type: field.TypeString},
+		{Name: "last_name", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "password", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "avatar_file", Type: field.TypeString},
+		{Name: "vars", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
+	}
+	// IdentitiesTable holds the schema information for the "identities" table.
+	IdentitiesTable = &schema.Table{
+		Name:        "identities",
+		Columns:     IdentitiesColumns,
+		PrimaryKey:  []*schema.Column{IdentitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// IncludedNetworksColumns holds the columns for the "included_networks" table.
 	IncludedNetworksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -920,6 +940,33 @@ var (
 			},
 		},
 	}
+	// EnvironmentEnvironmentToIdentityColumns holds the columns for the "environment_EnvironmentToIdentity" table.
+	EnvironmentEnvironmentToIdentityColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "identity_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToIdentityTable holds the schema information for the "environment_EnvironmentToIdentity" table.
+	EnvironmentEnvironmentToIdentityTable = &schema.Table{
+		Name:       "environment_EnvironmentToIdentity",
+		Columns:    EnvironmentEnvironmentToIdentityColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[0], EnvironmentEnvironmentToIdentityColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToIdentity_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToIdentity_identity_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[1]},
+
+				RefColumns: []*schema.Column{IdentitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// FindingFindingToScriptColumns holds the columns for the "finding_FindingToScript" table.
 	FindingFindingToScriptColumns = []*schema.Column{
 		{Name: "finding_id", Type: field.TypeInt},
@@ -1206,6 +1253,7 @@ var (
 		FindingsTable,
 		HostsTable,
 		HostDependenciesTable,
+		IdentitiesTable,
 		IncludedNetworksTable,
 		NetworksTable,
 		ProvisionedHostsTable,
@@ -1222,6 +1270,7 @@ var (
 		EnvironmentEnvironmentToHostTable,
 		EnvironmentEnvironmentToCompetitionTable,
 		EnvironmentEnvironmentToBuildTable,
+		EnvironmentEnvironmentToIdentityTable,
 		FindingFindingToScriptTable,
 		HostDependencyHostDependencyToHostTable,
 		HostDependencyHostDependencyToNetworkTable,
@@ -1290,6 +1339,8 @@ func init() {
 	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[1].RefTable = CompetitionsTable
 	EnvironmentEnvironmentToBuildTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToBuildTable.ForeignKeys[1].RefTable = BuildsTable
+	EnvironmentEnvironmentToIdentityTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToIdentityTable.ForeignKeys[1].RefTable = IdentitiesTable
 	FindingFindingToScriptTable.ForeignKeys[0].RefTable = FindingsTable
 	FindingFindingToScriptTable.ForeignKeys[1].RefTable = ScriptsTable
 	HostDependencyHostDependencyToHostTable.ForeignKeys[0].RefTable = HostDependenciesTable

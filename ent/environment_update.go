@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -189,6 +190,21 @@ func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpda
 	return eu.AddEnvironmentToBuildIDs(ids...)
 }
 
+// AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToIdentityIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToIdentityIDs(ids...)
+	return eu
+}
+
+// AddEnvironmentToIdentity adds the "EnvironmentToIdentity" edges to the Identity entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToIdentity(i ...*Identity) *EnvironmentUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return eu.AddEnvironmentToIdentityIDs(ids...)
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
@@ -342,6 +358,27 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentU
 		ids[i] = b[i].ID
 	}
 	return eu.RemoveEnvironmentToBuildIDs(ids...)
+}
+
+// ClearEnvironmentToIdentity clears all "EnvironmentToIdentity" edges to the Identity entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToIdentity() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToIdentity()
+	return eu
+}
+
+// RemoveEnvironmentToIdentityIDs removes the "EnvironmentToIdentity" edge to Identity entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToIdentityIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToIdentityIDs(ids...)
+	return eu
+}
+
+// RemoveEnvironmentToIdentity removes "EnvironmentToIdentity" edges to Identity entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToIdentity(i ...*Identity) *EnvironmentUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return eu.RemoveEnvironmentToIdentityIDs(ids...)
 }
 
 // ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
@@ -837,6 +874,60 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.EnvironmentToIdentityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedEnvironmentToIdentityIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToIdentityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if eu.mutation.EnvironmentToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1172,6 +1263,21 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *Environment
 	return euo.AddEnvironmentToBuildIDs(ids...)
 }
 
+// AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToIdentityIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToIdentityIDs(ids...)
+	return euo
+}
+
+// AddEnvironmentToIdentity adds the "EnvironmentToIdentity" edges to the Identity entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToIdentity(i ...*Identity) *EnvironmentUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return euo.AddEnvironmentToIdentityIDs(ids...)
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
@@ -1325,6 +1431,27 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *Environm
 		ids[i] = b[i].ID
 	}
 	return euo.RemoveEnvironmentToBuildIDs(ids...)
+}
+
+// ClearEnvironmentToIdentity clears all "EnvironmentToIdentity" edges to the Identity entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToIdentity() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToIdentity()
+	return euo
+}
+
+// RemoveEnvironmentToIdentityIDs removes the "EnvironmentToIdentity" edge to Identity entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIdentityIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToIdentityIDs(ids...)
+	return euo
+}
+
+// RemoveEnvironmentToIdentity removes "EnvironmentToIdentity" edges to Identity entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIdentity(i ...*Identity) *EnvironmentUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return euo.RemoveEnvironmentToIdentityIDs(ids...)
 }
 
 // ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
@@ -1817,6 +1944,60 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.EnvironmentToIdentityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedEnvironmentToIdentityIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToIdentityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
 				},
 			},
 		}

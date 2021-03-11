@@ -58,6 +58,7 @@ func (Environment) Edges() []ent.Edge {
 		edge.To("EnvironmentToHost", Host.Type),
 		edge.To("EnvironmentToCompetition", Competition.Type),
 		edge.To("EnvironmentToBuild", Build.Type),
+		edge.To("EnvironmentToIdentity", Identity.Type),
 		edge.From("EnvironmentToIncludedNetwork", IncludedNetwork.Type).Ref("IncludedNetworkToEnvironment").
 			StructTag(`hcl:"included_network,block"`),
 		edge.From("EnvironmentToNetwork", Network.Type).Ref("NetworkToEnvironment"),

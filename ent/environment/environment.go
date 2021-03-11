@@ -40,6 +40,8 @@ const (
 	EdgeEnvironmentToCompetition = "EnvironmentToCompetition"
 	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
 	EdgeEnvironmentToBuild = "EnvironmentToBuild"
+	// EdgeEnvironmentToIdentity holds the string denoting the environmenttoidentity edge name in mutations.
+	EdgeEnvironmentToIdentity = "EnvironmentToIdentity"
 	// EdgeEnvironmentToIncludedNetwork holds the string denoting the environmenttoincludednetwork edge name in mutations.
 	EdgeEnvironmentToIncludedNetwork = "EnvironmentToIncludedNetwork"
 	// EdgeEnvironmentToNetwork holds the string denoting the environmenttonetwork edge name in mutations.
@@ -76,6 +78,11 @@ const (
 	// EnvironmentToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	EnvironmentToBuildInverseTable = "builds"
+	// EnvironmentToIdentityTable is the table the holds the EnvironmentToIdentity relation/edge. The primary key declared below.
+	EnvironmentToIdentityTable = "environment_EnvironmentToIdentity"
+	// EnvironmentToIdentityInverseTable is the table name for the Identity entity.
+	// It exists in this package in order to avoid circular dependency with the "identity" package.
+	EnvironmentToIdentityInverseTable = "identities"
 	// EnvironmentToIncludedNetworkTable is the table the holds the EnvironmentToIncludedNetwork relation/edge. The primary key declared below.
 	EnvironmentToIncludedNetworkTable = "included_network_IncludedNetworkToEnvironment"
 	// EnvironmentToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
@@ -122,6 +129,9 @@ var (
 	// EnvironmentToBuildPrimaryKey and EnvironmentToBuildColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToBuild relation (M2M).
 	EnvironmentToBuildPrimaryKey = []string{"environment_id", "build_id"}
+	// EnvironmentToIdentityPrimaryKey and EnvironmentToIdentityColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToIdentity relation (M2M).
+	EnvironmentToIdentityPrimaryKey = []string{"environment_id", "identity_id"}
 	// EnvironmentToIncludedNetworkPrimaryKey and EnvironmentToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIncludedNetwork relation (M2M).
 	EnvironmentToIncludedNetworkPrimaryKey = []string{"included_network_id", "environment_id"}

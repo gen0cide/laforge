@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -166,6 +167,21 @@ func (ec *EnvironmentCreate) AddEnvironmentToBuild(b ...*Build) *EnvironmentCrea
 		ids[i] = b[i].ID
 	}
 	return ec.AddEnvironmentToBuildIDs(ids...)
+}
+
+// AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToIdentityIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToIdentityIDs(ids...)
+	return ec
+}
+
+// AddEnvironmentToIdentity adds the "EnvironmentToIdentity" edges to the Identity entity.
+func (ec *EnvironmentCreate) AddEnvironmentToIdentity(i ...*Identity) *EnvironmentCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ec.AddEnvironmentToIdentityIDs(ids...)
 }
 
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
@@ -499,6 +515,25 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToIdentityTable,
+			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: identity.FieldID,
 				},
 			},
 		}

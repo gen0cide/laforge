@@ -53,6 +53,8 @@ type Environment struct {
 	HCLEnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
 	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
 	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
+	HCLEnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
 	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
 	HCLEnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
@@ -75,6 +77,8 @@ type EnvironmentEdges struct {
 	EnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
 	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
 	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
+	EnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
 	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
 	EnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
@@ -83,7 +87,7 @@ type EnvironmentEdges struct {
 	EnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // EnvironmentToTagOrErr returns the EnvironmentToTag value or an error if the edge
@@ -131,10 +135,19 @@ func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
 	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
 }
 
+// EnvironmentToIdentityOrErr returns the EnvironmentToIdentity value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToIdentityOrErr() ([]*Identity, error) {
+	if e.loadedTypes[5] {
+		return e.EnvironmentToIdentity, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToIdentity"}
+}
+
 // EnvironmentToIncludedNetworkOrErr returns the EnvironmentToIncludedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.EnvironmentToIncludedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToIncludedNetwork"}
@@ -143,7 +156,7 @@ func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwor
 // EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.EnvironmentToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
@@ -152,7 +165,7 @@ func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
 // EnvironmentToTeamOrErr returns the EnvironmentToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.EnvironmentToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToTeam"}
@@ -296,6 +309,11 @@ func (e *Environment) QueryEnvironmentToCompetition() *CompetitionQuery {
 // QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
 func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
+}
+
+// QueryEnvironmentToIdentity queries the "EnvironmentToIdentity" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToIdentity() *IdentityQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIdentity(e)
 }
 
 // QueryEnvironmentToIncludedNetwork queries the "EnvironmentToIncludedNetwork" edge of the Environment entity.

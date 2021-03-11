@@ -987,6 +987,34 @@ func HasEnvironmentToBuildWith(preds ...predicate.Build) predicate.Environment {
 	})
 }
 
+// HasEnvironmentToIdentity applies the HasEdge predicate on the "EnvironmentToIdentity" edge.
+func HasEnvironmentToIdentity() predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToIdentityTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToIdentityTable, EnvironmentToIdentityPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEnvironmentToIdentityWith applies the HasEdge predicate on the "EnvironmentToIdentity" edge with a given conditions (other predicates).
+func HasEnvironmentToIdentityWith(preds ...predicate.Identity) predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToIdentityInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToIdentityTable, EnvironmentToIdentityPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasEnvironmentToIncludedNetwork applies the HasEdge predicate on the "EnvironmentToIncludedNetwork" edge.
 func HasEnvironmentToIncludedNetwork() predicate.Environment {
 	return predicate.Environment(func(s *sql.Selector) {

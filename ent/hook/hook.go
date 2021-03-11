@@ -191,6 +191,19 @@ func (f HostDependencyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return f(ctx, mv)
 }
 
+// The IdentityFunc type is an adapter to allow the use of ordinary
+// function as Identity mutator.
+type IdentityFunc func(context.Context, *ent.IdentityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IdentityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.IdentityMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IdentityMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The IncludedNetworkFunc type is an adapter to allow the use of ordinary
 // function as IncludedNetwork mutator.
 type IncludedNetworkFunc func(context.Context, *ent.IncludedNetworkMutation) (ent.Value, error)

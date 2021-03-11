@@ -22,6 +22,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -61,6 +62,7 @@ const (
 	TypeFinding            = "Finding"
 	TypeHost               = "Host"
 	TypeHostDependency     = "HostDependency"
+	TypeIdentity           = "Identity"
 	TypeIncludedNetwork    = "IncludedNetwork"
 	TypeNetwork            = "Network"
 	TypeProvisionedHost    = "ProvisionedHost"
@@ -5997,6 +5999,9 @@ type EnvironmentMutation struct {
 	_EnvironmentToBuild                  map[int]struct{}
 	removed_EnvironmentToBuild           map[int]struct{}
 	cleared_EnvironmentToBuild           bool
+	_EnvironmentToIdentity               map[int]struct{}
+	removed_EnvironmentToIdentity        map[int]struct{}
+	cleared_EnvironmentToIdentity        bool
 	_EnvironmentToIncludedNetwork        map[int]struct{}
 	removed_EnvironmentToIncludedNetwork map[int]struct{}
 	cleared_EnvironmentToIncludedNetwork bool
@@ -6791,6 +6796,59 @@ func (m *EnvironmentMutation) ResetEnvironmentToBuild() {
 	m.removed_EnvironmentToBuild = nil
 }
 
+// AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToIdentityIDs(ids ...int) {
+	if m._EnvironmentToIdentity == nil {
+		m._EnvironmentToIdentity = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._EnvironmentToIdentity[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEnvironmentToIdentity clears the "EnvironmentToIdentity" edge to the Identity entity.
+func (m *EnvironmentMutation) ClearEnvironmentToIdentity() {
+	m.cleared_EnvironmentToIdentity = true
+}
+
+// EnvironmentToIdentityCleared returns if the "EnvironmentToIdentity" edge to the Identity entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToIdentityCleared() bool {
+	return m.cleared_EnvironmentToIdentity
+}
+
+// RemoveEnvironmentToIdentityIDs removes the "EnvironmentToIdentity" edge to the Identity entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToIdentityIDs(ids ...int) {
+	if m.removed_EnvironmentToIdentity == nil {
+		m.removed_EnvironmentToIdentity = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToIdentity[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToIdentity returns the removed IDs of the "EnvironmentToIdentity" edge to the Identity entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToIdentityIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToIdentity {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EnvironmentToIdentityIDs returns the "EnvironmentToIdentity" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToIdentityIDs() (ids []int) {
+	for id := range m._EnvironmentToIdentity {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEnvironmentToIdentity resets all changes to the "EnvironmentToIdentity" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToIdentity() {
+	m._EnvironmentToIdentity = nil
+	m.cleared_EnvironmentToIdentity = false
+	m.removed_EnvironmentToIdentity = nil
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by ids.
 func (m *EnvironmentMutation) AddEnvironmentToIncludedNetworkIDs(ids ...int) {
 	if m._EnvironmentToIncludedNetwork == nil {
@@ -7260,7 +7318,7 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m._EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7275,6 +7333,9 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 	}
 	if m._EnvironmentToBuild != nil {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
+	}
+	if m._EnvironmentToIdentity != nil {
+		edges = append(edges, environment.EdgeEnvironmentToIdentity)
 	}
 	if m._EnvironmentToIncludedNetwork != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7322,6 +7383,12 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToIdentity:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToIdentity))
+		for id := range m._EnvironmentToIdentity {
+			ids = append(ids, id)
+		}
+		return ids
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		ids := make([]ent.Value, 0, len(m._EnvironmentToIncludedNetwork))
 		for id := range m._EnvironmentToIncludedNetwork {
@@ -7346,7 +7413,7 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.removed_EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7361,6 +7428,9 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 	}
 	if m.removed_EnvironmentToBuild != nil {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
+	}
+	if m.removed_EnvironmentToIdentity != nil {
+		edges = append(edges, environment.EdgeEnvironmentToIdentity)
 	}
 	if m.removed_EnvironmentToIncludedNetwork != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7408,6 +7478,12 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToIdentity:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToIdentity))
+		for id := range m.removed_EnvironmentToIdentity {
+			ids = append(ids, id)
+		}
+		return ids
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToIncludedNetwork))
 		for id := range m.removed_EnvironmentToIncludedNetwork {
@@ -7432,7 +7508,7 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.cleared_EnvironmentToTag {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7447,6 +7523,9 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 	}
 	if m.cleared_EnvironmentToBuild {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
+	}
+	if m.cleared_EnvironmentToIdentity {
+		edges = append(edges, environment.EdgeEnvironmentToIdentity)
 	}
 	if m.cleared_EnvironmentToIncludedNetwork {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7474,6 +7553,8 @@ func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 		return m.cleared_EnvironmentToCompetition
 	case environment.EdgeEnvironmentToBuild:
 		return m.cleared_EnvironmentToBuild
+	case environment.EdgeEnvironmentToIdentity:
+		return m.cleared_EnvironmentToIdentity
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		return m.cleared_EnvironmentToIncludedNetwork
 	case environment.EdgeEnvironmentToNetwork:
@@ -7510,6 +7591,9 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 		return nil
 	case environment.EdgeEnvironmentToBuild:
 		m.ResetEnvironmentToBuild()
+		return nil
+	case environment.EdgeEnvironmentToIdentity:
+		m.ResetEnvironmentToIdentity()
 		return nil
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		m.ResetEnvironmentToIncludedNetwork()
@@ -12184,6 +12268,817 @@ func (m *HostDependencyMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown HostDependency edge %s", name)
+}
+
+// IdentityMutation represents an operation that mutates the Identity nodes in the graph.
+type IdentityMutation struct {
+	config
+	op                            Op
+	typ                           string
+	id                            *int
+	hcl_id                        *string
+	first_name                    *string
+	last_name                     *string
+	email                         *string
+	password                      *string
+	description                   *string
+	avatar_file                   *string
+	vars                          *map[string]string
+	tags                          *map[string]string
+	clearedFields                 map[string]struct{}
+	_IdentityToEnvironment        map[int]struct{}
+	removed_IdentityToEnvironment map[int]struct{}
+	cleared_IdentityToEnvironment bool
+	done                          bool
+	oldValue                      func(context.Context) (*Identity, error)
+	predicates                    []predicate.Identity
+}
+
+var _ ent.Mutation = (*IdentityMutation)(nil)
+
+// identityOption allows management of the mutation configuration using functional options.
+type identityOption func(*IdentityMutation)
+
+// newIdentityMutation creates new mutation for the Identity entity.
+func newIdentityMutation(c config, op Op, opts ...identityOption) *IdentityMutation {
+	m := &IdentityMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIdentity,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIdentityID sets the ID field of the mutation.
+func withIdentityID(id int) identityOption {
+	return func(m *IdentityMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Identity
+		)
+		m.oldValue = func(ctx context.Context) (*Identity, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Identity.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIdentity sets the old Identity of the mutation.
+func withIdentity(node *Identity) identityOption {
+	return func(m *IdentityMutation) {
+		m.oldValue = func(context.Context) (*Identity, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IdentityMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IdentityMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *IdentityMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *IdentityMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *IdentityMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *IdentityMutation) ResetHclID() {
+	m.hcl_id = nil
+}
+
+// SetFirstName sets the "first_name" field.
+func (m *IdentityMutation) SetFirstName(s string) {
+	m.first_name = &s
+}
+
+// FirstName returns the value of the "first_name" field in the mutation.
+func (m *IdentityMutation) FirstName() (r string, exists bool) {
+	v := m.first_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstName returns the old "first_name" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldFirstName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFirstName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFirstName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+	}
+	return oldValue.FirstName, nil
+}
+
+// ResetFirstName resets all changes to the "first_name" field.
+func (m *IdentityMutation) ResetFirstName() {
+	m.first_name = nil
+}
+
+// SetLastName sets the "last_name" field.
+func (m *IdentityMutation) SetLastName(s string) {
+	m.last_name = &s
+}
+
+// LastName returns the value of the "last_name" field in the mutation.
+func (m *IdentityMutation) LastName() (r string, exists bool) {
+	v := m.last_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastName returns the old "last_name" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldLastName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLastName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLastName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+	}
+	return oldValue.LastName, nil
+}
+
+// ResetLastName resets all changes to the "last_name" field.
+func (m *IdentityMutation) ResetLastName() {
+	m.last_name = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *IdentityMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *IdentityMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *IdentityMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetPassword sets the "password" field.
+func (m *IdentityMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *IdentityMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *IdentityMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *IdentityMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *IdentityMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *IdentityMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetAvatarFile sets the "avatar_file" field.
+func (m *IdentityMutation) SetAvatarFile(s string) {
+	m.avatar_file = &s
+}
+
+// AvatarFile returns the value of the "avatar_file" field in the mutation.
+func (m *IdentityMutation) AvatarFile() (r string, exists bool) {
+	v := m.avatar_file
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatarFile returns the old "avatar_file" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldAvatarFile(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAvatarFile is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAvatarFile requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatarFile: %w", err)
+	}
+	return oldValue.AvatarFile, nil
+}
+
+// ResetAvatarFile resets all changes to the "avatar_file" field.
+func (m *IdentityMutation) ResetAvatarFile() {
+	m.avatar_file = nil
+}
+
+// SetVars sets the "vars" field.
+func (m *IdentityMutation) SetVars(value map[string]string) {
+	m.vars = &value
+}
+
+// Vars returns the value of the "vars" field in the mutation.
+func (m *IdentityMutation) Vars() (r map[string]string, exists bool) {
+	v := m.vars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVars returns the old "vars" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldVars is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldVars requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVars: %w", err)
+	}
+	return oldValue.Vars, nil
+}
+
+// ResetVars resets all changes to the "vars" field.
+func (m *IdentityMutation) ResetVars() {
+	m.vars = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *IdentityMutation) SetTags(value map[string]string) {
+	m.tags = &value
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *IdentityMutation) Tags() (r map[string]string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the Identity entity.
+// If the Identity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentityMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *IdentityMutation) ResetTags() {
+	m.tags = nil
+}
+
+// AddIdentityToEnvironmentIDs adds the "IdentityToEnvironment" edge to the Environment entity by ids.
+func (m *IdentityMutation) AddIdentityToEnvironmentIDs(ids ...int) {
+	if m._IdentityToEnvironment == nil {
+		m._IdentityToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._IdentityToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIdentityToEnvironment clears the "IdentityToEnvironment" edge to the Environment entity.
+func (m *IdentityMutation) ClearIdentityToEnvironment() {
+	m.cleared_IdentityToEnvironment = true
+}
+
+// IdentityToEnvironmentCleared returns if the "IdentityToEnvironment" edge to the Environment entity was cleared.
+func (m *IdentityMutation) IdentityToEnvironmentCleared() bool {
+	return m.cleared_IdentityToEnvironment
+}
+
+// RemoveIdentityToEnvironmentIDs removes the "IdentityToEnvironment" edge to the Environment entity by IDs.
+func (m *IdentityMutation) RemoveIdentityToEnvironmentIDs(ids ...int) {
+	if m.removed_IdentityToEnvironment == nil {
+		m.removed_IdentityToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_IdentityToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIdentityToEnvironment returns the removed IDs of the "IdentityToEnvironment" edge to the Environment entity.
+func (m *IdentityMutation) RemovedIdentityToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_IdentityToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IdentityToEnvironmentIDs returns the "IdentityToEnvironment" edge IDs in the mutation.
+func (m *IdentityMutation) IdentityToEnvironmentIDs() (ids []int) {
+	for id := range m._IdentityToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIdentityToEnvironment resets all changes to the "IdentityToEnvironment" edge.
+func (m *IdentityMutation) ResetIdentityToEnvironment() {
+	m._IdentityToEnvironment = nil
+	m.cleared_IdentityToEnvironment = false
+	m.removed_IdentityToEnvironment = nil
+}
+
+// Op returns the operation name.
+func (m *IdentityMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Identity).
+func (m *IdentityMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IdentityMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.hcl_id != nil {
+		fields = append(fields, identity.FieldHclID)
+	}
+	if m.first_name != nil {
+		fields = append(fields, identity.FieldFirstName)
+	}
+	if m.last_name != nil {
+		fields = append(fields, identity.FieldLastName)
+	}
+	if m.email != nil {
+		fields = append(fields, identity.FieldEmail)
+	}
+	if m.password != nil {
+		fields = append(fields, identity.FieldPassword)
+	}
+	if m.description != nil {
+		fields = append(fields, identity.FieldDescription)
+	}
+	if m.avatar_file != nil {
+		fields = append(fields, identity.FieldAvatarFile)
+	}
+	if m.vars != nil {
+		fields = append(fields, identity.FieldVars)
+	}
+	if m.tags != nil {
+		fields = append(fields, identity.FieldTags)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IdentityMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case identity.FieldHclID:
+		return m.HclID()
+	case identity.FieldFirstName:
+		return m.FirstName()
+	case identity.FieldLastName:
+		return m.LastName()
+	case identity.FieldEmail:
+		return m.Email()
+	case identity.FieldPassword:
+		return m.Password()
+	case identity.FieldDescription:
+		return m.Description()
+	case identity.FieldAvatarFile:
+		return m.AvatarFile()
+	case identity.FieldVars:
+		return m.Vars()
+	case identity.FieldTags:
+		return m.Tags()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IdentityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case identity.FieldHclID:
+		return m.OldHclID(ctx)
+	case identity.FieldFirstName:
+		return m.OldFirstName(ctx)
+	case identity.FieldLastName:
+		return m.OldLastName(ctx)
+	case identity.FieldEmail:
+		return m.OldEmail(ctx)
+	case identity.FieldPassword:
+		return m.OldPassword(ctx)
+	case identity.FieldDescription:
+		return m.OldDescription(ctx)
+	case identity.FieldAvatarFile:
+		return m.OldAvatarFile(ctx)
+	case identity.FieldVars:
+		return m.OldVars(ctx)
+	case identity.FieldTags:
+		return m.OldTags(ctx)
+	}
+	return nil, fmt.Errorf("unknown Identity field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IdentityMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case identity.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
+	case identity.FieldFirstName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstName(v)
+		return nil
+	case identity.FieldLastName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastName(v)
+		return nil
+	case identity.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case identity.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case identity.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case identity.FieldAvatarFile:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatarFile(v)
+		return nil
+	case identity.FieldVars:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVars(v)
+		return nil
+	case identity.FieldTags:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Identity field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IdentityMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IdentityMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IdentityMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Identity numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IdentityMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IdentityMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IdentityMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Identity nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IdentityMutation) ResetField(name string) error {
+	switch name {
+	case identity.FieldHclID:
+		m.ResetHclID()
+		return nil
+	case identity.FieldFirstName:
+		m.ResetFirstName()
+		return nil
+	case identity.FieldLastName:
+		m.ResetLastName()
+		return nil
+	case identity.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case identity.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case identity.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case identity.FieldAvatarFile:
+		m.ResetAvatarFile()
+		return nil
+	case identity.FieldVars:
+		m.ResetVars()
+		return nil
+	case identity.FieldTags:
+		m.ResetTags()
+		return nil
+	}
+	return fmt.Errorf("unknown Identity field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IdentityMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._IdentityToEnvironment != nil {
+		edges = append(edges, identity.EdgeIdentityToEnvironment)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IdentityMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case identity.EdgeIdentityToEnvironment:
+		ids := make([]ent.Value, 0, len(m._IdentityToEnvironment))
+		for id := range m._IdentityToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IdentityMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removed_IdentityToEnvironment != nil {
+		edges = append(edges, identity.EdgeIdentityToEnvironment)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IdentityMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case identity.EdgeIdentityToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_IdentityToEnvironment))
+		for id := range m.removed_IdentityToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IdentityMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_IdentityToEnvironment {
+		edges = append(edges, identity.EdgeIdentityToEnvironment)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IdentityMutation) EdgeCleared(name string) bool {
+	switch name {
+	case identity.EdgeIdentityToEnvironment:
+		return m.cleared_IdentityToEnvironment
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IdentityMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Identity unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IdentityMutation) ResetEdge(name string) error {
+	switch name {
+	case identity.EdgeIdentityToEnvironment:
+		m.ResetIdentityToEnvironment()
+		return nil
+	}
+	return fmt.Errorf("unknown Identity edge %s", name)
 }
 
 // IncludedNetworkMutation represents an operation that mutates the IncludedNetwork nodes in the graph.

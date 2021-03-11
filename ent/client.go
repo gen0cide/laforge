@@ -23,6 +23,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -72,6 +73,8 @@ type Client struct {
 	Host *HostClient
 	// HostDependency is the client for interacting with the HostDependency builders.
 	HostDependency *HostDependencyClient
+	// Identity is the client for interacting with the Identity builders.
+	Identity *IdentityClient
 	// IncludedNetwork is the client for interacting with the IncludedNetwork builders.
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
@@ -121,6 +124,7 @@ func (c *Client) init() {
 	c.Finding = NewFindingClient(c.config)
 	c.Host = NewHostClient(c.config)
 	c.HostDependency = NewHostDependencyClient(c.config)
+	c.Identity = NewIdentityClient(c.config)
 	c.IncludedNetwork = NewIncludedNetworkClient(c.config)
 	c.Network = NewNetworkClient(c.config)
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
@@ -178,6 +182,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Finding:            NewFindingClient(cfg),
 		Host:               NewHostClient(cfg),
 		HostDependency:     NewHostDependencyClient(cfg),
+		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
@@ -220,6 +225,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Finding:            NewFindingClient(cfg),
 		Host:               NewHostClient(cfg),
 		HostDependency:     NewHostDependencyClient(cfg),
+		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
@@ -273,6 +279,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Finding.Use(hooks...)
 	c.Host.Use(hooks...)
 	c.HostDependency.Use(hooks...)
+	c.Identity.Use(hooks...)
 	c.IncludedNetwork.Use(hooks...)
 	c.Network.Use(hooks...)
 	c.ProvisionedHost.Use(hooks...)
@@ -1304,6 +1311,22 @@ func (c *EnvironmentClient) QueryEnvironmentToBuild(e *Environment) *BuildQuery 
 	return query
 }
 
+// QueryEnvironmentToIdentity queries the EnvironmentToIdentity edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToIdentity(e *Environment) *IdentityQuery {
+	query := &IdentityQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(identity.Table, identity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEnvironmentToIncludedNetwork queries the EnvironmentToIncludedNetwork edge of a Environment.
 func (c *EnvironmentClient) QueryEnvironmentToIncludedNetwork(e *Environment) *IncludedNetworkQuery {
 	query := &IncludedNetworkQuery{config: c.config}
@@ -2107,6 +2130,110 @@ func (c *HostDependencyClient) QueryHostDependencyToNetwork(hd *HostDependency) 
 // Hooks returns the client hooks.
 func (c *HostDependencyClient) Hooks() []Hook {
 	return c.hooks.HostDependency
+}
+
+// IdentityClient is a client for the Identity schema.
+type IdentityClient struct {
+	config
+}
+
+// NewIdentityClient returns a client for the Identity from the given config.
+func NewIdentityClient(c config) *IdentityClient {
+	return &IdentityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `identity.Hooks(f(g(h())))`.
+func (c *IdentityClient) Use(hooks ...Hook) {
+	c.hooks.Identity = append(c.hooks.Identity, hooks...)
+}
+
+// Create returns a create builder for Identity.
+func (c *IdentityClient) Create() *IdentityCreate {
+	mutation := newIdentityMutation(c.config, OpCreate)
+	return &IdentityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Identity entities.
+func (c *IdentityClient) CreateBulk(builders ...*IdentityCreate) *IdentityCreateBulk {
+	return &IdentityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Identity.
+func (c *IdentityClient) Update() *IdentityUpdate {
+	mutation := newIdentityMutation(c.config, OpUpdate)
+	return &IdentityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IdentityClient) UpdateOne(i *Identity) *IdentityUpdateOne {
+	mutation := newIdentityMutation(c.config, OpUpdateOne, withIdentity(i))
+	return &IdentityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IdentityClient) UpdateOneID(id int) *IdentityUpdateOne {
+	mutation := newIdentityMutation(c.config, OpUpdateOne, withIdentityID(id))
+	return &IdentityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Identity.
+func (c *IdentityClient) Delete() *IdentityDelete {
+	mutation := newIdentityMutation(c.config, OpDelete)
+	return &IdentityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *IdentityClient) DeleteOne(i *Identity) *IdentityDeleteOne {
+	return c.DeleteOneID(i.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *IdentityClient) DeleteOneID(id int) *IdentityDeleteOne {
+	builder := c.Delete().Where(identity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IdentityDeleteOne{builder}
+}
+
+// Query returns a query builder for Identity.
+func (c *IdentityClient) Query() *IdentityQuery {
+	return &IdentityQuery{config: c.config}
+}
+
+// Get returns a Identity entity by its id.
+func (c *IdentityClient) Get(ctx context.Context, id int) (*Identity, error) {
+	return c.Query().Where(identity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IdentityClient) GetX(ctx context.Context, id int) *Identity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIdentityToEnvironment queries the IdentityToEnvironment edge of a Identity.
+func (c *IdentityClient) QueryIdentityToEnvironment(i *Identity) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(identity.Table, identity.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, identity.IdentityToEnvironmentTable, identity.IdentityToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IdentityClient) Hooks() []Hook {
+	return c.hooks.Identity
 }
 
 // IncludedNetworkClient is a client for the IncludedNetwork schema.

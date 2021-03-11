@@ -28,6 +28,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -669,7 +670,7 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		ID:     e.ID,
 		Type:   "Environment",
 		Fields: make([]*Field, 11),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(e.HclID); err != nil {
@@ -811,30 +812,40 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[5] = &Edge{
-		Type: "IncludedNetwork",
-		Name: "EnvironmentToIncludedNetwork",
+		Type: "Identity",
+		Name: "EnvironmentToIdentity",
 	}
-	node.Edges[5].IDs, err = e.QueryEnvironmentToIncludedNetwork().
-		Select(includednetwork.FieldID).
+	node.Edges[5].IDs, err = e.QueryEnvironmentToIdentity().
+		Select(identity.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
-		Type: "Network",
-		Name: "EnvironmentToNetwork",
+		Type: "IncludedNetwork",
+		Name: "EnvironmentToIncludedNetwork",
 	}
-	node.Edges[6].IDs, err = e.QueryEnvironmentToNetwork().
-		Select(network.FieldID).
+	node.Edges[6].IDs, err = e.QueryEnvironmentToIncludedNetwork().
+		Select(includednetwork.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[7] = &Edge{
+		Type: "Network",
+		Name: "EnvironmentToNetwork",
+	}
+	node.Edges[7].IDs, err = e.QueryEnvironmentToNetwork().
+		Select(network.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
 		Type: "Team",
 		Name: "EnvironmentToTeam",
 	}
-	node.Edges[7].IDs, err = e.QueryEnvironmentToTeam().
+	node.Edges[8].IDs, err = e.QueryEnvironmentToTeam().
 		Select(team.FieldID).
 		Ints(ctx)
 	if err != nil {
@@ -1338,6 +1349,99 @@ func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[1].IDs, err = hd.QueryHostDependencyToNetwork().
 		Select(network.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (i *Identity) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     i.ID,
+		Type:   "Identity",
+		Fields: make([]*Field, 9),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(i.HclID); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.FirstName); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "first_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.LastName); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "last_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Email); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "email",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Password); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "password",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Description); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "description",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.AvatarFile); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "avatar_file",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Vars); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "map[string]string",
+		Name:  "vars",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Tags); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "map[string]string",
+		Name:  "tags",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Environment",
+		Name: "IdentityToEnvironment",
+	}
+	node.Edges[0].IDs, err = i.QueryIdentityToEnvironment().
+		Select(environment.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -2362,6 +2466,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case identity.Table:
+		n, err := c.Identity.Query().
+			Where(identity.ID(id)).
+			CollectFields(ctx, "Identity").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case includednetwork.Table:
 		n, err := c.IncludedNetwork.Query().
 			Where(includednetwork.ID(id)).
@@ -2698,6 +2811,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.HostDependency.Query().
 			Where(hostdependency.IDIn(ids...)).
 			CollectFields(ctx, "HostDependency").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case identity.Table:
+		nodes, err := c.Identity.Query().
+			Where(identity.IDIn(ids...)).
+			CollectFields(ctx, "Identity").
 			All(ctx)
 		if err != nil {
 			return nil, err

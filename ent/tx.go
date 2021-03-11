@@ -40,6 +40,8 @@ type Tx struct {
 	Host *HostClient
 	// HostDependency is the client for interacting with the HostDependency builders.
 	HostDependency *HostDependencyClient
+	// Identity is the client for interacting with the Identity builders.
+	Identity *IdentityClient
 	// IncludedNetwork is the client for interacting with the IncludedNetwork builders.
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
@@ -209,6 +211,7 @@ func (tx *Tx) init() {
 	tx.Finding = NewFindingClient(tx.config)
 	tx.Host = NewHostClient(tx.config)
 	tx.HostDependency = NewHostDependencyClient(tx.config)
+	tx.Identity = NewIdentityClient(tx.config)
 	tx.IncludedNetwork = NewIncludedNetworkClient(tx.config)
 	tx.Network = NewNetworkClient(tx.config)
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)

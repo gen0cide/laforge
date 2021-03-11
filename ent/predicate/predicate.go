@@ -48,6 +48,9 @@ type Host func(*sql.Selector)
 // HostDependency is the predicate function for hostdependency builders.
 type HostDependency func(*sql.Selector)
 
+// Identity is the predicate function for identity builders.
+type Identity func(*sql.Selector)
+
 // IncludedNetwork is the predicate function for includednetwork builders.
 type IncludedNetwork func(*sql.Selector)
 
