@@ -1,44 +1,61 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"os"
+	"net/http"
 
-	nsxt "github.com/vmware/go-vmware-nsxt"
+	"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
+	nsx_policy "github.com/vmware/vsphere-automation-sdk-go/services/nsxt"
 )
 
 var (
-	host = "nsx01.cyberrange.rit.edu"
-	username = os.Getenv("GOVMOMI_USERNAME")
-	password = os.Getenv("GOVMOMI_PASSWORD")
+	host = "https://nsx01.cyberrange.rit.edu"
+	// username = os.Getenv("GOVMOMI_USERNAME")
+	// password = os.Getenv("GOVMOMI_PASSWORD")
 )
 
 func main() {
-	cfg := nsxt.Configuration{
-		BasePath:             "/api/v1",
-		Host:                 host,
-		Scheme:               "https",
-		UserName:             username,
-		Password:             password,
-		Insecure:             true,
-	}
+	// userPassContext := security.NewUserPasswordSecurityContext(username, password)
+	// security.AuthenticationHandler.Authenticate(userPassContext)
+	// test := security.AuthenticationHandler{}
+	// sessions
 
-	client, err := nsxt.NewAPIClient(&cfg)
+	httpClient := http.Client{}
+	connector := client.NewRestConnector(host, httpClient)
+	infraClient := nsx_policy.NewDefaultInfraClient(connector)
+
+	basePath := ""
+	filter := ""
+	typeFilter := ""
+	infra, err := infraClient.Get(&basePath, &filter, &typeFilter)
 	if err != nil {
-		log.Fatalf("error initializing NSX-T client: %v\n", err)
+		log.Fatalf("Error getting infra: %v\n", err)
 	}
+	fmt.Println(infra.DisplayName)
+	// cfg := nsxt.Configuration{
+	// 	BasePath:             "/api/v1",
+	// 	Host:                 host,
+	// 	Scheme:               "https",
+	// 	UserName:             username,
+	// 	Password:             password,
+	// 	Insecure:             true,
+	// }
 
-	fmt.Println("NX-T initialized...")
+	// client, err := nsxt.NewAPIClient(&cfg)
+	// if err != nil {
+	// 	log.Fatalf("error initializing NSX-T client: %v\n", err)
+	// }
 
-	ctx := context.Background()
-	// client.Context
+	// fmt.Println("NSX-T initialized...")
 
-	infra, res, err := client.PolicyApi.ReadInfra(ctx)
-	if err != nil {
-		log.Fatalf("Error reading infra: %v\n", err)
-	}
-	fmt.Printf("HTTP Status: %s\n", res.Status)
-	fmt.Println(infra)
+	// ctx := context.Background()
+	// // client.Context
+
+	// infra, res, err := client.PolicyApi.ReadInfra(ctx)
+	// if err != nil {
+	// 	log.Fatalf("Error reading infra: %v\n", err)
+	// }
+	// fmt.Printf("HTTP Status: %s\n", res.Status)
+	// fmt.Println(infra)
 }

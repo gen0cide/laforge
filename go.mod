@@ -40,6 +40,8 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	github.com/vmware/go-vmware-nsxt v0.0.0-20201207175959-23201aae9cc3
 	github.com/vmware/govmomi v0.24.0 // indirect
+	github.com/vmware/vsphere-automation-sdk-go/runtime v0.3.1
+	github.com/vmware/vsphere-automation-sdk-go/services/nsxt v0.5.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/zclconf/go-cty v1.5.1
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
