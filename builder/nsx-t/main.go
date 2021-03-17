@@ -17,7 +17,7 @@ var (
 
 func main() {
 	cfg := nsxt.Configuration{
-		BasePath:             "policy/api/v1/infra",
+		BasePath:             "/api/v1",
 		Host:                 host,
 		Scheme:               "https",
 		UserName:             username,
