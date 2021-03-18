@@ -12,6 +12,8 @@ const (
 
 	// EdgeDiskToTag holds the string denoting the disktotag edge name in mutations.
 	EdgeDiskToTag = "DiskToTag"
+	// EdgeDiskToHost holds the string denoting the disktohost edge name in mutations.
+	EdgeDiskToHost = "DiskToHost"
 
 	// Table holds the table name of the disk in the database.
 	Table = "disks"
@@ -22,6 +24,11 @@ const (
 	DiskToTagInverseTable = "tags"
 	// DiskToTagColumn is the table column denoting the DiskToTag relation/edge.
 	DiskToTagColumn = "disk_disk_to_tag"
+	// DiskToHostTable is the table the holds the DiskToHost relation/edge. The primary key declared below.
+	DiskToHostTable = "host_HostToDisk"
+	// DiskToHostInverseTable is the table name for the Host entity.
+	// It exists in this package in order to avoid circular dependency with the "host" package.
+	DiskToHostInverseTable = "hosts"
 )
 
 // Columns holds all SQL columns for disk fields.
@@ -30,20 +37,16 @@ var Columns = []string{
 	FieldSize,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Disk type.
-var ForeignKeys = []string{
-	"host_host_to_disk",
-}
+var (
+	// DiskToHostPrimaryKey and DiskToHostColumn2 are the table columns denoting the
+	// primary key for the DiskToHost relation (M2M).
+	DiskToHostPrimaryKey = []string{"host_id", "disk_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

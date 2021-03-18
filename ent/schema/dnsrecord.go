@@ -37,5 +37,6 @@ func (DNSRecord) Fields() []ent.Field {
 func (DNSRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("DNSRecordToTag", Tag.Type),
+		edge.From("DNSRecordToEnvironment", Environment.Type).Ref("EnvironmentToDNSRecord"),
 	}
 }

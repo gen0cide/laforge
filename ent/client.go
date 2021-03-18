@@ -695,6 +695,22 @@ func (c *CommandClient) QueryCommandToTag(co *Command) *TagQuery {
 	return query
 }
 
+// QueryCommandToEnvironment queries the CommandToEnvironment edge of a Command.
+func (c *CommandClient) QueryCommandToEnvironment(co *Command) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(command.Table, command.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CommandClient) Hooks() []Hook {
 	return c.hooks.Command
@@ -1039,6 +1055,22 @@ func (c *DNSRecordClient) QueryDNSRecordToTag(dr *DNSRecord) *TagQuery {
 	return query
 }
 
+// QueryDNSRecordToEnvironment queries the DNSRecordToEnvironment edge of a DNSRecord.
+func (c *DNSRecordClient) QueryDNSRecordToEnvironment(dr *DNSRecord) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DNSRecordClient) Hooks() []Hook {
 	return c.hooks.DNSRecord
@@ -1136,6 +1168,22 @@ func (c *DiskClient) QueryDiskToTag(d *Disk) *TagQuery {
 			sqlgraph.From(disk.Table, disk.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, disk.DiskToTagTable, disk.DiskToTagColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDiskToHost queries the DiskToHost edge of a Disk.
+func (c *DiskClient) QueryDiskToHost(d *Disk) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(disk.Table, disk.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, disk.DiskToHostTable, disk.DiskToHostPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -1327,6 +1375,38 @@ func (c *EnvironmentClient) QueryEnvironmentToIdentity(e *Environment) *Identity
 	return query
 }
 
+// QueryEnvironmentToCommand queries the EnvironmentToCommand edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToCommand(e *Environment) *CommandQuery {
+	query := &CommandQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(command.Table, command.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToScript queries the EnvironmentToScript edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToScript(e *Environment) *ScriptQuery {
+	query := &ScriptQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(script.Table, script.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEnvironmentToFileDownload queries the EnvironmentToFileDownload edge of a Environment.
 func (c *EnvironmentClient) QueryEnvironmentToFileDownload(e *Environment) *FileDownloadQuery {
 	query := &FileDownloadQuery{config: c.config}
@@ -1391,6 +1471,38 @@ func (c *EnvironmentClient) QueryEnvironmentToIncludedNetwork(e *Environment) *I
 	return query
 }
 
+// QueryEnvironmentToFinding queries the EnvironmentToFinding edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFinding(e *Environment) *FindingQuery {
+	query := &FindingQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(finding.Table, finding.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToDNSRecord queries the EnvironmentToDNSRecord edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToDNSRecord(e *Environment) *DNSRecordQuery {
+	query := &DNSRecordQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEnvironmentToNetwork queries the EnvironmentToNetwork edge of a Environment.
 func (c *EnvironmentClient) QueryEnvironmentToNetwork(e *Environment) *NetworkQuery {
 	query := &NetworkQuery{config: c.config}
@@ -1400,6 +1512,22 @@ func (c *EnvironmentClient) QueryEnvironmentToNetwork(e *Environment) *NetworkQu
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToHostDependency queries the EnvironmentToHostDependency edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToHostDependency(e *Environment) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToHostDependencyTable, environment.EnvironmentToHostDependencyPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1927,7 +2055,23 @@ func (c *FindingClient) QueryFindingToScript(f *Finding) *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFindingToEnvironment queries the FindingToEnvironment edge of a Finding.
+func (c *FindingClient) QueryFindingToEnvironment(f *Finding) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(finding.Table, finding.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToEnvironmentTable, finding.FindingToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -2031,7 +2175,7 @@ func (c *HostClient) QueryHostToDisk(h *Host) *DiskQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(disk.Table, disk.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToDiskTable, host.HostToDiskColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, host.HostToDiskTable, host.HostToDiskPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -2087,15 +2231,47 @@ func (c *HostClient) QueryHostToEnvironment(h *Host) *EnvironmentQuery {
 	return query
 }
 
-// QueryHostToHostDependency queries the HostToHostDependency edge of a Host.
-func (c *HostClient) QueryHostToHostDependency(h *Host) *HostDependencyQuery {
+// QueryHostToIncludedNetwork queries the HostToIncludedNetwork edge of a Host.
+func (c *HostClient) QueryHostToIncludedNetwork(h *Host) *IncludedNetworkQuery {
+	query := &IncludedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToIncludedNetworkTable, host.HostToIncludedNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDependOnHostToHostDependency queries the DependOnHostToHostDependency edge of a Host.
+func (c *HostClient) QueryDependOnHostToHostDependency(h *Host) *HostDependencyQuery {
 	query := &HostDependencyQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := h.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToHostDependencyTable, host.HostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.DependOnHostToHostDependencyTable, host.DependOnHostToHostDependencyPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDependByHostToHostDependency queries the DependByHostToHostDependency edge of a Host.
+func (c *HostClient) QueryDependByHostToHostDependency(h *Host) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.DependByHostToHostDependencyTable, host.DependByHostToHostDependencyPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -2191,15 +2367,31 @@ func (c *HostDependencyClient) GetX(ctx context.Context, id int) *HostDependency
 	return obj
 }
 
-// QueryHostDependencyToHost queries the HostDependencyToHost edge of a HostDependency.
-func (c *HostDependencyClient) QueryHostDependencyToHost(hd *HostDependency) *HostQuery {
+// QueryHostDependencyToDependOnHost queries the HostDependencyToDependOnHost edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToDependOnHost(hd *HostDependency) *HostQuery {
 	query := &HostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := hd.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToHostTable, hostdependency.HostDependencyToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToDependOnHostTable, hostdependency.HostDependencyToDependOnHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToDependByHost queries the HostDependencyToDependByHost edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToDependByHost(hd *HostDependency) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToDependByHostTable, hostdependency.HostDependencyToDependByHostPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
 		return fromV, nil
@@ -2216,6 +2408,22 @@ func (c *HostDependencyClient) QueryHostDependencyToNetwork(hd *HostDependency) 
 			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToNetworkTable, hostdependency.HostDependencyToNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToEnvironment queries the HostDependencyToEnvironment edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToEnvironment(hd *HostDependency) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, hostdependency.HostDependencyToEnvironmentTable, hostdependency.HostDependencyToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
 		return fromV, nil
@@ -2431,6 +2639,38 @@ func (c *IncludedNetworkClient) QueryIncludedNetworkToTag(in *IncludedNetwork) *
 	return query
 }
 
+// QueryIncludedNetworkToHost queries the IncludedNetworkToHost edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToHost(in *IncludedNetwork) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := in.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToHostTable, includednetwork.IncludedNetworkToHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncludedNetworkToNetwork queries the IncludedNetworkToNetwork edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToNetwork(in *IncludedNetwork) *NetworkQuery {
+	query := &NetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := in.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
+			sqlgraph.To(network.Table, network.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncludedNetworkToEnvironment queries the IncludedNetworkToEnvironment edge of a IncludedNetwork.
 func (c *IncludedNetworkClient) QueryIncludedNetworkToEnvironment(in *IncludedNetwork) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -2576,6 +2816,22 @@ func (c *NetworkClient) QueryNetworkToHostDependency(n *Network) *HostDependency
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetworkToIncludedNetwork queries the NetworkToIncludedNetwork edge of a Network.
+func (c *NetworkClient) QueryNetworkToIncludedNetwork(n *Network) *IncludedNetworkQuery {
+	query := &IncludedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, id),
+			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -3311,7 +3567,23 @@ func (c *ScriptClient) QueryScriptToFinding(s *Script) *FindingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, script.ScriptToFindingTable, script.ScriptToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, script.ScriptToFindingTable, script.ScriptToFindingPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScriptToEnvironment queries the ScriptToEnvironment edge of a Script.
+func (c *ScriptClient) QueryScriptToEnvironment(s *Script) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(script.Table, script.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, script.ScriptToEnvironmentTable, script.ScriptToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

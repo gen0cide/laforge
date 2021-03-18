@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -120,6 +121,21 @@ func (fu *FindingUpdate) AddFindingToScript(s ...*Script) *FindingUpdate {
 	return fu.AddFindingToScriptIDs(ids...)
 }
 
+// AddFindingToEnvironmentIDs adds the "FindingToEnvironment" edge to the Environment entity by IDs.
+func (fu *FindingUpdate) AddFindingToEnvironmentIDs(ids ...int) *FindingUpdate {
+	fu.mutation.AddFindingToEnvironmentIDs(ids...)
+	return fu
+}
+
+// AddFindingToEnvironment adds the "FindingToEnvironment" edges to the Environment entity.
+func (fu *FindingUpdate) AddFindingToEnvironment(e ...*Environment) *FindingUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fu.AddFindingToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the FindingMutation object of the builder.
 func (fu *FindingUpdate) Mutation() *FindingMutation {
 	return fu.mutation
@@ -207,6 +223,27 @@ func (fu *FindingUpdate) RemoveFindingToScript(s ...*Script) *FindingUpdate {
 		ids[i] = s[i].ID
 	}
 	return fu.RemoveFindingToScriptIDs(ids...)
+}
+
+// ClearFindingToEnvironment clears all "FindingToEnvironment" edges to the Environment entity.
+func (fu *FindingUpdate) ClearFindingToEnvironment() *FindingUpdate {
+	fu.mutation.ClearFindingToEnvironment()
+	return fu
+}
+
+// RemoveFindingToEnvironmentIDs removes the "FindingToEnvironment" edge to Environment entities by IDs.
+func (fu *FindingUpdate) RemoveFindingToEnvironmentIDs(ids ...int) *FindingUpdate {
+	fu.mutation.RemoveFindingToEnvironmentIDs(ids...)
+	return fu
+}
+
+// RemoveFindingToEnvironment removes "FindingToEnvironment" edges to Environment entities.
+func (fu *FindingUpdate) RemoveFindingToEnvironment(e ...*Environment) *FindingUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fu.RemoveFindingToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -499,7 +536,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if fu.mutation.FindingToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -515,7 +552,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := fu.mutation.RemovedFindingToScriptIDs(); len(nodes) > 0 && !fu.mutation.FindingToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -534,7 +571,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := fu.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -542,6 +579,60 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fu.mutation.FindingToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fu.mutation.RemovedFindingToEnvironmentIDs(); len(nodes) > 0 && !fu.mutation.FindingToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fu.mutation.FindingToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -658,6 +749,21 @@ func (fuo *FindingUpdateOne) AddFindingToScript(s ...*Script) *FindingUpdateOne 
 	return fuo.AddFindingToScriptIDs(ids...)
 }
 
+// AddFindingToEnvironmentIDs adds the "FindingToEnvironment" edge to the Environment entity by IDs.
+func (fuo *FindingUpdateOne) AddFindingToEnvironmentIDs(ids ...int) *FindingUpdateOne {
+	fuo.mutation.AddFindingToEnvironmentIDs(ids...)
+	return fuo
+}
+
+// AddFindingToEnvironment adds the "FindingToEnvironment" edges to the Environment entity.
+func (fuo *FindingUpdateOne) AddFindingToEnvironment(e ...*Environment) *FindingUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fuo.AddFindingToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the FindingMutation object of the builder.
 func (fuo *FindingUpdateOne) Mutation() *FindingMutation {
 	return fuo.mutation
@@ -745,6 +851,27 @@ func (fuo *FindingUpdateOne) RemoveFindingToScript(s ...*Script) *FindingUpdateO
 		ids[i] = s[i].ID
 	}
 	return fuo.RemoveFindingToScriptIDs(ids...)
+}
+
+// ClearFindingToEnvironment clears all "FindingToEnvironment" edges to the Environment entity.
+func (fuo *FindingUpdateOne) ClearFindingToEnvironment() *FindingUpdateOne {
+	fuo.mutation.ClearFindingToEnvironment()
+	return fuo
+}
+
+// RemoveFindingToEnvironmentIDs removes the "FindingToEnvironment" edge to Environment entities by IDs.
+func (fuo *FindingUpdateOne) RemoveFindingToEnvironmentIDs(ids ...int) *FindingUpdateOne {
+	fuo.mutation.RemoveFindingToEnvironmentIDs(ids...)
+	return fuo
+}
+
+// RemoveFindingToEnvironment removes "FindingToEnvironment" edges to Environment entities.
+func (fuo *FindingUpdateOne) RemoveFindingToEnvironment(e ...*Environment) *FindingUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fuo.RemoveFindingToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated Finding entity.
@@ -1042,7 +1169,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 	if fuo.mutation.FindingToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -1058,7 +1185,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 	if nodes := fuo.mutation.RemovedFindingToScriptIDs(); len(nodes) > 0 && !fuo.mutation.FindingToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -1077,7 +1204,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 	if nodes := fuo.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -1085,6 +1212,60 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuo.mutation.FindingToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuo.mutation.RemovedFindingToEnvironmentIDs(); len(nodes) > 0 && !fuo.mutation.FindingToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuo.mutation.FindingToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

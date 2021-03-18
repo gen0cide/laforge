@@ -827,6 +827,34 @@ func HasCommandToTagWith(preds ...predicate.Tag) predicate.Command {
 	})
 }
 
+// HasCommandToEnvironment applies the HasEdge predicate on the "CommandToEnvironment" edge.
+func HasCommandToEnvironment() predicate.Command {
+	return predicate.Command(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CommandToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CommandToEnvironmentTable, CommandToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCommandToEnvironmentWith applies the HasEdge predicate on the "CommandToEnvironment" edge with a given conditions (other predicates).
+func HasCommandToEnvironmentWith(preds ...predicate.Environment) predicate.Command {
+	return predicate.Command(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CommandToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CommandToEnvironmentTable, CommandToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Command) predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {

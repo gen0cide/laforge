@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/includednetwork"
+	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
 )
 
@@ -46,6 +48,36 @@ func (inc *IncludedNetworkCreate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNe
 		ids[i] = t[i].ID
 	}
 	return inc.AddIncludedNetworkToTagIDs(ids...)
+}
+
+// AddIncludedNetworkToHostIDs adds the "IncludedNetworkToHost" edge to the Host entity by IDs.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToHostIDs(ids ...int) *IncludedNetworkCreate {
+	inc.mutation.AddIncludedNetworkToHostIDs(ids...)
+	return inc
+}
+
+// AddIncludedNetworkToHost adds the "IncludedNetworkToHost" edges to the Host entity.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToHost(h ...*Host) *IncludedNetworkCreate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return inc.AddIncludedNetworkToHostIDs(ids...)
+}
+
+// AddIncludedNetworkToNetworkIDs adds the "IncludedNetworkToNetwork" edge to the Network entity by IDs.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToNetworkIDs(ids ...int) *IncludedNetworkCreate {
+	inc.mutation.AddIncludedNetworkToNetworkIDs(ids...)
+	return inc
+}
+
+// AddIncludedNetworkToNetwork adds the "IncludedNetworkToNetwork" edges to the Network entity.
+func (inc *IncludedNetworkCreate) AddIncludedNetworkToNetwork(n ...*Network) *IncludedNetworkCreate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return inc.AddIncludedNetworkToNetworkIDs(ids...)
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
@@ -174,6 +206,44 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := inc.mutation.IncludedNetworkToHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   includednetwork.IncludedNetworkToHostTable,
+			Columns: includednetwork.IncludedNetworkToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := inc.mutation.IncludedNetworkToNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   includednetwork.IncludedNetworkToNetworkTable,
+			Columns: includednetwork.IncludedNetworkToNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: network.FieldID,
 				},
 			},
 		}

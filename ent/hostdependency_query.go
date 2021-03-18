@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
@@ -27,8 +28,10 @@ type HostDependencyQuery struct {
 	fields     []string
 	predicates []predicate.HostDependency
 	// eager-loading edges.
-	withHostDependencyToHost    *HostQuery
-	withHostDependencyToNetwork *NetworkQuery
+	withHostDependencyToDependOnHost *HostQuery
+	withHostDependencyToDependByHost *HostQuery
+	withHostDependencyToNetwork      *NetworkQuery
+	withHostDependencyToEnvironment  *EnvironmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,8 +61,8 @@ func (hdq *HostDependencyQuery) Order(o ...OrderFunc) *HostDependencyQuery {
 	return hdq
 }
 
-// QueryHostDependencyToHost chains the current query on the "HostDependencyToHost" edge.
-func (hdq *HostDependencyQuery) QueryHostDependencyToHost() *HostQuery {
+// QueryHostDependencyToDependOnHost chains the current query on the "HostDependencyToDependOnHost" edge.
+func (hdq *HostDependencyQuery) QueryHostDependencyToDependOnHost() *HostQuery {
 	query := &HostQuery{config: hdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hdq.prepareQuery(ctx); err != nil {
@@ -72,7 +75,29 @@ func (hdq *HostDependencyQuery) QueryHostDependencyToHost() *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToHostTable, hostdependency.HostDependencyToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToDependOnHostTable, hostdependency.HostDependencyToDependOnHostPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(hdq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToDependByHost chains the current query on the "HostDependencyToDependByHost" edge.
+func (hdq *HostDependencyQuery) QueryHostDependencyToDependByHost() *HostQuery {
+	query := &HostQuery{config: hdq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := hdq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := hdq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, selector),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToDependByHostTable, hostdependency.HostDependencyToDependByHostPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(hdq.driver.Dialect(), step)
 		return fromU, nil
@@ -95,6 +120,28 @@ func (hdq *HostDependencyQuery) QueryHostDependencyToNetwork() *NetworkQuery {
 			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, selector),
 			sqlgraph.To(network.Table, network.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, hostdependency.HostDependencyToNetworkTable, hostdependency.HostDependencyToNetworkPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(hdq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToEnvironment chains the current query on the "HostDependencyToEnvironment" edge.
+func (hdq *HostDependencyQuery) QueryHostDependencyToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: hdq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := hdq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := hdq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, hostdependency.HostDependencyToEnvironmentTable, hostdependency.HostDependencyToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(hdq.driver.Dialect(), step)
 		return fromU, nil
@@ -278,27 +325,40 @@ func (hdq *HostDependencyQuery) Clone() *HostDependencyQuery {
 		return nil
 	}
 	return &HostDependencyQuery{
-		config:                      hdq.config,
-		limit:                       hdq.limit,
-		offset:                      hdq.offset,
-		order:                       append([]OrderFunc{}, hdq.order...),
-		predicates:                  append([]predicate.HostDependency{}, hdq.predicates...),
-		withHostDependencyToHost:    hdq.withHostDependencyToHost.Clone(),
-		withHostDependencyToNetwork: hdq.withHostDependencyToNetwork.Clone(),
+		config:                           hdq.config,
+		limit:                            hdq.limit,
+		offset:                           hdq.offset,
+		order:                            append([]OrderFunc{}, hdq.order...),
+		predicates:                       append([]predicate.HostDependency{}, hdq.predicates...),
+		withHostDependencyToDependOnHost: hdq.withHostDependencyToDependOnHost.Clone(),
+		withHostDependencyToDependByHost: hdq.withHostDependencyToDependByHost.Clone(),
+		withHostDependencyToNetwork:      hdq.withHostDependencyToNetwork.Clone(),
+		withHostDependencyToEnvironment:  hdq.withHostDependencyToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  hdq.sql.Clone(),
 		path: hdq.path,
 	}
 }
 
-// WithHostDependencyToHost tells the query-builder to eager-load the nodes that are connected to
-// the "HostDependencyToHost" edge. The optional arguments are used to configure the query builder of the edge.
-func (hdq *HostDependencyQuery) WithHostDependencyToHost(opts ...func(*HostQuery)) *HostDependencyQuery {
+// WithHostDependencyToDependOnHost tells the query-builder to eager-load the nodes that are connected to
+// the "HostDependencyToDependOnHost" edge. The optional arguments are used to configure the query builder of the edge.
+func (hdq *HostDependencyQuery) WithHostDependencyToDependOnHost(opts ...func(*HostQuery)) *HostDependencyQuery {
 	query := &HostQuery{config: hdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	hdq.withHostDependencyToHost = query
+	hdq.withHostDependencyToDependOnHost = query
+	return hdq
+}
+
+// WithHostDependencyToDependByHost tells the query-builder to eager-load the nodes that are connected to
+// the "HostDependencyToDependByHost" edge. The optional arguments are used to configure the query builder of the edge.
+func (hdq *HostDependencyQuery) WithHostDependencyToDependByHost(opts ...func(*HostQuery)) *HostDependencyQuery {
+	query := &HostQuery{config: hdq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	hdq.withHostDependencyToDependByHost = query
 	return hdq
 }
 
@@ -310,6 +370,17 @@ func (hdq *HostDependencyQuery) WithHostDependencyToNetwork(opts ...func(*Networ
 		opt(query)
 	}
 	hdq.withHostDependencyToNetwork = query
+	return hdq
+}
+
+// WithHostDependencyToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "HostDependencyToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (hdq *HostDependencyQuery) WithHostDependencyToEnvironment(opts ...func(*EnvironmentQuery)) *HostDependencyQuery {
+	query := &EnvironmentQuery{config: hdq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	hdq.withHostDependencyToEnvironment = query
 	return hdq
 }
 
@@ -378,9 +449,11 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 	var (
 		nodes       = []*HostDependency{}
 		_spec       = hdq.querySpec()
-		loadedTypes = [2]bool{
-			hdq.withHostDependencyToHost != nil,
+		loadedTypes = [4]bool{
+			hdq.withHostDependencyToDependOnHost != nil,
+			hdq.withHostDependencyToDependByHost != nil,
 			hdq.withHostDependencyToNetwork != nil,
+			hdq.withHostDependencyToEnvironment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -403,13 +476,13 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		return nodes, nil
 	}
 
-	if query := hdq.withHostDependencyToHost; query != nil {
+	if query := hdq.withHostDependencyToDependOnHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		ids := make(map[int]*HostDependency, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
-			node.Edges.HostDependencyToHost = []*Host{}
+			node.Edges.HostDependencyToDependOnHost = []*Host{}
 		}
 		var (
 			edgeids []int
@@ -418,11 +491,11 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
 				Inverse: false,
-				Table:   hostdependency.HostDependencyToHostTable,
-				Columns: hostdependency.HostDependencyToHostPrimaryKey,
+				Table:   hostdependency.HostDependencyToDependOnHostTable,
+				Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(hostdependency.HostDependencyToHostPrimaryKey[0], fks...))
+				s.Where(sql.InValues(hostdependency.HostDependencyToDependOnHostPrimaryKey[0], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {
@@ -449,7 +522,7 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, hdq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "HostDependencyToHost": %v`, err)
+			return nil, fmt.Errorf(`query edges "HostDependencyToDependOnHost": %v`, err)
 		}
 		query.Where(host.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -459,10 +532,74 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		for _, n := range neighbors {
 			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "HostDependencyToHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected "HostDependencyToDependOnHost" node returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.HostDependencyToHost = append(nodes[i].Edges.HostDependencyToHost, n)
+				nodes[i].Edges.HostDependencyToDependOnHost = append(nodes[i].Edges.HostDependencyToDependOnHost, n)
+			}
+		}
+	}
+
+	if query := hdq.withHostDependencyToDependByHost; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*HostDependency, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.HostDependencyToDependByHost = []*Host{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*HostDependency)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   hostdependency.HostDependencyToDependByHostTable,
+				Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(hostdependency.HostDependencyToDependByHostPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, hdq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "HostDependencyToDependByHost": %v`, err)
+		}
+		query.Where(host.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "HostDependencyToDependByHost" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.HostDependencyToDependByHost = append(nodes[i].Edges.HostDependencyToDependByHost, n)
 			}
 		}
 	}
@@ -527,6 +664,70 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 			}
 			for i := range nodes {
 				nodes[i].Edges.HostDependencyToNetwork = append(nodes[i].Edges.HostDependencyToNetwork, n)
+			}
+		}
+	}
+
+	if query := hdq.withHostDependencyToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*HostDependency, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.HostDependencyToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*HostDependency)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   hostdependency.HostDependencyToEnvironmentTable,
+				Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(hostdependency.HostDependencyToEnvironmentPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, hdq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "HostDependencyToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "HostDependencyToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.HostDependencyToEnvironment = append(nodes[i].Edges.HostDependencyToEnvironment, n)
 			}
 		}
 	}

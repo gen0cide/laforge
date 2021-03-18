@@ -39,6 +39,8 @@ type Network struct {
 	HCLNetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
 	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
 	HCLNetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
+	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
+	HCLNetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	//
 	provisioned_network_provisioned_network_to_network *int
 }
@@ -51,9 +53,11 @@ type NetworkEdges struct {
 	NetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
 	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
 	NetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
+	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
+	NetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // NetworkToTagOrErr returns the NetworkToTag value or an error if the edge
@@ -81,6 +85,15 @@ func (e NetworkEdges) NetworkToHostDependencyOrErr() ([]*HostDependency, error) 
 		return e.NetworkToHostDependency, nil
 	}
 	return nil, &NotLoadedError{edge: "NetworkToHostDependency"}
+}
+
+// NetworkToIncludedNetworkOrErr returns the NetworkToIncludedNetwork value or an error if the edge
+// was not loaded in eager-loading.
+func (e NetworkEdges) NetworkToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
+	if e.loadedTypes[3] {
+		return e.NetworkToIncludedNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "NetworkToIncludedNetwork"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -186,6 +199,11 @@ func (n *Network) QueryNetworkToEnvironment() *EnvironmentQuery {
 // QueryNetworkToHostDependency queries the "NetworkToHostDependency" edge of the Network entity.
 func (n *Network) QueryNetworkToHostDependency() *HostDependencyQuery {
 	return (&NetworkClient{config: n.config}).QueryNetworkToHostDependency(n)
+}
+
+// QueryNetworkToIncludedNetwork queries the "NetworkToIncludedNetwork" edge of the Network entity.
+func (n *Network) QueryNetworkToIncludedNetwork() *IncludedNetworkQuery {
+	return (&NetworkClient{config: n.config}).QueryNetworkToIncludedNetwork(n)
 }
 
 // Update returns a builder for updating this Network.

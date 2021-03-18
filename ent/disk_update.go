@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -55,6 +56,21 @@ func (du *DiskUpdate) AddDiskToTag(t ...*Tag) *DiskUpdate {
 	return du.AddDiskToTagIDs(ids...)
 }
 
+// AddDiskToHostIDs adds the "DiskToHost" edge to the Host entity by IDs.
+func (du *DiskUpdate) AddDiskToHostIDs(ids ...int) *DiskUpdate {
+	du.mutation.AddDiskToHostIDs(ids...)
+	return du
+}
+
+// AddDiskToHost adds the "DiskToHost" edges to the Host entity.
+func (du *DiskUpdate) AddDiskToHost(h ...*Host) *DiskUpdate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return du.AddDiskToHostIDs(ids...)
+}
+
 // Mutation returns the DiskMutation object of the builder.
 func (du *DiskUpdate) Mutation() *DiskMutation {
 	return du.mutation
@@ -79,6 +95,27 @@ func (du *DiskUpdate) RemoveDiskToTag(t ...*Tag) *DiskUpdate {
 		ids[i] = t[i].ID
 	}
 	return du.RemoveDiskToTagIDs(ids...)
+}
+
+// ClearDiskToHost clears all "DiskToHost" edges to the Host entity.
+func (du *DiskUpdate) ClearDiskToHost() *DiskUpdate {
+	du.mutation.ClearDiskToHost()
+	return du
+}
+
+// RemoveDiskToHostIDs removes the "DiskToHost" edge to Host entities by IDs.
+func (du *DiskUpdate) RemoveDiskToHostIDs(ids ...int) *DiskUpdate {
+	du.mutation.RemoveDiskToHostIDs(ids...)
+	return du
+}
+
+// RemoveDiskToHost removes "DiskToHost" edges to Host entities.
+func (du *DiskUpdate) RemoveDiskToHost(h ...*Host) *DiskUpdate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return du.RemoveDiskToHostIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -234,6 +271,60 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.DiskToHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedDiskToHostIDs(); len(nodes) > 0 && !du.mutation.DiskToHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DiskToHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{disk.Label}
@@ -280,6 +371,21 @@ func (duo *DiskUpdateOne) AddDiskToTag(t ...*Tag) *DiskUpdateOne {
 	return duo.AddDiskToTagIDs(ids...)
 }
 
+// AddDiskToHostIDs adds the "DiskToHost" edge to the Host entity by IDs.
+func (duo *DiskUpdateOne) AddDiskToHostIDs(ids ...int) *DiskUpdateOne {
+	duo.mutation.AddDiskToHostIDs(ids...)
+	return duo
+}
+
+// AddDiskToHost adds the "DiskToHost" edges to the Host entity.
+func (duo *DiskUpdateOne) AddDiskToHost(h ...*Host) *DiskUpdateOne {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return duo.AddDiskToHostIDs(ids...)
+}
+
 // Mutation returns the DiskMutation object of the builder.
 func (duo *DiskUpdateOne) Mutation() *DiskMutation {
 	return duo.mutation
@@ -304,6 +410,27 @@ func (duo *DiskUpdateOne) RemoveDiskToTag(t ...*Tag) *DiskUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return duo.RemoveDiskToTagIDs(ids...)
+}
+
+// ClearDiskToHost clears all "DiskToHost" edges to the Host entity.
+func (duo *DiskUpdateOne) ClearDiskToHost() *DiskUpdateOne {
+	duo.mutation.ClearDiskToHost()
+	return duo
+}
+
+// RemoveDiskToHostIDs removes the "DiskToHost" edge to Host entities by IDs.
+func (duo *DiskUpdateOne) RemoveDiskToHostIDs(ids ...int) *DiskUpdateOne {
+	duo.mutation.RemoveDiskToHostIDs(ids...)
+	return duo
+}
+
+// RemoveDiskToHost removes "DiskToHost" edges to Host entities.
+func (duo *DiskUpdateOne) RemoveDiskToHost(h ...*Host) *DiskUpdateOne {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return duo.RemoveDiskToHostIDs(ids...)
 }
 
 // Save executes the query and returns the updated Disk entity.
@@ -456,6 +583,60 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DiskToHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedDiskToHostIDs(); len(nodes) > 0 && !duo.mutation.DiskToHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DiskToHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: disk.DiskToHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
 				},
 			},
 		}

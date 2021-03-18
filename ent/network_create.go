@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -101,6 +102,21 @@ func (nc *NetworkCreate) AddNetworkToHostDependency(h ...*HostDependency) *Netwo
 		ids[i] = h[i].ID
 	}
 	return nc.AddNetworkToHostDependencyIDs(ids...)
+}
+
+// AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (nc *NetworkCreate) AddNetworkToIncludedNetworkIDs(ids ...int) *NetworkCreate {
+	nc.mutation.AddNetworkToIncludedNetworkIDs(ids...)
+	return nc
+}
+
+// AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nc *NetworkCreate) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nc.AddNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Mutation returns the NetworkMutation object of the builder.
@@ -296,6 +312,25 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: hostdependency.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
 				},
 			},
 		}

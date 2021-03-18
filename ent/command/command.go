@@ -34,6 +34,8 @@ const (
 	EdgeCommandToUser = "CommandToUser"
 	// EdgeCommandToTag holds the string denoting the commandtotag edge name in mutations.
 	EdgeCommandToTag = "CommandToTag"
+	// EdgeCommandToEnvironment holds the string denoting the commandtoenvironment edge name in mutations.
+	EdgeCommandToEnvironment = "CommandToEnvironment"
 
 	// Table holds the table name of the command in the database.
 	Table = "commands"
@@ -51,6 +53,11 @@ const (
 	CommandToTagInverseTable = "tags"
 	// CommandToTagColumn is the table column denoting the CommandToTag relation/edge.
 	CommandToTagColumn = "command_command_to_tag"
+	// CommandToEnvironmentTable is the table the holds the CommandToEnvironment relation/edge. The primary key declared below.
+	CommandToEnvironmentTable = "environment_EnvironmentToCommand"
+	// CommandToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	CommandToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for command fields.
@@ -73,6 +80,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioning_step_provisioning_step_to_command",
 }
+
+var (
+	// CommandToEnvironmentPrimaryKey and CommandToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the CommandToEnvironment relation (M2M).
+	CommandToEnvironmentPrimaryKey = []string{"environment_id", "command_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

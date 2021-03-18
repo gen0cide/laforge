@@ -42,6 +42,10 @@ const (
 	EdgeEnvironmentToBuild = "EnvironmentToBuild"
 	// EdgeEnvironmentToIdentity holds the string denoting the environmenttoidentity edge name in mutations.
 	EdgeEnvironmentToIdentity = "EnvironmentToIdentity"
+	// EdgeEnvironmentToCommand holds the string denoting the environmenttocommand edge name in mutations.
+	EdgeEnvironmentToCommand = "EnvironmentToCommand"
+	// EdgeEnvironmentToScript holds the string denoting the environmenttoscript edge name in mutations.
+	EdgeEnvironmentToScript = "EnvironmentToScript"
 	// EdgeEnvironmentToFileDownload holds the string denoting the environmenttofiledownload edge name in mutations.
 	EdgeEnvironmentToFileDownload = "EnvironmentToFileDownload"
 	// EdgeEnvironmentToFileDelete holds the string denoting the environmenttofiledelete edge name in mutations.
@@ -50,8 +54,14 @@ const (
 	EdgeEnvironmentToFileExtract = "EnvironmentToFileExtract"
 	// EdgeEnvironmentToIncludedNetwork holds the string denoting the environmenttoincludednetwork edge name in mutations.
 	EdgeEnvironmentToIncludedNetwork = "EnvironmentToIncludedNetwork"
+	// EdgeEnvironmentToFinding holds the string denoting the environmenttofinding edge name in mutations.
+	EdgeEnvironmentToFinding = "EnvironmentToFinding"
+	// EdgeEnvironmentToDNSRecord holds the string denoting the environmenttodnsrecord edge name in mutations.
+	EdgeEnvironmentToDNSRecord = "EnvironmentToDNSRecord"
 	// EdgeEnvironmentToNetwork holds the string denoting the environmenttonetwork edge name in mutations.
 	EdgeEnvironmentToNetwork = "EnvironmentToNetwork"
+	// EdgeEnvironmentToHostDependency holds the string denoting the environmenttohostdependency edge name in mutations.
+	EdgeEnvironmentToHostDependency = "EnvironmentToHostDependency"
 	// EdgeEnvironmentToTeam holds the string denoting the environmenttoteam edge name in mutations.
 	EdgeEnvironmentToTeam = "EnvironmentToTeam"
 
@@ -89,6 +99,16 @@ const (
 	// EnvironmentToIdentityInverseTable is the table name for the Identity entity.
 	// It exists in this package in order to avoid circular dependency with the "identity" package.
 	EnvironmentToIdentityInverseTable = "identities"
+	// EnvironmentToCommandTable is the table the holds the EnvironmentToCommand relation/edge. The primary key declared below.
+	EnvironmentToCommandTable = "environment_EnvironmentToCommand"
+	// EnvironmentToCommandInverseTable is the table name for the Command entity.
+	// It exists in this package in order to avoid circular dependency with the "command" package.
+	EnvironmentToCommandInverseTable = "commands"
+	// EnvironmentToScriptTable is the table the holds the EnvironmentToScript relation/edge. The primary key declared below.
+	EnvironmentToScriptTable = "environment_EnvironmentToScript"
+	// EnvironmentToScriptInverseTable is the table name for the Script entity.
+	// It exists in this package in order to avoid circular dependency with the "script" package.
+	EnvironmentToScriptInverseTable = "scripts"
 	// EnvironmentToFileDownloadTable is the table the holds the EnvironmentToFileDownload relation/edge. The primary key declared below.
 	EnvironmentToFileDownloadTable = "environment_EnvironmentToFileDownload"
 	// EnvironmentToFileDownloadInverseTable is the table name for the FileDownload entity.
@@ -109,11 +129,26 @@ const (
 	// EnvironmentToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
 	EnvironmentToIncludedNetworkInverseTable = "included_networks"
+	// EnvironmentToFindingTable is the table the holds the EnvironmentToFinding relation/edge. The primary key declared below.
+	EnvironmentToFindingTable = "environment_EnvironmentToFinding"
+	// EnvironmentToFindingInverseTable is the table name for the Finding entity.
+	// It exists in this package in order to avoid circular dependency with the "finding" package.
+	EnvironmentToFindingInverseTable = "findings"
+	// EnvironmentToDNSRecordTable is the table the holds the EnvironmentToDNSRecord relation/edge. The primary key declared below.
+	EnvironmentToDNSRecordTable = "environment_EnvironmentToDNSRecord"
+	// EnvironmentToDNSRecordInverseTable is the table name for the DNSRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "dnsrecord" package.
+	EnvironmentToDNSRecordInverseTable = "dns_records"
 	// EnvironmentToNetworkTable is the table the holds the EnvironmentToNetwork relation/edge. The primary key declared below.
 	EnvironmentToNetworkTable = "environment_EnvironmentToNetwork"
 	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	EnvironmentToNetworkInverseTable = "networks"
+	// EnvironmentToHostDependencyTable is the table the holds the EnvironmentToHostDependency relation/edge. The primary key declared below.
+	EnvironmentToHostDependencyTable = "environment_EnvironmentToHostDependency"
+	// EnvironmentToHostDependencyInverseTable is the table name for the HostDependency entity.
+	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
+	EnvironmentToHostDependencyInverseTable = "host_dependencies"
 	// EnvironmentToTeamTable is the table the holds the EnvironmentToTeam relation/edge. The primary key declared below.
 	EnvironmentToTeamTable = "team_TeamToEnvironment"
 	// EnvironmentToTeamInverseTable is the table name for the Team entity.
@@ -153,6 +188,12 @@ var (
 	// EnvironmentToIdentityPrimaryKey and EnvironmentToIdentityColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIdentity relation (M2M).
 	EnvironmentToIdentityPrimaryKey = []string{"environment_id", "identity_id"}
+	// EnvironmentToCommandPrimaryKey and EnvironmentToCommandColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToCommand relation (M2M).
+	EnvironmentToCommandPrimaryKey = []string{"environment_id", "command_id"}
+	// EnvironmentToScriptPrimaryKey and EnvironmentToScriptColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToScript relation (M2M).
+	EnvironmentToScriptPrimaryKey = []string{"environment_id", "script_id"}
 	// EnvironmentToFileDownloadPrimaryKey and EnvironmentToFileDownloadColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToFileDownload relation (M2M).
 	EnvironmentToFileDownloadPrimaryKey = []string{"environment_id", "file_download_id"}
@@ -165,9 +206,18 @@ var (
 	// EnvironmentToIncludedNetworkPrimaryKey and EnvironmentToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIncludedNetwork relation (M2M).
 	EnvironmentToIncludedNetworkPrimaryKey = []string{"environment_id", "included_network_id"}
+	// EnvironmentToFindingPrimaryKey and EnvironmentToFindingColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToFinding relation (M2M).
+	EnvironmentToFindingPrimaryKey = []string{"environment_id", "finding_id"}
+	// EnvironmentToDNSRecordPrimaryKey and EnvironmentToDNSRecordColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToDNSRecord relation (M2M).
+	EnvironmentToDNSRecordPrimaryKey = []string{"environment_id", "dns_record_id"}
 	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToNetwork relation (M2M).
 	EnvironmentToNetworkPrimaryKey = []string{"environment_id", "network_id"}
+	// EnvironmentToHostDependencyPrimaryKey and EnvironmentToHostDependencyColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToHostDependency relation (M2M).
+	EnvironmentToHostDependencyPrimaryKey = []string{"environment_id", "host_dependency_id"}
 	// EnvironmentToTeamPrimaryKey and EnvironmentToTeamColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToTeam relation (M2M).
 	EnvironmentToTeamPrimaryKey = []string{"team_id", "environment_id"}

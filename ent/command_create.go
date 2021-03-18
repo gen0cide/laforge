@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
@@ -115,6 +116,21 @@ func (cc *CommandCreate) AddCommandToTag(t ...*Tag) *CommandCreate {
 		ids[i] = t[i].ID
 	}
 	return cc.AddCommandToTagIDs(ids...)
+}
+
+// AddCommandToEnvironmentIDs adds the "CommandToEnvironment" edge to the Environment entity by IDs.
+func (cc *CommandCreate) AddCommandToEnvironmentIDs(ids ...int) *CommandCreate {
+	cc.mutation.AddCommandToEnvironmentIDs(ids...)
+	return cc
+}
+
+// AddCommandToEnvironment adds the "CommandToEnvironment" edges to the Environment entity.
+func (cc *CommandCreate) AddCommandToEnvironment(e ...*Environment) *CommandCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cc.AddCommandToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -356,6 +372,25 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.CommandToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   command.CommandToEnvironmentTable,
+			Columns: command.CommandToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

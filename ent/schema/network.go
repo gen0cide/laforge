@@ -35,5 +35,7 @@ func (Network) Edges() []ent.Edge {
 		edge.To("NetworkToTag", Tag.Type),
 		edge.From("NetworkToEnvironment", Environment.Type).Ref("EnvironmentToNetwork"),
 		edge.From("NetworkToHostDependency", HostDependency.Type).Ref("HostDependencyToNetwork"),
+		edge.From("NetworkToIncludedNetwork", IncludedNetwork.Type).
+			Ref("IncludedNetworkToNetwork"),
 	}
 }

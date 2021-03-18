@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -149,6 +150,21 @@ func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
 		ids[i] = f[i].ID
 	}
 	return sc.AddScriptToFindingIDs(ids...)
+}
+
+// AddScriptToEnvironmentIDs adds the "ScriptToEnvironment" edge to the Environment entity by IDs.
+func (sc *ScriptCreate) AddScriptToEnvironmentIDs(ids ...int) *ScriptCreate {
+	sc.mutation.AddScriptToEnvironmentIDs(ids...)
+	return sc
+}
+
+// AddScriptToEnvironment adds the "ScriptToEnvironment" edges to the Environment entity.
+func (sc *ScriptCreate) AddScriptToEnvironment(e ...*Environment) *ScriptCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return sc.AddScriptToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -424,7 +440,7 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 	if nodes := sc.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -432,6 +448,25 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: finding.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

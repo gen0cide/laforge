@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
@@ -111,6 +112,21 @@ func (fc *FindingCreate) AddFindingToScript(s ...*Script) *FindingCreate {
 		ids[i] = s[i].ID
 	}
 	return fc.AddFindingToScriptIDs(ids...)
+}
+
+// AddFindingToEnvironmentIDs adds the "FindingToEnvironment" edge to the Environment entity by IDs.
+func (fc *FindingCreate) AddFindingToEnvironmentIDs(ids ...int) *FindingCreate {
+	fc.mutation.AddFindingToEnvironmentIDs(ids...)
+	return fc
+}
+
+// AddFindingToEnvironment adds the "FindingToEnvironment" edges to the Environment entity.
+func (fc *FindingCreate) AddFindingToEnvironment(e ...*Environment) *FindingCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fc.AddFindingToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the FindingMutation object of the builder.
@@ -316,7 +332,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 	if nodes := fc.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   finding.FindingToScriptTable,
 			Columns: finding.FindingToScriptPrimaryKey,
 			Bidi:    false,
@@ -324,6 +340,25 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: script.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fc.mutation.FindingToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

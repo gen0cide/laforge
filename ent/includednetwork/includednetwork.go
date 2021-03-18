@@ -14,6 +14,10 @@ const (
 
 	// EdgeIncludedNetworkToTag holds the string denoting the includednetworktotag edge name in mutations.
 	EdgeIncludedNetworkToTag = "IncludedNetworkToTag"
+	// EdgeIncludedNetworkToHost holds the string denoting the includednetworktohost edge name in mutations.
+	EdgeIncludedNetworkToHost = "IncludedNetworkToHost"
+	// EdgeIncludedNetworkToNetwork holds the string denoting the includednetworktonetwork edge name in mutations.
+	EdgeIncludedNetworkToNetwork = "IncludedNetworkToNetwork"
 	// EdgeIncludedNetworkToEnvironment holds the string denoting the includednetworktoenvironment edge name in mutations.
 	EdgeIncludedNetworkToEnvironment = "IncludedNetworkToEnvironment"
 
@@ -26,6 +30,16 @@ const (
 	IncludedNetworkToTagInverseTable = "tags"
 	// IncludedNetworkToTagColumn is the table column denoting the IncludedNetworkToTag relation/edge.
 	IncludedNetworkToTagColumn = "included_network_included_network_to_tag"
+	// IncludedNetworkToHostTable is the table the holds the IncludedNetworkToHost relation/edge. The primary key declared below.
+	IncludedNetworkToHostTable = "included_network_IncludedNetworkToHost"
+	// IncludedNetworkToHostInverseTable is the table name for the Host entity.
+	// It exists in this package in order to avoid circular dependency with the "host" package.
+	IncludedNetworkToHostInverseTable = "hosts"
+	// IncludedNetworkToNetworkTable is the table the holds the IncludedNetworkToNetwork relation/edge. The primary key declared below.
+	IncludedNetworkToNetworkTable = "included_network_IncludedNetworkToNetwork"
+	// IncludedNetworkToNetworkInverseTable is the table name for the Network entity.
+	// It exists in this package in order to avoid circular dependency with the "network" package.
+	IncludedNetworkToNetworkInverseTable = "networks"
 	// IncludedNetworkToEnvironmentTable is the table the holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
 	IncludedNetworkToEnvironmentTable = "environment_EnvironmentToIncludedNetwork"
 	// IncludedNetworkToEnvironmentInverseTable is the table name for the Environment entity.
@@ -41,6 +55,12 @@ var Columns = []string{
 }
 
 var (
+	// IncludedNetworkToHostPrimaryKey and IncludedNetworkToHostColumn2 are the table columns denoting the
+	// primary key for the IncludedNetworkToHost relation (M2M).
+	IncludedNetworkToHostPrimaryKey = []string{"included_network_id", "host_id"}
+	// IncludedNetworkToNetworkPrimaryKey and IncludedNetworkToNetworkColumn2 are the table columns denoting the
+	// primary key for the IncludedNetworkToNetwork relation (M2M).
+	IncludedNetworkToNetworkPrimaryKey = []string{"included_network_id", "network_id"}
 	// IncludedNetworkToEnvironmentPrimaryKey and IncludedNetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the IncludedNetworkToEnvironment relation (M2M).
 	IncludedNetworkToEnvironmentPrimaryKey = []string{"environment_id", "included_network_id"}

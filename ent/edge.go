@@ -76,6 +76,14 @@ func (c *Command) CommandToTag(ctx context.Context) ([]*Tag, error) {
 	return result, err
 }
 
+func (c *Command) CommandToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := c.Edges.CommandToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = c.QueryCommandToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Competition) CompetitionToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := c.Edges.CompetitionToTagOrErr()
 	if IsNotLoaded(err) {
@@ -116,10 +124,26 @@ func (dr *DNSRecord) DNSRecordToTag(ctx context.Context) ([]*Tag, error) {
 	return result, err
 }
 
+func (dr *DNSRecord) DNSRecordToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := dr.Edges.DNSRecordToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = dr.QueryDNSRecordToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
 func (d *Disk) DiskToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := d.Edges.DiskToTagOrErr()
 	if IsNotLoaded(err) {
 		result, err = d.QueryDiskToTag().All(ctx)
+	}
+	return result, err
+}
+
+func (d *Disk) DiskToHost(ctx context.Context) ([]*Host, error) {
+	result, err := d.Edges.DiskToHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryDiskToHost().All(ctx)
 	}
 	return result, err
 }
@@ -172,6 +196,22 @@ func (e *Environment) EnvironmentToIdentity(ctx context.Context) ([]*Identity, e
 	return result, err
 }
 
+func (e *Environment) EnvironmentToCommand(ctx context.Context) ([]*Command, error) {
+	result, err := e.Edges.EnvironmentToCommandOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToCommand().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToScript(ctx context.Context) ([]*Script, error) {
+	result, err := e.Edges.EnvironmentToScriptOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToScript().All(ctx)
+	}
+	return result, err
+}
+
 func (e *Environment) EnvironmentToFileDownload(ctx context.Context) ([]*FileDownload, error) {
 	result, err := e.Edges.EnvironmentToFileDownloadOrErr()
 	if IsNotLoaded(err) {
@@ -204,10 +244,34 @@ func (e *Environment) EnvironmentToIncludedNetwork(ctx context.Context) ([]*Incl
 	return result, err
 }
 
+func (e *Environment) EnvironmentToFinding(ctx context.Context) ([]*Finding, error) {
+	result, err := e.Edges.EnvironmentToFindingOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToFinding().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToDNSRecord(ctx context.Context) ([]*DNSRecord, error) {
+	result, err := e.Edges.EnvironmentToDNSRecordOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToDNSRecord().All(ctx)
+	}
+	return result, err
+}
+
 func (e *Environment) EnvironmentToNetwork(ctx context.Context) ([]*Network, error) {
 	result, err := e.Edges.EnvironmentToNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = e.QueryEnvironmentToNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToHostDependency(ctx context.Context) ([]*HostDependency, error) {
+	result, err := e.Edges.EnvironmentToHostDependencyOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToHostDependency().All(ctx)
 	}
 	return result, err
 }
@@ -300,6 +364,14 @@ func (f *Finding) FindingToScript(ctx context.Context) ([]*Script, error) {
 	return result, err
 }
 
+func (f *Finding) FindingToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := f.Edges.FindingToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = f.QueryFindingToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
 func (h *Host) HostToDisk(ctx context.Context) ([]*Disk, error) {
 	result, err := h.Edges.HostToDiskOrErr()
 	if IsNotLoaded(err) {
@@ -332,18 +404,42 @@ func (h *Host) HostToEnvironment(ctx context.Context) ([]*Environment, error) {
 	return result, err
 }
 
-func (h *Host) HostToHostDependency(ctx context.Context) ([]*HostDependency, error) {
-	result, err := h.Edges.HostToHostDependencyOrErr()
+func (h *Host) HostToIncludedNetwork(ctx context.Context) ([]*IncludedNetwork, error) {
+	result, err := h.Edges.HostToIncludedNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = h.QueryHostToHostDependency().All(ctx)
+		result, err = h.QueryHostToIncludedNetwork().All(ctx)
 	}
 	return result, err
 }
 
-func (hd *HostDependency) HostDependencyToHost(ctx context.Context) ([]*Host, error) {
-	result, err := hd.Edges.HostDependencyToHostOrErr()
+func (h *Host) DependOnHostToHostDependency(ctx context.Context) ([]*HostDependency, error) {
+	result, err := h.Edges.DependOnHostToHostDependencyOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToHost().All(ctx)
+		result, err = h.QueryDependOnHostToHostDependency().All(ctx)
+	}
+	return result, err
+}
+
+func (h *Host) DependByHostToHostDependency(ctx context.Context) ([]*HostDependency, error) {
+	result, err := h.Edges.DependByHostToHostDependencyOrErr()
+	if IsNotLoaded(err) {
+		result, err = h.QueryDependByHostToHostDependency().All(ctx)
+	}
+	return result, err
+}
+
+func (hd *HostDependency) HostDependencyToDependOnHost(ctx context.Context) ([]*Host, error) {
+	result, err := hd.Edges.HostDependencyToDependOnHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = hd.QueryHostDependencyToDependOnHost().All(ctx)
+	}
+	return result, err
+}
+
+func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) ([]*Host, error) {
+	result, err := hd.Edges.HostDependencyToDependByHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = hd.QueryHostDependencyToDependByHost().All(ctx)
 	}
 	return result, err
 }
@@ -352,6 +448,14 @@ func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) ([]*Netwo
 	result, err := hd.Edges.HostDependencyToNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = hd.QueryHostDependencyToNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := hd.Edges.HostDependencyToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = hd.QueryHostDependencyToEnvironment().All(ctx)
 	}
 	return result, err
 }
@@ -368,6 +472,22 @@ func (in *IncludedNetwork) IncludedNetworkToTag(ctx context.Context) ([]*Tag, er
 	result, err := in.Edges.IncludedNetworkToTagOrErr()
 	if IsNotLoaded(err) {
 		result, err = in.QueryIncludedNetworkToTag().All(ctx)
+	}
+	return result, err
+}
+
+func (in *IncludedNetwork) IncludedNetworkToHost(ctx context.Context) ([]*Host, error) {
+	result, err := in.Edges.IncludedNetworkToHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = in.QueryIncludedNetworkToHost().All(ctx)
+	}
+	return result, err
+}
+
+func (in *IncludedNetwork) IncludedNetworkToNetwork(ctx context.Context) ([]*Network, error) {
+	result, err := in.Edges.IncludedNetworkToNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = in.QueryIncludedNetworkToNetwork().All(ctx)
 	}
 	return result, err
 }
@@ -400,6 +520,14 @@ func (n *Network) NetworkToHostDependency(ctx context.Context) ([]*HostDependenc
 	result, err := n.Edges.NetworkToHostDependencyOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryNetworkToHostDependency().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Network) NetworkToIncludedNetwork(ctx context.Context) ([]*IncludedNetwork, error) {
+	result, err := n.Edges.NetworkToIncludedNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryNetworkToIncludedNetwork().All(ctx)
 	}
 	return result, err
 }
@@ -592,6 +720,14 @@ func (s *Script) ScriptToFinding(ctx context.Context) ([]*Finding, error) {
 	result, err := s.Edges.ScriptToFindingOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryScriptToFinding().All(ctx)
+	}
+	return result, err
+}
+
+func (s *Script) ScriptToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := s.Edges.ScriptToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryScriptToEnvironment().All(ctx)
 	}
 	return result, err
 }

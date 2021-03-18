@@ -53,8 +53,14 @@ func (Host) Edges() []ent.Edge {
 		edge.To("HostToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("HostToTag", Tag.Type),
-		edge.From("HostToEnvironment", Environment.Type).Ref("EnvironmentToHost"),
-		edge.From("HostToHostDependency", HostDependency.Type).Ref("HostDependencyToHost").
+		edge.From("HostToEnvironment", Environment.Type).
+			Ref("EnvironmentToHost"),
+		edge.From("HostToIncludedNetwork", IncludedNetwork.Type).
+			Ref("IncludedNetworkToHost"),
+		edge.From("DependOnHostToHostDependency", HostDependency.Type).
+			Ref("HostDependencyToDependOnHost").
 			StructTag(`hcl:"depends_on,block"`),
+		edge.From("DependByHostToHostDependency", HostDependency.Type).
+			Ref("HostDependencyToDependByHost"),
 	}
 }

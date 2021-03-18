@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
@@ -172,6 +173,21 @@ func (su *ScriptUpdate) AddScriptToFinding(f ...*Finding) *ScriptUpdate {
 	return su.AddScriptToFindingIDs(ids...)
 }
 
+// AddScriptToEnvironmentIDs adds the "ScriptToEnvironment" edge to the Environment entity by IDs.
+func (su *ScriptUpdate) AddScriptToEnvironmentIDs(ids ...int) *ScriptUpdate {
+	su.mutation.AddScriptToEnvironmentIDs(ids...)
+	return su
+}
+
+// AddScriptToEnvironment adds the "ScriptToEnvironment" edges to the Environment entity.
+func (su *ScriptUpdate) AddScriptToEnvironment(e ...*Environment) *ScriptUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return su.AddScriptToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the ScriptMutation object of the builder.
 func (su *ScriptUpdate) Mutation() *ScriptMutation {
 	return su.mutation
@@ -238,6 +254,27 @@ func (su *ScriptUpdate) RemoveScriptToFinding(f ...*Finding) *ScriptUpdate {
 		ids[i] = f[i].ID
 	}
 	return su.RemoveScriptToFindingIDs(ids...)
+}
+
+// ClearScriptToEnvironment clears all "ScriptToEnvironment" edges to the Environment entity.
+func (su *ScriptUpdate) ClearScriptToEnvironment() *ScriptUpdate {
+	su.mutation.ClearScriptToEnvironment()
+	return su
+}
+
+// RemoveScriptToEnvironmentIDs removes the "ScriptToEnvironment" edge to Environment entities by IDs.
+func (su *ScriptUpdate) RemoveScriptToEnvironmentIDs(ids ...int) *ScriptUpdate {
+	su.mutation.RemoveScriptToEnvironmentIDs(ids...)
+	return su
+}
+
+// RemoveScriptToEnvironment removes "ScriptToEnvironment" edges to Environment entities.
+func (su *ScriptUpdate) RemoveScriptToEnvironment(e ...*Environment) *ScriptUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return su.RemoveScriptToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -532,7 +569,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if su.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -548,7 +585,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := su.mutation.RemovedScriptToFindingIDs(); len(nodes) > 0 && !su.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -567,7 +604,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := su.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -575,6 +612,60 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: finding.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if su.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedScriptToEnvironmentIDs(); len(nodes) > 0 && !su.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -744,6 +835,21 @@ func (suo *ScriptUpdateOne) AddScriptToFinding(f ...*Finding) *ScriptUpdateOne {
 	return suo.AddScriptToFindingIDs(ids...)
 }
 
+// AddScriptToEnvironmentIDs adds the "ScriptToEnvironment" edge to the Environment entity by IDs.
+func (suo *ScriptUpdateOne) AddScriptToEnvironmentIDs(ids ...int) *ScriptUpdateOne {
+	suo.mutation.AddScriptToEnvironmentIDs(ids...)
+	return suo
+}
+
+// AddScriptToEnvironment adds the "ScriptToEnvironment" edges to the Environment entity.
+func (suo *ScriptUpdateOne) AddScriptToEnvironment(e ...*Environment) *ScriptUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return suo.AddScriptToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the ScriptMutation object of the builder.
 func (suo *ScriptUpdateOne) Mutation() *ScriptMutation {
 	return suo.mutation
@@ -810,6 +916,27 @@ func (suo *ScriptUpdateOne) RemoveScriptToFinding(f ...*Finding) *ScriptUpdateOn
 		ids[i] = f[i].ID
 	}
 	return suo.RemoveScriptToFindingIDs(ids...)
+}
+
+// ClearScriptToEnvironment clears all "ScriptToEnvironment" edges to the Environment entity.
+func (suo *ScriptUpdateOne) ClearScriptToEnvironment() *ScriptUpdateOne {
+	suo.mutation.ClearScriptToEnvironment()
+	return suo
+}
+
+// RemoveScriptToEnvironmentIDs removes the "ScriptToEnvironment" edge to Environment entities by IDs.
+func (suo *ScriptUpdateOne) RemoveScriptToEnvironmentIDs(ids ...int) *ScriptUpdateOne {
+	suo.mutation.RemoveScriptToEnvironmentIDs(ids...)
+	return suo
+}
+
+// RemoveScriptToEnvironment removes "ScriptToEnvironment" edges to Environment entities.
+func (suo *ScriptUpdateOne) RemoveScriptToEnvironment(e ...*Environment) *ScriptUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return suo.RemoveScriptToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated Script entity.
@@ -1109,7 +1236,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	if suo.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -1125,7 +1252,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	if nodes := suo.mutation.RemovedScriptToFindingIDs(); len(nodes) > 0 && !suo.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -1144,7 +1271,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	if nodes := suo.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   script.ScriptToFindingTable,
 			Columns: script.ScriptToFindingPrimaryKey,
 			Bidi:    false,
@@ -1152,6 +1279,60 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: finding.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedScriptToEnvironmentIDs(); len(nodes) > 0 && !suo.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

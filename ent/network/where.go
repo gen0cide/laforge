@@ -550,6 +550,34 @@ func HasNetworkToHostDependencyWith(preds ...predicate.HostDependency) predicate
 	})
 }
 
+// HasNetworkToIncludedNetwork applies the HasEdge predicate on the "NetworkToIncludedNetwork" edge.
+func HasNetworkToIncludedNetwork() predicate.Network {
+	return predicate.Network(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(NetworkToIncludedNetworkTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNetworkToIncludedNetworkWith applies the HasEdge predicate on the "NetworkToIncludedNetwork" edge with a given conditions (other predicates).
+func HasNetworkToIncludedNetworkWith(preds ...predicate.IncludedNetwork) predicate.Network {
+	return predicate.Network(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(NetworkToIncludedNetworkInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Network) predicate.Network {
 	return predicate.Network(func(s *sql.Selector) {

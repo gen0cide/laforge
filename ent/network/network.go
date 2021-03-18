@@ -26,6 +26,8 @@ const (
 	EdgeNetworkToEnvironment = "NetworkToEnvironment"
 	// EdgeNetworkToHostDependency holds the string denoting the networktohostdependency edge name in mutations.
 	EdgeNetworkToHostDependency = "NetworkToHostDependency"
+	// EdgeNetworkToIncludedNetwork holds the string denoting the networktoincludednetwork edge name in mutations.
+	EdgeNetworkToIncludedNetwork = "NetworkToIncludedNetwork"
 
 	// Table holds the table name of the network in the database.
 	Table = "networks"
@@ -46,6 +48,11 @@ const (
 	// NetworkToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	NetworkToHostDependencyInverseTable = "host_dependencies"
+	// NetworkToIncludedNetworkTable is the table the holds the NetworkToIncludedNetwork relation/edge. The primary key declared below.
+	NetworkToIncludedNetworkTable = "included_network_IncludedNetworkToNetwork"
+	// NetworkToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
+	NetworkToIncludedNetworkInverseTable = "included_networks"
 )
 
 // Columns holds all SQL columns for network fields.
@@ -71,6 +78,9 @@ var (
 	// NetworkToHostDependencyPrimaryKey and NetworkToHostDependencyColumn2 are the table columns denoting the
 	// primary key for the NetworkToHostDependency relation (M2M).
 	NetworkToHostDependencyPrimaryKey = []string{"host_dependency_id", "network_id"}
+	// NetworkToIncludedNetworkPrimaryKey and NetworkToIncludedNetworkColumn2 are the table columns denoting the
+	// primary key for the NetworkToIncludedNetwork relation (M2M).
+	NetworkToIncludedNetworkPrimaryKey = []string{"included_network_id", "network_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

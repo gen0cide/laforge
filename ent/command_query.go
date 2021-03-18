@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
@@ -27,9 +28,10 @@ type CommandQuery struct {
 	fields     []string
 	predicates []predicate.Command
 	// eager-loading edges.
-	withCommandToUser *UserQuery
-	withCommandToTag  *TagQuery
-	withFKs           bool
+	withCommandToUser        *UserQuery
+	withCommandToTag         *TagQuery
+	withCommandToEnvironment *EnvironmentQuery
+	withFKs                  bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -96,6 +98,28 @@ func (cq *CommandQuery) QueryCommandToTag() *TagQuery {
 			sqlgraph.From(command.Table, command.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToTagTable, command.CommandToTagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCommandToEnvironment chains the current query on the "CommandToEnvironment" edge.
+func (cq *CommandQuery) QueryCommandToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(command.Table, command.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -279,13 +303,14 @@ func (cq *CommandQuery) Clone() *CommandQuery {
 		return nil
 	}
 	return &CommandQuery{
-		config:            cq.config,
-		limit:             cq.limit,
-		offset:            cq.offset,
-		order:             append([]OrderFunc{}, cq.order...),
-		predicates:        append([]predicate.Command{}, cq.predicates...),
-		withCommandToUser: cq.withCommandToUser.Clone(),
-		withCommandToTag:  cq.withCommandToTag.Clone(),
+		config:                   cq.config,
+		limit:                    cq.limit,
+		offset:                   cq.offset,
+		order:                    append([]OrderFunc{}, cq.order...),
+		predicates:               append([]predicate.Command{}, cq.predicates...),
+		withCommandToUser:        cq.withCommandToUser.Clone(),
+		withCommandToTag:         cq.withCommandToTag.Clone(),
+		withCommandToEnvironment: cq.withCommandToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -311,6 +336,17 @@ func (cq *CommandQuery) WithCommandToTag(opts ...func(*TagQuery)) *CommandQuery 
 		opt(query)
 	}
 	cq.withCommandToTag = query
+	return cq
+}
+
+// WithCommandToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "CommandToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CommandQuery) WithCommandToEnvironment(opts ...func(*EnvironmentQuery)) *CommandQuery {
+	query := &EnvironmentQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withCommandToEnvironment = query
 	return cq
 }
 
@@ -380,9 +416,10 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 		nodes       = []*Command{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			cq.withCommandToUser != nil,
 			cq.withCommandToTag != nil,
+			cq.withCommandToEnvironment != nil,
 		}
 	)
 	if withFKs {
@@ -463,6 +500,70 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "command_command_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.CommandToTag = append(node.Edges.CommandToTag, n)
+		}
+	}
+
+	if query := cq.withCommandToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Command, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.CommandToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Command)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   command.CommandToEnvironmentTable,
+				Columns: command.CommandToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(command.CommandToEnvironmentPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, cq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "CommandToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "CommandToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.CommandToEnvironment = append(nodes[i].Edges.CommandToEnvironment, n)
+			}
 		}
 	}
 

@@ -39,6 +39,8 @@ type Finding struct {
 	HCLFindingToHost []*Host `json:"FindingToHost,omitempty"`
 	// FindingToScript holds the value of the FindingToScript edge.
 	HCLFindingToScript []*Script `json:"FindingToScript,omitempty"`
+	// FindingToEnvironment holds the value of the FindingToEnvironment edge.
+	HCLFindingToEnvironment []*Environment `json:"FindingToEnvironment,omitempty"`
 	//
 
 }
@@ -53,9 +55,11 @@ type FindingEdges struct {
 	FindingToHost []*Host `json:"FindingToHost,omitempty"`
 	// FindingToScript holds the value of the FindingToScript edge.
 	FindingToScript []*Script `json:"FindingToScript,omitempty"`
+	// FindingToEnvironment holds the value of the FindingToEnvironment edge.
+	FindingToEnvironment []*Environment `json:"FindingToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // FindingToUserOrErr returns the FindingToUser value or an error if the edge
@@ -92,6 +96,15 @@ func (e FindingEdges) FindingToScriptOrErr() ([]*Script, error) {
 		return e.FindingToScript, nil
 	}
 	return nil, &NotLoadedError{edge: "FindingToScript"}
+}
+
+// FindingToEnvironmentOrErr returns the FindingToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e FindingEdges) FindingToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[4] {
+		return e.FindingToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "FindingToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -182,6 +195,11 @@ func (f *Finding) QueryFindingToHost() *HostQuery {
 // QueryFindingToScript queries the "FindingToScript" edge of the Finding entity.
 func (f *Finding) QueryFindingToScript() *ScriptQuery {
 	return (&FindingClient{config: f.config}).QueryFindingToScript(f)
+}
+
+// QueryFindingToEnvironment queries the "FindingToEnvironment" edge of the Finding entity.
+func (f *Finding) QueryFindingToEnvironment() *EnvironmentQuery {
+	return (&FindingClient{config: f.config}).QueryFindingToEnvironment(f)
 }
 
 // Update returns a builder for updating this Finding.

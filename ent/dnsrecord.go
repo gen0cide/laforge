@@ -39,6 +39,8 @@ type DNSRecord struct {
 	// Edges put into the main struct to be loaded via hcl
 	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
 	HCLDNSRecordToTag []*Tag `json:"DNSRecordToTag,omitempty"`
+	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
+	HCLDNSRecordToEnvironment []*Environment `json:"DNSRecordToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_dns_record *int
 }
@@ -47,9 +49,11 @@ type DNSRecord struct {
 type DNSRecordEdges struct {
 	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
 	DNSRecordToTag []*Tag `json:"DNSRecordToTag,omitempty"`
+	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
+	DNSRecordToEnvironment []*Environment `json:"DNSRecordToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // DNSRecordToTagOrErr returns the DNSRecordToTag value or an error if the edge
@@ -59,6 +63,15 @@ func (e DNSRecordEdges) DNSRecordToTagOrErr() ([]*Tag, error) {
 		return e.DNSRecordToTag, nil
 	}
 	return nil, &NotLoadedError{edge: "DNSRecordToTag"}
+}
+
+// DNSRecordToEnvironmentOrErr returns the DNSRecordToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e DNSRecordEdges) DNSRecordToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.DNSRecordToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "DNSRecordToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -169,6 +182,11 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 // QueryDNSRecordToTag queries the "DNSRecordToTag" edge of the DNSRecord entity.
 func (dr *DNSRecord) QueryDNSRecordToTag() *TagQuery {
 	return (&DNSRecordClient{config: dr.config}).QueryDNSRecordToTag(dr)
+}
+
+// QueryDNSRecordToEnvironment queries the "DNSRecordToEnvironment" edge of the DNSRecord entity.
+func (dr *DNSRecord) QueryDNSRecordToEnvironment() *EnvironmentQuery {
+	return (&DNSRecordClient{config: dr.config}).QueryDNSRecordToEnvironment(dr)
 }
 
 // Update returns a builder for updating this DNSRecord.

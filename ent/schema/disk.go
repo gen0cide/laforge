@@ -23,5 +23,7 @@ func (Disk) Fields() []ent.Field {
 func (Disk) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("DiskToTag", Tag.Type),
+		edge.From("DiskToHost", Host.Type).
+			Ref("HostToDisk"),
 	}
 }

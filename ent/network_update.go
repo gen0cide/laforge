@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -110,6 +111,21 @@ func (nu *NetworkUpdate) AddNetworkToHostDependency(h ...*HostDependency) *Netwo
 	return nu.AddNetworkToHostDependencyIDs(ids...)
 }
 
+// AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (nu *NetworkUpdate) AddNetworkToIncludedNetworkIDs(ids ...int) *NetworkUpdate {
+	nu.mutation.AddNetworkToIncludedNetworkIDs(ids...)
+	return nu
+}
+
+// AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nu *NetworkUpdate) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nu.AddNetworkToIncludedNetworkIDs(ids...)
+}
+
 // Mutation returns the NetworkMutation object of the builder.
 func (nu *NetworkUpdate) Mutation() *NetworkMutation {
 	return nu.mutation
@@ -176,6 +192,27 @@ func (nu *NetworkUpdate) RemoveNetworkToHostDependency(h ...*HostDependency) *Ne
 		ids[i] = h[i].ID
 	}
 	return nu.RemoveNetworkToHostDependencyIDs(ids...)
+}
+
+// ClearNetworkToIncludedNetwork clears all "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nu *NetworkUpdate) ClearNetworkToIncludedNetwork() *NetworkUpdate {
+	nu.mutation.ClearNetworkToIncludedNetwork()
+	return nu
+}
+
+// RemoveNetworkToIncludedNetworkIDs removes the "NetworkToIncludedNetwork" edge to IncludedNetwork entities by IDs.
+func (nu *NetworkUpdate) RemoveNetworkToIncludedNetworkIDs(ids ...int) *NetworkUpdate {
+	nu.mutation.RemoveNetworkToIncludedNetworkIDs(ids...)
+	return nu
+}
+
+// RemoveNetworkToIncludedNetwork removes "NetworkToIncludedNetwork" edges to IncludedNetwork entities.
+func (nu *NetworkUpdate) RemoveNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nu.RemoveNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -451,6 +488,60 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if nu.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nu.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{network.Label}
@@ -550,6 +641,21 @@ func (nuo *NetworkUpdateOne) AddNetworkToHostDependency(h ...*HostDependency) *N
 	return nuo.AddNetworkToHostDependencyIDs(ids...)
 }
 
+// AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (nuo *NetworkUpdateOne) AddNetworkToIncludedNetworkIDs(ids ...int) *NetworkUpdateOne {
+	nuo.mutation.AddNetworkToIncludedNetworkIDs(ids...)
+	return nuo
+}
+
+// AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nuo *NetworkUpdateOne) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nuo.AddNetworkToIncludedNetworkIDs(ids...)
+}
+
 // Mutation returns the NetworkMutation object of the builder.
 func (nuo *NetworkUpdateOne) Mutation() *NetworkMutation {
 	return nuo.mutation
@@ -616,6 +722,27 @@ func (nuo *NetworkUpdateOne) RemoveNetworkToHostDependency(h ...*HostDependency)
 		ids[i] = h[i].ID
 	}
 	return nuo.RemoveNetworkToHostDependencyIDs(ids...)
+}
+
+// ClearNetworkToIncludedNetwork clears all "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nuo *NetworkUpdateOne) ClearNetworkToIncludedNetwork() *NetworkUpdateOne {
+	nuo.mutation.ClearNetworkToIncludedNetwork()
+	return nuo
+}
+
+// RemoveNetworkToIncludedNetworkIDs removes the "NetworkToIncludedNetwork" edge to IncludedNetwork entities by IDs.
+func (nuo *NetworkUpdateOne) RemoveNetworkToIncludedNetworkIDs(ids ...int) *NetworkUpdateOne {
+	nuo.mutation.RemoveNetworkToIncludedNetworkIDs(ids...)
+	return nuo
+}
+
+// RemoveNetworkToIncludedNetwork removes "NetworkToIncludedNetwork" edges to IncludedNetwork entities.
+func (nuo *NetworkUpdateOne) RemoveNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nuo.RemoveNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Save executes the query and returns the updated Network entity.
@@ -888,6 +1015,60 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: hostdependency.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: includednetwork.FieldID,
 				},
 			},
 		}

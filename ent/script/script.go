@@ -42,6 +42,8 @@ const (
 	EdgeScriptToUser = "ScriptToUser"
 	// EdgeScriptToFinding holds the string denoting the scripttofinding edge name in mutations.
 	EdgeScriptToFinding = "ScriptToFinding"
+	// EdgeScriptToEnvironment holds the string denoting the scripttoenvironment edge name in mutations.
+	EdgeScriptToEnvironment = "ScriptToEnvironment"
 
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
@@ -60,10 +62,15 @@ const (
 	// ScriptToUserColumn is the table column denoting the ScriptToUser relation/edge.
 	ScriptToUserColumn = "script_script_to_user"
 	// ScriptToFindingTable is the table the holds the ScriptToFinding relation/edge. The primary key declared below.
-	ScriptToFindingTable = "finding_FindingToScript"
+	ScriptToFindingTable = "script_ScriptToFinding"
 	// ScriptToFindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
 	ScriptToFindingInverseTable = "findings"
+	// ScriptToEnvironmentTable is the table the holds the ScriptToEnvironment relation/edge. The primary key declared below.
+	ScriptToEnvironmentTable = "environment_EnvironmentToScript"
+	// ScriptToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	ScriptToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for script fields.
@@ -93,7 +100,10 @@ var ForeignKeys = []string{
 var (
 	// ScriptToFindingPrimaryKey and ScriptToFindingColumn2 are the table columns denoting the
 	// primary key for the ScriptToFinding relation (M2M).
-	ScriptToFindingPrimaryKey = []string{"finding_id", "script_id"}
+	ScriptToFindingPrimaryKey = []string{"script_id", "finding_id"}
+	// ScriptToEnvironmentPrimaryKey and ScriptToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the ScriptToEnvironment relation (M2M).
+	ScriptToEnvironmentPrimaryKey = []string{"environment_id", "script_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

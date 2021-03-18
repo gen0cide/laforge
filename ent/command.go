@@ -47,6 +47,8 @@ type Command struct {
 	HCLCommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
 	// CommandToTag holds the value of the CommandToTag edge.
 	HCLCommandToTag []*Tag `json:"CommandToTag,omitempty"`
+	// CommandToEnvironment holds the value of the CommandToEnvironment edge.
+	HCLCommandToEnvironment []*Environment `json:"CommandToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_command *int
 }
@@ -57,9 +59,11 @@ type CommandEdges struct {
 	CommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
 	// CommandToTag holds the value of the CommandToTag edge.
 	CommandToTag []*Tag `json:"CommandToTag,omitempty"`
+	// CommandToEnvironment holds the value of the CommandToEnvironment edge.
+	CommandToEnvironment []*Environment `json:"CommandToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // CommandToUserOrErr returns the CommandToUser value or an error if the edge
@@ -78,6 +82,15 @@ func (e CommandEdges) CommandToTagOrErr() ([]*Tag, error) {
 		return e.CommandToTag, nil
 	}
 	return nil, &NotLoadedError{edge: "CommandToTag"}
+}
+
+// CommandToEnvironmentOrErr returns the CommandToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e CommandEdges) CommandToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[2] {
+		return e.CommandToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "CommandToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -211,6 +224,11 @@ func (c *Command) QueryCommandToUser() *UserQuery {
 // QueryCommandToTag queries the "CommandToTag" edge of the Command entity.
 func (c *Command) QueryCommandToTag() *TagQuery {
 	return (&CommandClient{config: c.config}).QueryCommandToTag(c)
+}
+
+// QueryCommandToEnvironment queries the "CommandToEnvironment" edge of the Command entity.
+func (c *Command) QueryCommandToEnvironment() *EnvironmentQuery {
+	return (&CommandClient{config: c.config}).QueryCommandToEnvironment(c)
 }
 
 // Update returns a builder for updating this Command.

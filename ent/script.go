@@ -55,6 +55,8 @@ type Script struct {
 	HCLScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
 	HCLScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
+	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
+	HCLScriptToEnvironment []*Environment `json:"ScriptToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_script *int
 }
@@ -67,9 +69,11 @@ type ScriptEdges struct {
 	ScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
 	ScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
+	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
+	ScriptToEnvironment []*Environment `json:"ScriptToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ScriptToTagOrErr returns the ScriptToTag value or an error if the edge
@@ -97,6 +101,15 @@ func (e ScriptEdges) ScriptToFindingOrErr() ([]*Finding, error) {
 		return e.ScriptToFinding, nil
 	}
 	return nil, &NotLoadedError{edge: "ScriptToFinding"}
+}
+
+// ScriptToEnvironmentOrErr returns the ScriptToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e ScriptEdges) ScriptToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[3] {
+		return e.ScriptToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "ScriptToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -253,6 +266,11 @@ func (s *Script) QueryScriptToUser() *UserQuery {
 // QueryScriptToFinding queries the "ScriptToFinding" edge of the Script entity.
 func (s *Script) QueryScriptToFinding() *FindingQuery {
 	return (&ScriptClient{config: s.config}).QueryScriptToFinding(s)
+}
+
+// QueryScriptToEnvironment queries the "ScriptToEnvironment" edge of the Script entity.
+func (s *Script) QueryScriptToEnvironment() *EnvironmentQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToEnvironment(s)
 }
 
 // Update returns a builder for updating this Script.

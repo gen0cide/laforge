@@ -32,6 +32,8 @@ const (
 	EdgeFindingToHost = "FindingToHost"
 	// EdgeFindingToScript holds the string denoting the findingtoscript edge name in mutations.
 	EdgeFindingToScript = "FindingToScript"
+	// EdgeFindingToEnvironment holds the string denoting the findingtoenvironment edge name in mutations.
+	EdgeFindingToEnvironment = "FindingToEnvironment"
 
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
@@ -57,10 +59,15 @@ const (
 	// FindingToHostColumn is the table column denoting the FindingToHost relation/edge.
 	FindingToHostColumn = "finding_finding_to_host"
 	// FindingToScriptTable is the table the holds the FindingToScript relation/edge. The primary key declared below.
-	FindingToScriptTable = "finding_FindingToScript"
+	FindingToScriptTable = "script_ScriptToFinding"
 	// FindingToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
 	FindingToScriptInverseTable = "scripts"
+	// FindingToEnvironmentTable is the table the holds the FindingToEnvironment relation/edge. The primary key declared below.
+	FindingToEnvironmentTable = "environment_EnvironmentToFinding"
+	// FindingToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	FindingToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for finding fields.
@@ -76,7 +83,10 @@ var Columns = []string{
 var (
 	// FindingToScriptPrimaryKey and FindingToScriptColumn2 are the table columns denoting the
 	// primary key for the FindingToScript relation (M2M).
-	FindingToScriptPrimaryKey = []string{"finding_id", "script_id"}
+	FindingToScriptPrimaryKey = []string{"script_id", "finding_id"}
+	// FindingToEnvironmentPrimaryKey and FindingToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the FindingToEnvironment relation (M2M).
+	FindingToEnvironmentPrimaryKey = []string{"environment_id", "finding_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

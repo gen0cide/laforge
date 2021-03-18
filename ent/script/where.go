@@ -1187,7 +1187,7 @@ func HasScriptToFinding() predicate.Script {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ScriptToFindingTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ScriptToFindingTable, ScriptToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, ScriptToFindingTable, ScriptToFindingPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1199,7 +1199,35 @@ func HasScriptToFindingWith(preds ...predicate.Finding) predicate.Script {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ScriptToFindingInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ScriptToFindingTable, ScriptToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, ScriptToFindingTable, ScriptToFindingPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScriptToEnvironment applies the HasEdge predicate on the "ScriptToEnvironment" edge.
+func HasScriptToEnvironment() predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScriptToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScriptToEnvironmentTable, ScriptToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScriptToEnvironmentWith applies the HasEdge predicate on the "ScriptToEnvironment" edge with a given conditions (other predicates).
+func HasScriptToEnvironmentWith(preds ...predicate.Environment) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScriptToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScriptToEnvironmentTable, ScriptToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

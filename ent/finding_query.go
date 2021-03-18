@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -29,10 +30,11 @@ type FindingQuery struct {
 	fields     []string
 	predicates []predicate.Finding
 	// eager-loading edges.
-	withFindingToUser   *UserQuery
-	withFindingToTag    *TagQuery
-	withFindingToHost   *HostQuery
-	withFindingToScript *ScriptQuery
+	withFindingToUser        *UserQuery
+	withFindingToTag         *TagQuery
+	withFindingToHost        *HostQuery
+	withFindingToScript      *ScriptQuery
+	withFindingToEnvironment *EnvironmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -142,7 +144,29 @@ func (fq *FindingQuery) QueryFindingToScript() *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, selector),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFindingToEnvironment chains the current query on the "FindingToEnvironment" edge.
+func (fq *FindingQuery) QueryFindingToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: fq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(finding.Table, finding.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToEnvironmentTable, finding.FindingToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,15 +350,16 @@ func (fq *FindingQuery) Clone() *FindingQuery {
 		return nil
 	}
 	return &FindingQuery{
-		config:              fq.config,
-		limit:               fq.limit,
-		offset:              fq.offset,
-		order:               append([]OrderFunc{}, fq.order...),
-		predicates:          append([]predicate.Finding{}, fq.predicates...),
-		withFindingToUser:   fq.withFindingToUser.Clone(),
-		withFindingToTag:    fq.withFindingToTag.Clone(),
-		withFindingToHost:   fq.withFindingToHost.Clone(),
-		withFindingToScript: fq.withFindingToScript.Clone(),
+		config:                   fq.config,
+		limit:                    fq.limit,
+		offset:                   fq.offset,
+		order:                    append([]OrderFunc{}, fq.order...),
+		predicates:               append([]predicate.Finding{}, fq.predicates...),
+		withFindingToUser:        fq.withFindingToUser.Clone(),
+		withFindingToTag:         fq.withFindingToTag.Clone(),
+		withFindingToHost:        fq.withFindingToHost.Clone(),
+		withFindingToScript:      fq.withFindingToScript.Clone(),
+		withFindingToEnvironment: fq.withFindingToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
@@ -382,6 +407,17 @@ func (fq *FindingQuery) WithFindingToScript(opts ...func(*ScriptQuery)) *Finding
 		opt(query)
 	}
 	fq.withFindingToScript = query
+	return fq
+}
+
+// WithFindingToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "FindingToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FindingQuery) WithFindingToEnvironment(opts ...func(*EnvironmentQuery)) *FindingQuery {
+	query := &EnvironmentQuery{config: fq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	fq.withFindingToEnvironment = query
 	return fq
 }
 
@@ -450,11 +486,12 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 	var (
 		nodes       = []*Finding{}
 		_spec       = fq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			fq.withFindingToUser != nil,
 			fq.withFindingToTag != nil,
 			fq.withFindingToHost != nil,
 			fq.withFindingToScript != nil,
+			fq.withFindingToEnvironment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -578,12 +615,12 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
+				Inverse: true,
 				Table:   finding.FindingToScriptTable,
 				Columns: finding.FindingToScriptPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(finding.FindingToScriptPrimaryKey[0], fks...))
+				s.Where(sql.InValues(finding.FindingToScriptPrimaryKey[1], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {
@@ -624,6 +661,70 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.FindingToScript = append(nodes[i].Edges.FindingToScript, n)
+			}
+		}
+	}
+
+	if query := fq.withFindingToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Finding, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.FindingToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Finding)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   finding.FindingToEnvironmentTable,
+				Columns: finding.FindingToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(finding.FindingToEnvironmentPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, fq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "FindingToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "FindingToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.FindingToEnvironment = append(nodes[i].Edges.FindingToEnvironment, n)
 			}
 		}
 	}

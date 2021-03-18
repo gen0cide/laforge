@@ -26,6 +26,8 @@ const (
 
 	// EdgeDNSRecordToTag holds the string denoting the dnsrecordtotag edge name in mutations.
 	EdgeDNSRecordToTag = "DNSRecordToTag"
+	// EdgeDNSRecordToEnvironment holds the string denoting the dnsrecordtoenvironment edge name in mutations.
+	EdgeDNSRecordToEnvironment = "DNSRecordToEnvironment"
 
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
@@ -36,6 +38,11 @@ const (
 	DNSRecordToTagInverseTable = "tags"
 	// DNSRecordToTagColumn is the table column denoting the DNSRecordToTag relation/edge.
 	DNSRecordToTagColumn = "dns_record_dns_record_to_tag"
+	// DNSRecordToEnvironmentTable is the table the holds the DNSRecordToEnvironment relation/edge. The primary key declared below.
+	DNSRecordToEnvironmentTable = "environment_EnvironmentToDNSRecord"
+	// DNSRecordToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	DNSRecordToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for dnsrecord fields.
@@ -55,6 +62,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioning_step_provisioning_step_to_dns_record",
 }
+
+var (
+	// DNSRecordToEnvironmentPrimaryKey and DNSRecordToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the DNSRecordToEnvironment relation (M2M).
+	DNSRecordToEnvironmentPrimaryKey = []string{"environment_id", "dns_record_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

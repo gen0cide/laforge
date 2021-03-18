@@ -51,8 +51,8 @@ func (Script) Edges() []ent.Edge {
 		edge.To("ScriptToTag", Tag.Type),
 		edge.To("ScriptToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
-		edge.From("ScriptToFinding", Finding.Type).
-			Ref("FindingToScript").
+		edge.To("ScriptToFinding", Finding.Type).
 			StructTag(`hcl:"finding,block"`),
+		edge.From("ScriptToEnvironment", Environment.Type).Ref("EnvironmentToScript"),
 	}
 }

@@ -27,6 +27,10 @@ type IncludedNetwork struct {
 	// Edges put into the main struct to be loaded via hcl
 	// IncludedNetworkToTag holds the value of the IncludedNetworkToTag edge.
 	HCLIncludedNetworkToTag []*Tag `json:"IncludedNetworkToTag,omitempty"`
+	// IncludedNetworkToHost holds the value of the IncludedNetworkToHost edge.
+	HCLIncludedNetworkToHost []*Host `json:"IncludedNetworkToHost,omitempty"`
+	// IncludedNetworkToNetwork holds the value of the IncludedNetworkToNetwork edge.
+	HCLIncludedNetworkToNetwork []*Network `json:"IncludedNetworkToNetwork,omitempty"`
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
 	HCLIncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
 	//
@@ -37,11 +41,15 @@ type IncludedNetwork struct {
 type IncludedNetworkEdges struct {
 	// IncludedNetworkToTag holds the value of the IncludedNetworkToTag edge.
 	IncludedNetworkToTag []*Tag `json:"IncludedNetworkToTag,omitempty"`
+	// IncludedNetworkToHost holds the value of the IncludedNetworkToHost edge.
+	IncludedNetworkToHost []*Host `json:"IncludedNetworkToHost,omitempty"`
+	// IncludedNetworkToNetwork holds the value of the IncludedNetworkToNetwork edge.
+	IncludedNetworkToNetwork []*Network `json:"IncludedNetworkToNetwork,omitempty"`
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
 	IncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // IncludedNetworkToTagOrErr returns the IncludedNetworkToTag value or an error if the edge
@@ -53,10 +61,28 @@ func (e IncludedNetworkEdges) IncludedNetworkToTagOrErr() ([]*Tag, error) {
 	return nil, &NotLoadedError{edge: "IncludedNetworkToTag"}
 }
 
+// IncludedNetworkToHostOrErr returns the IncludedNetworkToHost value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncludedNetworkEdges) IncludedNetworkToHostOrErr() ([]*Host, error) {
+	if e.loadedTypes[1] {
+		return e.IncludedNetworkToHost, nil
+	}
+	return nil, &NotLoadedError{edge: "IncludedNetworkToHost"}
+}
+
+// IncludedNetworkToNetworkOrErr returns the IncludedNetworkToNetwork value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncludedNetworkEdges) IncludedNetworkToNetworkOrErr() ([]*Network, error) {
+	if e.loadedTypes[2] {
+		return e.IncludedNetworkToNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "IncludedNetworkToNetwork"}
+}
+
 // IncludedNetworkToEnvironmentOrErr returns the IncludedNetworkToEnvironment value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncludedNetworkEdges) IncludedNetworkToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[3] {
 		return e.IncludedNetworkToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "IncludedNetworkToEnvironment"}
@@ -117,6 +143,16 @@ func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) 
 // QueryIncludedNetworkToTag queries the "IncludedNetworkToTag" edge of the IncludedNetwork entity.
 func (in *IncludedNetwork) QueryIncludedNetworkToTag() *TagQuery {
 	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToTag(in)
+}
+
+// QueryIncludedNetworkToHost queries the "IncludedNetworkToHost" edge of the IncludedNetwork entity.
+func (in *IncludedNetwork) QueryIncludedNetworkToHost() *HostQuery {
+	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToHost(in)
+}
+
+// QueryIncludedNetworkToNetwork queries the "IncludedNetworkToNetwork" edge of the IncludedNetwork entity.
+func (in *IncludedNetwork) QueryIncludedNetworkToNetwork() *NetworkQuery {
+	return (&IncludedNetworkClient{config: in.config}).QueryIncludedNetworkToNetwork(in)
 }
 
 // QueryIncludedNetworkToEnvironment queries the "IncludedNetworkToEnvironment" edge of the IncludedNetwork entity.

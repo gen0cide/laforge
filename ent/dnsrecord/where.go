@@ -612,6 +612,34 @@ func HasDNSRecordToTagWith(preds ...predicate.Tag) predicate.DNSRecord {
 	})
 }
 
+// HasDNSRecordToEnvironment applies the HasEdge predicate on the "DNSRecordToEnvironment" edge.
+func HasDNSRecordToEnvironment() predicate.DNSRecord {
+	return predicate.DNSRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSRecordToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDNSRecordToEnvironmentWith applies the HasEdge predicate on the "DNSRecordToEnvironment" edge with a given conditions (other predicates).
+func HasDNSRecordToEnvironmentWith(preds ...predicate.Environment) predicate.DNSRecord {
+	return predicate.DNSRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSRecordToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DNSRecord) predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {

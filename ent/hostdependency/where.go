@@ -327,25 +327,53 @@ func NetworkIDContainsFold(v string) predicate.HostDependency {
 	})
 }
 
-// HasHostDependencyToHost applies the HasEdge predicate on the "HostDependencyToHost" edge.
-func HasHostDependencyToHost() predicate.HostDependency {
+// HasHostDependencyToDependOnHost applies the HasEdge predicate on the "HostDependencyToDependOnHost" edge.
+func HasHostDependencyToDependOnHost() predicate.HostDependency {
 	return predicate.HostDependency(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostDependencyToHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToHostTable, HostDependencyToHostPrimaryKey...),
+			sqlgraph.To(HostDependencyToDependOnHostTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHostDependencyToHostWith applies the HasEdge predicate on the "HostDependencyToHost" edge with a given conditions (other predicates).
-func HasHostDependencyToHostWith(preds ...predicate.Host) predicate.HostDependency {
+// HasHostDependencyToDependOnHostWith applies the HasEdge predicate on the "HostDependencyToDependOnHost" edge with a given conditions (other predicates).
+func HasHostDependencyToDependOnHostWith(preds ...predicate.Host) predicate.HostDependency {
 	return predicate.HostDependency(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostDependencyToHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToHostTable, HostDependencyToHostPrimaryKey...),
+			sqlgraph.To(HostDependencyToDependOnHostInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasHostDependencyToDependByHost applies the HasEdge predicate on the "HostDependencyToDependByHost" edge.
+func HasHostDependencyToDependByHost() predicate.HostDependency {
+	return predicate.HostDependency(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostDependencyToDependByHostTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHostDependencyToDependByHostWith applies the HasEdge predicate on the "HostDependencyToDependByHost" edge with a given conditions (other predicates).
+func HasHostDependencyToDependByHostWith(preds ...predicate.Host) predicate.HostDependency {
+	return predicate.HostDependency(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostDependencyToDependByHostInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -374,6 +402,34 @@ func HasHostDependencyToNetworkWith(preds ...predicate.Network) predicate.HostDe
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToNetworkInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToNetworkTable, HostDependencyToNetworkPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasHostDependencyToEnvironment applies the HasEdge predicate on the "HostDependencyToEnvironment" edge.
+func HasHostDependencyToEnvironment() predicate.HostDependency {
+	return predicate.HostDependency(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostDependencyToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHostDependencyToEnvironmentWith applies the HasEdge predicate on the "HostDependencyToEnvironment" edge with a given conditions (other predicates).
+func HasHostDependencyToEnvironmentWith(preds ...predicate.Environment) predicate.HostDependency {
+	return predicate.HostDependency(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HostDependencyToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

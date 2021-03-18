@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
@@ -33,19 +34,34 @@ func (hdc *HostDependencyCreate) SetNetworkID(s string) *HostDependencyCreate {
 	return hdc
 }
 
-// AddHostDependencyToHostIDs adds the "HostDependencyToHost" edge to the Host entity by IDs.
-func (hdc *HostDependencyCreate) AddHostDependencyToHostIDs(ids ...int) *HostDependencyCreate {
-	hdc.mutation.AddHostDependencyToHostIDs(ids...)
+// AddHostDependencyToDependOnHostIDs adds the "HostDependencyToDependOnHost" edge to the Host entity by IDs.
+func (hdc *HostDependencyCreate) AddHostDependencyToDependOnHostIDs(ids ...int) *HostDependencyCreate {
+	hdc.mutation.AddHostDependencyToDependOnHostIDs(ids...)
 	return hdc
 }
 
-// AddHostDependencyToHost adds the "HostDependencyToHost" edges to the Host entity.
-func (hdc *HostDependencyCreate) AddHostDependencyToHost(h ...*Host) *HostDependencyCreate {
+// AddHostDependencyToDependOnHost adds the "HostDependencyToDependOnHost" edges to the Host entity.
+func (hdc *HostDependencyCreate) AddHostDependencyToDependOnHost(h ...*Host) *HostDependencyCreate {
 	ids := make([]int, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
-	return hdc.AddHostDependencyToHostIDs(ids...)
+	return hdc.AddHostDependencyToDependOnHostIDs(ids...)
+}
+
+// AddHostDependencyToDependByHostIDs adds the "HostDependencyToDependByHost" edge to the Host entity by IDs.
+func (hdc *HostDependencyCreate) AddHostDependencyToDependByHostIDs(ids ...int) *HostDependencyCreate {
+	hdc.mutation.AddHostDependencyToDependByHostIDs(ids...)
+	return hdc
+}
+
+// AddHostDependencyToDependByHost adds the "HostDependencyToDependByHost" edges to the Host entity.
+func (hdc *HostDependencyCreate) AddHostDependencyToDependByHost(h ...*Host) *HostDependencyCreate {
+	ids := make([]int, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return hdc.AddHostDependencyToDependByHostIDs(ids...)
 }
 
 // AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by IDs.
@@ -61,6 +77,21 @@ func (hdc *HostDependencyCreate) AddHostDependencyToNetwork(n ...*Network) *Host
 		ids[i] = n[i].ID
 	}
 	return hdc.AddHostDependencyToNetworkIDs(ids...)
+}
+
+// AddHostDependencyToEnvironmentIDs adds the "HostDependencyToEnvironment" edge to the Environment entity by IDs.
+func (hdc *HostDependencyCreate) AddHostDependencyToEnvironmentIDs(ids ...int) *HostDependencyCreate {
+	hdc.mutation.AddHostDependencyToEnvironmentIDs(ids...)
+	return hdc
+}
+
+// AddHostDependencyToEnvironment adds the "HostDependencyToEnvironment" edges to the Environment entity.
+func (hdc *HostDependencyCreate) AddHostDependencyToEnvironment(e ...*Environment) *HostDependencyCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return hdc.AddHostDependencyToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the HostDependencyMutation object of the builder.
@@ -163,12 +194,31 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		})
 		_node.NetworkID = value
 	}
-	if nodes := hdc.mutation.HostDependencyToHostIDs(); len(nodes) > 0 {
+	if nodes := hdc.mutation.HostDependencyToDependOnHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   hostdependency.HostDependencyToHostTable,
-			Columns: hostdependency.HostDependencyToHostPrimaryKey,
+			Table:   hostdependency.HostDependencyToDependOnHostTable,
+			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: host.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hdc.mutation.HostDependencyToDependByHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   hostdependency.HostDependencyToDependByHostTable,
+			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -193,6 +243,25 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: network.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hdc.mutation.HostDependencyToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   hostdependency.HostDependencyToEnvironmentTable,
+			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/tag"
 )
 
@@ -81,6 +82,21 @@ func (drc *DNSRecordCreate) AddDNSRecordToTag(t ...*Tag) *DNSRecordCreate {
 		ids[i] = t[i].ID
 	}
 	return drc.AddDNSRecordToTagIDs(ids...)
+}
+
+// AddDNSRecordToEnvironmentIDs adds the "DNSRecordToEnvironment" edge to the Environment entity by IDs.
+func (drc *DNSRecordCreate) AddDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordCreate {
+	drc.mutation.AddDNSRecordToEnvironmentIDs(ids...)
+	return drc
+}
+
+// AddDNSRecordToEnvironment adds the "DNSRecordToEnvironment" edges to the Environment entity.
+func (drc *DNSRecordCreate) AddDNSRecordToEnvironment(e ...*Environment) *DNSRecordCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return drc.AddDNSRecordToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -260,6 +276,25 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := drc.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsrecord.DNSRecordToEnvironmentTable,
+			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}
