@@ -21,6 +21,7 @@ import (
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
+	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/loader/include"
@@ -373,28 +374,79 @@ func main() {
 	tloader := NewLoader()
 	tloader.ParseConfigFile("/home/red/Documents/infra/envs/fred/env.laforge")
 	loadedConfig, err := tloader.Bind()
-	identities, _ := createIdentities(ctx, client, loadedConfig.Identities, "/envs/fred12")
-
-	// envs, _ := createEnviroments(ctx, client, loadedConfig.Environments)
-	// user, _ := envs[0].QueryEnvironmentToUser().Only(ctx)
-	// backenv := user.QueryUserToEnvironment().OnlyX(ctx) // Will Fail with multiple users connected to the Env
-	// log.Println(envs[0])
-	// log.Println(backenv)
-	fmt.Println(identities)
+	if err != nil {
+		log.Fatal(err)
+	}
+	envs, _ := createEnviroments(ctx, client, loadedConfig.Environments, loadedConfig)
+	fmt.Println(envs)
 }
 
 // Need to combine everything here
-func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment) ([]*ent.Environment, error) {
-	bulk := []*ent.EnvironmentCreate{}
+func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment, loadedConfig *DefinedConfigs) ([]*ent.Environment, error) {
 	returnedEnvironment := []*ent.Environment{}
 	for _, cEnviroment := range configEnvs {
+		returnedCompetitions, err := createCompetitions(ctx, client, loadedConfig.Competitions, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedScripts, returnedFindings, err := createScripts(ctx, client, loadedConfig.Scripts, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedCommands, err := createCommands(ctx, client, loadedConfig.Commands, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedDNSRecords, err := createDNSRecords(ctx, client, loadedConfig.DNSRecords, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedFileDownloads, err := createFileDownload(ctx, client, loadedConfig.FileDownload, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedFileDeletes, err := createFileDelete(ctx, client, loadedConfig.FileDelete, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedFileExtracts, err := createFileExtract(ctx, client, loadedConfig.FileExtract, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedIdentities, err := createIdentities(ctx, client, loadedConfig.Identities, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedNetworks, err := createNetworks(ctx, client, loadedConfig.Networks, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedHosts, returnedHostDependencies, err := createHosts(ctx, client, loadedConfig.Hosts, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedIncludedNetworks, err := createIncludedNetwork(ctx, client, cEnviroment.HCLEnvironmentToIncludedNetwork, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
 		entEnvironment, err := client.Environment.
 			Query().
 			Where(environment.HclIDEQ(cEnviroment.HclID)).
 			Only(ctx)
 		if err != nil {
 			if err == err.(*ent.NotFoundError) {
-				createdQuery := client.Environment.Create().
+				newEnvironment, err := client.Environment.Create().
 					SetHclID(cEnviroment.HclID).
 					SetAdminCidrs(cEnviroment.AdminCidrs).
 					SetBuilder(cEnviroment.Builder).
@@ -405,8 +457,31 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 					SetName(cEnviroment.Name).
 					SetRevision(cEnviroment.Revision).
 					SetTags(cEnviroment.Tags).
-					SetTeamCount(cEnviroment.TeamCount)
-				bulk = append(bulk, createdQuery)
+					SetTeamCount(cEnviroment.TeamCount).
+					AddEnvironmentToCompetition(returnedCompetitions...).
+					AddEnvironmentToScript(returnedScripts...).
+					AddEnvironmentToFinding(returnedFindings...).
+					AddEnvironmentToCommand(returnedCommands...).
+					AddEnvironmentToDNSRecord(returnedDNSRecords...).
+					AddEnvironmentToFileDownload(returnedFileDownloads...).
+					AddEnvironmentToFileDelete(returnedFileDeletes...).
+					AddEnvironmentToFileExtract(returnedFileExtracts...).
+					AddEnvironmentToIdentity(returnedIdentities...).
+					AddEnvironmentToNetwork(returnedNetworks...).
+					AddEnvironmentToHost(returnedHosts...).
+					AddEnvironmentToHostDependency(returnedHostDependencies...).
+					AddEnvironmentToIncludedNetwork(returnedIncludedNetworks...).
+					Save(ctx)
+				if err != nil {
+					log.Fatalf("failed creating user: %v", err)
+					return nil, err
+				}
+				_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
+				if err != nil {
+					log.Fatalf("failed creating user: %v", err)
+					return nil, err
+				}
+				returnedEnvironment = append(returnedEnvironment, newEnvironment)
 				continue
 			}
 		}
@@ -422,20 +497,48 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			SetRevision(cEnviroment.Revision).
 			SetTags(cEnviroment.Tags).
 			SetTeamCount(cEnviroment.TeamCount).
+			ClearEnvironmentToCompetition().
+			ClearEnvironmentToScript().
+			ClearEnvironmentToFinding().
+			ClearEnvironmentToCommand().
+			ClearEnvironmentToDNSRecord().
+			ClearEnvironmentToFileDownload().
+			ClearEnvironmentToFileDelete().
+			ClearEnvironmentToFileExtract().
+			ClearEnvironmentToIdentity().
+			ClearEnvironmentToNetwork().
+			ClearEnvironmentToHostDependency().
+			ClearEnvironmentToIncludedNetwork().
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
-		returnedEnvironment = append(returnedEnvironment, entEnvironment)
-	}
-	if len(bulk) > 0 {
-		dbEnv, err := client.Environment.CreateBulk(bulk...).Save(ctx)
+		entEnvironment, err = entEnvironment.Update().
+			AddEnvironmentToCompetition(returnedCompetitions...).
+			AddEnvironmentToScript(returnedScripts...).
+			AddEnvironmentToFinding(returnedFindings...).
+			AddEnvironmentToCommand(returnedCommands...).
+			AddEnvironmentToDNSRecord(returnedDNSRecords...).
+			AddEnvironmentToFileDownload(returnedFileDownloads...).
+			AddEnvironmentToFileDelete(returnedFileDeletes...).
+			AddEnvironmentToFileExtract(returnedFileExtracts...).
+			AddEnvironmentToIdentity(returnedIdentities...).
+			AddEnvironmentToNetwork(returnedNetworks...).
+			AddEnvironmentToHost(returnedHosts...).
+			AddEnvironmentToHostDependency(returnedHostDependencies...).
+			AddEnvironmentToIncludedNetwork(returnedIncludedNetworks...).
+			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
-		returnedEnvironment = append(returnedEnvironment, dbEnv...)
+		_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedEnvironment = append(returnedEnvironment, entEnvironment)
 	}
 	return returnedEnvironment, nil
 }
@@ -490,6 +593,10 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 	returnedAllHostDependencies := []*ent.HostDependency{}
 	for _, cHost := range configHosts {
 		returnedDisks, err := createDisk(ctx, client, cHost.HCLHostToDisk, cHost.HclID)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, nil, err
+		}
 		entHost, err := client.Host.
 			Query().
 			Where(
@@ -1100,8 +1207,52 @@ func createHostDependencies(ctx context.Context, client *ent.Client, configHostD
 }
 
 // Need to validate After creating Included Networks
-func validateHostDependencies(ctx context.Context, client *ent.Client, configIncludedNetworks []*ent.IncludedNetwork, configHostDependencies []*ent.HostDependency) ([]*ent.HostDependency, error) {
-	return nil, nil
+func validateHostDependencies(ctx context.Context, client *ent.Client, uncheckedHostDependencies []*ent.HostDependency, envHclID string) ([]*ent.HostDependency, error) {
+	checkedHostDependencies := []*ent.HostDependency{}
+	for _, uncheckedHostDependency := range uncheckedHostDependencies {
+		entNetwork, err := client.Network.Query().Where(
+			network.And(
+				network.HclIDEQ(uncheckedHostDependency.NetworkID),
+				network.HasNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entHost, err := client.Host.Query().Where(
+			host.And(
+				host.HasHostToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				host.HclIDEQ(uncheckedHostDependency.HostID),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		_, err = client.IncludedNetwork.Query().Where(
+			includednetwork.And(
+				includednetwork.HasIncludedNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				includednetwork.HasIncludedNetworkToHostWith(host.HclIDEQ(uncheckedHostDependency.HostID)),
+				includednetwork.HasIncludedNetworkToNetworkWith(network.HclIDEQ(uncheckedHostDependency.NetworkID)),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entHostDependency, err := uncheckedHostDependency.Update().
+			AddHostDependencyToDependOnHost(entHost).
+			AddHostDependencyToNetwork(entNetwork).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		checkedHostDependencies = append(checkedHostDependencies, entHostDependency)
+
+	}
+	return checkedHostDependencies, nil
 }
 func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk, hostHclID string) ([]*ent.Disk, error) {
 	bulk := []*ent.DiskCreate{}
@@ -1141,4 +1292,83 @@ func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk,
 		returnedDisks = append(returnedDisks, dbDisk...)
 	}
 	return returnedDisks, nil
+}
+
+func createIncludedNetwork(ctx context.Context, client *ent.Client, configIncludedNetworks []*ent.IncludedNetwork, envHclID string) ([]*ent.IncludedNetwork, error) {
+	bulk := []*ent.IncludedNetworkCreate{}
+	returnedIncludedNetworks := []*ent.IncludedNetwork{}
+	for _, cIncludedNetwork := range configIncludedNetworks {
+		entNetwork, err := client.Network.Query().Where(
+			network.And(
+				network.HclIDEQ(cIncludedNetwork.Name),
+				network.Not(network.HasNetworkToEnvironment()),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entHosts := []*ent.Host{}
+		for _, cHostHclID := range cIncludedNetwork.Hosts {
+			entHost, err := client.Host.Query().Where(
+				host.And(
+					host.Not(host.HasHostToEnvironment()),
+					host.HclIDEQ(cHostHclID),
+				),
+			).Only(ctx)
+			if err != nil {
+				log.Fatalf("failed creating fileextract: %v", err)
+				return nil, err
+			}
+			entHosts = append(entHosts, entHost)
+		}
+		entIncludedNetwork, err := client.IncludedNetwork.
+			Query().
+			Where(
+				includednetwork.And(
+					includednetwork.HasIncludedNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+					includednetwork.NameEQ(cIncludedNetwork.Name),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.IncludedNetwork.Create().
+					SetName(cIncludedNetwork.Name).
+					SetHosts(cIncludedNetwork.Hosts).
+					AddIncludedNetworkToNetwork(entNetwork).
+					AddIncludedNetworkToHost(entHosts...)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		entIncludedNetwork, err = entIncludedNetwork.Update().
+			SetName(cIncludedNetwork.Name).
+			SetHosts(cIncludedNetwork.Hosts).
+			ClearIncludedNetworkToHost().
+			ClearIncludedNetworkToNetwork().
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entIncludedNetwork, err = entIncludedNetwork.Update().
+			AddIncludedNetworkToHost(entHosts...).
+			AddIncludedNetworkToNetwork(entNetwork).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedIncludedNetworks = append(returnedIncludedNetworks, entIncludedNetwork)
+	}
+	if len(bulk) > 0 {
+		dbIncludedNetwork, err := client.IncludedNetwork.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedIncludedNetworks = append(returnedIncludedNetworks, dbIncludedNetwork...)
+	}
+	return returnedIncludedNetworks, nil
 }
