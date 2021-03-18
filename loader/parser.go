@@ -368,6 +368,10 @@ func main() {
 func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment, loadedConfig *DefinedConfigs) ([]*ent.Environment, error) {
 	returnedEnvironment := []*ent.Environment{}
 	for _, cEnviroment := range configEnvs {
+		environmentHosts := []string{}
+		for _, cIncludedNetwork := range cEnviroment.HCLEnvironmentToIncludedNetwork {
+			environmentHosts = append(environmentHosts, cIncludedNetwork.Hosts...)
+		}
 		returnedCompetitions, returnedDNS, err := createCompetitions(ctx, client, loadedConfig.Competitions, cEnviroment.HclID)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
@@ -413,7 +417,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
-		returnedHosts, returnedHostDependencies, err := createHosts(ctx, client, loadedConfig.Hosts, cEnviroment.HclID)
+		returnedHosts, returnedHostDependencies, err := createHosts(ctx, client, loadedConfig.Hosts, cEnviroment.HclID, environmentHosts)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err
@@ -456,6 +460,11 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 					AddEnvironmentToIncludedNetwork(returnedIncludedNetworks...).
 					AddEnvironmentToDNS(returnedDNS...).
 					Save(ctx)
+				if err != nil {
+					log.Fatalf("failed creating user: %v", err)
+					return nil, err
+				}
+				_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
 				if err != nil {
 					log.Fatalf("failed creating user: %v", err)
 					return nil, err
@@ -589,11 +598,15 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 	}
 	return returnedCompetitions, returnedAllDNS, nil
 }
-func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string) ([]*ent.Host, []*ent.HostDependency, error) {
+func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string, environmentHosts []string) ([]*ent.Host, []*ent.HostDependency, error) {
 	bulk := []*ent.HostCreate{}
 	returnedHosts := []*ent.Host{}
 	returnedAllHostDependencies := []*ent.HostDependency{}
-	for _, cHost := range configHosts {
+	for _, cHostID := range environmentHosts {
+		cHost, ok := configHosts[cHostID]
+		if !ok {
+			return nil, nil, fmt.Errorf("host %s was not defined", cHostID)
+		}
 		returnedDisks, err := createDisk(ctx, client, cHost.HCLHostToDisk, cHost.HclID)
 		if err != nil {
 			log.Fatalf("failed creating fileextract: %v", err)
