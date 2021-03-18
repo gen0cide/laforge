@@ -823,7 +823,7 @@ func (c *CompetitionClient) QueryCompetitionToDNS(co *Competition) *DNSQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(competition.Table, competition.FieldID, id),
 			sqlgraph.To(dns.Table, dns.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, competition.CompetitionToDNSTable, competition.CompetitionToDNSColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, competition.CompetitionToDNSTable, competition.CompetitionToDNSPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -944,6 +944,38 @@ func (c *DNSClient) QueryDNSToTag(d *DNS) *TagQuery {
 			sqlgraph.From(dns.Table, dns.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dns.DNSToTagTable, dns.DNSToTagColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDNSToEnvironment queries the DNSToEnvironment edge of a DNS.
+func (c *DNSClient) QueryDNSToEnvironment(d *DNS) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dns.Table, dns.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dns.DNSToEnvironmentTable, dns.DNSToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDNSToCompetition queries the DNSToCompetition edge of a DNS.
+func (c *DNSClient) QueryDNSToCompetition(d *DNS) *CompetitionQuery {
+	query := &CompetitionQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dns.Table, dns.FieldID, id),
+			sqlgraph.To(competition.Table, competition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dns.DNSToCompetitionTable, dns.DNSToCompetitionPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -1496,6 +1528,22 @@ func (c *EnvironmentClient) QueryEnvironmentToDNSRecord(e *Environment) *DNSReco
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToDNS queries the EnvironmentToDNS edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToDNS(e *Environment) *DNSQuery {
+	query := &DNSQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(dns.Table, dns.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSTable, environment.EnvironmentToDNSPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil

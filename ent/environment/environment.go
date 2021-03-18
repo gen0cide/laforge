@@ -58,6 +58,8 @@ const (
 	EdgeEnvironmentToFinding = "EnvironmentToFinding"
 	// EdgeEnvironmentToDNSRecord holds the string denoting the environmenttodnsrecord edge name in mutations.
 	EdgeEnvironmentToDNSRecord = "EnvironmentToDNSRecord"
+	// EdgeEnvironmentToDNS holds the string denoting the environmenttodns edge name in mutations.
+	EdgeEnvironmentToDNS = "EnvironmentToDNS"
 	// EdgeEnvironmentToNetwork holds the string denoting the environmenttonetwork edge name in mutations.
 	EdgeEnvironmentToNetwork = "EnvironmentToNetwork"
 	// EdgeEnvironmentToHostDependency holds the string denoting the environmenttohostdependency edge name in mutations.
@@ -139,6 +141,11 @@ const (
 	// EnvironmentToDNSRecordInverseTable is the table name for the DNSRecord entity.
 	// It exists in this package in order to avoid circular dependency with the "dnsrecord" package.
 	EnvironmentToDNSRecordInverseTable = "dns_records"
+	// EnvironmentToDNSTable is the table the holds the EnvironmentToDNS relation/edge. The primary key declared below.
+	EnvironmentToDNSTable = "environment_EnvironmentToDNS"
+	// EnvironmentToDNSInverseTable is the table name for the DNS entity.
+	// It exists in this package in order to avoid circular dependency with the "dns" package.
+	EnvironmentToDNSInverseTable = "dn_ss"
 	// EnvironmentToNetworkTable is the table the holds the EnvironmentToNetwork relation/edge. The primary key declared below.
 	EnvironmentToNetworkTable = "environment_EnvironmentToNetwork"
 	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
@@ -212,6 +219,9 @@ var (
 	// EnvironmentToDNSRecordPrimaryKey and EnvironmentToDNSRecordColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToDNSRecord relation (M2M).
 	EnvironmentToDNSRecordPrimaryKey = []string{"environment_id", "dns_record_id"}
+	// EnvironmentToDNSPrimaryKey and EnvironmentToDNSColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToDNS relation (M2M).
+	EnvironmentToDNSPrimaryKey = []string{"environment_id", "dns_id"}
 	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToNetwork relation (M2M).
 	EnvironmentToNetworkPrimaryKey = []string{"environment_id", "network_id"}

@@ -22,6 +22,10 @@ const (
 
 	// EdgeDNSToTag holds the string denoting the dnstotag edge name in mutations.
 	EdgeDNSToTag = "DNSToTag"
+	// EdgeDNSToEnvironment holds the string denoting the dnstoenvironment edge name in mutations.
+	EdgeDNSToEnvironment = "DNSToEnvironment"
+	// EdgeDNSToCompetition holds the string denoting the dnstocompetition edge name in mutations.
+	EdgeDNSToCompetition = "DNSToCompetition"
 
 	// Table holds the table name of the dns in the database.
 	Table = "dn_ss"
@@ -32,6 +36,16 @@ const (
 	DNSToTagInverseTable = "tags"
 	// DNSToTagColumn is the table column denoting the DNSToTag relation/edge.
 	DNSToTagColumn = "dns_dns_to_tag"
+	// DNSToEnvironmentTable is the table the holds the DNSToEnvironment relation/edge. The primary key declared below.
+	DNSToEnvironmentTable = "environment_EnvironmentToDNS"
+	// DNSToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	DNSToEnvironmentInverseTable = "environments"
+	// DNSToCompetitionTable is the table the holds the DNSToCompetition relation/edge. The primary key declared below.
+	DNSToCompetitionTable = "competition_CompetitionToDNS"
+	// DNSToCompetitionInverseTable is the table name for the Competition entity.
+	// It exists in this package in order to avoid circular dependency with the "competition" package.
+	DNSToCompetitionInverseTable = "competitions"
 )
 
 // Columns holds all SQL columns for dns fields.
@@ -45,20 +59,19 @@ var Columns = []string{
 	FieldConfig,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the DNS type.
-var ForeignKeys = []string{
-	"competition_competition_to_dns",
-}
+var (
+	// DNSToEnvironmentPrimaryKey and DNSToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the DNSToEnvironment relation (M2M).
+	DNSToEnvironmentPrimaryKey = []string{"environment_id", "dns_id"}
+	// DNSToCompetitionPrimaryKey and DNSToCompetitionColumn2 are the table columns denoting the
+	// primary key for the DNSToCompetition relation (M2M).
+	DNSToCompetitionPrimaryKey = []string{"competition_id", "dns_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

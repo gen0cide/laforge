@@ -234,10 +234,10 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 	}
 	if nodes := cc.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

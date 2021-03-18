@@ -32,13 +32,11 @@ const (
 	CompetitionToTagInverseTable = "tags"
 	// CompetitionToTagColumn is the table column denoting the CompetitionToTag relation/edge.
 	CompetitionToTagColumn = "competition_competition_to_tag"
-	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge.
-	CompetitionToDNSTable = "dn_ss"
+	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge. The primary key declared below.
+	CompetitionToDNSTable = "competition_CompetitionToDNS"
 	// CompetitionToDNSInverseTable is the table name for the DNS entity.
 	// It exists in this package in order to avoid circular dependency with the "dns" package.
 	CompetitionToDNSInverseTable = "dn_ss"
-	// CompetitionToDNSColumn is the table column denoting the CompetitionToDNS relation/edge.
-	CompetitionToDNSColumn = "competition_competition_to_dns"
 	// CompetitionToEnvironmentTable is the table the holds the CompetitionToEnvironment relation/edge. The primary key declared below.
 	CompetitionToEnvironmentTable = "environment_EnvironmentToCompetition"
 	// CompetitionToEnvironmentInverseTable is the table name for the Environment entity.
@@ -56,6 +54,9 @@ var Columns = []string{
 }
 
 var (
+	// CompetitionToDNSPrimaryKey and CompetitionToDNSColumn2 are the table columns denoting the
+	// primary key for the CompetitionToDNS relation (M2M).
+	CompetitionToDNSPrimaryKey = []string{"competition_id", "dns_id"}
 	// CompetitionToEnvironmentPrimaryKey and CompetitionToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the CompetitionToEnvironment relation (M2M).
 	CompetitionToEnvironmentPrimaryKey = []string{"environment_id", "competition_id"}

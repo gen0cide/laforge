@@ -1239,6 +1239,34 @@ func HasEnvironmentToDNSRecordWith(preds ...predicate.DNSRecord) predicate.Envir
 	})
 }
 
+// HasEnvironmentToDNS applies the HasEdge predicate on the "EnvironmentToDNS" edge.
+func HasEnvironmentToDNS() predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToDNSTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToDNSTable, EnvironmentToDNSPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEnvironmentToDNSWith applies the HasEdge predicate on the "EnvironmentToDNS" edge with a given conditions (other predicates).
+func HasEnvironmentToDNSWith(preds ...predicate.DNS) predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToDNSInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToDNSTable, EnvironmentToDNSPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasEnvironmentToNetwork applies the HasEdge predicate on the "EnvironmentToNetwork" edge.
 func HasEnvironmentToNetwork() predicate.Environment {
 	return predicate.Environment(func(s *sql.Selector) {

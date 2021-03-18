@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
+	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -56,6 +57,7 @@ type EnvironmentQuery struct {
 	withEnvironmentToIncludedNetwork *IncludedNetworkQuery
 	withEnvironmentToFinding         *FindingQuery
 	withEnvironmentToDNSRecord       *DNSRecordQuery
+	withEnvironmentToDNS             *DNSQuery
 	withEnvironmentToNetwork         *NetworkQuery
 	withEnvironmentToHostDependency  *HostDependencyQuery
 	withEnvironmentToTeam            *TeamQuery
@@ -396,6 +398,28 @@ func (eq *EnvironmentQuery) QueryEnvironmentToDNSRecord() *DNSRecordQuery {
 	return query
 }
 
+// QueryEnvironmentToDNS chains the current query on the "EnvironmentToDNS" edge.
+func (eq *EnvironmentQuery) QueryEnvironmentToDNS() *DNSQuery {
+	query := &DNSQuery{config: eq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, selector),
+			sqlgraph.To(dns.Table, dns.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSTable, environment.EnvironmentToDNSPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryEnvironmentToNetwork chains the current query on the "EnvironmentToNetwork" edge.
 func (eq *EnvironmentQuery) QueryEnvironmentToNetwork() *NetworkQuery {
 	query := &NetworkQuery{config: eq.config}
@@ -657,6 +681,7 @@ func (eq *EnvironmentQuery) Clone() *EnvironmentQuery {
 		withEnvironmentToIncludedNetwork: eq.withEnvironmentToIncludedNetwork.Clone(),
 		withEnvironmentToFinding:         eq.withEnvironmentToFinding.Clone(),
 		withEnvironmentToDNSRecord:       eq.withEnvironmentToDNSRecord.Clone(),
+		withEnvironmentToDNS:             eq.withEnvironmentToDNS.Clone(),
 		withEnvironmentToNetwork:         eq.withEnvironmentToNetwork.Clone(),
 		withEnvironmentToHostDependency:  eq.withEnvironmentToHostDependency.Clone(),
 		withEnvironmentToTeam:            eq.withEnvironmentToTeam.Clone(),
@@ -820,6 +845,17 @@ func (eq *EnvironmentQuery) WithEnvironmentToDNSRecord(opts ...func(*DNSRecordQu
 	return eq
 }
 
+// WithEnvironmentToDNS tells the query-builder to eager-load the nodes that are connected to
+// the "EnvironmentToDNS" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EnvironmentQuery) WithEnvironmentToDNS(opts ...func(*DNSQuery)) *EnvironmentQuery {
+	query := &DNSQuery{config: eq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withEnvironmentToDNS = query
+	return eq
+}
+
 // WithEnvironmentToNetwork tells the query-builder to eager-load the nodes that are connected to
 // the "EnvironmentToNetwork" edge. The optional arguments are used to configure the query builder of the edge.
 func (eq *EnvironmentQuery) WithEnvironmentToNetwork(opts ...func(*NetworkQuery)) *EnvironmentQuery {
@@ -918,7 +954,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 	var (
 		nodes       = []*Environment{}
 		_spec       = eq.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [18]bool{
 			eq.withEnvironmentToTag != nil,
 			eq.withEnvironmentToUser != nil,
 			eq.withEnvironmentToHost != nil,
@@ -933,6 +969,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 			eq.withEnvironmentToIncludedNetwork != nil,
 			eq.withEnvironmentToFinding != nil,
 			eq.withEnvironmentToDNSRecord != nil,
+			eq.withEnvironmentToDNS != nil,
 			eq.withEnvironmentToNetwork != nil,
 			eq.withEnvironmentToHostDependency != nil,
 			eq.withEnvironmentToTeam != nil,
@@ -1815,6 +1852,70 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 			}
 			for i := range nodes {
 				nodes[i].Edges.EnvironmentToDNSRecord = append(nodes[i].Edges.EnvironmentToDNSRecord, n)
+			}
+		}
+	}
+
+	if query := eq.withEnvironmentToDNS; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Environment, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.EnvironmentToDNS = []*DNS{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Environment)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   environment.EnvironmentToDNSTable,
+				Columns: environment.EnvironmentToDNSPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(environment.EnvironmentToDNSPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "EnvironmentToDNS": %v`, err)
+		}
+		query.Where(dns.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "EnvironmentToDNS" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.EnvironmentToDNS = append(nodes[i].Edges.EnvironmentToDNS, n)
 			}
 		}
 	}

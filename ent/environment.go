@@ -71,6 +71,8 @@ type Environment struct {
 	HCLEnvironmentToFinding []*Finding `json:"EnvironmentToFinding,omitempty"`
 	// EnvironmentToDNSRecord holds the value of the EnvironmentToDNSRecord edge.
 	HCLEnvironmentToDNSRecord []*DNSRecord `json:"EnvironmentToDNSRecord,omitempty"`
+	// EnvironmentToDNS holds the value of the EnvironmentToDNS edge.
+	HCLEnvironmentToDNS []*DNS `json:"EnvironmentToDNS,omitempty"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
 	HCLEnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
 	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
@@ -111,6 +113,8 @@ type EnvironmentEdges struct {
 	EnvironmentToFinding []*Finding `json:"EnvironmentToFinding,omitempty"`
 	// EnvironmentToDNSRecord holds the value of the EnvironmentToDNSRecord edge.
 	EnvironmentToDNSRecord []*DNSRecord `json:"EnvironmentToDNSRecord,omitempty"`
+	// EnvironmentToDNS holds the value of the EnvironmentToDNS edge.
+	EnvironmentToDNS []*DNS `json:"EnvironmentToDNS,omitempty"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
 	EnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
 	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
@@ -119,7 +123,7 @@ type EnvironmentEdges struct {
 	EnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [18]bool
 }
 
 // EnvironmentToTagOrErr returns the EnvironmentToTag value or an error if the edge
@@ -248,10 +252,19 @@ func (e EnvironmentEdges) EnvironmentToDNSRecordOrErr() ([]*DNSRecord, error) {
 	return nil, &NotLoadedError{edge: "EnvironmentToDNSRecord"}
 }
 
+// EnvironmentToDNSOrErr returns the EnvironmentToDNS value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToDNSOrErr() ([]*DNS, error) {
+	if e.loadedTypes[14] {
+		return e.EnvironmentToDNS, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToDNS"}
+}
+
 // EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.EnvironmentToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
@@ -260,7 +273,7 @@ func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
 // EnvironmentToHostDependencyOrErr returns the EnvironmentToHostDependency value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToHostDependencyOrErr() ([]*HostDependency, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.EnvironmentToHostDependency, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToHostDependency"}
@@ -269,7 +282,7 @@ func (e EnvironmentEdges) EnvironmentToHostDependencyOrErr() ([]*HostDependency,
 // EnvironmentToTeamOrErr returns the EnvironmentToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[17] {
 		return e.EnvironmentToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToTeam"}
@@ -458,6 +471,11 @@ func (e *Environment) QueryEnvironmentToFinding() *FindingQuery {
 // QueryEnvironmentToDNSRecord queries the "EnvironmentToDNSRecord" edge of the Environment entity.
 func (e *Environment) QueryEnvironmentToDNSRecord() *DNSRecordQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToDNSRecord(e)
+}
+
+// QueryEnvironmentToDNS queries the "EnvironmentToDNS" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToDNS() *DNSQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToDNS(e)
 }
 
 // QueryEnvironmentToNetwork queries the "EnvironmentToNetwork" edge of the Environment entity.

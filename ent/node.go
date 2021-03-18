@@ -497,7 +497,7 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 		ID:     d.ID,
 		Type:   "DNS",
 		Fields: make([]*Field, 6),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(d.HclID); err != nil {
@@ -554,6 +554,26 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[0].IDs, err = d.QueryDNSToTag().
 		Select(tag.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Environment",
+		Name: "DNSToEnvironment",
+	}
+	node.Edges[1].IDs, err = d.QueryDNSToEnvironment().
+		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Competition",
+		Name: "DNSToCompetition",
+	}
+	node.Edges[2].IDs, err = d.QueryDNSToCompetition().
+		Select(competition.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -700,7 +720,7 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		ID:     e.ID,
 		Type:   "Environment",
 		Fields: make([]*Field, 11),
-		Edges:  make([]*Edge, 17),
+		Edges:  make([]*Edge, 18),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(e.HclID); err != nil {
@@ -932,30 +952,40 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[14] = &Edge{
-		Type: "Network",
-		Name: "EnvironmentToNetwork",
+		Type: "DNS",
+		Name: "EnvironmentToDNS",
 	}
-	node.Edges[14].IDs, err = e.QueryEnvironmentToNetwork().
-		Select(network.FieldID).
+	node.Edges[14].IDs, err = e.QueryEnvironmentToDNS().
+		Select(dns.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[15] = &Edge{
-		Type: "HostDependency",
-		Name: "EnvironmentToHostDependency",
+		Type: "Network",
+		Name: "EnvironmentToNetwork",
 	}
-	node.Edges[15].IDs, err = e.QueryEnvironmentToHostDependency().
-		Select(hostdependency.FieldID).
+	node.Edges[15].IDs, err = e.QueryEnvironmentToNetwork().
+		Select(network.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[16] = &Edge{
+		Type: "HostDependency",
+		Name: "EnvironmentToHostDependency",
+	}
+	node.Edges[16].IDs, err = e.QueryEnvironmentToHostDependency().
+		Select(hostdependency.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[17] = &Edge{
 		Type: "Team",
 		Name: "EnvironmentToTeam",
 	}
-	node.Edges[16].IDs, err = e.QueryEnvironmentToTeam().
+	node.Edges[17].IDs, err = e.QueryEnvironmentToTeam().
 		Select(team.FieldID).
 		Ints(ctx)
 	if err != nil {

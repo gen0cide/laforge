@@ -9,7 +9,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -78,6 +80,36 @@ func (du *DNSUpdate) AddDNSToTag(t ...*Tag) *DNSUpdate {
 	return du.AddDNSToTagIDs(ids...)
 }
 
+// AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
+func (du *DNSUpdate) AddDNSToEnvironmentIDs(ids ...int) *DNSUpdate {
+	du.mutation.AddDNSToEnvironmentIDs(ids...)
+	return du
+}
+
+// AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
+func (du *DNSUpdate) AddDNSToEnvironment(e ...*Environment) *DNSUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return du.AddDNSToEnvironmentIDs(ids...)
+}
+
+// AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
+func (du *DNSUpdate) AddDNSToCompetitionIDs(ids ...int) *DNSUpdate {
+	du.mutation.AddDNSToCompetitionIDs(ids...)
+	return du
+}
+
+// AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
+func (du *DNSUpdate) AddDNSToCompetition(c ...*Competition) *DNSUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return du.AddDNSToCompetitionIDs(ids...)
+}
+
 // Mutation returns the DNSMutation object of the builder.
 func (du *DNSUpdate) Mutation() *DNSMutation {
 	return du.mutation
@@ -102,6 +134,48 @@ func (du *DNSUpdate) RemoveDNSToTag(t ...*Tag) *DNSUpdate {
 		ids[i] = t[i].ID
 	}
 	return du.RemoveDNSToTagIDs(ids...)
+}
+
+// ClearDNSToEnvironment clears all "DNSToEnvironment" edges to the Environment entity.
+func (du *DNSUpdate) ClearDNSToEnvironment() *DNSUpdate {
+	du.mutation.ClearDNSToEnvironment()
+	return du
+}
+
+// RemoveDNSToEnvironmentIDs removes the "DNSToEnvironment" edge to Environment entities by IDs.
+func (du *DNSUpdate) RemoveDNSToEnvironmentIDs(ids ...int) *DNSUpdate {
+	du.mutation.RemoveDNSToEnvironmentIDs(ids...)
+	return du
+}
+
+// RemoveDNSToEnvironment removes "DNSToEnvironment" edges to Environment entities.
+func (du *DNSUpdate) RemoveDNSToEnvironment(e ...*Environment) *DNSUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return du.RemoveDNSToEnvironmentIDs(ids...)
+}
+
+// ClearDNSToCompetition clears all "DNSToCompetition" edges to the Competition entity.
+func (du *DNSUpdate) ClearDNSToCompetition() *DNSUpdate {
+	du.mutation.ClearDNSToCompetition()
+	return du
+}
+
+// RemoveDNSToCompetitionIDs removes the "DNSToCompetition" edge to Competition entities by IDs.
+func (du *DNSUpdate) RemoveDNSToCompetitionIDs(ids ...int) *DNSUpdate {
+	du.mutation.RemoveDNSToCompetitionIDs(ids...)
+	return du
+}
+
+// RemoveDNSToCompetition removes "DNSToCompetition" edges to Competition entities.
+func (du *DNSUpdate) RemoveDNSToCompetition(c ...*Competition) *DNSUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return du.RemoveDNSToCompetitionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -269,6 +343,114 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.DNSToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedDNSToEnvironmentIDs(); len(nodes) > 0 && !du.mutation.DNSToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DNSToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.DNSToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedDNSToCompetitionIDs(); len(nodes) > 0 && !du.mutation.DNSToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DNSToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dns.Label}
@@ -338,6 +520,36 @@ func (duo *DNSUpdateOne) AddDNSToTag(t ...*Tag) *DNSUpdateOne {
 	return duo.AddDNSToTagIDs(ids...)
 }
 
+// AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
+func (duo *DNSUpdateOne) AddDNSToEnvironmentIDs(ids ...int) *DNSUpdateOne {
+	duo.mutation.AddDNSToEnvironmentIDs(ids...)
+	return duo
+}
+
+// AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
+func (duo *DNSUpdateOne) AddDNSToEnvironment(e ...*Environment) *DNSUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return duo.AddDNSToEnvironmentIDs(ids...)
+}
+
+// AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
+func (duo *DNSUpdateOne) AddDNSToCompetitionIDs(ids ...int) *DNSUpdateOne {
+	duo.mutation.AddDNSToCompetitionIDs(ids...)
+	return duo
+}
+
+// AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
+func (duo *DNSUpdateOne) AddDNSToCompetition(c ...*Competition) *DNSUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return duo.AddDNSToCompetitionIDs(ids...)
+}
+
 // Mutation returns the DNSMutation object of the builder.
 func (duo *DNSUpdateOne) Mutation() *DNSMutation {
 	return duo.mutation
@@ -362,6 +574,48 @@ func (duo *DNSUpdateOne) RemoveDNSToTag(t ...*Tag) *DNSUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return duo.RemoveDNSToTagIDs(ids...)
+}
+
+// ClearDNSToEnvironment clears all "DNSToEnvironment" edges to the Environment entity.
+func (duo *DNSUpdateOne) ClearDNSToEnvironment() *DNSUpdateOne {
+	duo.mutation.ClearDNSToEnvironment()
+	return duo
+}
+
+// RemoveDNSToEnvironmentIDs removes the "DNSToEnvironment" edge to Environment entities by IDs.
+func (duo *DNSUpdateOne) RemoveDNSToEnvironmentIDs(ids ...int) *DNSUpdateOne {
+	duo.mutation.RemoveDNSToEnvironmentIDs(ids...)
+	return duo
+}
+
+// RemoveDNSToEnvironment removes "DNSToEnvironment" edges to Environment entities.
+func (duo *DNSUpdateOne) RemoveDNSToEnvironment(e ...*Environment) *DNSUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return duo.RemoveDNSToEnvironmentIDs(ids...)
+}
+
+// ClearDNSToCompetition clears all "DNSToCompetition" edges to the Competition entity.
+func (duo *DNSUpdateOne) ClearDNSToCompetition() *DNSUpdateOne {
+	duo.mutation.ClearDNSToCompetition()
+	return duo
+}
+
+// RemoveDNSToCompetitionIDs removes the "DNSToCompetition" edge to Competition entities by IDs.
+func (duo *DNSUpdateOne) RemoveDNSToCompetitionIDs(ids ...int) *DNSUpdateOne {
+	duo.mutation.RemoveDNSToCompetitionIDs(ids...)
+	return duo
+}
+
+// RemoveDNSToCompetition removes "DNSToCompetition" edges to Competition entities.
+func (duo *DNSUpdateOne) RemoveDNSToCompetition(c ...*Competition) *DNSUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return duo.RemoveDNSToCompetitionIDs(ids...)
 }
 
 // Save executes the query and returns the updated DNS entity.
@@ -526,6 +780,114 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DNSToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedDNSToEnvironmentIDs(); len(nodes) > 0 && !duo.mutation.DNSToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DNSToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DNSToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedDNSToCompetitionIDs(); len(nodes) > 0 && !duo.mutation.DNSToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DNSToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
 				},
 			},
 		}

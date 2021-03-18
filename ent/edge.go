@@ -116,6 +116,22 @@ func (d *DNS) DNSToTag(ctx context.Context) ([]*Tag, error) {
 	return result, err
 }
 
+func (d *DNS) DNSToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := d.Edges.DNSToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryDNSToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
+func (d *DNS) DNSToCompetition(ctx context.Context) ([]*Competition, error) {
+	result, err := d.Edges.DNSToCompetitionOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryDNSToCompetition().All(ctx)
+	}
+	return result, err
+}
+
 func (dr *DNSRecord) DNSRecordToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := dr.Edges.DNSRecordToTagOrErr()
 	if IsNotLoaded(err) {
@@ -256,6 +272,14 @@ func (e *Environment) EnvironmentToDNSRecord(ctx context.Context) ([]*DNSRecord,
 	result, err := e.Edges.EnvironmentToDNSRecordOrErr()
 	if IsNotLoaded(err) {
 		result, err = e.QueryEnvironmentToDNSRecord().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToDNS(ctx context.Context) ([]*DNS, error) {
+	result, err := e.Edges.EnvironmentToDNSOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToDNS().All(ctx)
 	}
 	return result, err
 }

@@ -473,6 +473,62 @@ func HasDNSToTagWith(preds ...predicate.Tag) predicate.DNS {
 	})
 }
 
+// HasDNSToEnvironment applies the HasEdge predicate on the "DNSToEnvironment" edge.
+func HasDNSToEnvironment() predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToEnvironmentTable, DNSToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDNSToEnvironmentWith applies the HasEdge predicate on the "DNSToEnvironment" edge with a given conditions (other predicates).
+func HasDNSToEnvironmentWith(preds ...predicate.Environment) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToEnvironmentTable, DNSToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDNSToCompetition applies the HasEdge predicate on the "DNSToCompetition" edge.
+func HasDNSToCompetition() predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToCompetitionTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToCompetitionTable, DNSToCompetitionPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDNSToCompetitionWith applies the HasEdge predicate on the "DNSToCompetition" edge with a given conditions (other predicates).
+func HasDNSToCompetitionWith(preds ...predicate.Competition) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToCompetitionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToCompetitionTable, DNSToCompetitionPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DNS) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {

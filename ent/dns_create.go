@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/tag"
 )
 
@@ -69,6 +71,36 @@ func (dc *DNSCreate) AddDNSToTag(t ...*Tag) *DNSCreate {
 		ids[i] = t[i].ID
 	}
 	return dc.AddDNSToTagIDs(ids...)
+}
+
+// AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
+func (dc *DNSCreate) AddDNSToEnvironmentIDs(ids ...int) *DNSCreate {
+	dc.mutation.AddDNSToEnvironmentIDs(ids...)
+	return dc
+}
+
+// AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
+func (dc *DNSCreate) AddDNSToEnvironment(e ...*Environment) *DNSCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return dc.AddDNSToEnvironmentIDs(ids...)
+}
+
+// AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
+func (dc *DNSCreate) AddDNSToCompetitionIDs(ids ...int) *DNSCreate {
+	dc.mutation.AddDNSToCompetitionIDs(ids...)
+	return dc
+}
+
+// AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
+func (dc *DNSCreate) AddDNSToCompetition(c ...*Competition) *DNSCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return dc.AddDNSToCompetitionIDs(ids...)
 }
 
 // Mutation returns the DNSMutation object of the builder.
@@ -226,6 +258,44 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DNSToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DNSToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
 				},
 			},
 		}

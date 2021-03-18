@@ -68,6 +68,7 @@ func (Environment) Edges() []ent.Edge {
 			StructTag(`hcl:"included_network,block"`),
 		edge.To("EnvironmentToFinding", Finding.Type),
 		edge.To("EnvironmentToDNSRecord", DNSRecord.Type),
+		edge.To("EnvironmentToDNS", DNS.Type),
 		edge.To("EnvironmentToNetwork", Network.Type),
 		edge.To("EnvironmentToHostDependency", HostDependency.Type),
 		edge.From("EnvironmentToTeam", Team.Type).Ref("TeamToEnvironment"),

@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -260,8 +261,6 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 				combinedConfigs.Competitions[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 			if x.RootPassword != "" {
 				obj.RootPassword = x.RootPassword
 			}
@@ -277,67 +276,53 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 			combinedConfigs.Competitions[x.HclID] = obj
 		}
 		for _, x := range element.DefinedHosts {
-			obj, found := combinedConfigs.Hosts[x.HclID]
+			_, found := combinedConfigs.Hosts[x.HclID]
 			if !found {
 				combinedConfigs.Hosts[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedNetworks {
-			obj, found := combinedConfigs.Networks[x.HclID]
+			_, found := combinedConfigs.Networks[x.HclID]
 			if !found {
 				combinedConfigs.Networks[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedScripts {
-			obj, found := combinedConfigs.Scripts[x.HclID]
+			_, found := combinedConfigs.Scripts[x.HclID]
 			if !found {
 				combinedConfigs.Scripts[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedCommands {
-			obj, found := combinedConfigs.Commands[x.HclID]
+			_, found := combinedConfigs.Commands[x.HclID]
 			if !found {
 				combinedConfigs.Commands[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedDNSRecords {
-			obj, found := combinedConfigs.DNSRecords[x.HclID]
+			_, found := combinedConfigs.DNSRecords[x.HclID]
 			if !found {
 				combinedConfigs.DNSRecords[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedEnvironments {
-			obj, found := combinedConfigs.Environments[x.HclID]
+			_, found := combinedConfigs.Environments[x.HclID]
 			if !found {
 				combinedConfigs.Environments[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedFileDownload {
-			obj, found := combinedConfigs.FileDownload[x.HclID]
+			_, found := combinedConfigs.FileDownload[x.HclID]
 			if !found {
 				combinedConfigs.FileDownload[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 		for _, x := range element.DefinedFileDelete {
 			element.FileDelete[x.HclID] = x
@@ -346,13 +331,11 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 			element.FileExtract[x.HclID] = x
 		}
 		for _, x := range element.DefinedIdentities {
-			obj, found := combinedConfigs.Identities[x.HclID]
+			_, found := combinedConfigs.Identities[x.HclID]
 			if !found {
 				combinedConfigs.Identities[x.HclID] = x
 				continue
 			}
-			fmt.Println("Stored: ", obj)
-			fmt.Println("New: ", x)
 		}
 	}
 	return combinedConfigs, nil
@@ -385,7 +368,7 @@ func main() {
 func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment, loadedConfig *DefinedConfigs) ([]*ent.Environment, error) {
 	returnedEnvironment := []*ent.Environment{}
 	for _, cEnviroment := range configEnvs {
-		returnedCompetitions, err := createCompetitions(ctx, client, loadedConfig.Competitions, cEnviroment.HclID)
+		returnedCompetitions, returnedDNS, err := createCompetitions(ctx, client, loadedConfig.Competitions, cEnviroment.HclID)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
 			return nil, err
@@ -471,6 +454,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 					AddEnvironmentToHost(returnedHosts...).
 					AddEnvironmentToHostDependency(returnedHostDependencies...).
 					AddEnvironmentToIncludedNetwork(returnedIncludedNetworks...).
+					AddEnvironmentToDNS(returnedDNS...).
 					Save(ctx)
 				if err != nil {
 					log.Fatalf("failed creating user: %v", err)
@@ -509,6 +493,8 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			ClearEnvironmentToNetwork().
 			ClearEnvironmentToHostDependency().
 			ClearEnvironmentToIncludedNetwork().
+			ClearEnvironmentToDNS().
+			ClearEnvironmentToHost().
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
@@ -528,6 +514,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			AddEnvironmentToHost(returnedHosts...).
 			AddEnvironmentToHostDependency(returnedHostDependencies...).
 			AddEnvironmentToIncludedNetwork(returnedIncludedNetworks...).
+			AddEnvironmentToDNS(returnedDNS...).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
@@ -543,10 +530,15 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 	return returnedEnvironment, nil
 }
 
-func createCompetitions(ctx context.Context, client *ent.Client, configCompetitions map[string]*ent.Competition, envHclID string) ([]*ent.Competition, error) {
+func createCompetitions(ctx context.Context, client *ent.Client, configCompetitions map[string]*ent.Competition, envHclID string) ([]*ent.Competition, []*ent.DNS, error) {
 	bulk := []*ent.CompetitionCreate{}
 	returnedCompetitions := []*ent.Competition{}
+	returnedAllDNS := []*ent.DNS{}
 	for _, cCompetition := range configCompetitions {
+		returnedDNS, err := createDNS(ctx, client, cCompetition.HCLCompetitionToDNS, envHclID)
+		if err != nil {
+			return nil, nil, err
+		}
 		entCompetition, err := client.Competition.
 			Query().
 			Where(
@@ -561,7 +553,9 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 				createdQuery := client.Competition.Create().
 					SetConfig(cCompetition.Config).
 					SetHclID(cCompetition.HclID).
-					SetRootPassword(cCompetition.RootPassword)
+					SetRootPassword(cCompetition.RootPassword).
+					SetTags(cCompetition.Tags).
+					AddCompetitionToDNS(returnedDNS...)
 				bulk = append(bulk, createdQuery)
 				continue
 			}
@@ -570,22 +564,30 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 			SetConfig(cCompetition.Config).
 			SetHclID(cCompetition.HclID).
 			SetRootPassword(cCompetition.RootPassword).
+			SetTags(cCompetition.Tags).
+			ClearCompetitionToDNS().
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating competition: %v", err)
-			return nil, err
+			return nil, nil, err
 		}
+		_, err = entCompetition.Update().AddCompetitionToDNS(returnedDNS...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, nil, err
+		}
+		returnedAllDNS = append(returnedAllDNS, returnedDNS...)
 		returnedCompetitions = append(returnedCompetitions, entCompetition)
 	}
 	if len(bulk) > 0 {
 		dbCompetitions, err := client.Competition.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
-			return nil, err
+			return nil, nil, err
 		}
 		returnedCompetitions = append(returnedCompetitions, dbCompetitions...)
 	}
-	return returnedCompetitions, nil
+	return returnedCompetitions, returnedAllDNS, nil
 }
 func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string) ([]*ent.Host, []*ent.HostDependency, error) {
 	bulk := []*ent.HostCreate{}
@@ -756,6 +758,7 @@ func createScripts(ctx context.Context, client *ent.Client, configScript map[str
 					SetDisabled(cScript.Disabled).
 					SetVars(cScript.Vars).
 					SetTags(cScript.Tags).
+					SetAbsPath(cScript.AbsPath).
 					AddScriptToFinding(returnedFindings...)
 				bulk = append(bulk, createdQuery)
 				continue
@@ -775,6 +778,7 @@ func createScripts(ctx context.Context, client *ent.Client, configScript map[str
 			SetDisabled(cScript.Disabled).
 			SetVars(cScript.Vars).
 			SetTags(cScript.Tags).
+			SetAbsPath(cScript.AbsPath).
 			ClearScriptToFinding().
 			Save(ctx)
 		if err != nil {
@@ -1205,55 +1209,57 @@ func createHostDependencies(ctx context.Context, client *ent.Client, configHostD
 	}
 	return returnedHostDependencies, nil
 }
-
-// Need to validate After creating Included Networks
-func validateHostDependencies(ctx context.Context, client *ent.Client, uncheckedHostDependencies []*ent.HostDependency, envHclID string) ([]*ent.HostDependency, error) {
-	checkedHostDependencies := []*ent.HostDependency{}
-	for _, uncheckedHostDependency := range uncheckedHostDependencies {
-		entNetwork, err := client.Network.Query().Where(
-			network.And(
-				network.HclIDEQ(uncheckedHostDependency.NetworkID),
-				network.HasNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
-			),
-		).Only(ctx)
+func createDNS(ctx context.Context, client *ent.Client, configDNS []*ent.DNS, envHclID string) ([]*ent.DNS, error) {
+	bulk := []*ent.DNSCreate{}
+	returnedDNS := []*ent.DNS{}
+	for _, cDNS := range configDNS {
+		entDNS, err := client.DNS.
+			Query().
+			Where(
+				dns.And(
+					dns.HclIDEQ(cDNS.HclID),
+					dns.HasDNSToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
-			return nil, err
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.DNS.Create().
+					SetConfig(cDNS.Config).
+					SetDNSServers(cDNS.DNSServers).
+					SetHclID(cDNS.HclID).
+					SetNtpServers(cDNS.NtpServers).
+					SetRootDomain(cDNS.RootDomain).
+					SetType(cDNS.Type)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
 		}
-		entHost, err := client.Host.Query().Where(
-			host.And(
-				host.HasHostToEnvironmentWith(environment.HclIDEQ(envHclID)),
-				host.HclIDEQ(uncheckedHostDependency.HostID),
-			),
-		).Only(ctx)
-		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
-			return nil, err
-		}
-		_, err = client.IncludedNetwork.Query().Where(
-			includednetwork.And(
-				includednetwork.HasIncludedNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
-				includednetwork.HasIncludedNetworkToHostWith(host.HclIDEQ(uncheckedHostDependency.HostID)),
-				includednetwork.HasIncludedNetworkToNetworkWith(network.HclIDEQ(uncheckedHostDependency.NetworkID)),
-			),
-		).Only(ctx)
-		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
-			return nil, err
-		}
-		entHostDependency, err := uncheckedHostDependency.Update().
-			AddHostDependencyToDependOnHost(entHost).
-			AddHostDependencyToNetwork(entNetwork).
+		entDNS, err = entDNS.Update().
+			SetConfig(cDNS.Config).
+			SetDNSServers(cDNS.DNSServers).
+			SetHclID(cDNS.HclID).
+			SetNtpServers(cDNS.NtpServers).
+			SetRootDomain(cDNS.RootDomain).
+			SetType(cDNS.Type).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating fileextract: %v", err)
 			return nil, err
 		}
-		checkedHostDependencies = append(checkedHostDependencies, entHostDependency)
-
+		returnedDNS = append(returnedDNS, entDNS)
 	}
-	return checkedHostDependencies, nil
+	if len(bulk) > 0 {
+		dbDNS, err := client.DNS.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedDNS = append(returnedDNS, dbDNS...)
+	}
+	return returnedDNS, nil
 }
+
 func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk, hostHclID string) ([]*ent.Disk, error) {
 	bulk := []*ent.DiskCreate{}
 	returnedDisks := []*ent.Disk{}
@@ -1301,7 +1307,10 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 		entNetwork, err := client.Network.Query().Where(
 			network.And(
 				network.HclIDEQ(cIncludedNetwork.Name),
-				network.Not(network.HasNetworkToEnvironment()),
+				network.Or(
+					network.Not(network.HasNetworkToEnvironment()),
+					network.HasNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
 			),
 		).Only(ctx)
 		if err != nil {
@@ -1312,8 +1321,11 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 		for _, cHostHclID := range cIncludedNetwork.Hosts {
 			entHost, err := client.Host.Query().Where(
 				host.And(
-					host.Not(host.HasHostToEnvironment()),
 					host.HclIDEQ(cHostHclID),
+					host.Or(
+						host.Not(host.HasHostToEnvironment()),
+						host.HasHostToEnvironmentWith(environment.HclIDEQ(envHclID)),
+					),
 				),
 			).Only(ctx)
 			if err != nil {
@@ -1371,4 +1383,53 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 		returnedIncludedNetworks = append(returnedIncludedNetworks, dbIncludedNetwork...)
 	}
 	return returnedIncludedNetworks, nil
+}
+
+// Need to validate After creating Included Networks
+func validateHostDependencies(ctx context.Context, client *ent.Client, uncheckedHostDependencies []*ent.HostDependency, envHclID string) ([]*ent.HostDependency, error) {
+	checkedHostDependencies := []*ent.HostDependency{}
+	for _, uncheckedHostDependency := range uncheckedHostDependencies {
+		entNetwork, err := client.Network.Query().Where(
+			network.And(
+				network.HclIDEQ(uncheckedHostDependency.NetworkID),
+				network.HasNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entHost, err := client.Host.Query().Where(
+			host.And(
+				host.HasHostToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				host.HclIDEQ(uncheckedHostDependency.HostID),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		_, err = client.IncludedNetwork.Query().Where(
+			includednetwork.And(
+				includednetwork.HasIncludedNetworkToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				includednetwork.HasIncludedNetworkToHostWith(host.HclIDEQ(uncheckedHostDependency.HostID)),
+				includednetwork.HasIncludedNetworkToNetworkWith(network.HclIDEQ(uncheckedHostDependency.NetworkID)),
+			),
+		).Only(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		entHostDependency, err := uncheckedHostDependency.Update().
+			AddHostDependencyToDependOnHost(entHost).
+			AddHostDependencyToNetwork(entNetwork).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		checkedHostDependencies = append(checkedHostDependencies, entHostDependency)
+
+	}
+	return checkedHostDependencies, nil
 }

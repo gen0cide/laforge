@@ -361,7 +361,7 @@ func HasCompetitionToDNS() predicate.Competition {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CompetitionToDNSTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToDNSTable, CompetitionToDNSColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompetitionToDNSTable, CompetitionToDNSPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -373,7 +373,7 @@ func HasCompetitionToDNSWith(preds ...predicate.DNS) predicate.Competition {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CompetitionToDNSInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToDNSTable, CompetitionToDNSColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompetitionToDNSTable, CompetitionToDNSPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

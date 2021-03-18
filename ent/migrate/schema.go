@@ -101,22 +101,13 @@ var (
 		{Name: "dns_servers", Type: field.TypeJSON},
 		{Name: "ntp_servers", Type: field.TypeJSON},
 		{Name: "config", Type: field.TypeJSON},
-		{Name: "competition_competition_to_dns", Type: field.TypeInt, Nullable: true},
 	}
 	// DnSsTable holds the schema information for the "dn_ss" table.
 	DnSsTable = &schema.Table{
-		Name:       "dn_ss",
-		Columns:    DnSsColumns,
-		PrimaryKey: []*schema.Column{DnSsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "dn_ss_competitions_CompetitionToDNS",
-				Columns: []*schema.Column{DnSsColumns[7]},
-
-				RefColumns: []*schema.Column{CompetitionsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "dn_ss",
+		Columns:     DnSsColumns,
+		PrimaryKey:  []*schema.Column{DnSsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// DNSRecordsColumns holds the columns for the "dns_records" table.
 	DNSRecordsColumns = []*schema.Column{
@@ -825,6 +816,33 @@ var (
 			},
 		},
 	}
+	// CompetitionCompetitionToDNSColumns holds the columns for the "competition_CompetitionToDNS" table.
+	CompetitionCompetitionToDNSColumns = []*schema.Column{
+		{Name: "competition_id", Type: field.TypeInt},
+		{Name: "dns_id", Type: field.TypeInt},
+	}
+	// CompetitionCompetitionToDNSTable holds the schema information for the "competition_CompetitionToDNS" table.
+	CompetitionCompetitionToDNSTable = &schema.Table{
+		Name:       "competition_CompetitionToDNS",
+		Columns:    CompetitionCompetitionToDNSColumns,
+		PrimaryKey: []*schema.Column{CompetitionCompetitionToDNSColumns[0], CompetitionCompetitionToDNSColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "competition_CompetitionToDNS_competition_id",
+				Columns: []*schema.Column{CompetitionCompetitionToDNSColumns[0]},
+
+				RefColumns: []*schema.Column{CompetitionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "competition_CompetitionToDNS_dns_id",
+				Columns: []*schema.Column{CompetitionCompetitionToDNSColumns[1]},
+
+				RefColumns: []*schema.Column{DnSsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// EnvironmentEnvironmentToUserColumns holds the columns for the "environment_EnvironmentToUser" table.
 	EnvironmentEnvironmentToUserColumns = []*schema.Column{
 		{Name: "environment_id", Type: field.TypeInt},
@@ -1172,6 +1190,33 @@ var (
 				Columns: []*schema.Column{EnvironmentEnvironmentToDNSRecordColumns[1]},
 
 				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// EnvironmentEnvironmentToDNSColumns holds the columns for the "environment_EnvironmentToDNS" table.
+	EnvironmentEnvironmentToDNSColumns = []*schema.Column{
+		{Name: "environment_id", Type: field.TypeInt},
+		{Name: "dns_id", Type: field.TypeInt},
+	}
+	// EnvironmentEnvironmentToDNSTable holds the schema information for the "environment_EnvironmentToDNS" table.
+	EnvironmentEnvironmentToDNSTable = &schema.Table{
+		Name:       "environment_EnvironmentToDNS",
+		Columns:    EnvironmentEnvironmentToDNSColumns,
+		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToDNSColumns[0], EnvironmentEnvironmentToDNSColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "environment_EnvironmentToDNS_environment_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToDNSColumns[0]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "environment_EnvironmentToDNS_dns_id",
+				Columns: []*schema.Column{EnvironmentEnvironmentToDNSColumns[1]},
+
+				RefColumns: []*schema.Column{DnSsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1583,6 +1628,7 @@ var (
 		UsersTable,
 		AgentStatusAgentStatusToProvisionedHostTable,
 		BuildBuildToProvisionedNetworkTable,
+		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
 		EnvironmentEnvironmentToHostTable,
 		EnvironmentEnvironmentToCompetitionTable,
@@ -1596,6 +1642,7 @@ var (
 		EnvironmentEnvironmentToIncludedNetworkTable,
 		EnvironmentEnvironmentToFindingTable,
 		EnvironmentEnvironmentToDNSRecordTable,
+		EnvironmentEnvironmentToDNSTable,
 		EnvironmentEnvironmentToNetworkTable,
 		EnvironmentEnvironmentToHostDependencyTable,
 		HostHostToDiskTable,
@@ -1615,7 +1662,6 @@ var (
 
 func init() {
 	CommandsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	DnSsTable.ForeignKeys[0].RefTable = CompetitionsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	FileDeletesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	FileDownloadsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
@@ -1659,6 +1705,8 @@ func init() {
 	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	BuildBuildToProvisionedNetworkTable.ForeignKeys[0].RefTable = BuildsTable
 	BuildBuildToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
+	CompetitionCompetitionToDNSTable.ForeignKeys[0].RefTable = CompetitionsTable
+	CompetitionCompetitionToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[1].RefTable = UsersTable
 	EnvironmentEnvironmentToHostTable.ForeignKeys[0].RefTable = EnvironmentsTable
@@ -1685,6 +1733,8 @@ func init() {
 	EnvironmentEnvironmentToFindingTable.ForeignKeys[1].RefTable = FindingsTable
 	EnvironmentEnvironmentToDNSRecordTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToDNSRecordTable.ForeignKeys[1].RefTable = DNSRecordsTable
+	EnvironmentEnvironmentToDNSTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentEnvironmentToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToNetworkTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
 	EnvironmentEnvironmentToHostDependencyTable.ForeignKeys[0].RefTable = EnvironmentsTable

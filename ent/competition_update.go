@@ -319,10 +319,10 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.CompetitionToDNSCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -335,10 +335,10 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.RemovedCompetitionToDNSIDs(); len(nodes) > 0 && !cu.mutation.CompetitionToDNSCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -354,10 +354,10 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -738,10 +738,10 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 	}
 	if cuo.mutation.CompetitionToDNSCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -754,10 +754,10 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 	}
 	if nodes := cuo.mutation.RemovedCompetitionToDNSIDs(); len(nodes) > 0 && !cuo.mutation.CompetitionToDNSCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -773,10 +773,10 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 	}
 	if nodes := cuo.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   competition.CompetitionToDNSTable,
-			Columns: []string{competition.CompetitionToDNSColumn},
+			Columns: competition.CompetitionToDNSPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
