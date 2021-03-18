@@ -37,7 +37,7 @@ const (
 	// NetworkToTagColumn is the table column denoting the NetworkToTag relation/edge.
 	NetworkToTagColumn = "network_network_to_tag"
 	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge. The primary key declared below.
-	NetworkToEnvironmentTable = "network_NetworkToEnvironment"
+	NetworkToEnvironmentTable = "environment_EnvironmentToNetwork"
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	NetworkToEnvironmentInverseTable = "environments"
@@ -67,7 +67,7 @@ var ForeignKeys = []string{
 var (
 	// NetworkToEnvironmentPrimaryKey and NetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the NetworkToEnvironment relation (M2M).
-	NetworkToEnvironmentPrimaryKey = []string{"network_id", "environment_id"}
+	NetworkToEnvironmentPrimaryKey = []string{"environment_id", "network_id"}
 	// NetworkToHostDependencyPrimaryKey and NetworkToHostDependencyColumn2 are the table columns denoting the
 	// primary key for the NetworkToHostDependency relation (M2M).
 	NetworkToHostDependencyPrimaryKey = []string{"host_dependency_id", "network_id"}

@@ -12,6 +12,9 @@ import (
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
@@ -205,6 +208,51 @@ func (eu *EnvironmentUpdate) AddEnvironmentToIdentity(i ...*Identity) *Environme
 	return eu.AddEnvironmentToIdentityIDs(ids...)
 }
 
+// AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToFileDownloadIDs(ids...)
+	return eu
+}
+
+// AddEnvironmentToFileDownload adds the "EnvironmentToFileDownload" edges to the FileDownload entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.AddEnvironmentToFileDownloadIDs(ids...)
+}
+
+// AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToFileDeleteIDs(ids...)
+	return eu
+}
+
+// AddEnvironmentToFileDelete adds the "EnvironmentToFileDelete" edges to the FileDelete entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.AddEnvironmentToFileDeleteIDs(ids...)
+}
+
+// AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileExtractIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToFileExtractIDs(ids...)
+	return eu
+}
+
+// AddEnvironmentToFileExtract adds the "EnvironmentToFileExtract" edges to the FileExtract entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.AddEnvironmentToFileExtractIDs(ids...)
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (eu *EnvironmentUpdate) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdate {
 	eu.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
@@ -379,6 +427,69 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToIdentity(i ...*Identity) *Enviro
 		ids[j] = i[j].ID
 	}
 	return eu.RemoveEnvironmentToIdentityIDs(ids...)
+}
+
+// ClearEnvironmentToFileDownload clears all "EnvironmentToFileDownload" edges to the FileDownload entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToFileDownload() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToFileDownload()
+	return eu
+}
+
+// RemoveEnvironmentToFileDownloadIDs removes the "EnvironmentToFileDownload" edge to FileDownload entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToFileDownloadIDs(ids...)
+	return eu
+}
+
+// RemoveEnvironmentToFileDownload removes "EnvironmentToFileDownload" edges to FileDownload entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.RemoveEnvironmentToFileDownloadIDs(ids...)
+}
+
+// ClearEnvironmentToFileDelete clears all "EnvironmentToFileDelete" edges to the FileDelete entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToFileDelete() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToFileDelete()
+	return eu
+}
+
+// RemoveEnvironmentToFileDeleteIDs removes the "EnvironmentToFileDelete" edge to FileDelete entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToFileDeleteIDs(ids...)
+	return eu
+}
+
+// RemoveEnvironmentToFileDelete removes "EnvironmentToFileDelete" edges to FileDelete entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.RemoveEnvironmentToFileDeleteIDs(ids...)
+}
+
+// ClearEnvironmentToFileExtract clears all "EnvironmentToFileExtract" edges to the FileExtract entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToFileExtract() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToFileExtract()
+	return eu
+}
+
+// RemoveEnvironmentToFileExtractIDs removes the "EnvironmentToFileExtract" edge to FileExtract entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileExtractIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToFileExtractIDs(ids...)
+	return eu
+}
+
+// RemoveEnvironmentToFileExtract removes "EnvironmentToFileExtract" edges to FileExtract entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return eu.RemoveEnvironmentToFileExtractIDs(ids...)
 }
 
 // ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
@@ -928,10 +1039,172 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.EnvironmentToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedEnvironmentToFileDownloadIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.EnvironmentToFileDeleteCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedEnvironmentToFileDeleteIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileDeleteCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.EnvironmentToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedEnvironmentToFileExtractIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if eu.mutation.EnvironmentToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -947,7 +1220,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := eu.mutation.RemovedEnvironmentToIncludedNetworkIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -966,7 +1239,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := eu.mutation.EnvironmentToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -985,7 +1258,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if eu.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
@@ -1001,7 +1274,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := eu.mutation.RemovedEnvironmentToNetworkIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
@@ -1020,7 +1293,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := eu.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
@@ -1278,6 +1551,51 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToIdentity(i ...*Identity) *Envir
 	return euo.AddEnvironmentToIdentityIDs(ids...)
 }
 
+// AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToFileDownloadIDs(ids...)
+	return euo
+}
+
+// AddEnvironmentToFileDownload adds the "EnvironmentToFileDownload" edges to the FileDownload entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.AddEnvironmentToFileDownloadIDs(ids...)
+}
+
+// AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToFileDeleteIDs(ids...)
+	return euo
+}
+
+// AddEnvironmentToFileDelete adds the "EnvironmentToFileDelete" edges to the FileDelete entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.AddEnvironmentToFileDeleteIDs(ids...)
+}
+
+// AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileExtractIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToFileExtractIDs(ids...)
+	return euo
+}
+
+// AddEnvironmentToFileExtract adds the "EnvironmentToFileExtract" edges to the FileExtract entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.AddEnvironmentToFileExtractIDs(ids...)
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
 func (euo *EnvironmentUpdateOne) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentUpdateOne {
 	euo.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
@@ -1452,6 +1770,69 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToIdentity(i ...*Identity) *En
 		ids[j] = i[j].ID
 	}
 	return euo.RemoveEnvironmentToIdentityIDs(ids...)
+}
+
+// ClearEnvironmentToFileDownload clears all "EnvironmentToFileDownload" edges to the FileDownload entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToFileDownload() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToFileDownload()
+	return euo
+}
+
+// RemoveEnvironmentToFileDownloadIDs removes the "EnvironmentToFileDownload" edge to FileDownload entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToFileDownloadIDs(ids...)
+	return euo
+}
+
+// RemoveEnvironmentToFileDownload removes "EnvironmentToFileDownload" edges to FileDownload entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.RemoveEnvironmentToFileDownloadIDs(ids...)
+}
+
+// ClearEnvironmentToFileDelete clears all "EnvironmentToFileDelete" edges to the FileDelete entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToFileDelete() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToFileDelete()
+	return euo
+}
+
+// RemoveEnvironmentToFileDeleteIDs removes the "EnvironmentToFileDelete" edge to FileDelete entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToFileDeleteIDs(ids...)
+	return euo
+}
+
+// RemoveEnvironmentToFileDelete removes "EnvironmentToFileDelete" edges to FileDelete entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.RemoveEnvironmentToFileDeleteIDs(ids...)
+}
+
+// ClearEnvironmentToFileExtract clears all "EnvironmentToFileExtract" edges to the FileExtract entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToFileExtract() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToFileExtract()
+	return euo
+}
+
+// RemoveEnvironmentToFileExtractIDs removes the "EnvironmentToFileExtract" edge to FileExtract entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileExtractIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToFileExtractIDs(ids...)
+	return euo
+}
+
+// RemoveEnvironmentToFileExtract removes "EnvironmentToFileExtract" edges to FileExtract entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return euo.RemoveEnvironmentToFileExtractIDs(ids...)
 }
 
 // ClearEnvironmentToIncludedNetwork clears all "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
@@ -2006,10 +2387,172 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if euo.mutation.EnvironmentToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedEnvironmentToFileDownloadIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileDownloadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.EnvironmentToFileDeleteCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedEnvironmentToFileDeleteIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileDeleteCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.EnvironmentToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedEnvironmentToFileExtractIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileExtractCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if euo.mutation.EnvironmentToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -2025,7 +2568,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if nodes := euo.mutation.RemovedEnvironmentToIncludedNetworkIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -2044,7 +2587,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if nodes := euo.mutation.EnvironmentToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -2063,7 +2606,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if euo.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
@@ -2079,7 +2622,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if nodes := euo.mutation.RemovedEnvironmentToNetworkIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,
@@ -2098,7 +2641,7 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if nodes := euo.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -26,8 +27,9 @@ type FileDeleteQuery struct {
 	fields     []string
 	predicates []predicate.FileDelete
 	// eager-loading edges.
-	withFileDeleteToTag *TagQuery
-	withFKs             bool
+	withFileDeleteToTag         *TagQuery
+	withFileDeleteToEnvironment *EnvironmentQuery
+	withFKs                     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -72,6 +74,28 @@ func (fdq *FileDeleteQuery) QueryFileDeleteToTag() *TagQuery {
 			sqlgraph.From(filedelete.Table, filedelete.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.FileDeleteToTagTable, filedelete.FileDeleteToTagColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFileDeleteToEnvironment chains the current query on the "FileDeleteToEnvironment" edge.
+func (fdq *FileDeleteQuery) QueryFileDeleteToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: fdq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fdq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fdq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(filedelete.Table, filedelete.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, filedelete.FileDeleteToEnvironmentTable, filedelete.FileDeleteToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -255,12 +279,13 @@ func (fdq *FileDeleteQuery) Clone() *FileDeleteQuery {
 		return nil
 	}
 	return &FileDeleteQuery{
-		config:              fdq.config,
-		limit:               fdq.limit,
-		offset:              fdq.offset,
-		order:               append([]OrderFunc{}, fdq.order...),
-		predicates:          append([]predicate.FileDelete{}, fdq.predicates...),
-		withFileDeleteToTag: fdq.withFileDeleteToTag.Clone(),
+		config:                      fdq.config,
+		limit:                       fdq.limit,
+		offset:                      fdq.offset,
+		order:                       append([]OrderFunc{}, fdq.order...),
+		predicates:                  append([]predicate.FileDelete{}, fdq.predicates...),
+		withFileDeleteToTag:         fdq.withFileDeleteToTag.Clone(),
+		withFileDeleteToEnvironment: fdq.withFileDeleteToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
@@ -278,18 +303,29 @@ func (fdq *FileDeleteQuery) WithFileDeleteToTag(opts ...func(*TagQuery)) *FileDe
 	return fdq
 }
 
+// WithFileDeleteToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "FileDeleteToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (fdq *FileDeleteQuery) WithFileDeleteToEnvironment(opts ...func(*EnvironmentQuery)) *FileDeleteQuery {
+	query := &EnvironmentQuery{config: fdq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	fdq.withFileDeleteToEnvironment = query
+	return fdq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty" hcl:"path,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.FileDelete.Query().
-//		GroupBy(filedelete.FieldPath).
+//		GroupBy(filedelete.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -311,11 +347,11 @@ func (fdq *FileDeleteQuery) GroupBy(field string, fields ...string) *FileDeleteG
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty" hcl:"path,attr"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.FileDelete.Query().
-//		Select(filedelete.FieldPath).
+//		Select(filedelete.FieldHclID).
 //		Scan(ctx, &v)
 //
 func (fdq *FileDeleteQuery) Select(field string, fields ...string) *FileDeleteSelect {
@@ -344,8 +380,9 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 		nodes       = []*FileDelete{}
 		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			fdq.withFileDeleteToTag != nil,
+			fdq.withFileDeleteToEnvironment != nil,
 		}
 	)
 	if withFKs {
@@ -397,6 +434,70 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "file_delete_file_delete_to_tag" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.FileDeleteToTag = append(node.Edges.FileDeleteToTag, n)
+		}
+	}
+
+	if query := fdq.withFileDeleteToEnvironment; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*FileDelete, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.FileDeleteToEnvironment = []*Environment{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*FileDelete)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   filedelete.FileDeleteToEnvironmentTable,
+				Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(filedelete.FileDeleteToEnvironmentPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, fdq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "FileDeleteToEnvironment": %v`, err)
+		}
+		query.Where(environment.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "FileDeleteToEnvironment" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.FileDeleteToEnvironment = append(nodes[i].Edges.FileDeleteToEnvironment, n)
+			}
 		}
 	}
 

@@ -12,6 +12,9 @@ import (
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
@@ -182,6 +185,51 @@ func (ec *EnvironmentCreate) AddEnvironmentToIdentity(i ...*Identity) *Environme
 		ids[j] = i[j].ID
 	}
 	return ec.AddEnvironmentToIdentityIDs(ids...)
+}
+
+// AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToFileDownloadIDs(ids...)
+	return ec
+}
+
+// AddEnvironmentToFileDownload adds the "EnvironmentToFileDownload" edges to the FileDownload entity.
+func (ec *EnvironmentCreate) AddEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentCreate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return ec.AddEnvironmentToFileDownloadIDs(ids...)
+}
+
+// AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToFileDeleteIDs(ids...)
+	return ec
+}
+
+// AddEnvironmentToFileDelete adds the "EnvironmentToFileDelete" edges to the FileDelete entity.
+func (ec *EnvironmentCreate) AddEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentCreate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return ec.AddEnvironmentToFileDeleteIDs(ids...)
+}
+
+// AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToFileExtractIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToFileExtractIDs(ids...)
+	return ec
+}
+
+// AddEnvironmentToFileExtract adds the "EnvironmentToFileExtract" edges to the FileExtract entity.
+func (ec *EnvironmentCreate) AddEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentCreate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return ec.AddEnvironmentToFileExtractIDs(ids...)
 }
 
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
@@ -542,10 +590,67 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := ec.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDownloadTable,
+			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedownload.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileDeleteTable,
+			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: filedelete.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   environment.EnvironmentToFileExtractTable,
+			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ec.mutation.EnvironmentToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToIncludedNetworkTable,
 			Columns: environment.EnvironmentToIncludedNetworkPrimaryKey,
 			Bidi:    false,
@@ -564,7 +669,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	if nodes := ec.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
 			Columns: environment.EnvironmentToNetworkPrimaryKey,
 			Bidi:    false,

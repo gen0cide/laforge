@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -93,6 +94,21 @@ func (fdc *FileDownloadCreate) AddFileDownloadToTag(t ...*Tag) *FileDownloadCrea
 		ids[i] = t[i].ID
 	}
 	return fdc.AddFileDownloadToTagIDs(ids...)
+}
+
+// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
+func (fdc *FileDownloadCreate) AddFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadCreate {
+	fdc.mutation.AddFileDownloadToEnvironmentIDs(ids...)
+	return fdc
+}
+
+// AddFileDownloadToEnvironment adds the "FileDownloadToEnvironment" edges to the Environment entity.
+func (fdc *FileDownloadCreate) AddFileDownloadToEnvironment(e ...*Environment) *FileDownloadCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fdc.AddFileDownloadToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -294,6 +310,25 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fdc.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

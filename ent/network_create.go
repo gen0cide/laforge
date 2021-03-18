@@ -269,7 +269,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 	if nodes := nc.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,

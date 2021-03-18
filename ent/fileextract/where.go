@@ -91,6 +91,13 @@ func IDLTE(id int) predicate.FileExtract {
 	})
 }
 
+// HclID applies equality check predicate on the "hcl_id" field. It's identical to HclIDEQ.
+func HclID(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
 // Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
 func Source(v string) predicate.FileExtract {
 	return predicate.FileExtract(func(s *sql.Selector) {
@@ -109,6 +116,117 @@ func Destination(v string) predicate.FileExtract {
 func Type(v string) predicate.FileExtract {
 	return predicate.FileExtract(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldType), v))
+	})
+}
+
+// HclIDEQ applies the EQ predicate on the "hcl_id" field.
+func HclIDEQ(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDNEQ applies the NEQ predicate on the "hcl_id" field.
+func HclIDNEQ(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDIn applies the In predicate on the "hcl_id" field.
+func HclIDIn(vs ...string) predicate.FileExtract {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.FileExtract(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDNotIn applies the NotIn predicate on the "hcl_id" field.
+func HclIDNotIn(vs ...string) predicate.FileExtract {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.FileExtract(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDGT applies the GT predicate on the "hcl_id" field.
+func HclIDGT(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDGTE applies the GTE predicate on the "hcl_id" field.
+func HclIDGTE(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLT applies the LT predicate on the "hcl_id" field.
+func HclIDLT(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLTE applies the LTE predicate on the "hcl_id" field.
+func HclIDLTE(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContains applies the Contains predicate on the "hcl_id" field.
+func HclIDContains(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasPrefix applies the HasPrefix predicate on the "hcl_id" field.
+func HclIDHasPrefix(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasSuffix applies the HasSuffix predicate on the "hcl_id" field.
+func HclIDHasSuffix(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDEqualFold applies the EqualFold predicate on the "hcl_id" field.
+func HclIDEqualFold(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContainsFold applies the ContainsFold predicate on the "hcl_id" field.
+func HclIDContainsFold(v string) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHclID), v))
 	})
 }
 
@@ -464,6 +582,34 @@ func HasFileExtractToTagWith(preds ...predicate.Tag) predicate.FileExtract {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FileExtractToTagInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractToTagTable, FileExtractToTagColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasFileExtractToEnvironment applies the HasEdge predicate on the "FileExtractToEnvironment" edge.
+func HasFileExtractToEnvironment() predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(FileExtractToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFileExtractToEnvironmentWith applies the HasEdge predicate on the "FileExtractToEnvironment" edge with a given conditions (other predicates).
+func HasFileExtractToEnvironmentWith(preds ...predicate.Environment) predicate.FileExtract {
+	return predicate.FileExtract(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(FileExtractToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

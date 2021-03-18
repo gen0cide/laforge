@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -102,6 +103,21 @@ func (fdu *FileDownloadUpdate) AddFileDownloadToTag(t ...*Tag) *FileDownloadUpda
 	return fdu.AddFileDownloadToTagIDs(ids...)
 }
 
+// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
+func (fdu *FileDownloadUpdate) AddFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadUpdate {
+	fdu.mutation.AddFileDownloadToEnvironmentIDs(ids...)
+	return fdu
+}
+
+// AddFileDownloadToEnvironment adds the "FileDownloadToEnvironment" edges to the Environment entity.
+func (fdu *FileDownloadUpdate) AddFileDownloadToEnvironment(e ...*Environment) *FileDownloadUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fdu.AddFileDownloadToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the FileDownloadMutation object of the builder.
 func (fdu *FileDownloadUpdate) Mutation() *FileDownloadMutation {
 	return fdu.mutation
@@ -126,6 +142,27 @@ func (fdu *FileDownloadUpdate) RemoveFileDownloadToTag(t ...*Tag) *FileDownloadU
 		ids[i] = t[i].ID
 	}
 	return fdu.RemoveFileDownloadToTagIDs(ids...)
+}
+
+// ClearFileDownloadToEnvironment clears all "FileDownloadToEnvironment" edges to the Environment entity.
+func (fdu *FileDownloadUpdate) ClearFileDownloadToEnvironment() *FileDownloadUpdate {
+	fdu.mutation.ClearFileDownloadToEnvironment()
+	return fdu
+}
+
+// RemoveFileDownloadToEnvironmentIDs removes the "FileDownloadToEnvironment" edge to Environment entities by IDs.
+func (fdu *FileDownloadUpdate) RemoveFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadUpdate {
+	fdu.mutation.RemoveFileDownloadToEnvironmentIDs(ids...)
+	return fdu
+}
+
+// RemoveFileDownloadToEnvironment removes "FileDownloadToEnvironment" edges to Environment entities.
+func (fdu *FileDownloadUpdate) RemoveFileDownloadToEnvironment(e ...*Environment) *FileDownloadUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fdu.RemoveFileDownloadToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -321,6 +358,60 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if fdu.mutation.FileDownloadToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fdu.mutation.RemovedFileDownloadToEnvironmentIDs(); len(nodes) > 0 && !fdu.mutation.FileDownloadToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fdu.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, fdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedownload.Label}
@@ -414,6 +505,21 @@ func (fduo *FileDownloadUpdateOne) AddFileDownloadToTag(t ...*Tag) *FileDownload
 	return fduo.AddFileDownloadToTagIDs(ids...)
 }
 
+// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
+func (fduo *FileDownloadUpdateOne) AddFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadUpdateOne {
+	fduo.mutation.AddFileDownloadToEnvironmentIDs(ids...)
+	return fduo
+}
+
+// AddFileDownloadToEnvironment adds the "FileDownloadToEnvironment" edges to the Environment entity.
+func (fduo *FileDownloadUpdateOne) AddFileDownloadToEnvironment(e ...*Environment) *FileDownloadUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fduo.AddFileDownloadToEnvironmentIDs(ids...)
+}
+
 // Mutation returns the FileDownloadMutation object of the builder.
 func (fduo *FileDownloadUpdateOne) Mutation() *FileDownloadMutation {
 	return fduo.mutation
@@ -438,6 +544,27 @@ func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToTag(t ...*Tag) *FileDownl
 		ids[i] = t[i].ID
 	}
 	return fduo.RemoveFileDownloadToTagIDs(ids...)
+}
+
+// ClearFileDownloadToEnvironment clears all "FileDownloadToEnvironment" edges to the Environment entity.
+func (fduo *FileDownloadUpdateOne) ClearFileDownloadToEnvironment() *FileDownloadUpdateOne {
+	fduo.mutation.ClearFileDownloadToEnvironment()
+	return fduo
+}
+
+// RemoveFileDownloadToEnvironmentIDs removes the "FileDownloadToEnvironment" edge to Environment entities by IDs.
+func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadUpdateOne {
+	fduo.mutation.RemoveFileDownloadToEnvironmentIDs(ids...)
+	return fduo
+}
+
+// RemoveFileDownloadToEnvironment removes "FileDownloadToEnvironment" edges to Environment entities.
+func (fduo *FileDownloadUpdateOne) RemoveFileDownloadToEnvironment(e ...*Environment) *FileDownloadUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fduo.RemoveFileDownloadToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated FileDownload entity.
@@ -630,6 +757,60 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fduo.mutation.FileDownloadToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fduo.mutation.RemovedFileDownloadToEnvironmentIDs(); len(nodes) > 0 && !fduo.mutation.FileDownloadToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fduo.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

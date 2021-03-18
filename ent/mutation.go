@@ -6002,6 +6002,15 @@ type EnvironmentMutation struct {
 	_EnvironmentToIdentity               map[int]struct{}
 	removed_EnvironmentToIdentity        map[int]struct{}
 	cleared_EnvironmentToIdentity        bool
+	_EnvironmentToFileDownload           map[int]struct{}
+	removed_EnvironmentToFileDownload    map[int]struct{}
+	cleared_EnvironmentToFileDownload    bool
+	_EnvironmentToFileDelete             map[int]struct{}
+	removed_EnvironmentToFileDelete      map[int]struct{}
+	cleared_EnvironmentToFileDelete      bool
+	_EnvironmentToFileExtract            map[int]struct{}
+	removed_EnvironmentToFileExtract     map[int]struct{}
+	cleared_EnvironmentToFileExtract     bool
 	_EnvironmentToIncludedNetwork        map[int]struct{}
 	removed_EnvironmentToIncludedNetwork map[int]struct{}
 	cleared_EnvironmentToIncludedNetwork bool
@@ -6849,6 +6858,165 @@ func (m *EnvironmentMutation) ResetEnvironmentToIdentity() {
 	m.removed_EnvironmentToIdentity = nil
 }
 
+// AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToFileDownloadIDs(ids ...int) {
+	if m._EnvironmentToFileDownload == nil {
+		m._EnvironmentToFileDownload = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._EnvironmentToFileDownload[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEnvironmentToFileDownload clears the "EnvironmentToFileDownload" edge to the FileDownload entity.
+func (m *EnvironmentMutation) ClearEnvironmentToFileDownload() {
+	m.cleared_EnvironmentToFileDownload = true
+}
+
+// EnvironmentToFileDownloadCleared returns if the "EnvironmentToFileDownload" edge to the FileDownload entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToFileDownloadCleared() bool {
+	return m.cleared_EnvironmentToFileDownload
+}
+
+// RemoveEnvironmentToFileDownloadIDs removes the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToFileDownloadIDs(ids ...int) {
+	if m.removed_EnvironmentToFileDownload == nil {
+		m.removed_EnvironmentToFileDownload = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToFileDownload[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToFileDownload returns the removed IDs of the "EnvironmentToFileDownload" edge to the FileDownload entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToFileDownloadIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToFileDownload {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EnvironmentToFileDownloadIDs returns the "EnvironmentToFileDownload" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToFileDownloadIDs() (ids []int) {
+	for id := range m._EnvironmentToFileDownload {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEnvironmentToFileDownload resets all changes to the "EnvironmentToFileDownload" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToFileDownload() {
+	m._EnvironmentToFileDownload = nil
+	m.cleared_EnvironmentToFileDownload = false
+	m.removed_EnvironmentToFileDownload = nil
+}
+
+// AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToFileDeleteIDs(ids ...int) {
+	if m._EnvironmentToFileDelete == nil {
+		m._EnvironmentToFileDelete = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._EnvironmentToFileDelete[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEnvironmentToFileDelete clears the "EnvironmentToFileDelete" edge to the FileDelete entity.
+func (m *EnvironmentMutation) ClearEnvironmentToFileDelete() {
+	m.cleared_EnvironmentToFileDelete = true
+}
+
+// EnvironmentToFileDeleteCleared returns if the "EnvironmentToFileDelete" edge to the FileDelete entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToFileDeleteCleared() bool {
+	return m.cleared_EnvironmentToFileDelete
+}
+
+// RemoveEnvironmentToFileDeleteIDs removes the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToFileDeleteIDs(ids ...int) {
+	if m.removed_EnvironmentToFileDelete == nil {
+		m.removed_EnvironmentToFileDelete = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToFileDelete[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToFileDelete returns the removed IDs of the "EnvironmentToFileDelete" edge to the FileDelete entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToFileDeleteIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToFileDelete {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EnvironmentToFileDeleteIDs returns the "EnvironmentToFileDelete" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToFileDeleteIDs() (ids []int) {
+	for id := range m._EnvironmentToFileDelete {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEnvironmentToFileDelete resets all changes to the "EnvironmentToFileDelete" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToFileDelete() {
+	m._EnvironmentToFileDelete = nil
+	m.cleared_EnvironmentToFileDelete = false
+	m.removed_EnvironmentToFileDelete = nil
+}
+
+// AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToFileExtractIDs(ids ...int) {
+	if m._EnvironmentToFileExtract == nil {
+		m._EnvironmentToFileExtract = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._EnvironmentToFileExtract[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEnvironmentToFileExtract clears the "EnvironmentToFileExtract" edge to the FileExtract entity.
+func (m *EnvironmentMutation) ClearEnvironmentToFileExtract() {
+	m.cleared_EnvironmentToFileExtract = true
+}
+
+// EnvironmentToFileExtractCleared returns if the "EnvironmentToFileExtract" edge to the FileExtract entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToFileExtractCleared() bool {
+	return m.cleared_EnvironmentToFileExtract
+}
+
+// RemoveEnvironmentToFileExtractIDs removes the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToFileExtractIDs(ids ...int) {
+	if m.removed_EnvironmentToFileExtract == nil {
+		m.removed_EnvironmentToFileExtract = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToFileExtract[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToFileExtract returns the removed IDs of the "EnvironmentToFileExtract" edge to the FileExtract entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToFileExtractIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToFileExtract {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EnvironmentToFileExtractIDs returns the "EnvironmentToFileExtract" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToFileExtractIDs() (ids []int) {
+	for id := range m._EnvironmentToFileExtract {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEnvironmentToFileExtract resets all changes to the "EnvironmentToFileExtract" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToFileExtract() {
+	m._EnvironmentToFileExtract = nil
+	m.cleared_EnvironmentToFileExtract = false
+	m.removed_EnvironmentToFileExtract = nil
+}
+
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by ids.
 func (m *EnvironmentMutation) AddEnvironmentToIncludedNetworkIDs(ids ...int) {
 	if m._EnvironmentToIncludedNetwork == nil {
@@ -7318,7 +7486,7 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 12)
 	if m._EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7336,6 +7504,15 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 	}
 	if m._EnvironmentToIdentity != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
+	}
+	if m._EnvironmentToFileDownload != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileDownload)
+	}
+	if m._EnvironmentToFileDelete != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileDelete)
+	}
+	if m._EnvironmentToFileExtract != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileExtract)
 	}
 	if m._EnvironmentToIncludedNetwork != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7389,6 +7566,24 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToFileDownload:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToFileDownload))
+		for id := range m._EnvironmentToFileDownload {
+			ids = append(ids, id)
+		}
+		return ids
+	case environment.EdgeEnvironmentToFileDelete:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToFileDelete))
+		for id := range m._EnvironmentToFileDelete {
+			ids = append(ids, id)
+		}
+		return ids
+	case environment.EdgeEnvironmentToFileExtract:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToFileExtract))
+		for id := range m._EnvironmentToFileExtract {
+			ids = append(ids, id)
+		}
+		return ids
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		ids := make([]ent.Value, 0, len(m._EnvironmentToIncludedNetwork))
 		for id := range m._EnvironmentToIncludedNetwork {
@@ -7413,7 +7608,7 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 12)
 	if m.removed_EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7431,6 +7626,15 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 	}
 	if m.removed_EnvironmentToIdentity != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
+	}
+	if m.removed_EnvironmentToFileDownload != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileDownload)
+	}
+	if m.removed_EnvironmentToFileDelete != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileDelete)
+	}
+	if m.removed_EnvironmentToFileExtract != nil {
+		edges = append(edges, environment.EdgeEnvironmentToFileExtract)
 	}
 	if m.removed_EnvironmentToIncludedNetwork != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7484,6 +7688,24 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToFileDownload:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToFileDownload))
+		for id := range m.removed_EnvironmentToFileDownload {
+			ids = append(ids, id)
+		}
+		return ids
+	case environment.EdgeEnvironmentToFileDelete:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToFileDelete))
+		for id := range m.removed_EnvironmentToFileDelete {
+			ids = append(ids, id)
+		}
+		return ids
+	case environment.EdgeEnvironmentToFileExtract:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToFileExtract))
+		for id := range m.removed_EnvironmentToFileExtract {
+			ids = append(ids, id)
+		}
+		return ids
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToIncludedNetwork))
 		for id := range m.removed_EnvironmentToIncludedNetwork {
@@ -7508,7 +7730,7 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 12)
 	if m.cleared_EnvironmentToTag {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -7526,6 +7748,15 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 	}
 	if m.cleared_EnvironmentToIdentity {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
+	}
+	if m.cleared_EnvironmentToFileDownload {
+		edges = append(edges, environment.EdgeEnvironmentToFileDownload)
+	}
+	if m.cleared_EnvironmentToFileDelete {
+		edges = append(edges, environment.EdgeEnvironmentToFileDelete)
+	}
+	if m.cleared_EnvironmentToFileExtract {
+		edges = append(edges, environment.EdgeEnvironmentToFileExtract)
 	}
 	if m.cleared_EnvironmentToIncludedNetwork {
 		edges = append(edges, environment.EdgeEnvironmentToIncludedNetwork)
@@ -7555,6 +7786,12 @@ func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 		return m.cleared_EnvironmentToBuild
 	case environment.EdgeEnvironmentToIdentity:
 		return m.cleared_EnvironmentToIdentity
+	case environment.EdgeEnvironmentToFileDownload:
+		return m.cleared_EnvironmentToFileDownload
+	case environment.EdgeEnvironmentToFileDelete:
+		return m.cleared_EnvironmentToFileDelete
+	case environment.EdgeEnvironmentToFileExtract:
+		return m.cleared_EnvironmentToFileExtract
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		return m.cleared_EnvironmentToIncludedNetwork
 	case environment.EdgeEnvironmentToNetwork:
@@ -7595,6 +7832,15 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 	case environment.EdgeEnvironmentToIdentity:
 		m.ResetEnvironmentToIdentity()
 		return nil
+	case environment.EdgeEnvironmentToFileDownload:
+		m.ResetEnvironmentToFileDownload()
+		return nil
+	case environment.EdgeEnvironmentToFileDelete:
+		m.ResetEnvironmentToFileDelete()
+		return nil
+	case environment.EdgeEnvironmentToFileExtract:
+		m.ResetEnvironmentToFileExtract()
+		return nil
 	case environment.EdgeEnvironmentToIncludedNetwork:
 		m.ResetEnvironmentToIncludedNetwork()
 		return nil
@@ -7611,18 +7857,22 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 // FileDeleteMutation represents an operation that mutates the FileDelete nodes in the graph.
 type FileDeleteMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	_path                   *string
-	tags                    *map[string]string
-	clearedFields           map[string]struct{}
-	_FileDeleteToTag        map[int]struct{}
-	removed_FileDeleteToTag map[int]struct{}
-	cleared_FileDeleteToTag bool
-	done                    bool
-	oldValue                func(context.Context) (*FileDelete, error)
-	predicates              []predicate.FileDelete
+	op                              Op
+	typ                             string
+	id                              *int
+	hcl_id                          *string
+	_path                           *string
+	tags                            *map[string]string
+	clearedFields                   map[string]struct{}
+	_FileDeleteToTag                map[int]struct{}
+	removed_FileDeleteToTag         map[int]struct{}
+	cleared_FileDeleteToTag         bool
+	_FileDeleteToEnvironment        map[int]struct{}
+	removed_FileDeleteToEnvironment map[int]struct{}
+	cleared_FileDeleteToEnvironment bool
+	done                            bool
+	oldValue                        func(context.Context) (*FileDelete, error)
+	predicates                      []predicate.FileDelete
 }
 
 var _ ent.Mutation = (*FileDeleteMutation)(nil)
@@ -7702,6 +7952,42 @@ func (m *FileDeleteMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *FileDeleteMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *FileDeleteMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the FileDelete entity.
+// If the FileDelete object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FileDeleteMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *FileDeleteMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetPath sets the "path" field.
@@ -7829,6 +8115,59 @@ func (m *FileDeleteMutation) ResetFileDeleteToTag() {
 	m.removed_FileDeleteToTag = nil
 }
 
+// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by ids.
+func (m *FileDeleteMutation) AddFileDeleteToEnvironmentIDs(ids ...int) {
+	if m._FileDeleteToEnvironment == nil {
+		m._FileDeleteToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._FileDeleteToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFileDeleteToEnvironment clears the "FileDeleteToEnvironment" edge to the Environment entity.
+func (m *FileDeleteMutation) ClearFileDeleteToEnvironment() {
+	m.cleared_FileDeleteToEnvironment = true
+}
+
+// FileDeleteToEnvironmentCleared returns if the "FileDeleteToEnvironment" edge to the Environment entity was cleared.
+func (m *FileDeleteMutation) FileDeleteToEnvironmentCleared() bool {
+	return m.cleared_FileDeleteToEnvironment
+}
+
+// RemoveFileDeleteToEnvironmentIDs removes the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
+func (m *FileDeleteMutation) RemoveFileDeleteToEnvironmentIDs(ids ...int) {
+	if m.removed_FileDeleteToEnvironment == nil {
+		m.removed_FileDeleteToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_FileDeleteToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFileDeleteToEnvironment returns the removed IDs of the "FileDeleteToEnvironment" edge to the Environment entity.
+func (m *FileDeleteMutation) RemovedFileDeleteToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_FileDeleteToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FileDeleteToEnvironmentIDs returns the "FileDeleteToEnvironment" edge IDs in the mutation.
+func (m *FileDeleteMutation) FileDeleteToEnvironmentIDs() (ids []int) {
+	for id := range m._FileDeleteToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFileDeleteToEnvironment resets all changes to the "FileDeleteToEnvironment" edge.
+func (m *FileDeleteMutation) ResetFileDeleteToEnvironment() {
+	m._FileDeleteToEnvironment = nil
+	m.cleared_FileDeleteToEnvironment = false
+	m.removed_FileDeleteToEnvironment = nil
+}
+
 // Op returns the operation name.
 func (m *FileDeleteMutation) Op() Op {
 	return m.op
@@ -7843,7 +8182,10 @@ func (m *FileDeleteMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FileDeleteMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.hcl_id != nil {
+		fields = append(fields, filedelete.FieldHclID)
+	}
 	if m._path != nil {
 		fields = append(fields, filedelete.FieldPath)
 	}
@@ -7858,6 +8200,8 @@ func (m *FileDeleteMutation) Fields() []string {
 // schema.
 func (m *FileDeleteMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case filedelete.FieldHclID:
+		return m.HclID()
 	case filedelete.FieldPath:
 		return m.Path()
 	case filedelete.FieldTags:
@@ -7871,6 +8215,8 @@ func (m *FileDeleteMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *FileDeleteMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case filedelete.FieldHclID:
+		return m.OldHclID(ctx)
 	case filedelete.FieldPath:
 		return m.OldPath(ctx)
 	case filedelete.FieldTags:
@@ -7884,6 +8230,13 @@ func (m *FileDeleteMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *FileDeleteMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case filedelete.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case filedelete.FieldPath:
 		v, ok := value.(string)
 		if !ok {
@@ -7947,6 +8300,9 @@ func (m *FileDeleteMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *FileDeleteMutation) ResetField(name string) error {
 	switch name {
+	case filedelete.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case filedelete.FieldPath:
 		m.ResetPath()
 		return nil
@@ -7959,9 +8315,12 @@ func (m *FileDeleteMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileDeleteMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m._FileDeleteToTag != nil {
 		edges = append(edges, filedelete.EdgeFileDeleteToTag)
+	}
+	if m._FileDeleteToEnvironment != nil {
+		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
 	}
 	return edges
 }
@@ -7976,15 +8335,24 @@ func (m *FileDeleteMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case filedelete.EdgeFileDeleteToEnvironment:
+		ids := make([]ent.Value, 0, len(m._FileDeleteToEnvironment))
+		for id := range m._FileDeleteToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileDeleteMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removed_FileDeleteToTag != nil {
 		edges = append(edges, filedelete.EdgeFileDeleteToTag)
+	}
+	if m.removed_FileDeleteToEnvironment != nil {
+		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
 	}
 	return edges
 }
@@ -7999,15 +8367,24 @@ func (m *FileDeleteMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case filedelete.EdgeFileDeleteToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_FileDeleteToEnvironment))
+		for id := range m.removed_FileDeleteToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileDeleteMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleared_FileDeleteToTag {
 		edges = append(edges, filedelete.EdgeFileDeleteToTag)
+	}
+	if m.cleared_FileDeleteToEnvironment {
+		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
 	}
 	return edges
 }
@@ -8018,6 +8395,8 @@ func (m *FileDeleteMutation) EdgeCleared(name string) bool {
 	switch name {
 	case filedelete.EdgeFileDeleteToTag:
 		return m.cleared_FileDeleteToTag
+	case filedelete.EdgeFileDeleteToEnvironment:
+		return m.cleared_FileDeleteToEnvironment
 	}
 	return false
 }
@@ -8037,6 +8416,9 @@ func (m *FileDeleteMutation) ResetEdge(name string) error {
 	case filedelete.EdgeFileDeleteToTag:
 		m.ResetFileDeleteToTag()
 		return nil
+	case filedelete.EdgeFileDeleteToEnvironment:
+		m.ResetFileDeleteToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown FileDelete edge %s", name)
 }
@@ -8044,26 +8426,29 @@ func (m *FileDeleteMutation) ResetEdge(name string) error {
 // FileDownloadMutation represents an operation that mutates the FileDownload nodes in the graph.
 type FileDownloadMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *int
-	hcl_id                    *string
-	source_type               *string
-	source                    *string
-	destination               *string
-	template                  *bool
-	perms                     *string
-	disabled                  *bool
-	md5                       *string
-	abs_path                  *string
-	tags                      *map[string]string
-	clearedFields             map[string]struct{}
-	_FileDownloadToTag        map[int]struct{}
-	removed_FileDownloadToTag map[int]struct{}
-	cleared_FileDownloadToTag bool
-	done                      bool
-	oldValue                  func(context.Context) (*FileDownload, error)
-	predicates                []predicate.FileDownload
+	op                                Op
+	typ                               string
+	id                                *int
+	hcl_id                            *string
+	source_type                       *string
+	source                            *string
+	destination                       *string
+	template                          *bool
+	perms                             *string
+	disabled                          *bool
+	md5                               *string
+	abs_path                          *string
+	tags                              *map[string]string
+	clearedFields                     map[string]struct{}
+	_FileDownloadToTag                map[int]struct{}
+	removed_FileDownloadToTag         map[int]struct{}
+	cleared_FileDownloadToTag         bool
+	_FileDownloadToEnvironment        map[int]struct{}
+	removed_FileDownloadToEnvironment map[int]struct{}
+	cleared_FileDownloadToEnvironment bool
+	done                              bool
+	oldValue                          func(context.Context) (*FileDownload, error)
+	predicates                        []predicate.FileDownload
 }
 
 var _ ent.Mutation = (*FileDownloadMutation)(nil)
@@ -8558,6 +8943,59 @@ func (m *FileDownloadMutation) ResetFileDownloadToTag() {
 	m.removed_FileDownloadToTag = nil
 }
 
+// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by ids.
+func (m *FileDownloadMutation) AddFileDownloadToEnvironmentIDs(ids ...int) {
+	if m._FileDownloadToEnvironment == nil {
+		m._FileDownloadToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._FileDownloadToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFileDownloadToEnvironment clears the "FileDownloadToEnvironment" edge to the Environment entity.
+func (m *FileDownloadMutation) ClearFileDownloadToEnvironment() {
+	m.cleared_FileDownloadToEnvironment = true
+}
+
+// FileDownloadToEnvironmentCleared returns if the "FileDownloadToEnvironment" edge to the Environment entity was cleared.
+func (m *FileDownloadMutation) FileDownloadToEnvironmentCleared() bool {
+	return m.cleared_FileDownloadToEnvironment
+}
+
+// RemoveFileDownloadToEnvironmentIDs removes the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
+func (m *FileDownloadMutation) RemoveFileDownloadToEnvironmentIDs(ids ...int) {
+	if m.removed_FileDownloadToEnvironment == nil {
+		m.removed_FileDownloadToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_FileDownloadToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFileDownloadToEnvironment returns the removed IDs of the "FileDownloadToEnvironment" edge to the Environment entity.
+func (m *FileDownloadMutation) RemovedFileDownloadToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_FileDownloadToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FileDownloadToEnvironmentIDs returns the "FileDownloadToEnvironment" edge IDs in the mutation.
+func (m *FileDownloadMutation) FileDownloadToEnvironmentIDs() (ids []int) {
+	for id := range m._FileDownloadToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFileDownloadToEnvironment resets all changes to the "FileDownloadToEnvironment" edge.
+func (m *FileDownloadMutation) ResetFileDownloadToEnvironment() {
+	m._FileDownloadToEnvironment = nil
+	m.cleared_FileDownloadToEnvironment = false
+	m.removed_FileDownloadToEnvironment = nil
+}
+
 // Op returns the operation name.
 func (m *FileDownloadMutation) Op() Op {
 	return m.op
@@ -8824,9 +9262,12 @@ func (m *FileDownloadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileDownloadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m._FileDownloadToTag != nil {
 		edges = append(edges, filedownload.EdgeFileDownloadToTag)
+	}
+	if m._FileDownloadToEnvironment != nil {
+		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
 	}
 	return edges
 }
@@ -8841,15 +9282,24 @@ func (m *FileDownloadMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case filedownload.EdgeFileDownloadToEnvironment:
+		ids := make([]ent.Value, 0, len(m._FileDownloadToEnvironment))
+		for id := range m._FileDownloadToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileDownloadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removed_FileDownloadToTag != nil {
 		edges = append(edges, filedownload.EdgeFileDownloadToTag)
+	}
+	if m.removed_FileDownloadToEnvironment != nil {
+		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
 	}
 	return edges
 }
@@ -8864,15 +9314,24 @@ func (m *FileDownloadMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case filedownload.EdgeFileDownloadToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_FileDownloadToEnvironment))
+		for id := range m.removed_FileDownloadToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileDownloadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleared_FileDownloadToTag {
 		edges = append(edges, filedownload.EdgeFileDownloadToTag)
+	}
+	if m.cleared_FileDownloadToEnvironment {
+		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
 	}
 	return edges
 }
@@ -8883,6 +9342,8 @@ func (m *FileDownloadMutation) EdgeCleared(name string) bool {
 	switch name {
 	case filedownload.EdgeFileDownloadToTag:
 		return m.cleared_FileDownloadToTag
+	case filedownload.EdgeFileDownloadToEnvironment:
+		return m.cleared_FileDownloadToEnvironment
 	}
 	return false
 }
@@ -8902,6 +9363,9 @@ func (m *FileDownloadMutation) ResetEdge(name string) error {
 	case filedownload.EdgeFileDownloadToTag:
 		m.ResetFileDownloadToTag()
 		return nil
+	case filedownload.EdgeFileDownloadToEnvironment:
+		m.ResetFileDownloadToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown FileDownload edge %s", name)
 }
@@ -8909,20 +9373,24 @@ func (m *FileDownloadMutation) ResetEdge(name string) error {
 // FileExtractMutation represents an operation that mutates the FileExtract nodes in the graph.
 type FileExtractMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *int
-	source                   *string
-	destination              *string
-	_type                    *string
-	tags                     *map[string]string
-	clearedFields            map[string]struct{}
-	_FileExtractToTag        map[int]struct{}
-	removed_FileExtractToTag map[int]struct{}
-	cleared_FileExtractToTag bool
-	done                     bool
-	oldValue                 func(context.Context) (*FileExtract, error)
-	predicates               []predicate.FileExtract
+	op                               Op
+	typ                              string
+	id                               *int
+	hcl_id                           *string
+	source                           *string
+	destination                      *string
+	_type                            *string
+	tags                             *map[string]string
+	clearedFields                    map[string]struct{}
+	_FileExtractToTag                map[int]struct{}
+	removed_FileExtractToTag         map[int]struct{}
+	cleared_FileExtractToTag         bool
+	_FileExtractToEnvironment        map[int]struct{}
+	removed_FileExtractToEnvironment map[int]struct{}
+	cleared_FileExtractToEnvironment bool
+	done                             bool
+	oldValue                         func(context.Context) (*FileExtract, error)
+	predicates                       []predicate.FileExtract
 }
 
 var _ ent.Mutation = (*FileExtractMutation)(nil)
@@ -9002,6 +9470,42 @@ func (m *FileExtractMutation) ID() (id int, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetHclID sets the "hcl_id" field.
+func (m *FileExtractMutation) SetHclID(s string) {
+	m.hcl_id = &s
+}
+
+// HclID returns the value of the "hcl_id" field in the mutation.
+func (m *FileExtractMutation) HclID() (r string, exists bool) {
+	v := m.hcl_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHclID returns the old "hcl_id" field's value of the FileExtract entity.
+// If the FileExtract object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FileExtractMutation) OldHclID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHclID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHclID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHclID: %w", err)
+	}
+	return oldValue.HclID, nil
+}
+
+// ResetHclID resets all changes to the "hcl_id" field.
+func (m *FileExtractMutation) ResetHclID() {
+	m.hcl_id = nil
 }
 
 // SetSource sets the "source" field.
@@ -9201,6 +9705,59 @@ func (m *FileExtractMutation) ResetFileExtractToTag() {
 	m.removed_FileExtractToTag = nil
 }
 
+// AddFileExtractToEnvironmentIDs adds the "FileExtractToEnvironment" edge to the Environment entity by ids.
+func (m *FileExtractMutation) AddFileExtractToEnvironmentIDs(ids ...int) {
+	if m._FileExtractToEnvironment == nil {
+		m._FileExtractToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._FileExtractToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFileExtractToEnvironment clears the "FileExtractToEnvironment" edge to the Environment entity.
+func (m *FileExtractMutation) ClearFileExtractToEnvironment() {
+	m.cleared_FileExtractToEnvironment = true
+}
+
+// FileExtractToEnvironmentCleared returns if the "FileExtractToEnvironment" edge to the Environment entity was cleared.
+func (m *FileExtractMutation) FileExtractToEnvironmentCleared() bool {
+	return m.cleared_FileExtractToEnvironment
+}
+
+// RemoveFileExtractToEnvironmentIDs removes the "FileExtractToEnvironment" edge to the Environment entity by IDs.
+func (m *FileExtractMutation) RemoveFileExtractToEnvironmentIDs(ids ...int) {
+	if m.removed_FileExtractToEnvironment == nil {
+		m.removed_FileExtractToEnvironment = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_FileExtractToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFileExtractToEnvironment returns the removed IDs of the "FileExtractToEnvironment" edge to the Environment entity.
+func (m *FileExtractMutation) RemovedFileExtractToEnvironmentIDs() (ids []int) {
+	for id := range m.removed_FileExtractToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FileExtractToEnvironmentIDs returns the "FileExtractToEnvironment" edge IDs in the mutation.
+func (m *FileExtractMutation) FileExtractToEnvironmentIDs() (ids []int) {
+	for id := range m._FileExtractToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFileExtractToEnvironment resets all changes to the "FileExtractToEnvironment" edge.
+func (m *FileExtractMutation) ResetFileExtractToEnvironment() {
+	m._FileExtractToEnvironment = nil
+	m.cleared_FileExtractToEnvironment = false
+	m.removed_FileExtractToEnvironment = nil
+}
+
 // Op returns the operation name.
 func (m *FileExtractMutation) Op() Op {
 	return m.op
@@ -9215,7 +9772,10 @@ func (m *FileExtractMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FileExtractMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
+	if m.hcl_id != nil {
+		fields = append(fields, fileextract.FieldHclID)
+	}
 	if m.source != nil {
 		fields = append(fields, fileextract.FieldSource)
 	}
@@ -9236,6 +9796,8 @@ func (m *FileExtractMutation) Fields() []string {
 // schema.
 func (m *FileExtractMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case fileextract.FieldHclID:
+		return m.HclID()
 	case fileextract.FieldSource:
 		return m.Source()
 	case fileextract.FieldDestination:
@@ -9253,6 +9815,8 @@ func (m *FileExtractMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *FileExtractMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case fileextract.FieldHclID:
+		return m.OldHclID(ctx)
 	case fileextract.FieldSource:
 		return m.OldSource(ctx)
 	case fileextract.FieldDestination:
@@ -9270,6 +9834,13 @@ func (m *FileExtractMutation) OldField(ctx context.Context, name string) (ent.Va
 // type.
 func (m *FileExtractMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case fileextract.FieldHclID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHclID(v)
+		return nil
 	case fileextract.FieldSource:
 		v, ok := value.(string)
 		if !ok {
@@ -9347,6 +9918,9 @@ func (m *FileExtractMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *FileExtractMutation) ResetField(name string) error {
 	switch name {
+	case fileextract.FieldHclID:
+		m.ResetHclID()
+		return nil
 	case fileextract.FieldSource:
 		m.ResetSource()
 		return nil
@@ -9365,9 +9939,12 @@ func (m *FileExtractMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileExtractMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m._FileExtractToTag != nil {
 		edges = append(edges, fileextract.EdgeFileExtractToTag)
+	}
+	if m._FileExtractToEnvironment != nil {
+		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
 	}
 	return edges
 }
@@ -9382,15 +9959,24 @@ func (m *FileExtractMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case fileextract.EdgeFileExtractToEnvironment:
+		ids := make([]ent.Value, 0, len(m._FileExtractToEnvironment))
+		for id := range m._FileExtractToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileExtractMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removed_FileExtractToTag != nil {
 		edges = append(edges, fileextract.EdgeFileExtractToTag)
+	}
+	if m.removed_FileExtractToEnvironment != nil {
+		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
 	}
 	return edges
 }
@@ -9405,15 +9991,24 @@ func (m *FileExtractMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case fileextract.EdgeFileExtractToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_FileExtractToEnvironment))
+		for id := range m.removed_FileExtractToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileExtractMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleared_FileExtractToTag {
 		edges = append(edges, fileextract.EdgeFileExtractToTag)
+	}
+	if m.cleared_FileExtractToEnvironment {
+		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
 	}
 	return edges
 }
@@ -9424,6 +10019,8 @@ func (m *FileExtractMutation) EdgeCleared(name string) bool {
 	switch name {
 	case fileextract.EdgeFileExtractToTag:
 		return m.cleared_FileExtractToTag
+	case fileextract.EdgeFileExtractToEnvironment:
+		return m.cleared_FileExtractToEnvironment
 	}
 	return false
 }
@@ -9442,6 +10039,9 @@ func (m *FileExtractMutation) ResetEdge(name string) error {
 	switch name {
 	case fileextract.EdgeFileExtractToTag:
 		m.ResetFileExtractToTag()
+		return nil
+	case fileextract.EdgeFileExtractToEnvironment:
+		m.ResetFileExtractToEnvironment()
 		return nil
 	}
 	return fmt.Errorf("unknown FileExtract edge %s", name)

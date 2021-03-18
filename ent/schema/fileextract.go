@@ -14,6 +14,8 @@ type FileExtract struct {
 // Fields of the FileExtract.
 func (FileExtract) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("source").
 			StructTag(`hcl:"source,attr"`),
 		field.String("destination").
@@ -29,5 +31,6 @@ func (FileExtract) Fields() []ent.Field {
 func (FileExtract) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("FileExtractToTag", Tag.Type),
+		edge.From("FileExtractToEnvironment", Environment.Type).Ref("EnvironmentToFileExtract"),
 	}
 }

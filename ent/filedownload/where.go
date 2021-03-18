@@ -987,6 +987,34 @@ func HasFileDownloadToTagWith(preds ...predicate.Tag) predicate.FileDownload {
 	})
 }
 
+// HasFileDownloadToEnvironment applies the HasEdge predicate on the "FileDownloadToEnvironment" edge.
+func HasFileDownloadToEnvironment() predicate.FileDownload {
+	return predicate.FileDownload(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(FileDownloadToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FileDownloadToEnvironmentTable, FileDownloadToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFileDownloadToEnvironmentWith applies the HasEdge predicate on the "FileDownloadToEnvironment" edge with a given conditions (other predicates).
+func HasFileDownloadToEnvironmentWith(preds ...predicate.Environment) predicate.FileDownload {
+	return predicate.FileDownload(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(FileDownloadToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FileDownloadToEnvironmentTable, FileDownloadToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.FileDownload) predicate.FileDownload {
 	return predicate.FileDownload(func(s *sql.Selector) {

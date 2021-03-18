@@ -27,7 +27,7 @@ const (
 	// IncludedNetworkToTagColumn is the table column denoting the IncludedNetworkToTag relation/edge.
 	IncludedNetworkToTagColumn = "included_network_included_network_to_tag"
 	// IncludedNetworkToEnvironmentTable is the table the holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
-	IncludedNetworkToEnvironmentTable = "included_network_IncludedNetworkToEnvironment"
+	IncludedNetworkToEnvironmentTable = "environment_EnvironmentToIncludedNetwork"
 	// IncludedNetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	IncludedNetworkToEnvironmentInverseTable = "environments"
@@ -43,7 +43,7 @@ var Columns = []string{
 var (
 	// IncludedNetworkToEnvironmentPrimaryKey and IncludedNetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the IncludedNetworkToEnvironment relation (M2M).
-	IncludedNetworkToEnvironmentPrimaryKey = []string{"included_network_id", "environment_id"}
+	IncludedNetworkToEnvironmentPrimaryKey = []string{"environment_id", "included_network_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

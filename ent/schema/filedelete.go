@@ -14,6 +14,8 @@ type FileDelete struct {
 // Fields of the FileDelete.
 func (FileDelete) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("hcl_id").
+			StructTag(`hcl:"id,label"`),
 		field.String("path").
 			StructTag(`hcl:"path,attr"`),
 		field.JSON("tags", map[string]string{}).
@@ -25,5 +27,6 @@ func (FileDelete) Fields() []ent.Field {
 func (FileDelete) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("FileDeleteToTag", Tag.Type),
+		edge.From("FileDeleteToEnvironment", Environment.Type).Ref("EnvironmentToFileDelete"),
 	}
 }

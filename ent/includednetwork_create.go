@@ -185,7 +185,7 @@ func (inc *IncludedNetworkCreate) createSpec() (*IncludedNetwork, *sqlgraph.Crea
 	if nodes := inc.mutation.IncludedNetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,

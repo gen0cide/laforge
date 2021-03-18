@@ -59,9 +59,12 @@ func (Environment) Edges() []ent.Edge {
 		edge.To("EnvironmentToCompetition", Competition.Type),
 		edge.To("EnvironmentToBuild", Build.Type),
 		edge.To("EnvironmentToIdentity", Identity.Type),
-		edge.From("EnvironmentToIncludedNetwork", IncludedNetwork.Type).Ref("IncludedNetworkToEnvironment").
+		edge.To("EnvironmentToFileDownload", FileDownload.Type),
+		edge.To("EnvironmentToFileDelete", FileDelete.Type),
+		edge.To("EnvironmentToFileExtract", FileExtract.Type),
+		edge.To("EnvironmentToIncludedNetwork", IncludedNetwork.Type).
 			StructTag(`hcl:"included_network,block"`),
-		edge.From("EnvironmentToNetwork", Network.Type).Ref("NetworkToEnvironment"),
+		edge.To("EnvironmentToNetwork", Network.Type),
 		edge.From("EnvironmentToTeam", Team.Type).Ref("TeamToEnvironment"),
 	}
 }

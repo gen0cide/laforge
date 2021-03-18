@@ -670,7 +670,7 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		ID:     e.ID,
 		Type:   "Environment",
 		Fields: make([]*Field, 11),
-		Edges:  make([]*Edge, 9),
+		Edges:  make([]*Edge, 12),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(e.HclID); err != nil {
@@ -822,30 +822,60 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
-		Type: "IncludedNetwork",
-		Name: "EnvironmentToIncludedNetwork",
+		Type: "FileDownload",
+		Name: "EnvironmentToFileDownload",
 	}
-	node.Edges[6].IDs, err = e.QueryEnvironmentToIncludedNetwork().
-		Select(includednetwork.FieldID).
+	node.Edges[6].IDs, err = e.QueryEnvironmentToFileDownload().
+		Select(filedownload.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[7] = &Edge{
-		Type: "Network",
-		Name: "EnvironmentToNetwork",
+		Type: "FileDelete",
+		Name: "EnvironmentToFileDelete",
 	}
-	node.Edges[7].IDs, err = e.QueryEnvironmentToNetwork().
-		Select(network.FieldID).
+	node.Edges[7].IDs, err = e.QueryEnvironmentToFileDelete().
+		Select(filedelete.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[8] = &Edge{
+		Type: "FileExtract",
+		Name: "EnvironmentToFileExtract",
+	}
+	node.Edges[8].IDs, err = e.QueryEnvironmentToFileExtract().
+		Select(fileextract.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[9] = &Edge{
+		Type: "IncludedNetwork",
+		Name: "EnvironmentToIncludedNetwork",
+	}
+	node.Edges[9].IDs, err = e.QueryEnvironmentToIncludedNetwork().
+		Select(includednetwork.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[10] = &Edge{
+		Type: "Network",
+		Name: "EnvironmentToNetwork",
+	}
+	node.Edges[10].IDs, err = e.QueryEnvironmentToNetwork().
+		Select(network.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[11] = &Edge{
 		Type: "Team",
 		Name: "EnvironmentToTeam",
 	}
-	node.Edges[8].IDs, err = e.QueryEnvironmentToTeam().
+	node.Edges[11].IDs, err = e.QueryEnvironmentToTeam().
 		Select(team.FieldID).
 		Ints(ctx)
 	if err != nil {
@@ -858,14 +888,22 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fd.ID,
 		Type:   "FileDelete",
-		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 1),
+		Fields: make([]*Field, 3),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(fd.Path); err != nil {
+	if buf, err = json.Marshal(fd.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(fd.Path); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "path",
 		Value: string(buf),
@@ -873,7 +911,7 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fd.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -888,6 +926,16 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[1] = &Edge{
+		Type: "Environment",
+		Name: "FileDeleteToEnvironment",
+	}
+	node.Edges[1].IDs, err = fd.QueryFileDeleteToEnvironment().
+		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -896,7 +944,7 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 		ID:     fd.ID,
 		Type:   "FileDownload",
 		Fields: make([]*Field, 10),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(fd.HclID); err != nil {
@@ -989,6 +1037,16 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[1] = &Edge{
+		Type: "Environment",
+		Name: "FileDownloadToEnvironment",
+	}
+	node.Edges[1].IDs, err = fd.QueryFileDownloadToEnvironment().
+		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -996,14 +1054,22 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     fe.ID,
 		Type:   "FileExtract",
-		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 1),
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(fe.Source); err != nil {
+	if buf, err = json.Marshal(fe.HclID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "hcl_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(fe.Source); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
 		Type:  "string",
 		Name:  "source",
 		Value: string(buf),
@@ -1011,7 +1077,7 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fe.Destination); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "destination",
 		Value: string(buf),
@@ -1019,7 +1085,7 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fe.Type); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "type",
 		Value: string(buf),
@@ -1027,7 +1093,7 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(fe.Tags); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "map[string]string",
 		Name:  "tags",
 		Value: string(buf),
@@ -1038,6 +1104,16 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[0].IDs, err = fe.QueryFileExtractToTag().
 		Select(tag.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Environment",
+		Name: "FileExtractToEnvironment",
+	}
+	node.Edges[1].IDs, err = fe.QueryFileExtractToEnvironment().
+		Select(environment.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err

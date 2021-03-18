@@ -257,7 +257,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 	if inu.mutation.IncludedNetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -273,7 +273,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 	if nodes := inu.mutation.RemovedIncludedNetworkToEnvironmentIDs(); len(nodes) > 0 && !inu.mutation.IncludedNetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -292,7 +292,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 	if nodes := inu.mutation.IncludedNetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -560,7 +560,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 	if inuo.mutation.IncludedNetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -576,7 +576,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 	if nodes := inuo.mutation.RemovedIncludedNetworkToEnvironmentIDs(); len(nodes) > 0 && !inuo.mutation.IncludedNetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -595,7 +595,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 	if nodes := inuo.mutation.IncludedNetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   includednetwork.IncludedNetworkToEnvironmentTable,
 			Columns: includednetwork.IncludedNetworkToEnvironmentPrimaryKey,
 			Bidi:    false,

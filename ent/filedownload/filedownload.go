@@ -30,6 +30,8 @@ const (
 
 	// EdgeFileDownloadToTag holds the string denoting the filedownloadtotag edge name in mutations.
 	EdgeFileDownloadToTag = "FileDownloadToTag"
+	// EdgeFileDownloadToEnvironment holds the string denoting the filedownloadtoenvironment edge name in mutations.
+	EdgeFileDownloadToEnvironment = "FileDownloadToEnvironment"
 
 	// Table holds the table name of the filedownload in the database.
 	Table = "file_downloads"
@@ -40,6 +42,11 @@ const (
 	FileDownloadToTagInverseTable = "tags"
 	// FileDownloadToTagColumn is the table column denoting the FileDownloadToTag relation/edge.
 	FileDownloadToTagColumn = "file_download_file_download_to_tag"
+	// FileDownloadToEnvironmentTable is the table the holds the FileDownloadToEnvironment relation/edge. The primary key declared below.
+	FileDownloadToEnvironmentTable = "environment_EnvironmentToFileDownload"
+	// FileDownloadToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	FileDownloadToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for filedownload fields.
@@ -61,6 +68,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioning_step_provisioning_step_to_file_download",
 }
+
+var (
+	// FileDownloadToEnvironmentPrimaryKey and FileDownloadToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the FileDownloadToEnvironment relation (M2M).
+	FileDownloadToEnvironmentPrimaryKey = []string{"environment_id", "file_download_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

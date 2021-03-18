@@ -43,6 +43,8 @@ type FileDownload struct {
 	// Edges put into the main struct to be loaded via hcl
 	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
 	HCLFileDownloadToTag []*Tag `json:"FileDownloadToTag,omitempty"`
+	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
+	HCLFileDownloadToEnvironment []*Environment `json:"FileDownloadToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_file_download *int
 }
@@ -51,9 +53,11 @@ type FileDownload struct {
 type FileDownloadEdges struct {
 	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
 	FileDownloadToTag []*Tag `json:"FileDownloadToTag,omitempty"`
+	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
+	FileDownloadToEnvironment []*Environment `json:"FileDownloadToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // FileDownloadToTagOrErr returns the FileDownloadToTag value or an error if the edge
@@ -63,6 +67,15 @@ func (e FileDownloadEdges) FileDownloadToTagOrErr() ([]*Tag, error) {
 		return e.FileDownloadToTag, nil
 	}
 	return nil, &NotLoadedError{edge: "FileDownloadToTag"}
+}
+
+// FileDownloadToEnvironmentOrErr returns the FileDownloadToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e FileDownloadEdges) FileDownloadToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.FileDownloadToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "FileDownloadToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -179,6 +192,11 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 // QueryFileDownloadToTag queries the "FileDownloadToTag" edge of the FileDownload entity.
 func (fd *FileDownload) QueryFileDownloadToTag() *TagQuery {
 	return (&FileDownloadClient{config: fd.config}).QueryFileDownloadToTag(fd)
+}
+
+// QueryFileDownloadToEnvironment queries the "FileDownloadToEnvironment" edge of the FileDownload entity.
+func (fd *FileDownload) QueryFileDownloadToEnvironment() *EnvironmentQuery {
+	return (&FileDownloadClient{config: fd.config}).QueryFileDownloadToEnvironment(fd)
 }
 
 // Update returns a builder for updating this FileDownload.

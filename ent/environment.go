@@ -55,6 +55,12 @@ type Environment struct {
 	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
 	HCLEnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
+	// EnvironmentToFileDownload holds the value of the EnvironmentToFileDownload edge.
+	HCLEnvironmentToFileDownload []*FileDownload `json:"EnvironmentToFileDownload,omitempty"`
+	// EnvironmentToFileDelete holds the value of the EnvironmentToFileDelete edge.
+	HCLEnvironmentToFileDelete []*FileDelete `json:"EnvironmentToFileDelete,omitempty"`
+	// EnvironmentToFileExtract holds the value of the EnvironmentToFileExtract edge.
+	HCLEnvironmentToFileExtract []*FileExtract `json:"EnvironmentToFileExtract,omitempty"`
 	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
 	HCLEnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
@@ -79,6 +85,12 @@ type EnvironmentEdges struct {
 	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
 	EnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
+	// EnvironmentToFileDownload holds the value of the EnvironmentToFileDownload edge.
+	EnvironmentToFileDownload []*FileDownload `json:"EnvironmentToFileDownload,omitempty"`
+	// EnvironmentToFileDelete holds the value of the EnvironmentToFileDelete edge.
+	EnvironmentToFileDelete []*FileDelete `json:"EnvironmentToFileDelete,omitempty"`
+	// EnvironmentToFileExtract holds the value of the EnvironmentToFileExtract edge.
+	EnvironmentToFileExtract []*FileExtract `json:"EnvironmentToFileExtract,omitempty"`
 	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
 	EnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
 	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
@@ -87,7 +99,7 @@ type EnvironmentEdges struct {
 	EnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [12]bool
 }
 
 // EnvironmentToTagOrErr returns the EnvironmentToTag value or an error if the edge
@@ -144,10 +156,37 @@ func (e EnvironmentEdges) EnvironmentToIdentityOrErr() ([]*Identity, error) {
 	return nil, &NotLoadedError{edge: "EnvironmentToIdentity"}
 }
 
+// EnvironmentToFileDownloadOrErr returns the EnvironmentToFileDownload value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToFileDownloadOrErr() ([]*FileDownload, error) {
+	if e.loadedTypes[6] {
+		return e.EnvironmentToFileDownload, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileDownload"}
+}
+
+// EnvironmentToFileDeleteOrErr returns the EnvironmentToFileDelete value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToFileDeleteOrErr() ([]*FileDelete, error) {
+	if e.loadedTypes[7] {
+		return e.EnvironmentToFileDelete, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileDelete"}
+}
+
+// EnvironmentToFileExtractOrErr returns the EnvironmentToFileExtract value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToFileExtractOrErr() ([]*FileExtract, error) {
+	if e.loadedTypes[8] {
+		return e.EnvironmentToFileExtract, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileExtract"}
+}
+
 // EnvironmentToIncludedNetworkOrErr returns the EnvironmentToIncludedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[9] {
 		return e.EnvironmentToIncludedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToIncludedNetwork"}
@@ -156,7 +195,7 @@ func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwor
 // EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[10] {
 		return e.EnvironmentToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
@@ -165,7 +204,7 @@ func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
 // EnvironmentToTeamOrErr returns the EnvironmentToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[11] {
 		return e.EnvironmentToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToTeam"}
@@ -314,6 +353,21 @@ func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
 // QueryEnvironmentToIdentity queries the "EnvironmentToIdentity" edge of the Environment entity.
 func (e *Environment) QueryEnvironmentToIdentity() *IdentityQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIdentity(e)
+}
+
+// QueryEnvironmentToFileDownload queries the "EnvironmentToFileDownload" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileDownload() *FileDownloadQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileDownload(e)
+}
+
+// QueryEnvironmentToFileDelete queries the "EnvironmentToFileDelete" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileDelete() *FileDeleteQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileDelete(e)
+}
+
+// QueryEnvironmentToFileExtract queries the "EnvironmentToFileExtract" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileExtract() *FileExtractQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileExtract(e)
 }
 
 // QueryEnvironmentToIncludedNetwork queries the "EnvironmentToIncludedNetwork" edge of the Environment entity.

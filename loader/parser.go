@@ -9,7 +9,12 @@ import (
 	"strings"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/user"
 	"github.com/gen0cide/laforge/loader/include"
 	hcl2 "github.com/hashicorp/hcl/v2"
@@ -33,22 +38,30 @@ type fileGlobResolver struct {
 // DefinedConfigs is the stuct to hold in all the loading for hcl
 type DefinedConfigs struct {
 	Filename            string
-	BaseDir             string              `hcl:"base_dir,optional" json:"base_dir,omitempty"`
-	User                *ent.User           `hcl:"user,block" json:"user,omitempty"`
-	IncludePaths        []*Include          `hcl:"include,block" json:"include_paths,omitempty"`
-	DefinedCompetitions []*ent.Competition  `hcl:"competition,block" json:"competitions,omitempty"`
-	DefinedHosts        []*ent.Host         `hcl:"host,block" json:"hosts,omitempty"`
-	DefinedNetworks     []*ent.Network      `hcl:"network,block" json:"networks,omitempty"`
-	DefinedScripts      []*ent.Script       `hcl:"script,block" json:"scripts,omitempty"`
-	DefinedCommands     []*ent.Command      `hcl:"command,block" json:"defined_commands,omitempty"`
-	DefinedDNSRecords   []*ent.DNSRecord    `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
-	DefinedEnvironments []*ent.Environment  `hcl:"environment,block" json:"environments,omitempty"`
-	DefinedFileDownload []*ent.FileDownload `hcl:"file_download,block" json:"file_download,omitempty"`
-	DefinedFileDelete   []*ent.FileDownload `hcl:"file_delete,block" json:"file_delete,omitempty"`
-	DefinedFileExtract  []*ent.FileDownload `hcl:"file_extract,block" json:"file_extract,omitempty"`
-	DefinedBuilds       []*ent.Build        `hcl:"build,block" json:"builds,omitempty"`
-	DefinedTeams        []*ent.Team         `hcl:"team,block" json:"teams,omitempty"`
-	DefinedIdentities   []*ent.Identity     `hcl:"identity,block" json:"identities,omitempty"`
+	BaseDir             string                       `hcl:"base_dir,optional" json:"base_dir,omitempty"`
+	IncludePaths        []*Include                   `hcl:"include,block" json:"include_paths,omitempty"`
+	DefinedCompetitions []*ent.Competition           `hcl:"competition,block" json:"competitions,omitempty"`
+	DefinedHosts        []*ent.Host                  `hcl:"host,block" json:"hosts,omitempty"`
+	DefinedNetworks     []*ent.Network               `hcl:"network,block" json:"networks,omitempty"`
+	DefinedScripts      []*ent.Script                `hcl:"script,block" json:"scripts,omitempty"`
+	DefinedCommands     []*ent.Command               `hcl:"command,block" json:"defined_commands,omitempty"`
+	DefinedDNSRecords   []*ent.DNSRecord             `hcl:"dns_record,block" json:"defined_dns_records,omitempty"`
+	DefinedEnvironments []*ent.Environment           `hcl:"environment,block" json:"environments,omitempty"`
+	DefinedFileDownload []*ent.FileDownload          `hcl:"file_download,block" json:"file_download,omitempty"`
+	DefinedFileDelete   []*ent.FileDelete            `hcl:"file_delete,block" json:"file_delete,omitempty"`
+	DefinedFileExtract  []*ent.FileExtract           `hcl:"file_extract,block" json:"file_extract,omitempty"`
+	DefinedIdentities   []*ent.Identity              `hcl:"identity,block" json:"identities,omitempty"`
+	Competitions        map[string]*ent.Competition  `json:"-"`
+	Hosts               map[string]*ent.Host         `json:"-"`
+	Networks            map[string]*ent.Network      `json:"-"`
+	Scripts             map[string]*ent.Script       `json:"-"`
+	Commands            map[string]*ent.Command      `json:"-"`
+	DNSRecords          map[string]*ent.DNSRecord    `json:"-"`
+	Environments        map[string]*ent.Environment  `json:"-"`
+	FileDownload        map[string]*ent.FileDownload `json:"-"`
+	FileDelete          map[string]*ent.FileDelete   `json:"-"`
+	FileExtract         map[string]*ent.FileExtract  `json:"-"`
+	Identities          map[string]*ent.Identity     `json:"-"`
 }
 
 // Loader defines the Laforge configuration loader object
@@ -204,7 +217,7 @@ func (l *Loader) Bind() (*DefinedConfigs, error) {
 		}
 		currLen = newLen
 	}
-	return l.ConfigMap[filenames[0]], nil
+	return l.merger(filenames)
 }
 
 // NewLoader returns a default Loader type
@@ -214,6 +227,127 @@ func NewLoader() *Loader {
 		ConfigMap:  map[string]*DefinedConfigs{},
 		SourceFile: "",
 	}
+}
+
+func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
+	combinedConfigs := &DefinedConfigs{
+		Filename:     l.SourceFile,
+		Competitions: map[string]*ent.Competition{},
+		Hosts:        map[string]*ent.Host{},
+		Networks:     map[string]*ent.Network{},
+		Scripts:      map[string]*ent.Script{},
+		Commands:     map[string]*ent.Command{},
+		DNSRecords:   map[string]*ent.DNSRecord{},
+		Environments: map[string]*ent.Environment{},
+		FileDownload: map[string]*ent.FileDownload{},
+		FileDelete:   map[string]*ent.FileDelete{},
+		FileExtract:  map[string]*ent.FileExtract{},
+		Identities:   map[string]*ent.Identity{},
+	}
+	for _, filename := range filenames {
+		element := l.ConfigMap[filename]
+		for _, x := range element.DefinedCompetitions {
+			obj, found := combinedConfigs.Competitions[x.HclID]
+			if !found {
+				combinedConfigs.Competitions[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+			if x.RootPassword != "" {
+				obj.RootPassword = x.RootPassword
+			}
+			if x.Config != nil {
+				obj.Config = x.Config
+			}
+			if x.Tags != nil {
+				obj.Tags = x.Tags
+			}
+			if x.HCLCompetitionToDNS != nil {
+				obj.HCLCompetitionToDNS = x.HCLCompetitionToDNS
+			}
+			combinedConfigs.Competitions[x.HclID] = obj
+		}
+		for _, x := range element.DefinedHosts {
+			obj, found := combinedConfigs.Hosts[x.HclID]
+			if !found {
+				combinedConfigs.Hosts[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedNetworks {
+			obj, found := combinedConfigs.Networks[x.HclID]
+			if !found {
+				combinedConfigs.Networks[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedScripts {
+			obj, found := combinedConfigs.Scripts[x.HclID]
+			if !found {
+				combinedConfigs.Scripts[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedCommands {
+			obj, found := combinedConfigs.Commands[x.HclID]
+			if !found {
+				combinedConfigs.Commands[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedDNSRecords {
+			obj, found := combinedConfigs.DNSRecords[x.HclID]
+			if !found {
+				combinedConfigs.DNSRecords[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedEnvironments {
+			obj, found := combinedConfigs.Environments[x.HclID]
+			if !found {
+				combinedConfigs.Environments[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedFileDownload {
+			obj, found := combinedConfigs.FileDownload[x.HclID]
+			if !found {
+				combinedConfigs.FileDownload[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+		for _, x := range element.DefinedFileDelete {
+			element.FileDelete[x.HclID] = x
+		}
+		for _, x := range element.DefinedFileExtract {
+			element.FileExtract[x.HclID] = x
+		}
+		for _, x := range element.DefinedIdentities {
+			obj, found := combinedConfigs.Identities[x.HclID]
+			if !found {
+				combinedConfigs.Identities[x.HclID] = x
+				continue
+			}
+			fmt.Println("Stored: ", obj)
+			fmt.Println("New: ", x)
+		}
+	}
+	return combinedConfigs, nil
 }
 
 func main() {
@@ -230,66 +364,56 @@ func main() {
 	}
 
 	tloader := NewLoader()
-	test := gohcl2.EncodeAsBlock(&ent.Environment{}, "enviroment")
-	fmt.Println(test)
 	tloader.ParseConfigFile("/home/red/Documents/infra/envs/fred/env.laforge")
-	tloader.Bind()
-	for _, element := range tloader.ConfigMap {
-		envs, _ := createEnviroments(ctx, client, element.DefinedEnvironments)
-		user, _ := envs[0].QueryEnvironmentToUser().Only(ctx)
-		backenv := user.QueryUserToEnvironment().OnlyX(ctx) // Will Fail with multiple users connected to the Env
-		log.Println(envs[0])
-		log.Println(backenv)
-	}
-	fmt.Println(tloader)
+	loadedConfig, err := tloader.Bind()
+	identities, _ := createIdentities(ctx, client, loadedConfig.Identities, "/envs/fred12")
+
+	// envs, _ := createEnviroments(ctx, client, loadedConfig.Environments)
+	// user, _ := envs[0].QueryEnvironmentToUser().Only(ctx)
+	// backenv := user.QueryUserToEnvironment().OnlyX(ctx) // Will Fail with multiple users connected to the Env
+	// log.Println(envs[0])
+	// log.Println(backenv)
+	fmt.Println(identities)
 }
 
-func createEnviroments(ctx context.Context, client *ent.Client, configEnvs []*ent.Environment) ([]*ent.Environment, error) {
+func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment) ([]*ent.Environment, error) {
 	bulk := []*ent.EnvironmentCreate{}
 	returnedEnvironment := []*ent.Environment{}
-	client.Environment.Create()
-	for _, env := range configEnvs {
-		users, err := createUsers(ctx, client, env.HCLEnvironmentToUser, env.HclID)
-		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
-			return nil, err
-		}
+	for _, cEnviroment := range configEnvs {
 		entEnv, err := client.Environment.
 			Query().
-			Where(environment.HclIDEQ(env.HclID)).
+			Where(environment.HclIDEQ(cEnviroment.HclID)).
 			Only(ctx)
 		if err != nil {
 			if err == err.(*ent.NotFoundError) {
 				createdQuery := client.Environment.Create().
-					SetHclID(env.HclID).
-					SetAdminCidrs(env.AdminCidrs).
-					SetBuilder(env.Builder).
-					SetCompetitionID(env.CompetitionID).
-					SetConfig(env.Config).
-					SetDescription(env.Description).
-					SetExposedVdiPorts(env.ExposedVdiPorts).
-					SetName(env.Name).
-					SetRevision(env.Revision).
-					SetTags(env.Tags).
-					SetTeamCount(env.TeamCount).
-					AddEnvironmentToUser(users...)
+					SetHclID(cEnviroment.HclID).
+					SetAdminCidrs(cEnviroment.AdminCidrs).
+					SetBuilder(cEnviroment.Builder).
+					SetCompetitionID(cEnviroment.CompetitionID).
+					SetConfig(cEnviroment.Config).
+					SetDescription(cEnviroment.Description).
+					SetExposedVdiPorts(cEnviroment.ExposedVdiPorts).
+					SetName(cEnviroment.Name).
+					SetRevision(cEnviroment.Revision).
+					SetTags(cEnviroment.Tags).
+					SetTeamCount(cEnviroment.TeamCount)
 				bulk = append(bulk, createdQuery)
 				continue
 			}
 		}
 		updatedEnv, err := entEnv.Update().
-			SetHclID(env.HclID).
-			SetAdminCidrs(env.AdminCidrs).
-			SetBuilder(env.Builder).
-			SetCompetitionID(env.CompetitionID).
-			SetConfig(env.Config).
-			SetDescription(env.Description).
-			SetExposedVdiPorts(env.ExposedVdiPorts).
-			SetName(env.Name).
-			SetRevision(env.Revision).
-			SetTags(env.Tags).
-			SetTeamCount(env.TeamCount).
-			AddEnvironmentToUser(users...).
+			SetHclID(cEnviroment.HclID).
+			SetAdminCidrs(cEnviroment.AdminCidrs).
+			SetBuilder(cEnviroment.Builder).
+			SetCompetitionID(cEnviroment.CompetitionID).
+			SetConfig(cEnviroment.Config).
+			SetDescription(cEnviroment.Description).
+			SetExposedVdiPorts(cEnviroment.ExposedVdiPorts).
+			SetName(cEnviroment.Name).
+			SetRevision(cEnviroment.Revision).
+			SetTags(cEnviroment.Tags).
+			SetTeamCount(cEnviroment.TeamCount).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("failed creating user: %v", err)
@@ -352,4 +476,266 @@ func createUsers(ctx context.Context, client *ent.Client, configUsers []*ent.Use
 		returnedUsers = append(returnedUsers, dbUsers...)
 	}
 	return returnedUsers, nil
+}
+
+func createCompetitions(ctx context.Context, client *ent.Client, configCompetitions map[string]*ent.Competition, envHclID string) ([]*ent.Competition, error) {
+	bulk := []*ent.CompetitionCreate{}
+	returnedCompetitions := []*ent.Competition{}
+	for _, cCompetition := range configCompetitions {
+		entCompetition, err := client.Competition.
+			Query().
+			Where(
+				competition.And(
+					competition.HclIDEQ(cCompetition.HclID),
+					competition.HasCompetitionToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.Competition.Create().
+					SetConfig(cCompetition.Config).
+					SetHclID(cCompetition.HclID).
+					SetRootPassword(cCompetition.RootPassword)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entCompetition.Update().
+			SetConfig(cCompetition.Config).
+			SetHclID(cCompetition.HclID).
+			SetRootPassword(cCompetition.RootPassword).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating competition: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbCompetitions, err := client.Competition.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedCompetitions = append(returnedCompetitions, dbCompetitions...)
+	}
+	return returnedCompetitions, nil
+}
+
+func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string) ([]*ent.Host, error) {
+	return nil, nil
+}
+func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[string]*ent.Network, envHclID string) ([]*ent.Network, error) {
+	return nil, nil
+}
+func createScripts(ctx context.Context, client *ent.Client, configScript map[string]*ent.Script, envHclID string) ([]*ent.Script, error) {
+	return nil, nil
+}
+func createCommands(ctx context.Context, client *ent.Client, configCommands map[string]*ent.Command, envHclID string) ([]*ent.Command, error) {
+	return nil, nil
+}
+func createDNSRecords(ctx context.Context, client *ent.Client, configDNSRecords map[string]*ent.DNSRecord, envHclID string) ([]*ent.DNSRecord, error) {
+	return nil, nil
+}
+func createFileDownload(ctx context.Context, client *ent.Client, configFileDownloads map[string]*ent.FileDownload, envHclID string) ([]*ent.FileDownload, error) {
+	bulk := []*ent.FileDownloadCreate{}
+	returnedFileDownloads := []*ent.FileDownload{}
+	for _, cFileDownload := range configFileDownloads {
+		entFileDownload, err := client.FileDownload.
+			Query().
+			Where(
+				filedownload.And(
+					filedownload.HclIDEQ(cFileDownload.HclID),
+					filedownload.HasFileDownloadToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.FileDownload.Create().
+					SetHclID(cFileDownload.HclID).
+					SetSourceType(cFileDownload.SourceType).
+					SetSource(cFileDownload.Source).
+					SetDestination(cFileDownload.Destination).
+					SetTemplate(cFileDownload.Template).
+					SetPerms(cFileDownload.Perms).
+					SetDisabled(cFileDownload.Disabled).
+					SetMd5(cFileDownload.Md5).
+					SetAbsPath(cFileDownload.AbsPath).
+					SetTags(cFileDownload.Tags)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entFileDownload.Update().
+			SetHclID(cFileDownload.HclID).
+			SetSourceType(cFileDownload.SourceType).
+			SetSource(cFileDownload.Source).
+			SetDestination(cFileDownload.Destination).
+			SetTemplate(cFileDownload.Template).
+			SetPerms(cFileDownload.Perms).
+			SetDisabled(cFileDownload.Disabled).
+			SetMd5(cFileDownload.Md5).
+			SetAbsPath(cFileDownload.AbsPath).
+			SetTags(cFileDownload.Tags).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbFileDownloads, err := client.FileDownload.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedFileDownloads = append(returnedFileDownloads, dbFileDownloads...)
+	}
+	return returnedFileDownloads, nil
+}
+func createFileDelete(ctx context.Context, client *ent.Client, configFileDeletes map[string]*ent.FileDelete, envHclID string) ([]*ent.FileDelete, error) {
+	bulk := []*ent.FileDeleteCreate{}
+	returnedFileDeletes := []*ent.FileDelete{}
+	for _, cFileDelete := range configFileDeletes {
+		entFileDelete, err := client.FileDelete.
+			Query().
+			Where(
+				filedelete.And(
+					filedelete.HclIDEQ(cFileDelete.HclID),
+					filedelete.HasFileDeleteToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.FileDelete.Create().
+					SetHclID(cFileDelete.HclID).
+					SetPath(cFileDelete.Path).
+					SetTags(cFileDelete.Tags)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entFileDelete.Update().
+			SetHclID(cFileDelete.HclID).
+			SetPath(cFileDelete.Path).
+			SetTags(cFileDelete.Tags).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbFileDelete, err := client.FileDelete.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedFileDeletes = append(returnedFileDeletes, dbFileDelete...)
+	}
+	return returnedFileDeletes, nil
+}
+func createFileExtract(ctx context.Context, client *ent.Client, configFileExtracts map[string]*ent.FileExtract, envHclID string) ([]*ent.FileExtract, error) {
+	bulk := []*ent.FileExtractCreate{}
+	returnedFileExtracts := []*ent.FileExtract{}
+	for _, cFileExtract := range configFileExtracts {
+		entFileExtract, err := client.FileExtract.
+			Query().
+			Where(
+				fileextract.And(
+					fileextract.HclIDEQ(cFileExtract.HclID),
+					fileextract.HasFileExtractToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.FileExtract.Create().
+					SetDestination(cFileExtract.Destination).
+					SetHclID(cFileExtract.HclID).
+					SetSource(cFileExtract.Source).
+					SetTags(cFileExtract.Tags).
+					SetType(cFileExtract.Type)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entFileExtract.Update().
+			SetDestination(cFileExtract.Destination).
+			SetHclID(cFileExtract.HclID).
+			SetSource(cFileExtract.Source).
+			SetTags(cFileExtract.Tags).
+			SetType(cFileExtract.Type).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbFileExtracts, err := client.FileExtract.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating fileextract: %v", err)
+			return nil, err
+		}
+		returnedFileExtracts = append(returnedFileExtracts, dbFileExtracts...)
+	}
+	return returnedFileExtracts, nil
+}
+func createIdentities(ctx context.Context, client *ent.Client, configIdentities map[string]*ent.Identity, envHclID string) ([]*ent.Identity, error) {
+	bulk := []*ent.IdentityCreate{}
+	returnedIdentities := []*ent.Identity{}
+	for _, cIdentity := range configIdentities {
+		entIdentity, err := client.Identity.
+			Query().
+			Where(
+				identity.And(
+					identity.HclIDEQ(cIdentity.HclID),
+					identity.HasIdentityToEnvironmentWith(environment.HclIDEQ(envHclID)),
+				),
+			).
+			Only(ctx)
+		if err != nil {
+			if err == err.(*ent.NotFoundError) {
+				createdQuery := client.Identity.Create().
+					SetAvatarFile(cIdentity.AvatarFile).
+					SetDescription(cIdentity.Description).
+					SetEmail(cIdentity.Email).
+					SetFirstName(cIdentity.FirstName).
+					SetHclID(cIdentity.HclID).
+					SetLastName(cIdentity.LastName).
+					SetPassword(cIdentity.Password).
+					SetVars(cIdentity.Vars).
+					SetTags(cIdentity.Tags)
+				bulk = append(bulk, createdQuery)
+				continue
+			}
+		}
+		_, err = entIdentity.Update().
+			SetAvatarFile(cIdentity.AvatarFile).
+			SetDescription(cIdentity.Description).
+			SetEmail(cIdentity.Email).
+			SetFirstName(cIdentity.FirstName).
+			SetHclID(cIdentity.HclID).
+			SetLastName(cIdentity.LastName).
+			SetPassword(cIdentity.Password).
+			SetVars(cIdentity.Vars).
+			SetTags(cIdentity.Tags).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating competition: %v", err)
+			return nil, err
+		}
+	}
+	if len(bulk) > 0 {
+		dbIdentities, err := client.Identity.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			log.Fatalf("failed creating user: %v", err)
+			return nil, err
+		}
+		returnedIdentities = append(returnedIdentities, dbIdentities...)
+	}
+	return returnedIdentities, nil
 }

@@ -97,7 +97,7 @@ func (nq *NetworkQuery) QueryNetworkToEnvironment() *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -488,12 +488,12 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
+				Inverse: true,
 				Table:   network.NetworkToEnvironmentTable,
 				Columns: network.NetworkToEnvironmentPrimaryKey,
 			},
 			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(network.NetworkToEnvironmentPrimaryKey[0], fks...))
+				s.Where(sql.InValues(network.NetworkToEnvironmentPrimaryKey[1], fks...))
 			},
 
 			ScanValues: func() [2]interface{} {

@@ -346,7 +346,7 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nu.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -362,7 +362,7 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := nu.mutation.RemovedNetworkToEnvironmentIDs(); len(nodes) > 0 && !nu.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -381,7 +381,7 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := nu.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -791,7 +791,7 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	if nuo.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -807,7 +807,7 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	if nodes := nuo.mutation.RemovedNetworkToEnvironmentIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,
@@ -826,7 +826,7 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	if nodes := nuo.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
 			Columns: network.NetworkToEnvironmentPrimaryKey,
 			Bidi:    false,

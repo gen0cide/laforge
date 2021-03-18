@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -18,6 +19,12 @@ type FileExtractCreate struct {
 	config
 	mutation *FileExtractMutation
 	hooks    []Hook
+}
+
+// SetHclID sets the "hcl_id" field.
+func (fec *FileExtractCreate) SetHclID(s string) *FileExtractCreate {
+	fec.mutation.SetHclID(s)
+	return fec
 }
 
 // SetSource sets the "source" field.
@@ -57,6 +64,21 @@ func (fec *FileExtractCreate) AddFileExtractToTag(t ...*Tag) *FileExtractCreate 
 		ids[i] = t[i].ID
 	}
 	return fec.AddFileExtractToTagIDs(ids...)
+}
+
+// AddFileExtractToEnvironmentIDs adds the "FileExtractToEnvironment" edge to the Environment entity by IDs.
+func (fec *FileExtractCreate) AddFileExtractToEnvironmentIDs(ids ...int) *FileExtractCreate {
+	fec.mutation.AddFileExtractToEnvironmentIDs(ids...)
+	return fec
+}
+
+// AddFileExtractToEnvironment adds the "FileExtractToEnvironment" edges to the Environment entity.
+func (fec *FileExtractCreate) AddFileExtractToEnvironment(e ...*Environment) *FileExtractCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fec.AddFileExtractToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -110,6 +132,9 @@ func (fec *FileExtractCreate) SaveX(ctx context.Context) *FileExtract {
 
 // check runs all checks and user-defined validators on the builder.
 func (fec *FileExtractCreate) check() error {
+	if _, ok := fec.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := fec.mutation.Source(); !ok {
 		return &ValidationError{Name: "source", err: errors.New("ent: missing required field \"source\"")}
 	}
@@ -149,6 +174,14 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 			},
 		}
 	)
+	if value, ok := fec.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: fileextract.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := fec.mutation.Source(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -192,6 +225,25 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fec.mutation.FileExtractToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: fileextract.FileExtractToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

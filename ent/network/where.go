@@ -500,7 +500,7 @@ func HasNetworkToEnvironment() predicate.Network {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, NetworkToEnvironmentTable, NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToEnvironmentTable, NetworkToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -512,7 +512,7 @@ func HasNetworkToEnvironmentWith(preds ...predicate.Environment) predicate.Netwo
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, NetworkToEnvironmentTable, NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToEnvironmentTable, NetworkToEnvironmentPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

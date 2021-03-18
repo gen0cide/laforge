@@ -1327,6 +1327,54 @@ func (c *EnvironmentClient) QueryEnvironmentToIdentity(e *Environment) *Identity
 	return query
 }
 
+// QueryEnvironmentToFileDownload queries the EnvironmentToFileDownload edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileDownload(e *Environment) *FileDownloadQuery {
+	query := &FileDownloadQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(filedownload.Table, filedownload.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToFileDelete queries the EnvironmentToFileDelete edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileDelete(e *Environment) *FileDeleteQuery {
+	query := &FileDeleteQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(filedelete.Table, filedelete.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeletePrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToFileExtract queries the EnvironmentToFileExtract edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileExtract(e *Environment) *FileExtractQuery {
+	query := &FileExtractQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(fileextract.Table, fileextract.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEnvironmentToIncludedNetwork queries the EnvironmentToIncludedNetwork edge of a Environment.
 func (c *EnvironmentClient) QueryEnvironmentToIncludedNetwork(e *Environment) *IncludedNetworkQuery {
 	query := &IncludedNetworkQuery{config: c.config}
@@ -1335,7 +1383,7 @@ func (c *EnvironmentClient) QueryEnvironmentToIncludedNetwork(e *Environment) *I
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.EnvironmentToIncludedNetworkTable, environment.EnvironmentToIncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToIncludedNetworkTable, environment.EnvironmentToIncludedNetworkPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1351,7 +1399,7 @@ func (c *EnvironmentClient) QueryEnvironmentToNetwork(e *Environment) *NetworkQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1479,6 +1527,22 @@ func (c *FileDeleteClient) QueryFileDeleteToTag(fd *FileDelete) *TagQuery {
 	return query
 }
 
+// QueryFileDeleteToEnvironment queries the FileDeleteToEnvironment edge of a FileDelete.
+func (c *FileDeleteClient) QueryFileDeleteToEnvironment(fd *FileDelete) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := fd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(filedelete.Table, filedelete.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, filedelete.FileDeleteToEnvironmentTable, filedelete.FileDeleteToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *FileDeleteClient) Hooks() []Hook {
 	return c.hooks.FileDelete
@@ -1583,6 +1647,22 @@ func (c *FileDownloadClient) QueryFileDownloadToTag(fd *FileDownload) *TagQuery 
 	return query
 }
 
+// QueryFileDownloadToEnvironment queries the FileDownloadToEnvironment edge of a FileDownload.
+func (c *FileDownloadClient) QueryFileDownloadToEnvironment(fd *FileDownload) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := fd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(filedownload.Table, filedownload.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *FileDownloadClient) Hooks() []Hook {
 	return c.hooks.FileDownload
@@ -1680,6 +1760,22 @@ func (c *FileExtractClient) QueryFileExtractToTag(fe *FileExtract) *TagQuery {
 			sqlgraph.From(fileextract.Table, fileextract.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.FileExtractToTagTable, fileextract.FileExtractToTagColumn),
+		)
+		fromV = sqlgraph.Neighbors(fe.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFileExtractToEnvironment queries the FileExtractToEnvironment edge of a FileExtract.
+func (c *FileExtractClient) QueryFileExtractToEnvironment(fe *FileExtract) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := fe.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fileextract.Table, fileextract.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(fe.driver.Dialect(), step)
 		return fromV, nil
@@ -2343,7 +2439,7 @@ func (c *IncludedNetworkClient) QueryIncludedNetworkToEnvironment(in *IncludedNe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
 		return fromV, nil
@@ -2463,7 +2559,7 @@ func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

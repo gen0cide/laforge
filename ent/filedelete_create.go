@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -18,6 +19,12 @@ type FileDeleteCreate struct {
 	config
 	mutation *FileDeleteMutation
 	hooks    []Hook
+}
+
+// SetHclID sets the "hcl_id" field.
+func (fdc *FileDeleteCreate) SetHclID(s string) *FileDeleteCreate {
+	fdc.mutation.SetHclID(s)
+	return fdc
 }
 
 // SetPath sets the "path" field.
@@ -45,6 +52,21 @@ func (fdc *FileDeleteCreate) AddFileDeleteToTag(t ...*Tag) *FileDeleteCreate {
 		ids[i] = t[i].ID
 	}
 	return fdc.AddFileDeleteToTagIDs(ids...)
+}
+
+// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
+func (fdc *FileDeleteCreate) AddFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteCreate {
+	fdc.mutation.AddFileDeleteToEnvironmentIDs(ids...)
+	return fdc
+}
+
+// AddFileDeleteToEnvironment adds the "FileDeleteToEnvironment" edges to the Environment entity.
+func (fdc *FileDeleteCreate) AddFileDeleteToEnvironment(e ...*Environment) *FileDeleteCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return fdc.AddFileDeleteToEnvironmentIDs(ids...)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -98,6 +120,9 @@ func (fdc *FileDeleteCreate) SaveX(ctx context.Context) *FileDelete {
 
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDeleteCreate) check() error {
+	if _, ok := fdc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+	}
 	if _, ok := fdc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
 	}
@@ -131,6 +156,14 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := fdc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedelete.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := fdc.mutation.Path(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -158,6 +191,25 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fdc.mutation.FileDeleteToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   filedelete.FileDeleteToEnvironmentTable,
+			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: environment.FieldID,
 				},
 			},
 		}

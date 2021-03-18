@@ -42,6 +42,12 @@ const (
 	EdgeEnvironmentToBuild = "EnvironmentToBuild"
 	// EdgeEnvironmentToIdentity holds the string denoting the environmenttoidentity edge name in mutations.
 	EdgeEnvironmentToIdentity = "EnvironmentToIdentity"
+	// EdgeEnvironmentToFileDownload holds the string denoting the environmenttofiledownload edge name in mutations.
+	EdgeEnvironmentToFileDownload = "EnvironmentToFileDownload"
+	// EdgeEnvironmentToFileDelete holds the string denoting the environmenttofiledelete edge name in mutations.
+	EdgeEnvironmentToFileDelete = "EnvironmentToFileDelete"
+	// EdgeEnvironmentToFileExtract holds the string denoting the environmenttofileextract edge name in mutations.
+	EdgeEnvironmentToFileExtract = "EnvironmentToFileExtract"
 	// EdgeEnvironmentToIncludedNetwork holds the string denoting the environmenttoincludednetwork edge name in mutations.
 	EdgeEnvironmentToIncludedNetwork = "EnvironmentToIncludedNetwork"
 	// EdgeEnvironmentToNetwork holds the string denoting the environmenttonetwork edge name in mutations.
@@ -83,13 +89,28 @@ const (
 	// EnvironmentToIdentityInverseTable is the table name for the Identity entity.
 	// It exists in this package in order to avoid circular dependency with the "identity" package.
 	EnvironmentToIdentityInverseTable = "identities"
+	// EnvironmentToFileDownloadTable is the table the holds the EnvironmentToFileDownload relation/edge. The primary key declared below.
+	EnvironmentToFileDownloadTable = "environment_EnvironmentToFileDownload"
+	// EnvironmentToFileDownloadInverseTable is the table name for the FileDownload entity.
+	// It exists in this package in order to avoid circular dependency with the "filedownload" package.
+	EnvironmentToFileDownloadInverseTable = "file_downloads"
+	// EnvironmentToFileDeleteTable is the table the holds the EnvironmentToFileDelete relation/edge. The primary key declared below.
+	EnvironmentToFileDeleteTable = "environment_EnvironmentToFileDelete"
+	// EnvironmentToFileDeleteInverseTable is the table name for the FileDelete entity.
+	// It exists in this package in order to avoid circular dependency with the "filedelete" package.
+	EnvironmentToFileDeleteInverseTable = "file_deletes"
+	// EnvironmentToFileExtractTable is the table the holds the EnvironmentToFileExtract relation/edge. The primary key declared below.
+	EnvironmentToFileExtractTable = "environment_EnvironmentToFileExtract"
+	// EnvironmentToFileExtractInverseTable is the table name for the FileExtract entity.
+	// It exists in this package in order to avoid circular dependency with the "fileextract" package.
+	EnvironmentToFileExtractInverseTable = "file_extracts"
 	// EnvironmentToIncludedNetworkTable is the table the holds the EnvironmentToIncludedNetwork relation/edge. The primary key declared below.
-	EnvironmentToIncludedNetworkTable = "included_network_IncludedNetworkToEnvironment"
+	EnvironmentToIncludedNetworkTable = "environment_EnvironmentToIncludedNetwork"
 	// EnvironmentToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
 	EnvironmentToIncludedNetworkInverseTable = "included_networks"
 	// EnvironmentToNetworkTable is the table the holds the EnvironmentToNetwork relation/edge. The primary key declared below.
-	EnvironmentToNetworkTable = "network_NetworkToEnvironment"
+	EnvironmentToNetworkTable = "environment_EnvironmentToNetwork"
 	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	EnvironmentToNetworkInverseTable = "networks"
@@ -132,12 +153,21 @@ var (
 	// EnvironmentToIdentityPrimaryKey and EnvironmentToIdentityColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIdentity relation (M2M).
 	EnvironmentToIdentityPrimaryKey = []string{"environment_id", "identity_id"}
+	// EnvironmentToFileDownloadPrimaryKey and EnvironmentToFileDownloadColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToFileDownload relation (M2M).
+	EnvironmentToFileDownloadPrimaryKey = []string{"environment_id", "file_download_id"}
+	// EnvironmentToFileDeletePrimaryKey and EnvironmentToFileDeleteColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToFileDelete relation (M2M).
+	EnvironmentToFileDeletePrimaryKey = []string{"environment_id", "file_delete_id"}
+	// EnvironmentToFileExtractPrimaryKey and EnvironmentToFileExtractColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToFileExtract relation (M2M).
+	EnvironmentToFileExtractPrimaryKey = []string{"environment_id", "file_extract_id"}
 	// EnvironmentToIncludedNetworkPrimaryKey and EnvironmentToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIncludedNetwork relation (M2M).
-	EnvironmentToIncludedNetworkPrimaryKey = []string{"included_network_id", "environment_id"}
+	EnvironmentToIncludedNetworkPrimaryKey = []string{"environment_id", "included_network_id"}
 	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToNetwork relation (M2M).
-	EnvironmentToNetworkPrimaryKey = []string{"network_id", "environment_id"}
+	EnvironmentToNetworkPrimaryKey = []string{"environment_id", "network_id"}
 	// EnvironmentToTeamPrimaryKey and EnvironmentToTeamColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToTeam relation (M2M).
 	EnvironmentToTeamPrimaryKey = []string{"team_id", "environment_id"}

@@ -7,6 +7,8 @@ const (
 	Label = "file_delete"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
 	// FieldTags holds the string denoting the tags field in the database.
@@ -14,6 +16,8 @@ const (
 
 	// EdgeFileDeleteToTag holds the string denoting the filedeletetotag edge name in mutations.
 	EdgeFileDeleteToTag = "FileDeleteToTag"
+	// EdgeFileDeleteToEnvironment holds the string denoting the filedeletetoenvironment edge name in mutations.
+	EdgeFileDeleteToEnvironment = "FileDeleteToEnvironment"
 
 	// Table holds the table name of the filedelete in the database.
 	Table = "file_deletes"
@@ -24,11 +28,17 @@ const (
 	FileDeleteToTagInverseTable = "tags"
 	// FileDeleteToTagColumn is the table column denoting the FileDeleteToTag relation/edge.
 	FileDeleteToTagColumn = "file_delete_file_delete_to_tag"
+	// FileDeleteToEnvironmentTable is the table the holds the FileDeleteToEnvironment relation/edge. The primary key declared below.
+	FileDeleteToEnvironmentTable = "environment_EnvironmentToFileDelete"
+	// FileDeleteToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	FileDeleteToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for filedelete fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldPath,
 	FieldTags,
 }
@@ -37,6 +47,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"provisioning_step_provisioning_step_to_file_delete",
 }
+
+var (
+	// FileDeleteToEnvironmentPrimaryKey and FileDeleteToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the FileDeleteToEnvironment relation (M2M).
+	FileDeleteToEnvironmentPrimaryKey = []string{"environment_id", "file_delete_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

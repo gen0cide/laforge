@@ -172,6 +172,30 @@ func (e *Environment) EnvironmentToIdentity(ctx context.Context) ([]*Identity, e
 	return result, err
 }
 
+func (e *Environment) EnvironmentToFileDownload(ctx context.Context) ([]*FileDownload, error) {
+	result, err := e.Edges.EnvironmentToFileDownloadOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToFileDownload().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToFileDelete(ctx context.Context) ([]*FileDelete, error) {
+	result, err := e.Edges.EnvironmentToFileDeleteOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToFileDelete().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Environment) EnvironmentToFileExtract(ctx context.Context) ([]*FileExtract, error) {
+	result, err := e.Edges.EnvironmentToFileExtractOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToFileExtract().All(ctx)
+	}
+	return result, err
+}
+
 func (e *Environment) EnvironmentToIncludedNetwork(ctx context.Context) ([]*IncludedNetwork, error) {
 	result, err := e.Edges.EnvironmentToIncludedNetworkOrErr()
 	if IsNotLoaded(err) {
@@ -204,6 +228,14 @@ func (fd *FileDelete) FileDeleteToTag(ctx context.Context) ([]*Tag, error) {
 	return result, err
 }
 
+func (fd *FileDelete) FileDeleteToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := fd.Edges.FileDeleteToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = fd.QueryFileDeleteToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
 func (fd *FileDownload) FileDownloadToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := fd.Edges.FileDownloadToTagOrErr()
 	if IsNotLoaded(err) {
@@ -212,10 +244,26 @@ func (fd *FileDownload) FileDownloadToTag(ctx context.Context) ([]*Tag, error) {
 	return result, err
 }
 
+func (fd *FileDownload) FileDownloadToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := fd.Edges.FileDownloadToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = fd.QueryFileDownloadToEnvironment().All(ctx)
+	}
+	return result, err
+}
+
 func (fe *FileExtract) FileExtractToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := fe.Edges.FileExtractToTagOrErr()
 	if IsNotLoaded(err) {
 		result, err = fe.QueryFileExtractToTag().All(ctx)
+	}
+	return result, err
+}
+
+func (fe *FileExtract) FileExtractToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := fe.Edges.FileExtractToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = fe.QueryFileExtractToEnvironment().All(ctx)
 	}
 	return result, err
 }

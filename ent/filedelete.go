@@ -16,6 +16,8 @@ type FileDelete struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty" hcl:"path,attr"`
 	// Tags holds the value of the "tags" field.
@@ -27,6 +29,8 @@ type FileDelete struct {
 	// Edges put into the main struct to be loaded via hcl
 	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
 	HCLFileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
+	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
+	HCLFileDeleteToEnvironment []*Environment `json:"FileDeleteToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_file_delete *int
 }
@@ -35,9 +39,11 @@ type FileDelete struct {
 type FileDeleteEdges struct {
 	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
 	FileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
+	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
+	FileDeleteToEnvironment []*Environment `json:"FileDeleteToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // FileDeleteToTagOrErr returns the FileDeleteToTag value or an error if the edge
@@ -49,6 +55,15 @@ func (e FileDeleteEdges) FileDeleteToTagOrErr() ([]*Tag, error) {
 	return nil, &NotLoadedError{edge: "FileDeleteToTag"}
 }
 
+// FileDeleteToEnvironmentOrErr returns the FileDeleteToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e FileDeleteEdges) FileDeleteToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.FileDeleteToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "FileDeleteToEnvironment"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -58,7 +73,7 @@ func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &[]byte{}
 		case filedelete.FieldID:
 			values[i] = &sql.NullInt64{}
-		case filedelete.FieldPath:
+		case filedelete.FieldHclID, filedelete.FieldPath:
 			values[i] = &sql.NullString{}
 		case filedelete.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_delete
 			values[i] = &sql.NullInt64{}
@@ -83,6 +98,12 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			fd.ID = int(value.Int64)
+		case filedelete.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				fd.HclID = value.String
+			}
 		case filedelete.FieldPath:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field path", values[i])
@@ -115,6 +136,11 @@ func (fd *FileDelete) QueryFileDeleteToTag() *TagQuery {
 	return (&FileDeleteClient{config: fd.config}).QueryFileDeleteToTag(fd)
 }
 
+// QueryFileDeleteToEnvironment queries the "FileDeleteToEnvironment" edge of the FileDelete entity.
+func (fd *FileDelete) QueryFileDeleteToEnvironment() *EnvironmentQuery {
+	return (&FileDeleteClient{config: fd.config}).QueryFileDeleteToEnvironment(fd)
+}
+
 // Update returns a builder for updating this FileDelete.
 // Note that you need to call FileDelete.Unwrap() before calling this method if this FileDelete
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -138,6 +164,8 @@ func (fd *FileDelete) String() string {
 	var builder strings.Builder
 	builder.WriteString("FileDelete(")
 	builder.WriteString(fmt.Sprintf("id=%v", fd.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(fd.HclID)
 	builder.WriteString(", path=")
 	builder.WriteString(fd.Path)
 	builder.WriteString(", tags=")

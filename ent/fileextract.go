@@ -16,6 +16,8 @@ type FileExtract struct {
 	config ` json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Source holds the value of the "source" field.
 	Source string `json:"source,omitempty" hcl:"source,attr"`
 	// Destination holds the value of the "destination" field.
@@ -31,6 +33,8 @@ type FileExtract struct {
 	// Edges put into the main struct to be loaded via hcl
 	// FileExtractToTag holds the value of the FileExtractToTag edge.
 	HCLFileExtractToTag []*Tag `json:"FileExtractToTag,omitempty"`
+	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
+	HCLFileExtractToEnvironment []*Environment `json:"FileExtractToEnvironment,omitempty"`
 	//
 	provisioning_step_provisioning_step_to_file_extract *int
 }
@@ -39,9 +43,11 @@ type FileExtract struct {
 type FileExtractEdges struct {
 	// FileExtractToTag holds the value of the FileExtractToTag edge.
 	FileExtractToTag []*Tag `json:"FileExtractToTag,omitempty"`
+	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
+	FileExtractToEnvironment []*Environment `json:"FileExtractToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // FileExtractToTagOrErr returns the FileExtractToTag value or an error if the edge
@@ -53,6 +59,15 @@ func (e FileExtractEdges) FileExtractToTagOrErr() ([]*Tag, error) {
 	return nil, &NotLoadedError{edge: "FileExtractToTag"}
 }
 
+// FileExtractToEnvironmentOrErr returns the FileExtractToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e FileExtractEdges) FileExtractToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.FileExtractToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "FileExtractToEnvironment"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -62,7 +77,7 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &[]byte{}
 		case fileextract.FieldID:
 			values[i] = &sql.NullInt64{}
-		case fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
+		case fileextract.FieldHclID, fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
 			values[i] = &sql.NullString{}
 		case fileextract.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_extract
 			values[i] = &sql.NullInt64{}
@@ -87,6 +102,12 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			fe.ID = int(value.Int64)
+		case fileextract.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				fe.HclID = value.String
+			}
 		case fileextract.FieldSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field source", values[i])
@@ -131,6 +152,11 @@ func (fe *FileExtract) QueryFileExtractToTag() *TagQuery {
 	return (&FileExtractClient{config: fe.config}).QueryFileExtractToTag(fe)
 }
 
+// QueryFileExtractToEnvironment queries the "FileExtractToEnvironment" edge of the FileExtract entity.
+func (fe *FileExtract) QueryFileExtractToEnvironment() *EnvironmentQuery {
+	return (&FileExtractClient{config: fe.config}).QueryFileExtractToEnvironment(fe)
+}
+
 // Update returns a builder for updating this FileExtract.
 // Note that you need to call FileExtract.Unwrap() before calling this method if this FileExtract
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -154,6 +180,8 @@ func (fe *FileExtract) String() string {
 	var builder strings.Builder
 	builder.WriteString("FileExtract(")
 	builder.WriteString(fmt.Sprintf("id=%v", fe.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(fe.HclID)
 	builder.WriteString(", source=")
 	builder.WriteString(fe.Source)
 	builder.WriteString(", destination=")
