@@ -374,57 +374,46 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 		}
 		returnedCompetitions, returnedDNS, err := createCompetitions(ctx, client, loadedConfig.Competitions, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedScripts, returnedFindings, err := createScripts(ctx, client, loadedConfig.Scripts, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedCommands, err := createCommands(ctx, client, loadedConfig.Commands, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedDNSRecords, err := createDNSRecords(ctx, client, loadedConfig.DNSRecords, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedFileDownloads, err := createFileDownload(ctx, client, loadedConfig.FileDownload, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedFileDeletes, err := createFileDelete(ctx, client, loadedConfig.FileDelete, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedFileExtracts, err := createFileExtract(ctx, client, loadedConfig.FileExtract, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedIdentities, err := createIdentities(ctx, client, loadedConfig.Identities, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedNetworks, err := createNetworks(ctx, client, loadedConfig.Networks, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedHosts, returnedHostDependencies, err := createHosts(ctx, client, loadedConfig.Hosts, cEnviroment.HclID, environmentHosts)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		returnedIncludedNetworks, err := createIncludedNetwork(ctx, client, cEnviroment.HCLEnvironmentToIncludedNetwork, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
 			return nil, err
 		}
 		entEnvironment, err := client.Environment.
@@ -461,17 +450,12 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 					AddEnvironmentToDNS(returnedDNS...).
 					Save(ctx)
 				if err != nil {
-					log.Fatalf("failed creating user: %v", err)
+					log.Fatalf("Failed to Create Environment %v. Err: %v", cEnviroment.HclID, err)
 					return nil, err
 				}
 				_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
 				if err != nil {
-					log.Fatalf("failed creating user: %v", err)
-					return nil, err
-				}
-				_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
-				if err != nil {
-					log.Fatalf("failed creating user: %v", err)
+					log.Fatalf("Failed to Validate Host Dependencies in Environment %v. Err: %v", cEnviroment.HclID, err)
 					return nil, err
 				}
 				returnedEnvironment = append(returnedEnvironment, newEnvironment)
@@ -506,7 +490,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			ClearEnvironmentToHost().
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to Update Environment %v. Err: %v", cEnviroment.HclID, err)
 			return nil, err
 		}
 		entEnvironment, err = entEnvironment.Update().
@@ -526,12 +510,12 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			AddEnvironmentToDNS(returnedDNS...).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to Update Environment %v with it's edges. Err: %v", cEnviroment.HclID, err)
 			return nil, err
 		}
 		_, err = validateHostDependencies(ctx, client, returnedHostDependencies, cEnviroment.HclID)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to Validate Host Dependencies in Environment %v. Err: %v", cEnviroment.HclID, err)
 			return nil, err
 		}
 		returnedEnvironment = append(returnedEnvironment, entEnvironment)
@@ -577,12 +561,12 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 			ClearCompetitionToDNS().
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating competition: %v", err)
+			log.Fatalf("Failed to Update Competition %v. Err: %v", cCompetition.HclID, err)
 			return nil, nil, err
 		}
 		_, err = entCompetition.Update().AddCompetitionToDNS(returnedDNS...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Competition %v with DNS. Err: %v", cCompetition.HclID, err)
 			return nil, nil, err
 		}
 		returnedAllDNS = append(returnedAllDNS, returnedDNS...)
@@ -591,13 +575,14 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 	if len(bulk) > 0 {
 		dbCompetitions, err := client.Competition.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to create bulk Competitions. Err: %v", err)
 			return nil, nil, err
 		}
 		returnedCompetitions = append(returnedCompetitions, dbCompetitions...)
 	}
 	return returnedCompetitions, returnedAllDNS, nil
 }
+
 func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string, environmentHosts []string) ([]*ent.Host, []*ent.HostDependency, error) {
 	bulk := []*ent.HostCreate{}
 	returnedHosts := []*ent.Host{}
@@ -605,11 +590,10 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 	for _, cHostID := range environmentHosts {
 		cHost, ok := configHosts[cHostID]
 		if !ok {
-			return nil, nil, fmt.Errorf("host %s was not defined", cHostID)
+			return nil, nil, fmt.Errorf("err: Host %v was not defined in the Enviroment %v", cHostID, envHclID)
 		}
 		returnedDisks, err := createDisk(ctx, client, cHost.HCLHostToDisk, cHost.HclID)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
 			return nil, nil, err
 		}
 		entHost, err := client.Host.
@@ -661,18 +645,17 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 			ClearHostToDisk().
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
 			return nil, nil, err
 		}
 		_, err = entHost.Update().AddHostToDisk(returnedDisks...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Disk to Host %v. Err: %v", cHost.HclID, err)
 			return nil, nil, err
 		}
 		returnedHosts = append(returnedHosts, entHost)
 		returnedHostDependencies, err := createHostDependencies(ctx, client, cHost.HCLDependOnHostToHostDependency, envHclID, entHost)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
 			return nil, nil, err
 		}
 		returnedAllHostDependencies = append(returnedAllHostDependencies, returnedHostDependencies...)
@@ -680,13 +663,14 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 	if len(bulk) > 0 {
 		dbHost, err := client.Host.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Hosts. Err: %v", err)
 			return nil, nil, err
 		}
 		returnedHosts = append(returnedHosts, dbHost...)
 	}
 	return returnedHosts, returnedAllHostDependencies, nil
 }
+
 func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[string]*ent.Network, envHclID string) ([]*ent.Network, error) {
 	bulk := []*ent.NetworkCreate{}
 	returnedNetworks := []*ent.Network{}
@@ -722,7 +706,7 @@ func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[
 			SetVdiVisible(cNetwork.VdiVisible).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Script %v. Err: %v", cNetwork.HclID, err)
 			return nil, err
 		}
 		returnedNetworks = append(returnedNetworks, entNetwork)
@@ -730,13 +714,14 @@ func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[
 	if len(bulk) > 0 {
 		dbNetwork, err := client.Network.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Networks. Err: %v", err)
 			return nil, err
 		}
 		returnedNetworks = append(returnedNetworks, dbNetwork...)
 	}
 	return returnedNetworks, nil
 }
+
 func createScripts(ctx context.Context, client *ent.Client, configScript map[string]*ent.Script, envHclID string) ([]*ent.Script, []*ent.Finding, error) {
 	bulk := []*ent.ScriptCreate{}
 	returnedScripts := []*ent.Script{}
@@ -795,12 +780,12 @@ func createScripts(ctx context.Context, client *ent.Client, configScript map[str
 			ClearScriptToFinding().
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Script %v. Err: %v", cScript.HclID, err)
 			return nil, nil, err
 		}
 		_, err = entScript.Update().AddScriptToFinding(returnedFindings...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Script %v with it's Findings. Err: %v", cScript.HclID, err)
 			return nil, nil, err
 		}
 		returnedAllFindings = append(returnedAllFindings, returnedFindings...)
@@ -809,13 +794,14 @@ func createScripts(ctx context.Context, client *ent.Client, configScript map[str
 	if len(bulk) > 0 {
 		dbScript, err := client.Script.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Scripts. Err: %v", err)
 			return nil, nil, err
 		}
 		returnedScripts = append(returnedScripts, dbScript...)
 	}
 	return returnedScripts, returnedAllFindings, nil
 }
+
 func createCommands(ctx context.Context, client *ent.Client, configCommands map[string]*ent.Command, envHclID string) ([]*ent.Command, error) {
 	bulk := []*ent.CommandCreate{}
 	returnedCommands := []*ent.Command{}
@@ -861,7 +847,7 @@ func createCommands(ctx context.Context, client *ent.Client, configCommands map[
 			SetVars(cCommand.Vars).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Command %v. Err: %v", cCommand.HclID, err)
 			return nil, err
 		}
 		returnedCommands = append(returnedCommands, entCommand)
@@ -869,13 +855,14 @@ func createCommands(ctx context.Context, client *ent.Client, configCommands map[
 	if len(bulk) > 0 {
 		dbCommand, err := client.Command.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Command. Err: %v", err)
 			return nil, err
 		}
 		returnedCommands = append(returnedCommands, dbCommand...)
 	}
 	return returnedCommands, nil
 }
+
 func createDNSRecords(ctx context.Context, client *ent.Client, configDNSRecords map[string]*ent.DNSRecord, envHclID string) ([]*ent.DNSRecord, error) {
 	bulk := []*ent.DNSRecordCreate{}
 	returnedDNSRecords := []*ent.DNSRecord{}
@@ -915,7 +902,7 @@ func createDNSRecords(ctx context.Context, client *ent.Client, configDNSRecords 
 			SetZone(cDNSRecord.Zone).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating competition: %v", err)
+			log.Fatalf("Failed to Update DNS Record %v. Err: %v", cDNSRecord.HclID, err)
 			return nil, err
 		}
 		returnedDNSRecords = append(returnedDNSRecords, entDNSRecord)
@@ -923,13 +910,14 @@ func createDNSRecords(ctx context.Context, client *ent.Client, configDNSRecords 
 	if len(bulk) > 0 {
 		dbDNSRecords, err := client.DNSRecord.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to create bulk DNS Records. Err: %v", err)
 			return nil, err
 		}
 		returnedDNSRecords = append(returnedDNSRecords, dbDNSRecords...)
 	}
 	return returnedDNSRecords, nil
 }
+
 func createFileDownload(ctx context.Context, client *ent.Client, configFileDownloads map[string]*ent.FileDownload, envHclID string) ([]*ent.FileDownload, error) {
 	bulk := []*ent.FileDownloadCreate{}
 	returnedFileDownloads := []*ent.FileDownload{}
@@ -973,7 +961,7 @@ func createFileDownload(ctx context.Context, client *ent.Client, configFileDownl
 			SetTags(cFileDownload.Tags).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update File Download %v. Err: %v", cFileDownload.HclID, err)
 			return nil, err
 		}
 		returnedFileDownloads = append(returnedFileDownloads, entFileDownload)
@@ -981,13 +969,14 @@ func createFileDownload(ctx context.Context, client *ent.Client, configFileDownl
 	if len(bulk) > 0 {
 		dbFileDownloads, err := client.FileDownload.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk File Downloads. Err: %v", err)
 			return nil, err
 		}
 		returnedFileDownloads = append(returnedFileDownloads, dbFileDownloads...)
 	}
 	return returnedFileDownloads, nil
 }
+
 func createFileDelete(ctx context.Context, client *ent.Client, configFileDeletes map[string]*ent.FileDelete, envHclID string) ([]*ent.FileDelete, error) {
 	bulk := []*ent.FileDeleteCreate{}
 	returnedFileDeletes := []*ent.FileDelete{}
@@ -1017,7 +1006,7 @@ func createFileDelete(ctx context.Context, client *ent.Client, configFileDeletes
 			SetTags(cFileDelete.Tags).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update File Delete %v. Err: %v", cFileDelete.HclID, err)
 			return nil, err
 		}
 		returnedFileDeletes = append(returnedFileDeletes, entFileDelete)
@@ -1025,13 +1014,14 @@ func createFileDelete(ctx context.Context, client *ent.Client, configFileDeletes
 	if len(bulk) > 0 {
 		dbFileDelete, err := client.FileDelete.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk File Delete. Err: %v", err)
 			return nil, err
 		}
 		returnedFileDeletes = append(returnedFileDeletes, dbFileDelete...)
 	}
 	return returnedFileDeletes, nil
 }
+
 func createFileExtract(ctx context.Context, client *ent.Client, configFileExtracts map[string]*ent.FileExtract, envHclID string) ([]*ent.FileExtract, error) {
 	bulk := []*ent.FileExtractCreate{}
 	returnedFileExtracts := []*ent.FileExtract{}
@@ -1065,7 +1055,7 @@ func createFileExtract(ctx context.Context, client *ent.Client, configFileExtrac
 			SetType(cFileExtract.Type).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update File Extract %v. Err: %v", cFileExtract.HclID, err)
 			return nil, err
 		}
 		returnedFileExtracts = append(returnedFileExtracts, entFileExtract)
@@ -1073,13 +1063,14 @@ func createFileExtract(ctx context.Context, client *ent.Client, configFileExtrac
 	if len(bulk) > 0 {
 		dbFileExtracts, err := client.FileExtract.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk File Extract. Err: %v", err)
 			return nil, err
 		}
 		returnedFileExtracts = append(returnedFileExtracts, dbFileExtracts...)
 	}
 	return returnedFileExtracts, nil
 }
+
 func createIdentities(ctx context.Context, client *ent.Client, configIdentities map[string]*ent.Identity, envHclID string) ([]*ent.Identity, error) {
 	bulk := []*ent.IdentityCreate{}
 	returnedIdentities := []*ent.Identity{}
@@ -1121,7 +1112,7 @@ func createIdentities(ctx context.Context, client *ent.Client, configIdentities 
 			SetTags(cIdentity.Tags).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating competition: %v", err)
+			log.Fatalf("Failed to Update Identity %v. Err: %v", cIdentity.HclID, err)
 			return nil, err
 		}
 		returnedIdentities = append(returnedIdentities, entIdentity)
@@ -1129,13 +1120,14 @@ func createIdentities(ctx context.Context, client *ent.Client, configIdentities 
 	if len(bulk) > 0 {
 		dbIdentities, err := client.Identity.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating user: %v", err)
+			log.Fatalf("Failed to create bulk Identities. Err: %v", err)
 			return nil, err
 		}
 		returnedIdentities = append(returnedIdentities, dbIdentities...)
 	}
 	return returnedIdentities, nil
 }
+
 func createFindings(ctx context.Context, client *ent.Client, configFindings []*ent.Finding, envHclID string, entScriptID string) ([]*ent.Finding, error) {
 	bulk := []*ent.FindingCreate{}
 	returnedFindings := []*ent.Finding{}
@@ -1170,7 +1162,7 @@ func createFindings(ctx context.Context, client *ent.Client, configFindings []*e
 			SetTags(cFinding.Tags).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update Finding %v for Script %v in Enviroment %v. Err: %v", cFinding.Name, entScriptID, envHclID, err)
 			return nil, err
 		}
 		returnedFindings = append(returnedFindings, entFinding)
@@ -1178,13 +1170,14 @@ func createFindings(ctx context.Context, client *ent.Client, configFindings []*e
 	if len(bulk) > 0 {
 		dbFinding, err := client.Finding.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Findings. Err: %v", err)
 			return nil, err
 		}
 		returnedFindings = append(returnedFindings, dbFinding...)
 	}
 	return returnedFindings, nil
 }
+
 func createHostDependencies(ctx context.Context, client *ent.Client, configHostDependencies []*ent.HostDependency, envHclID string, dependByHost *ent.Host) ([]*ent.HostDependency, error) {
 	bulk := []*ent.HostDependencyCreate{}
 	returnedHostDependencies := []*ent.HostDependency{}
@@ -1210,18 +1203,35 @@ func createHostDependencies(ctx context.Context, client *ent.Client, configHostD
 				continue
 			}
 		}
+		entHostDependency, err = entHostDependency.Update().
+			ClearHostDependencyToDependByHost().
+			ClearHostDependencyToDependOnHost().
+			ClearHostDependencyToNetwork().
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Clear Host Dependency by %v on Host %v Err: %v", dependByHost.HclID, cHostDependency.HostID, err)
+			return nil, err
+		}
+		entHostDependency, err = entHostDependency.Update().
+			AddHostDependencyToDependByHost(dependByHost).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Update Host Dependency by %v on Host %v Err: %v", dependByHost.HclID, cHostDependency.HostID, err)
+			return nil, err
+		}
 		returnedHostDependencies = append(returnedHostDependencies, entHostDependency)
 	}
 	if len(bulk) > 0 {
 		dbHostDependency, err := client.HostDependency.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Host Dependencies. Err: %v", err)
 			return nil, err
 		}
 		returnedHostDependencies = append(returnedHostDependencies, dbHostDependency...)
 	}
 	return returnedHostDependencies, nil
 }
+
 func createDNS(ctx context.Context, client *ent.Client, configDNS []*ent.DNS, envHclID string) ([]*ent.DNS, error) {
 	bulk := []*ent.DNSCreate{}
 	returnedDNS := []*ent.DNS{}
@@ -1257,7 +1267,7 @@ func createDNS(ctx context.Context, client *ent.Client, configDNS []*ent.DNS, en
 			SetType(cDNS.Type).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to Update DNS %v. Err: %v", cDNS.HclID, err)
 			return nil, err
 		}
 		returnedDNS = append(returnedDNS, entDNS)
@@ -1265,7 +1275,7 @@ func createDNS(ctx context.Context, client *ent.Client, configDNS []*ent.DNS, en
 	if len(bulk) > 0 {
 		dbDNS, err := client.DNS.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk DNS. Err: %v", err)
 			return nil, err
 		}
 		returnedDNS = append(returnedDNS, dbDNS...)
@@ -1297,7 +1307,7 @@ func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk,
 			SetSize(cDisk.Size).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to update Disk Size for %v. Err: %v", hostHclID, err)
 			return nil, err
 		}
 		returnedDisks = append(returnedDisks, entDisk)
@@ -1305,7 +1315,7 @@ func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk,
 	if len(bulk) > 0 {
 		dbDisk, err := client.Disk.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Disks. Err: %v", err)
 			return nil, err
 		}
 		returnedDisks = append(returnedDisks, dbDisk...)
@@ -1327,7 +1337,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 			),
 		).Only(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Unable to Query %v network in %v enviroment. Err: %v", cIncludedNetwork.Name, envHclID, err)
 			return nil, err
 		}
 		entHosts := []*ent.Host{}
@@ -1342,7 +1352,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 				),
 			).Only(ctx)
 			if err != nil {
-				log.Fatalf("failed creating fileextract: %v", err)
+				log.Fatalf("Unable to Query %v host in %v enviroment. Err: %v", cHostHclID, envHclID, err)
 				return nil, err
 			}
 			entHosts = append(entHosts, entHost)
@@ -1374,7 +1384,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 			ClearIncludedNetworkToNetwork().
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to update the Included Network %v with Hosts %v. Err: %v", cIncludedNetwork.Name, cIncludedNetwork.Hosts, err)
 			return nil, err
 		}
 		entIncludedNetwork, err = entIncludedNetwork.Update().
@@ -1382,7 +1392,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 			AddIncludedNetworkToNetwork(entNetwork).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to update the Included Network %v Edges with Hosts %v. Err: %v", cIncludedNetwork.Name, cIncludedNetwork.Hosts, err)
 			return nil, err
 		}
 		returnedIncludedNetworks = append(returnedIncludedNetworks, entIncludedNetwork)
@@ -1390,7 +1400,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 	if len(bulk) > 0 {
 		dbIncludedNetwork, err := client.IncludedNetwork.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Failed to create bulk Included Network. Err: %v", err)
 			return nil, err
 		}
 		returnedIncludedNetworks = append(returnedIncludedNetworks, dbIncludedNetwork...)
@@ -1398,7 +1408,6 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 	return returnedIncludedNetworks, nil
 }
 
-// Need to validate After creating Included Networks
 func validateHostDependencies(ctx context.Context, client *ent.Client, uncheckedHostDependencies []*ent.HostDependency, envHclID string) ([]*ent.HostDependency, error) {
 	checkedHostDependencies := []*ent.HostDependency{}
 	for _, uncheckedHostDependency := range uncheckedHostDependencies {
@@ -1409,7 +1418,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 			),
 		).Only(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Unable to Query %v network in %v enviroment. Err: %v", uncheckedHostDependency.NetworkID, envHclID, err)
 			return nil, err
 		}
 		entHost, err := client.Host.Query().Where(
@@ -1419,7 +1428,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 			),
 		).Only(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Unable to Query %v host in %v enviroment. Err: %v", uncheckedHostDependency.HostID, envHclID, err)
 			return nil, err
 		}
 		_, err = client.IncludedNetwork.Query().Where(
@@ -1430,7 +1439,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 			),
 		).Only(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			log.Fatalf("Unable to %v host in %v network while loading %v enviroment. Err: %v", uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, envHclID, err)
 			return nil, err
 		}
 		entHostDependency, err := uncheckedHostDependency.Update().
@@ -1438,7 +1447,13 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 			AddHostDependencyToNetwork(entNetwork).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("failed creating fileextract: %v", err)
+			dependedByHost, queryErr := uncheckedHostDependency.HostDependencyToDependByHost(ctx)
+			if queryErr != nil {
+				log.Fatalf("Unable to find the host Depended by Err: %v", queryErr)
+				return nil, queryErr
+			}
+			// TODO: Fix dependedByHost to be Unique so it's a single object instead of a slice
+			log.Fatalf("Failed to update the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost[0].HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
 			return nil, err
 		}
 		checkedHostDependencies = append(checkedHostDependencies, entHostDependency)
