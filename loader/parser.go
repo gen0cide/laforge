@@ -355,7 +355,7 @@ func main() {
 	}
 
 	tloader := NewLoader()
-	tloader.ParseConfigFile("/home/red/Documents/infra/envs/fred/env.laforge")
+	tloader.ParseConfigFile("/home/red/Documents/infra/envs/finals/env.laforge")
 	loadedConfig, err := tloader.Bind()
 	if err != nil {
 		log.Fatal(err)
@@ -583,10 +583,27 @@ func createCompetitions(ctx context.Context, client *ent.Client, configCompetiti
 	return returnedCompetitions, returnedAllDNS, nil
 }
 
+func removeDuplicateValues(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+
+	// If the key(values of the slice) is not equal
+	// to the already present value in new slice (list)
+	// then we append it. else we jump on another element.
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
 func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string, environmentHosts []string) ([]*ent.Host, []*ent.HostDependency, error) {
 	bulk := []*ent.HostCreate{}
 	returnedHosts := []*ent.Host{}
 	returnedAllHostDependencies := []*ent.HostDependency{}
+	environmentHosts = removeDuplicateValues(environmentHosts)
 	for _, cHostID := range environmentHosts {
 		cHost, ok := configHosts[cHostID]
 		if !ok {
@@ -1440,6 +1457,20 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 		).Only(ctx)
 		if err != nil {
 			log.Fatalf("Unable to %v host in %v network while loading %v enviroment. Err: %v", uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, envHclID, err)
+			return nil, err
+		}
+		uncheckedHostDependency, err := uncheckedHostDependency.Update().
+			ClearHostDependencyToDependOnHost().
+			ClearHostDependencyToNetwork().
+			Save(ctx)
+		if err != nil {
+			dependedByHost, queryErr := uncheckedHostDependency.HostDependencyToDependByHost(ctx)
+			if queryErr != nil {
+				log.Fatalf("Unable to find the host Depended by Err: %v", queryErr)
+				return nil, queryErr
+			}
+			// TODO: Fix dependedByHost to be Unique so it's a single object instead of a slice
+			log.Fatalf("Failed to clear the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost[0].HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
 			return nil, err
 		}
 		entHostDependency, err := uncheckedHostDependency.Update().
