@@ -62,7 +62,7 @@ func main() {
 	}
 
 	for _, ph := range phs {
-		host, err := ph.QueryHost().Only(ctx)
+		host, err := ph.QueryProvisionedHostToHost().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Host: %v", err)
 		}
@@ -79,7 +79,7 @@ func main() {
 			}
 		}
 
-		pn, err := ph.QueryProvisionedNetwork().Only(ctx)
+		pn, err := ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioned Network: %v", err)
 		}

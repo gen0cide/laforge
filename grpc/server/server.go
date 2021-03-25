@@ -27,8 +27,8 @@ var (
 )
 
 const (
-	TaskFailed = "Failed"
-	TaskRunning = "Running"
+	TaskFailed    = "Failed"
+	TaskRunning   = "Running"
 	TaskSucceeded = "Completed"
 )
 
@@ -69,55 +69,54 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 	}
 
 	// TODO; Will Wanna change this relationship to be 1-M between Host and AgentStatus
-	if statusExist{
+	if statusExist {
 		agentStatus, err := s.Client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Only(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
 		}
 		agentStatus, err = agentStatus.Update().
-							SetUpTime(int64(in.GetUptime())).
-							SetBootTime(int64(in.GetBoottime())).
-							SetNumProcs(int64(in.GetNumprocs())).
-							SetLoad1(in.GetLoad1()).
-							SetLoad5(in.GetLoad5()).
-							SetLoad15(in.GetLoad15()).
-							SetTotalMem(int64(in.GetTotalmem())).
-							SetFreeMem(int64(in.GetFreemem())).
-							SetUsedMem(int64(in.GetUsedmem())).
-							SetTimestamp(in.GetTimestamp().Seconds).
-							Save(ctx)
+			SetUpTime(int64(in.GetUptime())).
+			SetBootTime(int64(in.GetBoottime())).
+			SetNumProcs(int64(in.GetNumprocs())).
+			SetLoad1(in.GetLoad1()).
+			SetLoad5(in.GetLoad5()).
+			SetLoad15(in.GetLoad15()).
+			SetTotalMem(int64(in.GetTotalmem())).
+			SetFreeMem(int64(in.GetFreemem())).
+			SetUsedMem(int64(in.GetUsedmem())).
+			SetTimestamp(in.GetTimestamp().Seconds).
+			Save(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed updating Agent Status: %v", err)
 		}
-	} else{
+	} else {
 		ph, err := s.Client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
 
 		_, err = s.Client.AgentStatus.
-		Create().
-		SetClientID(in.GetClientId()).
-		SetHostname(in.GetHostname()).
-		SetUpTime(int64(in.GetUptime())).
-		SetBootTime(int64(in.GetBoottime())).
-		SetNumProcs(int64(in.GetNumprocs())).
-		SetOs(in.GetOs()).
-		SetHostID(in.GetHostid()).
-		SetLoad1(in.GetLoad1()).
-		SetLoad5(in.GetLoad5()).
-		SetLoad15(in.GetLoad15()).
-		SetTotalMem(int64(in.GetTotalmem())).
-		SetFreeMem(int64(in.GetFreemem())).
-		SetUsedMem(int64(in.GetUsedmem())).
-		SetTimestamp(in.GetTimestamp().Seconds).
-		AddHost(ph).
-		Save(ctx)
+			Create().
+			SetClientID(in.GetClientId()).
+			SetHostname(in.GetHostname()).
+			SetUpTime(int64(in.GetUptime())).
+			SetBootTime(int64(in.GetBoottime())).
+			SetNumProcs(int64(in.GetNumprocs())).
+			SetOs(in.GetOs()).
+			SetHostID(in.GetHostid()).
+			SetLoad1(in.GetLoad1()).
+			SetLoad5(in.GetLoad5()).
+			SetLoad15(in.GetLoad15()).
+			SetTotalMem(int64(in.GetTotalmem())).
+			SetFreeMem(int64(in.GetFreemem())).
+			SetUsedMem(int64(in.GetUsedmem())).
+			SetTimestamp(in.GetTimestamp().Seconds).
+			AddAgentStatusToProvisionedHost(ph).
+			Save(ctx)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed Creating Agent Status: %v", err)
 		}
 	}
 
-
-	// TODO: Implement This with ENT 
+	// TODO: Implement This with ENT
 	// tasks := make([]Task, 0)
 	// db.Find(&tasks, map[string]interface{}{"client_id": in.GetClientId(), "completed": false})
 	// if len(tasks) > 0 {
@@ -128,7 +127,7 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 
 //GetTask Gets a task that needs to be run on the client and sends it over
 func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply, error) {
-	// TODO: Implement This with ENT 
+	// TODO: Implement This with ENT
 	// clientID := in.ClientId
 	// db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
 	// tasks := make([]Task, 0)
@@ -142,7 +141,7 @@ func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 
 // InformTaskStatus Updates the status of a Task on a client from the response of the client
 func (s *Server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
-	// TODO: Implement This with ENT 
+	// TODO: Implement This with ENT
 	// clientID := in.ClientId
 	// tasks := make([]Task, 0)
 	// db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
@@ -195,26 +194,25 @@ func main() {
 	go web.Run(webPort)
 
 	// secure server
-	certPem,certerr := static.ReadFile(CertFile)
+	certPem, certerr := static.ReadFile(CertFile)
 	if certerr != nil {
-        fmt.Println("File reading error", certerr)
-        return 
+		fmt.Println("File reading error", certerr)
+		return
 	}
-	keyPem,keyerr := static.ReadFile(KeyFile)
+	keyPem, keyerr := static.ReadFile(KeyFile)
 	if keyerr != nil {
-        fmt.Println("File reading error", keyerr)
-        return 
+		fmt.Println("File reading error", keyerr)
+		return
 	}
 
 	cert, tlserr := tls.X509KeyPair(certPem, keyPem)
 	if tlserr != nil {
-        fmt.Println("File reading error", tlserr)
-        return 
+		fmt.Println("File reading error", tlserr)
+		return
 	}
 
 	creds := credentials.NewServerTLSFromCert(&cert)
 	s := grpc.NewServer(grpc.Creds(creds))
-
 
 	log.Printf("Starting Laforge Server on port " + Port)
 

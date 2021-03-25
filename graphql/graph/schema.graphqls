@@ -26,7 +26,7 @@ type User {
 type Tag {
   id: ID!
   name: String!
-  description: String
+  description: String # Will need to update Tags
 }
 
 enum FindingSeverity {
@@ -51,24 +51,26 @@ type Finding {
   description: String!
   severity: FindingSeverity!
   difficulty: FindingDifficulty!
-  maintainer: User!
-  tags: [Tag]
-  Host: Host!
+  findingToUser: User!
+  findingToTag: [Tag]
+  findingToHost: Host!
 }
 
 type DNSRecord {
   id: ID!
+  hcl_id: String!
   name: String!
   values: [String]!
   type: String!
   zone: String!
   vars: [varsMap]
-  tags: [Tag]
+  dnsRecordToTag: [Tag]
   disabled: Boolean!
 }
 
 type Script {
   id: ID!
+  hcl_id: String!
   name: String!
   language: String!
   description: String!
@@ -80,10 +82,10 @@ type Script {
   args: [String]!
   disabled: Boolean!
   vars: [varsMap]
-  tags: [Tag]
+  scriptToTag: [Tag]
   absPath: String!
-  maintainer: User!
-  findings: [Finding]!
+  scriptToUser: User!
+  scriptToFinding: [Finding]!
 }
 type Command {
   id: ID!
@@ -97,26 +99,29 @@ type Command {
   disabled: Boolean!
   vars: [varsMap]
   tags: [Tag]
-  maintainer: User!
+  commandToUser: User!
 }
 type FileDownload {
   id: ID!
+  hcl_id: String!
   sourceType: String!
   source: String!
   destination: String!
   templete: Boolean!
-  mode: String!
+  perms: String!
   disabled: Boolean!
   md5: String!
   absPath: String!
-  tags: [Tag]
+  fileDownloadToTag: [Tag]
 }
 type FileDelete {
   id: ID!
+  hcl_id: String!
   path: String!
 }
 type FileExtract {
   id: ID!
+  hcl_id: String!
   source: String!
   destination: String!
   type: String!
@@ -124,6 +129,7 @@ type FileExtract {
 
 type Host {
   id: ID!
+  hcl_id: String!
   hostname: String!
   OS: String!
   lastOctet: Int!
@@ -134,28 +140,24 @@ type Host {
   vars: [varsMap]
   userGroups: [String]!
   dependsOn: [Host]!
-  maintainer: User!
-  tags: [Tag]
-  dnsRecords: [DNSRecord]
-  commands: [Command]
-  disk: Disk!
-  scripts: [Script]
-  fileDeletes: [FileDelete]
-  fileDownloads: [FileDownload]
-  fileExtracts: [FileExtract]
+  hostToUser: User!
+  hostToTag: [Tag]
+  hostToDisk: Disk!
 }
 
 type Network {
   id: ID!
+  hcl_id: String!
   name: String!
   cidr: String!
   vdiVisible: Boolean!
   vars: [varsMap]
-  tags: [Tag]
+  networkToTag: [Tag]
 }
 
 type DNS {
   id: ID!
+  hcl_id: String!
   type: String!
   rootDomain: String!
   DNSServers: [String]!
@@ -163,17 +165,30 @@ type DNS {
   config: [configMap]
 }
 
+type Identity {
+  id: ID!
+  hcl_id: String!
+  first_name: String!
+  last_name: String!
+  email: String!
+  password: String!
+  description: String!
+  avatar_file: String!
+  vars: [varsMap]
+}
+
 type Build {
   id: ID!
   revision: Int!
   tags: [Tag]
   config: [configMap]
-  maintainer: User!
-  teams: [Team]!
+  buildToUser: User!
+  buildToTeam: [Team]!
 }
 
 type Environment {
   id: ID!
+  hcl_id: String!
   CompetitionID: String!
   Name: String!
   Description: String!
@@ -183,18 +198,20 @@ type Environment {
   ExposedVDIPorts: [String]!
   tags: [Tag]
   config: [configMap]
-  maintainer: User!
-  networks: [Network]!
-  hosts: [Host]!
-  build: Build!
-  competition: Competition!
+  environmentToUser: [User]!
+  environmentToNetwork: [Network]!
+  environmentToHost: [Host]!
+  environmentToBuild: [Build]!
+  environmentToCompetition: Competition!
+  environmentToIdentity: [Identity]!
 }
 
 type Competition {
   id: ID!
+  hcl_id: String!
   rootPassword: String!
   config: [configMap]
-  dns: DNS!
+  competitionToDNS: DNS!
 }
 
 type Team {
@@ -202,21 +219,21 @@ type Team {
   teamNumber: Int!
   config: [configMap]
   revision: Int!
-  maintainer: User!
-  build: Build!
-  environment: Environment!
-  tags: [Tag]
-  provisionedNetworks: [ProvisionedNetwork]!
+  teamToUser: User!
+  teamToBuild: Build!
+  teamToEnvironment: Environment!
+  teamToTag: [Tag]
+  teamToProvisionedNetwork: [ProvisionedNetwork]!
 }
 
 type ProvisionedNetwork {
   id: ID!
   name: String!
   cidr: String!
-  provisionedHosts: [ProvisionedHost]!
-  status: Status!
-  network: Network!
-  build: Build!
+  provisionedNetworkToProvisionedHost: [ProvisionedHost]!
+  provisionedNetworkToStatus: Status!
+  provisionedNetworkToNetwork: Network!
+  provisionedNetworkToBuild: Build!
 }
 
 enum ProvisionStatus {
@@ -258,42 +275,26 @@ type AgentStatus {
 type ProvisionedHost {
   id: ID!
   subnetIP: String!
-  status: Status!
-  provisionedNetwork: ProvisionedNetwork!
-  provisionedSteps: [ProvisioningStep]!
-  host: Host!
+  provisionedHostToStatus: Status!
+  provisionedHostToProvisionedNetwork: ProvisionedNetwork!
+  provisionedHostToProvisioningStep: [ProvisioningStep]!
+  provisionedHostToHost: Host!
   combinedOutput: String # Link to WebSocket
-  heartbeat: AgentStatus
-}
-
-type RemoteFile {
-  id: ID!
-  sourceType: String!
-  source: String!
-  destination: String!
-  vars: [varsMap]
-  templete: Boolean!
-  perms: String!
-  disabled: Boolean!
-  md5: String!
-  absPath: String!
-  ext: String!
-  tags: [Tag]
+  provisionedHostToAgentStatus: AgentStatus
 }
 
 type ProvisioningStep {
   id: ID!
   provisionType: String!
   stepNumber: Int!
-  provisionedHost: ProvisionedHost!
-  status: Status!
-  script: Script
-  command: Command
-  DNSRecord: DNSRecord
-  remoteFile: RemoteFile
-  # fileDownload: FileDownload # Not Needed for now
-  # fileDelete: FileDelete
-  # fileExtract: FileExtract
+  provisioningStepToProvisionedHost: ProvisionedHost!
+  provisioningStepToStatus: Status!
+  provisioningStepToScript: Script
+  provisioningStepToCommand: Command
+  provisioningStepToDNSRecord: DNSRecord
+  provisioningStepToFileDownload: FileDownload
+  provisioningStepToFileDelete: FileDelete
+  provisioningStepToFileExtract: FileExtract
 }
 
 type Query {
