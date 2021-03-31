@@ -15,6 +15,34 @@ var (
 	// password = os.Getenv("GOVMOMI_PASSWORD")
 )
 
+func (c *Client) GET(url string) (resp *Response, err error){
+	//defining the http client 
+	c := &http.Client{
+		CheckRedirect: redirectPolicyFunc,
+	}
+	
+	response, err := client.Get("http://example.com")
+	
+	// building the REST API as an http request 
+	// this is the URL to be called in main - "https://nsx01.cyberrange.rit.edu/api/v1/spec/openapi/nsx_api.json"
+	request, err := http.NewRequest("GET", url, nil)
+	// default header - verify its requirement 
+	request.Header.Add("If-None-Match", `W/"wyzzy"`)
+
+	//add the request body from Postman - in JSON format 
+	request.Body.Add("")  
+	respose, err := client.Do(request) //get the response of the request 
+	
+}
+func POST() {
+
+}
+ func PATCH() {
+
+ }
+  func DELETE() {
+
+  }
 func main() {
 	// userPassContext := security.NewUserPasswordSecurityContext(username, password)
 	// security.AuthenticationHandler.Authenticate(userPassContext)
@@ -33,6 +61,10 @@ func main() {
 		log.Fatalf("Error getting infra: %v\n", err)
 	}
 	fmt.Println(infra.DisplayName)
+
+	
+
+
 	// cfg := nsxt.Configuration{
 	// 	BasePath:             "/api/v1",
 	// 	Host:                 host,
