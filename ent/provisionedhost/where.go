@@ -405,6 +405,34 @@ func HasProvisionedHostToPlanWith(preds ...predicate.Plan) predicate.Provisioned
 	})
 }
 
+// HasProvisionedHostToGinFileMiddleware applies the HasEdge predicate on the "ProvisionedHostToGinFileMiddleware" edge.
+func HasProvisionedHostToGinFileMiddleware() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToGinFileMiddlewareTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToGinFileMiddlewareTable, ProvisionedHostToGinFileMiddlewareColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToGinFileMiddlewareWith applies the HasEdge predicate on the "ProvisionedHostToGinFileMiddleware" edge with a given conditions (other predicates).
+func HasProvisionedHostToGinFileMiddlewareWith(preds ...predicate.GinFileMiddleware) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToGinFileMiddlewareInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToGinFileMiddlewareTable, ProvisionedHostToGinFileMiddlewareColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisionedHost) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {

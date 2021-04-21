@@ -32,6 +32,8 @@ const (
 	EdgeProvisioningStepToFileExtract = "ProvisioningStepToFileExtract"
 	// EdgeProvisioningStepToPlan holds the string denoting the provisioningsteptoplan edge name in mutations.
 	EdgeProvisioningStepToPlan = "ProvisioningStepToPlan"
+	// EdgeProvisioningStepToGinFileMiddleware holds the string denoting the provisioningsteptoginfilemiddleware edge name in mutations.
+	EdgeProvisioningStepToGinFileMiddleware = "ProvisioningStepToGinFileMiddleware"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
@@ -101,6 +103,13 @@ const (
 	// ProvisioningStepToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisioningStepToPlanInverseTable = "plans"
+	// ProvisioningStepToGinFileMiddlewareTable is the table the holds the ProvisioningStepToGinFileMiddleware relation/edge.
+	ProvisioningStepToGinFileMiddlewareTable = "provisioning_steps"
+	// ProvisioningStepToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
+	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.
+	ProvisioningStepToGinFileMiddlewareInverseTable = "gin_file_middlewares"
+	// ProvisioningStepToGinFileMiddlewareColumn is the table column denoting the ProvisioningStepToGinFileMiddleware relation/edge.
+	ProvisioningStepToGinFileMiddlewareColumn = "gin_file_middleware_gin_file_middleware_to_provisioning_step"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.
@@ -108,6 +117,11 @@ var Columns = []string{
 	FieldID,
 	FieldProvisionerType,
 	FieldStepNumber,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisioningStep type.
+var ForeignKeys = []string{
+	"gin_file_middleware_gin_file_middleware_to_provisioning_step",
 }
 
 var (
@@ -123,6 +137,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

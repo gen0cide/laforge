@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 )
 
@@ -44,8 +45,10 @@ type ProvisioningStep struct {
 	HCLProvisioningStepToFileExtract []*FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
 	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
 	HCLProvisioningStepToPlan []*Plan `json:"ProvisioningStepToPlan,omitempty"`
+	// ProvisioningStepToGinFileMiddleware holds the value of the ProvisioningStepToGinFileMiddleware edge.
+	HCLProvisioningStepToGinFileMiddleware *GinFileMiddleware `json:"ProvisioningStepToGinFileMiddleware,omitempty"`
 	//
-
+	gin_file_middleware_gin_file_middleware_to_provisioning_step *int
 }
 
 // ProvisioningStepEdges holds the relations/edges for other nodes in the graph.
@@ -70,9 +73,11 @@ type ProvisioningStepEdges struct {
 	ProvisioningStepToFileExtract []*FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
 	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
 	ProvisioningStepToPlan []*Plan `json:"ProvisioningStepToPlan,omitempty"`
+	// ProvisioningStepToGinFileMiddleware holds the value of the ProvisioningStepToGinFileMiddleware edge.
+	ProvisioningStepToGinFileMiddleware *GinFileMiddleware `json:"ProvisioningStepToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // ProvisioningStepToTagOrErr returns the ProvisioningStepToTag value or an error if the edge
@@ -165,6 +170,20 @@ func (e ProvisioningStepEdges) ProvisioningStepToPlanOrErr() ([]*Plan, error) {
 	return nil, &NotLoadedError{edge: "ProvisioningStepToPlan"}
 }
 
+// ProvisioningStepToGinFileMiddlewareOrErr returns the ProvisioningStepToGinFileMiddleware value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProvisioningStepEdges) ProvisioningStepToGinFileMiddlewareOrErr() (*GinFileMiddleware, error) {
+	if e.loadedTypes[10] {
+		if e.ProvisioningStepToGinFileMiddleware == nil {
+			// The edge ProvisioningStepToGinFileMiddleware was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: ginfilemiddleware.Label}
+		}
+		return e.ProvisioningStepToGinFileMiddleware, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToGinFileMiddleware"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ProvisioningStep) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -174,6 +193,8 @@ func (*ProvisioningStep) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case provisioningstep.FieldProvisionerType:
 			values[i] = &sql.NullString{}
+		case provisioningstep.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioning_step
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisioningStep", columns[i])
 		}
@@ -206,6 +227,13 @@ func (ps *ProvisioningStep) assignValues(columns []string, values []interface{})
 				return fmt.Errorf("unexpected type %T for field step_number", values[i])
 			} else if value.Valid {
 				ps.StepNumber = int(value.Int64)
+			}
+		case provisioningstep.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field gin_file_middleware_gin_file_middleware_to_provisioning_step", value)
+			} else if value.Valid {
+				ps.gin_file_middleware_gin_file_middleware_to_provisioning_step = new(int)
+				*ps.gin_file_middleware_gin_file_middleware_to_provisioning_step = int(value.Int64)
 			}
 		}
 	}
@@ -260,6 +288,11 @@ func (ps *ProvisioningStep) QueryProvisioningStepToFileExtract() *FileExtractQue
 // QueryProvisioningStepToPlan queries the "ProvisioningStepToPlan" edge of the ProvisioningStep entity.
 func (ps *ProvisioningStep) QueryProvisioningStepToPlan() *PlanQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToPlan(ps)
+}
+
+// QueryProvisioningStepToGinFileMiddleware queries the "ProvisioningStepToGinFileMiddleware" edge of the ProvisioningStep entity.
+func (ps *ProvisioningStep) QueryProvisioningStepToGinFileMiddleware() *GinFileMiddlewareQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToGinFileMiddleware(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.

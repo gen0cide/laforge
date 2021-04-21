@@ -20,6 +20,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
@@ -61,6 +62,7 @@ const (
 	TypeFileDownload       = "FileDownload"
 	TypeFileExtract        = "FileExtract"
 	TypeFinding            = "Finding"
+	TypeGinFileMiddleware  = "GinFileMiddleware"
 	TypeHost               = "Host"
 	TypeHostDependency     = "HostDependency"
 	TypeIdentity           = "Identity"
@@ -11956,6 +11958,529 @@ func (m *FindingMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Finding edge %s", name)
 }
 
+// GinFileMiddlewareMutation represents an operation that mutates the GinFileMiddleware nodes in the graph.
+type GinFileMiddlewareMutation struct {
+	config
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	url_path                                    *string
+	file_path                                   *string
+	accessed                                    *bool
+	clearedFields                               map[string]struct{}
+	_GinFileMiddlewareToProvisionedHost         *int
+	cleared_GinFileMiddlewareToProvisionedHost  bool
+	_GinFileMiddlewareToProvisioningStep        *int
+	cleared_GinFileMiddlewareToProvisioningStep bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*GinFileMiddleware, error)
+	predicates                                  []predicate.GinFileMiddleware
+}
+
+var _ ent.Mutation = (*GinFileMiddlewareMutation)(nil)
+
+// ginfilemiddlewareOption allows management of the mutation configuration using functional options.
+type ginfilemiddlewareOption func(*GinFileMiddlewareMutation)
+
+// newGinFileMiddlewareMutation creates new mutation for the GinFileMiddleware entity.
+func newGinFileMiddlewareMutation(c config, op Op, opts ...ginfilemiddlewareOption) *GinFileMiddlewareMutation {
+	m := &GinFileMiddlewareMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGinFileMiddleware,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGinFileMiddlewareID sets the ID field of the mutation.
+func withGinFileMiddlewareID(id int) ginfilemiddlewareOption {
+	return func(m *GinFileMiddlewareMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GinFileMiddleware
+		)
+		m.oldValue = func(ctx context.Context) (*GinFileMiddleware, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GinFileMiddleware.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGinFileMiddleware sets the old GinFileMiddleware of the mutation.
+func withGinFileMiddleware(node *GinFileMiddleware) ginfilemiddlewareOption {
+	return func(m *GinFileMiddlewareMutation) {
+		m.oldValue = func(context.Context) (*GinFileMiddleware, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GinFileMiddlewareMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GinFileMiddlewareMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *GinFileMiddlewareMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetURLPath sets the "url_path" field.
+func (m *GinFileMiddlewareMutation) SetURLPath(s string) {
+	m.url_path = &s
+}
+
+// URLPath returns the value of the "url_path" field in the mutation.
+func (m *GinFileMiddlewareMutation) URLPath() (r string, exists bool) {
+	v := m.url_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURLPath returns the old "url_path" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldURLPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldURLPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldURLPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURLPath: %w", err)
+	}
+	return oldValue.URLPath, nil
+}
+
+// ResetURLPath resets all changes to the "url_path" field.
+func (m *GinFileMiddlewareMutation) ResetURLPath() {
+	m.url_path = nil
+}
+
+// SetFilePath sets the "file_path" field.
+func (m *GinFileMiddlewareMutation) SetFilePath(s string) {
+	m.file_path = &s
+}
+
+// FilePath returns the value of the "file_path" field in the mutation.
+func (m *GinFileMiddlewareMutation) FilePath() (r string, exists bool) {
+	v := m.file_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFilePath returns the old "file_path" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldFilePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFilePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFilePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFilePath: %w", err)
+	}
+	return oldValue.FilePath, nil
+}
+
+// ResetFilePath resets all changes to the "file_path" field.
+func (m *GinFileMiddlewareMutation) ResetFilePath() {
+	m.file_path = nil
+}
+
+// SetAccessed sets the "accessed" field.
+func (m *GinFileMiddlewareMutation) SetAccessed(b bool) {
+	m.accessed = &b
+}
+
+// Accessed returns the value of the "accessed" field in the mutation.
+func (m *GinFileMiddlewareMutation) Accessed() (r bool, exists bool) {
+	v := m.accessed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessed returns the old "accessed" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldAccessed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAccessed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAccessed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessed: %w", err)
+	}
+	return oldValue.Accessed, nil
+}
+
+// ResetAccessed resets all changes to the "accessed" field.
+func (m *GinFileMiddlewareMutation) ResetAccessed() {
+	m.accessed = nil
+}
+
+// SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisionedHostID(id int) {
+	m._GinFileMiddlewareToProvisionedHost = &id
+}
+
+// ClearGinFileMiddlewareToProvisionedHost clears the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisionedHost() {
+	m.cleared_GinFileMiddlewareToProvisionedHost = true
+}
+
+// GinFileMiddlewareToProvisionedHostCleared returns if the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostCleared() bool {
+	return m.cleared_GinFileMiddlewareToProvisionedHost
+}
+
+// GinFileMiddlewareToProvisionedHostID returns the "GinFileMiddlewareToProvisionedHost" edge ID in the mutation.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostID() (id int, exists bool) {
+	if m._GinFileMiddlewareToProvisionedHost != nil {
+		return *m._GinFileMiddlewareToProvisionedHost, true
+	}
+	return
+}
+
+// GinFileMiddlewareToProvisionedHostIDs returns the "GinFileMiddlewareToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GinFileMiddlewareToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostIDs() (ids []int) {
+	if id := m._GinFileMiddlewareToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGinFileMiddlewareToProvisionedHost resets all changes to the "GinFileMiddlewareToProvisionedHost" edge.
+func (m *GinFileMiddlewareMutation) ResetGinFileMiddlewareToProvisionedHost() {
+	m._GinFileMiddlewareToProvisionedHost = nil
+	m.cleared_GinFileMiddlewareToProvisionedHost = false
+}
+
+// SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisioningStepID(id int) {
+	m._GinFileMiddlewareToProvisioningStep = &id
+}
+
+// ClearGinFileMiddlewareToProvisioningStep clears the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisioningStep() {
+	m.cleared_GinFileMiddlewareToProvisioningStep = true
+}
+
+// GinFileMiddlewareToProvisioningStepCleared returns if the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepCleared() bool {
+	return m.cleared_GinFileMiddlewareToProvisioningStep
+}
+
+// GinFileMiddlewareToProvisioningStepID returns the "GinFileMiddlewareToProvisioningStep" edge ID in the mutation.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepID() (id int, exists bool) {
+	if m._GinFileMiddlewareToProvisioningStep != nil {
+		return *m._GinFileMiddlewareToProvisioningStep, true
+	}
+	return
+}
+
+// GinFileMiddlewareToProvisioningStepIDs returns the "GinFileMiddlewareToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GinFileMiddlewareToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepIDs() (ids []int) {
+	if id := m._GinFileMiddlewareToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGinFileMiddlewareToProvisioningStep resets all changes to the "GinFileMiddlewareToProvisioningStep" edge.
+func (m *GinFileMiddlewareMutation) ResetGinFileMiddlewareToProvisioningStep() {
+	m._GinFileMiddlewareToProvisioningStep = nil
+	m.cleared_GinFileMiddlewareToProvisioningStep = false
+}
+
+// Op returns the operation name.
+func (m *GinFileMiddlewareMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (GinFileMiddleware).
+func (m *GinFileMiddlewareMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GinFileMiddlewareMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.url_path != nil {
+		fields = append(fields, ginfilemiddleware.FieldURLPath)
+	}
+	if m.file_path != nil {
+		fields = append(fields, ginfilemiddleware.FieldFilePath)
+	}
+	if m.accessed != nil {
+		fields = append(fields, ginfilemiddleware.FieldAccessed)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GinFileMiddlewareMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ginfilemiddleware.FieldURLPath:
+		return m.URLPath()
+	case ginfilemiddleware.FieldFilePath:
+		return m.FilePath()
+	case ginfilemiddleware.FieldAccessed:
+		return m.Accessed()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GinFileMiddlewareMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ginfilemiddleware.FieldURLPath:
+		return m.OldURLPath(ctx)
+	case ginfilemiddleware.FieldFilePath:
+		return m.OldFilePath(ctx)
+	case ginfilemiddleware.FieldAccessed:
+		return m.OldAccessed(ctx)
+	}
+	return nil, fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GinFileMiddlewareMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ginfilemiddleware.FieldURLPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURLPath(v)
+		return nil
+	case ginfilemiddleware.FieldFilePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFilePath(v)
+		return nil
+	case ginfilemiddleware.FieldAccessed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessed(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GinFileMiddlewareMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GinFileMiddlewareMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GinFileMiddlewareMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GinFileMiddleware numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GinFileMiddlewareMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GinFileMiddlewareMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GinFileMiddleware nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ResetField(name string) error {
+	switch name {
+	case ginfilemiddleware.FieldURLPath:
+		m.ResetURLPath()
+		return nil
+	case ginfilemiddleware.FieldFilePath:
+		m.ResetFilePath()
+		return nil
+	case ginfilemiddleware.FieldAccessed:
+		m.ResetAccessed()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GinFileMiddlewareMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._GinFileMiddlewareToProvisionedHost != nil {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost)
+	}
+	if m._GinFileMiddlewareToProvisioningStep != nil {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GinFileMiddlewareMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		if id := m._GinFileMiddlewareToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		if id := m._GinFileMiddlewareToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GinFileMiddlewareMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GinFileMiddlewareMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GinFileMiddlewareMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_GinFileMiddlewareToProvisionedHost {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost)
+	}
+	if m.cleared_GinFileMiddlewareToProvisioningStep {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GinFileMiddlewareMutation) EdgeCleared(name string) bool {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		return m.cleared_GinFileMiddlewareToProvisionedHost
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		return m.cleared_GinFileMiddlewareToProvisioningStep
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ClearEdge(name string) error {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		m.ClearGinFileMiddlewareToProvisionedHost()
+		return nil
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		m.ClearGinFileMiddlewareToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ResetEdge(name string) error {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		m.ResetGinFileMiddlewareToProvisionedHost()
+		return nil
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		m.ResetGinFileMiddlewareToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware edge %s", name)
+}
+
 // HostMutation represents an operation that mutates the Host nodes in the graph.
 type HostMutation struct {
 	config
@@ -17705,6 +18230,8 @@ type ProvisionedHostMutation struct {
 	_ProvisionedHostToPlan                      map[int]struct{}
 	removed_ProvisionedHostToPlan               map[int]struct{}
 	cleared_ProvisionedHostToPlan               bool
+	_ProvisionedHostToGinFileMiddleware         *int
+	cleared_ProvisionedHostToGinFileMiddleware  bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedHost, error)
 	predicates                                  []predicate.ProvisionedHost
@@ -18196,6 +18723,45 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToPlan() {
 	m.removed_ProvisionedHostToPlan = nil
 }
 
+// SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToGinFileMiddlewareID(id int) {
+	m._ProvisionedHostToGinFileMiddleware = &id
+}
+
+// ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToGinFileMiddleware() {
+	m.cleared_ProvisionedHostToGinFileMiddleware = true
+}
+
+// ProvisionedHostToGinFileMiddlewareCleared returns if the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareCleared() bool {
+	return m.cleared_ProvisionedHostToGinFileMiddleware
+}
+
+// ProvisionedHostToGinFileMiddlewareID returns the "ProvisionedHostToGinFileMiddleware" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareID() (id int, exists bool) {
+	if m._ProvisionedHostToGinFileMiddleware != nil {
+		return *m._ProvisionedHostToGinFileMiddleware, true
+	}
+	return
+}
+
+// ProvisionedHostToGinFileMiddlewareIDs returns the "ProvisionedHostToGinFileMiddleware" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareIDs() (ids []int) {
+	if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisionedHostToGinFileMiddleware resets all changes to the "ProvisionedHostToGinFileMiddleware" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToGinFileMiddleware() {
+	m._ProvisionedHostToGinFileMiddleware = nil
+	m.cleared_ProvisionedHostToGinFileMiddleware = false
+}
+
 // Op returns the operation name.
 func (m *ProvisionedHostMutation) Op() Op {
 	return m.op
@@ -18309,7 +18875,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m._ProvisionedHostToTag != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -18330,6 +18896,9 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m._ProvisionedHostToPlan != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
+	}
+	if m._ProvisionedHostToGinFileMiddleware != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToGinFileMiddleware)
 	}
 	return edges
 }
@@ -18380,13 +18949,17 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removed_ProvisionedHostToTag != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -18463,7 +19036,7 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.cleared_ProvisionedHostToTag {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -18484,6 +19057,9 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisionedHostToPlan {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
+	}
+	if m.cleared_ProvisionedHostToGinFileMiddleware {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToGinFileMiddleware)
 	}
 	return edges
 }
@@ -18506,6 +19082,8 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedHostToAgentStatus
 	case provisionedhost.EdgeProvisionedHostToPlan:
 		return m.cleared_ProvisionedHostToPlan
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		return m.cleared_ProvisionedHostToGinFileMiddleware
 	}
 	return false
 }
@@ -18514,6 +19092,9 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 	switch name {
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		m.ClearProvisionedHostToGinFileMiddleware()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost unique edge %s", name)
 }
@@ -18542,6 +19123,9 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 		return nil
 	case provisionedhost.EdgeProvisionedHostToPlan:
 		m.ResetProvisionedHostToPlan()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		m.ResetProvisionedHostToGinFileMiddleware()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost edge %s", name)
@@ -19475,46 +20059,48 @@ func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 // ProvisioningStepMutation represents an operation that mutates the ProvisioningStep nodes in the graph.
 type ProvisioningStepMutation struct {
 	config
-	op                                        Op
-	typ                                       string
-	id                                        *int
-	provisioner_type                          *string
-	step_number                               *int
-	addstep_number                            *int
-	clearedFields                             map[string]struct{}
-	_ProvisioningStepToTag                    map[int]struct{}
-	removed_ProvisioningStepToTag             map[int]struct{}
-	cleared_ProvisioningStepToTag             bool
-	_ProvisioningStepToStatus                 map[int]struct{}
-	removed_ProvisioningStepToStatus          map[int]struct{}
-	cleared_ProvisioningStepToStatus          bool
-	_ProvisioningStepToProvisionedHost        map[int]struct{}
-	removed_ProvisioningStepToProvisionedHost map[int]struct{}
-	cleared_ProvisioningStepToProvisionedHost bool
-	_ProvisioningStepToScript                 map[int]struct{}
-	removed_ProvisioningStepToScript          map[int]struct{}
-	cleared_ProvisioningStepToScript          bool
-	_ProvisioningStepToCommand                map[int]struct{}
-	removed_ProvisioningStepToCommand         map[int]struct{}
-	cleared_ProvisioningStepToCommand         bool
-	_ProvisioningStepToDNSRecord              map[int]struct{}
-	removed_ProvisioningStepToDNSRecord       map[int]struct{}
-	cleared_ProvisioningStepToDNSRecord       bool
-	_ProvisioningStepToFileDelete             map[int]struct{}
-	removed_ProvisioningStepToFileDelete      map[int]struct{}
-	cleared_ProvisioningStepToFileDelete      bool
-	_ProvisioningStepToFileDownload           map[int]struct{}
-	removed_ProvisioningStepToFileDownload    map[int]struct{}
-	cleared_ProvisioningStepToFileDownload    bool
-	_ProvisioningStepToFileExtract            map[int]struct{}
-	removed_ProvisioningStepToFileExtract     map[int]struct{}
-	cleared_ProvisioningStepToFileExtract     bool
-	_ProvisioningStepToPlan                   map[int]struct{}
-	removed_ProvisioningStepToPlan            map[int]struct{}
-	cleared_ProvisioningStepToPlan            bool
-	done                                      bool
-	oldValue                                  func(context.Context) (*ProvisioningStep, error)
-	predicates                                []predicate.ProvisioningStep
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	provisioner_type                            *string
+	step_number                                 *int
+	addstep_number                              *int
+	clearedFields                               map[string]struct{}
+	_ProvisioningStepToTag                      map[int]struct{}
+	removed_ProvisioningStepToTag               map[int]struct{}
+	cleared_ProvisioningStepToTag               bool
+	_ProvisioningStepToStatus                   map[int]struct{}
+	removed_ProvisioningStepToStatus            map[int]struct{}
+	cleared_ProvisioningStepToStatus            bool
+	_ProvisioningStepToProvisionedHost          map[int]struct{}
+	removed_ProvisioningStepToProvisionedHost   map[int]struct{}
+	cleared_ProvisioningStepToProvisionedHost   bool
+	_ProvisioningStepToScript                   map[int]struct{}
+	removed_ProvisioningStepToScript            map[int]struct{}
+	cleared_ProvisioningStepToScript            bool
+	_ProvisioningStepToCommand                  map[int]struct{}
+	removed_ProvisioningStepToCommand           map[int]struct{}
+	cleared_ProvisioningStepToCommand           bool
+	_ProvisioningStepToDNSRecord                map[int]struct{}
+	removed_ProvisioningStepToDNSRecord         map[int]struct{}
+	cleared_ProvisioningStepToDNSRecord         bool
+	_ProvisioningStepToFileDelete               map[int]struct{}
+	removed_ProvisioningStepToFileDelete        map[int]struct{}
+	cleared_ProvisioningStepToFileDelete        bool
+	_ProvisioningStepToFileDownload             map[int]struct{}
+	removed_ProvisioningStepToFileDownload      map[int]struct{}
+	cleared_ProvisioningStepToFileDownload      bool
+	_ProvisioningStepToFileExtract              map[int]struct{}
+	removed_ProvisioningStepToFileExtract       map[int]struct{}
+	cleared_ProvisioningStepToFileExtract       bool
+	_ProvisioningStepToPlan                     map[int]struct{}
+	removed_ProvisioningStepToPlan              map[int]struct{}
+	cleared_ProvisioningStepToPlan              bool
+	_ProvisioningStepToGinFileMiddleware        *int
+	cleared_ProvisioningStepToGinFileMiddleware bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*ProvisioningStep, error)
+	predicates                                  []predicate.ProvisioningStep
 }
 
 var _ ent.Mutation = (*ProvisioningStepMutation)(nil)
@@ -20218,6 +20804,45 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
 	m.removed_ProvisioningStepToPlan = nil
 }
 
+// SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToGinFileMiddlewareID(id int) {
+	m._ProvisioningStepToGinFileMiddleware = &id
+}
+
+// ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToGinFileMiddleware() {
+	m.cleared_ProvisioningStepToGinFileMiddleware = true
+}
+
+// ProvisioningStepToGinFileMiddlewareCleared returns if the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareCleared() bool {
+	return m.cleared_ProvisioningStepToGinFileMiddleware
+}
+
+// ProvisioningStepToGinFileMiddlewareID returns the "ProvisioningStepToGinFileMiddleware" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareID() (id int, exists bool) {
+	if m._ProvisioningStepToGinFileMiddleware != nil {
+		return *m._ProvisioningStepToGinFileMiddleware, true
+	}
+	return
+}
+
+// ProvisioningStepToGinFileMiddlewareIDs returns the "ProvisioningStepToGinFileMiddleware" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareIDs() (ids []int) {
+	if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisioningStepToGinFileMiddleware resets all changes to the "ProvisioningStepToGinFileMiddleware" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToGinFileMiddleware() {
+	m._ProvisioningStepToGinFileMiddleware = nil
+	m.cleared_ProvisioningStepToGinFileMiddleware = false
+}
+
 // Op returns the operation name.
 func (m *ProvisioningStepMutation) Op() Op {
 	return m.op
@@ -20363,7 +20988,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m._ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -20393,6 +21018,9 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	}
 	if m._ProvisioningStepToPlan != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
+	if m._ProvisioningStepToGinFileMiddleware != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
 	}
 	return edges
 }
@@ -20461,13 +21089,17 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removed_ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -20571,7 +21203,7 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.cleared_ProvisioningStepToTag {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -20602,6 +21234,9 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	if m.cleared_ProvisioningStepToPlan {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
 	}
+	if m.cleared_ProvisioningStepToGinFileMiddleware {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
+	}
 	return edges
 }
 
@@ -20629,6 +21264,8 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisioningStepToFileExtract
 	case provisioningstep.EdgeProvisioningStepToPlan:
 		return m.cleared_ProvisioningStepToPlan
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		return m.cleared_ProvisioningStepToGinFileMiddleware
 	}
 	return false
 }
@@ -20637,6 +21274,9 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 	switch name {
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		m.ClearProvisioningStepToGinFileMiddleware()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep unique edge %s", name)
 }
@@ -20674,6 +21314,9 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	case provisioningstep.EdgeProvisioningStepToPlan:
 		m.ResetProvisioningStepToPlan()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		m.ResetProvisioningStepToGinFileMiddleware()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)

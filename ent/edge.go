@@ -404,6 +404,22 @@ func (f *Finding) FindingToEnvironment(ctx context.Context) ([]*Environment, err
 	return result, err
 }
 
+func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := gfm.Edges.GinFileMiddlewareToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = gfm.QueryGinFileMiddlewareToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := gfm.Edges.GinFileMiddlewareToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = gfm.QueryGinFileMiddlewareToProvisioningStep().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (h *Host) HostToDisk(ctx context.Context) ([]*Disk, error) {
 	result, err := h.Edges.HostToDiskOrErr()
 	if IsNotLoaded(err) {
@@ -676,6 +692,14 @@ func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) ([]*Plan, 
 	return result, err
 }
 
+func (ph *ProvisionedHost) ProvisionedHostToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
+	result, err := ph.Edges.ProvisionedHostToGinFileMiddlewareOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToGinFileMiddleware().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (pn *ProvisionedNetwork) ProvisionedNetworkToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := pn.Edges.ProvisionedNetworkToTagOrErr()
 	if IsNotLoaded(err) {
@@ -810,6 +834,14 @@ func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) ([]*Plan
 		result, err = ps.QueryProvisioningStepToPlan().All(ctx)
 	}
 	return result, err
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
+	result, err := ps.Edges.ProvisioningStepToGinFileMiddlewareOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }
 
 func (s *Script) ScriptToTag(ctx context.Context) ([]*Tag, error) {

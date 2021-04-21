@@ -26,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
@@ -3014,6 +3015,236 @@ func (f *Finding) ToEdge(order *FindingOrder) *FindingEdge {
 	return &FindingEdge{
 		Node:   f,
 		Cursor: order.Field.toCursor(f),
+	}
+}
+
+// GinFileMiddlewareEdge is the edge representation of GinFileMiddleware.
+type GinFileMiddlewareEdge struct {
+	Node   *GinFileMiddleware `json:"node"`
+	Cursor Cursor             `json:"cursor"`
+}
+
+// GinFileMiddlewareConnection is the connection containing edges to GinFileMiddleware.
+type GinFileMiddlewareConnection struct {
+	Edges      []*GinFileMiddlewareEdge `json:"edges"`
+	PageInfo   PageInfo                 `json:"pageInfo"`
+	TotalCount int                      `json:"totalCount"`
+}
+
+// GinFileMiddlewarePaginateOption enables pagination customization.
+type GinFileMiddlewarePaginateOption func(*ginFileMiddlewarePager) error
+
+// WithGinFileMiddlewareOrder configures pagination ordering.
+func WithGinFileMiddlewareOrder(order *GinFileMiddlewareOrder) GinFileMiddlewarePaginateOption {
+	if order == nil {
+		order = DefaultGinFileMiddlewareOrder
+	}
+	o := *order
+	return func(pager *ginFileMiddlewarePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultGinFileMiddlewareOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithGinFileMiddlewareFilter configures pagination filter.
+func WithGinFileMiddlewareFilter(filter func(*GinFileMiddlewareQuery) (*GinFileMiddlewareQuery, error)) GinFileMiddlewarePaginateOption {
+	return func(pager *ginFileMiddlewarePager) error {
+		if filter == nil {
+			return errors.New("GinFileMiddlewareQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type ginFileMiddlewarePager struct {
+	order  *GinFileMiddlewareOrder
+	filter func(*GinFileMiddlewareQuery) (*GinFileMiddlewareQuery, error)
+}
+
+func newGinFileMiddlewarePager(opts []GinFileMiddlewarePaginateOption) (*ginFileMiddlewarePager, error) {
+	pager := &ginFileMiddlewarePager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultGinFileMiddlewareOrder
+	}
+	return pager, nil
+}
+
+func (p *ginFileMiddlewarePager) applyFilter(query *GinFileMiddlewareQuery) (*GinFileMiddlewareQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *ginFileMiddlewarePager) toCursor(gfm *GinFileMiddleware) Cursor {
+	return p.order.Field.toCursor(gfm)
+}
+
+func (p *ginFileMiddlewarePager) applyCursors(query *GinFileMiddlewareQuery, after, before *Cursor) *GinFileMiddlewareQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultGinFileMiddlewareOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *ginFileMiddlewarePager) applyOrder(query *GinFileMiddlewareQuery, reverse bool) *GinFileMiddlewareQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultGinFileMiddlewareOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultGinFileMiddlewareOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to GinFileMiddleware.
+func (gfm *GinFileMiddlewareQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...GinFileMiddlewarePaginateOption,
+) (*GinFileMiddlewareConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newGinFileMiddlewarePager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if gfm, err = pager.applyFilter(gfm); err != nil {
+		return nil, err
+	}
+
+	conn := &GinFileMiddlewareConnection{Edges: []*GinFileMiddlewareEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := gfm.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := gfm.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	gfm = pager.applyCursors(gfm, after, before)
+	gfm = pager.applyOrder(gfm, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		gfm = gfm.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		gfm = gfm.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := gfm.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *GinFileMiddleware
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *GinFileMiddleware {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *GinFileMiddleware {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*GinFileMiddlewareEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &GinFileMiddlewareEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// GinFileMiddlewareOrderField defines the ordering field of GinFileMiddleware.
+type GinFileMiddlewareOrderField struct {
+	field    string
+	toCursor func(*GinFileMiddleware) Cursor
+}
+
+// GinFileMiddlewareOrder defines the ordering of GinFileMiddleware.
+type GinFileMiddlewareOrder struct {
+	Direction OrderDirection               `json:"direction"`
+	Field     *GinFileMiddlewareOrderField `json:"field"`
+}
+
+// DefaultGinFileMiddlewareOrder is the default ordering of GinFileMiddleware.
+var DefaultGinFileMiddlewareOrder = &GinFileMiddlewareOrder{
+	Direction: OrderDirectionAsc,
+	Field: &GinFileMiddlewareOrderField{
+		field: ginfilemiddleware.FieldID,
+		toCursor: func(gfm *GinFileMiddleware) Cursor {
+			return Cursor{ID: gfm.ID}
+		},
+	},
+}
+
+// ToEdge converts GinFileMiddleware into GinFileMiddlewareEdge.
+func (gfm *GinFileMiddleware) ToEdge(order *GinFileMiddlewareOrder) *GinFileMiddlewareEdge {
+	if order == nil {
+		order = DefaultGinFileMiddlewareOrder
+	}
+	return &GinFileMiddlewareEdge{
+		Node:   gfm,
+		Cursor: order.Field.toCursor(gfm),
 	}
 }
 

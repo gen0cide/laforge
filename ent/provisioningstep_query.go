@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -35,16 +36,18 @@ type ProvisioningStepQuery struct {
 	fields     []string
 	predicates []predicate.ProvisioningStep
 	// eager-loading edges.
-	withProvisioningStepToTag             *TagQuery
-	withProvisioningStepToStatus          *StatusQuery
-	withProvisioningStepToProvisionedHost *ProvisionedHostQuery
-	withProvisioningStepToScript          *ScriptQuery
-	withProvisioningStepToCommand         *CommandQuery
-	withProvisioningStepToDNSRecord       *DNSRecordQuery
-	withProvisioningStepToFileDelete      *FileDeleteQuery
-	withProvisioningStepToFileDownload    *FileDownloadQuery
-	withProvisioningStepToFileExtract     *FileExtractQuery
-	withProvisioningStepToPlan            *PlanQuery
+	withProvisioningStepToTag               *TagQuery
+	withProvisioningStepToStatus            *StatusQuery
+	withProvisioningStepToProvisionedHost   *ProvisionedHostQuery
+	withProvisioningStepToScript            *ScriptQuery
+	withProvisioningStepToCommand           *CommandQuery
+	withProvisioningStepToDNSRecord         *DNSRecordQuery
+	withProvisioningStepToFileDelete        *FileDeleteQuery
+	withProvisioningStepToFileDownload      *FileDownloadQuery
+	withProvisioningStepToFileExtract       *FileExtractQuery
+	withProvisioningStepToPlan              *PlanQuery
+	withProvisioningStepToGinFileMiddleware *GinFileMiddlewareQuery
+	withFKs                                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -294,6 +297,28 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToPlan() *PlanQuery {
 	return query
 }
 
+// QueryProvisioningStepToGinFileMiddleware chains the current query on the "ProvisioningStepToGinFileMiddleware" edge.
+func (psq *ProvisioningStepQuery) QueryProvisioningStepToGinFileMiddleware() *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: psq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := psq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := psq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToGinFileMiddlewareTable, provisioningstep.ProvisioningStepToGinFileMiddlewareColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first ProvisioningStep entity from the query.
 // Returns a *NotFoundError when no ProvisioningStep was found.
 func (psq *ProvisioningStepQuery) First(ctx context.Context) (*ProvisioningStep, error) {
@@ -470,21 +495,22 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		return nil
 	}
 	return &ProvisioningStepQuery{
-		config:                                psq.config,
-		limit:                                 psq.limit,
-		offset:                                psq.offset,
-		order:                                 append([]OrderFunc{}, psq.order...),
-		predicates:                            append([]predicate.ProvisioningStep{}, psq.predicates...),
-		withProvisioningStepToTag:             psq.withProvisioningStepToTag.Clone(),
-		withProvisioningStepToStatus:          psq.withProvisioningStepToStatus.Clone(),
-		withProvisioningStepToProvisionedHost: psq.withProvisioningStepToProvisionedHost.Clone(),
-		withProvisioningStepToScript:          psq.withProvisioningStepToScript.Clone(),
-		withProvisioningStepToCommand:         psq.withProvisioningStepToCommand.Clone(),
-		withProvisioningStepToDNSRecord:       psq.withProvisioningStepToDNSRecord.Clone(),
-		withProvisioningStepToFileDelete:      psq.withProvisioningStepToFileDelete.Clone(),
-		withProvisioningStepToFileDownload:    psq.withProvisioningStepToFileDownload.Clone(),
-		withProvisioningStepToFileExtract:     psq.withProvisioningStepToFileExtract.Clone(),
-		withProvisioningStepToPlan:            psq.withProvisioningStepToPlan.Clone(),
+		config:                                  psq.config,
+		limit:                                   psq.limit,
+		offset:                                  psq.offset,
+		order:                                   append([]OrderFunc{}, psq.order...),
+		predicates:                              append([]predicate.ProvisioningStep{}, psq.predicates...),
+		withProvisioningStepToTag:               psq.withProvisioningStepToTag.Clone(),
+		withProvisioningStepToStatus:            psq.withProvisioningStepToStatus.Clone(),
+		withProvisioningStepToProvisionedHost:   psq.withProvisioningStepToProvisionedHost.Clone(),
+		withProvisioningStepToScript:            psq.withProvisioningStepToScript.Clone(),
+		withProvisioningStepToCommand:           psq.withProvisioningStepToCommand.Clone(),
+		withProvisioningStepToDNSRecord:         psq.withProvisioningStepToDNSRecord.Clone(),
+		withProvisioningStepToFileDelete:        psq.withProvisioningStepToFileDelete.Clone(),
+		withProvisioningStepToFileDownload:      psq.withProvisioningStepToFileDownload.Clone(),
+		withProvisioningStepToFileExtract:       psq.withProvisioningStepToFileExtract.Clone(),
+		withProvisioningStepToPlan:              psq.withProvisioningStepToPlan.Clone(),
+		withProvisioningStepToGinFileMiddleware: psq.withProvisioningStepToGinFileMiddleware.Clone(),
 		// clone intermediate query.
 		sql:  psq.sql.Clone(),
 		path: psq.path,
@@ -601,6 +627,17 @@ func (psq *ProvisioningStepQuery) WithProvisioningStepToPlan(opts ...func(*PlanQ
 	return psq
 }
 
+// WithProvisioningStepToGinFileMiddleware tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisioningStepToGinFileMiddleware" edge. The optional arguments are used to configure the query builder of the edge.
+func (psq *ProvisioningStepQuery) WithProvisioningStepToGinFileMiddleware(opts ...func(*GinFileMiddlewareQuery)) *ProvisioningStepQuery {
+	query := &GinFileMiddlewareQuery{config: psq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	psq.withProvisioningStepToGinFileMiddleware = query
+	return psq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -665,8 +702,9 @@ func (psq *ProvisioningStepQuery) prepareQuery(ctx context.Context) error {
 func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningStep, error) {
 	var (
 		nodes       = []*ProvisioningStep{}
+		withFKs     = psq.withFKs
 		_spec       = psq.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			psq.withProvisioningStepToTag != nil,
 			psq.withProvisioningStepToStatus != nil,
 			psq.withProvisioningStepToProvisionedHost != nil,
@@ -677,8 +715,15 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			psq.withProvisioningStepToFileDownload != nil,
 			psq.withProvisioningStepToFileExtract != nil,
 			psq.withProvisioningStepToPlan != nil,
+			psq.withProvisioningStepToGinFileMiddleware != nil,
 		}
 	)
+	if psq.withProvisioningStepToGinFileMiddleware != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, provisioningstep.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &ProvisioningStep{config: psq.config}
 		nodes = append(nodes, node)
@@ -1055,6 +1100,31 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			}
 			for i := range nodes {
 				nodes[i].Edges.ProvisioningStepToPlan = append(nodes[i].Edges.ProvisioningStepToPlan, n)
+			}
+		}
+	}
+
+	if query := psq.withProvisioningStepToGinFileMiddleware; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
+		for i := range nodes {
+			if fk := nodes[i].gin_file_middleware_gin_file_middleware_to_provisioning_step; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(ginfilemiddleware.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "gin_file_middleware_gin_file_middleware_to_provisioning_step" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToGinFileMiddleware = n
 			}
 		}
 	}

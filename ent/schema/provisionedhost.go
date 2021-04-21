@@ -25,8 +25,14 @@ func (ProvisionedHost) Edges() []ent.Edge {
 		edge.To("ProvisionedHostToStatus", Status.Type),
 		edge.To("ProvisionedHostToProvisionedNetwork", ProvisionedNetwork.Type),
 		edge.To("ProvisionedHostToHost", Host.Type),
-		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).Ref("ProvisioningStepToProvisionedHost"),
-		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).Ref("AgentStatusToProvisionedHost"),
-		edge.From("ProvisionedHostToPlan", Plan.Type).Ref("PlanToProvisionedHost"),
+		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).
+			Ref("ProvisioningStepToProvisionedHost"),
+		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).
+			Ref("AgentStatusToProvisionedHost"),
+		edge.From("ProvisionedHostToPlan", Plan.Type).
+			Ref("PlanToProvisionedHost"),
+		edge.From("ProvisionedHostToGinFileMiddleware", GinFileMiddleware.Type).
+			Ref("GinFileMiddlewareToProvisionedHost").
+			Unique(),
 	}
 }

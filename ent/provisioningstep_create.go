@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -189,6 +190,25 @@ func (psc *ProvisioningStepCreate) AddProvisioningStepToPlan(p ...*Plan) *Provis
 		ids[i] = p[i].ID
 	}
 	return psc.AddProvisioningStepToPlanIDs(ids...)
+}
+
+// SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (psc *ProvisioningStepCreate) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepCreate {
+	psc.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
+	return psc
+}
+
+// SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepCreate {
+	if id != nil {
+		psc = psc.SetProvisioningStepToGinFileMiddlewareID(*id)
+	}
+	return psc
+}
+
+// SetProvisioningStepToGinFileMiddleware sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (psc *ProvisioningStepCreate) SetProvisioningStepToGinFileMiddleware(g *GinFileMiddleware) *ProvisioningStepCreate {
+	return psc.SetProvisioningStepToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -473,6 +493,25 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := psc.mutation.ProvisioningStepToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToGinFileMiddlewareTable,
+			Columns: []string{provisioningstep.ProvisioningStepToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
 				},
 			},
 		}

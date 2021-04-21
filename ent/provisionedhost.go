@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 )
 
@@ -36,8 +37,10 @@ type ProvisionedHost struct {
 	HCLProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
 	HCLProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
+	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
+	HCLProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	//
-
+	gin_file_middleware_gin_file_middleware_to_provisioned_host *int
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
@@ -56,9 +59,11 @@ type ProvisionedHostEdges struct {
 	ProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
 	ProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
+	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
+	ProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // ProvisionedHostToTagOrErr returns the ProvisionedHostToTag value or an error if the edge
@@ -124,6 +129,20 @@ func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() ([]*Plan, error) {
 	return nil, &NotLoadedError{edge: "ProvisionedHostToPlan"}
 }
 
+// ProvisionedHostToGinFileMiddlewareOrErr returns the ProvisionedHostToGinFileMiddleware value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProvisionedHostEdges) ProvisionedHostToGinFileMiddlewareOrErr() (*GinFileMiddleware, error) {
+	if e.loadedTypes[7] {
+		if e.ProvisionedHostToGinFileMiddleware == nil {
+			// The edge ProvisionedHostToGinFileMiddleware was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: ginfilemiddleware.Label}
+		}
+		return e.ProvisionedHostToGinFileMiddleware, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToGinFileMiddleware"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -133,6 +152,8 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case provisionedhost.FieldSubnetIP:
 			values[i] = &sql.NullString{}
+		case provisionedhost.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioned_host
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
 		}
@@ -159,6 +180,13 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 				return fmt.Errorf("unexpected type %T for field subnet_ip", values[i])
 			} else if value.Valid {
 				ph.SubnetIP = value.String
+			}
+		case provisionedhost.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field gin_file_middleware_gin_file_middleware_to_provisioned_host", value)
+			} else if value.Valid {
+				ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = new(int)
+				*ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = int(value.Int64)
 			}
 		}
 	}
@@ -198,6 +226,11 @@ func (ph *ProvisionedHost) QueryProvisionedHostToAgentStatus() *AgentStatusQuery
 // QueryProvisionedHostToPlan queries the "ProvisionedHostToPlan" edge of the ProvisionedHost entity.
 func (ph *ProvisionedHost) QueryProvisionedHostToPlan() *PlanQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToPlan(ph)
+}
+
+// QueryProvisionedHostToGinFileMiddleware queries the "ProvisionedHostToGinFileMiddleware" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToGinFileMiddleware() *GinFileMiddlewareQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToGinFileMiddleware(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -39,6 +40,8 @@ type ProvisionedHostQuery struct {
 	withProvisionedHostToProvisioningStep   *ProvisioningStepQuery
 	withProvisionedHostToAgentStatus        *AgentStatusQuery
 	withProvisionedHostToPlan               *PlanQuery
+	withProvisionedHostToGinFileMiddleware  *GinFileMiddlewareQuery
+	withFKs                                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -215,6 +218,28 @@ func (phq *ProvisionedHostQuery) QueryProvisionedHostToPlan() *PlanQuery {
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedHostToPlanTable, provisionedhost.ProvisionedHostToPlanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToGinFileMiddleware chains the current query on the "ProvisionedHostToGinFileMiddleware" edge.
+func (phq *ProvisionedHostQuery) QueryProvisionedHostToGinFileMiddleware() *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: phq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := phq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := phq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionedhost.ProvisionedHostToGinFileMiddlewareTable, provisionedhost.ProvisionedHostToGinFileMiddlewareColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
 		return fromU, nil
@@ -410,6 +435,7 @@ func (phq *ProvisionedHostQuery) Clone() *ProvisionedHostQuery {
 		withProvisionedHostToProvisioningStep:   phq.withProvisionedHostToProvisioningStep.Clone(),
 		withProvisionedHostToAgentStatus:        phq.withProvisionedHostToAgentStatus.Clone(),
 		withProvisionedHostToPlan:               phq.withProvisionedHostToPlan.Clone(),
+		withProvisionedHostToGinFileMiddleware:  phq.withProvisionedHostToGinFileMiddleware.Clone(),
 		// clone intermediate query.
 		sql:  phq.sql.Clone(),
 		path: phq.path,
@@ -493,6 +519,17 @@ func (phq *ProvisionedHostQuery) WithProvisionedHostToPlan(opts ...func(*PlanQue
 	return phq
 }
 
+// WithProvisionedHostToGinFileMiddleware tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisionedHostToGinFileMiddleware" edge. The optional arguments are used to configure the query builder of the edge.
+func (phq *ProvisionedHostQuery) WithProvisionedHostToGinFileMiddleware(opts ...func(*GinFileMiddlewareQuery)) *ProvisionedHostQuery {
+	query := &GinFileMiddlewareQuery{config: phq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	phq.withProvisionedHostToGinFileMiddleware = query
+	return phq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -557,8 +594,9 @@ func (phq *ProvisionedHostQuery) prepareQuery(ctx context.Context) error {
 func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost, error) {
 	var (
 		nodes       = []*ProvisionedHost{}
+		withFKs     = phq.withFKs
 		_spec       = phq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			phq.withProvisionedHostToTag != nil,
 			phq.withProvisionedHostToStatus != nil,
 			phq.withProvisionedHostToProvisionedNetwork != nil,
@@ -566,8 +604,15 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			phq.withProvisionedHostToProvisioningStep != nil,
 			phq.withProvisionedHostToAgentStatus != nil,
 			phq.withProvisionedHostToPlan != nil,
+			phq.withProvisionedHostToGinFileMiddleware != nil,
 		}
 	)
+	if phq.withProvisionedHostToGinFileMiddleware != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, provisionedhost.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &ProvisionedHost{config: phq.config}
 		nodes = append(nodes, node)
@@ -927,6 +972,31 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			}
 			for i := range nodes {
 				nodes[i].Edges.ProvisionedHostToPlan = append(nodes[i].Edges.ProvisionedHostToPlan, n)
+			}
+		}
+	}
+
+	if query := phq.withProvisionedHostToGinFileMiddleware; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisionedHost)
+		for i := range nodes {
+			if fk := nodes[i].gin_file_middleware_gin_file_middleware_to_provisioned_host; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(ginfilemiddleware.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "gin_file_middleware_gin_file_middleware_to_provisioned_host" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedHostToGinFileMiddleware = n
 			}
 		}
 	}

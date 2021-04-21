@@ -265,6 +265,20 @@ var (
 		PrimaryKey:  []*schema.Column{FindingsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
+	// GinFileMiddlewaresColumns holds the columns for the "gin_file_middlewares" table.
+	GinFileMiddlewaresColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url_path", Type: field.TypeString},
+		{Name: "file_path", Type: field.TypeString},
+		{Name: "accessed", Type: field.TypeBool},
+	}
+	// GinFileMiddlewaresTable holds the schema information for the "gin_file_middlewares" table.
+	GinFileMiddlewaresTable = &schema.Table{
+		Name:        "gin_file_middlewares",
+		Columns:     GinFileMiddlewaresColumns,
+		PrimaryKey:  []*schema.Column{GinFileMiddlewaresColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// HostsColumns holds the columns for the "hosts" table.
 	HostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -406,13 +420,22 @@ var (
 	ProvisionedHostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "subnet_ip", Type: field.TypeString},
+		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// ProvisionedHostsTable holds the schema information for the "provisioned_hosts" table.
 	ProvisionedHostsTable = &schema.Table{
-		Name:        "provisioned_hosts",
-		Columns:     ProvisionedHostsColumns,
-		PrimaryKey:  []*schema.Column{ProvisionedHostsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "provisioned_hosts",
+		Columns:    ProvisionedHostsColumns,
+		PrimaryKey: []*schema.Column{ProvisionedHostsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "provisioned_hosts_gin_file_middlewares_GinFileMiddlewareToProvisionedHost",
+				Columns: []*schema.Column{ProvisionedHostsColumns[2]},
+
+				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ProvisionedNetworksColumns holds the columns for the "provisioned_networks" table.
 	ProvisionedNetworksColumns = []*schema.Column{
@@ -432,13 +455,22 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "provisioner_type", Type: field.TypeString},
 		{Name: "step_number", Type: field.TypeInt},
+		{Name: "gin_file_middleware_gin_file_middleware_to_provisioning_step", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// ProvisioningStepsTable holds the schema information for the "provisioning_steps" table.
 	ProvisioningStepsTable = &schema.Table{
-		Name:        "provisioning_steps",
-		Columns:     ProvisioningStepsColumns,
-		PrimaryKey:  []*schema.Column{ProvisioningStepsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "provisioning_steps",
+		Columns:    ProvisioningStepsColumns,
+		PrimaryKey: []*schema.Column{ProvisioningStepsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "provisioning_steps_gin_file_middlewares_GinFileMiddlewareToProvisioningStep",
+				Columns: []*schema.Column{ProvisioningStepsColumns[3]},
+
+				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{
@@ -1771,6 +1803,7 @@ var (
 		FileDownloadsTable,
 		FileExtractsTable,
 		FindingsTable,
+		GinFileMiddlewaresTable,
 		HostsTable,
 		HostDependenciesTable,
 		IdentitiesTable,
@@ -1834,6 +1867,8 @@ func init() {
 	HostsTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
 	PlansTable.ForeignKeys[0].RefTable = PlansTable
+	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
+	ProvisioningStepsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable

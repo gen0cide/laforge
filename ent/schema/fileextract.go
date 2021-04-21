@@ -31,6 +31,7 @@ func (FileExtract) Fields() []ent.Field {
 func (FileExtract) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("FileExtractToTag", Tag.Type),
-		edge.From("FileExtractToEnvironment", Environment.Type).Ref("EnvironmentToFileExtract"),
+		edge.From("FileExtractToEnvironment", Environment.Type).
+			Ref("EnvironmentToFileExtract"),
 	}
 }

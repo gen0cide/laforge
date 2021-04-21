@@ -36,6 +36,7 @@ type hooks struct {
 	FileDownload       []ent.Hook
 	FileExtract        []ent.Hook
 	Finding            []ent.Hook
+	GinFileMiddleware  []ent.Hook
 	Host               []ent.Hook
 	HostDependency     []ent.Hook
 	Identity           []ent.Hook

@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -142,6 +143,25 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToPlan(p ...*Plan) *Provisio
 		ids[i] = p[i].ID
 	}
 	return phu.AddProvisionedHostToPlanIDs(ids...)
+}
+
+// SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToGinFileMiddlewareID(id int) *ProvisionedHostUpdate {
+	phu.mutation.SetProvisionedHostToGinFileMiddlewareID(id)
+	return phu
+}
+
+// SetNillableProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToGinFileMiddlewareID(id *int) *ProvisionedHostUpdate {
+	if id != nil {
+		phu = phu.SetProvisionedHostToGinFileMiddlewareID(*id)
+	}
+	return phu
+}
+
+// SetProvisionedHostToGinFileMiddleware sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToGinFileMiddleware(g *GinFileMiddleware) *ProvisionedHostUpdate {
+	return phu.SetProvisionedHostToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -294,6 +314,12 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToPlan(p ...*Plan) *Provi
 		ids[i] = p[i].ID
 	}
 	return phu.RemoveProvisionedHostToPlanIDs(ids...)
+}
+
+// ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToGinFileMiddleware() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToGinFileMiddleware()
+	return phu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -750,6 +776,41 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if phu.mutation.ProvisionedHostToGinFileMiddlewareCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToGinFileMiddlewareTable,
+			Columns: []string{provisionedhost.ProvisionedHostToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToGinFileMiddlewareTable,
+			Columns: []string{provisionedhost.ProvisionedHostToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, phu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionedhost.Label}
@@ -877,6 +938,25 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToPlan(p ...*Plan) *Prov
 		ids[i] = p[i].ID
 	}
 	return phuo.AddProvisionedHostToPlanIDs(ids...)
+}
+
+// SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToGinFileMiddlewareID(id int) *ProvisionedHostUpdateOne {
+	phuo.mutation.SetProvisionedHostToGinFileMiddlewareID(id)
+	return phuo
+}
+
+// SetNillableProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToGinFileMiddlewareID(id *int) *ProvisionedHostUpdateOne {
+	if id != nil {
+		phuo = phuo.SetProvisionedHostToGinFileMiddlewareID(*id)
+	}
+	return phuo
+}
+
+// SetProvisionedHostToGinFileMiddleware sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToGinFileMiddleware(g *GinFileMiddleware) *ProvisionedHostUpdateOne {
+	return phuo.SetProvisionedHostToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -1029,6 +1109,12 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToPlan(p ...*Plan) *P
 		ids[i] = p[i].ID
 	}
 	return phuo.RemoveProvisionedHostToPlanIDs(ids...)
+}
+
+// ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToGinFileMiddleware() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToGinFileMiddleware()
+	return phuo
 }
 
 // Save executes the query and returns the updated ProvisionedHost entity.
@@ -1482,6 +1568,41 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.ProvisionedHostToGinFileMiddlewareCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToGinFileMiddlewareTable,
+			Columns: []string{provisionedhost.ProvisionedHostToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToGinFileMiddlewareTable,
+			Columns: []string{provisionedhost.ProvisionedHostToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
 				},
 			},
 		}

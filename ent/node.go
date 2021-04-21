@@ -26,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
@@ -1343,6 +1344,61 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (gfm *GinFileMiddleware) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     gfm.ID,
+		Type:   "GinFileMiddleware",
+		Fields: make([]*Field, 3),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(gfm.URLPath); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "url_path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(gfm.FilePath); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "file_path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(gfm.Accessed); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "bool",
+		Name:  "accessed",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "ProvisionedHost",
+		Name: "GinFileMiddlewareToProvisionedHost",
+	}
+	node.Edges[0].IDs, err = gfm.QueryGinFileMiddlewareToProvisionedHost().
+		Select(provisionedhost.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "ProvisioningStep",
+		Name: "GinFileMiddlewareToProvisioningStep",
+	}
+	node.Edges[1].IDs, err = gfm.QueryGinFileMiddlewareToProvisioningStep().
+		Select(provisioningstep.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     h.ID,
@@ -1972,7 +2028,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -2049,6 +2105,16 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[6].IDs, err = ph.QueryProvisionedHostToPlan().
 		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "GinFileMiddleware",
+		Name: "ProvisionedHostToGinFileMiddleware",
+	}
+	node.Edges[7].IDs, err = ph.QueryProvisionedHostToGinFileMiddleware().
+		Select(ginfilemiddleware.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -2158,7 +2224,7 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ps.ID,
 		Type:   "ProvisioningStep",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 10),
+		Edges:  make([]*Edge, 11),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ps.ProvisionerType); err != nil {
@@ -2273,6 +2339,16 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[9].IDs, err = ps.QueryProvisioningStepToPlan().
 		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[10] = &Edge{
+		Type: "GinFileMiddleware",
+		Name: "ProvisioningStepToGinFileMiddleware",
+	}
+	node.Edges[10].IDs, err = ps.QueryProvisioningStepToGinFileMiddleware().
+		Select(ginfilemiddleware.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -2880,6 +2956,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case ginfilemiddleware.Table:
+		n, err := c.GinFileMiddleware.Query().
+			Where(ginfilemiddleware.ID(id)).
+			CollectFields(ctx, "GinFileMiddleware").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case host.Table:
 		n, err := c.Host.Query().
 			Where(host.ID(id)).
@@ -3226,6 +3311,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Finding.Query().
 			Where(finding.IDIn(ids...)).
 			CollectFields(ctx, "Finding").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case ginfilemiddleware.Table:
+		nodes, err := c.GinFileMiddleware.Query().
+			Where(ginfilemiddleware.IDIn(ids...)).
+			CollectFields(ctx, "GinFileMiddleware").
 			All(ctx)
 		if err != nil {
 			return nil, err

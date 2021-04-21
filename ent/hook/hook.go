@@ -165,6 +165,19 @@ func (f FindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The GinFileMiddlewareFunc type is an adapter to allow the use of ordinary
+// function as GinFileMiddleware mutator.
+type GinFileMiddlewareFunc func(context.Context, *ent.GinFileMiddlewareMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GinFileMiddlewareFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GinFileMiddlewareMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GinFileMiddlewareMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The HostFunc type is an adapter to allow the use of ordinary
 // function as Host mutator.
 type HostFunc func(context.Context, *ent.HostMutation) (ent.Value, error)

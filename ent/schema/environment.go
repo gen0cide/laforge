@@ -71,6 +71,7 @@ func (Environment) Edges() []ent.Edge {
 		edge.To("EnvironmentToDNS", DNS.Type),
 		edge.To("EnvironmentToNetwork", Network.Type),
 		edge.To("EnvironmentToHostDependency", HostDependency.Type),
-		edge.From("EnvironmentToTeam", Team.Type).Ref("TeamToEnvironment"),
+		edge.From("EnvironmentToTeam", Team.Type).
+			Ref("TeamToEnvironment"),
 	}
 }

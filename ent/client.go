@@ -21,6 +21,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
@@ -70,6 +71,8 @@ type Client struct {
 	FileExtract *FileExtractClient
 	// Finding is the client for interacting with the Finding builders.
 	Finding *FindingClient
+	// GinFileMiddleware is the client for interacting with the GinFileMiddleware builders.
+	GinFileMiddleware *GinFileMiddlewareClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
 	// HostDependency is the client for interacting with the HostDependency builders.
@@ -125,6 +128,7 @@ func (c *Client) init() {
 	c.FileDownload = NewFileDownloadClient(c.config)
 	c.FileExtract = NewFileExtractClient(c.config)
 	c.Finding = NewFindingClient(c.config)
+	c.GinFileMiddleware = NewGinFileMiddlewareClient(c.config)
 	c.Host = NewHostClient(c.config)
 	c.HostDependency = NewHostDependencyClient(c.config)
 	c.Identity = NewIdentityClient(c.config)
@@ -184,6 +188,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		FileDownload:       NewFileDownloadClient(cfg),
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
+		GinFileMiddleware:  NewGinFileMiddlewareClient(cfg),
 		Host:               NewHostClient(cfg),
 		HostDependency:     NewHostDependencyClient(cfg),
 		Identity:           NewIdentityClient(cfg),
@@ -228,6 +233,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		FileDownload:       NewFileDownloadClient(cfg),
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
+		GinFileMiddleware:  NewGinFileMiddlewareClient(cfg),
 		Host:               NewHostClient(cfg),
 		HostDependency:     NewHostDependencyClient(cfg),
 		Identity:           NewIdentityClient(cfg),
@@ -283,6 +289,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.FileDownload.Use(hooks...)
 	c.FileExtract.Use(hooks...)
 	c.Finding.Use(hooks...)
+	c.GinFileMiddleware.Use(hooks...)
 	c.Host.Use(hooks...)
 	c.HostDependency.Use(hooks...)
 	c.Identity.Use(hooks...)
@@ -2155,6 +2162,126 @@ func (c *FindingClient) Hooks() []Hook {
 	return c.hooks.Finding
 }
 
+// GinFileMiddlewareClient is a client for the GinFileMiddleware schema.
+type GinFileMiddlewareClient struct {
+	config
+}
+
+// NewGinFileMiddlewareClient returns a client for the GinFileMiddleware from the given config.
+func NewGinFileMiddlewareClient(c config) *GinFileMiddlewareClient {
+	return &GinFileMiddlewareClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ginfilemiddleware.Hooks(f(g(h())))`.
+func (c *GinFileMiddlewareClient) Use(hooks ...Hook) {
+	c.hooks.GinFileMiddleware = append(c.hooks.GinFileMiddleware, hooks...)
+}
+
+// Create returns a create builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Create() *GinFileMiddlewareCreate {
+	mutation := newGinFileMiddlewareMutation(c.config, OpCreate)
+	return &GinFileMiddlewareCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GinFileMiddleware entities.
+func (c *GinFileMiddlewareClient) CreateBulk(builders ...*GinFileMiddlewareCreate) *GinFileMiddlewareCreateBulk {
+	return &GinFileMiddlewareCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Update() *GinFileMiddlewareUpdate {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdate)
+	return &GinFileMiddlewareUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GinFileMiddlewareClient) UpdateOne(gfm *GinFileMiddleware) *GinFileMiddlewareUpdateOne {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdateOne, withGinFileMiddleware(gfm))
+	return &GinFileMiddlewareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GinFileMiddlewareClient) UpdateOneID(id int) *GinFileMiddlewareUpdateOne {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdateOne, withGinFileMiddlewareID(id))
+	return &GinFileMiddlewareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Delete() *GinFileMiddlewareDelete {
+	mutation := newGinFileMiddlewareMutation(c.config, OpDelete)
+	return &GinFileMiddlewareDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GinFileMiddlewareClient) DeleteOne(gfm *GinFileMiddleware) *GinFileMiddlewareDeleteOne {
+	return c.DeleteOneID(gfm.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GinFileMiddlewareClient) DeleteOneID(id int) *GinFileMiddlewareDeleteOne {
+	builder := c.Delete().Where(ginfilemiddleware.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GinFileMiddlewareDeleteOne{builder}
+}
+
+// Query returns a query builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Query() *GinFileMiddlewareQuery {
+	return &GinFileMiddlewareQuery{config: c.config}
+}
+
+// Get returns a GinFileMiddleware entity by its id.
+func (c *GinFileMiddlewareClient) Get(ctx context.Context, id int) (*GinFileMiddleware, error) {
+	return c.Query().Where(ginfilemiddleware.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GinFileMiddlewareClient) GetX(ctx context.Context, id int) *GinFileMiddleware {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGinFileMiddlewareToProvisionedHost queries the GinFileMiddlewareToProvisionedHost edge of a GinFileMiddleware.
+func (c *GinFileMiddlewareClient) QueryGinFileMiddlewareToProvisionedHost(gfm *GinFileMiddleware) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gfm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ginfilemiddleware.Table, ginfilemiddleware.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ginfilemiddleware.GinFileMiddlewareToProvisionedHostTable, ginfilemiddleware.GinFileMiddlewareToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(gfm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGinFileMiddlewareToProvisioningStep queries the GinFileMiddlewareToProvisioningStep edge of a GinFileMiddleware.
+func (c *GinFileMiddlewareClient) QueryGinFileMiddlewareToProvisioningStep(gfm *GinFileMiddleware) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gfm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ginfilemiddleware.Table, ginfilemiddleware.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ginfilemiddleware.GinFileMiddlewareToProvisioningStepTable, ginfilemiddleware.GinFileMiddlewareToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(gfm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GinFileMiddlewareClient) Hooks() []Hook {
+	return c.hooks.GinFileMiddleware
+}
+
 // HostClient is a client for the Host schema.
 type HostClient struct {
 	config
@@ -3310,6 +3437,22 @@ func (c *ProvisionedHostClient) QueryProvisionedHostToPlan(ph *ProvisionedHost) 
 	return query
 }
 
+// QueryProvisionedHostToGinFileMiddleware queries the ProvisionedHostToGinFileMiddleware edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToGinFileMiddleware(ph *ProvisionedHost) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionedhost.ProvisionedHostToGinFileMiddlewareTable, provisionedhost.ProvisionedHostToGinFileMiddlewareColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProvisionedHostClient) Hooks() []Hook {
 	return c.hooks.ProvisionedHost
@@ -3751,6 +3894,22 @@ func (c *ProvisioningStepClient) QueryProvisioningStepToPlan(ps *ProvisioningSte
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToGinFileMiddleware queries the ProvisioningStepToGinFileMiddleware edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToGinFileMiddleware(ps *ProvisioningStep) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToGinFileMiddlewareTable, provisioningstep.ProvisioningStepToGinFileMiddlewareColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil

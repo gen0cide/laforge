@@ -25,9 +25,12 @@ func (ProvisionedNetwork) Edges() []ent.Edge {
 		edge.To("ProvisionedNetworkToTag", Tag.Type),
 		edge.To("ProvisionedNetworkToStatus", Status.Type),
 		edge.To("ProvisionedNetworkToNetwork", Network.Type),
-		edge.From("ProvisionedNetworkToBuild", Build.Type).Ref("BuildToProvisionedNetwork"),
+		edge.From("ProvisionedNetworkToBuild", Build.Type).
+			Ref("BuildToProvisionedNetwork"),
 		edge.To("ProvisionedNetworkToTeam", Team.Type),
-		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).Ref("ProvisionedHostToProvisionedNetwork"),
-		edge.From("ProvisionedNetworkToPlan", Plan.Type).Ref("PlanToProvisionedNetwork"),
+		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).
+			Ref("ProvisionedHostToProvisionedNetwork"),
+		edge.From("ProvisionedNetworkToPlan", Plan.Type).
+			Ref("PlanToProvisionedNetwork"),
 	}
 }

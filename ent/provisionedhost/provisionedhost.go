@@ -24,6 +24,8 @@ const (
 	EdgeProvisionedHostToAgentStatus = "ProvisionedHostToAgentStatus"
 	// EdgeProvisionedHostToPlan holds the string denoting the provisionedhosttoplan edge name in mutations.
 	EdgeProvisionedHostToPlan = "ProvisionedHostToPlan"
+	// EdgeProvisionedHostToGinFileMiddleware holds the string denoting the provisionedhosttoginfilemiddleware edge name in mutations.
+	EdgeProvisionedHostToGinFileMiddleware = "ProvisionedHostToGinFileMiddleware"
 
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
@@ -68,12 +70,24 @@ const (
 	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedHostToPlanInverseTable = "plans"
+	// ProvisionedHostToGinFileMiddlewareTable is the table the holds the ProvisionedHostToGinFileMiddleware relation/edge.
+	ProvisionedHostToGinFileMiddlewareTable = "provisioned_hosts"
+	// ProvisionedHostToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
+	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.
+	ProvisionedHostToGinFileMiddlewareInverseTable = "gin_file_middlewares"
+	// ProvisionedHostToGinFileMiddlewareColumn is the table column denoting the ProvisionedHostToGinFileMiddleware relation/edge.
+	ProvisionedHostToGinFileMiddlewareColumn = "gin_file_middleware_gin_file_middleware_to_provisioned_host"
 )
 
 // Columns holds all SQL columns for provisionedhost fields.
 var Columns = []string{
 	FieldID,
 	FieldSubnetIP,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
+var ForeignKeys = []string{
+	"gin_file_middleware_gin_file_middleware_to_provisioned_host",
 }
 
 var (
@@ -95,6 +109,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

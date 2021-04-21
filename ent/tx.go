@@ -36,6 +36,8 @@ type Tx struct {
 	FileExtract *FileExtractClient
 	// Finding is the client for interacting with the Finding builders.
 	Finding *FindingClient
+	// GinFileMiddleware is the client for interacting with the GinFileMiddleware builders.
+	GinFileMiddleware *GinFileMiddlewareClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
 	// HostDependency is the client for interacting with the HostDependency builders.
@@ -211,6 +213,7 @@ func (tx *Tx) init() {
 	tx.FileDownload = NewFileDownloadClient(tx.config)
 	tx.FileExtract = NewFileExtractClient(tx.config)
 	tx.Finding = NewFindingClient(tx.config)
+	tx.GinFileMiddleware = NewGinFileMiddlewareClient(tx.config)
 	tx.Host = NewHostClient(tx.config)
 	tx.HostDependency = NewHostDependencyClient(tx.config)
 	tx.Identity = NewIdentityClient(tx.config)

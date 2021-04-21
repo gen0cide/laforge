@@ -42,6 +42,9 @@ type FileExtract func(*sql.Selector)
 // Finding is the predicate function for finding builders.
 type Finding func(*sql.Selector)
 
+// GinFileMiddleware is the predicate function for ginfilemiddleware builders.
+type GinFileMiddleware func(*sql.Selector)
+
 // Host is the predicate function for host builders.
 type Host func(*sql.Selector)
 

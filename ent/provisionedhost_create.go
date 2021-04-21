@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -135,6 +136,25 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToPlan(p ...*Plan) *Provisio
 		ids[i] = p[i].ID
 	}
 	return phc.AddProvisionedHostToPlanIDs(ids...)
+}
+
+// SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToGinFileMiddlewareID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToGinFileMiddlewareID(id)
+	return phc
+}
+
+// SetNillableProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (phc *ProvisionedHostCreate) SetNillableProvisionedHostToGinFileMiddlewareID(id *int) *ProvisionedHostCreate {
+	if id != nil {
+		phc = phc.SetProvisionedHostToGinFileMiddlewareID(*id)
+	}
+	return phc
+}
+
+// SetProvisionedHostToGinFileMiddleware sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToGinFileMiddleware(g *GinFileMiddleware) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -351,6 +371,25 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := phc.mutation.ProvisionedHostToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToGinFileMiddlewareTable,
+			Columns: []string{provisionedhost.ProvisionedHostToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
 				},
 			},
 		}

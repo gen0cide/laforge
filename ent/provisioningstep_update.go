@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -203,6 +204,25 @@ func (psu *ProvisioningStepUpdate) AddProvisioningStepToPlan(p ...*Plan) *Provis
 		ids[i] = p[i].ID
 	}
 	return psu.AddProvisioningStepToPlanIDs(ids...)
+}
+
+// SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
+	return psu
+}
+
+// SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToGinFileMiddlewareID(*id)
+	}
+	return psu
+}
+
+// SetProvisioningStepToGinFileMiddleware sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToGinFileMiddleware(g *GinFileMiddleware) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -418,6 +438,12 @@ func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToPlan(p ...*Plan) *Pro
 		ids[i] = p[i].ID
 	}
 	return psu.RemoveProvisioningStepToPlanIDs(ids...)
+}
+
+// ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToGinFileMiddleware() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToGinFileMiddleware()
+	return psu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1050,6 +1076,41 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if psu.mutation.ProvisioningStepToGinFileMiddlewareCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToGinFileMiddlewareTable,
+			Columns: []string{provisioningstep.ProvisioningStepToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.ProvisioningStepToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToGinFileMiddlewareTable,
+			Columns: []string{provisioningstep.ProvisioningStepToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, psu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisioningstep.Label}
@@ -1235,6 +1296,25 @@ func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToPlan(p ...*Plan) *Pr
 		ids[i] = p[i].ID
 	}
 	return psuo.AddProvisioningStepToPlanIDs(ids...)
+}
+
+// SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
+	return psuo
+}
+
+// SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToGinFileMiddlewareID(*id)
+	}
+	return psuo
+}
+
+// SetProvisioningStepToGinFileMiddleware sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToGinFileMiddleware(g *GinFileMiddleware) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToGinFileMiddlewareID(g.ID)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -1450,6 +1530,12 @@ func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToPlan(p ...*Plan) 
 		ids[i] = p[i].ID
 	}
 	return psuo.RemoveProvisioningStepToPlanIDs(ids...)
+}
+
+// ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToGinFileMiddleware() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToGinFileMiddleware()
+	return psuo
 }
 
 // Save executes the query and returns the updated ProvisioningStep entity.
@@ -2079,6 +2165,41 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psuo.mutation.ProvisioningStepToGinFileMiddlewareCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToGinFileMiddlewareTable,
+			Columns: []string{provisioningstep.ProvisioningStepToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.ProvisioningStepToGinFileMiddlewareIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToGinFileMiddlewareTable,
+			Columns: []string{provisioningstep.ProvisioningStepToGinFileMiddlewareColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ginfilemiddleware.FieldID,
 				},
 			},
 		}
