@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -109,6 +110,21 @@ func (bc *BuildCreate) AddBuildToEnvironment(e ...*Environment) *BuildCreate {
 		ids[i] = e[i].ID
 	}
 	return bc.AddBuildToEnvironmentIDs(ids...)
+}
+
+// AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
+func (bc *BuildCreate) AddBuildToPlanIDs(ids ...int) *BuildCreate {
+	bc.mutation.AddBuildToPlanIDs(ids...)
+	return bc
+}
+
+// AddBuildToPlan adds the "BuildToPlan" edges to the Plan entity.
+func (bc *BuildCreate) AddBuildToPlan(p ...*Plan) *BuildCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bc.AddBuildToPlanIDs(ids...)
 }
 
 // Mutation returns the BuildMutation object of the builder.
@@ -298,6 +314,25 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BuildToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   build.BuildToPlanTable,
+			Columns: build.BuildToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

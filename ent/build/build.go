@@ -22,6 +22,8 @@ const (
 	EdgeBuildToTeam = "BuildToTeam"
 	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
 	EdgeBuildToEnvironment = "BuildToEnvironment"
+	// EdgeBuildToPlan holds the string denoting the buildtoplan edge name in mutations.
+	EdgeBuildToPlan = "BuildToPlan"
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
@@ -54,6 +56,11 @@ const (
 	// BuildToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	BuildToEnvironmentInverseTable = "environments"
+	// BuildToPlanTable is the table the holds the BuildToPlan relation/edge. The primary key declared below.
+	BuildToPlanTable = "plan_PlanToBuild"
+	// BuildToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	BuildToPlanInverseTable = "plans"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -73,6 +80,9 @@ var (
 	// BuildToEnvironmentPrimaryKey and BuildToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the BuildToEnvironment relation (M2M).
 	BuildToEnvironmentPrimaryKey = []string{"environment_id", "build_id"}
+	// BuildToPlanPrimaryKey and BuildToPlanColumn2 are the table columns denoting the
+	// primary key for the BuildToPlan relation (M2M).
+	BuildToPlanPrimaryKey = []string{"plan_id", "build_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -27,5 +27,6 @@ func (Build) Edges() []ent.Edge {
 		edge.To("BuildToProvisionedNetwork", ProvisionedNetwork.Type),
 		edge.From("BuildToTeam", Team.Type).Ref("TeamToBuild"),
 		edge.From("BuildToEnvironment", Environment.Type).Ref("EnvironmentToBuild"),
+		edge.From("BuildToPlan", Plan.Type).Ref("PlanToBuild"),
 	}
 }

@@ -31,5 +31,6 @@ func (ProvisioningStep) Edges() []ent.Edge {
 		edge.To("ProvisioningStepToFileDelete", FileDelete.Type),
 		edge.To("ProvisioningStepToFileDownload", FileDownload.Type),
 		edge.To("ProvisioningStepToFileExtract", FileExtract.Type),
+		edge.From("ProvisioningStepToPlan", Plan.Type).Ref("PlanToProvisioningStep"),
 	}
 }

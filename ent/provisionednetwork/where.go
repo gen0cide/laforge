@@ -495,6 +495,34 @@ func HasProvisionedNetworkToProvisionedHostWith(preds ...predicate.ProvisionedHo
 	})
 }
 
+// HasProvisionedNetworkToPlan applies the HasEdge predicate on the "ProvisionedNetworkToPlan" edge.
+func HasProvisionedNetworkToPlan() predicate.ProvisionedNetwork {
+	return predicate.ProvisionedNetwork(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedNetworkToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedNetworkToPlanWith applies the HasEdge predicate on the "ProvisionedNetworkToPlan" edge with a given conditions (other predicates).
+func HasProvisionedNetworkToPlanWith(preds ...predicate.Plan) predicate.ProvisionedNetwork {
+	return predicate.ProvisionedNetwork(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedNetworkToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisionedNetwork) predicate.ProvisionedNetwork {
 	return predicate.ProvisionedNetwork(func(s *sql.Selector) {

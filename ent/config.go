@@ -41,6 +41,7 @@ type hooks struct {
 	Identity           []ent.Hook
 	IncludedNetwork    []ent.Hook
 	Network            []ent.Hook
+	Plan               []ent.Hook
 	ProvisionedHost    []ent.Hook
 	ProvisionedNetwork []ent.Hook
 	ProvisioningStep   []ent.Hook

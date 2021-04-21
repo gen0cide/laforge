@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -43,6 +44,7 @@ type ProvisioningStepQuery struct {
 	withProvisioningStepToFileDelete      *FileDeleteQuery
 	withProvisioningStepToFileDownload    *FileDownloadQuery
 	withProvisioningStepToFileExtract     *FileExtractQuery
+	withProvisioningStepToPlan            *PlanQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -270,6 +272,28 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToFileExtract() *FileExtr
 	return query
 }
 
+// QueryProvisioningStepToPlan chains the current query on the "ProvisioningStepToPlan" edge.
+func (psq *ProvisioningStepQuery) QueryProvisioningStepToPlan() *PlanQuery {
+	query := &PlanQuery{config: psq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := psq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := psq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first ProvisioningStep entity from the query.
 // Returns a *NotFoundError when no ProvisioningStep was found.
 func (psq *ProvisioningStepQuery) First(ctx context.Context) (*ProvisioningStep, error) {
@@ -460,6 +484,7 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		withProvisioningStepToFileDelete:      psq.withProvisioningStepToFileDelete.Clone(),
 		withProvisioningStepToFileDownload:    psq.withProvisioningStepToFileDownload.Clone(),
 		withProvisioningStepToFileExtract:     psq.withProvisioningStepToFileExtract.Clone(),
+		withProvisioningStepToPlan:            psq.withProvisioningStepToPlan.Clone(),
 		// clone intermediate query.
 		sql:  psq.sql.Clone(),
 		path: psq.path,
@@ -565,6 +590,17 @@ func (psq *ProvisioningStepQuery) WithProvisioningStepToFileExtract(opts ...func
 	return psq
 }
 
+// WithProvisioningStepToPlan tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisioningStepToPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (psq *ProvisioningStepQuery) WithProvisioningStepToPlan(opts ...func(*PlanQuery)) *ProvisioningStepQuery {
+	query := &PlanQuery{config: psq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	psq.withProvisioningStepToPlan = query
+	return psq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -630,7 +666,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	var (
 		nodes       = []*ProvisioningStep{}
 		_spec       = psq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			psq.withProvisioningStepToTag != nil,
 			psq.withProvisioningStepToStatus != nil,
 			psq.withProvisioningStepToProvisionedHost != nil,
@@ -640,6 +676,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			psq.withProvisioningStepToFileDelete != nil,
 			psq.withProvisioningStepToFileDownload != nil,
 			psq.withProvisioningStepToFileExtract != nil,
+			psq.withProvisioningStepToPlan != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -955,6 +992,70 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_extract" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ProvisioningStepToFileExtract = append(node.Edges.ProvisioningStepToFileExtract, n)
+		}
+	}
+
+	if query := psq.withProvisioningStepToPlan; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*ProvisioningStep, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisioningStepToPlan = []*Plan{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisioningStep)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   provisioningstep.ProvisioningStepToPlanTable,
+				Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisioningstep.ProvisioningStepToPlanPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, psq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "ProvisioningStepToPlan": %v`, err)
+		}
+		query.Where(plan.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "ProvisioningStepToPlan" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToPlan = append(nodes[i].Edges.ProvisioningStepToPlan, n)
+			}
 		}
 	}
 

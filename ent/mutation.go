@@ -25,6 +25,7 @@ import (
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -65,6 +66,7 @@ const (
 	TypeIdentity           = "Identity"
 	TypeIncludedNetwork    = "IncludedNetwork"
 	TypeNetwork            = "Network"
+	TypePlan               = "Plan"
 	TypeProvisionedHost    = "ProvisionedHost"
 	TypeProvisionedNetwork = "ProvisionedNetwork"
 	TypeProvisioningStep   = "ProvisioningStep"
@@ -1596,6 +1598,9 @@ type BuildMutation struct {
 	_BuildToEnvironment               map[int]struct{}
 	removed_BuildToEnvironment        map[int]struct{}
 	cleared_BuildToEnvironment        bool
+	_BuildToPlan                      map[int]struct{}
+	removed_BuildToPlan               map[int]struct{}
+	cleared_BuildToPlan               bool
 	done                              bool
 	oldValue                          func(context.Context) (*Build, error)
 	predicates                        []predicate.Build
@@ -2037,6 +2042,59 @@ func (m *BuildMutation) ResetBuildToEnvironment() {
 	m.removed_BuildToEnvironment = nil
 }
 
+// AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by ids.
+func (m *BuildMutation) AddBuildToPlanIDs(ids ...int) {
+	if m._BuildToPlan == nil {
+		m._BuildToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._BuildToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBuildToPlan clears the "BuildToPlan" edge to the Plan entity.
+func (m *BuildMutation) ClearBuildToPlan() {
+	m.cleared_BuildToPlan = true
+}
+
+// BuildToPlanCleared returns if the "BuildToPlan" edge to the Plan entity was cleared.
+func (m *BuildMutation) BuildToPlanCleared() bool {
+	return m.cleared_BuildToPlan
+}
+
+// RemoveBuildToPlanIDs removes the "BuildToPlan" edge to the Plan entity by IDs.
+func (m *BuildMutation) RemoveBuildToPlanIDs(ids ...int) {
+	if m.removed_BuildToPlan == nil {
+		m.removed_BuildToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_BuildToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildToPlan returns the removed IDs of the "BuildToPlan" edge to the Plan entity.
+func (m *BuildMutation) RemovedBuildToPlanIDs() (ids []int) {
+	for id := range m.removed_BuildToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BuildToPlanIDs returns the "BuildToPlan" edge IDs in the mutation.
+func (m *BuildMutation) BuildToPlanIDs() (ids []int) {
+	for id := range m._BuildToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBuildToPlan resets all changes to the "BuildToPlan" edge.
+func (m *BuildMutation) ResetBuildToPlan() {
+	m._BuildToPlan = nil
+	m.cleared_BuildToPlan = false
+	m.removed_BuildToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *BuildMutation) Op() Op {
 	return m.op
@@ -2182,7 +2240,7 @@ func (m *BuildMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BuildMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m._BuildToUser != nil {
 		edges = append(edges, build.EdgeBuildToUser)
 	}
@@ -2197,6 +2255,9 @@ func (m *BuildMutation) AddedEdges() []string {
 	}
 	if m._BuildToEnvironment != nil {
 		edges = append(edges, build.EdgeBuildToEnvironment)
+	}
+	if m._BuildToPlan != nil {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2235,13 +2296,19 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case build.EdgeBuildToPlan:
+		ids := make([]ent.Value, 0, len(m._BuildToPlan))
+		for id := range m._BuildToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BuildMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removed_BuildToUser != nil {
 		edges = append(edges, build.EdgeBuildToUser)
 	}
@@ -2256,6 +2323,9 @@ func (m *BuildMutation) RemovedEdges() []string {
 	}
 	if m.removed_BuildToEnvironment != nil {
 		edges = append(edges, build.EdgeBuildToEnvironment)
+	}
+	if m.removed_BuildToPlan != nil {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2294,13 +2364,19 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case build.EdgeBuildToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToPlan))
+		for id := range m.removed_BuildToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BuildMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.cleared_BuildToUser {
 		edges = append(edges, build.EdgeBuildToUser)
 	}
@@ -2315,6 +2391,9 @@ func (m *BuildMutation) ClearedEdges() []string {
 	}
 	if m.cleared_BuildToEnvironment {
 		edges = append(edges, build.EdgeBuildToEnvironment)
+	}
+	if m.cleared_BuildToPlan {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2333,6 +2412,8 @@ func (m *BuildMutation) EdgeCleared(name string) bool {
 		return m.cleared_BuildToTeam
 	case build.EdgeBuildToEnvironment:
 		return m.cleared_BuildToEnvironment
+	case build.EdgeBuildToPlan:
+		return m.cleared_BuildToPlan
 	}
 	return false
 }
@@ -2363,6 +2444,9 @@ func (m *BuildMutation) ResetEdge(name string) error {
 		return nil
 	case build.EdgeBuildToEnvironment:
 		m.ResetBuildToEnvironment()
+		return nil
+	case build.EdgeBuildToPlan:
+		m.ResetBuildToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Build edge %s", name)
@@ -16567,6 +16651,1031 @@ func (m *NetworkMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Network edge %s", name)
 }
 
+// PlanMutation represents an operation that mutates the Plan nodes in the graph.
+type PlanMutation struct {
+	config
+	op                               Op
+	typ                              string
+	id                               *int
+	step_number                      *int
+	addstep_number                   *int
+	_type                            *plan.Type
+	build_id                         *int
+	addbuild_id                      *int
+	clearedFields                    map[string]struct{}
+	_PrevPlan                        *int
+	cleared_PrevPlan                 bool
+	_NextPlan                        map[int]struct{}
+	removed_NextPlan                 map[int]struct{}
+	cleared_NextPlan                 bool
+	_PlanToBuild                     map[int]struct{}
+	removed_PlanToBuild              map[int]struct{}
+	cleared_PlanToBuild              bool
+	_PlanToTeam                      map[int]struct{}
+	removed_PlanToTeam               map[int]struct{}
+	cleared_PlanToTeam               bool
+	_PlanToProvisionedNetwork        map[int]struct{}
+	removed_PlanToProvisionedNetwork map[int]struct{}
+	cleared_PlanToProvisionedNetwork bool
+	_PlanToProvisionedHost           map[int]struct{}
+	removed_PlanToProvisionedHost    map[int]struct{}
+	cleared_PlanToProvisionedHost    bool
+	_PlanToProvisioningStep          map[int]struct{}
+	removed_PlanToProvisioningStep   map[int]struct{}
+	cleared_PlanToProvisioningStep   bool
+	done                             bool
+	oldValue                         func(context.Context) (*Plan, error)
+	predicates                       []predicate.Plan
+}
+
+var _ ent.Mutation = (*PlanMutation)(nil)
+
+// planOption allows management of the mutation configuration using functional options.
+type planOption func(*PlanMutation)
+
+// newPlanMutation creates new mutation for the Plan entity.
+func newPlanMutation(c config, op Op, opts ...planOption) *PlanMutation {
+	m := &PlanMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePlan,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPlanID sets the ID field of the mutation.
+func withPlanID(id int) planOption {
+	return func(m *PlanMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Plan
+		)
+		m.oldValue = func(ctx context.Context) (*Plan, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Plan.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPlan sets the old Plan of the mutation.
+func withPlan(node *Plan) planOption {
+	return func(m *PlanMutation) {
+		m.oldValue = func(context.Context) (*Plan, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PlanMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PlanMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *PlanMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetStepNumber sets the "step_number" field.
+func (m *PlanMutation) SetStepNumber(i int) {
+	m.step_number = &i
+	m.addstep_number = nil
+}
+
+// StepNumber returns the value of the "step_number" field in the mutation.
+func (m *PlanMutation) StepNumber() (r int, exists bool) {
+	v := m.step_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStepNumber returns the old "step_number" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldStepNumber(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStepNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStepNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStepNumber: %w", err)
+	}
+	return oldValue.StepNumber, nil
+}
+
+// AddStepNumber adds i to the "step_number" field.
+func (m *PlanMutation) AddStepNumber(i int) {
+	if m.addstep_number != nil {
+		*m.addstep_number += i
+	} else {
+		m.addstep_number = &i
+	}
+}
+
+// AddedStepNumber returns the value that was added to the "step_number" field in this mutation.
+func (m *PlanMutation) AddedStepNumber() (r int, exists bool) {
+	v := m.addstep_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStepNumber resets all changes to the "step_number" field.
+func (m *PlanMutation) ResetStepNumber() {
+	m.step_number = nil
+	m.addstep_number = nil
+}
+
+// SetType sets the "type" field.
+func (m *PlanMutation) SetType(pl plan.Type) {
+	m._type = &pl
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *PlanMutation) GetType() (r plan.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldType(ctx context.Context) (v plan.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *PlanMutation) ResetType() {
+	m._type = nil
+}
+
+// SetBuildID sets the "build_id" field.
+func (m *PlanMutation) SetBuildID(i int) {
+	m.build_id = &i
+	m.addbuild_id = nil
+}
+
+// BuildID returns the value of the "build_id" field in the mutation.
+func (m *PlanMutation) BuildID() (r int, exists bool) {
+	v := m.build_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBuildID returns the old "build_id" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldBuildID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBuildID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBuildID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBuildID: %w", err)
+	}
+	return oldValue.BuildID, nil
+}
+
+// AddBuildID adds i to the "build_id" field.
+func (m *PlanMutation) AddBuildID(i int) {
+	if m.addbuild_id != nil {
+		*m.addbuild_id += i
+	} else {
+		m.addbuild_id = &i
+	}
+}
+
+// AddedBuildID returns the value that was added to the "build_id" field in this mutation.
+func (m *PlanMutation) AddedBuildID() (r int, exists bool) {
+	v := m.addbuild_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBuildID resets all changes to the "build_id" field.
+func (m *PlanMutation) ResetBuildID() {
+	m.build_id = nil
+	m.addbuild_id = nil
+}
+
+// SetPrevPlanID sets the "PrevPlan" edge to the Plan entity by id.
+func (m *PlanMutation) SetPrevPlanID(id int) {
+	m._PrevPlan = &id
+}
+
+// ClearPrevPlan clears the "PrevPlan" edge to the Plan entity.
+func (m *PlanMutation) ClearPrevPlan() {
+	m.cleared_PrevPlan = true
+}
+
+// PrevPlanCleared returns if the "PrevPlan" edge to the Plan entity was cleared.
+func (m *PlanMutation) PrevPlanCleared() bool {
+	return m.cleared_PrevPlan
+}
+
+// PrevPlanID returns the "PrevPlan" edge ID in the mutation.
+func (m *PlanMutation) PrevPlanID() (id int, exists bool) {
+	if m._PrevPlan != nil {
+		return *m._PrevPlan, true
+	}
+	return
+}
+
+// PrevPlanIDs returns the "PrevPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrevPlanID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PrevPlanIDs() (ids []int) {
+	if id := m._PrevPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrevPlan resets all changes to the "PrevPlan" edge.
+func (m *PlanMutation) ResetPrevPlan() {
+	m._PrevPlan = nil
+	m.cleared_PrevPlan = false
+}
+
+// AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by ids.
+func (m *PlanMutation) AddNextPlanIDs(ids ...int) {
+	if m._NextPlan == nil {
+		m._NextPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._NextPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNextPlan clears the "NextPlan" edge to the Plan entity.
+func (m *PlanMutation) ClearNextPlan() {
+	m.cleared_NextPlan = true
+}
+
+// NextPlanCleared returns if the "NextPlan" edge to the Plan entity was cleared.
+func (m *PlanMutation) NextPlanCleared() bool {
+	return m.cleared_NextPlan
+}
+
+// RemoveNextPlanIDs removes the "NextPlan" edge to the Plan entity by IDs.
+func (m *PlanMutation) RemoveNextPlanIDs(ids ...int) {
+	if m.removed_NextPlan == nil {
+		m.removed_NextPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_NextPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNextPlan returns the removed IDs of the "NextPlan" edge to the Plan entity.
+func (m *PlanMutation) RemovedNextPlanIDs() (ids []int) {
+	for id := range m.removed_NextPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NextPlanIDs returns the "NextPlan" edge IDs in the mutation.
+func (m *PlanMutation) NextPlanIDs() (ids []int) {
+	for id := range m._NextPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNextPlan resets all changes to the "NextPlan" edge.
+func (m *PlanMutation) ResetNextPlan() {
+	m._NextPlan = nil
+	m.cleared_NextPlan = false
+	m.removed_NextPlan = nil
+}
+
+// AddPlanToBuildIDs adds the "PlanToBuild" edge to the Build entity by ids.
+func (m *PlanMutation) AddPlanToBuildIDs(ids ...int) {
+	if m._PlanToBuild == nil {
+		m._PlanToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PlanToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlanToBuild clears the "PlanToBuild" edge to the Build entity.
+func (m *PlanMutation) ClearPlanToBuild() {
+	m.cleared_PlanToBuild = true
+}
+
+// PlanToBuildCleared returns if the "PlanToBuild" edge to the Build entity was cleared.
+func (m *PlanMutation) PlanToBuildCleared() bool {
+	return m.cleared_PlanToBuild
+}
+
+// RemovePlanToBuildIDs removes the "PlanToBuild" edge to the Build entity by IDs.
+func (m *PlanMutation) RemovePlanToBuildIDs(ids ...int) {
+	if m.removed_PlanToBuild == nil {
+		m.removed_PlanToBuild = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PlanToBuild[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlanToBuild returns the removed IDs of the "PlanToBuild" edge to the Build entity.
+func (m *PlanMutation) RemovedPlanToBuildIDs() (ids []int) {
+	for id := range m.removed_PlanToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlanToBuildIDs returns the "PlanToBuild" edge IDs in the mutation.
+func (m *PlanMutation) PlanToBuildIDs() (ids []int) {
+	for id := range m._PlanToBuild {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlanToBuild resets all changes to the "PlanToBuild" edge.
+func (m *PlanMutation) ResetPlanToBuild() {
+	m._PlanToBuild = nil
+	m.cleared_PlanToBuild = false
+	m.removed_PlanToBuild = nil
+}
+
+// AddPlanToTeamIDs adds the "PlanToTeam" edge to the Team entity by ids.
+func (m *PlanMutation) AddPlanToTeamIDs(ids ...int) {
+	if m._PlanToTeam == nil {
+		m._PlanToTeam = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PlanToTeam[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlanToTeam clears the "PlanToTeam" edge to the Team entity.
+func (m *PlanMutation) ClearPlanToTeam() {
+	m.cleared_PlanToTeam = true
+}
+
+// PlanToTeamCleared returns if the "PlanToTeam" edge to the Team entity was cleared.
+func (m *PlanMutation) PlanToTeamCleared() bool {
+	return m.cleared_PlanToTeam
+}
+
+// RemovePlanToTeamIDs removes the "PlanToTeam" edge to the Team entity by IDs.
+func (m *PlanMutation) RemovePlanToTeamIDs(ids ...int) {
+	if m.removed_PlanToTeam == nil {
+		m.removed_PlanToTeam = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PlanToTeam[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlanToTeam returns the removed IDs of the "PlanToTeam" edge to the Team entity.
+func (m *PlanMutation) RemovedPlanToTeamIDs() (ids []int) {
+	for id := range m.removed_PlanToTeam {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlanToTeamIDs returns the "PlanToTeam" edge IDs in the mutation.
+func (m *PlanMutation) PlanToTeamIDs() (ids []int) {
+	for id := range m._PlanToTeam {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlanToTeam resets all changes to the "PlanToTeam" edge.
+func (m *PlanMutation) ResetPlanToTeam() {
+	m._PlanToTeam = nil
+	m.cleared_PlanToTeam = false
+	m.removed_PlanToTeam = nil
+}
+
+// AddPlanToProvisionedNetworkIDs adds the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
+func (m *PlanMutation) AddPlanToProvisionedNetworkIDs(ids ...int) {
+	if m._PlanToProvisionedNetwork == nil {
+		m._PlanToProvisionedNetwork = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PlanToProvisionedNetwork[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlanToProvisionedNetwork clears the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (m *PlanMutation) ClearPlanToProvisionedNetwork() {
+	m.cleared_PlanToProvisionedNetwork = true
+}
+
+// PlanToProvisionedNetworkCleared returns if the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+func (m *PlanMutation) PlanToProvisionedNetworkCleared() bool {
+	return m.cleared_PlanToProvisionedNetwork
+}
+
+// RemovePlanToProvisionedNetworkIDs removes the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
+func (m *PlanMutation) RemovePlanToProvisionedNetworkIDs(ids ...int) {
+	if m.removed_PlanToProvisionedNetwork == nil {
+		m.removed_PlanToProvisionedNetwork = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PlanToProvisionedNetwork[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlanToProvisionedNetwork returns the removed IDs of the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (m *PlanMutation) RemovedPlanToProvisionedNetworkIDs() (ids []int) {
+	for id := range m.removed_PlanToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlanToProvisionedNetworkIDs returns the "PlanToProvisionedNetwork" edge IDs in the mutation.
+func (m *PlanMutation) PlanToProvisionedNetworkIDs() (ids []int) {
+	for id := range m._PlanToProvisionedNetwork {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlanToProvisionedNetwork resets all changes to the "PlanToProvisionedNetwork" edge.
+func (m *PlanMutation) ResetPlanToProvisionedNetwork() {
+	m._PlanToProvisionedNetwork = nil
+	m.cleared_PlanToProvisionedNetwork = false
+	m.removed_PlanToProvisionedNetwork = nil
+}
+
+// AddPlanToProvisionedHostIDs adds the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ids.
+func (m *PlanMutation) AddPlanToProvisionedHostIDs(ids ...int) {
+	if m._PlanToProvisionedHost == nil {
+		m._PlanToProvisionedHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PlanToProvisionedHost[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlanToProvisionedHost clears the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *PlanMutation) ClearPlanToProvisionedHost() {
+	m.cleared_PlanToProvisionedHost = true
+}
+
+// PlanToProvisionedHostCleared returns if the "PlanToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *PlanMutation) PlanToProvisionedHostCleared() bool {
+	return m.cleared_PlanToProvisionedHost
+}
+
+// RemovePlanToProvisionedHostIDs removes the "PlanToProvisionedHost" edge to the ProvisionedHost entity by IDs.
+func (m *PlanMutation) RemovePlanToProvisionedHostIDs(ids ...int) {
+	if m.removed_PlanToProvisionedHost == nil {
+		m.removed_PlanToProvisionedHost = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PlanToProvisionedHost[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlanToProvisionedHost returns the removed IDs of the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *PlanMutation) RemovedPlanToProvisionedHostIDs() (ids []int) {
+	for id := range m.removed_PlanToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlanToProvisionedHostIDs returns the "PlanToProvisionedHost" edge IDs in the mutation.
+func (m *PlanMutation) PlanToProvisionedHostIDs() (ids []int) {
+	for id := range m._PlanToProvisionedHost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlanToProvisionedHost resets all changes to the "PlanToProvisionedHost" edge.
+func (m *PlanMutation) ResetPlanToProvisionedHost() {
+	m._PlanToProvisionedHost = nil
+	m.cleared_PlanToProvisionedHost = false
+	m.removed_PlanToProvisionedHost = nil
+}
+
+// AddPlanToProvisioningStepIDs adds the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ids.
+func (m *PlanMutation) AddPlanToProvisioningStepIDs(ids ...int) {
+	if m._PlanToProvisioningStep == nil {
+		m._PlanToProvisioningStep = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PlanToProvisioningStep[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlanToProvisioningStep clears the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *PlanMutation) ClearPlanToProvisioningStep() {
+	m.cleared_PlanToProvisioningStep = true
+}
+
+// PlanToProvisioningStepCleared returns if the "PlanToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *PlanMutation) PlanToProvisioningStepCleared() bool {
+	return m.cleared_PlanToProvisioningStep
+}
+
+// RemovePlanToProvisioningStepIDs removes the "PlanToProvisioningStep" edge to the ProvisioningStep entity by IDs.
+func (m *PlanMutation) RemovePlanToProvisioningStepIDs(ids ...int) {
+	if m.removed_PlanToProvisioningStep == nil {
+		m.removed_PlanToProvisioningStep = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PlanToProvisioningStep[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlanToProvisioningStep returns the removed IDs of the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *PlanMutation) RemovedPlanToProvisioningStepIDs() (ids []int) {
+	for id := range m.removed_PlanToProvisioningStep {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlanToProvisioningStepIDs returns the "PlanToProvisioningStep" edge IDs in the mutation.
+func (m *PlanMutation) PlanToProvisioningStepIDs() (ids []int) {
+	for id := range m._PlanToProvisioningStep {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlanToProvisioningStep resets all changes to the "PlanToProvisioningStep" edge.
+func (m *PlanMutation) ResetPlanToProvisioningStep() {
+	m._PlanToProvisioningStep = nil
+	m.cleared_PlanToProvisioningStep = false
+	m.removed_PlanToProvisioningStep = nil
+}
+
+// Op returns the operation name.
+func (m *PlanMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Plan).
+func (m *PlanMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PlanMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.step_number != nil {
+		fields = append(fields, plan.FieldStepNumber)
+	}
+	if m._type != nil {
+		fields = append(fields, plan.FieldType)
+	}
+	if m.build_id != nil {
+		fields = append(fields, plan.FieldBuildID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PlanMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.StepNumber()
+	case plan.FieldType:
+		return m.GetType()
+	case plan.FieldBuildID:
+		return m.BuildID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.OldStepNumber(ctx)
+	case plan.FieldType:
+		return m.OldType(ctx)
+	case plan.FieldBuildID:
+		return m.OldBuildID(ctx)
+	}
+	return nil, fmt.Errorf("unknown Plan field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlanMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case plan.FieldStepNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStepNumber(v)
+		return nil
+	case plan.FieldType:
+		v, ok := value.(plan.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case plan.FieldBuildID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBuildID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Plan field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PlanMutation) AddedFields() []string {
+	var fields []string
+	if m.addstep_number != nil {
+		fields = append(fields, plan.FieldStepNumber)
+	}
+	if m.addbuild_id != nil {
+		fields = append(fields, plan.FieldBuildID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PlanMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.AddedStepNumber()
+	case plan.FieldBuildID:
+		return m.AddedBuildID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlanMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case plan.FieldStepNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStepNumber(v)
+		return nil
+	case plan.FieldBuildID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBuildID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Plan numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PlanMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PlanMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PlanMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Plan nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PlanMutation) ResetField(name string) error {
+	switch name {
+	case plan.FieldStepNumber:
+		m.ResetStepNumber()
+		return nil
+	case plan.FieldType:
+		m.ResetType()
+		return nil
+	case plan.FieldBuildID:
+		m.ResetBuildID()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PlanMutation) AddedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m._PrevPlan != nil {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
+	if m._NextPlan != nil {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	if m._PlanToBuild != nil {
+		edges = append(edges, plan.EdgePlanToBuild)
+	}
+	if m._PlanToTeam != nil {
+		edges = append(edges, plan.EdgePlanToTeam)
+	}
+	if m._PlanToProvisionedNetwork != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedNetwork)
+	}
+	if m._PlanToProvisionedHost != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedHost)
+	}
+	if m._PlanToProvisioningStep != nil {
+		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PlanMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case plan.EdgePrevPlan:
+		if id := m._PrevPlan; id != nil {
+			return []ent.Value{*id}
+		}
+	case plan.EdgeNextPlan:
+		ids := make([]ent.Value, 0, len(m._NextPlan))
+		for id := range m._NextPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToBuild:
+		ids := make([]ent.Value, 0, len(m._PlanToBuild))
+		for id := range m._PlanToBuild {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToTeam:
+		ids := make([]ent.Value, 0, len(m._PlanToTeam))
+		for id := range m._PlanToTeam {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m._PlanToProvisionedNetwork))
+		for id := range m._PlanToProvisionedNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m._PlanToProvisionedHost))
+		for id := range m._PlanToProvisionedHost {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisioningStep:
+		ids := make([]ent.Value, 0, len(m._PlanToProvisioningStep))
+		for id := range m._PlanToProvisioningStep {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PlanMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.removed_NextPlan != nil {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	if m.removed_PlanToBuild != nil {
+		edges = append(edges, plan.EdgePlanToBuild)
+	}
+	if m.removed_PlanToTeam != nil {
+		edges = append(edges, plan.EdgePlanToTeam)
+	}
+	if m.removed_PlanToProvisionedNetwork != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedNetwork)
+	}
+	if m.removed_PlanToProvisionedHost != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedHost)
+	}
+	if m.removed_PlanToProvisioningStep != nil {
+		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PlanMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case plan.EdgeNextPlan:
+		ids := make([]ent.Value, 0, len(m.removed_NextPlan))
+		for id := range m.removed_NextPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_PlanToBuild))
+		for id := range m.removed_PlanToBuild {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToTeam:
+		ids := make([]ent.Value, 0, len(m.removed_PlanToTeam))
+		for id := range m.removed_PlanToTeam {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisionedNetwork:
+		ids := make([]ent.Value, 0, len(m.removed_PlanToProvisionedNetwork))
+		for id := range m.removed_PlanToProvisionedNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisionedHost:
+		ids := make([]ent.Value, 0, len(m.removed_PlanToProvisionedHost))
+		for id := range m.removed_PlanToProvisionedHost {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToProvisioningStep:
+		ids := make([]ent.Value, 0, len(m.removed_PlanToProvisioningStep))
+		for id := range m.removed_PlanToProvisioningStep {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PlanMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.cleared_PrevPlan {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
+	if m.cleared_NextPlan {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	if m.cleared_PlanToBuild {
+		edges = append(edges, plan.EdgePlanToBuild)
+	}
+	if m.cleared_PlanToTeam {
+		edges = append(edges, plan.EdgePlanToTeam)
+	}
+	if m.cleared_PlanToProvisionedNetwork {
+		edges = append(edges, plan.EdgePlanToProvisionedNetwork)
+	}
+	if m.cleared_PlanToProvisionedHost {
+		edges = append(edges, plan.EdgePlanToProvisionedHost)
+	}
+	if m.cleared_PlanToProvisioningStep {
+		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PlanMutation) EdgeCleared(name string) bool {
+	switch name {
+	case plan.EdgePrevPlan:
+		return m.cleared_PrevPlan
+	case plan.EdgeNextPlan:
+		return m.cleared_NextPlan
+	case plan.EdgePlanToBuild:
+		return m.cleared_PlanToBuild
+	case plan.EdgePlanToTeam:
+		return m.cleared_PlanToTeam
+	case plan.EdgePlanToProvisionedNetwork:
+		return m.cleared_PlanToProvisionedNetwork
+	case plan.EdgePlanToProvisionedHost:
+		return m.cleared_PlanToProvisionedHost
+	case plan.EdgePlanToProvisioningStep:
+		return m.cleared_PlanToProvisioningStep
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PlanMutation) ClearEdge(name string) error {
+	switch name {
+	case plan.EdgePrevPlan:
+		m.ClearPrevPlan()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PlanMutation) ResetEdge(name string) error {
+	switch name {
+	case plan.EdgePrevPlan:
+		m.ResetPrevPlan()
+		return nil
+	case plan.EdgeNextPlan:
+		m.ResetNextPlan()
+		return nil
+	case plan.EdgePlanToBuild:
+		m.ResetPlanToBuild()
+		return nil
+	case plan.EdgePlanToTeam:
+		m.ResetPlanToTeam()
+		return nil
+	case plan.EdgePlanToProvisionedNetwork:
+		m.ResetPlanToProvisionedNetwork()
+		return nil
+	case plan.EdgePlanToProvisionedHost:
+		m.ResetPlanToProvisionedHost()
+		return nil
+	case plan.EdgePlanToProvisioningStep:
+		m.ResetPlanToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan edge %s", name)
+}
+
 // ProvisionedHostMutation represents an operation that mutates the ProvisionedHost nodes in the graph.
 type ProvisionedHostMutation struct {
 	config
@@ -16593,6 +17702,9 @@ type ProvisionedHostMutation struct {
 	_ProvisionedHostToAgentStatus               map[int]struct{}
 	removed_ProvisionedHostToAgentStatus        map[int]struct{}
 	cleared_ProvisionedHostToAgentStatus        bool
+	_ProvisionedHostToPlan                      map[int]struct{}
+	removed_ProvisionedHostToPlan               map[int]struct{}
+	cleared_ProvisionedHostToPlan               bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedHost, error)
 	predicates                                  []predicate.ProvisionedHost
@@ -17031,6 +18143,59 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
 	m.removed_ProvisionedHostToAgentStatus = nil
 }
 
+// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToPlanIDs(ids ...int) {
+	if m._ProvisionedHostToPlan == nil {
+		m._ProvisionedHostToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedHostToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToPlan() {
+	m.cleared_ProvisionedHostToPlan = true
+}
+
+// ProvisionedHostToPlanCleared returns if the "ProvisionedHostToPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanCleared() bool {
+	return m.cleared_ProvisionedHostToPlan
+}
+
+// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToPlanIDs(ids ...int) {
+	if m.removed_ProvisionedHostToPlan == nil {
+		m.removed_ProvisionedHostToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedHostToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedHostToPlan returns the removed IDs of the "ProvisionedHostToPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToPlanIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedHostToPlanIDs returns the "ProvisionedHostToPlan" edge IDs in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []int) {
+	for id := range m._ProvisionedHostToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedHostToPlan resets all changes to the "ProvisionedHostToPlan" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToPlan() {
+	m._ProvisionedHostToPlan = nil
+	m.cleared_ProvisionedHostToPlan = false
+	m.removed_ProvisionedHostToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *ProvisionedHostMutation) Op() Op {
 	return m.op
@@ -17144,7 +18309,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m._ProvisionedHostToTag != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -17162,6 +18327,9 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m._ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m._ProvisionedHostToPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
 	}
 	return edges
 }
@@ -17206,13 +18374,19 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToPlan))
+		for id := range m._ProvisionedHostToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removed_ProvisionedHostToTag != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -17230,6 +18404,9 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 	}
 	if m.removed_ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.removed_ProvisionedHostToPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
 	}
 	return edges
 }
@@ -17274,13 +18451,19 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToPlan))
+		for id := range m.removed_ProvisionedHostToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.cleared_ProvisionedHostToTag {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
 	}
@@ -17298,6 +18481,9 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisionedHostToAgentStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.cleared_ProvisionedHostToPlan {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
 	}
 	return edges
 }
@@ -17318,6 +18504,8 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedHostToProvisioningStep
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		return m.cleared_ProvisionedHostToAgentStatus
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		return m.cleared_ProvisionedHostToPlan
 	}
 	return false
 }
@@ -17352,6 +18540,9 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		m.ResetProvisionedHostToAgentStatus()
 		return nil
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		m.ResetProvisionedHostToPlan()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost edge %s", name)
 }
@@ -17383,6 +18574,9 @@ type ProvisionedNetworkMutation struct {
 	_ProvisionedNetworkToProvisionedHost        map[int]struct{}
 	removed_ProvisionedNetworkToProvisionedHost map[int]struct{}
 	cleared_ProvisionedNetworkToProvisionedHost bool
+	_ProvisionedNetworkToPlan                   map[int]struct{}
+	removed_ProvisionedNetworkToPlan            map[int]struct{}
+	cleared_ProvisionedNetworkToPlan            bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedNetwork, error)
 	predicates                                  []predicate.ProvisionedNetwork
@@ -17857,6 +19051,59 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToProvisionedHost() 
 	m.removed_ProvisionedNetworkToProvisionedHost = nil
 }
 
+// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by ids.
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToPlanIDs(ids ...int) {
+	if m._ProvisionedNetworkToPlan == nil {
+		m._ProvisionedNetworkToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedNetworkToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedNetworkToPlan clears the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToPlan() {
+	m.cleared_ProvisionedNetworkToPlan = true
+}
+
+// ProvisionedNetworkToPlanCleared returns if the "ProvisionedNetworkToPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanCleared() bool {
+	return m.cleared_ProvisionedNetworkToPlan
+}
+
+// RemoveProvisionedNetworkToPlanIDs removes the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToPlanIDs(ids ...int) {
+	if m.removed_ProvisionedNetworkToPlan == nil {
+		m.removed_ProvisionedNetworkToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedNetworkToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedNetworkToPlan returns the removed IDs of the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToPlanIDs() (ids []int) {
+	for id := range m.removed_ProvisionedNetworkToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedNetworkToPlanIDs returns the "ProvisionedNetworkToPlan" edge IDs in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []int) {
+	for id := range m._ProvisionedNetworkToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedNetworkToPlan resets all changes to the "ProvisionedNetworkToPlan" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToPlan() {
+	m._ProvisionedNetworkToPlan = nil
+	m.cleared_ProvisionedNetworkToPlan = false
+	m.removed_ProvisionedNetworkToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *ProvisionedNetworkMutation) Op() Op {
 	return m.op
@@ -17987,7 +19234,7 @@ func (m *ProvisionedNetworkMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedNetworkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m._ProvisionedNetworkToTag != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
@@ -18005,6 +19252,9 @@ func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 	}
 	if m._ProvisionedNetworkToProvisionedHost != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
+	}
+	if m._ProvisionedNetworkToPlan != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
 	}
 	return edges
 }
@@ -18049,13 +19299,19 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToPlan))
+		for id := range m._ProvisionedNetworkToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removed_ProvisionedNetworkToTag != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
@@ -18073,6 +19329,9 @@ func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 	}
 	if m.removed_ProvisionedNetworkToProvisionedHost != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
+	}
+	if m.removed_ProvisionedNetworkToPlan != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
 	}
 	return edges
 }
@@ -18117,13 +19376,19 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToPlan))
+		for id := range m.removed_ProvisionedNetworkToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.cleared_ProvisionedNetworkToTag {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
 	}
@@ -18141,6 +19406,9 @@ func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisionedNetworkToProvisionedHost {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
+	}
+	if m.cleared_ProvisionedNetworkToPlan {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
 	}
 	return edges
 }
@@ -18161,6 +19429,8 @@ func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedNetworkToTeam
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		return m.cleared_ProvisionedNetworkToProvisionedHost
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		return m.cleared_ProvisionedNetworkToPlan
 	}
 	return false
 }
@@ -18194,6 +19464,9 @@ func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 		return nil
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		m.ResetProvisionedNetworkToProvisionedHost()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		m.ResetProvisionedNetworkToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork edge %s", name)
@@ -18236,6 +19509,9 @@ type ProvisioningStepMutation struct {
 	_ProvisioningStepToFileExtract            map[int]struct{}
 	removed_ProvisioningStepToFileExtract     map[int]struct{}
 	cleared_ProvisioningStepToFileExtract     bool
+	_ProvisioningStepToPlan                   map[int]struct{}
+	removed_ProvisioningStepToPlan            map[int]struct{}
+	cleared_ProvisioningStepToPlan            bool
 	done                                      bool
 	oldValue                                  func(context.Context) (*ProvisioningStep, error)
 	predicates                                []predicate.ProvisioningStep
@@ -18889,6 +20165,59 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToFileExtract() {
 	m.removed_ProvisioningStepToFileExtract = nil
 }
 
+// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToPlanIDs(ids ...int) {
+	if m._ProvisioningStepToPlan == nil {
+		m._ProvisioningStepToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisioningStepToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisioningStepToPlan clears the "ProvisioningStepToPlan" edge to the Plan entity.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToPlan() {
+	m.cleared_ProvisioningStepToPlan = true
+}
+
+// ProvisioningStepToPlanCleared returns if the "ProvisioningStepToPlan" edge to the Plan entity was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanCleared() bool {
+	return m.cleared_ProvisioningStepToPlan
+}
+
+// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToPlanIDs(ids ...int) {
+	if m.removed_ProvisioningStepToPlan == nil {
+		m.removed_ProvisioningStepToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToPlan returns the removed IDs of the "ProvisioningStepToPlan" edge to the Plan entity.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToPlanIDs() (ids []int) {
+	for id := range m.removed_ProvisioningStepToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisioningStepToPlanIDs returns the "ProvisioningStepToPlan" edge IDs in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []int) {
+	for id := range m._ProvisioningStepToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisioningStepToPlan resets all changes to the "ProvisioningStepToPlan" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
+	m._ProvisioningStepToPlan = nil
+	m.cleared_ProvisioningStepToPlan = false
+	m.removed_ProvisioningStepToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *ProvisioningStepMutation) Op() Op {
 	return m.op
@@ -19034,7 +20363,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m._ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -19061,6 +20390,9 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	}
 	if m._ProvisioningStepToFileExtract != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
+	}
+	if m._ProvisioningStepToPlan != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
 	}
 	return edges
 }
@@ -19123,13 +20455,19 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToPlan))
+		for id := range m._ProvisioningStepToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.removed_ProvisioningStepToTag != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -19156,6 +20494,9 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 	}
 	if m.removed_ProvisioningStepToFileExtract != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
+	}
+	if m.removed_ProvisioningStepToPlan != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
 	}
 	return edges
 }
@@ -19218,13 +20559,19 @@ func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToPlan))
+		for id := range m.removed_ProvisioningStepToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.cleared_ProvisioningStepToTag {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
 	}
@@ -19252,6 +20599,9 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	if m.cleared_ProvisioningStepToFileExtract {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
+	if m.cleared_ProvisioningStepToPlan {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
 	return edges
 }
 
@@ -19277,6 +20627,8 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisioningStepToFileDownload
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
 		return m.cleared_ProvisioningStepToFileExtract
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		return m.cleared_ProvisioningStepToPlan
 	}
 	return false
 }
@@ -19319,6 +20671,9 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
 		m.ResetProvisioningStepToFileExtract()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		m.ResetProvisioningStepToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
@@ -21791,6 +23146,9 @@ type TeamMutation struct {
 	_TeamToProvisionedNetwork        map[int]struct{}
 	removed_TeamToProvisionedNetwork map[int]struct{}
 	cleared_TeamToProvisionedNetwork bool
+	_TeamToPlan                      map[int]struct{}
+	removed_TeamToPlan               map[int]struct{}
+	cleared_TeamToPlan               bool
 	done                             bool
 	oldValue                         func(context.Context) (*Team, error)
 	predicates                       []predicate.Team
@@ -22288,6 +23646,59 @@ func (m *TeamMutation) ResetTeamToProvisionedNetwork() {
 	m.removed_TeamToProvisionedNetwork = nil
 }
 
+// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by ids.
+func (m *TeamMutation) AddTeamToPlanIDs(ids ...int) {
+	if m._TeamToPlan == nil {
+		m._TeamToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._TeamToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTeamToPlan clears the "TeamToPlan" edge to the Plan entity.
+func (m *TeamMutation) ClearTeamToPlan() {
+	m.cleared_TeamToPlan = true
+}
+
+// TeamToPlanCleared returns if the "TeamToPlan" edge to the Plan entity was cleared.
+func (m *TeamMutation) TeamToPlanCleared() bool {
+	return m.cleared_TeamToPlan
+}
+
+// RemoveTeamToPlanIDs removes the "TeamToPlan" edge to the Plan entity by IDs.
+func (m *TeamMutation) RemoveTeamToPlanIDs(ids ...int) {
+	if m.removed_TeamToPlan == nil {
+		m.removed_TeamToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_TeamToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeamToPlan returns the removed IDs of the "TeamToPlan" edge to the Plan entity.
+func (m *TeamMutation) RemovedTeamToPlanIDs() (ids []int) {
+	for id := range m.removed_TeamToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TeamToPlanIDs returns the "TeamToPlan" edge IDs in the mutation.
+func (m *TeamMutation) TeamToPlanIDs() (ids []int) {
+	for id := range m._TeamToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeamToPlan resets all changes to the "TeamToPlan" edge.
+func (m *TeamMutation) ResetTeamToPlan() {
+	m._TeamToPlan = nil
+	m.cleared_TeamToPlan = false
+	m.removed_TeamToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *TeamMutation) Op() Op {
 	return m.op
@@ -22462,7 +23873,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m._TeamToUser != nil {
 		edges = append(edges, team.EdgeTeamToUser)
 	}
@@ -22477,6 +23888,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m._TeamToProvisionedNetwork != nil {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m._TeamToPlan != nil {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22515,13 +23929,19 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeTeamToPlan:
+		ids := make([]ent.Value, 0, len(m._TeamToPlan))
+		for id := range m._TeamToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removed_TeamToUser != nil {
 		edges = append(edges, team.EdgeTeamToUser)
 	}
@@ -22536,6 +23956,9 @@ func (m *TeamMutation) RemovedEdges() []string {
 	}
 	if m.removed_TeamToProvisionedNetwork != nil {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m.removed_TeamToPlan != nil {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22574,13 +23997,19 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeTeamToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToPlan))
+		for id := range m.removed_TeamToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.cleared_TeamToUser {
 		edges = append(edges, team.EdgeTeamToUser)
 	}
@@ -22595,6 +24024,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.cleared_TeamToProvisionedNetwork {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m.cleared_TeamToPlan {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22613,6 +24045,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.cleared_TeamToTag
 	case team.EdgeTeamToProvisionedNetwork:
 		return m.cleared_TeamToProvisionedNetwork
+	case team.EdgeTeamToPlan:
+		return m.cleared_TeamToPlan
 	}
 	return false
 }
@@ -22643,6 +24077,9 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	case team.EdgeTeamToProvisionedNetwork:
 		m.ResetTeamToProvisionedNetwork()
+		return nil
+	case team.EdgeTeamToPlan:
+		m.ResetTeamToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)

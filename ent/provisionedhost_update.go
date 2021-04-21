@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -126,6 +127,21 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 		ids[i] = a[i].ID
 	}
 	return phu.AddProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToPlanIDs(ids...)
+	return phu
+}
+
+// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return phu.AddProvisionedHostToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -257,6 +273,27 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*Agent
 		ids[i] = a[i].ID
 	}
 	return phu.RemoveProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// ClearProvisionedHostToPlan clears all "ProvisionedHostToPlan" edges to the Plan entity.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToPlan() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToPlan()
+	return phu
+}
+
+// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to Plan entities by IDs.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToPlanIDs(ids...)
+	return phu
+}
+
+// RemoveProvisionedHostToPlan removes "ProvisionedHostToPlan" edges to Plan entities.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return phu.RemoveProvisionedHostToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -659,6 +696,60 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if phu.mutation.ProvisionedHostToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, phu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionedhost.Label}
@@ -771,6 +862,21 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*Agen
 		ids[i] = a[i].ID
 	}
 	return phuo.AddProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToPlanIDs(ids...)
+	return phuo
+}
+
+// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return phuo.AddProvisionedHostToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -902,6 +1008,27 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*A
 		ids[i] = a[i].ID
 	}
 	return phuo.RemoveProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// ClearProvisionedHostToPlan clears all "ProvisionedHostToPlan" edges to the Plan entity.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToPlan() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToPlan()
+	return phuo
+}
+
+// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to Plan entities by IDs.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToPlanIDs(ids...)
+	return phuo
+}
+
+// RemoveProvisionedHostToPlan removes "ProvisionedHostToPlan" edges to Plan entities.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return phuo.RemoveProvisionedHostToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the updated ProvisionedHost entity.
@@ -1301,6 +1428,60 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.ProvisionedHostToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

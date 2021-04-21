@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -119,6 +120,21 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 		ids[i] = a[i].ID
 	}
 	return phc.AddProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
+func (phc *ProvisionedHostCreate) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostCreate {
+	phc.mutation.AddProvisionedHostToPlanIDs(ids...)
+	return phc
+}
+
+// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
+func (phc *ProvisionedHostCreate) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return phc.AddProvisionedHostToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisionedHostMutation object of the builder.
@@ -316,6 +332,25 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := phc.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToPlanTable,
+			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

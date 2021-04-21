@@ -31,6 +31,7 @@ import (
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -218,7 +219,7 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		ID:     b.ID,
 		Type:   "Build",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(b.Revision); err != nil {
@@ -283,6 +284,16 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[4].IDs, err = b.QueryBuildToEnvironment().
 		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "Plan",
+		Name: "BuildToPlan",
+	}
+	node.Edges[5].IDs, err = b.QueryBuildToPlan().
+		Select(plan.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -1851,12 +1862,117 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pl.ID,
+		Type:   "Plan",
+		Fields: make([]*Field, 3),
+		Edges:  make([]*Edge, 7),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pl.StepNumber); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "int",
+		Name:  "step_number",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pl.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "plan.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pl.BuildID); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int",
+		Name:  "build_id",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Plan",
+		Name: "PrevPlan",
+	}
+	node.Edges[0].IDs, err = pl.QueryPrevPlan().
+		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Plan",
+		Name: "NextPlan",
+	}
+	node.Edges[1].IDs, err = pl.QueryNextPlan().
+		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Build",
+		Name: "PlanToBuild",
+	}
+	node.Edges[2].IDs, err = pl.QueryPlanToBuild().
+		Select(build.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Team",
+		Name: "PlanToTeam",
+	}
+	node.Edges[3].IDs, err = pl.QueryPlanToTeam().
+		Select(team.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "ProvisionedNetwork",
+		Name: "PlanToProvisionedNetwork",
+	}
+	node.Edges[4].IDs, err = pl.QueryPlanToProvisionedNetwork().
+		Select(provisionednetwork.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "ProvisionedHost",
+		Name: "PlanToProvisionedHost",
+	}
+	node.Edges[5].IDs, err = pl.QueryPlanToProvisionedHost().
+		Select(provisionedhost.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[6] = &Edge{
+		Type: "ProvisioningStep",
+		Name: "PlanToProvisioningStep",
+	}
+	node.Edges[6].IDs, err = pl.QueryPlanToProvisioningStep().
+		Select(provisioningstep.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -1927,6 +2043,16 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[6] = &Edge{
+		Type: "Plan",
+		Name: "ProvisionedHostToPlan",
+	}
+	node.Edges[6].IDs, err = ph.QueryProvisionedHostToPlan().
+		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -1935,7 +2061,7 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		ID:     pn.ID,
 		Type:   "ProvisionedNetwork",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pn.Name); err != nil {
@@ -2014,6 +2140,16 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[6] = &Edge{
+		Type: "Plan",
+		Name: "ProvisionedNetworkToPlan",
+	}
+	node.Edges[6].IDs, err = pn.QueryProvisionedNetworkToPlan().
+		Select(plan.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -2022,7 +2158,7 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ps.ID,
 		Type:   "ProvisioningStep",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 9),
+		Edges:  make([]*Edge, 10),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ps.ProvisionerType); err != nil {
@@ -2127,6 +2263,16 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[8].IDs, err = ps.QueryProvisioningStepToFileExtract().
 		Select(fileextract.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[9] = &Edge{
+		Type: "Plan",
+		Name: "ProvisioningStepToPlan",
+	}
+	node.Edges[9].IDs, err = ps.QueryProvisioningStepToPlan().
+		Select(plan.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -2406,7 +2552,7 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 		ID:     t.ID,
 		Type:   "Team",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(t.TeamNumber); err != nil {
@@ -2479,6 +2625,16 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[4].IDs, err = t.QueryTeamToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "Plan",
+		Name: "TeamToPlan",
+	}
+	node.Edges[5].IDs, err = t.QueryTeamToPlan().
+		Select(plan.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -2764,6 +2920,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		n, err := c.Network.Query().
 			Where(network.ID(id)).
 			CollectFields(ctx, "Network").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case plan.Table:
+		n, err := c.Plan.Query().
+			Where(plan.ID(id)).
+			CollectFields(ctx, "Plan").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -3126,6 +3291,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Network.Query().
 			Where(network.IDIn(ids...)).
 			CollectFields(ctx, "Network").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case plan.Table:
+		nodes, err := c.Plan.Query().
+			Where(plan.IDIn(ids...)).
+			CollectFields(ctx, "Plan").
 			All(ctx)
 		if err != nil {
 			return nil, err

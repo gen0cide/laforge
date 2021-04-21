@@ -31,6 +31,7 @@ import (
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -4163,6 +4164,236 @@ func (n *Network) ToEdge(order *NetworkOrder) *NetworkEdge {
 	return &NetworkEdge{
 		Node:   n,
 		Cursor: order.Field.toCursor(n),
+	}
+}
+
+// PlanEdge is the edge representation of Plan.
+type PlanEdge struct {
+	Node   *Plan  `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// PlanConnection is the connection containing edges to Plan.
+type PlanConnection struct {
+	Edges      []*PlanEdge `json:"edges"`
+	PageInfo   PageInfo    `json:"pageInfo"`
+	TotalCount int         `json:"totalCount"`
+}
+
+// PlanPaginateOption enables pagination customization.
+type PlanPaginateOption func(*planPager) error
+
+// WithPlanOrder configures pagination ordering.
+func WithPlanOrder(order *PlanOrder) PlanPaginateOption {
+	if order == nil {
+		order = DefaultPlanOrder
+	}
+	o := *order
+	return func(pager *planPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultPlanOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithPlanFilter configures pagination filter.
+func WithPlanFilter(filter func(*PlanQuery) (*PlanQuery, error)) PlanPaginateOption {
+	return func(pager *planPager) error {
+		if filter == nil {
+			return errors.New("PlanQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type planPager struct {
+	order  *PlanOrder
+	filter func(*PlanQuery) (*PlanQuery, error)
+}
+
+func newPlanPager(opts []PlanPaginateOption) (*planPager, error) {
+	pager := &planPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultPlanOrder
+	}
+	return pager, nil
+}
+
+func (p *planPager) applyFilter(query *PlanQuery) (*PlanQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *planPager) toCursor(pl *Plan) Cursor {
+	return p.order.Field.toCursor(pl)
+}
+
+func (p *planPager) applyCursors(query *PlanQuery, after, before *Cursor) *PlanQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultPlanOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *planPager) applyOrder(query *PlanQuery, reverse bool) *PlanQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultPlanOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultPlanOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Plan.
+func (pl *PlanQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...PlanPaginateOption,
+) (*PlanConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newPlanPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if pl, err = pager.applyFilter(pl); err != nil {
+		return nil, err
+	}
+
+	conn := &PlanConnection{Edges: []*PlanEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := pl.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := pl.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	pl = pager.applyCursors(pl, after, before)
+	pl = pager.applyOrder(pl, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		pl = pl.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		pl = pl.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := pl.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Plan
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Plan {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Plan {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*PlanEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &PlanEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// PlanOrderField defines the ordering field of Plan.
+type PlanOrderField struct {
+	field    string
+	toCursor func(*Plan) Cursor
+}
+
+// PlanOrder defines the ordering of Plan.
+type PlanOrder struct {
+	Direction OrderDirection  `json:"direction"`
+	Field     *PlanOrderField `json:"field"`
+}
+
+// DefaultPlanOrder is the default ordering of Plan.
+var DefaultPlanOrder = &PlanOrder{
+	Direction: OrderDirectionAsc,
+	Field: &PlanOrderField{
+		field: plan.FieldID,
+		toCursor: func(pl *Plan) Cursor {
+			return Cursor{ID: pl.ID}
+		},
+	},
+}
+
+// ToEdge converts Plan into PlanEdge.
+func (pl *Plan) ToEdge(order *PlanOrder) *PlanEdge {
+	if order == nil {
+		order = DefaultPlanOrder
+	}
+	return &PlanEdge{
+		Node:   pl,
+		Cursor: order.Field.toCursor(pl),
 	}
 }
 

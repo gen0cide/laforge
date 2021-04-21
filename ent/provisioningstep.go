@@ -42,6 +42,8 @@ type ProvisioningStep struct {
 	HCLProvisioningStepToFileDownload []*FileDownload `json:"ProvisioningStepToFileDownload,omitempty"`
 	// ProvisioningStepToFileExtract holds the value of the ProvisioningStepToFileExtract edge.
 	HCLProvisioningStepToFileExtract []*FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
+	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
+	HCLProvisioningStepToPlan []*Plan `json:"ProvisioningStepToPlan,omitempty"`
 	//
 
 }
@@ -66,9 +68,11 @@ type ProvisioningStepEdges struct {
 	ProvisioningStepToFileDownload []*FileDownload `json:"ProvisioningStepToFileDownload,omitempty"`
 	// ProvisioningStepToFileExtract holds the value of the ProvisioningStepToFileExtract edge.
 	ProvisioningStepToFileExtract []*FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
+	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
+	ProvisioningStepToPlan []*Plan `json:"ProvisioningStepToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // ProvisioningStepToTagOrErr returns the ProvisioningStepToTag value or an error if the edge
@@ -150,6 +154,15 @@ func (e ProvisioningStepEdges) ProvisioningStepToFileExtractOrErr() ([]*FileExtr
 		return e.ProvisioningStepToFileExtract, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisioningStepToFileExtract"}
+}
+
+// ProvisioningStepToPlanOrErr returns the ProvisioningStepToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisioningStepEdges) ProvisioningStepToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[9] {
+		return e.ProvisioningStepToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -242,6 +255,11 @@ func (ps *ProvisioningStep) QueryProvisioningStepToFileDownload() *FileDownloadQ
 // QueryProvisioningStepToFileExtract queries the "ProvisioningStepToFileExtract" edge of the ProvisioningStep entity.
 func (ps *ProvisioningStep) QueryProvisioningStepToFileExtract() *FileExtractQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToFileExtract(ps)
+}
+
+// QueryProvisioningStepToPlan queries the "ProvisioningStepToPlan" edge of the ProvisioningStep entity.
+func (ps *ProvisioningStep) QueryProvisioningStepToPlan() *PlanQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToPlan(ps)
 }
 
 // Update returns a builder for updating this ProvisioningStep.

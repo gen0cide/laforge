@@ -213,6 +213,18 @@ func (n *NetworkQuery) collectField(ctx *graphql.OperationContext, field graphql
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pl *PlanQuery) CollectFields(ctx context.Context, satisfies ...string) *PlanQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pl = pl.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pl
+}
+
+func (pl *PlanQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *PlanQuery {
+	return pl
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (ph *ProvisionedHostQuery) CollectFields(ctx context.Context, satisfies ...string) *ProvisionedHostQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		ph = ph.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

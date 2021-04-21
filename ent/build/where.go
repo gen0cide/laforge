@@ -314,6 +314,34 @@ func HasBuildToEnvironmentWith(preds ...predicate.Environment) predicate.Build {
 	})
 }
 
+// HasBuildToPlan applies the HasEdge predicate on the "BuildToPlan" edge.
+func HasBuildToPlan() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BuildToPlanTable, BuildToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToPlanWith applies the HasEdge predicate on the "BuildToPlan" edge with a given conditions (other predicates).
+func HasBuildToPlanWith(preds ...predicate.Plan) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BuildToPlanTable, BuildToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Build) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {

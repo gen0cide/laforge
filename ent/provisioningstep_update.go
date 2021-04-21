@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -187,6 +188,21 @@ func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileExtract(f ...*FileEx
 		ids[i] = f[i].ID
 	}
 	return psu.AddProvisioningStepToFileExtractIDs(ids...)
+}
+
+// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.AddProvisioningStepToPlanIDs(ids...)
+	return psu
+}
+
+// AddProvisioningStepToPlan adds the "ProvisioningStepToPlan" edges to the Plan entity.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return psu.AddProvisioningStepToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -381,6 +397,27 @@ func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileExtract(f ...*Fil
 		ids[i] = f[i].ID
 	}
 	return psu.RemoveProvisioningStepToFileExtractIDs(ids...)
+}
+
+// ClearProvisioningStepToPlan clears all "ProvisioningStepToPlan" edges to the Plan entity.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToPlan() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToPlan()
+	return psu
+}
+
+// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to Plan entities by IDs.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdate {
+	psu.mutation.RemoveProvisioningStepToPlanIDs(ids...)
+	return psu
+}
+
+// RemoveProvisioningStepToPlan removes "ProvisioningStepToPlan" edges to Plan entities.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return psu.RemoveProvisioningStepToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -959,6 +996,60 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if psu.mutation.ProvisioningStepToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, psu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisioningstep.Label}
@@ -1129,6 +1220,21 @@ func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileExtract(f ...*Fi
 		ids[i] = f[i].ID
 	}
 	return psuo.AddProvisioningStepToFileExtractIDs(ids...)
+}
+
+// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.AddProvisioningStepToPlanIDs(ids...)
+	return psuo
+}
+
+// AddProvisioningStepToPlan adds the "ProvisioningStepToPlan" edges to the Plan entity.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return psuo.AddProvisioningStepToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -1323,6 +1429,27 @@ func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileExtract(f ...
 		ids[i] = f[i].ID
 	}
 	return psuo.RemoveProvisioningStepToFileExtractIDs(ids...)
+}
+
+// ClearProvisioningStepToPlan clears all "ProvisioningStepToPlan" edges to the Plan entity.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToPlan() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToPlan()
+	return psuo
+}
+
+// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to Plan entities by IDs.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdateOne {
+	psuo.mutation.RemoveProvisioningStepToPlanIDs(ids...)
+	return psuo
+}
+
+// RemoveProvisioningStepToPlan removes "ProvisioningStepToPlan" edges to Plan entities.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return psuo.RemoveProvisioningStepToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the updated ProvisioningStep entity.
@@ -1898,6 +2025,60 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psuo.mutation.ProvisioningStepToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

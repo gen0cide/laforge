@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -37,6 +38,7 @@ type ProvisionedNetworkQuery struct {
 	withProvisionedNetworkToBuild           *BuildQuery
 	withProvisionedNetworkToTeam            *TeamQuery
 	withProvisionedNetworkToProvisionedHost *ProvisionedHostQuery
+	withProvisionedNetworkToPlan            *PlanQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -191,6 +193,28 @@ func (pnq *ProvisionedNetworkQuery) QueryProvisionedNetworkToProvisionedHost() *
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedNetworkToProvisionedHostTable, provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pnq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProvisionedNetworkToPlan chains the current query on the "ProvisionedNetworkToPlan" edge.
+func (pnq *ProvisionedNetworkQuery) QueryProvisionedNetworkToPlan() *PlanQuery {
+	query := &PlanQuery{config: pnq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pnq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pnq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, selector),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedNetworkToPlanTable, provisionednetwork.ProvisionedNetworkToPlanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pnq.driver.Dialect(), step)
 		return fromU, nil
@@ -385,6 +409,7 @@ func (pnq *ProvisionedNetworkQuery) Clone() *ProvisionedNetworkQuery {
 		withProvisionedNetworkToBuild:           pnq.withProvisionedNetworkToBuild.Clone(),
 		withProvisionedNetworkToTeam:            pnq.withProvisionedNetworkToTeam.Clone(),
 		withProvisionedNetworkToProvisionedHost: pnq.withProvisionedNetworkToProvisionedHost.Clone(),
+		withProvisionedNetworkToPlan:            pnq.withProvisionedNetworkToPlan.Clone(),
 		// clone intermediate query.
 		sql:  pnq.sql.Clone(),
 		path: pnq.path,
@@ -457,6 +482,17 @@ func (pnq *ProvisionedNetworkQuery) WithProvisionedNetworkToProvisionedHost(opts
 	return pnq
 }
 
+// WithProvisionedNetworkToPlan tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisionedNetworkToPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (pnq *ProvisionedNetworkQuery) WithProvisionedNetworkToPlan(opts ...func(*PlanQuery)) *ProvisionedNetworkQuery {
+	query := &PlanQuery{config: pnq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pnq.withProvisionedNetworkToPlan = query
+	return pnq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -522,13 +558,14 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	var (
 		nodes       = []*ProvisionedNetwork{}
 		_spec       = pnq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			pnq.withProvisionedNetworkToTag != nil,
 			pnq.withProvisionedNetworkToStatus != nil,
 			pnq.withProvisionedNetworkToNetwork != nil,
 			pnq.withProvisionedNetworkToBuild != nil,
 			pnq.withProvisionedNetworkToTeam != nil,
 			pnq.withProvisionedNetworkToProvisionedHost != nil,
+			pnq.withProvisionedNetworkToPlan != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -826,6 +863,70 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 			}
 			for i := range nodes {
 				nodes[i].Edges.ProvisionedNetworkToProvisionedHost = append(nodes[i].Edges.ProvisionedNetworkToProvisionedHost, n)
+			}
+		}
+	}
+
+	if query := pnq.withProvisionedNetworkToPlan; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*ProvisionedNetwork, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.ProvisionedNetworkToPlan = []*Plan{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*ProvisionedNetwork)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
+				Columns: provisionednetwork.ProvisionedNetworkToPlanPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(provisionednetwork.ProvisionedNetworkToPlanPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, pnq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "ProvisionedNetworkToPlan": %v`, err)
+		}
+		query.Where(plan.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "ProvisionedNetworkToPlan" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedNetworkToPlan = append(nodes[i].Edges.ProvisionedNetworkToPlan, n)
 			}
 		}
 	}

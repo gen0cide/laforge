@@ -24,6 +24,8 @@ const (
 	EdgeProvisionedNetworkToTeam = "ProvisionedNetworkToTeam"
 	// EdgeProvisionedNetworkToProvisionedHost holds the string denoting the provisionednetworktoprovisionedhost edge name in mutations.
 	EdgeProvisionedNetworkToProvisionedHost = "ProvisionedNetworkToProvisionedHost"
+	// EdgeProvisionedNetworkToPlan holds the string denoting the provisionednetworktoplan edge name in mutations.
+	EdgeProvisionedNetworkToPlan = "ProvisionedNetworkToPlan"
 
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
@@ -63,6 +65,11 @@ const (
 	// ProvisionedNetworkToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedNetworkToProvisionedHostInverseTable = "provisioned_hosts"
+	// ProvisionedNetworkToPlanTable is the table the holds the ProvisionedNetworkToPlan relation/edge. The primary key declared below.
+	ProvisionedNetworkToPlanTable = "plan_PlanToProvisionedNetwork"
+	// ProvisionedNetworkToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisionedNetworkToPlanInverseTable = "plans"
 )
 
 // Columns holds all SQL columns for provisionednetwork fields.
@@ -82,6 +89,9 @@ var (
 	// ProvisionedNetworkToProvisionedHostPrimaryKey and ProvisionedNetworkToProvisionedHostColumn2 are the table columns denoting the
 	// primary key for the ProvisionedNetworkToProvisionedHost relation (M2M).
 	ProvisionedNetworkToProvisionedHostPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
+	// ProvisionedNetworkToPlanPrimaryKey and ProvisionedNetworkToPlanColumn2 are the table columns denoting the
+	// primary key for the ProvisionedNetworkToPlan relation (M2M).
+	ProvisionedNetworkToPlanPrimaryKey = []string{"plan_id", "provisioned_network_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

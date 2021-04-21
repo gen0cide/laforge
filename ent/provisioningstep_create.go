@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
@@ -173,6 +174,21 @@ func (psc *ProvisioningStepCreate) AddProvisioningStepToFileExtract(f ...*FileEx
 		ids[i] = f[i].ID
 	}
 	return psc.AddProvisioningStepToFileExtractIDs(ids...)
+}
+
+// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
+func (psc *ProvisioningStepCreate) AddProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepCreate {
+	psc.mutation.AddProvisioningStepToPlanIDs(ids...)
+	return psc
+}
+
+// AddProvisioningStepToPlan adds the "ProvisioningStepToPlan" edges to the Plan entity.
+func (psc *ProvisioningStepCreate) AddProvisioningStepToPlan(p ...*Plan) *ProvisioningStepCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return psc.AddProvisioningStepToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisioningStepMutation object of the builder.
@@ -438,6 +454,25 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: fileextract.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := psc.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToPlanTable,
+			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

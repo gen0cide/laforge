@@ -30,6 +30,8 @@ const (
 	EdgeProvisioningStepToFileDownload = "ProvisioningStepToFileDownload"
 	// EdgeProvisioningStepToFileExtract holds the string denoting the provisioningsteptofileextract edge name in mutations.
 	EdgeProvisioningStepToFileExtract = "ProvisioningStepToFileExtract"
+	// EdgeProvisioningStepToPlan holds the string denoting the provisioningsteptoplan edge name in mutations.
+	EdgeProvisioningStepToPlan = "ProvisioningStepToPlan"
 
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
@@ -94,6 +96,11 @@ const (
 	ProvisioningStepToFileExtractInverseTable = "file_extracts"
 	// ProvisioningStepToFileExtractColumn is the table column denoting the ProvisioningStepToFileExtract relation/edge.
 	ProvisioningStepToFileExtractColumn = "provisioning_step_provisioning_step_to_file_extract"
+	// ProvisioningStepToPlanTable is the table the holds the ProvisioningStepToPlan relation/edge. The primary key declared below.
+	ProvisioningStepToPlanTable = "plan_PlanToProvisioningStep"
+	// ProvisioningStepToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisioningStepToPlanInverseTable = "plans"
 )
 
 // Columns holds all SQL columns for provisioningstep fields.
@@ -107,6 +114,9 @@ var (
 	// ProvisioningStepToProvisionedHostPrimaryKey and ProvisioningStepToProvisionedHostColumn2 are the table columns denoting the
 	// primary key for the ProvisioningStepToProvisionedHost relation (M2M).
 	ProvisioningStepToProvisionedHostPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
+	// ProvisioningStepToPlanPrimaryKey and ProvisioningStepToPlanColumn2 are the table columns denoting the
+	// primary key for the ProvisioningStepToPlan relation (M2M).
+	ProvisioningStepToPlanPrimaryKey = []string{"plan_id", "provisioning_step_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

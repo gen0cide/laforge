@@ -26,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -79,6 +80,8 @@ type Client struct {
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
 	Network *NetworkClient
+	// Plan is the client for interacting with the Plan builders.
+	Plan *PlanClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
@@ -127,6 +130,7 @@ func (c *Client) init() {
 	c.Identity = NewIdentityClient(c.config)
 	c.IncludedNetwork = NewIncludedNetworkClient(c.config)
 	c.Network = NewNetworkClient(c.config)
+	c.Plan = NewPlanClient(c.config)
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
 	c.ProvisionedNetwork = NewProvisionedNetworkClient(c.config)
 	c.ProvisioningStep = NewProvisioningStepClient(c.config)
@@ -185,6 +189,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
+		Plan:               NewPlanClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
@@ -228,6 +233,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
+		Plan:               NewPlanClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
@@ -282,6 +288,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Identity.Use(hooks...)
 	c.IncludedNetwork.Use(hooks...)
 	c.Network.Use(hooks...)
+	c.Plan.Use(hooks...)
 	c.ProvisionedHost.Use(hooks...)
 	c.ProvisionedNetwork.Use(hooks...)
 	c.ProvisioningStep.Use(hooks...)
@@ -568,6 +575,22 @@ func (c *BuildClient) QueryBuildToEnvironment(b *Build) *EnvironmentQuery {
 			sqlgraph.From(build.Table, build.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToEnvironmentTable, build.BuildToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToPlan queries the BuildToPlan edge of a Build.
+func (c *BuildClient) QueryBuildToPlan(b *Build) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToPlanTable, build.BuildToPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -2892,6 +2915,206 @@ func (c *NetworkClient) Hooks() []Hook {
 	return c.hooks.Network
 }
 
+// PlanClient is a client for the Plan schema.
+type PlanClient struct {
+	config
+}
+
+// NewPlanClient returns a client for the Plan from the given config.
+func NewPlanClient(c config) *PlanClient {
+	return &PlanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `plan.Hooks(f(g(h())))`.
+func (c *PlanClient) Use(hooks ...Hook) {
+	c.hooks.Plan = append(c.hooks.Plan, hooks...)
+}
+
+// Create returns a create builder for Plan.
+func (c *PlanClient) Create() *PlanCreate {
+	mutation := newPlanMutation(c.config, OpCreate)
+	return &PlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Plan entities.
+func (c *PlanClient) CreateBulk(builders ...*PlanCreate) *PlanCreateBulk {
+	return &PlanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Plan.
+func (c *PlanClient) Update() *PlanUpdate {
+	mutation := newPlanMutation(c.config, OpUpdate)
+	return &PlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlanClient) UpdateOne(pl *Plan) *PlanUpdateOne {
+	mutation := newPlanMutation(c.config, OpUpdateOne, withPlan(pl))
+	return &PlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlanClient) UpdateOneID(id int) *PlanUpdateOne {
+	mutation := newPlanMutation(c.config, OpUpdateOne, withPlanID(id))
+	return &PlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Plan.
+func (c *PlanClient) Delete() *PlanDelete {
+	mutation := newPlanMutation(c.config, OpDelete)
+	return &PlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *PlanClient) DeleteOne(pl *Plan) *PlanDeleteOne {
+	return c.DeleteOneID(pl.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *PlanClient) DeleteOneID(id int) *PlanDeleteOne {
+	builder := c.Delete().Where(plan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlanDeleteOne{builder}
+}
+
+// Query returns a query builder for Plan.
+func (c *PlanClient) Query() *PlanQuery {
+	return &PlanQuery{config: c.config}
+}
+
+// Get returns a Plan entity by its id.
+func (c *PlanClient) Get(ctx context.Context, id int) (*Plan, error) {
+	return c.Query().Where(plan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlanClient) GetX(ctx context.Context, id int) *Plan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPrevPlan queries the PrevPlan edge of a Plan.
+func (c *PlanClient) QueryPrevPlan(pl *Plan) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, plan.PrevPlanTable, plan.PrevPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNextPlan queries the NextPlan edge of a Plan.
+func (c *PlanClient) QueryNextPlan(pl *Plan) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, plan.NextPlanTable, plan.NextPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToBuild queries the PlanToBuild edge of a Plan.
+func (c *PlanClient) QueryPlanToBuild(pl *Plan) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToBuildTable, plan.PlanToBuildPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToTeam queries the PlanToTeam edge of a Plan.
+func (c *PlanClient) QueryPlanToTeam(pl *Plan) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToTeamTable, plan.PlanToTeamPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisionedNetwork queries the PlanToProvisionedNetwork edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisionedNetwork(pl *Plan) *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisionedNetworkTable, plan.PlanToProvisionedNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisionedHost queries the PlanToProvisionedHost edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisionedHost(pl *Plan) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisioningStep queries the PlanToProvisioningStep edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisioningStep(pl *Plan) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PlanClient) Hooks() []Hook {
+	return c.hooks.Plan
+}
+
 // ProvisionedHostClient is a client for the ProvisionedHost schema.
 type ProvisionedHostClient struct {
 	config
@@ -3064,6 +3287,22 @@ func (c *ProvisionedHostClient) QueryProvisionedHostToAgentStatus(ph *Provisione
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(agentstatus.Table, agentstatus.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToPlan queries the ProvisionedHostToPlan edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToPlan(ph *ProvisionedHost) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedHostToPlanTable, provisionedhost.ProvisionedHostToPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -3248,6 +3487,22 @@ func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToProvisionedHost(pn *
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedNetworkToProvisionedHostTable, provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedNetworkToPlan queries the ProvisionedNetworkToPlan edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToPlan(pn *ProvisionedNetwork) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pn.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedNetworkToPlanTable, provisionednetwork.ProvisionedNetworkToPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -3480,6 +3735,22 @@ func (c *ProvisioningStepClient) QueryProvisioningStepToFileExtract(ps *Provisio
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(fileextract.Table, fileextract.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileExtractTable, provisioningstep.ProvisioningStepToFileExtractColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToPlan queries the ProvisioningStepToPlan edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToPlan(ps *ProvisioningStep) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -3992,6 +4263,22 @@ func (c *TeamClient) QueryTeamToProvisionedNetwork(t *Team) *ProvisionedNetworkQ
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.TeamToProvisionedNetworkTable, team.TeamToProvisionedNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeamToPlan queries the TeamToPlan edge of a Team.
+func (c *TeamClient) QueryTeamToPlan(t *Team) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, team.TeamToPlanTable, team.TeamToPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

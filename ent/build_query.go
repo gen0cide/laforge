@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
@@ -35,6 +36,7 @@ type BuildQuery struct {
 	withBuildToProvisionedNetwork *ProvisionedNetworkQuery
 	withBuildToTeam               *TeamQuery
 	withBuildToEnvironment        *EnvironmentQuery
+	withBuildToPlan               *PlanQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -167,6 +169,28 @@ func (bq *BuildQuery) QueryBuildToEnvironment() *EnvironmentQuery {
 			sqlgraph.From(build.Table, build.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToEnvironmentTable, build.BuildToEnvironmentPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildToPlan chains the current query on the "BuildToPlan" edge.
+func (bq *BuildQuery) QueryBuildToPlan() *PlanQuery {
+	query := &PlanQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, selector),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToPlanTable, build.BuildToPlanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -360,6 +384,7 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		withBuildToProvisionedNetwork: bq.withBuildToProvisionedNetwork.Clone(),
 		withBuildToTeam:               bq.withBuildToTeam.Clone(),
 		withBuildToEnvironment:        bq.withBuildToEnvironment.Clone(),
+		withBuildToPlan:               bq.withBuildToPlan.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -418,6 +443,17 @@ func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *B
 		opt(query)
 	}
 	bq.withBuildToEnvironment = query
+	return bq
+}
+
+// WithBuildToPlan tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToPlan(opts ...func(*PlanQuery)) *BuildQuery {
+	query := &PlanQuery{config: bq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withBuildToPlan = query
 	return bq
 }
 
@@ -486,12 +522,13 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 	var (
 		nodes       = []*Build{}
 		_spec       = bq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			bq.withBuildToUser != nil,
 			bq.withBuildToTag != nil,
 			bq.withBuildToProvisionedNetwork != nil,
 			bq.withBuildToTeam != nil,
 			bq.withBuildToEnvironment != nil,
+			bq.withBuildToPlan != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -760,6 +797,70 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.BuildToEnvironment = append(nodes[i].Edges.BuildToEnvironment, n)
+			}
+		}
+	}
+
+	if query := bq.withBuildToPlan; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Build, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.BuildToPlan = []*Plan{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Build)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   build.BuildToPlanTable,
+				Columns: build.BuildToPlanPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(build.BuildToPlanPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, bq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "BuildToPlan": %v`, err)
+		}
+		query.Where(plan.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "BuildToPlan" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.BuildToPlan = append(nodes[i].Edges.BuildToPlan, n)
 			}
 		}
 	}

@@ -57,6 +57,9 @@ type IncludedNetwork func(*sql.Selector)
 // Network is the predicate function for network builders.
 type Network func(*sql.Selector)
 
+// Plan is the predicate function for plan builders.
+type Plan func(*sql.Selector)
+
 // ProvisionedHost is the predicate function for provisionedhost builders.
 type ProvisionedHost func(*sql.Selector)
 

@@ -37,6 +37,8 @@ type Team struct {
 	HCLTeamToTag []*Tag `json:"TeamToTag,omitempty"`
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	HCLTeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
+	// TeamToPlan holds the value of the TeamToPlan edge.
+	HCLTeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
 	//
 
 }
@@ -53,9 +55,11 @@ type TeamEdges struct {
 	TeamToTag []*Tag `json:"TeamToTag,omitempty"`
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	TeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
+	// TeamToPlan holds the value of the TeamToPlan edge.
+	TeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TeamToUserOrErr returns the TeamToUser value or an error if the edge
@@ -101,6 +105,15 @@ func (e TeamEdges) TeamToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error
 		return e.TeamToProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "TeamToProvisionedNetwork"}
+}
+
+// TeamToPlanOrErr returns the TeamToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) TeamToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[5] {
+		return e.TeamToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "TeamToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -182,6 +195,11 @@ func (t *Team) QueryTeamToTag() *TagQuery {
 // QueryTeamToProvisionedNetwork queries the "TeamToProvisionedNetwork" edge of the Team entity.
 func (t *Team) QueryTeamToProvisionedNetwork() *ProvisionedNetworkQuery {
 	return (&TeamClient{config: t.config}).QueryTeamToProvisionedNetwork(t)
+}
+
+// QueryTeamToPlan queries the "TeamToPlan" edge of the Team entity.
+func (t *Team) QueryTeamToPlan() *PlanQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToPlan(t)
 }
 
 // Update returns a builder for updating this Team.

@@ -60,6 +60,14 @@ func (b *Build) BuildToEnvironment(ctx context.Context) ([]*Environment, error) 
 	return result, err
 }
 
+func (b *Build) BuildToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := b.Edges.BuildToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryBuildToPlan().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Command) CommandToUser(ctx context.Context) ([]*User, error) {
 	result, err := c.Edges.CommandToUserOrErr()
 	if IsNotLoaded(err) {
@@ -556,6 +564,62 @@ func (n *Network) NetworkToIncludedNetwork(ctx context.Context) ([]*IncludedNetw
 	return result, err
 }
 
+func (pl *Plan) PrevPlan(ctx context.Context) (*Plan, error) {
+	result, err := pl.Edges.PrevPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPrevPlan().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pl *Plan) NextPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := pl.Edges.NextPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryNextPlan().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToBuild(ctx context.Context) ([]*Build, error) {
+	result, err := pl.Edges.PlanToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToBuild().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToTeam(ctx context.Context) ([]*Team, error) {
+	result, err := pl.Edges.PlanToTeamOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToTeam().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
+	result, err := pl.Edges.PlanToProvisionedNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisionedNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
+	result, err := pl.Edges.PlanToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisionedHost().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToProvisioningStep(ctx context.Context) ([]*ProvisioningStep, error) {
+	result, err := pl.Edges.PlanToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisioningStep().All(ctx)
+	}
+	return result, err
+}
+
 func (ph *ProvisionedHost) ProvisionedHostToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := ph.Edges.ProvisionedHostToTagOrErr()
 	if IsNotLoaded(err) {
@@ -604,6 +668,14 @@ func (ph *ProvisionedHost) ProvisionedHostToAgentStatus(ctx context.Context) ([]
 	return result, err
 }
 
+func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := ph.Edges.ProvisionedHostToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToPlan().All(ctx)
+	}
+	return result, err
+}
+
 func (pn *ProvisionedNetwork) ProvisionedNetworkToTag(ctx context.Context) ([]*Tag, error) {
 	result, err := pn.Edges.ProvisionedNetworkToTagOrErr()
 	if IsNotLoaded(err) {
@@ -648,6 +720,14 @@ func (pn *ProvisionedNetwork) ProvisionedNetworkToProvisionedHost(ctx context.Co
 	result, err := pn.Edges.ProvisionedNetworkToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
 		result, err = pn.QueryProvisionedNetworkToProvisionedHost().All(ctx)
+	}
+	return result, err
+}
+
+func (pn *ProvisionedNetwork) ProvisionedNetworkToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := pn.Edges.ProvisionedNetworkToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = pn.QueryProvisionedNetworkToPlan().All(ctx)
 	}
 	return result, err
 }
@@ -720,6 +800,14 @@ func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) (
 	result, err := ps.Edges.ProvisioningStepToFileExtractOrErr()
 	if IsNotLoaded(err) {
 		result, err = ps.QueryProvisioningStepToFileExtract().All(ctx)
+	}
+	return result, err
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := ps.Edges.ProvisioningStepToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToPlan().All(ctx)
 	}
 	return result, err
 }
@@ -800,6 +888,14 @@ func (t *Team) TeamToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetw
 	result, err := t.Edges.TeamToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = t.QueryTeamToProvisionedNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Team) TeamToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := t.Edges.TeamToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryTeamToPlan().All(ctx)
 	}
 	return result, err
 }

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
@@ -125,6 +126,21 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ..
 		ids[i] = p[i].ID
 	}
 	return pnc.AddProvisionedNetworkToProvisionedHostIDs(ids...)
+}
+
+// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkCreate {
+	pnc.mutation.AddProvisionedNetworkToPlanIDs(ids...)
+	return pnc
+}
+
+// AddProvisionedNetworkToPlan adds the "ProvisionedNetworkToPlan" edges to the Plan entity.
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pnc.AddProvisionedNetworkToPlanIDs(ids...)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -333,6 +349,25 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pnc.mutation.ProvisionedNetworkToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
+			Columns: provisionednetwork.ProvisionedNetworkToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

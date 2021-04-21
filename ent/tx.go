@@ -46,6 +46,8 @@ type Tx struct {
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
 	Network *NetworkClient
+	// Plan is the client for interacting with the Plan builders.
+	Plan *PlanClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
@@ -214,6 +216,7 @@ func (tx *Tx) init() {
 	tx.Identity = NewIdentityClient(tx.config)
 	tx.IncludedNetwork = NewIncludedNetworkClient(tx.config)
 	tx.Network = NewNetworkClient(tx.config)
+	tx.Plan = NewPlanClient(tx.config)
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)

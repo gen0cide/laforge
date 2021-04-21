@@ -379,6 +379,29 @@ var (
 			},
 		},
 	}
+	// PlansColumns holds the columns for the "plans" table.
+	PlansColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "step_number", Type: field.TypeInt},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"start_build", "start_team", "provision_network", "provision_host", "execute_step"}},
+		{Name: "build_id", Type: field.TypeInt},
+		{Name: "plan_next_plan", Type: field.TypeInt, Nullable: true},
+	}
+	// PlansTable holds the schema information for the "plans" table.
+	PlansTable = &schema.Table{
+		Name:       "plans",
+		Columns:    PlansColumns,
+		PrimaryKey: []*schema.Column{PlansColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plans_plans_NextPlan",
+				Columns: []*schema.Column{PlansColumns[4]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ProvisionedHostsColumns holds the columns for the "provisioned_hosts" table.
 	ProvisionedHostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1437,6 +1460,141 @@ var (
 			},
 		},
 	}
+	// PlanPlanToBuildColumns holds the columns for the "plan_PlanToBuild" table.
+	PlanPlanToBuildColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "build_id", Type: field.TypeInt},
+	}
+	// PlanPlanToBuildTable holds the schema information for the "plan_PlanToBuild" table.
+	PlanPlanToBuildTable = &schema.Table{
+		Name:       "plan_PlanToBuild",
+		Columns:    PlanPlanToBuildColumns,
+		PrimaryKey: []*schema.Column{PlanPlanToBuildColumns[0], PlanPlanToBuildColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_PlanToBuild_plan_id",
+				Columns: []*schema.Column{PlanPlanToBuildColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_PlanToBuild_build_id",
+				Columns: []*schema.Column{PlanPlanToBuildColumns[1]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// PlanPlanToTeamColumns holds the columns for the "plan_PlanToTeam" table.
+	PlanPlanToTeamColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "team_id", Type: field.TypeInt},
+	}
+	// PlanPlanToTeamTable holds the schema information for the "plan_PlanToTeam" table.
+	PlanPlanToTeamTable = &schema.Table{
+		Name:       "plan_PlanToTeam",
+		Columns:    PlanPlanToTeamColumns,
+		PrimaryKey: []*schema.Column{PlanPlanToTeamColumns[0], PlanPlanToTeamColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_PlanToTeam_plan_id",
+				Columns: []*schema.Column{PlanPlanToTeamColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_PlanToTeam_team_id",
+				Columns: []*schema.Column{PlanPlanToTeamColumns[1]},
+
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// PlanPlanToProvisionedNetworkColumns holds the columns for the "plan_PlanToProvisionedNetwork" table.
+	PlanPlanToProvisionedNetworkColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "provisioned_network_id", Type: field.TypeInt},
+	}
+	// PlanPlanToProvisionedNetworkTable holds the schema information for the "plan_PlanToProvisionedNetwork" table.
+	PlanPlanToProvisionedNetworkTable = &schema.Table{
+		Name:       "plan_PlanToProvisionedNetwork",
+		Columns:    PlanPlanToProvisionedNetworkColumns,
+		PrimaryKey: []*schema.Column{PlanPlanToProvisionedNetworkColumns[0], PlanPlanToProvisionedNetworkColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_PlanToProvisionedNetwork_plan_id",
+				Columns: []*schema.Column{PlanPlanToProvisionedNetworkColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_PlanToProvisionedNetwork_provisioned_network_id",
+				Columns: []*schema.Column{PlanPlanToProvisionedNetworkColumns[1]},
+
+				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// PlanPlanToProvisionedHostColumns holds the columns for the "plan_PlanToProvisionedHost" table.
+	PlanPlanToProvisionedHostColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "provisioned_host_id", Type: field.TypeInt},
+	}
+	// PlanPlanToProvisionedHostTable holds the schema information for the "plan_PlanToProvisionedHost" table.
+	PlanPlanToProvisionedHostTable = &schema.Table{
+		Name:       "plan_PlanToProvisionedHost",
+		Columns:    PlanPlanToProvisionedHostColumns,
+		PrimaryKey: []*schema.Column{PlanPlanToProvisionedHostColumns[0], PlanPlanToProvisionedHostColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_PlanToProvisionedHost_plan_id",
+				Columns: []*schema.Column{PlanPlanToProvisionedHostColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_PlanToProvisionedHost_provisioned_host_id",
+				Columns: []*schema.Column{PlanPlanToProvisionedHostColumns[1]},
+
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// PlanPlanToProvisioningStepColumns holds the columns for the "plan_PlanToProvisioningStep" table.
+	PlanPlanToProvisioningStepColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "provisioning_step_id", Type: field.TypeInt},
+	}
+	// PlanPlanToProvisioningStepTable holds the schema information for the "plan_PlanToProvisioningStep" table.
+	PlanPlanToProvisioningStepTable = &schema.Table{
+		Name:       "plan_PlanToProvisioningStep",
+		Columns:    PlanPlanToProvisioningStepColumns,
+		PrimaryKey: []*schema.Column{PlanPlanToProvisioningStepColumns[0], PlanPlanToProvisioningStepColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_PlanToProvisioningStep_plan_id",
+				Columns: []*schema.Column{PlanPlanToProvisioningStepColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_PlanToProvisioningStep_provisioning_step_id",
+				Columns: []*schema.Column{PlanPlanToProvisioningStepColumns[1]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ProvisionedHostProvisionedHostToProvisionedNetworkColumns holds the columns for the "provisioned_host_ProvisionedHostToProvisionedNetwork" table.
 	ProvisionedHostProvisionedHostToProvisionedNetworkColumns = []*schema.Column{
 		{Name: "provisioned_host_id", Type: field.TypeInt},
@@ -1618,6 +1776,7 @@ var (
 		IdentitiesTable,
 		IncludedNetworksTable,
 		NetworksTable,
+		PlansTable,
 		ProvisionedHostsTable,
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
@@ -1651,6 +1810,11 @@ var (
 		HostDependencyHostDependencyToNetworkTable,
 		IncludedNetworkIncludedNetworkToHostTable,
 		IncludedNetworkIncludedNetworkToNetworkTable,
+		PlanPlanToBuildTable,
+		PlanPlanToTeamTable,
+		PlanPlanToProvisionedNetworkTable,
+		PlanPlanToProvisionedHostTable,
+		PlanPlanToProvisioningStepTable,
 		ProvisionedHostProvisionedHostToProvisionedNetworkTable,
 		ProvisionedNetworkProvisionedNetworkToTeamTable,
 		ProvisioningStepProvisioningStepToProvisionedHostTable,
@@ -1669,6 +1833,7 @@ func init() {
 	HostsTable.ForeignKeys[0].RefTable = FindingsTable
 	HostsTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
+	PlansTable.ForeignKeys[0].RefTable = PlansTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
@@ -1751,6 +1916,16 @@ func init() {
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
+	PlanPlanToBuildTable.ForeignKeys[0].RefTable = PlansTable
+	PlanPlanToBuildTable.ForeignKeys[1].RefTable = BuildsTable
+	PlanPlanToTeamTable.ForeignKeys[0].RefTable = PlansTable
+	PlanPlanToTeamTable.ForeignKeys[1].RefTable = TeamsTable
+	PlanPlanToProvisionedNetworkTable.ForeignKeys[0].RefTable = PlansTable
+	PlanPlanToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
+	PlanPlanToProvisionedHostTable.ForeignKeys[0].RefTable = PlansTable
+	PlanPlanToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
+	PlanPlanToProvisioningStepTable.ForeignKeys[0].RefTable = PlansTable
+	PlanPlanToProvisioningStepTable.ForeignKeys[1].RefTable = ProvisioningStepsTable
 	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	ProvisionedNetworkProvisionedNetworkToTeamTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable

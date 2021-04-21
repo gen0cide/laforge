@@ -35,6 +35,8 @@ type Build struct {
 	HCLBuildToTeam []*Team `json:"BuildToTeam,omitempty"`
 	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
 	HCLBuildToEnvironment []*Environment `json:"BuildToEnvironment,omitempty"`
+	// BuildToPlan holds the value of the BuildToPlan edge.
+	HCLBuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
 	//
 
 }
@@ -51,9 +53,11 @@ type BuildEdges struct {
 	BuildToTeam []*Team `json:"BuildToTeam,omitempty"`
 	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
 	BuildToEnvironment []*Environment `json:"BuildToEnvironment,omitempty"`
+	// BuildToPlan holds the value of the BuildToPlan edge.
+	BuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // BuildToUserOrErr returns the BuildToUser value or an error if the edge
@@ -99,6 +103,15 @@ func (e BuildEdges) BuildToEnvironmentOrErr() ([]*Environment, error) {
 		return e.BuildToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToEnvironment"}
+}
+
+// BuildToPlanOrErr returns the BuildToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e BuildEdges) BuildToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[5] {
+		return e.BuildToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -174,6 +187,11 @@ func (b *Build) QueryBuildToTeam() *TeamQuery {
 // QueryBuildToEnvironment queries the "BuildToEnvironment" edge of the Build entity.
 func (b *Build) QueryBuildToEnvironment() *EnvironmentQuery {
 	return (&BuildClient{config: b.config}).QueryBuildToEnvironment(b)
+}
+
+// QueryBuildToPlan queries the "BuildToPlan" edge of the Build entity.
+func (b *Build) QueryBuildToPlan() *PlanQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToPlan(b)
 }
 
 // Update returns a builder for updating this Build.

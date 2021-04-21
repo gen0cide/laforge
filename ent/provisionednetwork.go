@@ -36,6 +36,8 @@ type ProvisionedNetwork struct {
 	HCLProvisionedNetworkToTeam []*Team `json:"ProvisionedNetworkToTeam,omitempty"`
 	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
 	HCLProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
+	// ProvisionedNetworkToPlan holds the value of the ProvisionedNetworkToPlan edge.
+	HCLProvisionedNetworkToPlan []*Plan `json:"ProvisionedNetworkToPlan,omitempty"`
 	//
 
 }
@@ -54,9 +56,11 @@ type ProvisionedNetworkEdges struct {
 	ProvisionedNetworkToTeam []*Team `json:"ProvisionedNetworkToTeam,omitempty"`
 	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
 	ProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
+	// ProvisionedNetworkToPlan holds the value of the ProvisionedNetworkToPlan edge.
+	ProvisionedNetworkToPlan []*Plan `json:"ProvisionedNetworkToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // ProvisionedNetworkToTagOrErr returns the ProvisionedNetworkToTag value or an error if the edge
@@ -111,6 +115,15 @@ func (e ProvisionedNetworkEdges) ProvisionedNetworkToProvisionedHostOrErr() ([]*
 		return e.ProvisionedNetworkToProvisionedHost, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedNetworkToProvisionedHost"}
+}
+
+// ProvisionedNetworkToPlanOrErr returns the ProvisionedNetworkToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[6] {
+		return e.ProvisionedNetworkToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedNetworkToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -188,6 +201,11 @@ func (pn *ProvisionedNetwork) QueryProvisionedNetworkToTeam() *TeamQuery {
 // QueryProvisionedNetworkToProvisionedHost queries the "ProvisionedNetworkToProvisionedHost" edge of the ProvisionedNetwork entity.
 func (pn *ProvisionedNetwork) QueryProvisionedNetworkToProvisionedHost() *ProvisionedHostQuery {
 	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToProvisionedHost(pn)
+}
+
+// QueryProvisionedNetworkToPlan queries the "ProvisionedNetworkToPlan" edge of the ProvisionedNetwork entity.
+func (pn *ProvisionedNetwork) QueryProvisionedNetworkToPlan() *PlanQuery {
+	return (&ProvisionedNetworkClient{config: pn.config}).QueryProvisionedNetworkToPlan(pn)
 }
 
 // Update returns a builder for updating this ProvisionedNetwork.

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -115,6 +116,21 @@ func (tc *TeamCreate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *Tea
 		ids[i] = p[i].ID
 	}
 	return tc.AddTeamToProvisionedNetworkIDs(ids...)
+}
+
+// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by IDs.
+func (tc *TeamCreate) AddTeamToPlanIDs(ids ...int) *TeamCreate {
+	tc.mutation.AddTeamToPlanIDs(ids...)
+	return tc
+}
+
+// AddTeamToPlan adds the "TeamToPlan" edges to the Plan entity.
+func (tc *TeamCreate) AddTeamToPlan(p ...*Plan) *TeamCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tc.AddTeamToPlanIDs(ids...)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -315,6 +331,25 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.TeamToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   team.TeamToPlanTable,
+			Columns: team.TeamToPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
 				},
 			},
 		}

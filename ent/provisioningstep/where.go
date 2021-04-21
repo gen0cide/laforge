@@ -544,6 +544,34 @@ func HasProvisioningStepToFileExtractWith(preds ...predicate.FileExtract) predic
 	})
 }
 
+// HasProvisioningStepToPlan applies the HasEdge predicate on the "ProvisioningStepToPlan" edge.
+func HasProvisioningStepToPlan() predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisioningStepToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisioningStepToPlanWith applies the HasEdge predicate on the "ProvisioningStepToPlan" edge with a given conditions (other predicates).
+func HasProvisioningStepToPlanWith(preds ...predicate.Plan) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisioningStepToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisioningStep) predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {

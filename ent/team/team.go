@@ -24,6 +24,8 @@ const (
 	EdgeTeamToTag = "TeamToTag"
 	// EdgeTeamToProvisionedNetwork holds the string denoting the teamtoprovisionednetwork edge name in mutations.
 	EdgeTeamToProvisionedNetwork = "TeamToProvisionedNetwork"
+	// EdgeTeamToPlan holds the string denoting the teamtoplan edge name in mutations.
+	EdgeTeamToPlan = "TeamToPlan"
 
 	// Table holds the table name of the team in the database.
 	Table = "teams"
@@ -56,6 +58,11 @@ const (
 	// TeamToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	TeamToProvisionedNetworkInverseTable = "provisioned_networks"
+	// TeamToPlanTable is the table the holds the TeamToPlan relation/edge. The primary key declared below.
+	TeamToPlanTable = "plan_PlanToTeam"
+	// TeamToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	TeamToPlanInverseTable = "plans"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -76,6 +83,9 @@ var (
 	// TeamToProvisionedNetworkPrimaryKey and TeamToProvisionedNetworkColumn2 are the table columns denoting the
 	// primary key for the TeamToProvisionedNetwork relation (M2M).
 	TeamToProvisionedNetworkPrimaryKey = []string{"provisioned_network_id", "team_id"}
+	// TeamToPlanPrimaryKey and TeamToPlanColumn2 are the table columns denoting the
+	// primary key for the TeamToPlan relation (M2M).
+	TeamToPlanPrimaryKey = []string{"plan_id", "team_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

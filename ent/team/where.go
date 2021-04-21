@@ -397,6 +397,34 @@ func HasTeamToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) pred
 	})
 }
 
+// HasTeamToPlan applies the HasEdge predicate on the "TeamToPlan" edge.
+func HasTeamToPlan() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TeamToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TeamToPlanTable, TeamToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTeamToPlanWith applies the HasEdge predicate on the "TeamToPlan" edge with a given conditions (other predicates).
+func HasTeamToPlanWith(preds ...predicate.Plan) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TeamToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TeamToPlanTable, TeamToPlanPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Team) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {

@@ -34,6 +34,8 @@ type ProvisionedHost struct {
 	HCLProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	HCLProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
+	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
+	HCLProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
 	//
 
 }
@@ -52,9 +54,11 @@ type ProvisionedHostEdges struct {
 	ProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	ProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
+	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
+	ProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // ProvisionedHostToTagOrErr returns the ProvisionedHostToTag value or an error if the edge
@@ -109,6 +113,15 @@ func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatu
 		return e.ProvisionedHostToAgentStatus, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentStatus"}
+}
+
+// ProvisionedHostToPlanOrErr returns the ProvisionedHostToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[6] {
+		return e.ProvisionedHostToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -180,6 +193,11 @@ func (ph *ProvisionedHost) QueryProvisionedHostToProvisioningStep() *Provisionin
 // QueryProvisionedHostToAgentStatus queries the "ProvisionedHostToAgentStatus" edge of the ProvisionedHost entity.
 func (ph *ProvisionedHost) QueryProvisionedHostToAgentStatus() *AgentStatusQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToAgentStatus(ph)
+}
+
+// QueryProvisionedHostToPlan queries the "ProvisionedHostToPlan" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToPlan() *PlanQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToPlan(ph)
 }
 
 // Update returns a builder for updating this ProvisionedHost.
