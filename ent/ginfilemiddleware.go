@@ -17,8 +17,8 @@ type GinFileMiddleware struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// URLPath holds the value of the "url_path" field.
-	URLPath string `json:"url_path,omitempty"`
+	// URLID holds the value of the "url_id" field.
+	URLID string `json:"url_id,omitempty"`
 	// FilePath holds the value of the "file_path" field.
 	FilePath string `json:"file_path,omitempty"`
 	// Accessed holds the value of the "accessed" field.
@@ -84,7 +84,7 @@ func (*GinFileMiddleware) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case ginfilemiddleware.FieldID:
 			values[i] = &sql.NullInt64{}
-		case ginfilemiddleware.FieldURLPath, ginfilemiddleware.FieldFilePath:
+		case ginfilemiddleware.FieldURLID, ginfilemiddleware.FieldFilePath:
 			values[i] = &sql.NullString{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type GinFileMiddleware", columns[i])
@@ -107,11 +107,11 @@ func (gfm *GinFileMiddleware) assignValues(columns []string, values []interface{
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			gfm.ID = int(value.Int64)
-		case ginfilemiddleware.FieldURLPath:
+		case ginfilemiddleware.FieldURLID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field url_path", values[i])
+				return fmt.Errorf("unexpected type %T for field url_id", values[i])
 			} else if value.Valid {
-				gfm.URLPath = value.String
+				gfm.URLID = value.String
 			}
 		case ginfilemiddleware.FieldFilePath:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -163,8 +163,8 @@ func (gfm *GinFileMiddleware) String() string {
 	var builder strings.Builder
 	builder.WriteString("GinFileMiddleware(")
 	builder.WriteString(fmt.Sprintf("id=%v", gfm.ID))
-	builder.WriteString(", url_path=")
-	builder.WriteString(gfm.URLPath)
+	builder.WriteString(", url_id=")
+	builder.WriteString(gfm.URLID)
 	builder.WriteString(", file_path=")
 	builder.WriteString(gfm.FilePath)
 	builder.WriteString(", accessed=")

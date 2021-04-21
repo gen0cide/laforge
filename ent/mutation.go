@@ -11964,7 +11964,7 @@ type GinFileMiddlewareMutation struct {
 	op                                          Op
 	typ                                         string
 	id                                          *int
-	url_path                                    *string
+	url_id                                      *string
 	file_path                                   *string
 	accessed                                    *bool
 	clearedFields                               map[string]struct{}
@@ -12056,40 +12056,40 @@ func (m *GinFileMiddlewareMutation) ID() (id int, exists bool) {
 	return *m.id, true
 }
 
-// SetURLPath sets the "url_path" field.
-func (m *GinFileMiddlewareMutation) SetURLPath(s string) {
-	m.url_path = &s
+// SetURLID sets the "url_id" field.
+func (m *GinFileMiddlewareMutation) SetURLID(s string) {
+	m.url_id = &s
 }
 
-// URLPath returns the value of the "url_path" field in the mutation.
-func (m *GinFileMiddlewareMutation) URLPath() (r string, exists bool) {
-	v := m.url_path
+// URLID returns the value of the "url_id" field in the mutation.
+func (m *GinFileMiddlewareMutation) URLID() (r string, exists bool) {
+	v := m.url_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldURLPath returns the old "url_path" field's value of the GinFileMiddleware entity.
+// OldURLID returns the old "url_id" field's value of the GinFileMiddleware entity.
 // If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GinFileMiddlewareMutation) OldURLPath(ctx context.Context) (v string, err error) {
+func (m *GinFileMiddlewareMutation) OldURLID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldURLPath is only allowed on UpdateOne operations")
+		return v, fmt.Errorf("OldURLID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldURLPath requires an ID field in the mutation")
+		return v, fmt.Errorf("OldURLID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldURLPath: %w", err)
+		return v, fmt.Errorf("querying old value for OldURLID: %w", err)
 	}
-	return oldValue.URLPath, nil
+	return oldValue.URLID, nil
 }
 
-// ResetURLPath resets all changes to the "url_path" field.
-func (m *GinFileMiddlewareMutation) ResetURLPath() {
-	m.url_path = nil
+// ResetURLID resets all changes to the "url_id" field.
+func (m *GinFileMiddlewareMutation) ResetURLID() {
+	m.url_id = nil
 }
 
 // SetFilePath sets the "file_path" field.
@@ -12257,8 +12257,8 @@ func (m *GinFileMiddlewareMutation) Type() string {
 // AddedFields().
 func (m *GinFileMiddlewareMutation) Fields() []string {
 	fields := make([]string, 0, 3)
-	if m.url_path != nil {
-		fields = append(fields, ginfilemiddleware.FieldURLPath)
+	if m.url_id != nil {
+		fields = append(fields, ginfilemiddleware.FieldURLID)
 	}
 	if m.file_path != nil {
 		fields = append(fields, ginfilemiddleware.FieldFilePath)
@@ -12274,8 +12274,8 @@ func (m *GinFileMiddlewareMutation) Fields() []string {
 // schema.
 func (m *GinFileMiddlewareMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case ginfilemiddleware.FieldURLPath:
-		return m.URLPath()
+	case ginfilemiddleware.FieldURLID:
+		return m.URLID()
 	case ginfilemiddleware.FieldFilePath:
 		return m.FilePath()
 	case ginfilemiddleware.FieldAccessed:
@@ -12289,8 +12289,8 @@ func (m *GinFileMiddlewareMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *GinFileMiddlewareMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case ginfilemiddleware.FieldURLPath:
-		return m.OldURLPath(ctx)
+	case ginfilemiddleware.FieldURLID:
+		return m.OldURLID(ctx)
 	case ginfilemiddleware.FieldFilePath:
 		return m.OldFilePath(ctx)
 	case ginfilemiddleware.FieldAccessed:
@@ -12304,12 +12304,12 @@ func (m *GinFileMiddlewareMutation) OldField(ctx context.Context, name string) (
 // type.
 func (m *GinFileMiddlewareMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case ginfilemiddleware.FieldURLPath:
+	case ginfilemiddleware.FieldURLID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetURLPath(v)
+		m.SetURLID(v)
 		return nil
 	case ginfilemiddleware.FieldFilePath:
 		v, ok := value.(string)
@@ -12374,8 +12374,8 @@ func (m *GinFileMiddlewareMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *GinFileMiddlewareMutation) ResetField(name string) error {
 	switch name {
-	case ginfilemiddleware.FieldURLPath:
-		m.ResetURLPath()
+	case ginfilemiddleware.FieldURLID:
+		m.ResetURLID()
 		return nil
 	case ginfilemiddleware.FieldFilePath:
 		m.ResetFilePath()

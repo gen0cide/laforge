@@ -7,8 +7,8 @@ const (
 	Label = "gin_file_middleware"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldURLPath holds the string denoting the url_path field in the database.
-	FieldURLPath = "url_path"
+	// FieldURLID holds the string denoting the url_id field in the database.
+	FieldURLID = "url_id"
 	// FieldFilePath holds the string denoting the file_path field in the database.
 	FieldFilePath = "file_path"
 	// FieldAccessed holds the string denoting the accessed field in the database.
@@ -40,7 +40,7 @@ const (
 // Columns holds all SQL columns for ginfilemiddleware fields.
 var Columns = []string{
 	FieldID,
-	FieldURLPath,
+	FieldURLID,
 	FieldFilePath,
 	FieldAccessed,
 }

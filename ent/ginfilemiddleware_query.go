@@ -319,12 +319,12 @@ func (gfmq *GinFileMiddlewareQuery) WithGinFileMiddlewareToProvisioningStep(opts
 // Example:
 //
 //	var v []struct {
-//		URLPath string `json:"url_path,omitempty"`
+//		URLID string `json:"url_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.GinFileMiddleware.Query().
-//		GroupBy(ginfilemiddleware.FieldURLPath).
+//		GroupBy(ginfilemiddleware.FieldURLID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -346,11 +346,11 @@ func (gfmq *GinFileMiddlewareQuery) GroupBy(field string, fields ...string) *Gin
 // Example:
 //
 //	var v []struct {
-//		URLPath string `json:"url_path,omitempty"`
+//		URLID string `json:"url_id,omitempty"`
 //	}
 //
 //	client.GinFileMiddleware.Query().
-//		Select(ginfilemiddleware.FieldURLPath).
+//		Select(ginfilemiddleware.FieldURLID).
 //		Scan(ctx, &v)
 //
 func (gfmq *GinFileMiddlewareQuery) Select(field string, fields ...string) *GinFileMiddlewareSelect {

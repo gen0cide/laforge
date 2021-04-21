@@ -14,7 +14,7 @@ type GinFileMiddleware struct {
 // Fields of the GinFileMiddleware.
 func (GinFileMiddleware) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("url_path"),
+		field.String("url_id"),
 		field.String("file_path"),
 		field.Bool("accessed").
 			Default(false),

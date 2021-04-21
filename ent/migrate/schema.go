@@ -268,7 +268,7 @@ var (
 	// GinFileMiddlewaresColumns holds the columns for the "gin_file_middlewares" table.
 	GinFileMiddlewaresColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "url_path", Type: field.TypeString},
+		{Name: "url_id", Type: field.TypeString},
 		{Name: "file_path", Type: field.TypeString},
 		{Name: "accessed", Type: field.TypeBool},
 	}

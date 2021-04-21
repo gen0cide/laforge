@@ -91,10 +91,10 @@ func IDLTE(id int) predicate.GinFileMiddleware {
 	})
 }
 
-// URLPath applies equality check predicate on the "url_path" field. It's identical to URLPathEQ.
-func URLPath(v string) predicate.GinFileMiddleware {
+// URLID applies equality check predicate on the "url_id" field. It's identical to URLIDEQ.
+func URLID(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldURLPath), v))
+		s.Where(sql.EQ(s.C(FieldURLID), v))
 	})
 }
 
@@ -112,22 +112,22 @@ func Accessed(v bool) predicate.GinFileMiddleware {
 	})
 }
 
-// URLPathEQ applies the EQ predicate on the "url_path" field.
-func URLPathEQ(v string) predicate.GinFileMiddleware {
+// URLIDEQ applies the EQ predicate on the "url_id" field.
+func URLIDEQ(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldURLPath), v))
+		s.Where(sql.EQ(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathNEQ applies the NEQ predicate on the "url_path" field.
-func URLPathNEQ(v string) predicate.GinFileMiddleware {
+// URLIDNEQ applies the NEQ predicate on the "url_id" field.
+func URLIDNEQ(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldURLPath), v))
+		s.Where(sql.NEQ(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathIn applies the In predicate on the "url_path" field.
-func URLPathIn(vs ...string) predicate.GinFileMiddleware {
+// URLIDIn applies the In predicate on the "url_id" field.
+func URLIDIn(vs ...string) predicate.GinFileMiddleware {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -139,12 +139,12 @@ func URLPathIn(vs ...string) predicate.GinFileMiddleware {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldURLPath), v...))
+		s.Where(sql.In(s.C(FieldURLID), v...))
 	})
 }
 
-// URLPathNotIn applies the NotIn predicate on the "url_path" field.
-func URLPathNotIn(vs ...string) predicate.GinFileMiddleware {
+// URLIDNotIn applies the NotIn predicate on the "url_id" field.
+func URLIDNotIn(vs ...string) predicate.GinFileMiddleware {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -156,70 +156,70 @@ func URLPathNotIn(vs ...string) predicate.GinFileMiddleware {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldURLPath), v...))
+		s.Where(sql.NotIn(s.C(FieldURLID), v...))
 	})
 }
 
-// URLPathGT applies the GT predicate on the "url_path" field.
-func URLPathGT(v string) predicate.GinFileMiddleware {
+// URLIDGT applies the GT predicate on the "url_id" field.
+func URLIDGT(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldURLPath), v))
+		s.Where(sql.GT(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathGTE applies the GTE predicate on the "url_path" field.
-func URLPathGTE(v string) predicate.GinFileMiddleware {
+// URLIDGTE applies the GTE predicate on the "url_id" field.
+func URLIDGTE(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldURLPath), v))
+		s.Where(sql.GTE(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathLT applies the LT predicate on the "url_path" field.
-func URLPathLT(v string) predicate.GinFileMiddleware {
+// URLIDLT applies the LT predicate on the "url_id" field.
+func URLIDLT(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldURLPath), v))
+		s.Where(sql.LT(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathLTE applies the LTE predicate on the "url_path" field.
-func URLPathLTE(v string) predicate.GinFileMiddleware {
+// URLIDLTE applies the LTE predicate on the "url_id" field.
+func URLIDLTE(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldURLPath), v))
+		s.Where(sql.LTE(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathContains applies the Contains predicate on the "url_path" field.
-func URLPathContains(v string) predicate.GinFileMiddleware {
+// URLIDContains applies the Contains predicate on the "url_id" field.
+func URLIDContains(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldURLPath), v))
+		s.Where(sql.Contains(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathHasPrefix applies the HasPrefix predicate on the "url_path" field.
-func URLPathHasPrefix(v string) predicate.GinFileMiddleware {
+// URLIDHasPrefix applies the HasPrefix predicate on the "url_id" field.
+func URLIDHasPrefix(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldURLPath), v))
+		s.Where(sql.HasPrefix(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathHasSuffix applies the HasSuffix predicate on the "url_path" field.
-func URLPathHasSuffix(v string) predicate.GinFileMiddleware {
+// URLIDHasSuffix applies the HasSuffix predicate on the "url_id" field.
+func URLIDHasSuffix(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldURLPath), v))
+		s.Where(sql.HasSuffix(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathEqualFold applies the EqualFold predicate on the "url_path" field.
-func URLPathEqualFold(v string) predicate.GinFileMiddleware {
+// URLIDEqualFold applies the EqualFold predicate on the "url_id" field.
+func URLIDEqualFold(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldURLPath), v))
+		s.Where(sql.EqualFold(s.C(FieldURLID), v))
 	})
 }
 
-// URLPathContainsFold applies the ContainsFold predicate on the "url_path" field.
-func URLPathContainsFold(v string) predicate.GinFileMiddleware {
+// URLIDContainsFold applies the ContainsFold predicate on the "url_id" field.
+func URLIDContainsFold(v string) predicate.GinFileMiddleware {
 	return predicate.GinFileMiddleware(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldURLPath), v))
+		s.Where(sql.ContainsFold(s.C(FieldURLID), v))
 	})
 }
 

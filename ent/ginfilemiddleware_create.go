@@ -21,9 +21,9 @@ type GinFileMiddlewareCreate struct {
 	hooks    []Hook
 }
 
-// SetURLPath sets the "url_path" field.
-func (gfmc *GinFileMiddlewareCreate) SetURLPath(s string) *GinFileMiddlewareCreate {
-	gfmc.mutation.SetURLPath(s)
+// SetURLID sets the "url_id" field.
+func (gfmc *GinFileMiddlewareCreate) SetURLID(s string) *GinFileMiddlewareCreate {
+	gfmc.mutation.SetURLID(s)
 	return gfmc
 }
 
@@ -145,8 +145,8 @@ func (gfmc *GinFileMiddlewareCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (gfmc *GinFileMiddlewareCreate) check() error {
-	if _, ok := gfmc.mutation.URLPath(); !ok {
-		return &ValidationError{Name: "url_path", err: errors.New("ent: missing required field \"url_path\"")}
+	if _, ok := gfmc.mutation.URLID(); !ok {
+		return &ValidationError{Name: "url_id", err: errors.New("ent: missing required field \"url_id\"")}
 	}
 	if _, ok := gfmc.mutation.FilePath(); !ok {
 		return &ValidationError{Name: "file_path", err: errors.New("ent: missing required field \"file_path\"")}
@@ -181,13 +181,13 @@ func (gfmc *GinFileMiddlewareCreate) createSpec() (*GinFileMiddleware, *sqlgraph
 			},
 		}
 	)
-	if value, ok := gfmc.mutation.URLPath(); ok {
+	if value, ok := gfmc.mutation.URLID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: ginfilemiddleware.FieldURLPath,
+			Column: ginfilemiddleware.FieldURLID,
 		})
-		_node.URLPath = value
+		_node.URLID = value
 	}
 	if value, ok := gfmc.mutation.FilePath(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

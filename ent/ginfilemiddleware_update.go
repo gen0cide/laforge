@@ -28,9 +28,9 @@ func (gfmu *GinFileMiddlewareUpdate) Where(ps ...predicate.GinFileMiddleware) *G
 	return gfmu
 }
 
-// SetURLPath sets the "url_path" field.
-func (gfmu *GinFileMiddlewareUpdate) SetURLPath(s string) *GinFileMiddlewareUpdate {
-	gfmu.mutation.SetURLPath(s)
+// SetURLID sets the "url_id" field.
+func (gfmu *GinFileMiddlewareUpdate) SetURLID(s string) *GinFileMiddlewareUpdate {
+	gfmu.mutation.SetURLID(s)
 	return gfmu
 }
 
@@ -178,11 +178,11 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			}
 		}
 	}
-	if value, ok := gfmu.mutation.URLPath(); ok {
+	if value, ok := gfmu.mutation.URLID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: ginfilemiddleware.FieldURLPath,
+			Column: ginfilemiddleware.FieldURLID,
 		})
 	}
 	if value, ok := gfmu.mutation.FilePath(); ok {
@@ -287,9 +287,9 @@ type GinFileMiddlewareUpdateOne struct {
 	mutation *GinFileMiddlewareMutation
 }
 
-// SetURLPath sets the "url_path" field.
-func (gfmuo *GinFileMiddlewareUpdateOne) SetURLPath(s string) *GinFileMiddlewareUpdateOne {
-	gfmuo.mutation.SetURLPath(s)
+// SetURLID sets the "url_id" field.
+func (gfmuo *GinFileMiddlewareUpdateOne) SetURLID(s string) *GinFileMiddlewareUpdateOne {
+	gfmuo.mutation.SetURLID(s)
 	return gfmuo
 }
 
@@ -442,11 +442,11 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			}
 		}
 	}
-	if value, ok := gfmuo.mutation.URLPath(); ok {
+	if value, ok := gfmuo.mutation.URLID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: ginfilemiddleware.FieldURLPath,
+			Column: ginfilemiddleware.FieldURLID,
 		})
 	}
 	if value, ok := gfmuo.mutation.FilePath(); ok {

@@ -1352,12 +1352,12 @@ func (gfm *GinFileMiddleware) Node(ctx context.Context) (node *Node, err error) 
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(gfm.URLPath); err != nil {
+	if buf, err = json.Marshal(gfm.URLID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
 		Type:  "string",
-		Name:  "url_path",
+		Name:  "url_id",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(gfm.FilePath); err != nil {
