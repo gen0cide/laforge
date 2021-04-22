@@ -7,7 +7,12 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/team"
 )
 
 // Plan is the model entity for the Plan schema.
@@ -31,17 +36,22 @@ type Plan struct {
 	// NextPlan holds the value of the NextPlan edge.
 	HCLNextPlan []*Plan `json:"NextPlan,omitempty"`
 	// PlanToBuild holds the value of the PlanToBuild edge.
-	HCLPlanToBuild []*Build `json:"PlanToBuild,omitempty"`
+	HCLPlanToBuild *Build `json:"PlanToBuild,omitempty"`
 	// PlanToTeam holds the value of the PlanToTeam edge.
-	HCLPlanToTeam []*Team `json:"PlanToTeam,omitempty"`
+	HCLPlanToTeam *Team `json:"PlanToTeam,omitempty"`
 	// PlanToProvisionedNetwork holds the value of the PlanToProvisionedNetwork edge.
-	HCLPlanToProvisionedNetwork []*ProvisionedNetwork `json:"PlanToProvisionedNetwork,omitempty"`
+	HCLPlanToProvisionedNetwork *ProvisionedNetwork `json:"PlanToProvisionedNetwork,omitempty"`
 	// PlanToProvisionedHost holds the value of the PlanToProvisionedHost edge.
-	HCLPlanToProvisionedHost []*ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
+	HCLPlanToProvisionedHost *ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
-	HCLPlanToProvisioningStep []*ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
+	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	//
-	plan_next_plan *int
+	plan_next_plan                   *int
+	plan_plan_to_build               *int
+	plan_plan_to_team                *int
+	plan_plan_to_provisioned_network *int
+	plan_plan_to_provisioned_host    *int
+	plan_plan_to_provisioning_step   *int
 }
 
 // PlanEdges holds the relations/edges for other nodes in the graph.
@@ -51,15 +61,15 @@ type PlanEdges struct {
 	// NextPlan holds the value of the NextPlan edge.
 	NextPlan []*Plan `json:"NextPlan,omitempty"`
 	// PlanToBuild holds the value of the PlanToBuild edge.
-	PlanToBuild []*Build `json:"PlanToBuild,omitempty"`
+	PlanToBuild *Build `json:"PlanToBuild,omitempty"`
 	// PlanToTeam holds the value of the PlanToTeam edge.
-	PlanToTeam []*Team `json:"PlanToTeam,omitempty"`
+	PlanToTeam *Team `json:"PlanToTeam,omitempty"`
 	// PlanToProvisionedNetwork holds the value of the PlanToProvisionedNetwork edge.
-	PlanToProvisionedNetwork []*ProvisionedNetwork `json:"PlanToProvisionedNetwork,omitempty"`
+	PlanToProvisionedNetwork *ProvisionedNetwork `json:"PlanToProvisionedNetwork,omitempty"`
 	// PlanToProvisionedHost holds the value of the PlanToProvisionedHost edge.
-	PlanToProvisionedHost []*ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
+	PlanToProvisionedHost *ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
-	PlanToProvisioningStep []*ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
+	PlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [7]bool
@@ -89,45 +99,70 @@ func (e PlanEdges) NextPlanOrErr() ([]*Plan, error) {
 }
 
 // PlanToBuildOrErr returns the PlanToBuild value or an error if the edge
-// was not loaded in eager-loading.
-func (e PlanEdges) PlanToBuildOrErr() ([]*Build, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToBuildOrErr() (*Build, error) {
 	if e.loadedTypes[2] {
+		if e.PlanToBuild == nil {
+			// The edge PlanToBuild was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: build.Label}
+		}
 		return e.PlanToBuild, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToBuild"}
 }
 
 // PlanToTeamOrErr returns the PlanToTeam value or an error if the edge
-// was not loaded in eager-loading.
-func (e PlanEdges) PlanToTeamOrErr() ([]*Team, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToTeamOrErr() (*Team, error) {
 	if e.loadedTypes[3] {
+		if e.PlanToTeam == nil {
+			// The edge PlanToTeam was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: team.Label}
+		}
 		return e.PlanToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToTeam"}
 }
 
 // PlanToProvisionedNetworkOrErr returns the PlanToProvisionedNetwork value or an error if the edge
-// was not loaded in eager-loading.
-func (e PlanEdges) PlanToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToProvisionedNetworkOrErr() (*ProvisionedNetwork, error) {
 	if e.loadedTypes[4] {
+		if e.PlanToProvisionedNetwork == nil {
+			// The edge PlanToProvisionedNetwork was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionednetwork.Label}
+		}
 		return e.PlanToProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToProvisionedNetwork"}
 }
 
 // PlanToProvisionedHostOrErr returns the PlanToProvisionedHost value or an error if the edge
-// was not loaded in eager-loading.
-func (e PlanEdges) PlanToProvisionedHostOrErr() ([]*ProvisionedHost, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToProvisionedHostOrErr() (*ProvisionedHost, error) {
 	if e.loadedTypes[5] {
+		if e.PlanToProvisionedHost == nil {
+			// The edge PlanToProvisionedHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionedhost.Label}
+		}
 		return e.PlanToProvisionedHost, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToProvisionedHost"}
 }
 
 // PlanToProvisioningStepOrErr returns the PlanToProvisioningStep value or an error if the edge
-// was not loaded in eager-loading.
-func (e PlanEdges) PlanToProvisioningStepOrErr() ([]*ProvisioningStep, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToProvisioningStepOrErr() (*ProvisioningStep, error) {
 	if e.loadedTypes[6] {
+		if e.PlanToProvisioningStep == nil {
+			// The edge PlanToProvisioningStep was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisioningstep.Label}
+		}
 		return e.PlanToProvisioningStep, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToProvisioningStep"}
@@ -143,6 +178,16 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 		case plan.FieldType:
 			values[i] = &sql.NullString{}
 		case plan.ForeignKeys[0]: // plan_next_plan
+			values[i] = &sql.NullInt64{}
+		case plan.ForeignKeys[1]: // plan_plan_to_build
+			values[i] = &sql.NullInt64{}
+		case plan.ForeignKeys[2]: // plan_plan_to_team
+			values[i] = &sql.NullInt64{}
+		case plan.ForeignKeys[3]: // plan_plan_to_provisioned_network
+			values[i] = &sql.NullInt64{}
+		case plan.ForeignKeys[4]: // plan_plan_to_provisioned_host
+			values[i] = &sql.NullInt64{}
+		case plan.ForeignKeys[5]: // plan_plan_to_provisioning_step
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
@@ -189,6 +234,41 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				pl.plan_next_plan = new(int)
 				*pl.plan_next_plan = int(value.Int64)
+			}
+		case plan.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_build", value)
+			} else if value.Valid {
+				pl.plan_plan_to_build = new(int)
+				*pl.plan_plan_to_build = int(value.Int64)
+			}
+		case plan.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_team", value)
+			} else if value.Valid {
+				pl.plan_plan_to_team = new(int)
+				*pl.plan_plan_to_team = int(value.Int64)
+			}
+		case plan.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_network", value)
+			} else if value.Valid {
+				pl.plan_plan_to_provisioned_network = new(int)
+				*pl.plan_plan_to_provisioned_network = int(value.Int64)
+			}
+		case plan.ForeignKeys[4]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_host", value)
+			} else if value.Valid {
+				pl.plan_plan_to_provisioned_host = new(int)
+				*pl.plan_plan_to_provisioned_host = int(value.Int64)
+			}
+		case plan.ForeignKeys[5]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioning_step", value)
+			} else if value.Valid {
+				pl.plan_plan_to_provisioning_step = new(int)
+				*pl.plan_plan_to_provisioning_step = int(value.Int64)
 			}
 		}
 	}

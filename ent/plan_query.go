@@ -125,7 +125,7 @@ func (pq *PlanQuery) QueryPlanToBuild() *BuildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToBuildTable, plan.PlanToBuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToBuildTable, plan.PlanToBuildColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -147,7 +147,7 @@ func (pq *PlanQuery) QueryPlanToTeam() *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToTeamTable, plan.PlanToTeamPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -169,7 +169,7 @@ func (pq *PlanQuery) QueryPlanToProvisionedNetwork() *ProvisionedNetworkQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisionedNetworkTable, plan.PlanToProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisionedNetworkTable, plan.PlanToProvisionedNetworkColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -191,7 +191,7 @@ func (pq *PlanQuery) QueryPlanToProvisionedHost() *ProvisionedHostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -213,7 +213,7 @@ func (pq *PlanQuery) QueryPlanToProvisioningStep() *ProvisioningStepQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -568,7 +568,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			pq.withPlanToProvisioningStep != nil,
 		}
 	)
-	if pq.withPrevPlan != nil {
+	if pq.withPrevPlan != nil || pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedNetwork != nil || pq.withPlanToProvisionedHost != nil || pq.withPlanToProvisioningStep != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -649,321 +649,126 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 	}
 
 	if query := pq.withPlanToBuild; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Plan, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.PlanToBuild = []*Build{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Plan)
+		for i := range nodes {
+			if fk := nodes[i].plan_plan_to_build; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Plan)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   plan.PlanToBuildTable,
-				Columns: plan.PlanToBuildPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(plan.PlanToBuildPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PlanToBuild": %v`, err)
-		}
-		query.Where(build.IDIn(edgeids...))
+		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "PlanToBuild" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_build" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanToBuild = append(nodes[i].Edges.PlanToBuild, n)
+				nodes[i].Edges.PlanToBuild = n
 			}
 		}
 	}
 
 	if query := pq.withPlanToTeam; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Plan, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.PlanToTeam = []*Team{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Plan)
+		for i := range nodes {
+			if fk := nodes[i].plan_plan_to_team; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Plan)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   plan.PlanToTeamTable,
-				Columns: plan.PlanToTeamPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(plan.PlanToTeamPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PlanToTeam": %v`, err)
-		}
-		query.Where(team.IDIn(edgeids...))
+		query.Where(team.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "PlanToTeam" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_team" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanToTeam = append(nodes[i].Edges.PlanToTeam, n)
+				nodes[i].Edges.PlanToTeam = n
 			}
 		}
 	}
 
 	if query := pq.withPlanToProvisionedNetwork; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Plan, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.PlanToProvisionedNetwork = []*ProvisionedNetwork{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Plan)
+		for i := range nodes {
+			if fk := nodes[i].plan_plan_to_provisioned_network; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Plan)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   plan.PlanToProvisionedNetworkTable,
-				Columns: plan.PlanToProvisionedNetworkPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(plan.PlanToProvisionedNetworkPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PlanToProvisionedNetwork": %v`, err)
-		}
-		query.Where(provisionednetwork.IDIn(edgeids...))
+		query.Where(provisionednetwork.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "PlanToProvisionedNetwork" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioned_network" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanToProvisionedNetwork = append(nodes[i].Edges.PlanToProvisionedNetwork, n)
+				nodes[i].Edges.PlanToProvisionedNetwork = n
 			}
 		}
 	}
 
 	if query := pq.withPlanToProvisionedHost; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Plan, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.PlanToProvisionedHost = []*ProvisionedHost{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Plan)
+		for i := range nodes {
+			if fk := nodes[i].plan_plan_to_provisioned_host; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Plan)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   plan.PlanToProvisionedHostTable,
-				Columns: plan.PlanToProvisionedHostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(plan.PlanToProvisionedHostPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PlanToProvisionedHost": %v`, err)
-		}
-		query.Where(provisionedhost.IDIn(edgeids...))
+		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "PlanToProvisionedHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioned_host" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanToProvisionedHost = append(nodes[i].Edges.PlanToProvisionedHost, n)
+				nodes[i].Edges.PlanToProvisionedHost = n
 			}
 		}
 	}
 
 	if query := pq.withPlanToProvisioningStep; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Plan, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.PlanToProvisioningStep = []*ProvisioningStep{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Plan)
+		for i := range nodes {
+			if fk := nodes[i].plan_plan_to_provisioning_step; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Plan)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   plan.PlanToProvisioningStepTable,
-				Columns: plan.PlanToProvisioningStepPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(plan.PlanToProvisioningStepPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PlanToProvisioningStep": %v`, err)
-		}
-		query.Where(provisioningstep.IDIn(edgeids...))
+		query.Where(provisioningstep.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "PlanToProvisioningStep" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanToProvisioningStep = append(nodes[i].Edges.PlanToProvisioningStep, n)
+				nodes[i].Edges.PlanToProvisioningStep = n
 			}
 		}
 	}

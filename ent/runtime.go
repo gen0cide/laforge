@@ -7,6 +7,7 @@ import (
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/schema"
+	"github.com/gen0cide/laforge/ent/status"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -35,4 +36,14 @@ func init() {
 	ginfilemiddlewareDescAccessed := ginfilemiddlewareFields[2].Descriptor()
 	// ginfilemiddleware.DefaultAccessed holds the default value on creation for the accessed field.
 	ginfilemiddleware.DefaultAccessed = ginfilemiddlewareDescAccessed.Default.(bool)
+	statusFields := schema.Status{}.Fields()
+	_ = statusFields
+	// statusDescFailed is the schema descriptor for failed field.
+	statusDescFailed := statusFields[4].Descriptor()
+	// status.DefaultFailed holds the default value on creation for the failed field.
+	status.DefaultFailed = statusDescFailed.Default.(bool)
+	// statusDescCompleted is the schema descriptor for completed field.
+	statusDescCompleted := statusFields[5].Descriptor()
+	// status.DefaultCompleted holds the default value on creation for the completed field.
+	status.DefaultCompleted = statusDescCompleted.Default.(bool)
 }

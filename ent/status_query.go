@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -12,9 +11,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/team"
 )
 
 // StatusQuery is the builder for querying Status entities.
@@ -26,8 +27,10 @@ type StatusQuery struct {
 	fields     []string
 	predicates []predicate.Status
 	// eager-loading edges.
-	withStatusToTag *TagQuery
-	withFKs         bool
+	withStatusToBuild              *BuildQuery
+	withStatusToProvisionedNetwork *ProvisionedNetworkQuery
+	withStatusToTeam               *TeamQuery
+	withFKs                        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,9 +60,9 @@ func (sq *StatusQuery) Order(o ...OrderFunc) *StatusQuery {
 	return sq
 }
 
-// QueryStatusToTag chains the current query on the "StatusToTag" edge.
-func (sq *StatusQuery) QueryStatusToTag() *TagQuery {
-	query := &TagQuery{config: sq.config}
+// QueryStatusToBuild chains the current query on the "StatusToBuild" edge.
+func (sq *StatusQuery) QueryStatusToBuild() *BuildQuery {
+	query := &BuildQuery{config: sq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -70,8 +73,52 @@ func (sq *StatusQuery) QueryStatusToTag() *TagQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, status.StatusToTagTable, status.StatusToTagColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToBuildTable, status.StatusToBuildColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisionedNetwork chains the current query on the "StatusToProvisionedNetwork" edge.
+func (sq *StatusQuery) QueryStatusToProvisionedNetwork() *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedNetworkTable, status.StatusToProvisionedNetworkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToTeam chains the current query on the "StatusToTeam" edge.
+func (sq *StatusQuery) QueryStatusToTeam() *TeamQuery {
+	query := &TeamQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToTeamTable, status.StatusToTeamColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -255,26 +302,50 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		return nil
 	}
 	return &StatusQuery{
-		config:          sq.config,
-		limit:           sq.limit,
-		offset:          sq.offset,
-		order:           append([]OrderFunc{}, sq.order...),
-		predicates:      append([]predicate.Status{}, sq.predicates...),
-		withStatusToTag: sq.withStatusToTag.Clone(),
+		config:                         sq.config,
+		limit:                          sq.limit,
+		offset:                         sq.offset,
+		order:                          append([]OrderFunc{}, sq.order...),
+		predicates:                     append([]predicate.Status{}, sq.predicates...),
+		withStatusToBuild:              sq.withStatusToBuild.Clone(),
+		withStatusToProvisionedNetwork: sq.withStatusToProvisionedNetwork.Clone(),
+		withStatusToTeam:               sq.withStatusToTeam.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
 }
 
-// WithStatusToTag tells the query-builder to eager-load the nodes that are connected to
-// the "StatusToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *StatusQuery) WithStatusToTag(opts ...func(*TagQuery)) *StatusQuery {
-	query := &TagQuery{config: sq.config}
+// WithStatusToBuild tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToBuild" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToBuild(opts ...func(*BuildQuery)) *StatusQuery {
+	query := &BuildQuery{config: sq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withStatusToTag = query
+	sq.withStatusToBuild = query
+	return sq
+}
+
+// WithStatusToProvisionedNetwork tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToProvisionedNetwork" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToProvisionedNetwork(opts ...func(*ProvisionedNetworkQuery)) *StatusQuery {
+	query := &ProvisionedNetworkQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToProvisionedNetwork = query
+	return sq
+}
+
+// WithStatusToTeam tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToTeam" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToTeam(opts ...func(*TeamQuery)) *StatusQuery {
+	query := &TeamQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToTeam = query
 	return sq
 }
 
@@ -344,10 +415,15 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		nodes       = []*Status{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [1]bool{
-			sq.withStatusToTag != nil,
+		loadedTypes = [3]bool{
+			sq.withStatusToBuild != nil,
+			sq.withStatusToProvisionedNetwork != nil,
+			sq.withStatusToTeam != nil,
 		}
 	)
+	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToTeam != nil {
+		withFKs = true
+	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, status.ForeignKeys...)
 	}
@@ -371,32 +447,78 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		return nodes, nil
 	}
 
-	if query := sq.withStatusToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Status)
+	if query := sq.withStatusToBuild; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.StatusToTag = []*Tag{}
+			if fk := nodes[i].build_build_to_status; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(status.StatusToTagColumn, fks...))
-		}))
+		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.status_status_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "status_status_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "status_status_to_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_status" returned %v`, n.ID)
 			}
-			node.Edges.StatusToTag = append(node.Edges.StatusToTag, n)
+			for i := range nodes {
+				nodes[i].Edges.StatusToBuild = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToProvisionedNetwork; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Status)
+		for i := range nodes {
+			if fk := nodes[i].provisioned_network_provisioned_network_to_status; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(provisionednetwork.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_network_provisioned_network_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToProvisionedNetwork = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToTeam; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Status)
+		for i := range nodes {
+			if fk := nodes[i].team_team_to_status; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(team.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "team_team_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToTeam = n
+			}
 		}
 	}
 

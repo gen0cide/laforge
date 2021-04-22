@@ -22,12 +22,10 @@ func (ProvisionedNetwork) Fields() []ent.Field {
 // Edges of the ProvisionedNetwork.
 func (ProvisionedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ProvisionedNetworkToTag", Tag.Type),
-		edge.To("ProvisionedNetworkToStatus", Status.Type),
-		edge.To("ProvisionedNetworkToNetwork", Network.Type),
-		edge.From("ProvisionedNetworkToBuild", Build.Type).
-			Ref("BuildToProvisionedNetwork"),
-		edge.To("ProvisionedNetworkToTeam", Team.Type),
+		edge.To("ProvisionedNetworkToStatus", Status.Type).Unique(),
+		edge.To("ProvisionedNetworkToNetwork", Network.Type).Unique(),
+		edge.To("ProvisionedNetworkToBuild", Build.Type).Unique(),
+		edge.To("ProvisionedNetworkToTeam", Team.Type).Unique(),
 		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).
 			Ref("ProvisionedHostToProvisionedNetwork"),
 		edge.From("ProvisionedNetworkToPlan", Plan.Type).

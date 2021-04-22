@@ -383,7 +383,7 @@ func HasProvisionedHostToPlan() predicate.ProvisionedHost {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -395,7 +395,7 @@ func HasProvisionedHostToPlanWith(preds ...predicate.Plan) predicate.Provisioned
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToPlanInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

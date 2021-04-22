@@ -550,7 +550,7 @@ func HasProvisioningStepToPlan() predicate.ProvisioningStep {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisioningStepToPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -562,7 +562,7 @@ func HasProvisioningStepToPlanWith(preds ...predicate.Plan) predicate.Provisioni
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisioningStepToPlanInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisioningStepToPlanTable, ProvisioningStepToPlanColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

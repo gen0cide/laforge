@@ -9,86 +9,77 @@ const (
 	FieldID = "id"
 	// FieldRevision holds the string denoting the revision field in the database.
 	FieldRevision = "revision"
-	// FieldConfig holds the string denoting the config field in the database.
-	FieldConfig = "config"
 
-	// EdgeBuildToUser holds the string denoting the buildtouser edge name in mutations.
-	EdgeBuildToUser = "BuildToUser"
-	// EdgeBuildToTag holds the string denoting the buildtotag edge name in mutations.
-	EdgeBuildToTag = "BuildToTag"
+	// EdgeBuildToStatus holds the string denoting the buildtostatus edge name in mutations.
+	EdgeBuildToStatus = "BuildToStatus"
+	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
+	EdgeBuildToEnvironment = "BuildToEnvironment"
 	// EdgeBuildToProvisionedNetwork holds the string denoting the buildtoprovisionednetwork edge name in mutations.
 	EdgeBuildToProvisionedNetwork = "BuildToProvisionedNetwork"
 	// EdgeBuildToTeam holds the string denoting the buildtoteam edge name in mutations.
 	EdgeBuildToTeam = "BuildToTeam"
-	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
-	EdgeBuildToEnvironment = "BuildToEnvironment"
 	// EdgeBuildToPlan holds the string denoting the buildtoplan edge name in mutations.
 	EdgeBuildToPlan = "BuildToPlan"
 
 	// Table holds the table name of the build in the database.
 	Table = "builds"
-	// BuildToUserTable is the table the holds the BuildToUser relation/edge.
-	BuildToUserTable = "users"
-	// BuildToUserInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	BuildToUserInverseTable = "users"
-	// BuildToUserColumn is the table column denoting the BuildToUser relation/edge.
-	BuildToUserColumn = "build_build_to_user"
-	// BuildToTagTable is the table the holds the BuildToTag relation/edge.
-	BuildToTagTable = "tags"
-	// BuildToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	BuildToTagInverseTable = "tags"
-	// BuildToTagColumn is the table column denoting the BuildToTag relation/edge.
-	BuildToTagColumn = "build_build_to_tag"
-	// BuildToProvisionedNetworkTable is the table the holds the BuildToProvisionedNetwork relation/edge. The primary key declared below.
-	BuildToProvisionedNetworkTable = "build_BuildToProvisionedNetwork"
-	// BuildToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
-	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
-	BuildToProvisionedNetworkInverseTable = "provisioned_networks"
-	// BuildToTeamTable is the table the holds the BuildToTeam relation/edge. The primary key declared below.
-	BuildToTeamTable = "team_TeamToBuild"
-	// BuildToTeamInverseTable is the table name for the Team entity.
-	// It exists in this package in order to avoid circular dependency with the "team" package.
-	BuildToTeamInverseTable = "teams"
-	// BuildToEnvironmentTable is the table the holds the BuildToEnvironment relation/edge. The primary key declared below.
-	BuildToEnvironmentTable = "environment_EnvironmentToBuild"
+	// BuildToStatusTable is the table the holds the BuildToStatus relation/edge.
+	BuildToStatusTable = "status"
+	// BuildToStatusInverseTable is the table name for the Status entity.
+	// It exists in this package in order to avoid circular dependency with the "status" package.
+	BuildToStatusInverseTable = "status"
+	// BuildToStatusColumn is the table column denoting the BuildToStatus relation/edge.
+	BuildToStatusColumn = "build_build_to_status"
+	// BuildToEnvironmentTable is the table the holds the BuildToEnvironment relation/edge.
+	BuildToEnvironmentTable = "builds"
 	// BuildToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	BuildToEnvironmentInverseTable = "environments"
-	// BuildToPlanTable is the table the holds the BuildToPlan relation/edge. The primary key declared below.
-	BuildToPlanTable = "plan_PlanToBuild"
+	// BuildToEnvironmentColumn is the table column denoting the BuildToEnvironment relation/edge.
+	BuildToEnvironmentColumn = "build_build_to_environment"
+	// BuildToProvisionedNetworkTable is the table the holds the BuildToProvisionedNetwork relation/edge.
+	BuildToProvisionedNetworkTable = "provisioned_networks"
+	// BuildToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
+	BuildToProvisionedNetworkInverseTable = "provisioned_networks"
+	// BuildToProvisionedNetworkColumn is the table column denoting the BuildToProvisionedNetwork relation/edge.
+	BuildToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_build"
+	// BuildToTeamTable is the table the holds the BuildToTeam relation/edge.
+	BuildToTeamTable = "teams"
+	// BuildToTeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	BuildToTeamInverseTable = "teams"
+	// BuildToTeamColumn is the table column denoting the BuildToTeam relation/edge.
+	BuildToTeamColumn = "team_team_to_build"
+	// BuildToPlanTable is the table the holds the BuildToPlan relation/edge.
+	BuildToPlanTable = "plans"
 	// BuildToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	BuildToPlanInverseTable = "plans"
+	// BuildToPlanColumn is the table column denoting the BuildToPlan relation/edge.
+	BuildToPlanColumn = "plan_plan_to_build"
 )
 
 // Columns holds all SQL columns for build fields.
 var Columns = []string{
 	FieldID,
 	FieldRevision,
-	FieldConfig,
 }
 
-var (
-	// BuildToProvisionedNetworkPrimaryKey and BuildToProvisionedNetworkColumn2 are the table columns denoting the
-	// primary key for the BuildToProvisionedNetwork relation (M2M).
-	BuildToProvisionedNetworkPrimaryKey = []string{"build_id", "provisioned_network_id"}
-	// BuildToTeamPrimaryKey and BuildToTeamColumn2 are the table columns denoting the
-	// primary key for the BuildToTeam relation (M2M).
-	BuildToTeamPrimaryKey = []string{"team_id", "build_id"}
-	// BuildToEnvironmentPrimaryKey and BuildToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the BuildToEnvironment relation (M2M).
-	BuildToEnvironmentPrimaryKey = []string{"environment_id", "build_id"}
-	// BuildToPlanPrimaryKey and BuildToPlanColumn2 are the table columns denoting the
-	// primary key for the BuildToPlan relation (M2M).
-	BuildToPlanPrimaryKey = []string{"plan_id", "build_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
+var ForeignKeys = []string{
+	"build_build_to_environment",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

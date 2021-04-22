@@ -33,10 +33,10 @@ func (Plan) Edges() []ent.Edge {
 		edge.To("NextPlan", Plan.Type).
 			From("PrevPlan").
 			Unique(),
-		edge.To("PlanToBuild", Build.Type),
-		edge.To("PlanToTeam", Team.Type),
-		edge.To("PlanToProvisionedNetwork", ProvisionedNetwork.Type),
-		edge.To("PlanToProvisionedHost", ProvisionedHost.Type),
-		edge.To("PlanToProvisioningStep", ProvisioningStep.Type),
+		edge.To("PlanToBuild", Build.Type).Unique(),
+		edge.To("PlanToTeam", Team.Type).Unique(),
+		edge.To("PlanToProvisionedNetwork", ProvisionedNetwork.Type).Unique(),
+		edge.To("PlanToProvisionedHost", ProvisionedHost.Type).Unique(),
+		edge.To("PlanToProvisioningStep", ProvisioningStep.Type).Unique(),
 	}
 }

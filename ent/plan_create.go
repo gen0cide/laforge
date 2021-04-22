@@ -76,79 +76,99 @@ func (pc *PlanCreate) AddNextPlan(p ...*Plan) *PlanCreate {
 	return pc.AddNextPlanIDs(ids...)
 }
 
-// AddPlanToBuildIDs adds the "PlanToBuild" edge to the Build entity by IDs.
-func (pc *PlanCreate) AddPlanToBuildIDs(ids ...int) *PlanCreate {
-	pc.mutation.AddPlanToBuildIDs(ids...)
+// SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
+func (pc *PlanCreate) SetPlanToBuildID(id int) *PlanCreate {
+	pc.mutation.SetPlanToBuildID(id)
 	return pc
 }
 
-// AddPlanToBuild adds the "PlanToBuild" edges to the Build entity.
-func (pc *PlanCreate) AddPlanToBuild(b ...*Build) *PlanCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
+func (pc *PlanCreate) SetNillablePlanToBuildID(id *int) *PlanCreate {
+	if id != nil {
+		pc = pc.SetPlanToBuildID(*id)
 	}
-	return pc.AddPlanToBuildIDs(ids...)
-}
-
-// AddPlanToTeamIDs adds the "PlanToTeam" edge to the Team entity by IDs.
-func (pc *PlanCreate) AddPlanToTeamIDs(ids ...int) *PlanCreate {
-	pc.mutation.AddPlanToTeamIDs(ids...)
 	return pc
 }
 
-// AddPlanToTeam adds the "PlanToTeam" edges to the Team entity.
-func (pc *PlanCreate) AddPlanToTeam(t ...*Team) *PlanCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pc.AddPlanToTeamIDs(ids...)
+// SetPlanToBuild sets the "PlanToBuild" edge to the Build entity.
+func (pc *PlanCreate) SetPlanToBuild(b *Build) *PlanCreate {
+	return pc.SetPlanToBuildID(b.ID)
 }
 
-// AddPlanToProvisionedNetworkIDs adds the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (pc *PlanCreate) AddPlanToProvisionedNetworkIDs(ids ...int) *PlanCreate {
-	pc.mutation.AddPlanToProvisionedNetworkIDs(ids...)
+// SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
+func (pc *PlanCreate) SetPlanToTeamID(id int) *PlanCreate {
+	pc.mutation.SetPlanToTeamID(id)
 	return pc
 }
 
-// AddPlanToProvisionedNetwork adds the "PlanToProvisionedNetwork" edges to the ProvisionedNetwork entity.
-func (pc *PlanCreate) AddPlanToProvisionedNetwork(p ...*ProvisionedNetwork) *PlanCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
+func (pc *PlanCreate) SetNillablePlanToTeamID(id *int) *PlanCreate {
+	if id != nil {
+		pc = pc.SetPlanToTeamID(*id)
 	}
-	return pc.AddPlanToProvisionedNetworkIDs(ids...)
-}
-
-// AddPlanToProvisionedHostIDs adds the "PlanToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (pc *PlanCreate) AddPlanToProvisionedHostIDs(ids ...int) *PlanCreate {
-	pc.mutation.AddPlanToProvisionedHostIDs(ids...)
 	return pc
 }
 
-// AddPlanToProvisionedHost adds the "PlanToProvisionedHost" edges to the ProvisionedHost entity.
-func (pc *PlanCreate) AddPlanToProvisionedHost(p ...*ProvisionedHost) *PlanCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pc.AddPlanToProvisionedHostIDs(ids...)
+// SetPlanToTeam sets the "PlanToTeam" edge to the Team entity.
+func (pc *PlanCreate) SetPlanToTeam(t *Team) *PlanCreate {
+	return pc.SetPlanToTeamID(t.ID)
 }
 
-// AddPlanToProvisioningStepIDs adds the "PlanToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (pc *PlanCreate) AddPlanToProvisioningStepIDs(ids ...int) *PlanCreate {
-	pc.mutation.AddPlanToProvisioningStepIDs(ids...)
+// SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (pc *PlanCreate) SetPlanToProvisionedNetworkID(id int) *PlanCreate {
+	pc.mutation.SetPlanToProvisionedNetworkID(id)
 	return pc
 }
 
-// AddPlanToProvisioningStep adds the "PlanToProvisioningStep" edges to the ProvisioningStep entity.
-func (pc *PlanCreate) AddPlanToProvisioningStep(p ...*ProvisioningStep) *PlanCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (pc *PlanCreate) SetNillablePlanToProvisionedNetworkID(id *int) *PlanCreate {
+	if id != nil {
+		pc = pc.SetPlanToProvisionedNetworkID(*id)
 	}
-	return pc.AddPlanToProvisioningStepIDs(ids...)
+	return pc
+}
+
+// SetPlanToProvisionedNetwork sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (pc *PlanCreate) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *PlanCreate {
+	return pc.SetPlanToProvisionedNetworkID(p.ID)
+}
+
+// SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (pc *PlanCreate) SetPlanToProvisionedHostID(id int) *PlanCreate {
+	pc.mutation.SetPlanToProvisionedHostID(id)
+	return pc
+}
+
+// SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (pc *PlanCreate) SetNillablePlanToProvisionedHostID(id *int) *PlanCreate {
+	if id != nil {
+		pc = pc.SetPlanToProvisionedHostID(*id)
+	}
+	return pc
+}
+
+// SetPlanToProvisionedHost sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (pc *PlanCreate) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanCreate {
+	return pc.SetPlanToProvisionedHostID(p.ID)
+}
+
+// SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (pc *PlanCreate) SetPlanToProvisioningStepID(id int) *PlanCreate {
+	pc.mutation.SetPlanToProvisioningStepID(id)
+	return pc
+}
+
+// SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (pc *PlanCreate) SetNillablePlanToProvisioningStepID(id *int) *PlanCreate {
+	if id != nil {
+		pc = pc.SetPlanToProvisioningStepID(*id)
+	}
+	return pc
+}
+
+// SetPlanToProvisioningStep sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (pc *PlanCreate) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanCreate {
+	return pc.SetPlanToProvisioningStepID(p.ID)
 }
 
 // Mutation returns the PlanMutation object of the builder.
@@ -307,10 +327,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
+			Columns: []string{plan.PlanToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -326,10 +346,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
+			Columns: []string{plan.PlanToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -345,10 +365,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -364,10 +384,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -383,10 +403,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
+			Columns: []string{plan.PlanToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

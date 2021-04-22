@@ -367,7 +367,7 @@ func HasPlanToBuild() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToBuildTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToBuildTable, PlanToBuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToBuildTable, PlanToBuildColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -379,7 +379,7 @@ func HasPlanToBuildWith(preds ...predicate.Build) predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToBuildInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToBuildTable, PlanToBuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToBuildTable, PlanToBuildColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -395,7 +395,7 @@ func HasPlanToTeam() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToTeamTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToTeamTable, PlanToTeamPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToTeamTable, PlanToTeamColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -407,7 +407,7 @@ func HasPlanToTeamWith(preds ...predicate.Team) predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToTeamInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToTeamTable, PlanToTeamPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToTeamTable, PlanToTeamColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -423,7 +423,7 @@ func HasPlanToProvisionedNetwork() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -435,7 +435,7 @@ func HasPlanToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) pred
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -451,7 +451,7 @@ func HasPlanToProvisionedHost() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisionedHostTable, PlanToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedHostTable, PlanToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -463,7 +463,7 @@ func HasPlanToProvisionedHostWith(preds ...predicate.ProvisionedHost) predicate.
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisionedHostTable, PlanToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedHostTable, PlanToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -479,7 +479,7 @@ func HasPlanToProvisioningStep() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisioningStepTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisioningStepTable, PlanToProvisioningStepPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisioningStepTable, PlanToProvisioningStepColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -491,7 +491,7 @@ func HasPlanToProvisioningStepWith(preds ...predicate.ProvisioningStep) predicat
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisioningStepInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, PlanToProvisioningStepTable, PlanToProvisioningStepPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisioningStepTable, PlanToProvisioningStepColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

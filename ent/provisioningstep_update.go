@@ -1024,10 +1024,10 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1040,10 +1040,10 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if nodes := psu.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1059,10 +1059,10 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if nodes := psu.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2121,10 +2121,10 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2137,10 +2137,10 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if nodes := psuo.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2156,10 +2156,10 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if nodes := psuo.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

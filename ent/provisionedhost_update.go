@@ -724,10 +724,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if phu.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -740,10 +740,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -759,10 +759,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1524,10 +1524,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if phuo.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1540,10 +1540,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1559,10 +1559,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

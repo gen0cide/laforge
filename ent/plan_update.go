@@ -97,79 +97,99 @@ func (pu *PlanUpdate) AddNextPlan(p ...*Plan) *PlanUpdate {
 	return pu.AddNextPlanIDs(ids...)
 }
 
-// AddPlanToBuildIDs adds the "PlanToBuild" edge to the Build entity by IDs.
-func (pu *PlanUpdate) AddPlanToBuildIDs(ids ...int) *PlanUpdate {
-	pu.mutation.AddPlanToBuildIDs(ids...)
+// SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
+func (pu *PlanUpdate) SetPlanToBuildID(id int) *PlanUpdate {
+	pu.mutation.SetPlanToBuildID(id)
 	return pu
 }
 
-// AddPlanToBuild adds the "PlanToBuild" edges to the Build entity.
-func (pu *PlanUpdate) AddPlanToBuild(b ...*Build) *PlanUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
+func (pu *PlanUpdate) SetNillablePlanToBuildID(id *int) *PlanUpdate {
+	if id != nil {
+		pu = pu.SetPlanToBuildID(*id)
 	}
-	return pu.AddPlanToBuildIDs(ids...)
-}
-
-// AddPlanToTeamIDs adds the "PlanToTeam" edge to the Team entity by IDs.
-func (pu *PlanUpdate) AddPlanToTeamIDs(ids ...int) *PlanUpdate {
-	pu.mutation.AddPlanToTeamIDs(ids...)
 	return pu
 }
 
-// AddPlanToTeam adds the "PlanToTeam" edges to the Team entity.
-func (pu *PlanUpdate) AddPlanToTeam(t ...*Team) *PlanUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pu.AddPlanToTeamIDs(ids...)
+// SetPlanToBuild sets the "PlanToBuild" edge to the Build entity.
+func (pu *PlanUpdate) SetPlanToBuild(b *Build) *PlanUpdate {
+	return pu.SetPlanToBuildID(b.ID)
 }
 
-// AddPlanToProvisionedNetworkIDs adds the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (pu *PlanUpdate) AddPlanToProvisionedNetworkIDs(ids ...int) *PlanUpdate {
-	pu.mutation.AddPlanToProvisionedNetworkIDs(ids...)
+// SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
+func (pu *PlanUpdate) SetPlanToTeamID(id int) *PlanUpdate {
+	pu.mutation.SetPlanToTeamID(id)
 	return pu
 }
 
-// AddPlanToProvisionedNetwork adds the "PlanToProvisionedNetwork" edges to the ProvisionedNetwork entity.
-func (pu *PlanUpdate) AddPlanToProvisionedNetwork(p ...*ProvisionedNetwork) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
+func (pu *PlanUpdate) SetNillablePlanToTeamID(id *int) *PlanUpdate {
+	if id != nil {
+		pu = pu.SetPlanToTeamID(*id)
 	}
-	return pu.AddPlanToProvisionedNetworkIDs(ids...)
-}
-
-// AddPlanToProvisionedHostIDs adds the "PlanToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (pu *PlanUpdate) AddPlanToProvisionedHostIDs(ids ...int) *PlanUpdate {
-	pu.mutation.AddPlanToProvisionedHostIDs(ids...)
 	return pu
 }
 
-// AddPlanToProvisionedHost adds the "PlanToProvisionedHost" edges to the ProvisionedHost entity.
-func (pu *PlanUpdate) AddPlanToProvisionedHost(p ...*ProvisionedHost) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.AddPlanToProvisionedHostIDs(ids...)
+// SetPlanToTeam sets the "PlanToTeam" edge to the Team entity.
+func (pu *PlanUpdate) SetPlanToTeam(t *Team) *PlanUpdate {
+	return pu.SetPlanToTeamID(t.ID)
 }
 
-// AddPlanToProvisioningStepIDs adds the "PlanToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (pu *PlanUpdate) AddPlanToProvisioningStepIDs(ids ...int) *PlanUpdate {
-	pu.mutation.AddPlanToProvisioningStepIDs(ids...)
+// SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (pu *PlanUpdate) SetPlanToProvisionedNetworkID(id int) *PlanUpdate {
+	pu.mutation.SetPlanToProvisionedNetworkID(id)
 	return pu
 }
 
-// AddPlanToProvisioningStep adds the "PlanToProvisioningStep" edges to the ProvisioningStep entity.
-func (pu *PlanUpdate) AddPlanToProvisioningStep(p ...*ProvisioningStep) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (pu *PlanUpdate) SetNillablePlanToProvisionedNetworkID(id *int) *PlanUpdate {
+	if id != nil {
+		pu = pu.SetPlanToProvisionedNetworkID(*id)
 	}
-	return pu.AddPlanToProvisioningStepIDs(ids...)
+	return pu
+}
+
+// SetPlanToProvisionedNetwork sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (pu *PlanUpdate) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *PlanUpdate {
+	return pu.SetPlanToProvisionedNetworkID(p.ID)
+}
+
+// SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (pu *PlanUpdate) SetPlanToProvisionedHostID(id int) *PlanUpdate {
+	pu.mutation.SetPlanToProvisionedHostID(id)
+	return pu
+}
+
+// SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (pu *PlanUpdate) SetNillablePlanToProvisionedHostID(id *int) *PlanUpdate {
+	if id != nil {
+		pu = pu.SetPlanToProvisionedHostID(*id)
+	}
+	return pu
+}
+
+// SetPlanToProvisionedHost sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (pu *PlanUpdate) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanUpdate {
+	return pu.SetPlanToProvisionedHostID(p.ID)
+}
+
+// SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (pu *PlanUpdate) SetPlanToProvisioningStepID(id int) *PlanUpdate {
+	pu.mutation.SetPlanToProvisioningStepID(id)
+	return pu
+}
+
+// SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (pu *PlanUpdate) SetNillablePlanToProvisioningStepID(id *int) *PlanUpdate {
+	if id != nil {
+		pu = pu.SetPlanToProvisioningStepID(*id)
+	}
+	return pu
+}
+
+// SetPlanToProvisioningStep sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (pu *PlanUpdate) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanUpdate {
+	return pu.SetPlanToProvisioningStepID(p.ID)
 }
 
 // Mutation returns the PlanMutation object of the builder.
@@ -204,109 +224,34 @@ func (pu *PlanUpdate) RemoveNextPlan(p ...*Plan) *PlanUpdate {
 	return pu.RemoveNextPlanIDs(ids...)
 }
 
-// ClearPlanToBuild clears all "PlanToBuild" edges to the Build entity.
+// ClearPlanToBuild clears the "PlanToBuild" edge to the Build entity.
 func (pu *PlanUpdate) ClearPlanToBuild() *PlanUpdate {
 	pu.mutation.ClearPlanToBuild()
 	return pu
 }
 
-// RemovePlanToBuildIDs removes the "PlanToBuild" edge to Build entities by IDs.
-func (pu *PlanUpdate) RemovePlanToBuildIDs(ids ...int) *PlanUpdate {
-	pu.mutation.RemovePlanToBuildIDs(ids...)
-	return pu
-}
-
-// RemovePlanToBuild removes "PlanToBuild" edges to Build entities.
-func (pu *PlanUpdate) RemovePlanToBuild(b ...*Build) *PlanUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return pu.RemovePlanToBuildIDs(ids...)
-}
-
-// ClearPlanToTeam clears all "PlanToTeam" edges to the Team entity.
+// ClearPlanToTeam clears the "PlanToTeam" edge to the Team entity.
 func (pu *PlanUpdate) ClearPlanToTeam() *PlanUpdate {
 	pu.mutation.ClearPlanToTeam()
 	return pu
 }
 
-// RemovePlanToTeamIDs removes the "PlanToTeam" edge to Team entities by IDs.
-func (pu *PlanUpdate) RemovePlanToTeamIDs(ids ...int) *PlanUpdate {
-	pu.mutation.RemovePlanToTeamIDs(ids...)
-	return pu
-}
-
-// RemovePlanToTeam removes "PlanToTeam" edges to Team entities.
-func (pu *PlanUpdate) RemovePlanToTeam(t ...*Team) *PlanUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return pu.RemovePlanToTeamIDs(ids...)
-}
-
-// ClearPlanToProvisionedNetwork clears all "PlanToProvisionedNetwork" edges to the ProvisionedNetwork entity.
+// ClearPlanToProvisionedNetwork clears the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
 func (pu *PlanUpdate) ClearPlanToProvisionedNetwork() *PlanUpdate {
 	pu.mutation.ClearPlanToProvisionedNetwork()
 	return pu
 }
 
-// RemovePlanToProvisionedNetworkIDs removes the "PlanToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (pu *PlanUpdate) RemovePlanToProvisionedNetworkIDs(ids ...int) *PlanUpdate {
-	pu.mutation.RemovePlanToProvisionedNetworkIDs(ids...)
-	return pu
-}
-
-// RemovePlanToProvisionedNetwork removes "PlanToProvisionedNetwork" edges to ProvisionedNetwork entities.
-func (pu *PlanUpdate) RemovePlanToProvisionedNetwork(p ...*ProvisionedNetwork) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.RemovePlanToProvisionedNetworkIDs(ids...)
-}
-
-// ClearPlanToProvisionedHost clears all "PlanToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearPlanToProvisionedHost clears the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
 func (pu *PlanUpdate) ClearPlanToProvisionedHost() *PlanUpdate {
 	pu.mutation.ClearPlanToProvisionedHost()
 	return pu
 }
 
-// RemovePlanToProvisionedHostIDs removes the "PlanToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (pu *PlanUpdate) RemovePlanToProvisionedHostIDs(ids ...int) *PlanUpdate {
-	pu.mutation.RemovePlanToProvisionedHostIDs(ids...)
-	return pu
-}
-
-// RemovePlanToProvisionedHost removes "PlanToProvisionedHost" edges to ProvisionedHost entities.
-func (pu *PlanUpdate) RemovePlanToProvisionedHost(p ...*ProvisionedHost) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.RemovePlanToProvisionedHostIDs(ids...)
-}
-
-// ClearPlanToProvisioningStep clears all "PlanToProvisioningStep" edges to the ProvisioningStep entity.
+// ClearPlanToProvisioningStep clears the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
 func (pu *PlanUpdate) ClearPlanToProvisioningStep() *PlanUpdate {
 	pu.mutation.ClearPlanToProvisioningStep()
 	return pu
-}
-
-// RemovePlanToProvisioningStepIDs removes the "PlanToProvisioningStep" edge to ProvisioningStep entities by IDs.
-func (pu *PlanUpdate) RemovePlanToProvisioningStepIDs(ids ...int) *PlanUpdate {
-	pu.mutation.RemovePlanToProvisioningStepIDs(ids...)
-	return pu
-}
-
-// RemovePlanToProvisioningStep removes "PlanToProvisioningStep" edges to ProvisioningStep entities.
-func (pu *PlanUpdate) RemovePlanToProvisioningStep(p ...*ProvisioningStep) *PlanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.RemovePlanToProvisioningStepIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -520,10 +465,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
+			Columns: []string{plan.PlanToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -531,34 +476,15 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: build.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedPlanToBuildIDs(); len(nodes) > 0 && !pu.mutation.PlanToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.PlanToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
+			Columns: []string{plan.PlanToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -574,10 +500,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
+			Columns: []string{plan.PlanToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -585,34 +511,15 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: team.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedPlanToTeamIDs(); len(nodes) > 0 && !pu.mutation.PlanToTeamCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: team.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.PlanToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
+			Columns: []string{plan.PlanToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -628,10 +535,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -639,34 +546,15 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: provisionednetwork.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedPlanToProvisionedNetworkIDs(); len(nodes) > 0 && !pu.mutation.PlanToProvisionedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.PlanToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -682,10 +570,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -693,34 +581,15 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedPlanToProvisionedHostIDs(); len(nodes) > 0 && !pu.mutation.PlanToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.PlanToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -736,10 +605,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
+			Columns: []string{plan.PlanToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -747,34 +616,15 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: provisioningstep.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedPlanToProvisioningStepIDs(); len(nodes) > 0 && !pu.mutation.PlanToProvisioningStepCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisioningstep.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.PlanToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
+			Columns: []string{plan.PlanToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -872,79 +722,99 @@ func (puo *PlanUpdateOne) AddNextPlan(p ...*Plan) *PlanUpdateOne {
 	return puo.AddNextPlanIDs(ids...)
 }
 
-// AddPlanToBuildIDs adds the "PlanToBuild" edge to the Build entity by IDs.
-func (puo *PlanUpdateOne) AddPlanToBuildIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.AddPlanToBuildIDs(ids...)
+// SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
+func (puo *PlanUpdateOne) SetPlanToBuildID(id int) *PlanUpdateOne {
+	puo.mutation.SetPlanToBuildID(id)
 	return puo
 }
 
-// AddPlanToBuild adds the "PlanToBuild" edges to the Build entity.
-func (puo *PlanUpdateOne) AddPlanToBuild(b ...*Build) *PlanUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillablePlanToBuildID(id *int) *PlanUpdateOne {
+	if id != nil {
+		puo = puo.SetPlanToBuildID(*id)
 	}
-	return puo.AddPlanToBuildIDs(ids...)
-}
-
-// AddPlanToTeamIDs adds the "PlanToTeam" edge to the Team entity by IDs.
-func (puo *PlanUpdateOne) AddPlanToTeamIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.AddPlanToTeamIDs(ids...)
 	return puo
 }
 
-// AddPlanToTeam adds the "PlanToTeam" edges to the Team entity.
-func (puo *PlanUpdateOne) AddPlanToTeam(t ...*Team) *PlanUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return puo.AddPlanToTeamIDs(ids...)
+// SetPlanToBuild sets the "PlanToBuild" edge to the Build entity.
+func (puo *PlanUpdateOne) SetPlanToBuild(b *Build) *PlanUpdateOne {
+	return puo.SetPlanToBuildID(b.ID)
 }
 
-// AddPlanToProvisionedNetworkIDs adds the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (puo *PlanUpdateOne) AddPlanToProvisionedNetworkIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.AddPlanToProvisionedNetworkIDs(ids...)
+// SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
+func (puo *PlanUpdateOne) SetPlanToTeamID(id int) *PlanUpdateOne {
+	puo.mutation.SetPlanToTeamID(id)
 	return puo
 }
 
-// AddPlanToProvisionedNetwork adds the "PlanToProvisionedNetwork" edges to the ProvisionedNetwork entity.
-func (puo *PlanUpdateOne) AddPlanToProvisionedNetwork(p ...*ProvisionedNetwork) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillablePlanToTeamID(id *int) *PlanUpdateOne {
+	if id != nil {
+		puo = puo.SetPlanToTeamID(*id)
 	}
-	return puo.AddPlanToProvisionedNetworkIDs(ids...)
-}
-
-// AddPlanToProvisionedHostIDs adds the "PlanToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (puo *PlanUpdateOne) AddPlanToProvisionedHostIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.AddPlanToProvisionedHostIDs(ids...)
 	return puo
 }
 
-// AddPlanToProvisionedHost adds the "PlanToProvisionedHost" edges to the ProvisionedHost entity.
-func (puo *PlanUpdateOne) AddPlanToProvisionedHost(p ...*ProvisionedHost) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.AddPlanToProvisionedHostIDs(ids...)
+// SetPlanToTeam sets the "PlanToTeam" edge to the Team entity.
+func (puo *PlanUpdateOne) SetPlanToTeam(t *Team) *PlanUpdateOne {
+	return puo.SetPlanToTeamID(t.ID)
 }
 
-// AddPlanToProvisioningStepIDs adds the "PlanToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (puo *PlanUpdateOne) AddPlanToProvisioningStepIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.AddPlanToProvisioningStepIDs(ids...)
+// SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (puo *PlanUpdateOne) SetPlanToProvisionedNetworkID(id int) *PlanUpdateOne {
+	puo.mutation.SetPlanToProvisionedNetworkID(id)
 	return puo
 }
 
-// AddPlanToProvisioningStep adds the "PlanToProvisioningStep" edges to the ProvisioningStep entity.
-func (puo *PlanUpdateOne) AddPlanToProvisioningStep(p ...*ProvisioningStep) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillablePlanToProvisionedNetworkID(id *int) *PlanUpdateOne {
+	if id != nil {
+		puo = puo.SetPlanToProvisionedNetworkID(*id)
 	}
-	return puo.AddPlanToProvisioningStepIDs(ids...)
+	return puo
+}
+
+// SetPlanToProvisionedNetwork sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (puo *PlanUpdateOne) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *PlanUpdateOne {
+	return puo.SetPlanToProvisionedNetworkID(p.ID)
+}
+
+// SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (puo *PlanUpdateOne) SetPlanToProvisionedHostID(id int) *PlanUpdateOne {
+	puo.mutation.SetPlanToProvisionedHostID(id)
+	return puo
+}
+
+// SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillablePlanToProvisionedHostID(id *int) *PlanUpdateOne {
+	if id != nil {
+		puo = puo.SetPlanToProvisionedHostID(*id)
+	}
+	return puo
+}
+
+// SetPlanToProvisionedHost sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (puo *PlanUpdateOne) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanUpdateOne {
+	return puo.SetPlanToProvisionedHostID(p.ID)
+}
+
+// SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (puo *PlanUpdateOne) SetPlanToProvisioningStepID(id int) *PlanUpdateOne {
+	puo.mutation.SetPlanToProvisioningStepID(id)
+	return puo
+}
+
+// SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillablePlanToProvisioningStepID(id *int) *PlanUpdateOne {
+	if id != nil {
+		puo = puo.SetPlanToProvisioningStepID(*id)
+	}
+	return puo
+}
+
+// SetPlanToProvisioningStep sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (puo *PlanUpdateOne) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanUpdateOne {
+	return puo.SetPlanToProvisioningStepID(p.ID)
 }
 
 // Mutation returns the PlanMutation object of the builder.
@@ -979,109 +849,34 @@ func (puo *PlanUpdateOne) RemoveNextPlan(p ...*Plan) *PlanUpdateOne {
 	return puo.RemoveNextPlanIDs(ids...)
 }
 
-// ClearPlanToBuild clears all "PlanToBuild" edges to the Build entity.
+// ClearPlanToBuild clears the "PlanToBuild" edge to the Build entity.
 func (puo *PlanUpdateOne) ClearPlanToBuild() *PlanUpdateOne {
 	puo.mutation.ClearPlanToBuild()
 	return puo
 }
 
-// RemovePlanToBuildIDs removes the "PlanToBuild" edge to Build entities by IDs.
-func (puo *PlanUpdateOne) RemovePlanToBuildIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.RemovePlanToBuildIDs(ids...)
-	return puo
-}
-
-// RemovePlanToBuild removes "PlanToBuild" edges to Build entities.
-func (puo *PlanUpdateOne) RemovePlanToBuild(b ...*Build) *PlanUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return puo.RemovePlanToBuildIDs(ids...)
-}
-
-// ClearPlanToTeam clears all "PlanToTeam" edges to the Team entity.
+// ClearPlanToTeam clears the "PlanToTeam" edge to the Team entity.
 func (puo *PlanUpdateOne) ClearPlanToTeam() *PlanUpdateOne {
 	puo.mutation.ClearPlanToTeam()
 	return puo
 }
 
-// RemovePlanToTeamIDs removes the "PlanToTeam" edge to Team entities by IDs.
-func (puo *PlanUpdateOne) RemovePlanToTeamIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.RemovePlanToTeamIDs(ids...)
-	return puo
-}
-
-// RemovePlanToTeam removes "PlanToTeam" edges to Team entities.
-func (puo *PlanUpdateOne) RemovePlanToTeam(t ...*Team) *PlanUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return puo.RemovePlanToTeamIDs(ids...)
-}
-
-// ClearPlanToProvisionedNetwork clears all "PlanToProvisionedNetwork" edges to the ProvisionedNetwork entity.
+// ClearPlanToProvisionedNetwork clears the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
 func (puo *PlanUpdateOne) ClearPlanToProvisionedNetwork() *PlanUpdateOne {
 	puo.mutation.ClearPlanToProvisionedNetwork()
 	return puo
 }
 
-// RemovePlanToProvisionedNetworkIDs removes the "PlanToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (puo *PlanUpdateOne) RemovePlanToProvisionedNetworkIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.RemovePlanToProvisionedNetworkIDs(ids...)
-	return puo
-}
-
-// RemovePlanToProvisionedNetwork removes "PlanToProvisionedNetwork" edges to ProvisionedNetwork entities.
-func (puo *PlanUpdateOne) RemovePlanToProvisionedNetwork(p ...*ProvisionedNetwork) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.RemovePlanToProvisionedNetworkIDs(ids...)
-}
-
-// ClearPlanToProvisionedHost clears all "PlanToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearPlanToProvisionedHost clears the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
 func (puo *PlanUpdateOne) ClearPlanToProvisionedHost() *PlanUpdateOne {
 	puo.mutation.ClearPlanToProvisionedHost()
 	return puo
 }
 
-// RemovePlanToProvisionedHostIDs removes the "PlanToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (puo *PlanUpdateOne) RemovePlanToProvisionedHostIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.RemovePlanToProvisionedHostIDs(ids...)
-	return puo
-}
-
-// RemovePlanToProvisionedHost removes "PlanToProvisionedHost" edges to ProvisionedHost entities.
-func (puo *PlanUpdateOne) RemovePlanToProvisionedHost(p ...*ProvisionedHost) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.RemovePlanToProvisionedHostIDs(ids...)
-}
-
-// ClearPlanToProvisioningStep clears all "PlanToProvisioningStep" edges to the ProvisioningStep entity.
+// ClearPlanToProvisioningStep clears the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
 func (puo *PlanUpdateOne) ClearPlanToProvisioningStep() *PlanUpdateOne {
 	puo.mutation.ClearPlanToProvisioningStep()
 	return puo
-}
-
-// RemovePlanToProvisioningStepIDs removes the "PlanToProvisioningStep" edge to ProvisioningStep entities by IDs.
-func (puo *PlanUpdateOne) RemovePlanToProvisioningStepIDs(ids ...int) *PlanUpdateOne {
-	puo.mutation.RemovePlanToProvisioningStepIDs(ids...)
-	return puo
-}
-
-// RemovePlanToProvisioningStep removes "PlanToProvisioningStep" edges to ProvisioningStep entities.
-func (puo *PlanUpdateOne) RemovePlanToProvisioningStep(p ...*ProvisioningStep) *PlanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.RemovePlanToProvisioningStepIDs(ids...)
 }
 
 // Save executes the query and returns the updated Plan entity.
@@ -1300,10 +1095,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
+			Columns: []string{plan.PlanToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1311,34 +1106,15 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 					Column: build.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedPlanToBuildIDs(); len(nodes) > 0 && !puo.mutation.PlanToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.PlanToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToBuildTable,
-			Columns: plan.PlanToBuildPrimaryKey,
+			Columns: []string{plan.PlanToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1354,10 +1130,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
+			Columns: []string{plan.PlanToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1365,34 +1141,15 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 					Column: team.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedPlanToTeamIDs(); len(nodes) > 0 && !puo.mutation.PlanToTeamCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: team.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.PlanToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
-			Columns: plan.PlanToTeamPrimaryKey,
+			Columns: []string{plan.PlanToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1408,10 +1165,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1419,34 +1176,15 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 					Column: provisionednetwork.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedPlanToProvisionedNetworkIDs(); len(nodes) > 0 && !puo.mutation.PlanToProvisionedNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionednetwork.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.PlanToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
-			Columns: plan.PlanToProvisionedNetworkPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1462,10 +1200,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1473,34 +1211,15 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedPlanToProvisionedHostIDs(); len(nodes) > 0 && !puo.mutation.PlanToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.PlanToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
-			Columns: plan.PlanToProvisionedHostPrimaryKey,
+			Columns: []string{plan.PlanToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1516,10 +1235,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
+			Columns: []string{plan.PlanToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1527,34 +1246,15 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 					Column: provisioningstep.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedPlanToProvisioningStepIDs(); len(nodes) > 0 && !puo.mutation.PlanToProvisioningStepCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisioningstep.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.PlanToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
-			Columns: plan.PlanToProvisioningStepPrimaryKey,
+			Columns: []string{plan.PlanToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

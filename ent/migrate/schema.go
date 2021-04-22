@@ -37,14 +37,22 @@ var (
 	BuildsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "revision", Type: field.TypeInt},
-		{Name: "config", Type: field.TypeJSON},
+		{Name: "build_build_to_environment", Type: field.TypeInt, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
-		Name:        "builds",
-		Columns:     BuildsColumns,
-		PrimaryKey:  []*schema.Column{BuildsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "builds",
+		Columns:    BuildsColumns,
+		PrimaryKey: []*schema.Column{BuildsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "builds_environments_BuildToEnvironment",
+				Columns: []*schema.Column{BuildsColumns[2]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// CommandsColumns holds the columns for the "commands" table.
 	CommandsColumns = []*schema.Column{
@@ -376,22 +384,13 @@ var (
 		{Name: "vdi_visible", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeInt, Nullable: true},
 	}
 	// NetworksTable holds the schema information for the "networks" table.
 	NetworksTable = &schema.Table{
-		Name:       "networks",
-		Columns:    NetworksColumns,
-		PrimaryKey: []*schema.Column{NetworksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "networks_provisioned_networks_ProvisionedNetworkToNetwork",
-				Columns: []*schema.Column{NetworksColumns[7]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "networks",
+		Columns:     NetworksColumns,
+		PrimaryKey:  []*schema.Column{NetworksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// PlansColumns holds the columns for the "plans" table.
 	PlansColumns = []*schema.Column{
@@ -400,6 +399,11 @@ var (
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"start_build", "start_team", "provision_network", "provision_host", "execute_step"}},
 		{Name: "build_id", Type: field.TypeInt},
 		{Name: "plan_next_plan", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_build", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_team", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_provisioned_network", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_provisioning_step", Type: field.TypeInt, Nullable: true},
 	}
 	// PlansTable holds the schema information for the "plans" table.
 	PlansTable = &schema.Table{
@@ -412,6 +416,41 @@ var (
 				Columns: []*schema.Column{PlansColumns[4]},
 
 				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "plans_builds_PlanToBuild",
+				Columns: []*schema.Column{PlansColumns[5]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "plans_teams_PlanToTeam",
+				Columns: []*schema.Column{PlansColumns[6]},
+
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "plans_provisioned_networks_PlanToProvisionedNetwork",
+				Columns: []*schema.Column{PlansColumns[7]},
+
+				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "plans_provisioned_hosts_PlanToProvisionedHost",
+				Columns: []*schema.Column{PlansColumns[8]},
+
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "plans_provisioning_steps_PlanToProvisioningStep",
+				Columns: []*schema.Column{PlansColumns[9]},
+
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -442,13 +481,38 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "cidr", Type: field.TypeString},
+		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_build", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_team", Type: field.TypeInt, Nullable: true},
 	}
 	// ProvisionedNetworksTable holds the schema information for the "provisioned_networks" table.
 	ProvisionedNetworksTable = &schema.Table{
-		Name:        "provisioned_networks",
-		Columns:     ProvisionedNetworksColumns,
-		PrimaryKey:  []*schema.Column{ProvisionedNetworksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "provisioned_networks",
+		Columns:    ProvisionedNetworksColumns,
+		PrimaryKey: []*schema.Column{ProvisionedNetworksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "provisioned_networks_networks_ProvisionedNetworkToNetwork",
+				Columns: []*schema.Column{ProvisionedNetworksColumns[3]},
+
+				RefColumns: []*schema.Column{NetworksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioned_networks_builds_ProvisionedNetworkToBuild",
+				Columns: []*schema.Column{ProvisionedNetworksColumns[4]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioned_networks_teams_ProvisionedNetworkToTeam",
+				Columns: []*schema.Column{ProvisionedNetworksColumns[5]},
+
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ProvisioningStepsColumns holds the columns for the "provisioning_steps" table.
 	ProvisioningStepsColumns = []*schema.Column{
@@ -509,15 +573,18 @@ var (
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
-		{Name: "started_at", Type: field.TypeTime},
-		{Name: "ended_at", Type: field.TypeTime},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
+		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork"}},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "failed", Type: field.TypeBool},
 		{Name: "completed", Type: field.TypeBool},
-		{Name: "error", Type: field.TypeString},
+		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "build_build_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeInt, Nullable: true},
+		{Name: "team_team_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
 	StatusTable = &schema.Table{
@@ -526,24 +593,38 @@ var (
 		PrimaryKey: []*schema.Column{StatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:  "status_builds_BuildToStatus",
+				Columns: []*schema.Column{StatusColumns[8]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:  "status_provisioned_hosts_ProvisionedHostToStatus",
-				Columns: []*schema.Column{StatusColumns[7]},
+				Columns: []*schema.Column{StatusColumns[9]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "status_provisioned_networks_ProvisionedNetworkToStatus",
-				Columns: []*schema.Column{StatusColumns[8]},
+				Columns: []*schema.Column{StatusColumns[10]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "status_provisioning_steps_ProvisioningStepToStatus",
-				Columns: []*schema.Column{StatusColumns[9]},
+				Columns: []*schema.Column{StatusColumns[11]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "status_teams_TeamToStatus",
+				Columns: []*schema.Column{StatusColumns[12]},
+
+				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -555,7 +636,6 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeJSON},
 		{Name: "agent_status_agent_status_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "build_build_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "command_command_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "competition_competition_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "dns_dns_to_tag", Type: field.TypeInt, Nullable: true},
@@ -570,11 +650,8 @@ var (
 		{Name: "included_network_included_network_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "network_network_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioning_step_provisioning_step_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "script_script_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "status_status_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "team_team_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "user_user_to_tag", Type: field.TypeInt, Nullable: true},
 	}
 	// TagsTable holds the schema information for the "tags" table.
@@ -591,148 +668,120 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_builds_BuildToTag",
-				Columns: []*schema.Column{TagsColumns[5]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_commands_CommandToTag",
-				Columns: []*schema.Column{TagsColumns[6]},
+				Columns: []*schema.Column{TagsColumns[5]},
 
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_competitions_CompetitionToTag",
-				Columns: []*schema.Column{TagsColumns[7]},
+				Columns: []*schema.Column{TagsColumns[6]},
 
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_dn_ss_DNSToTag",
-				Columns: []*schema.Column{TagsColumns[8]},
+				Columns: []*schema.Column{TagsColumns[7]},
 
 				RefColumns: []*schema.Column{DnSsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_dns_records_DNSRecordToTag",
-				Columns: []*schema.Column{TagsColumns[9]},
+				Columns: []*schema.Column{TagsColumns[8]},
 
 				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_disks_DiskToTag",
-				Columns: []*schema.Column{TagsColumns[10]},
+				Columns: []*schema.Column{TagsColumns[9]},
 
 				RefColumns: []*schema.Column{DisksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_environments_EnvironmentToTag",
-				Columns: []*schema.Column{TagsColumns[11]},
+				Columns: []*schema.Column{TagsColumns[10]},
 
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_file_deletes_FileDeleteToTag",
-				Columns: []*schema.Column{TagsColumns[12]},
+				Columns: []*schema.Column{TagsColumns[11]},
 
 				RefColumns: []*schema.Column{FileDeletesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_file_downloads_FileDownloadToTag",
-				Columns: []*schema.Column{TagsColumns[13]},
+				Columns: []*schema.Column{TagsColumns[12]},
 
 				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_file_extracts_FileExtractToTag",
-				Columns: []*schema.Column{TagsColumns[14]},
+				Columns: []*schema.Column{TagsColumns[13]},
 
 				RefColumns: []*schema.Column{FileExtractsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_findings_FindingToTag",
-				Columns: []*schema.Column{TagsColumns[15]},
+				Columns: []*schema.Column{TagsColumns[14]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_hosts_HostToTag",
-				Columns: []*schema.Column{TagsColumns[16]},
+				Columns: []*schema.Column{TagsColumns[15]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_included_networks_IncludedNetworkToTag",
-				Columns: []*schema.Column{TagsColumns[17]},
+				Columns: []*schema.Column{TagsColumns[16]},
 
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_networks_NetworkToTag",
-				Columns: []*schema.Column{TagsColumns[18]},
+				Columns: []*schema.Column{TagsColumns[17]},
 
 				RefColumns: []*schema.Column{NetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_provisioned_hosts_ProvisionedHostToTag",
-				Columns: []*schema.Column{TagsColumns[19]},
+				Columns: []*schema.Column{TagsColumns[18]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_provisioned_networks_ProvisionedNetworkToTag",
-				Columns: []*schema.Column{TagsColumns[20]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_provisioning_steps_ProvisioningStepToTag",
-				Columns: []*schema.Column{TagsColumns[21]},
+				Columns: []*schema.Column{TagsColumns[19]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_scripts_ScriptToTag",
-				Columns: []*schema.Column{TagsColumns[22]},
+				Columns: []*schema.Column{TagsColumns[20]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_status_StatusToTag",
-				Columns: []*schema.Column{TagsColumns[23]},
-
-				RefColumns: []*schema.Column{StatusColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_teams_TeamToTag",
-				Columns: []*schema.Column{TagsColumns[24]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_users_UserToTag",
-				Columns: []*schema.Column{TagsColumns[25]},
+				Columns: []*schema.Column{TagsColumns[21]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -743,15 +792,22 @@ var (
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "team_number", Type: field.TypeInt},
-		{Name: "config", Type: field.TypeJSON},
-		{Name: "revision", Type: field.TypeInt64},
+		{Name: "team_team_to_build", Type: field.TypeInt, Nullable: true},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
 	TeamsTable = &schema.Table{
-		Name:        "teams",
-		Columns:     TeamsColumns,
-		PrimaryKey:  []*schema.Column{TeamsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "teams",
+		Columns:    TeamsColumns,
+		PrimaryKey: []*schema.Column{TeamsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "teams_builds_TeamToBuild",
+				Columns: []*schema.Column{TeamsColumns[2]},
+
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -760,12 +816,10 @@ var (
 		{Name: "uuid", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
 		{Name: "hcl_id", Type: field.TypeString},
-		{Name: "build_build_to_user", Type: field.TypeInt, Nullable: true},
 		{Name: "command_command_to_user", Type: field.TypeInt, Nullable: true},
 		{Name: "finding_finding_to_user", Type: field.TypeInt, Nullable: true},
 		{Name: "host_host_to_user", Type: field.TypeInt, Nullable: true},
 		{Name: "script_script_to_user", Type: field.TypeInt, Nullable: true},
-		{Name: "team_team_to_user", Type: field.TypeInt, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -774,45 +828,31 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_builds_BuildToUser",
-				Columns: []*schema.Column{UsersColumns[5]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "users_commands_CommandToUser",
-				Columns: []*schema.Column{UsersColumns[6]},
+				Columns: []*schema.Column{UsersColumns[5]},
 
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "users_findings_FindingToUser",
-				Columns: []*schema.Column{UsersColumns[7]},
+				Columns: []*schema.Column{UsersColumns[6]},
 
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "users_hosts_HostToUser",
-				Columns: []*schema.Column{UsersColumns[8]},
+				Columns: []*schema.Column{UsersColumns[7]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "users_scripts_ScriptToUser",
-				Columns: []*schema.Column{UsersColumns[9]},
+				Columns: []*schema.Column{UsersColumns[8]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "users_teams_TeamToUser",
-				Columns: []*schema.Column{UsersColumns[10]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -840,33 +880,6 @@ var (
 				Columns: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// BuildBuildToProvisionedNetworkColumns holds the columns for the "build_BuildToProvisionedNetwork" table.
-	BuildBuildToProvisionedNetworkColumns = []*schema.Column{
-		{Name: "build_id", Type: field.TypeInt},
-		{Name: "provisioned_network_id", Type: field.TypeInt},
-	}
-	// BuildBuildToProvisionedNetworkTable holds the schema information for the "build_BuildToProvisionedNetwork" table.
-	BuildBuildToProvisionedNetworkTable = &schema.Table{
-		Name:       "build_BuildToProvisionedNetwork",
-		Columns:    BuildBuildToProvisionedNetworkColumns,
-		PrimaryKey: []*schema.Column{BuildBuildToProvisionedNetworkColumns[0], BuildBuildToProvisionedNetworkColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "build_BuildToProvisionedNetwork_build_id",
-				Columns: []*schema.Column{BuildBuildToProvisionedNetworkColumns[0]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "build_BuildToProvisionedNetwork_provisioned_network_id",
-				Columns: []*schema.Column{BuildBuildToProvisionedNetworkColumns[1]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -975,33 +988,6 @@ var (
 				Columns: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[1]},
 
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToBuildColumns holds the columns for the "environment_EnvironmentToBuild" table.
-	EnvironmentEnvironmentToBuildColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "build_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToBuildTable holds the schema information for the "environment_EnvironmentToBuild" table.
-	EnvironmentEnvironmentToBuildTable = &schema.Table{
-		Name:       "environment_EnvironmentToBuild",
-		Columns:    EnvironmentEnvironmentToBuildColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToBuildColumns[0], EnvironmentEnvironmentToBuildColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToBuild_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToBuildColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToBuild_build_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToBuildColumns[1]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1492,141 +1478,6 @@ var (
 			},
 		},
 	}
-	// PlanPlanToBuildColumns holds the columns for the "plan_PlanToBuild" table.
-	PlanPlanToBuildColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "build_id", Type: field.TypeInt},
-	}
-	// PlanPlanToBuildTable holds the schema information for the "plan_PlanToBuild" table.
-	PlanPlanToBuildTable = &schema.Table{
-		Name:       "plan_PlanToBuild",
-		Columns:    PlanPlanToBuildColumns,
-		PrimaryKey: []*schema.Column{PlanPlanToBuildColumns[0], PlanPlanToBuildColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "plan_PlanToBuild_plan_id",
-				Columns: []*schema.Column{PlanPlanToBuildColumns[0]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "plan_PlanToBuild_build_id",
-				Columns: []*schema.Column{PlanPlanToBuildColumns[1]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// PlanPlanToTeamColumns holds the columns for the "plan_PlanToTeam" table.
-	PlanPlanToTeamColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "team_id", Type: field.TypeInt},
-	}
-	// PlanPlanToTeamTable holds the schema information for the "plan_PlanToTeam" table.
-	PlanPlanToTeamTable = &schema.Table{
-		Name:       "plan_PlanToTeam",
-		Columns:    PlanPlanToTeamColumns,
-		PrimaryKey: []*schema.Column{PlanPlanToTeamColumns[0], PlanPlanToTeamColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "plan_PlanToTeam_plan_id",
-				Columns: []*schema.Column{PlanPlanToTeamColumns[0]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "plan_PlanToTeam_team_id",
-				Columns: []*schema.Column{PlanPlanToTeamColumns[1]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// PlanPlanToProvisionedNetworkColumns holds the columns for the "plan_PlanToProvisionedNetwork" table.
-	PlanPlanToProvisionedNetworkColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "provisioned_network_id", Type: field.TypeInt},
-	}
-	// PlanPlanToProvisionedNetworkTable holds the schema information for the "plan_PlanToProvisionedNetwork" table.
-	PlanPlanToProvisionedNetworkTable = &schema.Table{
-		Name:       "plan_PlanToProvisionedNetwork",
-		Columns:    PlanPlanToProvisionedNetworkColumns,
-		PrimaryKey: []*schema.Column{PlanPlanToProvisionedNetworkColumns[0], PlanPlanToProvisionedNetworkColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "plan_PlanToProvisionedNetwork_plan_id",
-				Columns: []*schema.Column{PlanPlanToProvisionedNetworkColumns[0]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "plan_PlanToProvisionedNetwork_provisioned_network_id",
-				Columns: []*schema.Column{PlanPlanToProvisionedNetworkColumns[1]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// PlanPlanToProvisionedHostColumns holds the columns for the "plan_PlanToProvisionedHost" table.
-	PlanPlanToProvisionedHostColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "provisioned_host_id", Type: field.TypeInt},
-	}
-	// PlanPlanToProvisionedHostTable holds the schema information for the "plan_PlanToProvisionedHost" table.
-	PlanPlanToProvisionedHostTable = &schema.Table{
-		Name:       "plan_PlanToProvisionedHost",
-		Columns:    PlanPlanToProvisionedHostColumns,
-		PrimaryKey: []*schema.Column{PlanPlanToProvisionedHostColumns[0], PlanPlanToProvisionedHostColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "plan_PlanToProvisionedHost_plan_id",
-				Columns: []*schema.Column{PlanPlanToProvisionedHostColumns[0]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "plan_PlanToProvisionedHost_provisioned_host_id",
-				Columns: []*schema.Column{PlanPlanToProvisionedHostColumns[1]},
-
-				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// PlanPlanToProvisioningStepColumns holds the columns for the "plan_PlanToProvisioningStep" table.
-	PlanPlanToProvisioningStepColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "provisioning_step_id", Type: field.TypeInt},
-	}
-	// PlanPlanToProvisioningStepTable holds the schema information for the "plan_PlanToProvisioningStep" table.
-	PlanPlanToProvisioningStepTable = &schema.Table{
-		Name:       "plan_PlanToProvisioningStep",
-		Columns:    PlanPlanToProvisioningStepColumns,
-		PrimaryKey: []*schema.Column{PlanPlanToProvisioningStepColumns[0], PlanPlanToProvisioningStepColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "plan_PlanToProvisioningStep_plan_id",
-				Columns: []*schema.Column{PlanPlanToProvisioningStepColumns[0]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "plan_PlanToProvisioningStep_provisioning_step_id",
-				Columns: []*schema.Column{PlanPlanToProvisioningStepColumns[1]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// ProvisionedHostProvisionedHostToProvisionedNetworkColumns holds the columns for the "provisioned_host_ProvisionedHostToProvisionedNetwork" table.
 	ProvisionedHostProvisionedHostToProvisionedNetworkColumns = []*schema.Column{
 		{Name: "provisioned_host_id", Type: field.TypeInt},
@@ -1650,33 +1501,6 @@ var (
 				Columns: []*schema.Column{ProvisionedHostProvisionedHostToProvisionedNetworkColumns[1]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// ProvisionedNetworkProvisionedNetworkToTeamColumns holds the columns for the "provisioned_network_ProvisionedNetworkToTeam" table.
-	ProvisionedNetworkProvisionedNetworkToTeamColumns = []*schema.Column{
-		{Name: "provisioned_network_id", Type: field.TypeInt},
-		{Name: "team_id", Type: field.TypeInt},
-	}
-	// ProvisionedNetworkProvisionedNetworkToTeamTable holds the schema information for the "provisioned_network_ProvisionedNetworkToTeam" table.
-	ProvisionedNetworkProvisionedNetworkToTeamTable = &schema.Table{
-		Name:       "provisioned_network_ProvisionedNetworkToTeam",
-		Columns:    ProvisionedNetworkProvisionedNetworkToTeamColumns,
-		PrimaryKey: []*schema.Column{ProvisionedNetworkProvisionedNetworkToTeamColumns[0], ProvisionedNetworkProvisionedNetworkToTeamColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "provisioned_network_ProvisionedNetworkToTeam_provisioned_network_id",
-				Columns: []*schema.Column{ProvisionedNetworkProvisionedNetworkToTeamColumns[0]},
-
-				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "provisioned_network_ProvisionedNetworkToTeam_team_id",
-				Columns: []*schema.Column{ProvisionedNetworkProvisionedNetworkToTeamColumns[1]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1735,60 +1559,6 @@ var (
 			},
 		},
 	}
-	// TeamTeamToBuildColumns holds the columns for the "team_TeamToBuild" table.
-	TeamTeamToBuildColumns = []*schema.Column{
-		{Name: "team_id", Type: field.TypeInt},
-		{Name: "build_id", Type: field.TypeInt},
-	}
-	// TeamTeamToBuildTable holds the schema information for the "team_TeamToBuild" table.
-	TeamTeamToBuildTable = &schema.Table{
-		Name:       "team_TeamToBuild",
-		Columns:    TeamTeamToBuildColumns,
-		PrimaryKey: []*schema.Column{TeamTeamToBuildColumns[0], TeamTeamToBuildColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "team_TeamToBuild_team_id",
-				Columns: []*schema.Column{TeamTeamToBuildColumns[0]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "team_TeamToBuild_build_id",
-				Columns: []*schema.Column{TeamTeamToBuildColumns[1]},
-
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// TeamTeamToEnvironmentColumns holds the columns for the "team_TeamToEnvironment" table.
-	TeamTeamToEnvironmentColumns = []*schema.Column{
-		{Name: "team_id", Type: field.TypeInt},
-		{Name: "environment_id", Type: field.TypeInt},
-	}
-	// TeamTeamToEnvironmentTable holds the schema information for the "team_TeamToEnvironment" table.
-	TeamTeamToEnvironmentTable = &schema.Table{
-		Name:       "team_TeamToEnvironment",
-		Columns:    TeamTeamToEnvironmentColumns,
-		PrimaryKey: []*schema.Column{TeamTeamToEnvironmentColumns[0], TeamTeamToEnvironmentColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "team_TeamToEnvironment_team_id",
-				Columns: []*schema.Column{TeamTeamToEnvironmentColumns[0]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "team_TeamToEnvironment_environment_id",
-				Columns: []*schema.Column{TeamTeamToEnvironmentColumns[1]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentStatusTable,
@@ -1819,12 +1589,10 @@ var (
 		TeamsTable,
 		UsersTable,
 		AgentStatusAgentStatusToProvisionedHostTable,
-		BuildBuildToProvisionedNetworkTable,
 		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
 		EnvironmentEnvironmentToHostTable,
 		EnvironmentEnvironmentToCompetitionTable,
-		EnvironmentEnvironmentToBuildTable,
 		EnvironmentEnvironmentToIdentityTable,
 		EnvironmentEnvironmentToCommandTable,
 		EnvironmentEnvironmentToScriptTable,
@@ -1843,21 +1611,14 @@ var (
 		HostDependencyHostDependencyToNetworkTable,
 		IncludedNetworkIncludedNetworkToHostTable,
 		IncludedNetworkIncludedNetworkToNetworkTable,
-		PlanPlanToBuildTable,
-		PlanPlanToTeamTable,
-		PlanPlanToProvisionedNetworkTable,
-		PlanPlanToProvisionedHostTable,
-		PlanPlanToProvisioningStepTable,
 		ProvisionedHostProvisionedHostToProvisionedNetworkTable,
-		ProvisionedNetworkProvisionedNetworkToTeamTable,
 		ProvisioningStepProvisioningStepToProvisionedHostTable,
 		ScriptScriptToFindingTable,
-		TeamTeamToBuildTable,
-		TeamTeamToEnvironmentTable,
 	}
 )
 
 func init() {
+	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	CommandsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	FileDeletesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
@@ -1865,46 +1626,48 @@ func init() {
 	FileExtractsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	HostsTable.ForeignKeys[0].RefTable = FindingsTable
 	HostsTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	NetworksTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
 	PlansTable.ForeignKeys[0].RefTable = PlansTable
+	PlansTable.ForeignKeys[1].RefTable = BuildsTable
+	PlansTable.ForeignKeys[2].RefTable = TeamsTable
+	PlansTable.ForeignKeys[3].RefTable = ProvisionedNetworksTable
+	PlansTable.ForeignKeys[4].RefTable = ProvisionedHostsTable
+	PlansTable.ForeignKeys[5].RefTable = ProvisioningStepsTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
+	ProvisionedNetworksTable.ForeignKeys[0].RefTable = NetworksTable
+	ProvisionedNetworksTable.ForeignKeys[1].RefTable = BuildsTable
+	ProvisionedNetworksTable.ForeignKeys[2].RefTable = TeamsTable
 	ProvisioningStepsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	StatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
-	StatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	StatusTable.ForeignKeys[2].RefTable = ProvisioningStepsTable
+	StatusTable.ForeignKeys[0].RefTable = BuildsTable
+	StatusTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
+	StatusTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
+	StatusTable.ForeignKeys[3].RefTable = ProvisioningStepsTable
+	StatusTable.ForeignKeys[4].RefTable = TeamsTable
 	TagsTable.ForeignKeys[0].RefTable = AgentStatusTable
-	TagsTable.ForeignKeys[1].RefTable = BuildsTable
-	TagsTable.ForeignKeys[2].RefTable = CommandsTable
-	TagsTable.ForeignKeys[3].RefTable = CompetitionsTable
-	TagsTable.ForeignKeys[4].RefTable = DnSsTable
-	TagsTable.ForeignKeys[5].RefTable = DNSRecordsTable
-	TagsTable.ForeignKeys[6].RefTable = DisksTable
-	TagsTable.ForeignKeys[7].RefTable = EnvironmentsTable
-	TagsTable.ForeignKeys[8].RefTable = FileDeletesTable
-	TagsTable.ForeignKeys[9].RefTable = FileDownloadsTable
-	TagsTable.ForeignKeys[10].RefTable = FileExtractsTable
-	TagsTable.ForeignKeys[11].RefTable = FindingsTable
-	TagsTable.ForeignKeys[12].RefTable = HostsTable
-	TagsTable.ForeignKeys[13].RefTable = IncludedNetworksTable
-	TagsTable.ForeignKeys[14].RefTable = NetworksTable
-	TagsTable.ForeignKeys[15].RefTable = ProvisionedHostsTable
-	TagsTable.ForeignKeys[16].RefTable = ProvisionedNetworksTable
-	TagsTable.ForeignKeys[17].RefTable = ProvisioningStepsTable
-	TagsTable.ForeignKeys[18].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[19].RefTable = StatusTable
-	TagsTable.ForeignKeys[20].RefTable = TeamsTable
-	TagsTable.ForeignKeys[21].RefTable = UsersTable
-	UsersTable.ForeignKeys[0].RefTable = BuildsTable
-	UsersTable.ForeignKeys[1].RefTable = CommandsTable
-	UsersTable.ForeignKeys[2].RefTable = FindingsTable
-	UsersTable.ForeignKeys[3].RefTable = HostsTable
-	UsersTable.ForeignKeys[4].RefTable = ScriptsTable
-	UsersTable.ForeignKeys[5].RefTable = TeamsTable
+	TagsTable.ForeignKeys[1].RefTable = CommandsTable
+	TagsTable.ForeignKeys[2].RefTable = CompetitionsTable
+	TagsTable.ForeignKeys[3].RefTable = DnSsTable
+	TagsTable.ForeignKeys[4].RefTable = DNSRecordsTable
+	TagsTable.ForeignKeys[5].RefTable = DisksTable
+	TagsTable.ForeignKeys[6].RefTable = EnvironmentsTable
+	TagsTable.ForeignKeys[7].RefTable = FileDeletesTable
+	TagsTable.ForeignKeys[8].RefTable = FileDownloadsTable
+	TagsTable.ForeignKeys[9].RefTable = FileExtractsTable
+	TagsTable.ForeignKeys[10].RefTable = FindingsTable
+	TagsTable.ForeignKeys[11].RefTable = HostsTable
+	TagsTable.ForeignKeys[12].RefTable = IncludedNetworksTable
+	TagsTable.ForeignKeys[13].RefTable = NetworksTable
+	TagsTable.ForeignKeys[14].RefTable = ProvisionedHostsTable
+	TagsTable.ForeignKeys[15].RefTable = ProvisioningStepsTable
+	TagsTable.ForeignKeys[16].RefTable = ScriptsTable
+	TagsTable.ForeignKeys[17].RefTable = UsersTable
+	TeamsTable.ForeignKeys[0].RefTable = BuildsTable
+	UsersTable.ForeignKeys[0].RefTable = CommandsTable
+	UsersTable.ForeignKeys[1].RefTable = FindingsTable
+	UsersTable.ForeignKeys[2].RefTable = HostsTable
+	UsersTable.ForeignKeys[3].RefTable = ScriptsTable
 	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[0].RefTable = AgentStatusTable
 	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	BuildBuildToProvisionedNetworkTable.ForeignKeys[0].RefTable = BuildsTable
-	BuildBuildToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[0].RefTable = CompetitionsTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable
@@ -1913,8 +1676,6 @@ func init() {
 	EnvironmentEnvironmentToHostTable.ForeignKeys[1].RefTable = HostsTable
 	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[1].RefTable = CompetitionsTable
-	EnvironmentEnvironmentToBuildTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToBuildTable.ForeignKeys[1].RefTable = BuildsTable
 	EnvironmentEnvironmentToIdentityTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToIdentityTable.ForeignKeys[1].RefTable = IdentitiesTable
 	EnvironmentEnvironmentToCommandTable.ForeignKeys[0].RefTable = EnvironmentsTable
@@ -1951,26 +1712,10 @@ func init() {
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
-	PlanPlanToBuildTable.ForeignKeys[0].RefTable = PlansTable
-	PlanPlanToBuildTable.ForeignKeys[1].RefTable = BuildsTable
-	PlanPlanToTeamTable.ForeignKeys[0].RefTable = PlansTable
-	PlanPlanToTeamTable.ForeignKeys[1].RefTable = TeamsTable
-	PlanPlanToProvisionedNetworkTable.ForeignKeys[0].RefTable = PlansTable
-	PlanPlanToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	PlanPlanToProvisionedHostTable.ForeignKeys[0].RefTable = PlansTable
-	PlanPlanToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	PlanPlanToProvisioningStepTable.ForeignKeys[0].RefTable = PlansTable
-	PlanPlanToProvisioningStepTable.ForeignKeys[1].RefTable = ProvisioningStepsTable
 	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	ProvisionedHostProvisionedHostToProvisionedNetworkTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	ProvisionedNetworkProvisionedNetworkToTeamTable.ForeignKeys[0].RefTable = ProvisionedNetworksTable
-	ProvisionedNetworkProvisionedNetworkToTeamTable.ForeignKeys[1].RefTable = TeamsTable
 	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	ScriptScriptToFindingTable.ForeignKeys[0].RefTable = ScriptsTable
 	ScriptScriptToFindingTable.ForeignKeys[1].RefTable = FindingsTable
-	TeamTeamToBuildTable.ForeignKeys[0].RefTable = TeamsTable
-	TeamTeamToBuildTable.ForeignKeys[1].RefTable = BuildsTable
-	TeamTeamToEnvironmentTable.ForeignKeys[0].RefTable = TeamsTable
-	TeamTeamToEnvironmentTable.ForeignKeys[1].RefTable = EnvironmentsTable
 }

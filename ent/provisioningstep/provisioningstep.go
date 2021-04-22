@@ -98,11 +98,13 @@ const (
 	ProvisioningStepToFileExtractInverseTable = "file_extracts"
 	// ProvisioningStepToFileExtractColumn is the table column denoting the ProvisioningStepToFileExtract relation/edge.
 	ProvisioningStepToFileExtractColumn = "provisioning_step_provisioning_step_to_file_extract"
-	// ProvisioningStepToPlanTable is the table the holds the ProvisioningStepToPlan relation/edge. The primary key declared below.
-	ProvisioningStepToPlanTable = "plan_PlanToProvisioningStep"
+	// ProvisioningStepToPlanTable is the table the holds the ProvisioningStepToPlan relation/edge.
+	ProvisioningStepToPlanTable = "plans"
 	// ProvisioningStepToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisioningStepToPlanInverseTable = "plans"
+	// ProvisioningStepToPlanColumn is the table column denoting the ProvisioningStepToPlan relation/edge.
+	ProvisioningStepToPlanColumn = "plan_plan_to_provisioning_step"
 	// ProvisioningStepToGinFileMiddlewareTable is the table the holds the ProvisioningStepToGinFileMiddleware relation/edge.
 	ProvisioningStepToGinFileMiddlewareTable = "provisioning_steps"
 	// ProvisioningStepToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
@@ -128,9 +130,6 @@ var (
 	// ProvisioningStepToProvisionedHostPrimaryKey and ProvisioningStepToProvisionedHostColumn2 are the table columns denoting the
 	// primary key for the ProvisioningStepToProvisionedHost relation (M2M).
 	ProvisioningStepToProvisionedHostPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
-	// ProvisioningStepToPlanPrimaryKey and ProvisioningStepToPlanColumn2 are the table columns denoting the
-	// primary key for the ProvisioningStepToPlan relation (M2M).
-	ProvisioningStepToPlanPrimaryKey = []string{"plan_id", "provisioning_step_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

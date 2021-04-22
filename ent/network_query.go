@@ -33,7 +33,6 @@ type NetworkQuery struct {
 	withNetworkToEnvironment     *EnvironmentQuery
 	withNetworkToHostDependency  *HostDependencyQuery
 	withNetworkToIncludedNetwork *IncludedNetworkQuery
-	withFKs                      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -450,7 +449,6 @@ func (nq *NetworkQuery) prepareQuery(ctx context.Context) error {
 func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 	var (
 		nodes       = []*Network{}
-		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
 		loadedTypes = [4]bool{
 			nq.withNetworkToTag != nil,
@@ -459,9 +457,6 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 			nq.withNetworkToIncludedNetwork != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, network.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Network{config: nq.config}
 		nodes = append(nodes, node)

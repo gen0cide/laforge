@@ -45,31 +45,41 @@ const (
 	NextPlanTable = "plans"
 	// NextPlanColumn is the table column denoting the NextPlan relation/edge.
 	NextPlanColumn = "plan_next_plan"
-	// PlanToBuildTable is the table the holds the PlanToBuild relation/edge. The primary key declared below.
-	PlanToBuildTable = "plan_PlanToBuild"
+	// PlanToBuildTable is the table the holds the PlanToBuild relation/edge.
+	PlanToBuildTable = "plans"
 	// PlanToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	PlanToBuildInverseTable = "builds"
-	// PlanToTeamTable is the table the holds the PlanToTeam relation/edge. The primary key declared below.
-	PlanToTeamTable = "plan_PlanToTeam"
+	// PlanToBuildColumn is the table column denoting the PlanToBuild relation/edge.
+	PlanToBuildColumn = "plan_plan_to_build"
+	// PlanToTeamTable is the table the holds the PlanToTeam relation/edge.
+	PlanToTeamTable = "plans"
 	// PlanToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	PlanToTeamInverseTable = "teams"
-	// PlanToProvisionedNetworkTable is the table the holds the PlanToProvisionedNetwork relation/edge. The primary key declared below.
-	PlanToProvisionedNetworkTable = "plan_PlanToProvisionedNetwork"
+	// PlanToTeamColumn is the table column denoting the PlanToTeam relation/edge.
+	PlanToTeamColumn = "plan_plan_to_team"
+	// PlanToProvisionedNetworkTable is the table the holds the PlanToProvisionedNetwork relation/edge.
+	PlanToProvisionedNetworkTable = "plans"
 	// PlanToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	PlanToProvisionedNetworkInverseTable = "provisioned_networks"
-	// PlanToProvisionedHostTable is the table the holds the PlanToProvisionedHost relation/edge. The primary key declared below.
-	PlanToProvisionedHostTable = "plan_PlanToProvisionedHost"
+	// PlanToProvisionedNetworkColumn is the table column denoting the PlanToProvisionedNetwork relation/edge.
+	PlanToProvisionedNetworkColumn = "plan_plan_to_provisioned_network"
+	// PlanToProvisionedHostTable is the table the holds the PlanToProvisionedHost relation/edge.
+	PlanToProvisionedHostTable = "plans"
 	// PlanToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	PlanToProvisionedHostInverseTable = "provisioned_hosts"
-	// PlanToProvisioningStepTable is the table the holds the PlanToProvisioningStep relation/edge. The primary key declared below.
-	PlanToProvisioningStepTable = "plan_PlanToProvisioningStep"
+	// PlanToProvisionedHostColumn is the table column denoting the PlanToProvisionedHost relation/edge.
+	PlanToProvisionedHostColumn = "plan_plan_to_provisioned_host"
+	// PlanToProvisioningStepTable is the table the holds the PlanToProvisioningStep relation/edge.
+	PlanToProvisioningStepTable = "plans"
 	// PlanToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	PlanToProvisioningStepInverseTable = "provisioning_steps"
+	// PlanToProvisioningStepColumn is the table column denoting the PlanToProvisioningStep relation/edge.
+	PlanToProvisioningStepColumn = "plan_plan_to_provisioning_step"
 )
 
 // Columns holds all SQL columns for plan fields.
@@ -83,25 +93,12 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Plan type.
 var ForeignKeys = []string{
 	"plan_next_plan",
+	"plan_plan_to_build",
+	"plan_plan_to_team",
+	"plan_plan_to_provisioned_network",
+	"plan_plan_to_provisioned_host",
+	"plan_plan_to_provisioning_step",
 }
-
-var (
-	// PlanToBuildPrimaryKey and PlanToBuildColumn2 are the table columns denoting the
-	// primary key for the PlanToBuild relation (M2M).
-	PlanToBuildPrimaryKey = []string{"plan_id", "build_id"}
-	// PlanToTeamPrimaryKey and PlanToTeamColumn2 are the table columns denoting the
-	// primary key for the PlanToTeam relation (M2M).
-	PlanToTeamPrimaryKey = []string{"plan_id", "team_id"}
-	// PlanToProvisionedNetworkPrimaryKey and PlanToProvisionedNetworkColumn2 are the table columns denoting the
-	// primary key for the PlanToProvisionedNetwork relation (M2M).
-	PlanToProvisionedNetworkPrimaryKey = []string{"plan_id", "provisioned_network_id"}
-	// PlanToProvisionedHostPrimaryKey and PlanToProvisionedHostColumn2 are the table columns denoting the
-	// primary key for the PlanToProvisionedHost relation (M2M).
-	PlanToProvisionedHostPrimaryKey = []string{"plan_id", "provisioned_host_id"}
-	// PlanToProvisioningStepPrimaryKey and PlanToProvisioningStepColumn2 are the table columns denoting the
-	// primary key for the PlanToProvisioningStep relation (M2M).
-	PlanToProvisioningStepPrimaryKey = []string{"plan_id", "provisioning_step_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

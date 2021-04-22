@@ -26,7 +26,6 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
-	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -161,21 +160,6 @@ func (ec *EnvironmentCreate) AddEnvironmentToCompetition(c ...*Competition) *Env
 		ids[i] = c[i].ID
 	}
 	return ec.AddEnvironmentToCompetitionIDs(ids...)
-}
-
-// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddEnvironmentToBuildIDs(ids...)
-	return ec
-}
-
-// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
-func (ec *EnvironmentCreate) AddEnvironmentToBuild(b ...*Build) *EnvironmentCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return ec.AddEnvironmentToBuildIDs(ids...)
 }
 
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
@@ -358,19 +342,19 @@ func (ec *EnvironmentCreate) AddEnvironmentToHostDependency(h ...*HostDependency
 	return ec.AddEnvironmentToHostDependencyIDs(ids...)
 }
 
-// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddEnvironmentToTeamIDs(ids...)
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
+func (ec *EnvironmentCreate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentCreate {
+	ec.mutation.AddEnvironmentToBuildIDs(ids...)
 	return ec
 }
 
-// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
-func (ec *EnvironmentCreate) AddEnvironmentToTeam(t ...*Team) *EnvironmentCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
+func (ec *EnvironmentCreate) AddEnvironmentToBuild(b ...*Build) *EnvironmentCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return ec.AddEnvironmentToTeamIDs(ids...)
+	return ec.AddEnvironmentToBuildIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -648,25 +632,6 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ec.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -895,17 +860,17 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.EnvironmentToTeamIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}

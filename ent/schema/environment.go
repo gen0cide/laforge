@@ -57,7 +57,6 @@ func (Environment) Edges() []ent.Edge {
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("EnvironmentToHost", Host.Type),
 		edge.To("EnvironmentToCompetition", Competition.Type),
-		edge.To("EnvironmentToBuild", Build.Type),
 		edge.To("EnvironmentToIdentity", Identity.Type),
 		edge.To("EnvironmentToCommand", Command.Type),
 		edge.To("EnvironmentToScript", Script.Type),
@@ -71,7 +70,7 @@ func (Environment) Edges() []ent.Edge {
 		edge.To("EnvironmentToDNS", DNS.Type),
 		edge.To("EnvironmentToNetwork", Network.Type),
 		edge.To("EnvironmentToHostDependency", HostDependency.Type),
-		edge.From("EnvironmentToTeam", Team.Type).
-			Ref("TeamToEnvironment"),
+		edge.From("EnvironmentToBuild", Build.Type).
+			Ref("BuildToEnvironment"),
 	}
 }

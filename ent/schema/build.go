@@ -15,20 +15,21 @@ type Build struct {
 func (Build) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("revision"),
-		field.JSON("config", map[string]string{}),
 	}
 }
 
 // Edges of the Build.
 func (Build) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("BuildToUser", User.Type),
-		edge.To("BuildToTag", Tag.Type),
-		edge.To("BuildToProvisionedNetwork", ProvisionedNetwork.Type),
+		edge.To("BuildToStatus", Status.Type).
+			Unique(),
+		edge.To("BuildToEnvironment", Environment.Type).
+			Unique().
+			Required(),
+		edge.From("BuildToProvisionedNetwork", ProvisionedNetwork.Type).
+			Ref("ProvisionedNetworkToBuild"),
 		edge.From("BuildToTeam", Team.Type).
 			Ref("TeamToBuild"),
-		edge.From("BuildToEnvironment", Environment.Type).
-			Ref("EnvironmentToBuild"),
 		edge.From("BuildToPlan", Plan.Type).
 			Ref("PlanToBuild"),
 	}

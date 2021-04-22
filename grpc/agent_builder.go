@@ -90,7 +90,7 @@ func main() {
 			log.Fatalf("Failed to Query Team: %v", err)
 		}
 		teamName := team.TeamNumber
-		env, err := team.QueryTeamToEnvironment().Only(ctx)
+		env, err := team.QueryTeamToBuild().QueryBuildToEnvironment().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Enviroment: %v", err)
 		}

@@ -289,7 +289,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToPlan() *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -1042,65 +1042,30 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 
 	if query := psq.withProvisioningStepToPlan; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*ProvisioningStep, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.ProvisioningStepToPlan = []*Plan{}
+		nodeids := make(map[int]*ProvisioningStep)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProvisioningStepToPlan = []*Plan{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*ProvisioningStep)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   provisioningstep.ProvisioningStepToPlanTable,
-				Columns: provisioningstep.ProvisioningStepToPlanPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(provisioningstep.ProvisioningStepToPlanPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, psq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "ProvisioningStepToPlan": %v`, err)
-		}
-		query.Where(plan.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Plan(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisioningstep.ProvisioningStepToPlanColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.plan_plan_to_provisioning_step
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_plan_to_provisioning_step" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "ProvisioningStepToPlan" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.ProvisioningStepToPlan = append(nodes[i].Edges.ProvisioningStepToPlan, n)
-			}
+			node.Edges.ProvisioningStepToPlan = append(node.Edges.ProvisioningStepToPlan, n)
 		}
 	}
 

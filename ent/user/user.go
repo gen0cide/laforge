@@ -48,12 +48,10 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the User type.
 var ForeignKeys = []string{
-	"build_build_to_user",
 	"command_command_to_user",
 	"finding_finding_to_user",
 	"host_host_to_user",
 	"script_script_to_user",
-	"team_team_to_user",
 }
 
 var (

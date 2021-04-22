@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -14,9 +15,8 @@ import (
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
-	"github.com/gen0cide/laforge/ent/user"
 )
 
 // BuildUpdate is the builder for updating Build entities.
@@ -45,40 +45,34 @@ func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 	return bu
 }
 
-// SetConfig sets the "config" field.
-func (bu *BuildUpdate) SetConfig(m map[string]string) *BuildUpdate {
-	bu.mutation.SetConfig(m)
+// SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
+func (bu *BuildUpdate) SetBuildToStatusID(id int) *BuildUpdate {
+	bu.mutation.SetBuildToStatusID(id)
 	return bu
 }
 
-// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by IDs.
-func (bu *BuildUpdate) AddBuildToUserIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddBuildToUserIDs(ids...)
-	return bu
-}
-
-// AddBuildToUser adds the "BuildToUser" edges to the User entity.
-func (bu *BuildUpdate) AddBuildToUser(u ...*User) *BuildUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// SetNillableBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID if the given value is not nil.
+func (bu *BuildUpdate) SetNillableBuildToStatusID(id *int) *BuildUpdate {
+	if id != nil {
+		bu = bu.SetBuildToStatusID(*id)
 	}
-	return bu.AddBuildToUserIDs(ids...)
-}
-
-// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by IDs.
-func (bu *BuildUpdate) AddBuildToTagIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddBuildToTagIDs(ids...)
 	return bu
 }
 
-// AddBuildToTag adds the "BuildToTag" edges to the Tag entity.
-func (bu *BuildUpdate) AddBuildToTag(t ...*Tag) *BuildUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return bu.AddBuildToTagIDs(ids...)
+// SetBuildToStatus sets the "BuildToStatus" edge to the Status entity.
+func (bu *BuildUpdate) SetBuildToStatus(s *Status) *BuildUpdate {
+	return bu.SetBuildToStatusID(s.ID)
+}
+
+// SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by ID.
+func (bu *BuildUpdate) SetBuildToEnvironmentID(id int) *BuildUpdate {
+	bu.mutation.SetBuildToEnvironmentID(id)
+	return bu
+}
+
+// SetBuildToEnvironment sets the "BuildToEnvironment" edge to the Environment entity.
+func (bu *BuildUpdate) SetBuildToEnvironment(e *Environment) *BuildUpdate {
+	return bu.SetBuildToEnvironmentID(e.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -111,21 +105,6 @@ func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
 	return bu.AddBuildToTeamIDs(ids...)
 }
 
-// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by IDs.
-func (bu *BuildUpdate) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
-	bu.mutation.AddBuildToEnvironmentIDs(ids...)
-	return bu
-}
-
-// AddBuildToEnvironment adds the "BuildToEnvironment" edges to the Environment entity.
-func (bu *BuildUpdate) AddBuildToEnvironment(e ...*Environment) *BuildUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return bu.AddBuildToEnvironmentIDs(ids...)
-}
-
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
 func (bu *BuildUpdate) AddBuildToPlanIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToPlanIDs(ids...)
@@ -146,46 +125,16 @@ func (bu *BuildUpdate) Mutation() *BuildMutation {
 	return bu.mutation
 }
 
-// ClearBuildToUser clears all "BuildToUser" edges to the User entity.
-func (bu *BuildUpdate) ClearBuildToUser() *BuildUpdate {
-	bu.mutation.ClearBuildToUser()
+// ClearBuildToStatus clears the "BuildToStatus" edge to the Status entity.
+func (bu *BuildUpdate) ClearBuildToStatus() *BuildUpdate {
+	bu.mutation.ClearBuildToStatus()
 	return bu
 }
 
-// RemoveBuildToUserIDs removes the "BuildToUser" edge to User entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToUserIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveBuildToUserIDs(ids...)
+// ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
+func (bu *BuildUpdate) ClearBuildToEnvironment() *BuildUpdate {
+	bu.mutation.ClearBuildToEnvironment()
 	return bu
-}
-
-// RemoveBuildToUser removes "BuildToUser" edges to User entities.
-func (bu *BuildUpdate) RemoveBuildToUser(u ...*User) *BuildUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return bu.RemoveBuildToUserIDs(ids...)
-}
-
-// ClearBuildToTag clears all "BuildToTag" edges to the Tag entity.
-func (bu *BuildUpdate) ClearBuildToTag() *BuildUpdate {
-	bu.mutation.ClearBuildToTag()
-	return bu
-}
-
-// RemoveBuildToTagIDs removes the "BuildToTag" edge to Tag entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToTagIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveBuildToTagIDs(ids...)
-	return bu
-}
-
-// RemoveBuildToTag removes "BuildToTag" edges to Tag entities.
-func (bu *BuildUpdate) RemoveBuildToTag(t ...*Tag) *BuildUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return bu.RemoveBuildToTagIDs(ids...)
 }
 
 // ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
@@ -230,27 +179,6 @@ func (bu *BuildUpdate) RemoveBuildToTeam(t ...*Team) *BuildUpdate {
 	return bu.RemoveBuildToTeamIDs(ids...)
 }
 
-// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to the Environment entity.
-func (bu *BuildUpdate) ClearBuildToEnvironment() *BuildUpdate {
-	bu.mutation.ClearBuildToEnvironment()
-	return bu
-}
-
-// RemoveBuildToEnvironmentIDs removes the "BuildToEnvironment" edge to Environment entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdate {
-	bu.mutation.RemoveBuildToEnvironmentIDs(ids...)
-	return bu
-}
-
-// RemoveBuildToEnvironment removes "BuildToEnvironment" edges to Environment entities.
-func (bu *BuildUpdate) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return bu.RemoveBuildToEnvironmentIDs(ids...)
-}
-
 // ClearBuildToPlan clears all "BuildToPlan" edges to the Plan entity.
 func (bu *BuildUpdate) ClearBuildToPlan() *BuildUpdate {
 	bu.mutation.ClearBuildToPlan()
@@ -279,12 +207,18 @@ func (bu *BuildUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(bu.hooks) == 0 {
+		if err = bu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = bu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BuildMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = bu.check(); err != nil {
+				return 0, err
 			}
 			bu.mutation = mutation
 			affected, err = bu.sqlSave(ctx)
@@ -323,6 +257,14 @@ func (bu *BuildUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (bu *BuildUpdate) check() error {
+	if _, ok := bu.mutation.BuildToEnvironmentID(); bu.mutation.BuildToEnvironmentCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"BuildToEnvironment\"")
+	}
+	return nil
+}
+
 func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -355,59 +297,33 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: build.FieldRevision,
 		})
 	}
-	if value, ok := bu.mutation.Config(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: build.FieldConfig,
-		})
-	}
-	if bu.mutation.BuildToUserCleared() {
+	if bu.mutation.BuildToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
+			Table:   build.BuildToStatusTable,
+			Columns: []string{build.BuildToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: status.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedBuildToUserIDs(); len(nodes) > 0 && !bu.mutation.BuildToUserCleared() {
+	if nodes := bu.mutation.BuildToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
+			Table:   build.BuildToStatusTable,
+			Columns: []string{build.BuildToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := bu.mutation.BuildToUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: status.FieldID,
 				},
 			},
 		}
@@ -416,52 +332,33 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.BuildToTagCleared() {
+	if bu.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
+			Table:   build.BuildToEnvironmentTable,
+			Columns: []string{build.BuildToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedBuildToTagIDs(); len(nodes) > 0 && !bu.mutation.BuildToTagCleared() {
+	if nodes := bu.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
+			Table:   build.BuildToEnvironmentTable,
+			Columns: []string{build.BuildToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := bu.mutation.BuildToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -472,10 +369,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.BuildToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -488,10 +385,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedBuildToProvisionedNetworkIDs(); len(nodes) > 0 && !bu.mutation.BuildToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -507,10 +404,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -526,10 +423,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -542,10 +439,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedBuildToTeamIDs(); len(nodes) > 0 && !bu.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -561,10 +458,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.BuildToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -578,66 +475,12 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.BuildToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := bu.mutation.RemovedBuildToEnvironmentIDs(); len(nodes) > 0 && !bu.mutation.BuildToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := bu.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if bu.mutation.BuildToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -650,10 +493,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedBuildToPlanIDs(); len(nodes) > 0 && !bu.mutation.BuildToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -669,10 +512,10 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.BuildToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -717,40 +560,34 @@ func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 	return buo
 }
 
-// SetConfig sets the "config" field.
-func (buo *BuildUpdateOne) SetConfig(m map[string]string) *BuildUpdateOne {
-	buo.mutation.SetConfig(m)
+// SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
+func (buo *BuildUpdateOne) SetBuildToStatusID(id int) *BuildUpdateOne {
+	buo.mutation.SetBuildToStatusID(id)
 	return buo
 }
 
-// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToUserIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddBuildToUserIDs(ids...)
-	return buo
-}
-
-// AddBuildToUser adds the "BuildToUser" edges to the User entity.
-func (buo *BuildUpdateOne) AddBuildToUser(u ...*User) *BuildUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// SetNillableBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID if the given value is not nil.
+func (buo *BuildUpdateOne) SetNillableBuildToStatusID(id *int) *BuildUpdateOne {
+	if id != nil {
+		buo = buo.SetBuildToStatusID(*id)
 	}
-	return buo.AddBuildToUserIDs(ids...)
-}
-
-// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToTagIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddBuildToTagIDs(ids...)
 	return buo
 }
 
-// AddBuildToTag adds the "BuildToTag" edges to the Tag entity.
-func (buo *BuildUpdateOne) AddBuildToTag(t ...*Tag) *BuildUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return buo.AddBuildToTagIDs(ids...)
+// SetBuildToStatus sets the "BuildToStatus" edge to the Status entity.
+func (buo *BuildUpdateOne) SetBuildToStatus(s *Status) *BuildUpdateOne {
+	return buo.SetBuildToStatusID(s.ID)
+}
+
+// SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by ID.
+func (buo *BuildUpdateOne) SetBuildToEnvironmentID(id int) *BuildUpdateOne {
+	buo.mutation.SetBuildToEnvironmentID(id)
+	return buo
+}
+
+// SetBuildToEnvironment sets the "BuildToEnvironment" edge to the Environment entity.
+func (buo *BuildUpdateOne) SetBuildToEnvironment(e *Environment) *BuildUpdateOne {
+	return buo.SetBuildToEnvironmentID(e.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -783,21 +620,6 @@ func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
 	return buo.AddBuildToTeamIDs(ids...)
 }
 
-// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.AddBuildToEnvironmentIDs(ids...)
-	return buo
-}
-
-// AddBuildToEnvironment adds the "BuildToEnvironment" edges to the Environment entity.
-func (buo *BuildUpdateOne) AddBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return buo.AddBuildToEnvironmentIDs(ids...)
-}
-
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToPlanIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToPlanIDs(ids...)
@@ -818,46 +640,16 @@ func (buo *BuildUpdateOne) Mutation() *BuildMutation {
 	return buo.mutation
 }
 
-// ClearBuildToUser clears all "BuildToUser" edges to the User entity.
-func (buo *BuildUpdateOne) ClearBuildToUser() *BuildUpdateOne {
-	buo.mutation.ClearBuildToUser()
+// ClearBuildToStatus clears the "BuildToStatus" edge to the Status entity.
+func (buo *BuildUpdateOne) ClearBuildToStatus() *BuildUpdateOne {
+	buo.mutation.ClearBuildToStatus()
 	return buo
 }
 
-// RemoveBuildToUserIDs removes the "BuildToUser" edge to User entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToUserIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveBuildToUserIDs(ids...)
+// ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
+func (buo *BuildUpdateOne) ClearBuildToEnvironment() *BuildUpdateOne {
+	buo.mutation.ClearBuildToEnvironment()
 	return buo
-}
-
-// RemoveBuildToUser removes "BuildToUser" edges to User entities.
-func (buo *BuildUpdateOne) RemoveBuildToUser(u ...*User) *BuildUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return buo.RemoveBuildToUserIDs(ids...)
-}
-
-// ClearBuildToTag clears all "BuildToTag" edges to the Tag entity.
-func (buo *BuildUpdateOne) ClearBuildToTag() *BuildUpdateOne {
-	buo.mutation.ClearBuildToTag()
-	return buo
-}
-
-// RemoveBuildToTagIDs removes the "BuildToTag" edge to Tag entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToTagIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveBuildToTagIDs(ids...)
-	return buo
-}
-
-// RemoveBuildToTag removes "BuildToTag" edges to Tag entities.
-func (buo *BuildUpdateOne) RemoveBuildToTag(t ...*Tag) *BuildUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return buo.RemoveBuildToTagIDs(ids...)
 }
 
 // ClearBuildToProvisionedNetwork clears all "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
@@ -902,27 +694,6 @@ func (buo *BuildUpdateOne) RemoveBuildToTeam(t ...*Team) *BuildUpdateOne {
 	return buo.RemoveBuildToTeamIDs(ids...)
 }
 
-// ClearBuildToEnvironment clears all "BuildToEnvironment" edges to the Environment entity.
-func (buo *BuildUpdateOne) ClearBuildToEnvironment() *BuildUpdateOne {
-	buo.mutation.ClearBuildToEnvironment()
-	return buo
-}
-
-// RemoveBuildToEnvironmentIDs removes the "BuildToEnvironment" edge to Environment entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToEnvironmentIDs(ids ...int) *BuildUpdateOne {
-	buo.mutation.RemoveBuildToEnvironmentIDs(ids...)
-	return buo
-}
-
-// RemoveBuildToEnvironment removes "BuildToEnvironment" edges to Environment entities.
-func (buo *BuildUpdateOne) RemoveBuildToEnvironment(e ...*Environment) *BuildUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return buo.RemoveBuildToEnvironmentIDs(ids...)
-}
-
 // ClearBuildToPlan clears all "BuildToPlan" edges to the Plan entity.
 func (buo *BuildUpdateOne) ClearBuildToPlan() *BuildUpdateOne {
 	buo.mutation.ClearBuildToPlan()
@@ -951,12 +722,18 @@ func (buo *BuildUpdateOne) Save(ctx context.Context) (*Build, error) {
 		node *Build
 	)
 	if len(buo.hooks) == 0 {
+		if err = buo.check(); err != nil {
+			return nil, err
+		}
 		node, err = buo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BuildMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = buo.check(); err != nil {
+				return nil, err
 			}
 			buo.mutation = mutation
 			node, err = buo.sqlSave(ctx)
@@ -993,6 +770,14 @@ func (buo *BuildUpdateOne) ExecX(ctx context.Context) {
 	if err := buo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (buo *BuildUpdateOne) check() error {
+	if _, ok := buo.mutation.BuildToEnvironmentID(); buo.mutation.BuildToEnvironmentCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"BuildToEnvironment\"")
+	}
+	return nil
 }
 
 func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error) {
@@ -1032,59 +817,33 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Column: build.FieldRevision,
 		})
 	}
-	if value, ok := buo.mutation.Config(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: build.FieldConfig,
-		})
-	}
-	if buo.mutation.BuildToUserCleared() {
+	if buo.mutation.BuildToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
+			Table:   build.BuildToStatusTable,
+			Columns: []string{build.BuildToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: status.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedBuildToUserIDs(); len(nodes) > 0 && !buo.mutation.BuildToUserCleared() {
+	if nodes := buo.mutation.BuildToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
+			Table:   build.BuildToStatusTable,
+			Columns: []string{build.BuildToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := buo.mutation.BuildToUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   build.BuildToUserTable,
-			Columns: []string{build.BuildToUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: status.FieldID,
 				},
 			},
 		}
@@ -1093,52 +852,33 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.BuildToTagCleared() {
+	if buo.mutation.BuildToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
+			Table:   build.BuildToEnvironmentTable,
+			Columns: []string{build.BuildToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedBuildToTagIDs(); len(nodes) > 0 && !buo.mutation.BuildToTagCleared() {
+	if nodes := buo.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
+			Table:   build.BuildToEnvironmentTable,
+			Columns: []string{build.BuildToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := buo.mutation.BuildToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   build.BuildToTagTable,
-			Columns: []string{build.BuildToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -1149,10 +889,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if buo.mutation.BuildToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1165,10 +905,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.RemovedBuildToProvisionedNetworkIDs(); len(nodes) > 0 && !buo.mutation.BuildToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1184,10 +924,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
 			Table:   build.BuildToProvisionedNetworkTable,
-			Columns: build.BuildToProvisionedNetworkPrimaryKey,
+			Columns: []string{build.BuildToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1203,10 +943,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if buo.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1219,10 +959,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.RemovedBuildToTeamIDs(); len(nodes) > 0 && !buo.mutation.BuildToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1238,10 +978,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.BuildToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToTeamTable,
-			Columns: build.BuildToTeamPrimaryKey,
+			Columns: []string{build.BuildToTeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1255,66 +995,12 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.BuildToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := buo.mutation.RemovedBuildToEnvironmentIDs(); len(nodes) > 0 && !buo.mutation.BuildToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := buo.mutation.BuildToEnvironmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   build.BuildToEnvironmentTable,
-			Columns: build.BuildToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if buo.mutation.BuildToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1327,10 +1013,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.RemovedBuildToPlanIDs(); len(nodes) > 0 && !buo.mutation.BuildToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1346,10 +1032,10 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 	}
 	if nodes := buo.mutation.BuildToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   build.BuildToPlanTable,
-			Columns: build.BuildToPlanPrimaryKey,
+			Columns: []string{build.BuildToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

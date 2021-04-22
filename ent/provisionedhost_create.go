@@ -362,10 +362,10 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	}
 	if nodes := phc.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: provisionedhost.ProvisionedHostToPlanPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

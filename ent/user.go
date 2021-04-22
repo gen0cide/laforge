@@ -33,12 +33,10 @@ type User struct {
 	// UserToEnvironment holds the value of the UserToEnvironment edge.
 	HCLUserToEnvironment []*Environment `json:"UserToEnvironment,omitempty"`
 	//
-	build_build_to_user     *int
 	command_command_to_user *int
 	finding_finding_to_user *int
 	host_host_to_user       *int
 	script_script_to_user   *int
-	team_team_to_user       *int
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
@@ -79,17 +77,13 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case user.FieldName, user.FieldUUID, user.FieldEmail, user.FieldHclID:
 			values[i] = &sql.NullString{}
-		case user.ForeignKeys[0]: // build_build_to_user
+		case user.ForeignKeys[0]: // command_command_to_user
 			values[i] = &sql.NullInt64{}
-		case user.ForeignKeys[1]: // command_command_to_user
+		case user.ForeignKeys[1]: // finding_finding_to_user
 			values[i] = &sql.NullInt64{}
-		case user.ForeignKeys[2]: // finding_finding_to_user
+		case user.ForeignKeys[2]: // host_host_to_user
 			values[i] = &sql.NullInt64{}
-		case user.ForeignKeys[3]: // host_host_to_user
-			values[i] = &sql.NullInt64{}
-		case user.ForeignKeys[4]: // script_script_to_user
-			values[i] = &sql.NullInt64{}
-		case user.ForeignKeys[5]: // team_team_to_user
+		case user.ForeignKeys[3]: // script_script_to_user
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
@@ -138,45 +132,31 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			}
 		case user.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field build_build_to_user", value)
-			} else if value.Valid {
-				u.build_build_to_user = new(int)
-				*u.build_build_to_user = int(value.Int64)
-			}
-		case user.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field command_command_to_user", value)
 			} else if value.Valid {
 				u.command_command_to_user = new(int)
 				*u.command_command_to_user = int(value.Int64)
 			}
-		case user.ForeignKeys[2]:
+		case user.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_user", value)
 			} else if value.Valid {
 				u.finding_finding_to_user = new(int)
 				*u.finding_finding_to_user = int(value.Int64)
 			}
-		case user.ForeignKeys[3]:
+		case user.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field host_host_to_user", value)
 			} else if value.Valid {
 				u.host_host_to_user = new(int)
 				*u.host_host_to_user = int(value.Int64)
 			}
-		case user.ForeignKeys[4]:
+		case user.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field script_script_to_user", value)
 			} else if value.Valid {
 				u.script_script_to_user = new(int)
 				*u.script_script_to_user = int(value.Int64)
-			}
-		case user.ForeignKeys[5]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field team_team_to_user", value)
-			} else if value.Valid {
-				u.team_team_to_user = new(int)
-				*u.team_team_to_user = int(value.Int64)
 			}
 		}
 	}

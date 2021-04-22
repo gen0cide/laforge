@@ -65,11 +65,13 @@ const (
 	// ProvisionedHostToAgentStatusInverseTable is the table name for the AgentStatus entity.
 	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
 	ProvisionedHostToAgentStatusInverseTable = "agent_status"
-	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge. The primary key declared below.
-	ProvisionedHostToPlanTable = "plan_PlanToProvisionedHost"
+	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge.
+	ProvisionedHostToPlanTable = "plans"
 	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedHostToPlanInverseTable = "plans"
+	// ProvisionedHostToPlanColumn is the table column denoting the ProvisionedHostToPlan relation/edge.
+	ProvisionedHostToPlanColumn = "plan_plan_to_provisioned_host"
 	// ProvisionedHostToGinFileMiddlewareTable is the table the holds the ProvisionedHostToGinFileMiddleware relation/edge.
 	ProvisionedHostToGinFileMiddlewareTable = "provisioned_hosts"
 	// ProvisionedHostToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
@@ -100,9 +102,6 @@ var (
 	// ProvisionedHostToAgentStatusPrimaryKey and ProvisionedHostToAgentStatusColumn2 are the table columns denoting the
 	// primary key for the ProvisionedHostToAgentStatus relation (M2M).
 	ProvisionedHostToAgentStatusPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
-	// ProvisionedHostToPlanPrimaryKey and ProvisionedHostToPlanColumn2 are the table columns denoting the
-	// primary key for the ProvisionedHostToPlan relation (M2M).
-	ProvisionedHostToPlanPrimaryKey = []string{"plan_id", "provisioned_host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

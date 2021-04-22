@@ -10,12 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
-	"github.com/gen0cide/laforge/ent/user"
 )
 
 // TeamCreate is the builder for creating a Team entity.
@@ -31,76 +29,34 @@ func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 	return tc
 }
 
-// SetConfig sets the "config" field.
-func (tc *TeamCreate) SetConfig(m map[string]string) *TeamCreate {
-	tc.mutation.SetConfig(m)
+// SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by ID.
+func (tc *TeamCreate) SetTeamToBuildID(id int) *TeamCreate {
+	tc.mutation.SetTeamToBuildID(id)
 	return tc
 }
 
-// SetRevision sets the "revision" field.
-func (tc *TeamCreate) SetRevision(i int64) *TeamCreate {
-	tc.mutation.SetRevision(i)
+// SetTeamToBuild sets the "TeamToBuild" edge to the Build entity.
+func (tc *TeamCreate) SetTeamToBuild(b *Build) *TeamCreate {
+	return tc.SetTeamToBuildID(b.ID)
+}
+
+// SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID.
+func (tc *TeamCreate) SetTeamToStatusID(id int) *TeamCreate {
+	tc.mutation.SetTeamToStatusID(id)
 	return tc
 }
 
-// AddTeamToUserIDs adds the "TeamToUser" edge to the User entity by IDs.
-func (tc *TeamCreate) AddTeamToUserIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToUserIDs(ids...)
-	return tc
-}
-
-// AddTeamToUser adds the "TeamToUser" edges to the User entity.
-func (tc *TeamCreate) AddTeamToUser(u ...*User) *TeamCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// SetNillableTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID if the given value is not nil.
+func (tc *TeamCreate) SetNillableTeamToStatusID(id *int) *TeamCreate {
+	if id != nil {
+		tc = tc.SetTeamToStatusID(*id)
 	}
-	return tc.AddTeamToUserIDs(ids...)
-}
-
-// AddTeamToBuildIDs adds the "TeamToBuild" edge to the Build entity by IDs.
-func (tc *TeamCreate) AddTeamToBuildIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToBuildIDs(ids...)
 	return tc
 }
 
-// AddTeamToBuild adds the "TeamToBuild" edges to the Build entity.
-func (tc *TeamCreate) AddTeamToBuild(b ...*Build) *TeamCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return tc.AddTeamToBuildIDs(ids...)
-}
-
-// AddTeamToEnvironmentIDs adds the "TeamToEnvironment" edge to the Environment entity by IDs.
-func (tc *TeamCreate) AddTeamToEnvironmentIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToEnvironmentIDs(ids...)
-	return tc
-}
-
-// AddTeamToEnvironment adds the "TeamToEnvironment" edges to the Environment entity.
-func (tc *TeamCreate) AddTeamToEnvironment(e ...*Environment) *TeamCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return tc.AddTeamToEnvironmentIDs(ids...)
-}
-
-// AddTeamToTagIDs adds the "TeamToTag" edge to the Tag entity by IDs.
-func (tc *TeamCreate) AddTeamToTagIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToTagIDs(ids...)
-	return tc
-}
-
-// AddTeamToTag adds the "TeamToTag" edges to the Tag entity.
-func (tc *TeamCreate) AddTeamToTag(t ...*Tag) *TeamCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tc.AddTeamToTagIDs(ids...)
+// SetTeamToStatus sets the "TeamToStatus" edge to the Status entity.
+func (tc *TeamCreate) SetTeamToStatus(s *Status) *TeamCreate {
+	return tc.SetTeamToStatusID(s.ID)
 }
 
 // AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -187,11 +143,8 @@ func (tc *TeamCreate) check() error {
 	if _, ok := tc.mutation.TeamNumber(); !ok {
 		return &ValidationError{Name: "team_number", err: errors.New("ent: missing required field \"team_number\"")}
 	}
-	if _, ok := tc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
-	}
-	if _, ok := tc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+	if _, ok := tc.mutation.TeamToBuildID(); !ok {
+		return &ValidationError{Name: "TeamToBuild", err: errors.New("ent: missing required edge \"TeamToBuild\"")}
 	}
 	return nil
 }
@@ -228,47 +181,12 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		})
 		_node.TeamNumber = value
 	}
-	if value, ok := tc.mutation.Config(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: team.FieldConfig,
-		})
-		_node.Config = value
-	}
-	if value, ok := tc.mutation.Revision(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: team.FieldRevision,
-		})
-		_node.Revision = value
-	}
-	if nodes := tc.mutation.TeamToUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   team.TeamToUserTable,
-			Columns: []string{team.TeamToUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := tc.mutation.TeamToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   team.TeamToBuildTable,
-			Columns: team.TeamToBuildPrimaryKey,
+			Columns: []string{team.TeamToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -282,36 +200,17 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.TeamToEnvironmentIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.TeamToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   team.TeamToEnvironmentTable,
-			Columns: team.TeamToEnvironmentPrimaryKey,
+			Table:   team.TeamToStatusTable,
+			Columns: []string{team.TeamToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.TeamToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   team.TeamToTagTable,
-			Columns: []string{team.TeamToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: status.FieldID,
 				},
 			},
 		}
@@ -322,10 +221,10 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.TeamToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   team.TeamToProvisionedNetworkTable,
-			Columns: team.TeamToProvisionedNetworkPrimaryKey,
+			Columns: []string{team.TeamToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -341,10 +240,10 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.TeamToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
-			Columns: team.TeamToPlanPrimaryKey,
+			Columns: []string{team.TeamToPlanColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
