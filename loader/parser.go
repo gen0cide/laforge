@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -290,6 +291,11 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 			}
 		}
 		for _, x := range element.DefinedScripts {
+			if x.SourceType == "local" {
+				dir := path.Dir(element.Filename)
+				absPath := path.Join(dir, x.Source)
+				x.AbsPath = absPath
+			}
 			_, found := combinedConfigs.Scripts[x.HclID]
 			if !found {
 				combinedConfigs.Scripts[x.HclID] = x
