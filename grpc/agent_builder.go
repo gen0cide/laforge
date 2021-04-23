@@ -1,4 +1,4 @@
-package main
+package grpc
 
 import (
 	"context"
@@ -13,23 +13,20 @@ import (
 	"github.com/gen0cide/laforge/ent"
 )
 
-func buildAgent(agentID string, serverAddress string, binarypath string, isWindows bool) {
-	if runtime.GOOS == "windows" {
-		binarypath = binarypath + ".exe"
-	}
-	command := "go build -ldflags=\" -s -w -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
-	fmt.Println(command)
-	cmd := exec.Command("bash", "-c", command)
+func BuildAgent(agentID string, serverAddress string, binarypath string, isWindows bool) {
+	command := ""
 	if isWindows {
-		cmd = exec.Command("powershell", "-c", command)
+		command = "CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=\"zcc\" go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
+	} else {
+		command = "CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
 	}
+	cmd := exec.Command("bash", "-c", command)
 	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Created %s, Output %s\n", binarypath, stdoutStderr)
-
+	log.Printf("Created %s, Output %s\n", binarypath, stdoutStderr)
 }
 
 func main() {
@@ -97,6 +94,6 @@ func main() {
 		envName := env.Name
 
 		binaryName := filepath.Join(envName, "team", fmt.Sprint(teamName), networkName, hostName)
-		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName, false)
+		BuildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName, false)
 	}
 }

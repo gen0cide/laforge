@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path"
+	"strings"
 	"sync"
 
 	"github.com/gen0cide/laforge/ent"
@@ -16,6 +19,8 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/grpc"
+	"github.com/gen0cide/laforge/server/utils"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -215,7 +220,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		WithHostDependencyToNetwork().
 		All(ctx)
 
-	currentBuild := pNetwork.QueryProvisionedNetworkToBuild().OnlyX(ctx)
+	currentBuild := pNetwork.QueryProvisionedNetworkToBuild().WithBuildToEnvironment().OnlyX(ctx)
 	currentTeam := pNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
 
 	for _, entHostDependency := range entHostDependencies {
@@ -303,6 +308,32 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		return nil, err
 	}
 	// Make Binary and tmp url
+
+	serverAddress, ok := os.LookupEnv("GRPC_SERVER")
+	if !ok {
+		serverAddress = "localhost:50051"
+	}
+	isWindowsHost := false
+	if strings.Contains(entHost.OS, "w2k") {
+		isWindowsHost = true
+	}
+	// TODO: Add Binary Path to CWD
+	binaryPath := path.Join(currentBuild.Edges.BuildToEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), pNetwork.Name, entHost.Hostname)
+	os.MkdirAll(binaryPath, 0755)
+	binaryName := path.Join(binaryPath, "laforgeAgent")
+	if isWindowsHost {
+		binaryName = binaryName + ".exe"
+	}
+	grpc.BuildAgent(fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
+
+	entTmpUrl, err := utils.CreateTempURL(ctx, client, binaryName)
+	if err != nil {
+		return nil, err
+	}
+	_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisionedHost(entProvisionedHost).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return entProvisionedHost, nil
 }
