@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -24,6 +25,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var renderFiles = false
+
 func main() {
 	var wg sync.WaitGroup
 
@@ -41,9 +44,9 @@ func main() {
 		log.Fatalf("Failed to find Environment %v. Err: %v", 1, err)
 	}
 
-	entBuild, err := client.Build.Query().Where(build.IDEQ(1)).WithBuildToEnvironment().Only(ctx)
+	entBuild, _ := createBuild(ctx, client, entEnvironment)
 	if err != nil {
-		entBuild, _ = createBuild(ctx, client, entEnvironment)
+		log.Fatalf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
 	}
 	fmt.Println(entBuild)
 
@@ -126,14 +129,12 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		log.Fatalf("Failed to Query Enviroment for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
-	pNetworks := []*ent.ProvisionedNetwork{}
+	createProvisonedNetworks := []*ent.ProvisionedNetwork{}
 	for _, buildNetwork := range buildNetworks {
-		pNetwork, _ := createProvisionedNetworks(ctx, client, entBuild, entTeam, buildNetwork, wg)
-		// TODO: Whats happening here: For Some reason even though pNetworks is appended here once the for loop continues it is empty again
-		pNetworks = append(pNetworks, pNetwork)
-		println(pNetworks)
+		pNetwork, _ := createProvisionedNetworks(ctx, client, entBuild, entTeam, buildNetwork)
+		createProvisonedNetworks = append(createProvisonedNetworks, pNetwork)
 	}
-	for _, pNetwork := range pNetworks {
+	for _, pNetwork := range createProvisonedNetworks {
 		entHosts, err := pNetwork.
 			QueryProvisionedNetworkToNetwork().
 			QueryNetworkToIncludedNetwork().
@@ -154,8 +155,7 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 	return entTeam, nil
 }
 
-func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild *ent.Build, entTeam *ent.Team, entNetwork *ent.Network, wg *sync.WaitGroup) (*ent.ProvisionedNetwork, error) {
-	defer wg.Done()
+func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild *ent.Build, entTeam *ent.Team, entNetwork *ent.Network) (*ent.ProvisionedNetwork, error) {
 
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisionedNetwork)
 	if err != nil {
@@ -269,7 +269,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 			}
 		}
 		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToPlan().Only(ctx)
-		if err != err.(*ent.NotFoundError) {
+		if err != nil && err != err.(*ent.NotFoundError) {
 			log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
 			return nil, err
 		}
@@ -297,7 +297,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 
 	_, err = client.Plan.Create().
 		AddPrevPlan(prevPlans...).
-		SetType(plan.TypeProvisionNetwork).
+		SetType(plan.TypeProvisionHost).
 		SetBuildID(prevPlan.BuildID).
 		SetPlanToProvisionedHost(entProvisionedHost).
 		SetStepNumber(planStepNumber).
@@ -307,7 +307,6 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		log.Fatalf("Failed to create Plan Node for Provisioned Host  %v. Err: %v", entHost.HclID, err)
 		return nil, err
 	}
-	// Make Binary and tmp url
 
 	serverAddress, ok := os.LookupEnv("GRPC_SERVER")
 	if !ok {
@@ -317,22 +316,28 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 	if strings.Contains(entHost.OS, "w2k") {
 		isWindowsHost = true
 	}
-	// TODO: Add Binary Path to CWD
+
 	binaryPath := path.Join(currentBuild.Edges.BuildToEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), pNetwork.Name, entHost.Hostname)
 	os.MkdirAll(binaryPath, 0755)
 	binaryName := path.Join(binaryPath, "laforgeAgent")
 	if isWindowsHost {
 		binaryName = binaryName + ".exe"
 	}
-	grpc.BuildAgent(fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
-
-	entTmpUrl, err := utils.CreateTempURL(ctx, client, binaryName)
+	binaryName, err = filepath.Abs(binaryName)
 	if err != nil {
+		log.Fatalf("Unable to Resolve Absolute File Path. Err: %v", err)
 		return nil, err
 	}
-	_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisionedHost(entProvisionedHost).Save(ctx)
-	if err != nil {
-		return nil, err
+	if renderFiles {
+		grpc.BuildAgent(fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
+		entTmpUrl, err := utils.CreateTempURL(ctx, client, binaryName)
+		if err != nil {
+			return nil, err
+		}
+		_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisionedHost(entProvisionedHost).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return entProvisionedHost, nil
