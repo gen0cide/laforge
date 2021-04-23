@@ -37,14 +37,10 @@ const (
 
 	// Table holds the table name of the plan in the database.
 	Table = "plans"
-	// PrevPlanTable is the table the holds the PrevPlan relation/edge.
-	PrevPlanTable = "plans"
-	// PrevPlanColumn is the table column denoting the PrevPlan relation/edge.
-	PrevPlanColumn = "plan_next_plan"
-	// NextPlanTable is the table the holds the NextPlan relation/edge.
-	NextPlanTable = "plans"
-	// NextPlanColumn is the table column denoting the NextPlan relation/edge.
-	NextPlanColumn = "plan_next_plan"
+	// PrevPlanTable is the table the holds the PrevPlan relation/edge. The primary key declared below.
+	PrevPlanTable = "plan_NextPlan"
+	// NextPlanTable is the table the holds the NextPlan relation/edge. The primary key declared below.
+	NextPlanTable = "plan_NextPlan"
 	// PlanToBuildTable is the table the holds the PlanToBuild relation/edge.
 	PlanToBuildTable = "plans"
 	// PlanToBuildInverseTable is the table name for the Build entity.
@@ -92,12 +88,20 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Plan type.
 var ForeignKeys = []string{
-	"plan_next_plan",
 	"plan_plan_to_build",
 	"plan_plan_to_team",
 	"plan_plan_to_provisioned_host",
 	"plan_plan_to_provisioning_step",
 }
+
+var (
+	// PrevPlanPrimaryKey and PrevPlanColumn2 are the table columns denoting the
+	// primary key for the PrevPlan relation (M2M).
+	PrevPlanPrimaryKey = []string{"plan_id", "PrevPlan_id"}
+	// NextPlanPrimaryKey and NextPlanColumn2 are the table columns denoting the
+	// primary key for the NextPlan relation (M2M).
+	NextPlanPrimaryKey = []string{"plan_id", "PrevPlan_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

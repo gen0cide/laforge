@@ -72,7 +72,6 @@ func createBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		return nil, err
 	}
 	_, err = client.Plan.Create().
-		SetNillablePrevPlanID(nil).
 		SetType(plan.TypeStartBuild).
 		SetBuildID(entBuild.ID).
 		SetPlanToBuild(entBuild).
@@ -107,7 +106,7 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		return nil, err
 	}
 	_, err = client.Plan.Create().
-		SetPrevPlan(buildPlanNode).
+		AddPrevPlan(buildPlanNode).
 		SetType(plan.TypeStartTeam).
 		SetBuildID(entBuild.ID).
 		SetPlanToTeam(entTeam).
@@ -125,7 +124,9 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 	pNetworks := []*ent.ProvisionedNetwork{}
 	for _, buildNetwork := range buildNetworks {
 		pNetwork, _ := createProvisionedNetworks(ctx, client, entBuild, entTeam, buildNetwork, wg)
+		// TODO: Whats happening here: For Some reason even though pNetworks is appended here once the for loop continues it is empty again
 		pNetworks = append(pNetworks, pNetwork)
+		println(pNetworks)
 	}
 	for _, pNetwork := range pNetworks {
 		entHosts, err := pNetwork.
@@ -174,20 +175,22 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		return nil, err
 	}
 	_, err = client.Plan.Create().
-		SetPrevPlan(teamPlanNode).
+		AddPrevPlan(teamPlanNode).
 		SetType(plan.TypeProvisionNetwork).
 		SetBuildID(entBuild.ID).
 		SetPlanToProvisionedNetwork(entProvisionedNetwork).
 		SetStepNumber(teamPlanNode.StepNumber + 1).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
+		log.Fatalf("Failed to create Plan Node for Provisioned Network  %v. Err: %v", entProvisionedNetwork.Name, err)
 		return nil, err
 	}
 	return entProvisionedNetwork, nil
 }
 
 func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *ent.ProvisionedNetwork, entHost *ent.Host, prevPlan *ent.Plan) (*ent.ProvisionedHost, error) {
+	prevPlans := []*ent.Plan{prevPlan}
+	planStepNumber := prevPlan.StepNumber + 1
 	entProvisionedHost, err := client.ProvisionedHost.Query().Where(
 		provisionedhost.And(
 			provisionedhost.HasProvisionedHostToProvisionedNetworkWith(
@@ -212,13 +215,24 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		WithHostDependencyToNetwork().
 		All(ctx)
 
-	passedInPrevPlan := prevPlan
+	currentBuild := pNetwork.QueryProvisionedNetworkToBuild().OnlyX(ctx)
+	currentTeam := pNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
 
 	for _, entHostDependency := range entHostDependencies {
 		entDependsOnHost, err := client.ProvisionedHost.Query().Where(
 			provisionedhost.And(
 				provisionedhost.HasProvisionedHostToProvisionedNetworkWith(
-					provisionednetwork.IDEQ(entHostDependency.Edges.HostDependencyToNetwork.ID),
+					provisionednetwork.And(
+						provisionednetwork.HasProvisionedNetworkToNetworkWith(
+							network.IDEQ(entHostDependency.Edges.HostDependencyToNetwork.ID),
+						),
+						provisionednetwork.HasProvisionedNetworkToBuildWith(
+							build.IDEQ(currentBuild.ID),
+						),
+						provisionednetwork.HasProvisionedNetworkToTeamWith(
+							team.IDEQ(currentTeam.ID),
+						),
+					),
 				),
 				provisionedhost.HasProvisionedHostToHostWith(
 					host.IDEQ(entHostDependency.Edges.HostDependencyToDependOnHost.ID),
@@ -230,37 +244,35 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 				log.Fatalf("Failed to Query Depended On Host %v for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
 				return nil, err
 			} else {
-				dependOnBuild := pNetwork.QueryProvisionedNetworkToBuild().OnlyX(ctx)
-				dependOnTeam := pNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
 				dependOnPnetwork, err := client.ProvisionedNetwork.Query().Where(
 					provisionednetwork.And(
 						provisionednetwork.HasProvisionedNetworkToNetworkWith(
 							network.IDEQ(entHostDependency.Edges.HostDependencyToNetwork.ID),
 						),
 						provisionednetwork.HasProvisionedNetworkToBuildWith(
-							build.IDEQ(dependOnBuild.ID),
+							build.IDEQ(currentBuild.ID),
 						),
 						provisionednetwork.HasProvisionedNetworkToTeamWith(
-							team.IDEQ(dependOnTeam.ID),
+							team.IDEQ(currentTeam.ID),
 						),
 					),
 				).Only(ctx)
 				if err != nil {
 					log.Fatalf("Failed to Query Provined Network %v for Depended On Host %v. Err: %v", entHostDependency.Edges.HostDependencyToNetwork.HclID, entHostDependency.Edges.HostDependencyToDependOnHost.HclID, err)
 				}
-				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, passedInPrevPlan)
+				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, prevPlan)
 			}
-		} else {
-			dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToPlan().Only(ctx)
-			if err != err.(*ent.NotFoundError) {
-				log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
-				return nil, err
-			}
-			if dependOnPlan.StepNumber > prevPlan.StepNumber {
-				prevPlan = dependOnPlan
-			}
-			return entDependsOnHost, nil
 		}
+		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToPlan().Only(ctx)
+		if err != err.(*ent.NotFoundError) {
+			log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
+			return nil, err
+		}
+		prevPlans = append(prevPlans, dependOnPlan)
+		if planStepNumber <= dependOnPlan.StepNumber {
+			planStepNumber = dependOnPlan.StepNumber + 1
+		}
+
 	}
 
 	// When get Internet combine CIDR in pNetwork with LastOctet in entHost
@@ -278,7 +290,19 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetProvisionedHostToHost(entHost).
 		Save(ctx)
 
+	_, err = client.Plan.Create().
+		AddPrevPlan(prevPlans...).
+		SetType(plan.TypeProvisionNetwork).
+		SetBuildID(prevPlan.BuildID).
+		SetPlanToProvisionedHost(entProvisionedHost).
+		SetStepNumber(planStepNumber).
+		Save(ctx)
+
+	if err != nil {
+		log.Fatalf("Failed to create Plan Node for Provisioned Host  %v. Err: %v", entHost.HclID, err)
+		return nil, err
+	}
 	// Make Binary and tmp url
 
-	return nil, nil
+	return entProvisionedHost, nil
 }

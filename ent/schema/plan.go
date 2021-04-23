@@ -31,8 +31,7 @@ func (Plan) Fields() []ent.Field {
 func (Plan) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("NextPlan", Plan.Type).
-			From("PrevPlan").
-			Unique(),
+			From("PrevPlan"),
 		edge.To("PlanToBuild", Build.Type).Unique(),
 		edge.To("PlanToTeam", Team.Type).Unique(),
 		edge.To("PlanToProvisionedNetwork", ProvisionedNetwork.Type).Unique(),

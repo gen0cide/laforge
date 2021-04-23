@@ -63,23 +63,19 @@ func (pu *PlanUpdate) AddBuildID(i int) *PlanUpdate {
 	return pu
 }
 
-// SetPrevPlanID sets the "PrevPlan" edge to the Plan entity by ID.
-func (pu *PlanUpdate) SetPrevPlanID(id int) *PlanUpdate {
-	pu.mutation.SetPrevPlanID(id)
+// AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
+func (pu *PlanUpdate) AddPrevPlanIDs(ids ...int) *PlanUpdate {
+	pu.mutation.AddPrevPlanIDs(ids...)
 	return pu
 }
 
-// SetNillablePrevPlanID sets the "PrevPlan" edge to the Plan entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePrevPlanID(id *int) *PlanUpdate {
-	if id != nil {
-		pu = pu.SetPrevPlanID(*id)
+// AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
+func (pu *PlanUpdate) AddPrevPlan(p ...*Plan) *PlanUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
-	return pu
-}
-
-// SetPrevPlan sets the "PrevPlan" edge to the Plan entity.
-func (pu *PlanUpdate) SetPrevPlan(p *Plan) *PlanUpdate {
-	return pu.SetPrevPlanID(p.ID)
+	return pu.AddPrevPlanIDs(ids...)
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
@@ -197,10 +193,25 @@ func (pu *PlanUpdate) Mutation() *PlanMutation {
 	return pu.mutation
 }
 
-// ClearPrevPlan clears the "PrevPlan" edge to the Plan entity.
+// ClearPrevPlan clears all "PrevPlan" edges to the Plan entity.
 func (pu *PlanUpdate) ClearPrevPlan() *PlanUpdate {
 	pu.mutation.ClearPrevPlan()
 	return pu
+}
+
+// RemovePrevPlanIDs removes the "PrevPlan" edge to Plan entities by IDs.
+func (pu *PlanUpdate) RemovePrevPlanIDs(ids ...int) *PlanUpdate {
+	pu.mutation.RemovePrevPlanIDs(ids...)
+	return pu
+}
+
+// RemovePrevPlan removes "PrevPlan" edges to Plan entities.
+func (pu *PlanUpdate) RemovePrevPlan(p ...*Plan) *PlanUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemovePrevPlanIDs(ids...)
 }
 
 // ClearNextPlan clears all "NextPlan" edges to the Plan entity.
@@ -376,10 +387,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PrevPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   plan.PrevPlanTable,
-			Columns: []string{plan.PrevPlanColumn},
+			Columns: plan.PrevPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -390,12 +401,31 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.PrevPlanIDs(); len(nodes) > 0 {
+	if nodes := pu.mutation.RemovedPrevPlanIDs(); len(nodes) > 0 && !pu.mutation.PrevPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   plan.PrevPlanTable,
-			Columns: []string{plan.PrevPlanColumn},
+			Columns: plan.PrevPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.PrevPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   plan.PrevPlanTable,
+			Columns: plan.PrevPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -411,10 +441,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.NextPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -427,10 +457,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := pu.mutation.RemovedNextPlanIDs(); len(nodes) > 0 && !pu.mutation.NextPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -446,10 +476,10 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := pu.mutation.NextPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -688,23 +718,19 @@ func (puo *PlanUpdateOne) AddBuildID(i int) *PlanUpdateOne {
 	return puo
 }
 
-// SetPrevPlanID sets the "PrevPlan" edge to the Plan entity by ID.
-func (puo *PlanUpdateOne) SetPrevPlanID(id int) *PlanUpdateOne {
-	puo.mutation.SetPrevPlanID(id)
+// AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
+func (puo *PlanUpdateOne) AddPrevPlanIDs(ids ...int) *PlanUpdateOne {
+	puo.mutation.AddPrevPlanIDs(ids...)
 	return puo
 }
 
-// SetNillablePrevPlanID sets the "PrevPlan" edge to the Plan entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePrevPlanID(id *int) *PlanUpdateOne {
-	if id != nil {
-		puo = puo.SetPrevPlanID(*id)
+// AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
+func (puo *PlanUpdateOne) AddPrevPlan(p ...*Plan) *PlanUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
-	return puo
-}
-
-// SetPrevPlan sets the "PrevPlan" edge to the Plan entity.
-func (puo *PlanUpdateOne) SetPrevPlan(p *Plan) *PlanUpdateOne {
-	return puo.SetPrevPlanID(p.ID)
+	return puo.AddPrevPlanIDs(ids...)
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
@@ -822,10 +848,25 @@ func (puo *PlanUpdateOne) Mutation() *PlanMutation {
 	return puo.mutation
 }
 
-// ClearPrevPlan clears the "PrevPlan" edge to the Plan entity.
+// ClearPrevPlan clears all "PrevPlan" edges to the Plan entity.
 func (puo *PlanUpdateOne) ClearPrevPlan() *PlanUpdateOne {
 	puo.mutation.ClearPrevPlan()
 	return puo
+}
+
+// RemovePrevPlanIDs removes the "PrevPlan" edge to Plan entities by IDs.
+func (puo *PlanUpdateOne) RemovePrevPlanIDs(ids ...int) *PlanUpdateOne {
+	puo.mutation.RemovePrevPlanIDs(ids...)
+	return puo
+}
+
+// RemovePrevPlan removes "PrevPlan" edges to Plan entities.
+func (puo *PlanUpdateOne) RemovePrevPlan(p ...*Plan) *PlanUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemovePrevPlanIDs(ids...)
 }
 
 // ClearNextPlan clears all "NextPlan" edges to the Plan entity.
@@ -1006,10 +1047,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PrevPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   plan.PrevPlanTable,
-			Columns: []string{plan.PrevPlanColumn},
+			Columns: plan.PrevPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1020,12 +1061,31 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.PrevPlanIDs(); len(nodes) > 0 {
+	if nodes := puo.mutation.RemovedPrevPlanIDs(); len(nodes) > 0 && !puo.mutation.PrevPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   plan.PrevPlanTable,
-			Columns: []string{plan.PrevPlanColumn},
+			Columns: plan.PrevPlanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.PrevPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   plan.PrevPlanTable,
+			Columns: plan.PrevPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1041,10 +1101,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.NextPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1057,10 +1117,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if nodes := puo.mutation.RemovedNextPlanIDs(); len(nodes) > 0 && !puo.mutation.NextPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1076,10 +1136,10 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if nodes := puo.mutation.NextPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

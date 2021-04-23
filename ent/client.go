@@ -3101,7 +3101,7 @@ func (c *PlanClient) QueryPrevPlan(pl *Plan) *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, plan.PrevPlanTable, plan.PrevPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, plan.PrevPlanTable, plan.PrevPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil
@@ -3117,7 +3117,7 @@ func (c *PlanClient) QueryNextPlan(pl *Plan) *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, plan.NextPlanTable, plan.NextPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.NextPlanTable, plan.NextPlanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil

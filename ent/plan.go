@@ -32,7 +32,7 @@ type Plan struct {
 
 	// Edges put into the main struct to be loaded via hcl
 	// PrevPlan holds the value of the PrevPlan edge.
-	HCLPrevPlan *Plan `json:"PrevPlan,omitempty"`
+	HCLPrevPlan []*Plan `json:"PrevPlan,omitempty"`
 	// NextPlan holds the value of the NextPlan edge.
 	HCLNextPlan []*Plan `json:"NextPlan,omitempty"`
 	// PlanToBuild holds the value of the PlanToBuild edge.
@@ -46,7 +46,6 @@ type Plan struct {
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
 	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	//
-	plan_next_plan                 *int
 	plan_plan_to_build             *int
 	plan_plan_to_team              *int
 	plan_plan_to_provisioned_host  *int
@@ -56,7 +55,7 @@ type Plan struct {
 // PlanEdges holds the relations/edges for other nodes in the graph.
 type PlanEdges struct {
 	// PrevPlan holds the value of the PrevPlan edge.
-	PrevPlan *Plan `json:"PrevPlan,omitempty"`
+	PrevPlan []*Plan `json:"PrevPlan,omitempty"`
 	// NextPlan holds the value of the NextPlan edge.
 	NextPlan []*Plan `json:"NextPlan,omitempty"`
 	// PlanToBuild holds the value of the PlanToBuild edge.
@@ -75,14 +74,9 @@ type PlanEdges struct {
 }
 
 // PrevPlanOrErr returns the PrevPlan value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e PlanEdges) PrevPlanOrErr() (*Plan, error) {
+// was not loaded in eager-loading.
+func (e PlanEdges) PrevPlanOrErr() ([]*Plan, error) {
 	if e.loadedTypes[0] {
-		if e.PrevPlan == nil {
-			// The edge PrevPlan was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: plan.Label}
-		}
 		return e.PrevPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "PrevPlan"}
@@ -176,15 +170,13 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case plan.FieldType:
 			values[i] = &sql.NullString{}
-		case plan.ForeignKeys[0]: // plan_next_plan
+		case plan.ForeignKeys[0]: // plan_plan_to_build
 			values[i] = &sql.NullInt64{}
-		case plan.ForeignKeys[1]: // plan_plan_to_build
+		case plan.ForeignKeys[1]: // plan_plan_to_team
 			values[i] = &sql.NullInt64{}
-		case plan.ForeignKeys[2]: // plan_plan_to_team
+		case plan.ForeignKeys[2]: // plan_plan_to_provisioned_host
 			values[i] = &sql.NullInt64{}
-		case plan.ForeignKeys[3]: // plan_plan_to_provisioned_host
-			values[i] = &sql.NullInt64{}
-		case plan.ForeignKeys[4]: // plan_plan_to_provisioning_step
+		case plan.ForeignKeys[3]: // plan_plan_to_provisioning_step
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
@@ -227,33 +219,26 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 			}
 		case plan.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_next_plan", value)
-			} else if value.Valid {
-				pl.plan_next_plan = new(int)
-				*pl.plan_next_plan = int(value.Int64)
-			}
-		case plan.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_build", value)
 			} else if value.Valid {
 				pl.plan_plan_to_build = new(int)
 				*pl.plan_plan_to_build = int(value.Int64)
 			}
-		case plan.ForeignKeys[2]:
+		case plan.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_team", value)
 			} else if value.Valid {
 				pl.plan_plan_to_team = new(int)
 				*pl.plan_plan_to_team = int(value.Int64)
 			}
-		case plan.ForeignKeys[3]:
+		case plan.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_host", value)
 			} else if value.Valid {
 				pl.plan_plan_to_provisioned_host = new(int)
 				*pl.plan_plan_to_provisioned_host = int(value.Int64)
 			}
-		case plan.ForeignKeys[4]:
+		case plan.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioning_step", value)
 			} else if value.Valid {

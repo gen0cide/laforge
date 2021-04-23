@@ -42,23 +42,19 @@ func (pc *PlanCreate) SetBuildID(i int) *PlanCreate {
 	return pc
 }
 
-// SetPrevPlanID sets the "PrevPlan" edge to the Plan entity by ID.
-func (pc *PlanCreate) SetPrevPlanID(id int) *PlanCreate {
-	pc.mutation.SetPrevPlanID(id)
+// AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
+func (pc *PlanCreate) AddPrevPlanIDs(ids ...int) *PlanCreate {
+	pc.mutation.AddPrevPlanIDs(ids...)
 	return pc
 }
 
-// SetNillablePrevPlanID sets the "PrevPlan" edge to the Plan entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePrevPlanID(id *int) *PlanCreate {
-	if id != nil {
-		pc = pc.SetPrevPlanID(*id)
+// AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
+func (pc *PlanCreate) AddPrevPlan(p ...*Plan) *PlanCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
-	return pc
-}
-
-// SetPrevPlan sets the "PrevPlan" edge to the Plan entity.
-func (pc *PlanCreate) SetPrevPlan(p *Plan) *PlanCreate {
-	return pc.SetPrevPlanID(p.ID)
+	return pc.AddPrevPlanIDs(ids...)
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
@@ -289,10 +285,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PrevPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   plan.PrevPlanTable,
-			Columns: []string{plan.PrevPlanColumn},
+			Columns: plan.PrevPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -308,10 +304,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.NextPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   plan.NextPlanTable,
-			Columns: []string{plan.NextPlanColumn},
+			Columns: plan.NextPlanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

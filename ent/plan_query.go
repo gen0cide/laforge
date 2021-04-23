@@ -81,7 +81,7 @@ func (pq *PlanQuery) QueryPrevPlan() *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, plan.PrevPlanTable, plan.PrevPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, plan.PrevPlanTable, plan.PrevPlanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -103,7 +103,7 @@ func (pq *PlanQuery) QueryNextPlan() *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, plan.NextPlanTable, plan.NextPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.NextPlanTable, plan.NextPlanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -568,7 +568,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			pq.withPlanToProvisioningStep != nil,
 		}
 	)
-	if pq.withPrevPlan != nil || pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedHost != nil || pq.withPlanToProvisioningStep != nil {
+	if pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedHost != nil || pq.withPlanToProvisioningStep != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -595,56 +595,130 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 	}
 
 	if query := pq.withPrevPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Plan)
-		for i := range nodes {
-			if fk := nodes[i].plan_next_plan; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
-			}
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Plan, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.PrevPlan = []*Plan{}
 		}
-		query.Where(plan.IDIn(ids...))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Plan)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   plan.PrevPlanTable,
+				Columns: plan.PrevPlanPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(plan.PrevPlanPrimaryKey[1], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "PrevPlan": %v`, err)
+		}
+		query.Where(plan.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_next_plan" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected "PrevPlan" node returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PrevPlan = n
+				nodes[i].Edges.PrevPlan = append(nodes[i].Edges.PrevPlan, n)
 			}
 		}
 	}
 
 	if query := pq.withNextPlan; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Plan)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.NextPlan = []*Plan{}
+		ids := make(map[int]*Plan, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.NextPlan = []*Plan{}
 		}
-		query.withFKs = true
-		query.Where(predicate.Plan(func(s *sql.Selector) {
-			s.Where(sql.InValues(plan.NextPlanColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Plan)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   plan.NextPlanTable,
+				Columns: plan.NextPlanPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(plan.NextPlanPrimaryKey[0], fks...))
+			},
+
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				edgeids = append(edgeids, inValue)
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "NextPlan": %v`, err)
+		}
+		query.Where(plan.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.plan_next_plan
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "plan_next_plan" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_next_plan" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "NextPlan" node returned %v`, n.ID)
 			}
-			node.Edges.NextPlan = append(node.Edges.NextPlan, n)
+			for i := range nodes {
+				nodes[i].Edges.NextPlan = append(nodes[i].Edges.NextPlan, n)
+			}
 		}
 	}
 

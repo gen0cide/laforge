@@ -311,7 +311,7 @@ func HasPrevPlan() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PrevPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PrevPlanTable, PrevPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, PrevPlanTable, PrevPlanPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -323,7 +323,7 @@ func HasPrevPlanWith(preds ...predicate.Plan) predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PrevPlanTable, PrevPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, PrevPlanTable, PrevPlanPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -339,7 +339,7 @@ func HasNextPlan() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NextPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NextPlanTable, NextPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NextPlanTable, NextPlanPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -351,7 +351,7 @@ func HasNextPlanWith(preds ...predicate.Plan) predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NextPlanTable, NextPlanColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NextPlanTable, NextPlanPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

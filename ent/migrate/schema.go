@@ -423,7 +423,6 @@ var (
 		{Name: "step_number", Type: field.TypeInt},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"start_build", "start_team", "provision_network", "provision_host", "execute_step"}},
 		{Name: "build_id", Type: field.TypeInt},
-		{Name: "plan_next_plan", Type: field.TypeInt, Nullable: true},
 		{Name: "plan_plan_to_build", Type: field.TypeInt, Nullable: true},
 		{Name: "plan_plan_to_team", Type: field.TypeInt, Nullable: true},
 		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Nullable: true},
@@ -436,36 +435,29 @@ var (
 		PrimaryKey: []*schema.Column{PlansColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "plans_plans_NextPlan",
-				Columns: []*schema.Column{PlansColumns[4]},
-
-				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "plans_builds_PlanToBuild",
-				Columns: []*schema.Column{PlansColumns[5]},
+				Columns: []*schema.Column{PlansColumns[4]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "plans_teams_PlanToTeam",
-				Columns: []*schema.Column{PlansColumns[6]},
+				Columns: []*schema.Column{PlansColumns[5]},
 
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "plans_provisioned_hosts_PlanToProvisionedHost",
-				Columns: []*schema.Column{PlansColumns[7]},
+				Columns: []*schema.Column{PlansColumns[6]},
 
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "plans_provisioning_steps_PlanToProvisioningStep",
-				Columns: []*schema.Column{PlansColumns[8]},
+				Columns: []*schema.Column{PlansColumns[7]},
 
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -1403,6 +1395,33 @@ var (
 			},
 		},
 	}
+	// PlanNextPlanColumns holds the columns for the "plan_NextPlan" table.
+	PlanNextPlanColumns = []*schema.Column{
+		{Name: "plan_id", Type: field.TypeInt},
+		{Name: "PrevPlan_id", Type: field.TypeInt},
+	}
+	// PlanNextPlanTable holds the schema information for the "plan_NextPlan" table.
+	PlanNextPlanTable = &schema.Table{
+		Name:       "plan_NextPlan",
+		Columns:    PlanNextPlanColumns,
+		PrimaryKey: []*schema.Column{PlanNextPlanColumns[0], PlanNextPlanColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "plan_NextPlan_plan_id",
+				Columns: []*schema.Column{PlanNextPlanColumns[0]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:  "plan_NextPlan_PrevPlan_id",
+				Columns: []*schema.Column{PlanNextPlanColumns[1]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ProvisioningStepProvisioningStepToProvisionedHostColumns holds the columns for the "provisioning_step_ProvisioningStepToProvisionedHost" table.
 	ProvisioningStepProvisioningStepToProvisionedHostColumns = []*schema.Column{
 		{Name: "provisioning_step_id", Type: field.TypeInt},
@@ -1505,6 +1524,7 @@ var (
 		HostHostToDiskTable,
 		IncludedNetworkIncludedNetworkToHostTable,
 		IncludedNetworkIncludedNetworkToNetworkTable,
+		PlanNextPlanTable,
 		ProvisioningStepProvisioningStepToProvisionedHostTable,
 		ScriptScriptToFindingTable,
 	}
@@ -1522,11 +1542,10 @@ func init() {
 	HostDependenciesTable.ForeignKeys[1].RefTable = HostsTable
 	HostDependenciesTable.ForeignKeys[2].RefTable = HostsTable
 	HostDependenciesTable.ForeignKeys[3].RefTable = NetworksTable
-	PlansTable.ForeignKeys[0].RefTable = PlansTable
-	PlansTable.ForeignKeys[1].RefTable = BuildsTable
-	PlansTable.ForeignKeys[2].RefTable = TeamsTable
-	PlansTable.ForeignKeys[3].RefTable = ProvisionedHostsTable
-	PlansTable.ForeignKeys[4].RefTable = ProvisioningStepsTable
+	PlansTable.ForeignKeys[0].RefTable = BuildsTable
+	PlansTable.ForeignKeys[1].RefTable = TeamsTable
+	PlansTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
+	PlansTable.ForeignKeys[3].RefTable = ProvisioningStepsTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ProvisionedHostsTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	ProvisionedHostsTable.ForeignKeys[2].RefTable = HostsTable
@@ -1601,6 +1620,8 @@ func init() {
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
+	PlanNextPlanTable.ForeignKeys[0].RefTable = PlansTable
+	PlanNextPlanTable.ForeignKeys[1].RefTable = PlansTable
 	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	ScriptScriptToFindingTable.ForeignKeys[0].RefTable = ScriptsTable

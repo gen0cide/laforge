@@ -564,12 +564,12 @@ func (n *Network) NetworkToIncludedNetwork(ctx context.Context) ([]*IncludedNetw
 	return result, err
 }
 
-func (pl *Plan) PrevPlan(ctx context.Context) (*Plan, error) {
+func (pl *Plan) PrevPlan(ctx context.Context) ([]*Plan, error) {
 	result, err := pl.Edges.PrevPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = pl.QueryPrevPlan().Only(ctx)
+		result, err = pl.QueryPrevPlan().All(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (pl *Plan) NextPlan(ctx context.Context) ([]*Plan, error) {

@@ -16832,7 +16832,8 @@ type PlanMutation struct {
 	build_id                         *int
 	addbuild_id                      *int
 	clearedFields                    map[string]struct{}
-	_PrevPlan                        *int
+	_PrevPlan                        map[int]struct{}
+	removed_PrevPlan                 map[int]struct{}
 	cleared_PrevPlan                 bool
 	_NextPlan                        map[int]struct{}
 	removed_NextPlan                 map[int]struct{}
@@ -17079,9 +17080,14 @@ func (m *PlanMutation) ResetBuildID() {
 	m.addbuild_id = nil
 }
 
-// SetPrevPlanID sets the "PrevPlan" edge to the Plan entity by id.
-func (m *PlanMutation) SetPrevPlanID(id int) {
-	m._PrevPlan = &id
+// AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by ids.
+func (m *PlanMutation) AddPrevPlanIDs(ids ...int) {
+	if m._PrevPlan == nil {
+		m._PrevPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PrevPlan[ids[i]] = struct{}{}
+	}
 }
 
 // ClearPrevPlan clears the "PrevPlan" edge to the Plan entity.
@@ -17094,20 +17100,28 @@ func (m *PlanMutation) PrevPlanCleared() bool {
 	return m.cleared_PrevPlan
 }
 
-// PrevPlanID returns the "PrevPlan" edge ID in the mutation.
-func (m *PlanMutation) PrevPlanID() (id int, exists bool) {
-	if m._PrevPlan != nil {
-		return *m._PrevPlan, true
+// RemovePrevPlanIDs removes the "PrevPlan" edge to the Plan entity by IDs.
+func (m *PlanMutation) RemovePrevPlanIDs(ids ...int) {
+	if m.removed_PrevPlan == nil {
+		m.removed_PrevPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PrevPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrevPlan returns the removed IDs of the "PrevPlan" edge to the Plan entity.
+func (m *PlanMutation) RemovedPrevPlanIDs() (ids []int) {
+	for id := range m.removed_PrevPlan {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // PrevPlanIDs returns the "PrevPlan" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PrevPlanID instead. It exists only for internal usage by the builders.
 func (m *PlanMutation) PrevPlanIDs() (ids []int) {
-	if id := m._PrevPlan; id != nil {
-		ids = append(ids, *id)
+	for id := range m._PrevPlan {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -17116,6 +17130,7 @@ func (m *PlanMutation) PrevPlanIDs() (ids []int) {
 func (m *PlanMutation) ResetPrevPlan() {
 	m._PrevPlan = nil
 	m.cleared_PrevPlan = false
+	m.removed_PrevPlan = nil
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by ids.
@@ -17570,9 +17585,11 @@ func (m *PlanMutation) AddedEdges() []string {
 func (m *PlanMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case plan.EdgePrevPlan:
-		if id := m._PrevPlan; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m._PrevPlan))
+		for id := range m._PrevPlan {
+			ids = append(ids, id)
 		}
+		return ids
 	case plan.EdgeNextPlan:
 		ids := make([]ent.Value, 0, len(m._NextPlan))
 		for id := range m._NextPlan {
@@ -17606,6 +17623,9 @@ func (m *PlanMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PlanMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 7)
+	if m.removed_PrevPlan != nil {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
 	if m.removed_NextPlan != nil {
 		edges = append(edges, plan.EdgeNextPlan)
 	}
@@ -17616,6 +17636,12 @@ func (m *PlanMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *PlanMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case plan.EdgePrevPlan:
+		ids := make([]ent.Value, 0, len(m.removed_PrevPlan))
+		for id := range m.removed_PrevPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	case plan.EdgeNextPlan:
 		ids := make([]ent.Value, 0, len(m.removed_NextPlan))
 		for id := range m.removed_NextPlan {
@@ -17679,9 +17705,6 @@ func (m *PlanMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *PlanMutation) ClearEdge(name string) error {
 	switch name {
-	case plan.EdgePrevPlan:
-		m.ClearPrevPlan()
-		return nil
 	case plan.EdgePlanToBuild:
 		m.ClearPlanToBuild()
 		return nil
