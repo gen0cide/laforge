@@ -135,19 +135,23 @@ func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToProvisionedHost(p ..
 	return pnu.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
-func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.AddProvisionedNetworkToPlanIDs(ids...)
+// SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID.
+func (pnu *ProvisionedNetworkUpdate) SetProvisionedNetworkToPlanID(id int) *ProvisionedNetworkUpdate {
+	pnu.mutation.SetProvisionedNetworkToPlanID(id)
 	return pnu
 }
 
-// AddProvisionedNetworkToPlan adds the "ProvisionedNetworkToPlan" edges to the Plan entity.
-func (pnu *ProvisionedNetworkUpdate) AddProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (pnu *ProvisionedNetworkUpdate) SetNillableProvisionedNetworkToPlanID(id *int) *ProvisionedNetworkUpdate {
+	if id != nil {
+		pnu = pnu.SetProvisionedNetworkToPlanID(*id)
 	}
-	return pnu.AddProvisionedNetworkToPlanIDs(ids...)
+	return pnu
+}
+
+// SetProvisionedNetworkToPlan sets the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (pnu *ProvisionedNetworkUpdate) SetProvisionedNetworkToPlan(p *Plan) *ProvisionedNetworkUpdate {
+	return pnu.SetProvisionedNetworkToPlanID(p.ID)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -200,25 +204,10 @@ func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToProvisionedHost(p
 	return pnu.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// ClearProvisionedNetworkToPlan clears all "ProvisionedNetworkToPlan" edges to the Plan entity.
+// ClearProvisionedNetworkToPlan clears the "ProvisionedNetworkToPlan" edge to the Plan entity.
 func (pnu *ProvisionedNetworkUpdate) ClearProvisionedNetworkToPlan() *ProvisionedNetworkUpdate {
 	pnu.mutation.ClearProvisionedNetworkToPlan()
 	return pnu
-}
-
-// RemoveProvisionedNetworkToPlanIDs removes the "ProvisionedNetworkToPlan" edge to Plan entities by IDs.
-func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkUpdate {
-	pnu.mutation.RemoveProvisionedNetworkToPlanIDs(ids...)
-	return pnu
-}
-
-// RemoveProvisionedNetworkToPlan removes "ProvisionedNetworkToPlan" edges to Plan entities.
-func (pnu *ProvisionedNetworkUpdate) RemoveProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pnu.RemoveProvisionedNetworkToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -446,10 +435,10 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 	}
 	if pnu.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -462,10 +451,10 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 	}
 	if nodes := pnu.mutation.RemovedProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -481,10 +470,10 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 	}
 	if nodes := pnu.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -500,7 +489,7 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 	}
 	if pnu.mutation.ProvisionedNetworkToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
 			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},
@@ -511,31 +500,12 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnu.mutation.RemovedProvisionedNetworkToPlanIDs(); len(nodes) > 0 && !pnu.mutation.ProvisionedNetworkToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
-			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pnu.mutation.ProvisionedNetworkToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
 			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},
@@ -673,19 +643,23 @@ func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToProvisionedHost(
 	return pnuo.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
-func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.AddProvisionedNetworkToPlanIDs(ids...)
+// SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID.
+func (pnuo *ProvisionedNetworkUpdateOne) SetProvisionedNetworkToPlanID(id int) *ProvisionedNetworkUpdateOne {
+	pnuo.mutation.SetProvisionedNetworkToPlanID(id)
 	return pnuo
 }
 
-// AddProvisionedNetworkToPlan adds the "ProvisionedNetworkToPlan" edges to the Plan entity.
-func (pnuo *ProvisionedNetworkUpdateOne) AddProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (pnuo *ProvisionedNetworkUpdateOne) SetNillableProvisionedNetworkToPlanID(id *int) *ProvisionedNetworkUpdateOne {
+	if id != nil {
+		pnuo = pnuo.SetProvisionedNetworkToPlanID(*id)
 	}
-	return pnuo.AddProvisionedNetworkToPlanIDs(ids...)
+	return pnuo
+}
+
+// SetProvisionedNetworkToPlan sets the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (pnuo *ProvisionedNetworkUpdateOne) SetProvisionedNetworkToPlan(p *Plan) *ProvisionedNetworkUpdateOne {
+	return pnuo.SetProvisionedNetworkToPlanID(p.ID)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -738,25 +712,10 @@ func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToProvisionedHo
 	return pnuo.RemoveProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// ClearProvisionedNetworkToPlan clears all "ProvisionedNetworkToPlan" edges to the Plan entity.
+// ClearProvisionedNetworkToPlan clears the "ProvisionedNetworkToPlan" edge to the Plan entity.
 func (pnuo *ProvisionedNetworkUpdateOne) ClearProvisionedNetworkToPlan() *ProvisionedNetworkUpdateOne {
 	pnuo.mutation.ClearProvisionedNetworkToPlan()
 	return pnuo
-}
-
-// RemoveProvisionedNetworkToPlanIDs removes the "ProvisionedNetworkToPlan" edge to Plan entities by IDs.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkUpdateOne {
-	pnuo.mutation.RemoveProvisionedNetworkToPlanIDs(ids...)
-	return pnuo
-}
-
-// RemoveProvisionedNetworkToPlan removes "ProvisionedNetworkToPlan" edges to Plan entities.
-func (pnuo *ProvisionedNetworkUpdateOne) RemoveProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pnuo.RemoveProvisionedNetworkToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the updated ProvisionedNetwork entity.
@@ -989,10 +948,10 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	if pnuo.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1005,10 +964,10 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	if nodes := pnuo.mutation.RemovedProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1024,10 +983,10 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	if nodes := pnuo.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1043,7 +1002,7 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	if pnuo.mutation.ProvisionedNetworkToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
 			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},
@@ -1054,31 +1013,12 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pnuo.mutation.RemovedProvisionedNetworkToPlanIDs(); len(nodes) > 0 && !pnuo.mutation.ProvisionedNetworkToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
-			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pnuo.mutation.ProvisionedNetworkToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
 			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},

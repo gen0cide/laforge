@@ -60,7 +60,7 @@ const (
 	// PlanToTeamColumn is the table column denoting the PlanToTeam relation/edge.
 	PlanToTeamColumn = "plan_plan_to_team"
 	// PlanToProvisionedNetworkTable is the table the holds the PlanToProvisionedNetwork relation/edge.
-	PlanToProvisionedNetworkTable = "plans"
+	PlanToProvisionedNetworkTable = "provisioned_networks"
 	// PlanToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	PlanToProvisionedNetworkInverseTable = "provisioned_networks"
@@ -95,7 +95,6 @@ var ForeignKeys = []string{
 	"plan_next_plan",
 	"plan_plan_to_build",
 	"plan_plan_to_team",
-	"plan_plan_to_provisioned_network",
 	"plan_plan_to_provisioned_host",
 	"plan_plan_to_provisioning_step",
 }

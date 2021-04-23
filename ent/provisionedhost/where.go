@@ -209,41 +209,13 @@ func SubnetIPContainsFold(v string) predicate.ProvisionedHost {
 	})
 }
 
-// HasProvisionedHostToTag applies the HasEdge predicate on the "ProvisionedHostToTag" edge.
-func HasProvisionedHostToTag() predicate.ProvisionedHost {
-	return predicate.ProvisionedHost(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedHostToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToTagTable, ProvisionedHostToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasProvisionedHostToTagWith applies the HasEdge predicate on the "ProvisionedHostToTag" edge with a given conditions (other predicates).
-func HasProvisionedHostToTagWith(preds ...predicate.Tag) predicate.ProvisionedHost {
-	return predicate.ProvisionedHost(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedHostToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToTagTable, ProvisionedHostToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasProvisionedHostToStatus applies the HasEdge predicate on the "ProvisionedHostToStatus" edge.
 func HasProvisionedHostToStatus() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToStatusTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -255,7 +227,7 @@ func HasProvisionedHostToStatusWith(preds ...predicate.Status) predicate.Provisi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToStatusInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -271,7 +243,7 @@ func HasProvisionedHostToProvisionedNetwork() predicate.ProvisionedHost {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToProvisionedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -283,7 +255,7 @@ func HasProvisionedHostToProvisionedNetworkWith(preds ...predicate.ProvisionedNe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToProvisionedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -299,7 +271,7 @@ func HasProvisionedHostToHost() predicate.ProvisionedHost {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -311,7 +283,7 @@ func HasProvisionedHostToHostWith(preds ...predicate.Host) predicate.Provisioned
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

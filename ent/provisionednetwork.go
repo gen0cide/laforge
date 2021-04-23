@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
@@ -39,8 +40,9 @@ type ProvisionedNetwork struct {
 	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
 	HCLProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
 	// ProvisionedNetworkToPlan holds the value of the ProvisionedNetworkToPlan edge.
-	HCLProvisionedNetworkToPlan []*Plan `json:"ProvisionedNetworkToPlan,omitempty"`
+	HCLProvisionedNetworkToPlan *Plan `json:"ProvisionedNetworkToPlan,omitempty"`
 	//
+	plan_plan_to_provisioned_network                   *int
 	provisioned_network_provisioned_network_to_network *int
 	provisioned_network_provisioned_network_to_build   *int
 	provisioned_network_provisioned_network_to_team    *int
@@ -59,7 +61,7 @@ type ProvisionedNetworkEdges struct {
 	// ProvisionedNetworkToProvisionedHost holds the value of the ProvisionedNetworkToProvisionedHost edge.
 	ProvisionedNetworkToProvisionedHost []*ProvisionedHost `json:"ProvisionedNetworkToProvisionedHost,omitempty"`
 	// ProvisionedNetworkToPlan holds the value of the ProvisionedNetworkToPlan edge.
-	ProvisionedNetworkToPlan []*Plan `json:"ProvisionedNetworkToPlan,omitempty"`
+	ProvisionedNetworkToPlan *Plan `json:"ProvisionedNetworkToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -131,9 +133,14 @@ func (e ProvisionedNetworkEdges) ProvisionedNetworkToProvisionedHostOrErr() ([]*
 }
 
 // ProvisionedNetworkToPlanOrErr returns the ProvisionedNetworkToPlan value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisionedNetworkEdges) ProvisionedNetworkToPlanOrErr() ([]*Plan, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProvisionedNetworkEdges) ProvisionedNetworkToPlanOrErr() (*Plan, error) {
 	if e.loadedTypes[5] {
+		if e.ProvisionedNetworkToPlan == nil {
+			// The edge ProvisionedNetworkToPlan was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: plan.Label}
+		}
 		return e.ProvisionedNetworkToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedNetworkToPlan"}
@@ -148,11 +155,13 @@ func (*ProvisionedNetwork) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case provisionednetwork.FieldName, provisionednetwork.FieldCidr:
 			values[i] = &sql.NullString{}
-		case provisionednetwork.ForeignKeys[0]: // provisioned_network_provisioned_network_to_network
+		case provisionednetwork.ForeignKeys[0]: // plan_plan_to_provisioned_network
 			values[i] = &sql.NullInt64{}
-		case provisionednetwork.ForeignKeys[1]: // provisioned_network_provisioned_network_to_build
+		case provisionednetwork.ForeignKeys[1]: // provisioned_network_provisioned_network_to_network
 			values[i] = &sql.NullInt64{}
-		case provisionednetwork.ForeignKeys[2]: // provisioned_network_provisioned_network_to_team
+		case provisionednetwork.ForeignKeys[2]: // provisioned_network_provisioned_network_to_build
+			values[i] = &sql.NullInt64{}
+		case provisionednetwork.ForeignKeys[3]: // provisioned_network_provisioned_network_to_team
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedNetwork", columns[i])
@@ -189,19 +198,26 @@ func (pn *ProvisionedNetwork) assignValues(columns []string, values []interface{
 			}
 		case provisionednetwork.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_network", value)
+			} else if value.Valid {
+				pn.plan_plan_to_provisioned_network = new(int)
+				*pn.plan_plan_to_provisioned_network = int(value.Int64)
+			}
+		case provisionednetwork.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
 			} else if value.Valid {
 				pn.provisioned_network_provisioned_network_to_network = new(int)
 				*pn.provisioned_network_provisioned_network_to_network = int(value.Int64)
 			}
-		case provisionednetwork.ForeignKeys[1]:
+		case provisionednetwork.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_build", value)
 			} else if value.Valid {
 				pn.provisioned_network_provisioned_network_to_build = new(int)
 				*pn.provisioned_network_provisioned_network_to_build = int(value.Int64)
 			}
-		case provisionednetwork.ForeignKeys[2]:
+		case provisionednetwork.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_team", value)
 			} else if value.Valid {

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
@@ -29,6 +30,7 @@ type StatusQuery struct {
 	// eager-loading edges.
 	withStatusToBuild              *BuildQuery
 	withStatusToProvisionedNetwork *ProvisionedNetworkQuery
+	withStatusToProvisionedHost    *ProvisionedHostQuery
 	withStatusToTeam               *TeamQuery
 	withFKs                        bool
 	// intermediate query (i.e. traversal path).
@@ -97,6 +99,28 @@ func (sq *StatusQuery) QueryStatusToProvisionedNetwork() *ProvisionedNetworkQuer
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedNetworkTable, status.StatusToProvisionedNetworkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisionedHost chains the current query on the "StatusToProvisionedHost" edge.
+func (sq *StatusQuery) QueryStatusToProvisionedHost() *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedHostTable, status.StatusToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -309,6 +333,7 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		predicates:                     append([]predicate.Status{}, sq.predicates...),
 		withStatusToBuild:              sq.withStatusToBuild.Clone(),
 		withStatusToProvisionedNetwork: sq.withStatusToProvisionedNetwork.Clone(),
+		withStatusToProvisionedHost:    sq.withStatusToProvisionedHost.Clone(),
 		withStatusToTeam:               sq.withStatusToTeam.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
@@ -335,6 +360,17 @@ func (sq *StatusQuery) WithStatusToProvisionedNetwork(opts ...func(*ProvisionedN
 		opt(query)
 	}
 	sq.withStatusToProvisionedNetwork = query
+	return sq
+}
+
+// WithStatusToProvisionedHost tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToProvisionedHost" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToProvisionedHost(opts ...func(*ProvisionedHostQuery)) *StatusQuery {
+	query := &ProvisionedHostQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToProvisionedHost = query
 	return sq
 }
 
@@ -415,13 +451,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		nodes       = []*Status{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			sq.withStatusToBuild != nil,
 			sq.withStatusToProvisionedNetwork != nil,
+			sq.withStatusToProvisionedHost != nil,
 			sq.withStatusToTeam != nil,
 		}
 	)
-	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToTeam != nil {
+	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToTeam != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -493,6 +530,31 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.StatusToProvisionedNetwork = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToProvisionedHost; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Status)
+		for i := range nodes {
+			if fk := nodes[i].provisioned_host_provisioned_host_to_status; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(provisionedhost.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_host_provisioned_host_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToProvisionedHost = n
 			}
 		}
 	}

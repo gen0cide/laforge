@@ -55,13 +55,15 @@ const (
 	ProvisionedNetworkToTeamInverseTable = "teams"
 	// ProvisionedNetworkToTeamColumn is the table column denoting the ProvisionedNetworkToTeam relation/edge.
 	ProvisionedNetworkToTeamColumn = "provisioned_network_provisioned_network_to_team"
-	// ProvisionedNetworkToProvisionedHostTable is the table the holds the ProvisionedNetworkToProvisionedHost relation/edge. The primary key declared below.
-	ProvisionedNetworkToProvisionedHostTable = "provisioned_host_ProvisionedHostToProvisionedNetwork"
+	// ProvisionedNetworkToProvisionedHostTable is the table the holds the ProvisionedNetworkToProvisionedHost relation/edge.
+	ProvisionedNetworkToProvisionedHostTable = "provisioned_hosts"
 	// ProvisionedNetworkToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedNetworkToProvisionedHostInverseTable = "provisioned_hosts"
+	// ProvisionedNetworkToProvisionedHostColumn is the table column denoting the ProvisionedNetworkToProvisionedHost relation/edge.
+	ProvisionedNetworkToProvisionedHostColumn = "provisioned_host_provisioned_host_to_provisioned_network"
 	// ProvisionedNetworkToPlanTable is the table the holds the ProvisionedNetworkToPlan relation/edge.
-	ProvisionedNetworkToPlanTable = "plans"
+	ProvisionedNetworkToPlanTable = "provisioned_networks"
 	// ProvisionedNetworkToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedNetworkToPlanInverseTable = "plans"
@@ -78,16 +80,11 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedNetwork type.
 var ForeignKeys = []string{
+	"plan_plan_to_provisioned_network",
 	"provisioned_network_provisioned_network_to_network",
 	"provisioned_network_provisioned_network_to_build",
 	"provisioned_network_provisioned_network_to_team",
 }
-
-var (
-	// ProvisionedNetworkToProvisionedHostPrimaryKey and ProvisionedNetworkToProvisionedHostColumn2 are the table columns denoting the
-	// primary key for the ProvisionedNetworkToProvisionedHost relation (M2M).
-	ProvisionedNetworkToProvisionedHostPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

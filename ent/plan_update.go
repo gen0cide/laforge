@@ -535,7 +535,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.PlanToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
 			Columns: []string{plan.PlanToProvisionedNetworkColumn},
@@ -551,7 +551,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := pu.mutation.PlanToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
 			Columns: []string{plan.PlanToProvisionedNetworkColumn},
@@ -1165,7 +1165,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if puo.mutation.PlanToProvisionedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
 			Columns: []string{plan.PlanToProvisionedNetworkColumn},
@@ -1181,7 +1181,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if nodes := puo.mutation.PlanToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedNetworkTable,
 			Columns: []string{plan.PlanToProvisionedNetworkColumn},

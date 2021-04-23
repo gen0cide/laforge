@@ -414,6 +414,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 		if err != nil {
 			return nil, err
 		}
+		// returnedHostDependencies is empty if ran once but ok when ran multiple times
 		returnedHosts, returnedHostDependencies, err := createHosts(ctx, client, loadedConfig.Hosts, cEnviroment.HclID, environmentHosts)
 		if err != nil {
 			return nil, err
@@ -606,7 +607,6 @@ func removeDuplicateValues(stringSlice []string) []string {
 }
 
 func createHosts(ctx context.Context, client *ent.Client, configHosts map[string]*ent.Host, envHclID string, environmentHosts []string) ([]*ent.Host, []*ent.HostDependency, error) {
-	bulk := []*ent.HostCreate{}
 	returnedHosts := []*ent.Host{}
 	returnedAllHostDependencies := []*ent.HostDependency{}
 	environmentHosts = removeDuplicateValues(environmentHosts)
@@ -630,7 +630,7 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 			Only(ctx)
 		if err != nil {
 			if err == err.(*ent.NotFoundError) {
-				createdQuery := client.Host.Create().
+				entHost, err = client.Host.Create().
 					SetAllowMACChanges(cHost.AllowMACChanges).
 					SetDescription(cHost.Description).
 					SetExposedTCPPorts(cHost.ExposedTCPPorts).
@@ -645,51 +645,50 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 					SetTags(cHost.Tags).
 					SetUserGroups(cHost.UserGroups).
 					SetVars(cHost.Vars).
-					AddHostToDisk(returnedDisks...)
-				bulk = append(bulk, createdQuery)
-				continue
+					AddHostToDisk(returnedDisks...).
+					Save(ctx)
+				if err != nil {
+					log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
+					return nil, nil, err
+				}
+			} else {
+				return nil, nil, err
+			}
+		} else {
+			entHost, err = entHost.Update().
+				SetAllowMACChanges(cHost.AllowMACChanges).
+				SetDescription(cHost.Description).
+				SetExposedTCPPorts(cHost.ExposedTCPPorts).
+				SetExposedUDPPorts(cHost.ExposedUDPPorts).
+				SetHclID(cHost.HclID).
+				SetHostname(cHost.Hostname).
+				SetInstanceSize(cHost.InstanceSize).
+				SetLastOctet(cHost.LastOctet).
+				SetOS(cHost.OS).
+				SetOverridePassword(cHost.OverridePassword).
+				SetProvisionSteps(cHost.ProvisionSteps).
+				SetTags(cHost.Tags).
+				SetUserGroups(cHost.UserGroups).
+				SetVars(cHost.Vars).
+				ClearHostToDisk().
+				Save(ctx)
+			if err != nil {
+				log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
+				return nil, nil, err
+			}
+			_, err = entHost.Update().AddHostToDisk(returnedDisks...).Save(ctx)
+			if err != nil {
+				log.Fatalf("Failed to Update Disk to Host %v. Err: %v", cHost.HclID, err)
+				return nil, nil, err
 			}
 		}
-		entHost, err = entHost.Update().
-			SetAllowMACChanges(cHost.AllowMACChanges).
-			SetDescription(cHost.Description).
-			SetExposedTCPPorts(cHost.ExposedTCPPorts).
-			SetExposedUDPPorts(cHost.ExposedUDPPorts).
-			SetHclID(cHost.HclID).
-			SetHostname(cHost.Hostname).
-			SetInstanceSize(cHost.InstanceSize).
-			SetLastOctet(cHost.LastOctet).
-			SetOS(cHost.OS).
-			SetOverridePassword(cHost.OverridePassword).
-			SetProvisionSteps(cHost.ProvisionSteps).
-			SetTags(cHost.Tags).
-			SetUserGroups(cHost.UserGroups).
-			SetVars(cHost.Vars).
-			ClearHostToDisk().
-			Save(ctx)
-		if err != nil {
-			log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
-			return nil, nil, err
-		}
-		_, err = entHost.Update().AddHostToDisk(returnedDisks...).Save(ctx)
-		if err != nil {
-			log.Fatalf("Failed to Update Disk to Host %v. Err: %v", cHost.HclID, err)
-			return nil, nil, err
-		}
+
 		returnedHosts = append(returnedHosts, entHost)
 		returnedHostDependencies, err := createHostDependencies(ctx, client, cHost.HCLDependOnHostToHostDependency, envHclID, entHost)
 		if err != nil {
 			return nil, nil, err
 		}
 		returnedAllHostDependencies = append(returnedAllHostDependencies, returnedHostDependencies...)
-	}
-	if len(bulk) > 0 {
-		dbHost, err := client.Host.CreateBulk(bulk...).Save(ctx)
-		if err != nil {
-			log.Fatalf("Failed to create bulk Hosts. Err: %v", err)
-			return nil, nil, err
-		}
-		returnedHosts = append(returnedHosts, dbHost...)
 	}
 	return returnedHosts, returnedAllHostDependencies, nil
 }
@@ -1221,7 +1220,7 @@ func createHostDependencies(ctx context.Context, client *ent.Client, configHostD
 				createdQuery := client.HostDependency.Create().
 					SetHostID(cHostDependency.HostID).
 					SetNetworkID(cHostDependency.NetworkID).
-					AddHostDependencyToDependByHost(dependByHost)
+					SetHostDependencyToDependByHost(dependByHost)
 				bulk = append(bulk, createdQuery)
 				continue
 			}
@@ -1236,7 +1235,7 @@ func createHostDependencies(ctx context.Context, client *ent.Client, configHostD
 			return nil, err
 		}
 		entHostDependency, err = entHostDependency.Update().
-			AddHostDependencyToDependByHost(dependByHost).
+			SetHostDependencyToDependByHost(dependByHost).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Update Host Dependency by %v on Host %v Err: %v", dependByHost.HclID, cHostDependency.HostID, err)
@@ -1475,13 +1474,12 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 				log.Fatalf("Unable to find the host Depended by Err: %v", queryErr)
 				return nil, queryErr
 			}
-			// TODO: Fix dependedByHost to be Unique so it's a single object instead of a slice
-			log.Fatalf("Failed to clear the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost[0].HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
+			log.Fatalf("Failed to clear the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost.HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
 			return nil, err
 		}
 		entHostDependency, err := uncheckedHostDependency.Update().
-			AddHostDependencyToDependOnHost(entHost).
-			AddHostDependencyToNetwork(entNetwork).
+			SetHostDependencyToDependOnHost(entHost).
+			SetHostDependencyToNetwork(entNetwork).
 			Save(ctx)
 		if err != nil {
 			dependedByHost, queryErr := uncheckedHostDependency.HostDependencyToDependByHost(ctx)
@@ -1489,8 +1487,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, unchecked
 				log.Fatalf("Unable to find the host Depended by Err: %v", queryErr)
 				return nil, queryErr
 			}
-			// TODO: Fix dependedByHost to be Unique so it's a single object instead of a slice
-			log.Fatalf("Failed to update the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost[0].HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
+			log.Fatalf("Failed to update the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost.HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
 			return nil, err
 		}
 		checkedHostDependencies = append(checkedHostDependencies, entHostDependency)

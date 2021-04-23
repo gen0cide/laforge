@@ -23,26 +23,34 @@ const (
 
 	// Table holds the table name of the hostdependency in the database.
 	Table = "host_dependencies"
-	// HostDependencyToDependOnHostTable is the table the holds the HostDependencyToDependOnHost relation/edge. The primary key declared below.
-	HostDependencyToDependOnHostTable = "host_dependency_HostDependencyToDependOnHost"
+	// HostDependencyToDependOnHostTable is the table the holds the HostDependencyToDependOnHost relation/edge.
+	HostDependencyToDependOnHostTable = "host_dependencies"
 	// HostDependencyToDependOnHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	HostDependencyToDependOnHostInverseTable = "hosts"
-	// HostDependencyToDependByHostTable is the table the holds the HostDependencyToDependByHost relation/edge. The primary key declared below.
-	HostDependencyToDependByHostTable = "host_dependency_HostDependencyToDependByHost"
+	// HostDependencyToDependOnHostColumn is the table column denoting the HostDependencyToDependOnHost relation/edge.
+	HostDependencyToDependOnHostColumn = "host_dependency_host_dependency_to_depend_on_host"
+	// HostDependencyToDependByHostTable is the table the holds the HostDependencyToDependByHost relation/edge.
+	HostDependencyToDependByHostTable = "host_dependencies"
 	// HostDependencyToDependByHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	HostDependencyToDependByHostInverseTable = "hosts"
-	// HostDependencyToNetworkTable is the table the holds the HostDependencyToNetwork relation/edge. The primary key declared below.
-	HostDependencyToNetworkTable = "host_dependency_HostDependencyToNetwork"
+	// HostDependencyToDependByHostColumn is the table column denoting the HostDependencyToDependByHost relation/edge.
+	HostDependencyToDependByHostColumn = "host_dependency_host_dependency_to_depend_by_host"
+	// HostDependencyToNetworkTable is the table the holds the HostDependencyToNetwork relation/edge.
+	HostDependencyToNetworkTable = "host_dependencies"
 	// HostDependencyToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	HostDependencyToNetworkInverseTable = "networks"
-	// HostDependencyToEnvironmentTable is the table the holds the HostDependencyToEnvironment relation/edge. The primary key declared below.
-	HostDependencyToEnvironmentTable = "environment_EnvironmentToHostDependency"
+	// HostDependencyToNetworkColumn is the table column denoting the HostDependencyToNetwork relation/edge.
+	HostDependencyToNetworkColumn = "host_dependency_host_dependency_to_network"
+	// HostDependencyToEnvironmentTable is the table the holds the HostDependencyToEnvironment relation/edge.
+	HostDependencyToEnvironmentTable = "host_dependencies"
 	// HostDependencyToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	HostDependencyToEnvironmentInverseTable = "environments"
+	// HostDependencyToEnvironmentColumn is the table column denoting the HostDependencyToEnvironment relation/edge.
+	HostDependencyToEnvironmentColumn = "environment_environment_to_host_dependency"
 )
 
 // Columns holds all SQL columns for hostdependency fields.
@@ -52,25 +60,23 @@ var Columns = []string{
 	FieldNetworkID,
 }
 
-var (
-	// HostDependencyToDependOnHostPrimaryKey and HostDependencyToDependOnHostColumn2 are the table columns denoting the
-	// primary key for the HostDependencyToDependOnHost relation (M2M).
-	HostDependencyToDependOnHostPrimaryKey = []string{"host_dependency_id", "host_id"}
-	// HostDependencyToDependByHostPrimaryKey and HostDependencyToDependByHostColumn2 are the table columns denoting the
-	// primary key for the HostDependencyToDependByHost relation (M2M).
-	HostDependencyToDependByHostPrimaryKey = []string{"host_dependency_id", "host_id"}
-	// HostDependencyToNetworkPrimaryKey and HostDependencyToNetworkColumn2 are the table columns denoting the
-	// primary key for the HostDependencyToNetwork relation (M2M).
-	HostDependencyToNetworkPrimaryKey = []string{"host_dependency_id", "network_id"}
-	// HostDependencyToEnvironmentPrimaryKey and HostDependencyToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the HostDependencyToEnvironment relation (M2M).
-	HostDependencyToEnvironmentPrimaryKey = []string{"environment_id", "host_dependency_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the HostDependency type.
+var ForeignKeys = []string{
+	"environment_environment_to_host_dependency",
+	"host_dependency_host_dependency_to_depend_on_host",
+	"host_dependency_host_dependency_to_depend_by_host",
+	"host_dependency_host_dependency_to_network",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
@@ -42,6 +43,8 @@ type Status struct {
 	HCLStatusToBuild *Build `json:"StatusToBuild,omitempty"`
 	// StatusToProvisionedNetwork holds the value of the StatusToProvisionedNetwork edge.
 	HCLStatusToProvisionedNetwork *ProvisionedNetwork `json:"StatusToProvisionedNetwork,omitempty"`
+	// StatusToProvisionedHost holds the value of the StatusToProvisionedHost edge.
+	HCLStatusToProvisionedHost *ProvisionedHost `json:"StatusToProvisionedHost,omitempty"`
 	// StatusToTeam holds the value of the StatusToTeam edge.
 	HCLStatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	//
@@ -58,11 +61,13 @@ type StatusEdges struct {
 	StatusToBuild *Build `json:"StatusToBuild,omitempty"`
 	// StatusToProvisionedNetwork holds the value of the StatusToProvisionedNetwork edge.
 	StatusToProvisionedNetwork *ProvisionedNetwork `json:"StatusToProvisionedNetwork,omitempty"`
+	// StatusToProvisionedHost holds the value of the StatusToProvisionedHost edge.
+	StatusToProvisionedHost *ProvisionedHost `json:"StatusToProvisionedHost,omitempty"`
 	// StatusToTeam holds the value of the StatusToTeam edge.
 	StatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // StatusToBuildOrErr returns the StatusToBuild value or an error if the edge
@@ -93,10 +98,24 @@ func (e StatusEdges) StatusToProvisionedNetworkOrErr() (*ProvisionedNetwork, err
 	return nil, &NotLoadedError{edge: "StatusToProvisionedNetwork"}
 }
 
+// StatusToProvisionedHostOrErr returns the StatusToProvisionedHost value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToProvisionedHostOrErr() (*ProvisionedHost, error) {
+	if e.loadedTypes[2] {
+		if e.StatusToProvisionedHost == nil {
+			// The edge StatusToProvisionedHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionedhost.Label}
+		}
+		return e.StatusToProvisionedHost, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToProvisionedHost"}
+}
+
 // StatusToTeamOrErr returns the StatusToTeam value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e StatusEdges) StatusToTeamOrErr() (*Team, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		if e.StatusToTeam == nil {
 			// The edge StatusToTeam was loaded in eager-loading,
 			// but was not found.
@@ -241,6 +260,11 @@ func (s *Status) QueryStatusToBuild() *BuildQuery {
 // QueryStatusToProvisionedNetwork queries the "StatusToProvisionedNetwork" edge of the Status entity.
 func (s *Status) QueryStatusToProvisionedNetwork() *ProvisionedNetworkQuery {
 	return (&StatusClient{config: s.config}).QueryStatusToProvisionedNetwork(s)
+}
+
+// QueryStatusToProvisionedHost queries the "StatusToProvisionedHost" edge of the Status entity.
+func (s *Status) QueryStatusToProvisionedHost() *ProvisionedHostQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToProvisionedHost(s)
 }
 
 // QueryStatusToTeam queries the "StatusToTeam" edge of the Status entity.

@@ -423,7 +423,7 @@ func HasPlanToProvisionedNetwork() predicate.Plan {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -435,7 +435,7 @@ func HasPlanToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) pred
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(PlanToProvisionedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, PlanToProvisionedNetworkTable, PlanToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

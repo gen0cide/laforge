@@ -2000,7 +2000,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -2012,80 +2012,70 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
-		Type: "Tag",
-		Name: "ProvisionedHostToTag",
-	}
-	node.Edges[0].IDs, err = ph.QueryProvisionedHostToTag().
-		Select(tag.FieldID).
-		Ints(ctx)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[1] = &Edge{
 		Type: "Status",
 		Name: "ProvisionedHostToStatus",
 	}
-	node.Edges[1].IDs, err = ph.QueryProvisionedHostToStatus().
+	node.Edges[0].IDs, err = ph.QueryProvisionedHostToStatus().
 		Select(status.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[2] = &Edge{
+	node.Edges[1] = &Edge{
 		Type: "ProvisionedNetwork",
 		Name: "ProvisionedHostToProvisionedNetwork",
 	}
-	node.Edges[2].IDs, err = ph.QueryProvisionedHostToProvisionedNetwork().
+	node.Edges[1].IDs, err = ph.QueryProvisionedHostToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[3] = &Edge{
+	node.Edges[2] = &Edge{
 		Type: "Host",
 		Name: "ProvisionedHostToHost",
 	}
-	node.Edges[3].IDs, err = ph.QueryProvisionedHostToHost().
+	node.Edges[2].IDs, err = ph.QueryProvisionedHostToHost().
 		Select(host.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[4] = &Edge{
+	node.Edges[3] = &Edge{
 		Type: "ProvisioningStep",
 		Name: "ProvisionedHostToProvisioningStep",
 	}
-	node.Edges[4].IDs, err = ph.QueryProvisionedHostToProvisioningStep().
+	node.Edges[3].IDs, err = ph.QueryProvisionedHostToProvisioningStep().
 		Select(provisioningstep.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[5] = &Edge{
+	node.Edges[4] = &Edge{
 		Type: "AgentStatus",
 		Name: "ProvisionedHostToAgentStatus",
 	}
-	node.Edges[5].IDs, err = ph.QueryProvisionedHostToAgentStatus().
+	node.Edges[4].IDs, err = ph.QueryProvisionedHostToAgentStatus().
 		Select(agentstatus.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[6] = &Edge{
+	node.Edges[5] = &Edge{
 		Type: "Plan",
 		Name: "ProvisionedHostToPlan",
 	}
-	node.Edges[6].IDs, err = ph.QueryProvisionedHostToPlan().
+	node.Edges[5].IDs, err = ph.QueryProvisionedHostToPlan().
 		Select(plan.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[7] = &Edge{
+	node.Edges[6] = &Edge{
 		Type: "GinFileMiddleware",
 		Name: "ProvisionedHostToGinFileMiddleware",
 	}
-	node.Edges[7].IDs, err = ph.QueryProvisionedHostToGinFileMiddleware().
+	node.Edges[6].IDs, err = ph.QueryProvisionedHostToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
 		Ints(ctx)
 	if err != nil {
@@ -2486,7 +2476,7 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		ID:     s.ID,
 		Type:   "Status",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(s.State); err != nil {
@@ -2566,10 +2556,20 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[2] = &Edge{
+		Type: "ProvisionedHost",
+		Name: "StatusToProvisionedHost",
+	}
+	node.Edges[2].IDs, err = s.QueryStatusToProvisionedHost().
+		Select(provisionedhost.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
 		Type: "Team",
 		Name: "StatusToTeam",
 	}
-	node.Edges[2].IDs, err = s.QueryStatusToTeam().
+	node.Edges[3].IDs, err = s.QueryStatusToTeam().
 		Select(team.FieldID).
 		Ints(ctx)
 	if err != nil {

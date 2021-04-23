@@ -1273,7 +1273,7 @@ func HasEnvironmentToHostDependency() predicate.Environment {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(EnvironmentToHostDependencyTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToHostDependencyTable, EnvironmentToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentToHostDependencyTable, EnvironmentToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1285,7 +1285,7 @@ func HasEnvironmentToHostDependencyWith(preds ...predicate.HostDependency) predi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(EnvironmentToHostDependencyInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToHostDependencyTable, EnvironmentToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentToHostDependencyTable, EnvironmentToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

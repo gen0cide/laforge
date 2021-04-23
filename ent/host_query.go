@@ -192,7 +192,7 @@ func (hq *HostQuery) QueryDependOnHostToHostDependency() *HostDependencyQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, selector),
 			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, host.DependOnHostToHostDependencyTable, host.DependOnHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, host.DependOnHostToHostDependencyTable, host.DependOnHostToHostDependencyColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
 		return fromU, nil
@@ -214,7 +214,7 @@ func (hq *HostQuery) QueryDependByHostToHostDependency() *HostDependencyQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, selector),
 			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, host.DependByHostToHostDependencyTable, host.DependByHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, host.DependByHostToHostDependencyTable, host.DependByHostToHostDependencyColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
 		return fromU, nil
@@ -844,129 +844,59 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withDependOnHostToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Host, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.DependOnHostToHostDependency = []*HostDependency{}
+		nodeids := make(map[int]*Host)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.DependOnHostToHostDependency = []*HostDependency{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Host)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   host.DependOnHostToHostDependencyTable,
-				Columns: host.DependOnHostToHostDependencyPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(host.DependOnHostToHostDependencyPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, hq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DependOnHostToHostDependency": %v`, err)
-		}
-		query.Where(hostdependency.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.HostDependency(func(s *sql.Selector) {
+			s.Where(sql.InValues(host.DependOnHostToHostDependencyColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.host_dependency_host_dependency_to_depend_on_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "host_dependency_host_dependency_to_depend_on_host" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "DependOnHostToHostDependency" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_dependency_host_dependency_to_depend_on_host" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.DependOnHostToHostDependency = append(nodes[i].Edges.DependOnHostToHostDependency, n)
-			}
+			node.Edges.DependOnHostToHostDependency = append(node.Edges.DependOnHostToHostDependency, n)
 		}
 	}
 
 	if query := hq.withDependByHostToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Host, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.DependByHostToHostDependency = []*HostDependency{}
+		nodeids := make(map[int]*Host)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.DependByHostToHostDependency = []*HostDependency{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Host)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   host.DependByHostToHostDependencyTable,
-				Columns: host.DependByHostToHostDependencyPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(host.DependByHostToHostDependencyPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, hq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DependByHostToHostDependency": %v`, err)
-		}
-		query.Where(hostdependency.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.HostDependency(func(s *sql.Selector) {
+			s.Where(sql.InValues(host.DependByHostToHostDependencyColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.host_dependency_host_dependency_to_depend_by_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "host_dependency_host_dependency_to_depend_by_host" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "DependByHostToHostDependency" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_dependency_host_dependency_to_depend_by_host" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.DependByHostToHostDependency = append(nodes[i].Edges.DependByHostToHostDependency, n)
-			}
+			node.Edges.DependByHostToHostDependency = append(node.Edges.DependByHostToHostDependency, n)
 		}
 	}
 

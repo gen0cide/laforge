@@ -144,11 +144,13 @@ const (
 	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	EnvironmentToNetworkInverseTable = "networks"
-	// EnvironmentToHostDependencyTable is the table the holds the EnvironmentToHostDependency relation/edge. The primary key declared below.
-	EnvironmentToHostDependencyTable = "environment_EnvironmentToHostDependency"
+	// EnvironmentToHostDependencyTable is the table the holds the EnvironmentToHostDependency relation/edge.
+	EnvironmentToHostDependencyTable = "host_dependencies"
 	// EnvironmentToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	EnvironmentToHostDependencyInverseTable = "host_dependencies"
+	// EnvironmentToHostDependencyColumn is the table column denoting the EnvironmentToHostDependency relation/edge.
+	EnvironmentToHostDependencyColumn = "environment_environment_to_host_dependency"
 	// EnvironmentToBuildTable is the table the holds the EnvironmentToBuild relation/edge.
 	EnvironmentToBuildTable = "builds"
 	// EnvironmentToBuildInverseTable is the table name for the Build entity.
@@ -217,9 +219,6 @@ var (
 	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToNetwork relation (M2M).
 	EnvironmentToNetworkPrimaryKey = []string{"environment_id", "network_id"}
-	// EnvironmentToHostDependencyPrimaryKey and EnvironmentToHostDependencyColumn2 are the table columns denoting the
-	// primary key for the EnvironmentToHostDependency relation (M2M).
-	EnvironmentToHostDependencyPrimaryKey = []string{"environment_id", "host_dependency_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

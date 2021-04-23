@@ -13,14 +13,14 @@ import (
 	"github.com/gen0cide/laforge/ent"
 )
 
-func buildAgent(agentID string, serverAddress string, binarypath string) {
+func buildAgent(agentID string, serverAddress string, binarypath string, isWindows bool) {
 	if runtime.GOOS == "windows" {
 		binarypath = binarypath + ".exe"
 	}
 	command := "go build -ldflags=\" -s -w -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
 	fmt.Println(command)
 	cmd := exec.Command("bash", "-c", command)
-	if runtime.GOOS == "windows" {
+	if isWindows {
 		cmd = exec.Command("powershell", "-c", command)
 	}
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -97,6 +97,6 @@ func main() {
 		envName := env.Name
 
 		binaryName := filepath.Join(envName, "team", fmt.Sprint(teamName), networkName, hostName)
-		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName)
+		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName, false)
 	}
 }

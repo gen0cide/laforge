@@ -540,10 +540,10 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 	}
 	if nodes := hc.mutation.DependOnHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -559,10 +559,10 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 	}
 	if nodes := hc.mutation.DependByHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

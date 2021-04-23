@@ -843,10 +843,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -1712,10 +1712,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1728,10 +1728,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToHostDependencyIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1747,10 +1747,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3510,10 +3510,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3526,10 +3526,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToHostDependencyIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3545,10 +3545,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

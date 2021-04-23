@@ -13857,17 +13857,13 @@ type HostDependencyMutation struct {
 	host_id                              *string
 	network_id                           *string
 	clearedFields                        map[string]struct{}
-	_HostDependencyToDependOnHost        map[int]struct{}
-	removed_HostDependencyToDependOnHost map[int]struct{}
+	_HostDependencyToDependOnHost        *int
 	cleared_HostDependencyToDependOnHost bool
-	_HostDependencyToDependByHost        map[int]struct{}
-	removed_HostDependencyToDependByHost map[int]struct{}
+	_HostDependencyToDependByHost        *int
 	cleared_HostDependencyToDependByHost bool
-	_HostDependencyToNetwork             map[int]struct{}
-	removed_HostDependencyToNetwork      map[int]struct{}
+	_HostDependencyToNetwork             *int
 	cleared_HostDependencyToNetwork      bool
-	_HostDependencyToEnvironment         map[int]struct{}
-	removed_HostDependencyToEnvironment  map[int]struct{}
+	_HostDependencyToEnvironment         *int
 	cleared_HostDependencyToEnvironment  bool
 	done                                 bool
 	oldValue                             func(context.Context) (*HostDependency, error)
@@ -14025,14 +14021,9 @@ func (m *HostDependencyMutation) ResetNetworkID() {
 	m.network_id = nil
 }
 
-// AddHostDependencyToDependOnHostIDs adds the "HostDependencyToDependOnHost" edge to the Host entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToDependOnHostIDs(ids ...int) {
-	if m._HostDependencyToDependOnHost == nil {
-		m._HostDependencyToDependOnHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToDependOnHost[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToDependOnHostID(id int) {
+	m._HostDependencyToDependOnHost = &id
 }
 
 // ClearHostDependencyToDependOnHost clears the "HostDependencyToDependOnHost" edge to the Host entity.
@@ -14045,28 +14036,20 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostCleared() bool {
 	return m.cleared_HostDependencyToDependOnHost
 }
 
-// RemoveHostDependencyToDependOnHostIDs removes the "HostDependencyToDependOnHost" edge to the Host entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToDependOnHostIDs(ids ...int) {
-	if m.removed_HostDependencyToDependOnHost == nil {
-		m.removed_HostDependencyToDependOnHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToDependOnHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToDependOnHost returns the removed IDs of the "HostDependencyToDependOnHost" edge to the Host entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToDependOnHostIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToDependOnHost {
-		ids = append(ids, id)
+// HostDependencyToDependOnHostID returns the "HostDependencyToDependOnHost" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToDependOnHostID() (id int, exists bool) {
+	if m._HostDependencyToDependOnHost != nil {
+		return *m._HostDependencyToDependOnHost, true
 	}
 	return
 }
 
 // HostDependencyToDependOnHostIDs returns the "HostDependencyToDependOnHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToDependOnHostID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []int) {
-	for id := range m._HostDependencyToDependOnHost {
-		ids = append(ids, id)
+	if id := m._HostDependencyToDependOnHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -14075,17 +14058,11 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToDependOnHost() {
 	m._HostDependencyToDependOnHost = nil
 	m.cleared_HostDependencyToDependOnHost = false
-	m.removed_HostDependencyToDependOnHost = nil
 }
 
-// AddHostDependencyToDependByHostIDs adds the "HostDependencyToDependByHost" edge to the Host entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToDependByHostIDs(ids ...int) {
-	if m._HostDependencyToDependByHost == nil {
-		m._HostDependencyToDependByHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToDependByHost[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToDependByHostID(id int) {
+	m._HostDependencyToDependByHost = &id
 }
 
 // ClearHostDependencyToDependByHost clears the "HostDependencyToDependByHost" edge to the Host entity.
@@ -14098,28 +14075,20 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostCleared() bool {
 	return m.cleared_HostDependencyToDependByHost
 }
 
-// RemoveHostDependencyToDependByHostIDs removes the "HostDependencyToDependByHost" edge to the Host entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToDependByHostIDs(ids ...int) {
-	if m.removed_HostDependencyToDependByHost == nil {
-		m.removed_HostDependencyToDependByHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToDependByHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToDependByHost returns the removed IDs of the "HostDependencyToDependByHost" edge to the Host entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToDependByHostIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToDependByHost {
-		ids = append(ids, id)
+// HostDependencyToDependByHostID returns the "HostDependencyToDependByHost" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToDependByHostID() (id int, exists bool) {
+	if m._HostDependencyToDependByHost != nil {
+		return *m._HostDependencyToDependByHost, true
 	}
 	return
 }
 
 // HostDependencyToDependByHostIDs returns the "HostDependencyToDependByHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToDependByHostID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []int) {
-	for id := range m._HostDependencyToDependByHost {
-		ids = append(ids, id)
+	if id := m._HostDependencyToDependByHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -14128,17 +14097,11 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToDependByHost() {
 	m._HostDependencyToDependByHost = nil
 	m.cleared_HostDependencyToDependByHost = false
-	m.removed_HostDependencyToDependByHost = nil
 }
 
-// AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToNetworkIDs(ids ...int) {
-	if m._HostDependencyToNetwork == nil {
-		m._HostDependencyToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToNetwork[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToNetworkID(id int) {
+	m._HostDependencyToNetwork = &id
 }
 
 // ClearHostDependencyToNetwork clears the "HostDependencyToNetwork" edge to the Network entity.
@@ -14151,28 +14114,20 @@ func (m *HostDependencyMutation) HostDependencyToNetworkCleared() bool {
 	return m.cleared_HostDependencyToNetwork
 }
 
-// RemoveHostDependencyToNetworkIDs removes the "HostDependencyToNetwork" edge to the Network entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToNetworkIDs(ids ...int) {
-	if m.removed_HostDependencyToNetwork == nil {
-		m.removed_HostDependencyToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToNetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToNetwork returns the removed IDs of the "HostDependencyToNetwork" edge to the Network entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToNetworkIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToNetwork {
-		ids = append(ids, id)
+// HostDependencyToNetworkID returns the "HostDependencyToNetwork" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToNetworkID() (id int, exists bool) {
+	if m._HostDependencyToNetwork != nil {
+		return *m._HostDependencyToNetwork, true
 	}
 	return
 }
 
 // HostDependencyToNetworkIDs returns the "HostDependencyToNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToNetworkID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
-	for id := range m._HostDependencyToNetwork {
-		ids = append(ids, id)
+	if id := m._HostDependencyToNetwork; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -14181,17 +14136,11 @@ func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToNetwork() {
 	m._HostDependencyToNetwork = nil
 	m.cleared_HostDependencyToNetwork = false
-	m.removed_HostDependencyToNetwork = nil
 }
 
-// AddHostDependencyToEnvironmentIDs adds the "HostDependencyToEnvironment" edge to the Environment entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToEnvironmentIDs(ids ...int) {
-	if m._HostDependencyToEnvironment == nil {
-		m._HostDependencyToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToEnvironment[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToEnvironmentID(id int) {
+	m._HostDependencyToEnvironment = &id
 }
 
 // ClearHostDependencyToEnvironment clears the "HostDependencyToEnvironment" edge to the Environment entity.
@@ -14204,28 +14153,20 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentCleared() bool {
 	return m.cleared_HostDependencyToEnvironment
 }
 
-// RemoveHostDependencyToEnvironmentIDs removes the "HostDependencyToEnvironment" edge to the Environment entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToEnvironmentIDs(ids ...int) {
-	if m.removed_HostDependencyToEnvironment == nil {
-		m.removed_HostDependencyToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToEnvironment returns the removed IDs of the "HostDependencyToEnvironment" edge to the Environment entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToEnvironment {
-		ids = append(ids, id)
+// HostDependencyToEnvironmentID returns the "HostDependencyToEnvironment" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToEnvironmentID() (id int, exists bool) {
+	if m._HostDependencyToEnvironment != nil {
+		return *m._HostDependencyToEnvironment, true
 	}
 	return
 }
 
 // HostDependencyToEnvironmentIDs returns the "HostDependencyToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []int) {
-	for id := range m._HostDependencyToEnvironment {
-		ids = append(ids, id)
+	if id := m._HostDependencyToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -14234,7 +14175,6 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToEnvironment() {
 	m._HostDependencyToEnvironment = nil
 	m.cleared_HostDependencyToEnvironment = false
-	m.removed_HostDependencyToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -14388,29 +14328,21 @@ func (m *HostDependencyMutation) AddedEdges() []string {
 func (m *HostDependencyMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case hostdependency.EdgeHostDependencyToDependOnHost:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToDependOnHost))
-		for id := range m._HostDependencyToDependOnHost {
-			ids = append(ids, id)
+		if id := m._HostDependencyToDependOnHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToDependByHost:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToDependByHost))
-		for id := range m._HostDependencyToDependByHost {
-			ids = append(ids, id)
+		if id := m._HostDependencyToDependByHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToNetwork:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToNetwork))
-		for id := range m._HostDependencyToNetwork {
-			ids = append(ids, id)
+		if id := m._HostDependencyToNetwork; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToEnvironment:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToEnvironment))
-		for id := range m._HostDependencyToEnvironment {
-			ids = append(ids, id)
+		if id := m._HostDependencyToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -14418,18 +14350,6 @@ func (m *HostDependencyMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HostDependencyMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removed_HostDependencyToDependOnHost != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToDependOnHost)
-	}
-	if m.removed_HostDependencyToDependByHost != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToDependByHost)
-	}
-	if m.removed_HostDependencyToNetwork != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToNetwork)
-	}
-	if m.removed_HostDependencyToEnvironment != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToEnvironment)
-	}
 	return edges
 }
 
@@ -14437,30 +14357,6 @@ func (m *HostDependencyMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *HostDependencyMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case hostdependency.EdgeHostDependencyToDependOnHost:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToDependOnHost))
-		for id := range m.removed_HostDependencyToDependOnHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToDependByHost:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToDependByHost))
-		for id := range m.removed_HostDependencyToDependByHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToNetwork:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToNetwork))
-		for id := range m.removed_HostDependencyToNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToEnvironment))
-		for id := range m.removed_HostDependencyToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -14503,6 +14399,18 @@ func (m *HostDependencyMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *HostDependencyMutation) ClearEdge(name string) error {
 	switch name {
+	case hostdependency.EdgeHostDependencyToDependOnHost:
+		m.ClearHostDependencyToDependOnHost()
+		return nil
+	case hostdependency.EdgeHostDependencyToDependByHost:
+		m.ClearHostDependencyToDependByHost()
+		return nil
+	case hostdependency.EdgeHostDependencyToNetwork:
+		m.ClearHostDependencyToNetwork()
+		return nil
+	case hostdependency.EdgeHostDependencyToEnvironment:
+		m.ClearHostDependencyToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown HostDependency unique edge %s", name)
 }
@@ -17830,17 +17738,11 @@ type ProvisionedHostMutation struct {
 	id                                          *int
 	subnet_ip                                   *string
 	clearedFields                               map[string]struct{}
-	_ProvisionedHostToTag                       map[int]struct{}
-	removed_ProvisionedHostToTag                map[int]struct{}
-	cleared_ProvisionedHostToTag                bool
-	_ProvisionedHostToStatus                    map[int]struct{}
-	removed_ProvisionedHostToStatus             map[int]struct{}
+	_ProvisionedHostToStatus                    *int
 	cleared_ProvisionedHostToStatus             bool
-	_ProvisionedHostToProvisionedNetwork        map[int]struct{}
-	removed_ProvisionedHostToProvisionedNetwork map[int]struct{}
+	_ProvisionedHostToProvisionedNetwork        *int
 	cleared_ProvisionedHostToProvisionedNetwork bool
-	_ProvisionedHostToHost                      map[int]struct{}
-	removed_ProvisionedHostToHost               map[int]struct{}
+	_ProvisionedHostToHost                      *int
 	cleared_ProvisionedHostToHost               bool
 	_ProvisionedHostToProvisioningStep          map[int]struct{}
 	removed_ProvisionedHostToProvisioningStep   map[int]struct{}
@@ -17973,67 +17875,9 @@ func (m *ProvisionedHostMutation) ResetSubnetIP() {
 	m.subnet_ip = nil
 }
 
-// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToTagIDs(ids ...int) {
-	if m._ProvisionedHostToTag == nil {
-		m._ProvisionedHostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProvisionedHostToTag clears the "ProvisionedHostToTag" edge to the Tag entity.
-func (m *ProvisionedHostMutation) ClearProvisionedHostToTag() {
-	m.cleared_ProvisionedHostToTag = true
-}
-
-// ProvisionedHostToTagCleared returns if the "ProvisionedHostToTag" edge to the Tag entity was cleared.
-func (m *ProvisionedHostMutation) ProvisionedHostToTagCleared() bool {
-	return m.cleared_ProvisionedHostToTag
-}
-
-// RemoveProvisionedHostToTagIDs removes the "ProvisionedHostToTag" edge to the Tag entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToTagIDs(ids ...int) {
-	if m.removed_ProvisionedHostToTag == nil {
-		m.removed_ProvisionedHostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToTag returns the removed IDs of the "ProvisionedHostToTag" edge to the Tag entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToTagIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisionedHostToTagIDs returns the "ProvisionedHostToTag" edge IDs in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToTagIDs() (ids []int) {
-	for id := range m._ProvisionedHostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisionedHostToTag resets all changes to the "ProvisionedHostToTag" edge.
-func (m *ProvisionedHostMutation) ResetProvisionedHostToTag() {
-	m._ProvisionedHostToTag = nil
-	m.cleared_ProvisionedHostToTag = false
-	m.removed_ProvisionedHostToTag = nil
-}
-
-// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToStatuIDs(ids ...int) {
-	if m._ProvisionedHostToStatus == nil {
-		m._ProvisionedHostToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToStatus[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToStatusID(id int) {
+	m._ProvisionedHostToStatus = &id
 }
 
 // ClearProvisionedHostToStatus clears the "ProvisionedHostToStatus" edge to the Status entity.
@@ -18046,28 +17890,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusCleared() bool {
 	return m.cleared_ProvisionedHostToStatus
 }
 
-// RemoveProvisionedHostToStatuIDs removes the "ProvisionedHostToStatus" edge to the Status entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToStatuIDs(ids ...int) {
-	if m.removed_ProvisionedHostToStatus == nil {
-		m.removed_ProvisionedHostToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToStatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToStatus returns the removed IDs of the "ProvisionedHostToStatus" edge to the Status entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToStatusIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToStatus {
-		ids = append(ids, id)
+// ProvisionedHostToStatusID returns the "ProvisionedHostToStatus" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusID() (id int, exists bool) {
+	if m._ProvisionedHostToStatus != nil {
+		return *m._ProvisionedHostToStatus, true
 	}
 	return
 }
 
 // ProvisionedHostToStatusIDs returns the "ProvisionedHostToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToStatusID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
-	for id := range m._ProvisionedHostToStatus {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18076,17 +17912,11 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToStatus() {
 	m._ProvisionedHostToStatus = nil
 	m.cleared_ProvisionedHostToStatus = false
-	m.removed_ProvisionedHostToStatus = nil
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) {
-	if m._ProvisionedHostToProvisionedNetwork == nil {
-		m._ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToProvisionedNetworkID(id int) {
+	m._ProvisionedHostToProvisionedNetwork = &id
 }
 
 // ClearProvisionedHostToProvisionedNetwork clears the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity.
@@ -18099,28 +17929,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkCleared() b
 	return m.cleared_ProvisionedHostToProvisionedNetwork
 }
 
-// RemoveProvisionedHostToProvisionedNetworkIDs removes the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) {
-	if m.removed_ProvisionedHostToProvisionedNetwork == nil {
-		m.removed_ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToProvisionedNetwork returns the removed IDs of the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisionedNetworkIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToProvisionedNetwork {
-		ids = append(ids, id)
+// ProvisionedHostToProvisionedNetworkID returns the "ProvisionedHostToProvisionedNetwork" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkID() (id int, exists bool) {
+	if m._ProvisionedHostToProvisionedNetwork != nil {
+		return *m._ProvisionedHostToProvisionedNetwork, true
 	}
 	return
 }
 
 // ProvisionedHostToProvisionedNetworkIDs returns the "ProvisionedHostToProvisionedNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToProvisionedNetworkID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids []int) {
-	for id := range m._ProvisionedHostToProvisionedNetwork {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToProvisionedNetwork; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18129,17 +17951,11 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids 
 func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisionedNetwork() {
 	m._ProvisionedHostToProvisionedNetwork = nil
 	m.cleared_ProvisionedHostToProvisionedNetwork = false
-	m.removed_ProvisionedHostToProvisionedNetwork = nil
 }
 
-// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToHostIDs(ids ...int) {
-	if m._ProvisionedHostToHost == nil {
-		m._ProvisionedHostToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToHost[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToHostID(id int) {
+	m._ProvisionedHostToHost = &id
 }
 
 // ClearProvisionedHostToHost clears the "ProvisionedHostToHost" edge to the Host entity.
@@ -18152,28 +17968,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostCleared() bool {
 	return m.cleared_ProvisionedHostToHost
 }
 
-// RemoveProvisionedHostToHostIDs removes the "ProvisionedHostToHost" edge to the Host entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToHostIDs(ids ...int) {
-	if m.removed_ProvisionedHostToHost == nil {
-		m.removed_ProvisionedHostToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToHost returns the removed IDs of the "ProvisionedHostToHost" edge to the Host entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToHostIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToHost {
-		ids = append(ids, id)
+// ProvisionedHostToHostID returns the "ProvisionedHostToHost" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToHostID() (id int, exists bool) {
+	if m._ProvisionedHostToHost != nil {
+		return *m._ProvisionedHostToHost, true
 	}
 	return
 }
 
 // ProvisionedHostToHostIDs returns the "ProvisionedHostToHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToHostID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
-	for id := range m._ProvisionedHostToHost {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18182,7 +17990,6 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToHost() {
 	m._ProvisionedHostToHost = nil
 	m.cleared_ProvisionedHostToHost = false
-	m.removed_ProvisionedHostToHost = nil
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by ids.
@@ -18496,10 +18303,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m._ProvisionedHostToTag != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
+	edges := make([]string, 0, 7)
 	if m._ProvisionedHostToStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -18528,30 +18332,18 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToTag))
-		for id := range m._ProvisionedHostToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToStatus:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToStatus))
-		for id := range m._ProvisionedHostToStatus {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisionedNetwork))
-		for id := range m._ProvisionedHostToProvisionedNetwork {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToProvisionedNetwork; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToHost:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToHost))
-		for id := range m._ProvisionedHostToHost {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisioningStep))
 		for id := range m._ProvisionedHostToProvisioningStep {
@@ -18580,19 +18372,7 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.removed_ProvisionedHostToTag != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
-	if m.removed_ProvisionedHostToStatus != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
-	}
-	if m.removed_ProvisionedHostToProvisionedNetwork != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisionedNetwork)
-	}
-	if m.removed_ProvisionedHostToHost != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
-	}
+	edges := make([]string, 0, 7)
 	if m.removed_ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
@@ -18609,30 +18389,6 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToTag))
-		for id := range m.removed_ProvisionedHostToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToStatus:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToStatus))
-		for id := range m.removed_ProvisionedHostToStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisionedNetwork))
-		for id := range m.removed_ProvisionedHostToProvisionedNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToHost:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToHost))
-		for id := range m.removed_ProvisionedHostToHost {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisioningStep))
 		for id := range m.removed_ProvisionedHostToProvisioningStep {
@@ -18657,10 +18413,7 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.cleared_ProvisionedHostToTag {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
+	edges := make([]string, 0, 7)
 	if m.cleared_ProvisionedHostToStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -18689,8 +18442,6 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		return m.cleared_ProvisionedHostToTag
 	case provisionedhost.EdgeProvisionedHostToStatus:
 		return m.cleared_ProvisionedHostToStatus
 	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
@@ -18713,6 +18464,15 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 	switch name {
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		m.ClearProvisionedHostToStatus()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		m.ClearProvisionedHostToProvisionedNetwork()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToHost:
+		m.ClearProvisionedHostToHost()
+		return nil
 	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
 		m.ClearProvisionedHostToGinFileMiddleware()
 		return nil
@@ -18724,9 +18484,6 @@ func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		m.ResetProvisionedHostToTag()
-		return nil
 	case provisionedhost.EdgeProvisionedHostToStatus:
 		m.ResetProvisionedHostToStatus()
 		return nil
@@ -18772,8 +18529,7 @@ type ProvisionedNetworkMutation struct {
 	_ProvisionedNetworkToProvisionedHost        map[int]struct{}
 	removed_ProvisionedNetworkToProvisionedHost map[int]struct{}
 	cleared_ProvisionedNetworkToProvisionedHost bool
-	_ProvisionedNetworkToPlan                   map[int]struct{}
-	removed_ProvisionedNetworkToPlan            map[int]struct{}
+	_ProvisionedNetworkToPlan                   *int
 	cleared_ProvisionedNetworkToPlan            bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedNetwork, error)
@@ -19140,14 +18896,9 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToProvisionedHost() 
 	m.removed_ProvisionedNetworkToProvisionedHost = nil
 }
 
-// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToPlanIDs(ids ...int) {
-	if m._ProvisionedNetworkToPlan == nil {
-		m._ProvisionedNetworkToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToPlan[ids[i]] = struct{}{}
-	}
+// SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToPlanID(id int) {
+	m._ProvisionedNetworkToPlan = &id
 }
 
 // ClearProvisionedNetworkToPlan clears the "ProvisionedNetworkToPlan" edge to the Plan entity.
@@ -19160,28 +18911,20 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanCleared() bool {
 	return m.cleared_ProvisionedNetworkToPlan
 }
 
-// RemoveProvisionedNetworkToPlanIDs removes the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToPlanIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToPlan == nil {
-		m.removed_ProvisionedNetworkToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToPlan[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToPlan returns the removed IDs of the "ProvisionedNetworkToPlan" edge to the Plan entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToPlanIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToPlan {
-		ids = append(ids, id)
+// ProvisionedNetworkToPlanID returns the "ProvisionedNetworkToPlan" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanID() (id int, exists bool) {
+	if m._ProvisionedNetworkToPlan != nil {
+		return *m._ProvisionedNetworkToPlan, true
 	}
 	return
 }
 
 // ProvisionedNetworkToPlanIDs returns the "ProvisionedNetworkToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToPlanID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToPlan {
-		ids = append(ids, id)
+	if id := m._ProvisionedNetworkToPlan; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19190,7 +18933,6 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []int) {
 func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToPlan() {
 	m._ProvisionedNetworkToPlan = nil
 	m.cleared_ProvisionedNetworkToPlan = false
-	m.removed_ProvisionedNetworkToPlan = nil
 }
 
 // Op returns the operation name.
@@ -19372,11 +19114,9 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToPlan:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToPlan))
-		for id := range m._ProvisionedNetworkToPlan {
-			ids = append(ids, id)
+		if id := m._ProvisionedNetworkToPlan; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -19386,9 +19126,6 @@ func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 6)
 	if m.removed_ProvisionedNetworkToProvisionedHost != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
-	}
-	if m.removed_ProvisionedNetworkToPlan != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
 	}
 	return edges
 }
@@ -19400,12 +19137,6 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToProvisionedHost))
 		for id := range m.removed_ProvisionedNetworkToProvisionedHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionednetwork.EdgeProvisionedNetworkToPlan:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToPlan))
-		for id := range m.removed_ProvisionedNetworkToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -19472,6 +19203,9 @@ func (m *ProvisionedNetworkMutation) ClearEdge(name string) error {
 		return nil
 	case provisionednetwork.EdgeProvisionedNetworkToTeam:
 		m.ClearProvisionedNetworkToTeam()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		m.ClearProvisionedNetworkToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork unique edge %s", name)
@@ -22183,6 +21917,8 @@ type StatusMutation struct {
 	cleared_StatusToBuild              bool
 	_StatusToProvisionedNetwork        *int
 	cleared_StatusToProvisionedNetwork bool
+	_StatusToProvisionedHost           *int
+	cleared_StatusToProvisionedHost    bool
 	_StatusToTeam                      *int
 	cleared_StatusToTeam               bool
 	done                               bool
@@ -22638,6 +22374,45 @@ func (m *StatusMutation) ResetStatusToProvisionedNetwork() {
 	m.cleared_StatusToProvisionedNetwork = false
 }
 
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *StatusMutation) SetStatusToProvisionedHostID(id int) {
+	m._StatusToProvisionedHost = &id
+}
+
+// ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *StatusMutation) ClearStatusToProvisionedHost() {
+	m.cleared_StatusToProvisionedHost = true
+}
+
+// StatusToProvisionedHostCleared returns if the "StatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *StatusMutation) StatusToProvisionedHostCleared() bool {
+	return m.cleared_StatusToProvisionedHost
+}
+
+// StatusToProvisionedHostID returns the "StatusToProvisionedHost" edge ID in the mutation.
+func (m *StatusMutation) StatusToProvisionedHostID() (id int, exists bool) {
+	if m._StatusToProvisionedHost != nil {
+		return *m._StatusToProvisionedHost, true
+	}
+	return
+}
+
+// StatusToProvisionedHostIDs returns the "StatusToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToProvisionedHostIDs() (ids []int) {
+	if id := m._StatusToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToProvisionedHost resets all changes to the "StatusToProvisionedHost" edge.
+func (m *StatusMutation) ResetStatusToProvisionedHost() {
+	m._StatusToProvisionedHost = nil
+	m.cleared_StatusToProvisionedHost = false
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by id.
 func (m *StatusMutation) SetStatusToTeamID(id int) {
 	m._StatusToTeam = &id
@@ -22913,12 +22688,15 @@ func (m *StatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m._StatusToBuild != nil {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
 	if m._StatusToProvisionedNetwork != nil {
 		edges = append(edges, status.EdgeStatusToProvisionedNetwork)
+	}
+	if m._StatusToProvisionedHost != nil {
+		edges = append(edges, status.EdgeStatusToProvisionedHost)
 	}
 	if m._StatusToTeam != nil {
 		edges = append(edges, status.EdgeStatusToTeam)
@@ -22938,6 +22716,10 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 		if id := m._StatusToProvisionedNetwork; id != nil {
 			return []ent.Value{*id}
 		}
+	case status.EdgeStatusToProvisionedHost:
+		if id := m._StatusToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
 	case status.EdgeStatusToTeam:
 		if id := m._StatusToTeam; id != nil {
 			return []ent.Value{*id}
@@ -22948,7 +22730,7 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -22962,12 +22744,15 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.cleared_StatusToBuild {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
 	if m.cleared_StatusToProvisionedNetwork {
 		edges = append(edges, status.EdgeStatusToProvisionedNetwork)
+	}
+	if m.cleared_StatusToProvisionedHost {
+		edges = append(edges, status.EdgeStatusToProvisionedHost)
 	}
 	if m.cleared_StatusToTeam {
 		edges = append(edges, status.EdgeStatusToTeam)
@@ -22983,6 +22768,8 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 		return m.cleared_StatusToBuild
 	case status.EdgeStatusToProvisionedNetwork:
 		return m.cleared_StatusToProvisionedNetwork
+	case status.EdgeStatusToProvisionedHost:
+		return m.cleared_StatusToProvisionedHost
 	case status.EdgeStatusToTeam:
 		return m.cleared_StatusToTeam
 	}
@@ -22998,6 +22785,9 @@ func (m *StatusMutation) ClearEdge(name string) error {
 		return nil
 	case status.EdgeStatusToProvisionedNetwork:
 		m.ClearStatusToProvisionedNetwork()
+		return nil
+	case status.EdgeStatusToProvisionedHost:
+		m.ClearStatusToProvisionedHost()
 		return nil
 	case status.EdgeStatusToTeam:
 		m.ClearStatusToTeam()
@@ -23015,6 +22805,9 @@ func (m *StatusMutation) ResetEdge(name string) error {
 		return nil
 	case status.EdgeStatusToProvisionedNetwork:
 		m.ResetStatusToProvisionedNetwork()
+		return nil
+	case status.EdgeStatusToProvisionedHost:
+		m.ResetStatusToProvisionedHost()
 		return nil
 	case status.EdgeStatusToTeam:
 		m.ResetStatusToTeam()

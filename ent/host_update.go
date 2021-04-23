@@ -838,10 +838,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if hu.mutation.DependOnHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -854,10 +854,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := hu.mutation.RemovedDependOnHostToHostDependencyIDs(); len(nodes) > 0 && !hu.mutation.DependOnHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -873,10 +873,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := hu.mutation.DependOnHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -892,10 +892,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if hu.mutation.DependByHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -908,10 +908,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := hu.mutation.RemovedDependByHostToHostDependencyIDs(); len(nodes) > 0 && !hu.mutation.DependByHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -927,10 +927,10 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := hu.mutation.DependByHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1773,10 +1773,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if huo.mutation.DependOnHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1789,10 +1789,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if nodes := huo.mutation.RemovedDependOnHostToHostDependencyIDs(); len(nodes) > 0 && !huo.mutation.DependOnHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1808,10 +1808,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if nodes := huo.mutation.DependOnHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependOnHostToHostDependencyTable,
-			Columns: host.DependOnHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1827,10 +1827,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if huo.mutation.DependByHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1843,10 +1843,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if nodes := huo.mutation.RemovedDependByHostToHostDependencyIDs(); len(nodes) > 0 && !huo.mutation.DependByHostToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1862,10 +1862,10 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	}
 	if nodes := huo.mutation.DependByHostToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   host.DependByHostToHostDependencyTable,
-			Columns: host.DependByHostToHostDependencyPrimaryKey,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

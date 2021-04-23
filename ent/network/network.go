@@ -43,11 +43,13 @@ const (
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	NetworkToEnvironmentInverseTable = "environments"
-	// NetworkToHostDependencyTable is the table the holds the NetworkToHostDependency relation/edge. The primary key declared below.
-	NetworkToHostDependencyTable = "host_dependency_HostDependencyToNetwork"
+	// NetworkToHostDependencyTable is the table the holds the NetworkToHostDependency relation/edge.
+	NetworkToHostDependencyTable = "host_dependencies"
 	// NetworkToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	NetworkToHostDependencyInverseTable = "host_dependencies"
+	// NetworkToHostDependencyColumn is the table column denoting the NetworkToHostDependency relation/edge.
+	NetworkToHostDependencyColumn = "host_dependency_host_dependency_to_network"
 	// NetworkToIncludedNetworkTable is the table the holds the NetworkToIncludedNetwork relation/edge. The primary key declared below.
 	NetworkToIncludedNetworkTable = "included_network_IncludedNetworkToNetwork"
 	// NetworkToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
@@ -70,9 +72,6 @@ var (
 	// NetworkToEnvironmentPrimaryKey and NetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the NetworkToEnvironment relation (M2M).
 	NetworkToEnvironmentPrimaryKey = []string{"environment_id", "network_id"}
-	// NetworkToHostDependencyPrimaryKey and NetworkToHostDependencyColumn2 are the table columns denoting the
-	// primary key for the NetworkToHostDependency relation (M2M).
-	NetworkToHostDependencyPrimaryKey = []string{"host_dependency_id", "network_id"}
 	// NetworkToIncludedNetworkPrimaryKey and NetworkToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the NetworkToIncludedNetwork relation (M2M).
 	NetworkToIncludedNetworkPrimaryKey = []string{"included_network_id", "network_id"}

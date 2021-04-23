@@ -128,19 +128,23 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ..
 	return pnc.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 }
 
-// AddProvisionedNetworkToPlanIDs adds the "ProvisionedNetworkToPlan" edge to the Plan entity by IDs.
-func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToPlanIDs(ids ...int) *ProvisionedNetworkCreate {
-	pnc.mutation.AddProvisionedNetworkToPlanIDs(ids...)
+// SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID.
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToPlanID(id int) *ProvisionedNetworkCreate {
+	pnc.mutation.SetProvisionedNetworkToPlanID(id)
 	return pnc
 }
 
-// AddProvisionedNetworkToPlan adds the "ProvisionedNetworkToPlan" edges to the Plan entity.
-func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToPlan(p ...*Plan) *ProvisionedNetworkCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToPlanID(id *int) *ProvisionedNetworkCreate {
+	if id != nil {
+		pnc = pnc.SetProvisionedNetworkToPlanID(*id)
 	}
-	return pnc.AddProvisionedNetworkToPlanIDs(ids...)
+	return pnc
+}
+
+// SetProvisionedNetworkToPlan sets the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToPlan(p *Plan) *ProvisionedNetworkCreate {
+	return pnc.SetProvisionedNetworkToPlanID(p.ID)
 }
 
 // Mutation returns the ProvisionedNetworkMutation object of the builder.
@@ -321,10 +325,10 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 	}
 	if nodes := pnc.mutation.ProvisionedNetworkToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToProvisionedHostTable,
-			Columns: provisionednetwork.ProvisionedNetworkToProvisionedHostPrimaryKey,
+			Columns: []string{provisionednetwork.ProvisionedNetworkToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -340,7 +344,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 	}
 	if nodes := pnc.mutation.ProvisionedNetworkToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionednetwork.ProvisionedNetworkToPlanTable,
 			Columns: []string{provisionednetwork.ProvisionedNetworkToPlanColumn},

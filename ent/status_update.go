@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
@@ -168,6 +169,25 @@ func (su *StatusUpdate) SetStatusToProvisionedNetwork(p *ProvisionedNetwork) *St
 	return su.SetStatusToProvisionedNetworkID(p.ID)
 }
 
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (su *StatusUpdate) SetStatusToProvisionedHostID(id int) *StatusUpdate {
+	su.mutation.SetStatusToProvisionedHostID(id)
+	return su
+}
+
+// SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (su *StatusUpdate) SetNillableStatusToProvisionedHostID(id *int) *StatusUpdate {
+	if id != nil {
+		su = su.SetStatusToProvisionedHostID(*id)
+	}
+	return su
+}
+
+// SetStatusToProvisionedHost sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (su *StatusUpdate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusUpdate {
+	return su.SetStatusToProvisionedHostID(p.ID)
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
 func (su *StatusUpdate) SetStatusToTeamID(id int) *StatusUpdate {
 	su.mutation.SetStatusToTeamID(id)
@@ -201,6 +221,12 @@ func (su *StatusUpdate) ClearStatusToBuild() *StatusUpdate {
 // ClearStatusToProvisionedNetwork clears the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
 func (su *StatusUpdate) ClearStatusToProvisionedNetwork() *StatusUpdate {
 	su.mutation.ClearStatusToProvisionedNetwork()
+	return su
+}
+
+// ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (su *StatusUpdate) ClearStatusToProvisionedHost() *StatusUpdate {
+	su.mutation.ClearStatusToProvisionedHost()
 	return su
 }
 
@@ -437,6 +463,41 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.StatusToProvisionedHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.StatusToProvisionedHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if su.mutation.StatusToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -628,6 +689,25 @@ func (suo *StatusUpdateOne) SetStatusToProvisionedNetwork(p *ProvisionedNetwork)
 	return suo.SetStatusToProvisionedNetworkID(p.ID)
 }
 
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (suo *StatusUpdateOne) SetStatusToProvisionedHostID(id int) *StatusUpdateOne {
+	suo.mutation.SetStatusToProvisionedHostID(id)
+	return suo
+}
+
+// SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (suo *StatusUpdateOne) SetNillableStatusToProvisionedHostID(id *int) *StatusUpdateOne {
+	if id != nil {
+		suo = suo.SetStatusToProvisionedHostID(*id)
+	}
+	return suo
+}
+
+// SetStatusToProvisionedHost sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (suo *StatusUpdateOne) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusUpdateOne {
+	return suo.SetStatusToProvisionedHostID(p.ID)
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
 func (suo *StatusUpdateOne) SetStatusToTeamID(id int) *StatusUpdateOne {
 	suo.mutation.SetStatusToTeamID(id)
@@ -661,6 +741,12 @@ func (suo *StatusUpdateOne) ClearStatusToBuild() *StatusUpdateOne {
 // ClearStatusToProvisionedNetwork clears the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
 func (suo *StatusUpdateOne) ClearStatusToProvisionedNetwork() *StatusUpdateOne {
 	suo.mutation.ClearStatusToProvisionedNetwork()
+	return suo
+}
+
+// ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (suo *StatusUpdateOne) ClearStatusToProvisionedHost() *StatusUpdateOne {
+	suo.mutation.ClearStatusToProvisionedHost()
 	return suo
 }
 
@@ -894,6 +980,41 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.StatusToProvisionedHostCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.StatusToProvisionedHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
 				},
 			},
 		}

@@ -64,8 +64,7 @@ type Host struct {
 	// DependByHostToHostDependency holds the value of the DependByHostToHostDependency edge.
 	HCLDependByHostToHostDependency []*HostDependency `json:"DependByHostToHostDependency,omitempty"`
 	//
-	finding_finding_to_host                   *int
-	provisioned_host_provisioned_host_to_host *int
+	finding_finding_to_host *int
 }
 
 // HostEdges holds the relations/edges for other nodes in the graph.
@@ -166,8 +165,6 @@ func (*Host) scanValues(columns []string) ([]interface{}, error) {
 		case host.FieldHclID, host.FieldHostname, host.FieldDescription, host.FieldOS, host.FieldInstanceSize, host.FieldOverridePassword:
 			values[i] = &sql.NullString{}
 		case host.ForeignKeys[0]: // finding_finding_to_host
-			values[i] = &sql.NullInt64{}
-		case host.ForeignKeys[1]: // provisioned_host_provisioned_host_to_host
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Host", columns[i])
@@ -298,13 +295,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				h.finding_finding_to_host = new(int)
 				*h.finding_finding_to_host = int(value.Int64)
-			}
-		case host.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_host", value)
-			} else if value.Valid {
-				h.provisioned_host_provisioned_host_to_host = new(int)
-				*h.provisioned_host_provisioned_host_to_host = int(value.Int64)
 			}
 		}
 	}

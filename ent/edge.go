@@ -460,36 +460,36 @@ func (h *Host) DependByHostToHostDependency(ctx context.Context) ([]*HostDepende
 	return result, err
 }
 
-func (hd *HostDependency) HostDependencyToDependOnHost(ctx context.Context) ([]*Host, error) {
+func (hd *HostDependency) HostDependencyToDependOnHost(ctx context.Context) (*Host, error) {
 	result, err := hd.Edges.HostDependencyToDependOnHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToDependOnHost().All(ctx)
+		result, err = hd.QueryHostDependencyToDependOnHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) ([]*Host, error) {
+func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) (*Host, error) {
 	result, err := hd.Edges.HostDependencyToDependByHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToDependByHost().All(ctx)
+		result, err = hd.QueryHostDependencyToDependByHost().Only(ctx)
 	}
 	return result, err
 }
 
-func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) ([]*Network, error) {
+func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) (*Network, error) {
 	result, err := hd.Edges.HostDependencyToNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToNetwork().All(ctx)
+		result, err = hd.QueryHostDependencyToNetwork().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := hd.Edges.HostDependencyToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToEnvironment().All(ctx)
+		result, err = hd.QueryHostDependencyToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Identity) IdentityToEnvironment(ctx context.Context) ([]*Environment, error) {
@@ -620,34 +620,26 @@ func (pl *Plan) PlanToProvisioningStep(ctx context.Context) (*ProvisioningStep, 
 	return result, MaskNotFound(err)
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := ph.Edges.ProvisionedHostToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) ([]*Status, error) {
+func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) (*Status, error) {
 	result, err := ph.Edges.ProvisionedHostToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToStatus().All(ctx)
+		result, err = ph.QueryProvisionedHostToStatus().Only(ctx)
 	}
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
+func (ph *ProvisionedHost) ProvisionedHostToProvisionedNetwork(ctx context.Context) (*ProvisionedNetwork, error) {
 	result, err := ph.Edges.ProvisionedHostToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToProvisionedNetwork().All(ctx)
+		result, err = ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 	}
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToHost(ctx context.Context) ([]*Host, error) {
+func (ph *ProvisionedHost) ProvisionedHostToHost(ctx context.Context) (*Host, error) {
 	result, err := ph.Edges.ProvisionedHostToHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToHost().All(ctx)
+		result, err = ph.QueryProvisionedHostToHost().Only(ctx)
 	}
 	return result, err
 }
@@ -724,12 +716,12 @@ func (pn *ProvisionedNetwork) ProvisionedNetworkToProvisionedHost(ctx context.Co
 	return result, err
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToPlan(ctx context.Context) ([]*Plan, error) {
+func (pn *ProvisionedNetwork) ProvisionedNetworkToPlan(ctx context.Context) (*Plan, error) {
 	result, err := pn.Edges.ProvisionedNetworkToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToPlan().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToPlan().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (ps *ProvisioningStep) ProvisioningStepToTag(ctx context.Context) ([]*Tag, error) {
@@ -864,6 +856,14 @@ func (s *Status) StatusToProvisionedNetwork(ctx context.Context) (*ProvisionedNe
 	result, err := s.Edges.StatusToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryStatusToProvisionedNetwork().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := s.Edges.StatusToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToProvisionedHost().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

@@ -120,7 +120,7 @@ func (nq *NetworkQuery) QueryNetworkToHostDependency() *HostDependencyQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -572,65 +572,30 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 
 	if query := nq.withNetworkToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Network, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.NetworkToHostDependency = []*HostDependency{}
+		nodeids := make(map[int]*Network)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.NetworkToHostDependency = []*HostDependency{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Network)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   network.NetworkToHostDependencyTable,
-				Columns: network.NetworkToHostDependencyPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(network.NetworkToHostDependencyPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, nq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "NetworkToHostDependency": %v`, err)
-		}
-		query.Where(hostdependency.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.HostDependency(func(s *sql.Selector) {
+			s.Where(sql.InValues(network.NetworkToHostDependencyColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.host_dependency_host_dependency_to_network
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "host_dependency_host_dependency_to_network" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "NetworkToHostDependency" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_dependency_host_dependency_to_network" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.NetworkToHostDependency = append(nodes[i].Edges.NetworkToHostDependency, n)
-			}
+			node.Edges.NetworkToHostDependency = append(node.Edges.NetworkToHostDependency, n)
 		}
 	}
 

@@ -9,8 +9,13 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/team"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -117,11 +122,29 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		log.Fatalf("Failed to Query Enviroment for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
+	pNetworks := []*ent.ProvisionedNetwork{}
 	for _, buildNetwork := range buildNetworks {
-		wg.Add(1)
-		go createProvisionedNetworks(ctx, client, entBuild, entTeam, buildNetwork, wg)
+		pNetwork, _ := createProvisionedNetworks(ctx, client, entBuild, entTeam, buildNetwork, wg)
+		pNetworks = append(pNetworks, pNetwork)
 	}
-
+	for _, pNetwork := range pNetworks {
+		entHosts, err := pNetwork.
+			QueryProvisionedNetworkToNetwork().
+			QueryNetworkToIncludedNetwork().
+			QueryIncludedNetworkToHost().All(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Query Hosts for Network %v. Err: %v", pNetwork.Name, err)
+			return nil, err
+		}
+		networkPlan, err := pNetwork.QueryProvisionedNetworkToPlan().Only(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Query Plan for Network %v. Err: %v", pNetwork.Name, err)
+			return nil, err
+		}
+		for _, entHost := range entHosts {
+			createProvisionedHosts(ctx, client, pNetwork, entHost, networkPlan)
+		}
+	}
 	return entTeam, nil
 }
 
@@ -162,4 +185,100 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		return nil, err
 	}
 	return entProvisionedNetwork, nil
+}
+
+func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *ent.ProvisionedNetwork, entHost *ent.Host, prevPlan *ent.Plan) (*ent.ProvisionedHost, error) {
+	entProvisionedHost, err := client.ProvisionedHost.Query().Where(
+		provisionedhost.And(
+			provisionedhost.HasProvisionedHostToProvisionedNetworkWith(
+				provisionednetwork.IDEQ(pNetwork.ID),
+			),
+			provisionedhost.HasProvisionedHostToHostWith(
+				host.IDEQ(entHost.ID),
+			),
+		),
+	).Only(ctx)
+	if err != nil {
+		if err != err.(*ent.NotFoundError) {
+			log.Fatalf("Failed to Query Existing Host %v. Err: %v", entHost.HclID, err)
+			return nil, err
+		}
+	} else {
+		return entProvisionedHost, nil
+	}
+
+	entHostDependencies, err := entHost.QueryDependByHostToHostDependency().
+		WithHostDependencyToDependOnHost().
+		WithHostDependencyToNetwork().
+		All(ctx)
+
+	passedInPrevPlan := prevPlan
+
+	for _, entHostDependency := range entHostDependencies {
+		entDependsOnHost, err := client.ProvisionedHost.Query().Where(
+			provisionedhost.And(
+				provisionedhost.HasProvisionedHostToProvisionedNetworkWith(
+					provisionednetwork.IDEQ(entHostDependency.Edges.HostDependencyToNetwork.ID),
+				),
+				provisionedhost.HasProvisionedHostToHostWith(
+					host.IDEQ(entHostDependency.Edges.HostDependencyToDependOnHost.ID),
+				),
+			),
+		).WithProvisionedHostToPlan().Only(ctx)
+		if err != nil {
+			if err != err.(*ent.NotFoundError) {
+				log.Fatalf("Failed to Query Depended On Host %v for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
+				return nil, err
+			} else {
+				dependOnBuild := pNetwork.QueryProvisionedNetworkToBuild().OnlyX(ctx)
+				dependOnTeam := pNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
+				dependOnPnetwork, err := client.ProvisionedNetwork.Query().Where(
+					provisionednetwork.And(
+						provisionednetwork.HasProvisionedNetworkToNetworkWith(
+							network.IDEQ(entHostDependency.Edges.HostDependencyToNetwork.ID),
+						),
+						provisionednetwork.HasProvisionedNetworkToBuildWith(
+							build.IDEQ(dependOnBuild.ID),
+						),
+						provisionednetwork.HasProvisionedNetworkToTeamWith(
+							team.IDEQ(dependOnTeam.ID),
+						),
+					),
+				).Only(ctx)
+				if err != nil {
+					log.Fatalf("Failed to Query Provined Network %v for Depended On Host %v. Err: %v", entHostDependency.Edges.HostDependencyToNetwork.HclID, entHostDependency.Edges.HostDependencyToDependOnHost.HclID, err)
+				}
+				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, passedInPrevPlan)
+			}
+		} else {
+			dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToPlan().Only(ctx)
+			if err != err.(*ent.NotFoundError) {
+				log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
+				return nil, err
+			}
+			if dependOnPlan.StepNumber > prevPlan.StepNumber {
+				prevPlan = dependOnPlan
+			}
+			return entDependsOnHost, nil
+		}
+	}
+
+	// When get Internet combine CIDR in pNetwork with LastOctet in entHost
+	subnetIP := fmt.Sprint(entHost.LastOctet)
+
+	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisionedHost)
+	if err != nil {
+		return nil, err
+	}
+
+	entProvisionedHost, err = client.ProvisionedHost.Create().
+		SetSubnetIP(subnetIP).
+		SetProvisionedHostToStatus(entStatus).
+		SetProvisionedHostToProvisionedNetwork(pNetwork).
+		SetProvisionedHostToHost(entHost).
+		Save(ctx)
+
+	// Make Binary and tmp url
+
+	return nil, nil
 }

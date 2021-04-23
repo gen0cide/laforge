@@ -7,7 +7,10 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/network"
 )
 
 // HostDependency is the model entity for the HostDependency schema.
@@ -25,63 +28,86 @@ type HostDependency struct {
 
 	// Edges put into the main struct to be loaded via hcl
 	// HostDependencyToDependOnHost holds the value of the HostDependencyToDependOnHost edge.
-	HCLHostDependencyToDependOnHost []*Host `json:"HostDependencyToDependOnHost,omitempty"`
+	HCLHostDependencyToDependOnHost *Host `json:"HostDependencyToDependOnHost,omitempty"`
 	// HostDependencyToDependByHost holds the value of the HostDependencyToDependByHost edge.
-	HCLHostDependencyToDependByHost []*Host `json:"HostDependencyToDependByHost,omitempty"`
+	HCLHostDependencyToDependByHost *Host `json:"HostDependencyToDependByHost,omitempty"`
 	// HostDependencyToNetwork holds the value of the HostDependencyToNetwork edge.
-	HCLHostDependencyToNetwork []*Network `json:"HostDependencyToNetwork,omitempty"`
+	HCLHostDependencyToNetwork *Network `json:"HostDependencyToNetwork,omitempty"`
 	// HostDependencyToEnvironment holds the value of the HostDependencyToEnvironment edge.
-	HCLHostDependencyToEnvironment []*Environment `json:"HostDependencyToEnvironment,omitempty"`
+	HCLHostDependencyToEnvironment *Environment `json:"HostDependencyToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_host_dependency        *int
+	host_dependency_host_dependency_to_depend_on_host *int
+	host_dependency_host_dependency_to_depend_by_host *int
+	host_dependency_host_dependency_to_network        *int
 }
 
 // HostDependencyEdges holds the relations/edges for other nodes in the graph.
 type HostDependencyEdges struct {
 	// HostDependencyToDependOnHost holds the value of the HostDependencyToDependOnHost edge.
-	HostDependencyToDependOnHost []*Host `json:"HostDependencyToDependOnHost,omitempty"`
+	HostDependencyToDependOnHost *Host `json:"HostDependencyToDependOnHost,omitempty"`
 	// HostDependencyToDependByHost holds the value of the HostDependencyToDependByHost edge.
-	HostDependencyToDependByHost []*Host `json:"HostDependencyToDependByHost,omitempty"`
+	HostDependencyToDependByHost *Host `json:"HostDependencyToDependByHost,omitempty"`
 	// HostDependencyToNetwork holds the value of the HostDependencyToNetwork edge.
-	HostDependencyToNetwork []*Network `json:"HostDependencyToNetwork,omitempty"`
+	HostDependencyToNetwork *Network `json:"HostDependencyToNetwork,omitempty"`
 	// HostDependencyToEnvironment holds the value of the HostDependencyToEnvironment edge.
-	HostDependencyToEnvironment []*Environment `json:"HostDependencyToEnvironment,omitempty"`
+	HostDependencyToEnvironment *Environment `json:"HostDependencyToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
 }
 
 // HostDependencyToDependOnHostOrErr returns the HostDependencyToDependOnHost value or an error if the edge
-// was not loaded in eager-loading.
-func (e HostDependencyEdges) HostDependencyToDependOnHostOrErr() ([]*Host, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e HostDependencyEdges) HostDependencyToDependOnHostOrErr() (*Host, error) {
 	if e.loadedTypes[0] {
+		if e.HostDependencyToDependOnHost == nil {
+			// The edge HostDependencyToDependOnHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: host.Label}
+		}
 		return e.HostDependencyToDependOnHost, nil
 	}
 	return nil, &NotLoadedError{edge: "HostDependencyToDependOnHost"}
 }
 
 // HostDependencyToDependByHostOrErr returns the HostDependencyToDependByHost value or an error if the edge
-// was not loaded in eager-loading.
-func (e HostDependencyEdges) HostDependencyToDependByHostOrErr() ([]*Host, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e HostDependencyEdges) HostDependencyToDependByHostOrErr() (*Host, error) {
 	if e.loadedTypes[1] {
+		if e.HostDependencyToDependByHost == nil {
+			// The edge HostDependencyToDependByHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: host.Label}
+		}
 		return e.HostDependencyToDependByHost, nil
 	}
 	return nil, &NotLoadedError{edge: "HostDependencyToDependByHost"}
 }
 
 // HostDependencyToNetworkOrErr returns the HostDependencyToNetwork value or an error if the edge
-// was not loaded in eager-loading.
-func (e HostDependencyEdges) HostDependencyToNetworkOrErr() ([]*Network, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e HostDependencyEdges) HostDependencyToNetworkOrErr() (*Network, error) {
 	if e.loadedTypes[2] {
+		if e.HostDependencyToNetwork == nil {
+			// The edge HostDependencyToNetwork was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: network.Label}
+		}
 		return e.HostDependencyToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "HostDependencyToNetwork"}
 }
 
 // HostDependencyToEnvironmentOrErr returns the HostDependencyToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e HostDependencyEdges) HostDependencyToEnvironmentOrErr() ([]*Environment, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e HostDependencyEdges) HostDependencyToEnvironmentOrErr() (*Environment, error) {
 	if e.loadedTypes[3] {
+		if e.HostDependencyToEnvironment == nil {
+			// The edge HostDependencyToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.HostDependencyToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "HostDependencyToEnvironment"}
@@ -96,6 +122,14 @@ func (*HostDependency) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case hostdependency.FieldHostID, hostdependency.FieldNetworkID:
 			values[i] = &sql.NullString{}
+		case hostdependency.ForeignKeys[0]: // environment_environment_to_host_dependency
+			values[i] = &sql.NullInt64{}
+		case hostdependency.ForeignKeys[1]: // host_dependency_host_dependency_to_depend_on_host
+			values[i] = &sql.NullInt64{}
+		case hostdependency.ForeignKeys[2]: // host_dependency_host_dependency_to_depend_by_host
+			values[i] = &sql.NullInt64{}
+		case hostdependency.ForeignKeys[3]: // host_dependency_host_dependency_to_network
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HostDependency", columns[i])
 		}
@@ -128,6 +162,34 @@ func (hd *HostDependency) assignValues(columns []string, values []interface{}) e
 				return fmt.Errorf("unexpected type %T for field network_id", values[i])
 			} else if value.Valid {
 				hd.NetworkID = value.String
+			}
+		case hostdependency.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_host_dependency", value)
+			} else if value.Valid {
+				hd.environment_environment_to_host_dependency = new(int)
+				*hd.environment_environment_to_host_dependency = int(value.Int64)
+			}
+		case hostdependency.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_depend_on_host", value)
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_depend_on_host = new(int)
+				*hd.host_dependency_host_dependency_to_depend_on_host = int(value.Int64)
+			}
+		case hostdependency.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_depend_by_host", value)
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_depend_by_host = new(int)
+				*hd.host_dependency_host_dependency_to_depend_by_host = int(value.Int64)
+			}
+		case hostdependency.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_network", value)
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_network = new(int)
+				*hd.host_dependency_host_dependency_to_network = int(value.Int64)
 			}
 		}
 	}

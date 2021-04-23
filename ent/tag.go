@@ -37,7 +37,6 @@ type Tag struct {
 	host_host_to_tag                           *int
 	included_network_included_network_to_tag   *int
 	network_network_to_tag                     *int
-	provisioned_host_provisioned_host_to_tag   *int
 	provisioning_step_provisioning_step_to_tag *int
 	script_script_to_tag                       *int
 	user_user_to_tag                           *int
@@ -84,13 +83,11 @@ func (*Tag) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case tag.ForeignKeys[13]: // network_network_to_tag
 			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[14]: // provisioned_host_provisioned_host_to_tag
+		case tag.ForeignKeys[14]: // provisioning_step_provisioning_step_to_tag
 			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[15]: // provisioning_step_provisioning_step_to_tag
+		case tag.ForeignKeys[15]: // script_script_to_tag
 			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[16]: // script_script_to_tag
-			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[17]: // user_user_to_tag
+		case tag.ForeignKeys[16]: // user_user_to_tag
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
@@ -234,26 +231,19 @@ func (t *Tag) assignValues(columns []string, values []interface{}) error {
 			}
 		case tag.ForeignKeys[14]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_tag", value)
-			} else if value.Valid {
-				t.provisioned_host_provisioned_host_to_tag = new(int)
-				*t.provisioned_host_provisioned_host_to_tag = int(value.Int64)
-			}
-		case tag.ForeignKeys[15]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_tag", value)
 			} else if value.Valid {
 				t.provisioning_step_provisioning_step_to_tag = new(int)
 				*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
 			}
-		case tag.ForeignKeys[16]:
+		case tag.ForeignKeys[15]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
 			} else if value.Valid {
 				t.script_script_to_tag = new(int)
 				*t.script_script_to_tag = int(value.Int64)
 			}
-		case tag.ForeignKeys[17]:
+		case tag.ForeignKeys[16]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
 			} else if value.Valid {

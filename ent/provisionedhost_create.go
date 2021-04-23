@@ -17,7 +17,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisionedHostCreate is the builder for creating a ProvisionedHost entity.
@@ -33,64 +32,37 @@ func (phc *ProvisionedHostCreate) SetSubnetIP(s string) *ProvisionedHostCreate {
 	return phc
 }
 
-// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by IDs.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToTagIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisionedHostToTagIDs(ids...)
+// SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToStatusID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToStatusID(id)
 	return phc
 }
 
-// AddProvisionedHostToTag adds the "ProvisionedHostToTag" edges to the Tag entity.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToTag(t ...*Tag) *ProvisionedHostCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return phc.AddProvisionedHostToTagIDs(ids...)
+// SetProvisionedHostToStatus sets the "ProvisionedHostToStatus" edge to the Status entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToStatus(s *Status) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToStatusID(s.ID)
 }
 
-// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by IDs.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToStatuIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisionedHostToStatuIDs(ids...)
+// SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToProvisionedNetworkID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToProvisionedNetworkID(id)
 	return phc
 }
 
-// AddProvisionedHostToStatus adds the "ProvisionedHostToStatus" edges to the Status entity.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToStatus(s ...*Status) *ProvisionedHostCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return phc.AddProvisionedHostToStatuIDs(ids...)
+// SetProvisionedHostToProvisionedNetwork sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToProvisionedNetwork(p *ProvisionedNetwork) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToProvisionedNetworkID(p.ID)
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisionedHostToProvisionedNetworkIDs(ids...)
+// SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToHostID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToHostID(id)
 	return phc
 }
 
-// AddProvisionedHostToProvisionedNetwork adds the "ProvisionedHostToProvisionedNetwork" edges to the ProvisionedNetwork entity.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisionedNetwork(p ...*ProvisionedNetwork) *ProvisionedHostCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return phc.AddProvisionedHostToProvisionedNetworkIDs(ids...)
-}
-
-// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by IDs.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToHostIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisionedHostToHostIDs(ids...)
-	return phc
-}
-
-// AddProvisionedHostToHost adds the "ProvisionedHostToHost" edges to the Host entity.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToHost(h ...*Host) *ProvisionedHostCreate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return phc.AddProvisionedHostToHostIDs(ids...)
+// SetProvisionedHostToHost sets the "ProvisionedHostToHost" edge to the Host entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToHost(h *Host) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToHostID(h.ID)
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
@@ -211,6 +183,15 @@ func (phc *ProvisionedHostCreate) check() error {
 	if _, ok := phc.mutation.SubnetIP(); !ok {
 		return &ValidationError{Name: "subnet_ip", err: errors.New("ent: missing required field \"subnet_ip\"")}
 	}
+	if _, ok := phc.mutation.ProvisionedHostToStatusID(); !ok {
+		return &ValidationError{Name: "ProvisionedHostToStatus", err: errors.New("ent: missing required edge \"ProvisionedHostToStatus\"")}
+	}
+	if _, ok := phc.mutation.ProvisionedHostToProvisionedNetworkID(); !ok {
+		return &ValidationError{Name: "ProvisionedHostToProvisionedNetwork", err: errors.New("ent: missing required edge \"ProvisionedHostToProvisionedNetwork\"")}
+	}
+	if _, ok := phc.mutation.ProvisionedHostToHostID(); !ok {
+		return &ValidationError{Name: "ProvisionedHostToHost", err: errors.New("ent: missing required edge \"ProvisionedHostToHost\"")}
+	}
 	return nil
 }
 
@@ -246,28 +227,9 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		})
 		_node.SubnetIP = value
 	}
-	if nodes := phc.mutation.ProvisionedHostToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisionedhost.ProvisionedHostToTagTable,
-			Columns: []string{provisionedhost.ProvisionedHostToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := phc.mutation.ProvisionedHostToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   provisionedhost.ProvisionedHostToStatusTable,
 			Columns: []string{provisionedhost.ProvisionedHostToStatusColumn},
@@ -286,10 +248,10 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	}
 	if nodes := phc.mutation.ProvisionedHostToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisionedhost.ProvisionedHostToProvisionedNetworkTable,
-			Columns: provisionedhost.ProvisionedHostToProvisionedNetworkPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -305,7 +267,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	}
 	if nodes := phc.mutation.ProvisionedHostToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisionedhost.ProvisionedHostToHostTable,
 			Columns: []string{provisionedhost.ProvisionedHostToHostColumn},

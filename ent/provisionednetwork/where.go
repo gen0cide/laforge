@@ -445,7 +445,7 @@ func HasProvisionedNetworkToProvisionedHost() predicate.ProvisionedNetwork {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkToProvisionedHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworkToProvisionedHostTable, ProvisionedNetworkToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedNetworkToProvisionedHostTable, ProvisionedNetworkToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -457,7 +457,7 @@ func HasProvisionedNetworkToProvisionedHostWith(preds ...predicate.ProvisionedHo
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkToProvisionedHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedNetworkToProvisionedHostTable, ProvisionedNetworkToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedNetworkToProvisionedHostTable, ProvisionedNetworkToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -473,7 +473,7 @@ func HasProvisionedNetworkToPlan() predicate.ProvisionedNetwork {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkToPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -485,7 +485,7 @@ func HasProvisionedNetworkToPlanWith(preds ...predicate.Plan) predicate.Provisio
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedNetworkToPlanInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedNetworkToPlanTable, ProvisionedNetworkToPlanColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

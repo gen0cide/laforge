@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
@@ -141,6 +142,25 @@ func (sc *StatusCreate) SetNillableStatusToProvisionedNetworkID(id *int) *Status
 // SetStatusToProvisionedNetwork sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
 func (sc *StatusCreate) SetStatusToProvisionedNetwork(p *ProvisionedNetwork) *StatusCreate {
 	return sc.SetStatusToProvisionedNetworkID(p.ID)
+}
+
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (sc *StatusCreate) SetStatusToProvisionedHostID(id int) *StatusCreate {
+	sc.mutation.SetStatusToProvisionedHostID(id)
+	return sc
+}
+
+// SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToProvisionedHostID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToProvisionedHostID(*id)
+	}
+	return sc
+}
+
+// SetStatusToProvisionedHost sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (sc *StatusCreate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusCreate {
+	return sc.SetStatusToProvisionedHostID(p.ID)
 }
 
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
@@ -361,6 +381,25 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToProvisionedHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
 				},
 			},
 		}
