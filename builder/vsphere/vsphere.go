@@ -2,9 +2,16 @@ package vsphere
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
+
+	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/vapi/library"
+	"github.com/vmware/govmomi/vapi/rest"
+	"github.com/vmware/govmomi/vim25"
 )
 
 type VSphere struct {
@@ -12,6 +19,7 @@ type VSphere struct {
 	Client http.Client
 	Username string
 	Password string
+	ContentLibraryId string
 }
 
 type PowerState string
@@ -410,6 +418,46 @@ func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 		return
 	}
 	networks = networkList.Value
+	return
+}
+
+func (vs *VSphere) GetTemplateIDByName(name string) (templateId string, err error) {
+	u, err := url.Parse(vs.BaseUrl + "/sdk")
+	if err != nil {
+		return
+	}
+	u.User = url.UserPassword(vs.Username, vs.Password)
+	
+	ctx := context.TODO()
+	client, err := govmomi.NewClient(ctx, u, false)
+	if err != nil {
+		return
+	}
+
+	v25, err := vim25.NewClient(ctx, client.RoundTripper)
+	if err != nil {
+		return
+	}
+	c := rest.NewClient(v25)
+	c.Login(ctx, u.User)
+	clm := library.NewManager(c)
+
+	fi := library.FindItem{
+		LibraryID: vs.ContentLibraryId,
+		Name:      name,
+	}
+	items, err := clm.FindLibraryItems(ctx, fi)
+	if err != nil {
+		return
+	}
+	if len(items) < 1 {
+		return
+	}
+	item, err := clm.GetLibraryItem(ctx, items[0])
+	if err != nil {
+		return
+	}
+	templateId = item.ID
 	return
 }
 
