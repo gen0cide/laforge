@@ -230,6 +230,34 @@ func HasBuildToEnvironmentWith(preds ...predicate.Environment) predicate.Build {
 	})
 }
 
+// HasBuildToCompetition applies the HasEdge predicate on the "BuildToCompetition" edge.
+func HasBuildToCompetition() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToCompetitionTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToCompetitionTable, BuildToCompetitionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToCompetitionWith applies the HasEdge predicate on the "BuildToCompetition" edge with a given conditions (other predicates).
+func HasBuildToCompetitionWith(preds ...predicate.Competition) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToCompetitionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToCompetitionTable, BuildToCompetitionColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasBuildToProvisionedNetwork applies the HasEdge predicate on the "BuildToProvisionedNetwork" edge.
 func HasBuildToProvisionedNetwork() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {

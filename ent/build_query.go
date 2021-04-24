@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -32,6 +33,7 @@ type BuildQuery struct {
 	// eager-loading edges.
 	withBuildToStatus             *StatusQuery
 	withBuildToEnvironment        *EnvironmentQuery
+	withBuildToCompetition        *CompetitionQuery
 	withBuildToProvisionedNetwork *ProvisionedNetworkQuery
 	withBuildToTeam               *TeamQuery
 	withBuildToPlan               *PlanQuery
@@ -102,6 +104,28 @@ func (bq *BuildQuery) QueryBuildToEnvironment() *EnvironmentQuery {
 			sqlgraph.From(build.Table, build.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToEnvironmentTable, build.BuildToEnvironmentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildToCompetition chains the current query on the "BuildToCompetition" edge.
+func (bq *BuildQuery) QueryBuildToCompetition() *CompetitionQuery {
+	query := &CompetitionQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, selector),
+			sqlgraph.To(competition.Table, competition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToCompetitionTable, build.BuildToCompetitionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -358,6 +382,7 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		predicates:                    append([]predicate.Build{}, bq.predicates...),
 		withBuildToStatus:             bq.withBuildToStatus.Clone(),
 		withBuildToEnvironment:        bq.withBuildToEnvironment.Clone(),
+		withBuildToCompetition:        bq.withBuildToCompetition.Clone(),
 		withBuildToProvisionedNetwork: bq.withBuildToProvisionedNetwork.Clone(),
 		withBuildToTeam:               bq.withBuildToTeam.Clone(),
 		withBuildToPlan:               bq.withBuildToPlan.Clone(),
@@ -386,6 +411,17 @@ func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *B
 		opt(query)
 	}
 	bq.withBuildToEnvironment = query
+	return bq
+}
+
+// WithBuildToCompetition tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToCompetition" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToCompetition(opts ...func(*CompetitionQuery)) *BuildQuery {
+	query := &CompetitionQuery{config: bq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withBuildToCompetition = query
 	return bq
 }
 
@@ -488,15 +524,16 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		nodes       = []*Build{}
 		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			bq.withBuildToStatus != nil,
 			bq.withBuildToEnvironment != nil,
+			bq.withBuildToCompetition != nil,
 			bq.withBuildToProvisionedNetwork != nil,
 			bq.withBuildToTeam != nil,
 			bq.withBuildToPlan != nil,
 		}
 	)
-	if bq.withBuildToEnvironment != nil {
+	if bq.withBuildToEnvironment != nil || bq.withBuildToCompetition != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -571,6 +608,31 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.BuildToEnvironment = n
+			}
+		}
+	}
+
+	if query := bq.withBuildToCompetition; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Build)
+		for i := range nodes {
+			if fk := nodes[i].build_build_to_competition; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(competition.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_competition" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.BuildToCompetition = n
 			}
 		}
 	}

@@ -14,6 +14,8 @@ const (
 	EdgeBuildToStatus = "BuildToStatus"
 	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
 	EdgeBuildToEnvironment = "BuildToEnvironment"
+	// EdgeBuildToCompetition holds the string denoting the buildtocompetition edge name in mutations.
+	EdgeBuildToCompetition = "BuildToCompetition"
 	// EdgeBuildToProvisionedNetwork holds the string denoting the buildtoprovisionednetwork edge name in mutations.
 	EdgeBuildToProvisionedNetwork = "BuildToProvisionedNetwork"
 	// EdgeBuildToTeam holds the string denoting the buildtoteam edge name in mutations.
@@ -37,6 +39,13 @@ const (
 	BuildToEnvironmentInverseTable = "environments"
 	// BuildToEnvironmentColumn is the table column denoting the BuildToEnvironment relation/edge.
 	BuildToEnvironmentColumn = "build_build_to_environment"
+	// BuildToCompetitionTable is the table the holds the BuildToCompetition relation/edge.
+	BuildToCompetitionTable = "builds"
+	// BuildToCompetitionInverseTable is the table name for the Competition entity.
+	// It exists in this package in order to avoid circular dependency with the "competition" package.
+	BuildToCompetitionInverseTable = "competitions"
+	// BuildToCompetitionColumn is the table column denoting the BuildToCompetition relation/edge.
+	BuildToCompetitionColumn = "build_build_to_competition"
 	// BuildToProvisionedNetworkTable is the table the holds the BuildToProvisionedNetwork relation/edge.
 	BuildToProvisionedNetworkTable = "provisioned_networks"
 	// BuildToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
@@ -69,6 +78,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
 var ForeignKeys = []string{
 	"build_build_to_environment",
+	"build_build_to_competition",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

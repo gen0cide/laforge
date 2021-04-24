@@ -38,6 +38,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "revision", Type: field.TypeInt},
 		{Name: "build_build_to_environment", Type: field.TypeInt, Nullable: true},
+		{Name: "build_build_to_competition", Type: field.TypeInt, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
@@ -50,6 +51,13 @@ var (
 				Columns: []*schema.Column{BuildsColumns[2]},
 
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "builds_competitions_BuildToCompetition",
+				Columns: []*schema.Column{BuildsColumns[3]},
+
+				RefColumns: []*schema.Column{CompetitionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -83,13 +91,22 @@ var (
 		{Name: "root_password", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_competition", Type: field.TypeInt, Nullable: true},
 	}
 	// CompetitionsTable holds the schema information for the "competitions" table.
 	CompetitionsTable = &schema.Table{
-		Name:        "competitions",
-		Columns:     CompetitionsColumns,
-		PrimaryKey:  []*schema.Column{CompetitionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "competitions",
+		Columns:    CompetitionsColumns,
+		PrimaryKey: []*schema.Column{CompetitionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "competitions_environments_EnvironmentToCompetition",
+				Columns: []*schema.Column{CompetitionsColumns[5]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// DnSsColumns holds the columns for the "dn_ss" table.
 	DnSsColumns = []*schema.Column{
@@ -992,33 +1009,6 @@ var (
 			},
 		},
 	}
-	// EnvironmentEnvironmentToCompetitionColumns holds the columns for the "environment_EnvironmentToCompetition" table.
-	EnvironmentEnvironmentToCompetitionColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "competition_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToCompetitionTable holds the schema information for the "environment_EnvironmentToCompetition" table.
-	EnvironmentEnvironmentToCompetitionTable = &schema.Table{
-		Name:       "environment_EnvironmentToCompetition",
-		Columns:    EnvironmentEnvironmentToCompetitionColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[0], EnvironmentEnvironmentToCompetitionColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToCompetition_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToCompetition_competition_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToCompetitionColumns[1]},
-
-				RefColumns: []*schema.Column{CompetitionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// EnvironmentEnvironmentToIdentityColumns holds the columns for the "environment_EnvironmentToIdentity" table.
 	EnvironmentEnvironmentToIdentityColumns = []*schema.Column{
 		{Name: "environment_id", Type: field.TypeInt},
@@ -1484,7 +1474,6 @@ var (
 		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
 		EnvironmentEnvironmentToHostTable,
-		EnvironmentEnvironmentToCompetitionTable,
 		EnvironmentEnvironmentToIdentityTable,
 		EnvironmentEnvironmentToCommandTable,
 		EnvironmentEnvironmentToScriptTable,
@@ -1506,6 +1495,8 @@ var (
 
 func init() {
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	BuildsTable.ForeignKeys[1].RefTable = CompetitionsTable
+	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostsTable.ForeignKeys[0].RefTable = FindingsTable
 	HostDependenciesTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[1].RefTable = HostsTable
@@ -1565,8 +1556,6 @@ func init() {
 	EnvironmentEnvironmentToUserTable.ForeignKeys[1].RefTable = UsersTable
 	EnvironmentEnvironmentToHostTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToHostTable.ForeignKeys[1].RefTable = HostsTable
-	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToCompetitionTable.ForeignKeys[1].RefTable = CompetitionsTable
 	EnvironmentEnvironmentToIdentityTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToIdentityTable.ForeignKeys[1].RefTable = IdentitiesTable
 	EnvironmentEnvironmentToCommandTable.ForeignKeys[0].RefTable = EnvironmentsTable

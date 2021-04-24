@@ -84,11 +84,13 @@ const (
 	// EnvironmentToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	EnvironmentToHostInverseTable = "hosts"
-	// EnvironmentToCompetitionTable is the table the holds the EnvironmentToCompetition relation/edge. The primary key declared below.
-	EnvironmentToCompetitionTable = "environment_EnvironmentToCompetition"
+	// EnvironmentToCompetitionTable is the table the holds the EnvironmentToCompetition relation/edge.
+	EnvironmentToCompetitionTable = "competitions"
 	// EnvironmentToCompetitionInverseTable is the table name for the Competition entity.
 	// It exists in this package in order to avoid circular dependency with the "competition" package.
 	EnvironmentToCompetitionInverseTable = "competitions"
+	// EnvironmentToCompetitionColumn is the table column denoting the EnvironmentToCompetition relation/edge.
+	EnvironmentToCompetitionColumn = "environment_environment_to_competition"
 	// EnvironmentToIdentityTable is the table the holds the EnvironmentToIdentity relation/edge. The primary key declared below.
 	EnvironmentToIdentityTable = "environment_EnvironmentToIdentity"
 	// EnvironmentToIdentityInverseTable is the table name for the Identity entity.
@@ -183,9 +185,6 @@ var (
 	// EnvironmentToHostPrimaryKey and EnvironmentToHostColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToHost relation (M2M).
 	EnvironmentToHostPrimaryKey = []string{"environment_id", "host_id"}
-	// EnvironmentToCompetitionPrimaryKey and EnvironmentToCompetitionColumn2 are the table columns denoting the
-	// primary key for the EnvironmentToCompetition relation (M2M).
-	EnvironmentToCompetitionPrimaryKey = []string{"environment_id", "competition_id"}
 	// EnvironmentToIdentityPrimaryKey and EnvironmentToIdentityColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIdentity relation (M2M).
 	EnvironmentToIdentityPrimaryKey = []string{"environment_id", "identity_id"}

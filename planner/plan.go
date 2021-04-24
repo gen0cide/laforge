@@ -9,10 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -32,7 +34,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var RenderFiles = false
+var RenderFiles = true
 
 func main() {
 	var wg sync.WaitGroup
@@ -77,10 +79,16 @@ func createBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 	if err != nil {
 		return nil, err
 	}
+	entCompetition, err := client.Competition.Query().Where(competition.HclIDEQ(entEnvironment.CompetitionID)).Only(ctx)
+	if err != nil {
+		log.Fatalf("Failed to Query Competition %v for Enviroment %v. Err: %v", len(entEnvironment.CompetitionID), entEnvironment.HclID, err)
+		return nil, err
+	}
 	entBuild, err := client.Build.Create().
 		SetRevision(len(entEnvironment.Edges.EnvironmentToBuild)).
 		SetBuildToEnvironment(entEnvironment).
 		SetBuildToStatus(entStatus).
+		SetBuildToCompetition(entCompetition).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create Build %v for Enviroment %v. Err: %v", len(entEnvironment.Edges.EnvironmentToBuild), entEnvironment.HclID, err)
@@ -459,6 +467,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 													SetStepNumber(stepNumber).
 													SetType(provisioningstep.TypeDNSRecord).SetProvisioningStepToDNSRecord(entDNSRecord).
 													SetProvisioningStepToStatus(entStatus).
+													SetProvisioningStepToProvisionedHost(pHost).
 													Save(ctx)
 												if err != nil {
 													log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
@@ -471,6 +480,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 											SetStepNumber(stepNumber).
 											SetType(provisioningstep.TypeFileDelete).SetProvisioningStepToFileDelete(entFileDelete).
 											SetProvisioningStepToStatus(entStatus).
+											SetProvisioningStepToProvisionedHost(pHost).
 											Save(ctx)
 										if err != nil {
 											log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
@@ -481,8 +491,10 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							} else {
 								entProvisioningStep, err = client.ProvisioningStep.Create().
 									SetStepNumber(stepNumber).
-									SetType(provisioningstep.TypeFileExtract).SetProvisioningStepToFileExtract(entFileExtract).
+									SetType(provisioningstep.TypeFileExtract).
+									SetProvisioningStepToFileExtract(entFileExtract).
 									SetProvisioningStepToStatus(entStatus).
+									SetProvisioningStepToProvisionedHost(pHost).
 									Save(ctx)
 								if err != nil {
 									log.Fatalf("Failed to Creat Provisioning Step for FileExtract %v. Err: %v", hclID, err)
@@ -496,6 +508,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							SetType(provisioningstep.TypeFileDownload).
 							SetProvisioningStepToFileDownload(entFileDownload).
 							SetProvisioningStepToStatus(entStatus).
+							SetProvisioningStepToProvisionedHost(pHost).
 							Save(ctx)
 						if err != nil {
 							log.Fatalf("Failed to Creat Provisioning Step for FileDownload %v. Err: %v", hclID, err)
@@ -509,6 +522,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 					SetType(provisioningstep.TypeCommand).
 					SetProvisioningStepToCommand(entCommand).
 					SetProvisioningStepToStatus(entStatus).
+					SetProvisioningStepToProvisionedHost(pHost).
 					Save(ctx)
 				if err != nil {
 					log.Fatalf("Failed to Creat Provisioning Step for Command %v. Err: %v", hclID, err)
@@ -522,14 +536,27 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			SetType(provisioningstep.TypeScript).
 			SetProvisioningStepToScript(entScript).
 			SetProvisioningStepToStatus(entStatus).
+			SetProvisioningStepToProvisionedHost(pHost).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Creat Provisioning Step for Script %v. Err: %v", hclID, err)
 			return nil, err
 		}
-		// if RenderFiles {
+		if RenderFiles {
+			filePath, err := renderScript(ctx, client, entProvisioningStep)
+			if err != nil {
+				return nil, err
+			}
+			entTmpUrl, err := utils.CreateTempURL(ctx, client, filePath)
+			if err != nil {
+				return nil, err
+			}
+			_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisioningStep(entProvisioningStep).Save(ctx)
+			if err != nil {
+				return nil, err
+			}
 
-		// }
+		}
 	}
 
 	_, err = client.Plan.Create().
@@ -547,4 +574,53 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 
 	return entProvisioningStep, nil
 
+}
+
+func renderScript(ctx context.Context, client *ent.Client, pStep *ent.ProvisioningStep) (string, error) {
+	currentProvisionedHost := pStep.QueryProvisioningStepToProvisionedHost().OnlyX(ctx)
+	currentScript := pStep.QueryProvisioningStepToScript().OnlyX(ctx)
+	currentProvisionedNetwork := currentProvisionedHost.QueryProvisionedHostToProvisionedNetwork().OnlyX(ctx)
+	currentTeam := currentProvisionedNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
+	currentBuild := currentTeam.QueryTeamToBuild().OnlyX(ctx)
+	currentEnvironment := currentBuild.QueryBuildToEnvironment().OnlyX(ctx)
+	currentCompetition := currentBuild.QueryBuildToCompetition().OnlyX(ctx)
+	currentNetwork := currentProvisionedNetwork.QueryProvisionedNetworkToNetwork().OnlyX(ctx)
+	currentHost := currentProvisionedHost.QueryProvisionedHostToHost().OnlyX(ctx)
+	// Need to Make Unique and change how it's loaded in
+	currentDNS := currentCompetition.QueryCompetitionToDNS().FirstX(ctx)
+	templeteData := TempleteContext{
+		Build:              currentBuild,
+		Competition:        currentCompetition,
+		Environment:        currentEnvironment,
+		Host:               currentHost,
+		DNS:                currentDNS,
+		Network:            currentNetwork,
+		Script:             currentScript,
+		Team:               currentTeam,
+		ProvisionedNetwork: currentProvisionedNetwork,
+		ProvisionedHost:    currentProvisionedHost,
+		ProvisioningStep:   pStep,
+	}
+	t, err := template.ParseFiles(currentScript.AbsPath)
+	if err != nil {
+		log.Fatalf("Failed to Parse templete for script %v. Err: %v", currentScript.Name, err)
+		return "", err
+	}
+	t.Funcs(TemplateFuncLib)
+	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
+	os.MkdirAll(fileRelativePath, 0755)
+	fileName := filepath.Base(currentScript.Source)
+	fileName = path.Join(fileRelativePath, fileName)
+	fileName, err = filepath.Abs(fileName)
+	if err != nil {
+		return "", err
+	}
+	f, err := os.Create(fileName)
+	if err != nil {
+		log.Fatalf("Error Generating Script %v. Err: %v", currentScript.Name, err)
+		return "", err
+	}
+	err = t.Execute(f, templeteData)
+	f.Close()
+	return fileName, nil
 }

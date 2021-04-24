@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/status"
 )
@@ -28,6 +29,8 @@ type Build struct {
 	HCLBuildToStatus *Status `json:"BuildToStatus,omitempty"`
 	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
 	HCLBuildToEnvironment *Environment `json:"BuildToEnvironment,omitempty"`
+	// BuildToCompetition holds the value of the BuildToCompetition edge.
+	HCLBuildToCompetition *Competition `json:"BuildToCompetition,omitempty"`
 	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
 	HCLBuildToProvisionedNetwork []*ProvisionedNetwork `json:"BuildToProvisionedNetwork,omitempty"`
 	// BuildToTeam holds the value of the BuildToTeam edge.
@@ -36,6 +39,7 @@ type Build struct {
 	HCLBuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
 	//
 	build_build_to_environment *int
+	build_build_to_competition *int
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
@@ -44,6 +48,8 @@ type BuildEdges struct {
 	BuildToStatus *Status `json:"BuildToStatus,omitempty"`
 	// BuildToEnvironment holds the value of the BuildToEnvironment edge.
 	BuildToEnvironment *Environment `json:"BuildToEnvironment,omitempty"`
+	// BuildToCompetition holds the value of the BuildToCompetition edge.
+	BuildToCompetition *Competition `json:"BuildToCompetition,omitempty"`
 	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
 	BuildToProvisionedNetwork []*ProvisionedNetwork `json:"BuildToProvisionedNetwork,omitempty"`
 	// BuildToTeam holds the value of the BuildToTeam edge.
@@ -52,7 +58,7 @@ type BuildEdges struct {
 	BuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // BuildToStatusOrErr returns the BuildToStatus value or an error if the edge
@@ -83,10 +89,24 @@ func (e BuildEdges) BuildToEnvironmentOrErr() (*Environment, error) {
 	return nil, &NotLoadedError{edge: "BuildToEnvironment"}
 }
 
+// BuildToCompetitionOrErr returns the BuildToCompetition value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BuildEdges) BuildToCompetitionOrErr() (*Competition, error) {
+	if e.loadedTypes[2] {
+		if e.BuildToCompetition == nil {
+			// The edge BuildToCompetition was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: competition.Label}
+		}
+		return e.BuildToCompetition, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToCompetition"}
+}
+
 // BuildToProvisionedNetworkOrErr returns the BuildToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.BuildToProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToProvisionedNetwork"}
@@ -95,7 +115,7 @@ func (e BuildEdges) BuildToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, err
 // BuildToTeamOrErr returns the BuildToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.BuildToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToTeam"}
@@ -104,7 +124,7 @@ func (e BuildEdges) BuildToTeamOrErr() ([]*Team, error) {
 // BuildToPlanOrErr returns the BuildToPlan value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToPlanOrErr() ([]*Plan, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.BuildToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToPlan"}
@@ -118,6 +138,8 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 		case build.FieldID, build.FieldRevision:
 			values[i] = &sql.NullInt64{}
 		case build.ForeignKeys[0]: // build_build_to_environment
+			values[i] = &sql.NullInt64{}
+		case build.ForeignKeys[1]: // build_build_to_competition
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Build", columns[i])
@@ -153,6 +175,13 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 				b.build_build_to_environment = new(int)
 				*b.build_build_to_environment = int(value.Int64)
 			}
+		case build.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field build_build_to_competition", value)
+			} else if value.Valid {
+				b.build_build_to_competition = new(int)
+				*b.build_build_to_competition = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -166,6 +195,11 @@ func (b *Build) QueryBuildToStatus() *StatusQuery {
 // QueryBuildToEnvironment queries the "BuildToEnvironment" edge of the Build entity.
 func (b *Build) QueryBuildToEnvironment() *EnvironmentQuery {
 	return (&BuildClient{config: b.config}).QueryBuildToEnvironment(b)
+}
+
+// QueryBuildToCompetition queries the "BuildToCompetition" edge of the Build entity.
+func (b *Build) QueryBuildToCompetition() *CompetitionQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToCompetition(b)
 }
 
 // QueryBuildToProvisionedNetwork queries the "BuildToProvisionedNetwork" edge of the Build entity.

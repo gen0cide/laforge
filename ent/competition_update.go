@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -83,19 +84,38 @@ func (cu *CompetitionUpdate) AddCompetitionToDNS(d ...*DNS) *CompetitionUpdate {
 	return cu.AddCompetitionToDNSIDs(ids...)
 }
 
-// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
-func (cu *CompetitionUpdate) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdate {
-	cu.mutation.AddCompetitionToEnvironmentIDs(ids...)
+// SetCompetitionToEnvironmentID sets the "CompetitionToEnvironment" edge to the Environment entity by ID.
+func (cu *CompetitionUpdate) SetCompetitionToEnvironmentID(id int) *CompetitionUpdate {
+	cu.mutation.SetCompetitionToEnvironmentID(id)
 	return cu
 }
 
-// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
-func (cu *CompetitionUpdate) AddCompetitionToEnvironment(e ...*Environment) *CompetitionUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableCompetitionToEnvironmentID sets the "CompetitionToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cu *CompetitionUpdate) SetNillableCompetitionToEnvironmentID(id *int) *CompetitionUpdate {
+	if id != nil {
+		cu = cu.SetCompetitionToEnvironmentID(*id)
 	}
-	return cu.AddCompetitionToEnvironmentIDs(ids...)
+	return cu
+}
+
+// SetCompetitionToEnvironment sets the "CompetitionToEnvironment" edge to the Environment entity.
+func (cu *CompetitionUpdate) SetCompetitionToEnvironment(e *Environment) *CompetitionUpdate {
+	return cu.SetCompetitionToEnvironmentID(e.ID)
+}
+
+// AddCompetitionToBuildIDs adds the "CompetitionToBuild" edge to the Build entity by IDs.
+func (cu *CompetitionUpdate) AddCompetitionToBuildIDs(ids ...int) *CompetitionUpdate {
+	cu.mutation.AddCompetitionToBuildIDs(ids...)
+	return cu
+}
+
+// AddCompetitionToBuild adds the "CompetitionToBuild" edges to the Build entity.
+func (cu *CompetitionUpdate) AddCompetitionToBuild(b ...*Build) *CompetitionUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cu.AddCompetitionToBuildIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -145,25 +165,31 @@ func (cu *CompetitionUpdate) RemoveCompetitionToDNS(d ...*DNS) *CompetitionUpdat
 	return cu.RemoveCompetitionToDNSIDs(ids...)
 }
 
-// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to the Environment entity.
+// ClearCompetitionToEnvironment clears the "CompetitionToEnvironment" edge to the Environment entity.
 func (cu *CompetitionUpdate) ClearCompetitionToEnvironment() *CompetitionUpdate {
 	cu.mutation.ClearCompetitionToEnvironment()
 	return cu
 }
 
-// RemoveCompetitionToEnvironmentIDs removes the "CompetitionToEnvironment" edge to Environment entities by IDs.
-func (cu *CompetitionUpdate) RemoveCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdate {
-	cu.mutation.RemoveCompetitionToEnvironmentIDs(ids...)
+// ClearCompetitionToBuild clears all "CompetitionToBuild" edges to the Build entity.
+func (cu *CompetitionUpdate) ClearCompetitionToBuild() *CompetitionUpdate {
+	cu.mutation.ClearCompetitionToBuild()
 	return cu
 }
 
-// RemoveCompetitionToEnvironment removes "CompetitionToEnvironment" edges to Environment entities.
-func (cu *CompetitionUpdate) RemoveCompetitionToEnvironment(e ...*Environment) *CompetitionUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// RemoveCompetitionToBuildIDs removes the "CompetitionToBuild" edge to Build entities by IDs.
+func (cu *CompetitionUpdate) RemoveCompetitionToBuildIDs(ids ...int) *CompetitionUpdate {
+	cu.mutation.RemoveCompetitionToBuildIDs(ids...)
+	return cu
+}
+
+// RemoveCompetitionToBuild removes "CompetitionToBuild" edges to Build entities.
+func (cu *CompetitionUpdate) RemoveCompetitionToBuild(b ...*Build) *CompetitionUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cu.RemoveCompetitionToEnvironmentIDs(ids...)
+	return cu.RemoveCompetitionToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -373,10 +399,10 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.CompetitionToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Columns: []string{competition.CompetitionToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -387,12 +413,12 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.RemovedCompetitionToEnvironmentIDs(); len(nodes) > 0 && !cu.mutation.CompetitionToEnvironmentCleared() {
+	if nodes := cu.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Columns: []string{competition.CompetitionToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -404,19 +430,54 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := cu.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
+	if cu.mutation.CompetitionToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedCompetitionToBuildIDs(); len(nodes) > 0 && !cu.mutation.CompetitionToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.CompetitionToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
 				},
 			},
 		}
@@ -497,19 +558,38 @@ func (cuo *CompetitionUpdateOne) AddCompetitionToDNS(d ...*DNS) *CompetitionUpda
 	return cuo.AddCompetitionToDNSIDs(ids...)
 }
 
-// AddCompetitionToEnvironmentIDs adds the "CompetitionToEnvironment" edge to the Environment entity by IDs.
-func (cuo *CompetitionUpdateOne) AddCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdateOne {
-	cuo.mutation.AddCompetitionToEnvironmentIDs(ids...)
+// SetCompetitionToEnvironmentID sets the "CompetitionToEnvironment" edge to the Environment entity by ID.
+func (cuo *CompetitionUpdateOne) SetCompetitionToEnvironmentID(id int) *CompetitionUpdateOne {
+	cuo.mutation.SetCompetitionToEnvironmentID(id)
 	return cuo
 }
 
-// AddCompetitionToEnvironment adds the "CompetitionToEnvironment" edges to the Environment entity.
-func (cuo *CompetitionUpdateOne) AddCompetitionToEnvironment(e ...*Environment) *CompetitionUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableCompetitionToEnvironmentID sets the "CompetitionToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cuo *CompetitionUpdateOne) SetNillableCompetitionToEnvironmentID(id *int) *CompetitionUpdateOne {
+	if id != nil {
+		cuo = cuo.SetCompetitionToEnvironmentID(*id)
 	}
-	return cuo.AddCompetitionToEnvironmentIDs(ids...)
+	return cuo
+}
+
+// SetCompetitionToEnvironment sets the "CompetitionToEnvironment" edge to the Environment entity.
+func (cuo *CompetitionUpdateOne) SetCompetitionToEnvironment(e *Environment) *CompetitionUpdateOne {
+	return cuo.SetCompetitionToEnvironmentID(e.ID)
+}
+
+// AddCompetitionToBuildIDs adds the "CompetitionToBuild" edge to the Build entity by IDs.
+func (cuo *CompetitionUpdateOne) AddCompetitionToBuildIDs(ids ...int) *CompetitionUpdateOne {
+	cuo.mutation.AddCompetitionToBuildIDs(ids...)
+	return cuo
+}
+
+// AddCompetitionToBuild adds the "CompetitionToBuild" edges to the Build entity.
+func (cuo *CompetitionUpdateOne) AddCompetitionToBuild(b ...*Build) *CompetitionUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cuo.AddCompetitionToBuildIDs(ids...)
 }
 
 // Mutation returns the CompetitionMutation object of the builder.
@@ -559,25 +639,31 @@ func (cuo *CompetitionUpdateOne) RemoveCompetitionToDNS(d ...*DNS) *CompetitionU
 	return cuo.RemoveCompetitionToDNSIDs(ids...)
 }
 
-// ClearCompetitionToEnvironment clears all "CompetitionToEnvironment" edges to the Environment entity.
+// ClearCompetitionToEnvironment clears the "CompetitionToEnvironment" edge to the Environment entity.
 func (cuo *CompetitionUpdateOne) ClearCompetitionToEnvironment() *CompetitionUpdateOne {
 	cuo.mutation.ClearCompetitionToEnvironment()
 	return cuo
 }
 
-// RemoveCompetitionToEnvironmentIDs removes the "CompetitionToEnvironment" edge to Environment entities by IDs.
-func (cuo *CompetitionUpdateOne) RemoveCompetitionToEnvironmentIDs(ids ...int) *CompetitionUpdateOne {
-	cuo.mutation.RemoveCompetitionToEnvironmentIDs(ids...)
+// ClearCompetitionToBuild clears all "CompetitionToBuild" edges to the Build entity.
+func (cuo *CompetitionUpdateOne) ClearCompetitionToBuild() *CompetitionUpdateOne {
+	cuo.mutation.ClearCompetitionToBuild()
 	return cuo
 }
 
-// RemoveCompetitionToEnvironment removes "CompetitionToEnvironment" edges to Environment entities.
-func (cuo *CompetitionUpdateOne) RemoveCompetitionToEnvironment(e ...*Environment) *CompetitionUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// RemoveCompetitionToBuildIDs removes the "CompetitionToBuild" edge to Build entities by IDs.
+func (cuo *CompetitionUpdateOne) RemoveCompetitionToBuildIDs(ids ...int) *CompetitionUpdateOne {
+	cuo.mutation.RemoveCompetitionToBuildIDs(ids...)
+	return cuo
+}
+
+// RemoveCompetitionToBuild removes "CompetitionToBuild" edges to Build entities.
+func (cuo *CompetitionUpdateOne) RemoveCompetitionToBuild(b ...*Build) *CompetitionUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cuo.RemoveCompetitionToEnvironmentIDs(ids...)
+	return cuo.RemoveCompetitionToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the updated Competition entity.
@@ -792,10 +878,10 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 	}
 	if cuo.mutation.CompetitionToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Columns: []string{competition.CompetitionToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -806,12 +892,12 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.RemovedCompetitionToEnvironmentIDs(); len(nodes) > 0 && !cuo.mutation.CompetitionToEnvironmentCleared() {
+	if nodes := cuo.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Columns: []string{competition.CompetitionToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -823,19 +909,54 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := cuo.mutation.CompetitionToEnvironmentIDs(); len(nodes) > 0 {
+	if cuo.mutation.CompetitionToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   competition.CompetitionToEnvironmentTable,
-			Columns: competition.CompetitionToEnvironmentPrimaryKey,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedCompetitionToBuildIDs(); len(nodes) > 0 && !cuo.mutation.CompetitionToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.CompetitionToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   competition.CompetitionToBuildTable,
+			Columns: []string{competition.CompetitionToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: build.FieldID,
 				},
 			},
 		}

@@ -615,10 +615,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToCompetitionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCompetitionTable,
-			Columns: environment.EnvironmentToCompetitionPrimaryKey,
+			Columns: []string{environment.EnvironmentToCompetitionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

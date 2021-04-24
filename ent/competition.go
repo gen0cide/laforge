@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/competition"
+	"github.com/gen0cide/laforge/ent/environment"
 )
 
 // Competition is the model entity for the Competition schema.
@@ -34,9 +35,11 @@ type Competition struct {
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
 	HCLCompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
-	HCLCompetitionToEnvironment []*Environment `json:"CompetitionToEnvironment,omitempty"`
+	HCLCompetitionToEnvironment *Environment `json:"CompetitionToEnvironment,omitempty"`
+	// CompetitionToBuild holds the value of the CompetitionToBuild edge.
+	HCLCompetitionToBuild []*Build `json:"CompetitionToBuild,omitempty"`
 	//
-
+	environment_environment_to_competition *int
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
@@ -46,10 +49,12 @@ type CompetitionEdges struct {
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
 	CompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
-	CompetitionToEnvironment []*Environment `json:"CompetitionToEnvironment,omitempty"`
+	CompetitionToEnvironment *Environment `json:"CompetitionToEnvironment,omitempty"`
+	// CompetitionToBuild holds the value of the CompetitionToBuild edge.
+	CompetitionToBuild []*Build `json:"CompetitionToBuild,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // CompetitionToTagOrErr returns the CompetitionToTag value or an error if the edge
@@ -71,12 +76,26 @@ func (e CompetitionEdges) CompetitionToDNSOrErr() ([]*DNS, error) {
 }
 
 // CompetitionToEnvironmentOrErr returns the CompetitionToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e CompetitionEdges) CompetitionToEnvironmentOrErr() ([]*Environment, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CompetitionEdges) CompetitionToEnvironmentOrErr() (*Environment, error) {
 	if e.loadedTypes[2] {
+		if e.CompetitionToEnvironment == nil {
+			// The edge CompetitionToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.CompetitionToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "CompetitionToEnvironment"}
+}
+
+// CompetitionToBuildOrErr returns the CompetitionToBuild value or an error if the edge
+// was not loaded in eager-loading.
+func (e CompetitionEdges) CompetitionToBuildOrErr() ([]*Build, error) {
+	if e.loadedTypes[3] {
+		return e.CompetitionToBuild, nil
+	}
+	return nil, &NotLoadedError{edge: "CompetitionToBuild"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -90,6 +109,8 @@ func (*Competition) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case competition.FieldHclID, competition.FieldRootPassword:
 			values[i] = &sql.NullString{}
+		case competition.ForeignKeys[0]: // environment_environment_to_competition
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Competition", columns[i])
 		}
@@ -141,6 +162,13 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case competition.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_competition", value)
+			} else if value.Valid {
+				c.environment_environment_to_competition = new(int)
+				*c.environment_environment_to_competition = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -159,6 +187,11 @@ func (c *Competition) QueryCompetitionToDNS() *DNSQuery {
 // QueryCompetitionToEnvironment queries the "CompetitionToEnvironment" edge of the Competition entity.
 func (c *Competition) QueryCompetitionToEnvironment() *EnvironmentQuery {
 	return (&CompetitionClient{config: c.config}).QueryCompetitionToEnvironment(c)
+}
+
+// QueryCompetitionToBuild queries the "CompetitionToBuild" edge of the Competition entity.
+func (c *Competition) QueryCompetitionToBuild() *BuildQuery {
+	return (&CompetitionClient{config: c.config}).QueryCompetitionToBuild(c)
 }
 
 // Update returns a builder for updating this Competition.

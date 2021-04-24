@@ -36,6 +36,14 @@ func (b *Build) BuildToEnvironment(ctx context.Context) (*Environment, error) {
 	return result, err
 }
 
+func (b *Build) BuildToCompetition(ctx context.Context) (*Competition, error) {
+	result, err := b.Edges.BuildToCompetitionOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryBuildToCompetition().Only(ctx)
+	}
+	return result, err
+}
+
 func (b *Build) BuildToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
 	result, err := b.Edges.BuildToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
@@ -100,10 +108,18 @@ func (c *Competition) CompetitionToDNS(ctx context.Context) ([]*DNS, error) {
 	return result, err
 }
 
-func (c *Competition) CompetitionToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (c *Competition) CompetitionToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := c.Edges.CompetitionToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = c.QueryCompetitionToEnvironment().All(ctx)
+		result, err = c.QueryCompetitionToEnvironment().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (c *Competition) CompetitionToBuild(ctx context.Context) ([]*Build, error) {
+	result, err := c.Edges.CompetitionToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = c.QueryCompetitionToBuild().All(ctx)
 	}
 	return result, err
 }

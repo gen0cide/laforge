@@ -8,6 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
+	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8
 	github.com/briandowns/formatifier v0.0.0-20150226010542-6d068a6ce63a
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dsnet/compress v0.0.1 // indirect
@@ -23,6 +24,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/iamacarpet/go-win64api v0.0.0-20200715182619-8cbc936e1a5a
+	github.com/iancoleman/strcase v0.1.3
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/kardianos/service v1.1.0
 	github.com/kr/pretty v0.2.0 // indirect

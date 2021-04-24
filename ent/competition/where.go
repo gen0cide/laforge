@@ -389,7 +389,7 @@ func HasCompetitionToEnvironment() predicate.Competition {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CompetitionToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -401,7 +401,35 @@ func HasCompetitionToEnvironmentWith(preds ...predicate.Environment) predicate.C
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CompetitionToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, CompetitionToEnvironmentTable, CompetitionToEnvironmentColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCompetitionToBuild applies the HasEdge predicate on the "CompetitionToBuild" edge.
+func HasCompetitionToBuild() predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CompetitionToBuildTable, CompetitionToBuildColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompetitionToBuildWith applies the HasEdge predicate on the "CompetitionToBuild" edge with a given conditions (other predicates).
+func HasCompetitionToBuildWith(preds ...predicate.Build) predicate.Competition {
+	return predicate.Competition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetitionToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CompetitionToBuildTable, CompetitionToBuildColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

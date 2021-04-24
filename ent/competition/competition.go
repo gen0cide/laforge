@@ -22,6 +22,8 @@ const (
 	EdgeCompetitionToDNS = "CompetitionToDNS"
 	// EdgeCompetitionToEnvironment holds the string denoting the competitiontoenvironment edge name in mutations.
 	EdgeCompetitionToEnvironment = "CompetitionToEnvironment"
+	// EdgeCompetitionToBuild holds the string denoting the competitiontobuild edge name in mutations.
+	EdgeCompetitionToBuild = "CompetitionToBuild"
 
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
@@ -37,11 +39,20 @@ const (
 	// CompetitionToDNSInverseTable is the table name for the DNS entity.
 	// It exists in this package in order to avoid circular dependency with the "dns" package.
 	CompetitionToDNSInverseTable = "dn_ss"
-	// CompetitionToEnvironmentTable is the table the holds the CompetitionToEnvironment relation/edge. The primary key declared below.
-	CompetitionToEnvironmentTable = "environment_EnvironmentToCompetition"
+	// CompetitionToEnvironmentTable is the table the holds the CompetitionToEnvironment relation/edge.
+	CompetitionToEnvironmentTable = "competitions"
 	// CompetitionToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	CompetitionToEnvironmentInverseTable = "environments"
+	// CompetitionToEnvironmentColumn is the table column denoting the CompetitionToEnvironment relation/edge.
+	CompetitionToEnvironmentColumn = "environment_environment_to_competition"
+	// CompetitionToBuildTable is the table the holds the CompetitionToBuild relation/edge.
+	CompetitionToBuildTable = "builds"
+	// CompetitionToBuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	CompetitionToBuildInverseTable = "builds"
+	// CompetitionToBuildColumn is the table column denoting the CompetitionToBuild relation/edge.
+	CompetitionToBuildColumn = "build_build_to_competition"
 )
 
 // Columns holds all SQL columns for competition fields.
@@ -53,19 +64,26 @@ var Columns = []string{
 	FieldTags,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the Competition type.
+var ForeignKeys = []string{
+	"environment_environment_to_competition",
+}
+
 var (
 	// CompetitionToDNSPrimaryKey and CompetitionToDNSColumn2 are the table columns denoting the
 	// primary key for the CompetitionToDNS relation (M2M).
 	CompetitionToDNSPrimaryKey = []string{"competition_id", "dns_id"}
-	// CompetitionToEnvironmentPrimaryKey and CompetitionToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the CompetitionToEnvironment relation (M2M).
-	CompetitionToEnvironmentPrimaryKey = []string{"environment_id", "competition_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

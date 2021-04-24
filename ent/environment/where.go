@@ -937,7 +937,7 @@ func HasEnvironmentToCompetition() predicate.Environment {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(EnvironmentToCompetitionTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToCompetitionTable, EnvironmentToCompetitionPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentToCompetitionTable, EnvironmentToCompetitionColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -949,7 +949,7 @@ func HasEnvironmentToCompetitionWith(preds ...predicate.Competition) predicate.E
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(EnvironmentToCompetitionInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentToCompetitionTable, EnvironmentToCompetitionPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentToCompetitionTable, EnvironmentToCompetitionColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

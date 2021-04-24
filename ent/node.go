@@ -220,7 +220,7 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		ID:     b.ID,
 		Type:   "Build",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(b.Revision); err != nil {
@@ -252,30 +252,40 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[2] = &Edge{
-		Type: "ProvisionedNetwork",
-		Name: "BuildToProvisionedNetwork",
+		Type: "Competition",
+		Name: "BuildToCompetition",
 	}
-	node.Edges[2].IDs, err = b.QueryBuildToProvisionedNetwork().
-		Select(provisionednetwork.FieldID).
+	node.Edges[2].IDs, err = b.QueryBuildToCompetition().
+		Select(competition.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[3] = &Edge{
-		Type: "Team",
-		Name: "BuildToTeam",
+		Type: "ProvisionedNetwork",
+		Name: "BuildToProvisionedNetwork",
 	}
-	node.Edges[3].IDs, err = b.QueryBuildToTeam().
-		Select(team.FieldID).
+	node.Edges[3].IDs, err = b.QueryBuildToProvisionedNetwork().
+		Select(provisionednetwork.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[4] = &Edge{
+		Type: "Team",
+		Name: "BuildToTeam",
+	}
+	node.Edges[4].IDs, err = b.QueryBuildToTeam().
+		Select(team.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
 		Type: "Plan",
 		Name: "BuildToPlan",
 	}
-	node.Edges[4].IDs, err = b.QueryBuildToPlan().
+	node.Edges[5].IDs, err = b.QueryBuildToPlan().
 		Select(plan.FieldID).
 		Ints(ctx)
 	if err != nil {
@@ -418,7 +428,7 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 		ID:     c.ID,
 		Type:   "Competition",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(c.HclID); err != nil {
@@ -479,6 +489,16 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[2].IDs, err = c.QueryCompetitionToEnvironment().
 		Select(environment.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Build",
+		Name: "CompetitionToBuild",
+	}
+	node.Edges[3].IDs, err = c.QueryCompetitionToBuild().
+		Select(build.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -75,6 +76,17 @@ func (bu *BuildUpdate) SetBuildToEnvironment(e *Environment) *BuildUpdate {
 	return bu.SetBuildToEnvironmentID(e.ID)
 }
 
+// SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
+func (bu *BuildUpdate) SetBuildToCompetitionID(id int) *BuildUpdate {
+	bu.mutation.SetBuildToCompetitionID(id)
+	return bu
+}
+
+// SetBuildToCompetition sets the "BuildToCompetition" edge to the Competition entity.
+func (bu *BuildUpdate) SetBuildToCompetition(c *Competition) *BuildUpdate {
+	return bu.SetBuildToCompetitionID(c.ID)
+}
+
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (bu *BuildUpdate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
 	bu.mutation.AddBuildToProvisionedNetworkIDs(ids...)
@@ -134,6 +146,12 @@ func (bu *BuildUpdate) ClearBuildToStatus() *BuildUpdate {
 // ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
 func (bu *BuildUpdate) ClearBuildToEnvironment() *BuildUpdate {
 	bu.mutation.ClearBuildToEnvironment()
+	return bu
+}
+
+// ClearBuildToCompetition clears the "BuildToCompetition" edge to the Competition entity.
+func (bu *BuildUpdate) ClearBuildToCompetition() *BuildUpdate {
+	bu.mutation.ClearBuildToCompetition()
 	return bu
 }
 
@@ -262,6 +280,9 @@ func (bu *BuildUpdate) check() error {
 	if _, ok := bu.mutation.BuildToEnvironmentID(); bu.mutation.BuildToEnvironmentCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"BuildToEnvironment\"")
 	}
+	if _, ok := bu.mutation.BuildToCompetitionID(); bu.mutation.BuildToCompetitionCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"BuildToCompetition\"")
+	}
 	return nil
 }
 
@@ -359,6 +380,41 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.BuildToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToCompetitionTable,
+			Columns: []string{build.BuildToCompetitionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.BuildToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToCompetitionTable,
+			Columns: []string{build.BuildToCompetitionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
 				},
 			},
 		}
@@ -590,6 +646,17 @@ func (buo *BuildUpdateOne) SetBuildToEnvironment(e *Environment) *BuildUpdateOne
 	return buo.SetBuildToEnvironmentID(e.ID)
 }
 
+// SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
+func (buo *BuildUpdateOne) SetBuildToCompetitionID(id int) *BuildUpdateOne {
+	buo.mutation.SetBuildToCompetitionID(id)
+	return buo
+}
+
+// SetBuildToCompetition sets the "BuildToCompetition" edge to the Competition entity.
+func (buo *BuildUpdateOne) SetBuildToCompetition(c *Competition) *BuildUpdateOne {
+	return buo.SetBuildToCompetitionID(c.ID)
+}
+
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (buo *BuildUpdateOne) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
 	buo.mutation.AddBuildToProvisionedNetworkIDs(ids...)
@@ -649,6 +716,12 @@ func (buo *BuildUpdateOne) ClearBuildToStatus() *BuildUpdateOne {
 // ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
 func (buo *BuildUpdateOne) ClearBuildToEnvironment() *BuildUpdateOne {
 	buo.mutation.ClearBuildToEnvironment()
+	return buo
+}
+
+// ClearBuildToCompetition clears the "BuildToCompetition" edge to the Competition entity.
+func (buo *BuildUpdateOne) ClearBuildToCompetition() *BuildUpdateOne {
+	buo.mutation.ClearBuildToCompetition()
 	return buo
 }
 
@@ -777,6 +850,9 @@ func (buo *BuildUpdateOne) check() error {
 	if _, ok := buo.mutation.BuildToEnvironmentID(); buo.mutation.BuildToEnvironmentCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"BuildToEnvironment\"")
 	}
+	if _, ok := buo.mutation.BuildToCompetitionID(); buo.mutation.BuildToCompetitionCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"BuildToCompetition\"")
+	}
 	return nil
 }
 
@@ -879,6 +955,41 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.BuildToCompetitionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToCompetitionTable,
+			Columns: []string{build.BuildToCompetitionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.BuildToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToCompetitionTable,
+			Columns: []string{build.BuildToCompetitionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
 				},
 			},
 		}

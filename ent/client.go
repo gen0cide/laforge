@@ -541,6 +541,22 @@ func (c *BuildClient) QueryBuildToEnvironment(b *Build) *EnvironmentQuery {
 	return query
 }
 
+// QueryBuildToCompetition queries the BuildToCompetition edge of a Build.
+func (c *BuildClient) QueryBuildToCompetition(b *Build) *CompetitionQuery {
+	query := &CompetitionQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(competition.Table, competition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToCompetitionTable, build.BuildToCompetitionColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryBuildToProvisionedNetwork queries the BuildToProvisionedNetwork edge of a Build.
 func (c *BuildClient) QueryBuildToProvisionedNetwork(b *Build) *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: c.config}
@@ -853,7 +869,23 @@ func (c *CompetitionClient) QueryCompetitionToEnvironment(co *Competition) *Envi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(competition.Table, competition.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, competition.CompetitionToEnvironmentTable, competition.CompetitionToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, competition.CompetitionToEnvironmentTable, competition.CompetitionToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompetitionToBuild queries the CompetitionToBuild edge of a Competition.
+func (c *CompetitionClient) QueryCompetitionToBuild(co *Competition) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(competition.Table, competition.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, competition.CompetitionToBuildTable, competition.CompetitionToBuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -1381,7 +1413,7 @@ func (c *EnvironmentClient) QueryEnvironmentToCompetition(e *Environment) *Compe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(competition.Table, competition.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToCompetitionTable, environment.EnvironmentToCompetitionPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToCompetitionTable, environment.EnvironmentToCompetitionColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil

@@ -26,6 +26,9 @@ func (Build) Edges() []ent.Edge {
 		edge.To("BuildToEnvironment", Environment.Type).
 			Unique().
 			Required(),
+		edge.To("BuildToCompetition", Competition.Type).
+			Unique().
+			Required(),
 		edge.From("BuildToProvisionedNetwork", ProvisionedNetwork.Type).
 			Ref("ProvisionedNetworkToBuild"),
 		edge.From("BuildToTeam", Team.Type).

@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -58,6 +59,17 @@ func (bc *BuildCreate) SetBuildToEnvironmentID(id int) *BuildCreate {
 // SetBuildToEnvironment sets the "BuildToEnvironment" edge to the Environment entity.
 func (bc *BuildCreate) SetBuildToEnvironment(e *Environment) *BuildCreate {
 	return bc.SetBuildToEnvironmentID(e.ID)
+}
+
+// SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
+func (bc *BuildCreate) SetBuildToCompetitionID(id int) *BuildCreate {
+	bc.mutation.SetBuildToCompetitionID(id)
+	return bc
+}
+
+// SetBuildToCompetition sets the "BuildToCompetition" edge to the Competition entity.
+func (bc *BuildCreate) SetBuildToCompetition(c *Competition) *BuildCreate {
+	return bc.SetBuildToCompetitionID(c.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -162,6 +174,9 @@ func (bc *BuildCreate) check() error {
 	if _, ok := bc.mutation.BuildToEnvironmentID(); !ok {
 		return &ValidationError{Name: "BuildToEnvironment", err: errors.New("ent: missing required edge \"BuildToEnvironment\"")}
 	}
+	if _, ok := bc.mutation.BuildToCompetitionID(); !ok {
+		return &ValidationError{Name: "BuildToCompetition", err: errors.New("ent: missing required edge \"BuildToCompetition\"")}
+	}
 	return nil
 }
 
@@ -227,6 +242,25 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BuildToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToCompetitionTable,
+			Columns: []string{build.BuildToCompetitionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competition.FieldID,
 				},
 			},
 		}
