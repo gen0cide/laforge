@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -19,7 +20,6 @@ type VSphere struct {
 	Client http.Client
 	Username string
 	Password string
-	ContentLibraryId string
 }
 
 type PowerState string
@@ -421,7 +421,7 @@ func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 	return
 }
 
-func (vs *VSphere) GetTemplateIDByName(name string) (templateId string, err error) {
+func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName string) (templateId string, err error) {
 	u, err := url.Parse(vs.BaseUrl + "/sdk")
 	if err != nil {
 		return
@@ -442,15 +442,37 @@ func (vs *VSphere) GetTemplateIDByName(name string) (templateId string, err erro
 	c.Login(ctx, u.User)
 	clm := library.NewManager(c)
 
+	// Find the content library by name
+	cl := library.Find{
+		Name: contentLibraryName,
+	}
+	contentLibrary, err := clm.FindLibrary(ctx, cl)
+	if err != nil {
+		return
+	}
+	if len(contentLibrary) < 1 {
+		err = errors.New("no content libaries found with the name \"" + contentLibraryName + "\"")
+		return
+	}
+	if len(contentLibrary) > 1 {
+		err = errors.New("more than one content library matches the name \"" + contentLibraryName + "\"")
+		return
+	}
+
 	fi := library.FindItem{
-		LibraryID: vs.ContentLibraryId,
-		Name:      name,
+		LibraryID: contentLibrary[0],
+		Name:      templateName,
 	}
 	items, err := clm.FindLibraryItems(ctx, fi)
 	if err != nil {
 		return
 	}
 	if len(items) < 1 {
+		err = errors.New("no templates were found with the name \"" + templateName + "\"")
+		return
+	}
+	if len(items) > 1 {
+		err = errors.New("found more than one (" + fmt.Sprint(len(items)) + ") for the template \"" + templateName + "\"")
 		return
 	}
 	item, err := clm.GetLibraryItem(ctx, items[0])
