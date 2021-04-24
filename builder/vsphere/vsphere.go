@@ -1,6 +1,7 @@
 package vsphere
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -25,8 +26,10 @@ type AuthorizationResponse struct {
 	Value string `json:"value"`
 }
 
+type Identifier string
+
 type VirtualMachine struct {
-	Identifier string `json:"vm"`
+	Identifier Identifier `json:"vm"`
 	MemorySize int `json:"memory-size_MiB"`
 	Name string `json:"name"`
 	PowerState PowerState `json:"power_state"`
@@ -38,7 +41,7 @@ type VirtualMachineList struct {
 }
 
 type Datastore struct {
-	Identifier string `json:"datastore"`
+	Identifier Identifier `json:"datastore"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 	FreeSpace int `json:"free_space"`
@@ -50,7 +53,7 @@ type DatastoreList struct {
 }
 
 type Folder struct {
-	Identifier string `json:"folder"`
+	Identifier Identifier `json:"folder"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
@@ -60,7 +63,7 @@ type FolderList struct {
 }
 
 type ResourcePool struct {
-	Identifier string `json:"resource_pool"`
+	Identifier Identifier `json:"resource_pool"`
 	Name string `json:"name"`
 }
 
@@ -68,7 +71,7 @@ type ResourcePoolList struct {
 	Value []ResourcePool `json:"value"`
 }
 
-type TemplateMemory struct {
+type Memory struct {
 	Size int `json:"size_MiB"`
 }
 
@@ -101,7 +104,7 @@ const (
 )
 
 type TemplateNic struct {
-	Identifier string `json:"network"`
+	Identifier Identifier `json:"network"`
 	MacType MacType `json:"mac_type"`
 	BackingType BackingType `json:"backing_type"`
 }
@@ -122,8 +125,8 @@ type TemplateHomeStorage struct {
 }
 
 type Template struct {
-	Identifier string `json:"vm_template"`
-	Memory TemplateMemory `json:"memory"`
+	Identifier Identifier `json:"vm_template"`
+	Memory Memory `json:"memory"`
 	Disks []TemplateDiskEntry `json:"disks"`
 	Nics []TemplateNicEntry `json:"nics"`
 	Cpu TemplateCpu `json:"cpu"`
@@ -133,6 +136,109 @@ type Template struct {
 
 type TemplateResponse struct {
 	Value Template `json:"value"`
+}
+
+type OperatingSystem string
+
+const (
+	OS_UBUNTU_64 = "UBUNTU_64"
+)
+
+type VirtualMachinePlacement struct {
+	Datastore Identifier `json:"datastore"`
+	Folder Identifier `json:"folder"`
+	ResourcePool Identifier `json:"resource_pool"`
+}
+
+type VirtualMachineCpu struct {
+	Count int `json:"count"`
+	CoresPerSocket int `json:"cores_per_socket"`
+}
+
+type VirtualMachineVmdk struct {
+	Capacity int `json:"capacity"`
+}
+
+type VirtualMachineScsi struct {
+	Bus int `json:"bus"`
+	Unit int `json:"unit"`
+}
+
+type VirtualMachineDiskType string
+
+const (
+	VM_DISK_TYPE_SCSI VirtualMachineDiskType = "SCSI"
+)
+
+type VirtualMachineDisk struct {
+	NewVdmk VirtualMachineVmdk `json:"new_vmdk"`
+	Scsi VirtualMachineScsi `json:"scsi"`
+	Type VirtualMachineDiskType `json:"type"`
+}
+
+type VirtualMachineNicType string
+
+const (
+	VM_NIC_E1000E VirtualMachineNicType = "E1000E"
+)
+
+type VirtualMachineNic struct {
+	AllowGuestControl bool `json:"allow_guest_control"`
+	StartConnected bool `json:"start_connected"`
+	Type VirtualMachineNicType `json:"type"`
+	UptCompatibilityEnabled bool `json:"upt_compatibility_enabled"`
+	WakeOnLanEnabled bool `json:"wake_on_lan_enabled"`
+}
+
+type VirtualMachineCdromType string;
+
+const (
+	VM_CDROM_ISO_FILE = "ISO_FILE"
+	VM_CDROM_HOST_DEVICE = "HOST_DEVICE"
+	VM_CDROM_CLIENT_DEVICE = "CLIENT_DEVICE"
+)
+
+type VirtualMachineCdromBacking struct {
+	DeviceAccessType string `json:"device_access_type"`
+	Type VirtualMachineCdromType `json:"type"`
+}
+
+type VirtualMachineCdromSata struct {
+	Bus int `json:"bus"`
+	Unit int `json:"unit"`
+}
+
+type VirtualMachineCdrom struct {
+	AllowGuestControl bool `json:"allow_guest_control"`
+	Backing VirtualMachineCdromBacking `json:"backing"`
+	Sata VirtualMachineCdromSata `json:"sata"`
+	StartConnected bool `json:"start_connected"`
+	Type string `json:"type"`
+}
+
+type VirtualMachineSpec struct {
+	GuestOS OperatingSystem `json:"guest_OS"`
+	Name string `json:"name"`
+	Placement VirtualMachinePlacement `json:"placement"`
+	Cpu VirtualMachineCpu `json:"cpu"`
+	Memory Memory `json:"memory"`
+	Disks []VirtualMachineDisk `json:"disks"`
+	Nics []VirtualMachineNic `json:"nics"`
+	Cdroms []VirtualMachineCdrom `json:"cdroms"`
+}	
+
+type CreateVirtualMachineData struct {
+	Spec VirtualMachineSpec `json:"spec"`
+}
+
+type Network struct {
+	Identifier Identifier `json:"network"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type ListNetworkResponse struct {
+	Value []Network `json:"value"`
 }
 
 func (vs *VSphere) authorize() (sessionToken string, err error) {
@@ -167,6 +273,19 @@ func (vs *VSphere) generateAuthorizedRequest(method string, url string) (request
 		return
 	}
 	request, err = http.NewRequest(method, (vs.BaseUrl + url), nil)
+	if err != nil {
+		return
+	}
+	request.Header.Add("vmware-api-session-id", sessionToken)
+	return
+}
+
+func (vs *VSphere) generateAuthorizedRequestWithData(method string, url string, data *bytes.Buffer) (request *http.Request, err error) {
+	sessionToken, err := vs.authorize()
+	if err != nil {
+		return
+	}
+	request, err = http.NewRequest(method, (vs.BaseUrl + url), data)
 	if err != nil {
 		return
 	}
@@ -270,6 +389,30 @@ func (vs *VSphere) ListResourcePools() (resourcePools []ResourcePool, err error)
 	return
 }
 
+func (vs *VSphere) ListNetworks() (networks []Network, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/network")
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var networkList ListNetworkResponse
+	err = json.NewDecoder(response.Body).Decode(&networkList)
+	if err != nil {
+		return
+	}
+	networks = networkList.Value
+	return
+}
+
 func (vs *VSphere) GetTemplate(templateId string) (template Template, err error) {
 	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/vm-template/library-items/" + templateId)
 	if err != nil {
@@ -291,5 +434,30 @@ func (vs *VSphere) GetTemplate(templateId string) (template Template, err error)
 		return
 	}
 	template = templateResponse.Value
+	return
+}
+
+func (vs *VSphere) CreateVM(vmSpec VirtualMachineSpec) (err error) {
+	requestData := CreateVirtualMachineData{
+		Spec: vmSpec,
+	}
+	requestDataString, err := json.Marshal(requestData)
+	if err != nil {
+		return
+	}
+	request, err := vs.generateAuthorizedRequestWithData("POST", "/rest/vcenter/vm", bytes.NewBuffer(requestDataString))
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	// TODO: Actually parse the response
 	return
 }
