@@ -181,8 +181,6 @@ type Build {
   id: ID!
   revision: Int!
   tags: [Tag]
-  config: [configMap]
-  buildToUser: User!
   buildToTeam: [Team]!
 }
 

@@ -82,16 +82,20 @@ const (
 	// HostToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
 	HostToIncludedNetworkInverseTable = "included_networks"
-	// DependOnHostToHostDependencyTable is the table the holds the DependOnHostToHostDependency relation/edge. The primary key declared below.
-	DependOnHostToHostDependencyTable = "host_dependency_HostDependencyToDependOnHost"
+	// DependOnHostToHostDependencyTable is the table the holds the DependOnHostToHostDependency relation/edge.
+	DependOnHostToHostDependencyTable = "host_dependencies"
 	// DependOnHostToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	DependOnHostToHostDependencyInverseTable = "host_dependencies"
-	// DependByHostToHostDependencyTable is the table the holds the DependByHostToHostDependency relation/edge. The primary key declared below.
-	DependByHostToHostDependencyTable = "host_dependency_HostDependencyToDependByHost"
+	// DependOnHostToHostDependencyColumn is the table column denoting the DependOnHostToHostDependency relation/edge.
+	DependOnHostToHostDependencyColumn = "host_dependency_host_dependency_to_depend_on_host"
+	// DependByHostToHostDependencyTable is the table the holds the DependByHostToHostDependency relation/edge.
+	DependByHostToHostDependencyTable = "host_dependencies"
 	// DependByHostToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	DependByHostToHostDependencyInverseTable = "host_dependencies"
+	// DependByHostToHostDependencyColumn is the table column denoting the DependByHostToHostDependency relation/edge.
+	DependByHostToHostDependencyColumn = "host_dependency_host_dependency_to_depend_by_host"
 )
 
 // Columns holds all SQL columns for host fields.
@@ -116,7 +120,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Host type.
 var ForeignKeys = []string{
 	"finding_finding_to_host",
-	"provisioned_host_provisioned_host_to_host",
 }
 
 var (
@@ -129,12 +132,6 @@ var (
 	// HostToIncludedNetworkPrimaryKey and HostToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the HostToIncludedNetwork relation (M2M).
 	HostToIncludedNetworkPrimaryKey = []string{"included_network_id", "host_id"}
-	// DependOnHostToHostDependencyPrimaryKey and DependOnHostToHostDependencyColumn2 are the table columns denoting the
-	// primary key for the DependOnHostToHostDependency relation (M2M).
-	DependOnHostToHostDependencyPrimaryKey = []string{"host_dependency_id", "host_id"}
-	// DependByHostToHostDependencyPrimaryKey and DependByHostToHostDependencyColumn2 are the table columns denoting the
-	// primary key for the DependByHostToHostDependency relation (M2M).
-	DependByHostToHostDependencyPrimaryKey = []string{"host_dependency_id", "host_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

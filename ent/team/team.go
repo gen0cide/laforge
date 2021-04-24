@@ -9,79 +9,68 @@ const (
 	FieldID = "id"
 	// FieldTeamNumber holds the string denoting the team_number field in the database.
 	FieldTeamNumber = "team_number"
-	// FieldConfig holds the string denoting the config field in the database.
-	FieldConfig = "config"
-	// FieldRevision holds the string denoting the revision field in the database.
-	FieldRevision = "revision"
 
-	// EdgeTeamToUser holds the string denoting the teamtouser edge name in mutations.
-	EdgeTeamToUser = "TeamToUser"
 	// EdgeTeamToBuild holds the string denoting the teamtobuild edge name in mutations.
 	EdgeTeamToBuild = "TeamToBuild"
-	// EdgeTeamToEnvironment holds the string denoting the teamtoenvironment edge name in mutations.
-	EdgeTeamToEnvironment = "TeamToEnvironment"
-	// EdgeTeamToTag holds the string denoting the teamtotag edge name in mutations.
-	EdgeTeamToTag = "TeamToTag"
+	// EdgeTeamToStatus holds the string denoting the teamtostatus edge name in mutations.
+	EdgeTeamToStatus = "TeamToStatus"
 	// EdgeTeamToProvisionedNetwork holds the string denoting the teamtoprovisionednetwork edge name in mutations.
 	EdgeTeamToProvisionedNetwork = "TeamToProvisionedNetwork"
+	// EdgeTeamToPlan holds the string denoting the teamtoplan edge name in mutations.
+	EdgeTeamToPlan = "TeamToPlan"
 
 	// Table holds the table name of the team in the database.
 	Table = "teams"
-	// TeamToUserTable is the table the holds the TeamToUser relation/edge.
-	TeamToUserTable = "users"
-	// TeamToUserInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	TeamToUserInverseTable = "users"
-	// TeamToUserColumn is the table column denoting the TeamToUser relation/edge.
-	TeamToUserColumn = "team_team_to_user"
-	// TeamToBuildTable is the table the holds the TeamToBuild relation/edge. The primary key declared below.
-	TeamToBuildTable = "team_TeamToBuild"
+	// TeamToBuildTable is the table the holds the TeamToBuild relation/edge.
+	TeamToBuildTable = "teams"
 	// TeamToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	TeamToBuildInverseTable = "builds"
-	// TeamToEnvironmentTable is the table the holds the TeamToEnvironment relation/edge. The primary key declared below.
-	TeamToEnvironmentTable = "team_TeamToEnvironment"
-	// TeamToEnvironmentInverseTable is the table name for the Environment entity.
-	// It exists in this package in order to avoid circular dependency with the "environment" package.
-	TeamToEnvironmentInverseTable = "environments"
-	// TeamToTagTable is the table the holds the TeamToTag relation/edge.
-	TeamToTagTable = "tags"
-	// TeamToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TeamToTagInverseTable = "tags"
-	// TeamToTagColumn is the table column denoting the TeamToTag relation/edge.
-	TeamToTagColumn = "team_team_to_tag"
-	// TeamToProvisionedNetworkTable is the table the holds the TeamToProvisionedNetwork relation/edge. The primary key declared below.
-	TeamToProvisionedNetworkTable = "provisioned_network_ProvisionedNetworkToTeam"
+	// TeamToBuildColumn is the table column denoting the TeamToBuild relation/edge.
+	TeamToBuildColumn = "team_team_to_build"
+	// TeamToStatusTable is the table the holds the TeamToStatus relation/edge.
+	TeamToStatusTable = "status"
+	// TeamToStatusInverseTable is the table name for the Status entity.
+	// It exists in this package in order to avoid circular dependency with the "status" package.
+	TeamToStatusInverseTable = "status"
+	// TeamToStatusColumn is the table column denoting the TeamToStatus relation/edge.
+	TeamToStatusColumn = "team_team_to_status"
+	// TeamToProvisionedNetworkTable is the table the holds the TeamToProvisionedNetwork relation/edge.
+	TeamToProvisionedNetworkTable = "provisioned_networks"
 	// TeamToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	TeamToProvisionedNetworkInverseTable = "provisioned_networks"
+	// TeamToProvisionedNetworkColumn is the table column denoting the TeamToProvisionedNetwork relation/edge.
+	TeamToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_team"
+	// TeamToPlanTable is the table the holds the TeamToPlan relation/edge.
+	TeamToPlanTable = "plans"
+	// TeamToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	TeamToPlanInverseTable = "plans"
+	// TeamToPlanColumn is the table column denoting the TeamToPlan relation/edge.
+	TeamToPlanColumn = "plan_plan_to_team"
 )
 
 // Columns holds all SQL columns for team fields.
 var Columns = []string{
 	FieldID,
 	FieldTeamNumber,
-	FieldConfig,
-	FieldRevision,
 }
 
-var (
-	// TeamToBuildPrimaryKey and TeamToBuildColumn2 are the table columns denoting the
-	// primary key for the TeamToBuild relation (M2M).
-	TeamToBuildPrimaryKey = []string{"team_id", "build_id"}
-	// TeamToEnvironmentPrimaryKey and TeamToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the TeamToEnvironment relation (M2M).
-	TeamToEnvironmentPrimaryKey = []string{"team_id", "environment_id"}
-	// TeamToProvisionedNetworkPrimaryKey and TeamToProvisionedNetworkColumn2 are the table columns denoting the
-	// primary key for the TeamToProvisionedNetwork relation (M2M).
-	TeamToProvisionedNetworkPrimaryKey = []string{"provisioned_network_id", "team_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the Team type.
+var ForeignKeys = []string{
+	"team_team_to_build",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

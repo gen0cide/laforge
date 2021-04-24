@@ -14,11 +14,11 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
-	"github.com/gen0cide/laforge/ent/user"
 )
 
 // BuildQuery is the builder for querying Build entities.
@@ -30,11 +30,12 @@ type BuildQuery struct {
 	fields     []string
 	predicates []predicate.Build
 	// eager-loading edges.
-	withBuildToUser               *UserQuery
-	withBuildToTag                *TagQuery
+	withBuildToStatus             *StatusQuery
+	withBuildToEnvironment        *EnvironmentQuery
 	withBuildToProvisionedNetwork *ProvisionedNetworkQuery
 	withBuildToTeam               *TeamQuery
-	withBuildToEnvironment        *EnvironmentQuery
+	withBuildToPlan               *PlanQuery
+	withFKs                       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,9 +65,9 @@ func (bq *BuildQuery) Order(o ...OrderFunc) *BuildQuery {
 	return bq
 }
 
-// QueryBuildToUser chains the current query on the "BuildToUser" edge.
-func (bq *BuildQuery) QueryBuildToUser() *UserQuery {
-	query := &UserQuery{config: bq.config}
+// QueryBuildToStatus chains the current query on the "BuildToStatus" edge.
+func (bq *BuildQuery) QueryBuildToStatus() *StatusQuery {
+	query := &StatusQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -77,74 +78,8 @@ func (bq *BuildQuery) QueryBuildToUser() *UserQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.BuildToUserTable, build.BuildToUserColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryBuildToTag chains the current query on the "BuildToTag" edge.
-func (bq *BuildQuery) QueryBuildToTag() *TagQuery {
-	query := &TagQuery{config: bq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := bq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.BuildToTagTable, build.BuildToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryBuildToProvisionedNetwork chains the current query on the "BuildToProvisionedNetwork" edge.
-func (bq *BuildQuery) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery {
-	query := &ProvisionedNetworkQuery{config: bq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := bq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, build.BuildToProvisionedNetworkTable, build.BuildToProvisionedNetworkPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryBuildToTeam chains the current query on the "BuildToTeam" edge.
-func (bq *BuildQuery) QueryBuildToTeam() *TeamQuery {
-	query := &TeamQuery{config: bq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := bq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToTeamTable, build.BuildToTeamPrimaryKey...),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, build.BuildToStatusTable, build.BuildToStatusColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -166,7 +101,73 @@ func (bq *BuildQuery) QueryBuildToEnvironment() *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, build.BuildToEnvironmentTable, build.BuildToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToEnvironmentTable, build.BuildToEnvironmentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildToProvisionedNetwork chains the current query on the "BuildToProvisionedNetwork" edge.
+func (bq *BuildQuery) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, selector),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToProvisionedNetworkTable, build.BuildToProvisionedNetworkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildToTeam chains the current query on the "BuildToTeam" edge.
+func (bq *BuildQuery) QueryBuildToTeam() *TeamQuery {
+	query := &TeamQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, selector),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToTeamTable, build.BuildToTeamColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildToPlan chains the current query on the "BuildToPlan" edge.
+func (bq *BuildQuery) QueryBuildToPlan() *PlanQuery {
+	query := &PlanQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, selector),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToPlanTable, build.BuildToPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -355,36 +356,36 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		offset:                        bq.offset,
 		order:                         append([]OrderFunc{}, bq.order...),
 		predicates:                    append([]predicate.Build{}, bq.predicates...),
-		withBuildToUser:               bq.withBuildToUser.Clone(),
-		withBuildToTag:                bq.withBuildToTag.Clone(),
+		withBuildToStatus:             bq.withBuildToStatus.Clone(),
+		withBuildToEnvironment:        bq.withBuildToEnvironment.Clone(),
 		withBuildToProvisionedNetwork: bq.withBuildToProvisionedNetwork.Clone(),
 		withBuildToTeam:               bq.withBuildToTeam.Clone(),
-		withBuildToEnvironment:        bq.withBuildToEnvironment.Clone(),
+		withBuildToPlan:               bq.withBuildToPlan.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
 	}
 }
 
-// WithBuildToUser tells the query-builder to eager-load the nodes that are connected to
-// the "BuildToUser" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BuildQuery) WithBuildToUser(opts ...func(*UserQuery)) *BuildQuery {
-	query := &UserQuery{config: bq.config}
+// WithBuildToStatus tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToStatus" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToStatus(opts ...func(*StatusQuery)) *BuildQuery {
+	query := &StatusQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withBuildToUser = query
+	bq.withBuildToStatus = query
 	return bq
 }
 
-// WithBuildToTag tells the query-builder to eager-load the nodes that are connected to
-// the "BuildToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BuildQuery) WithBuildToTag(opts ...func(*TagQuery)) *BuildQuery {
-	query := &TagQuery{config: bq.config}
+// WithBuildToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *BuildQuery {
+	query := &EnvironmentQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withBuildToTag = query
+	bq.withBuildToEnvironment = query
 	return bq
 }
 
@@ -410,14 +411,14 @@ func (bq *BuildQuery) WithBuildToTeam(opts ...func(*TeamQuery)) *BuildQuery {
 	return bq
 }
 
-// WithBuildToEnvironment tells the query-builder to eager-load the nodes that are connected to
-// the "BuildToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BuildQuery) WithBuildToEnvironment(opts ...func(*EnvironmentQuery)) *BuildQuery {
-	query := &EnvironmentQuery{config: bq.config}
+// WithBuildToPlan tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToPlan(opts ...func(*PlanQuery)) *BuildQuery {
+	query := &PlanQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withBuildToEnvironment = query
+	bq.withBuildToPlan = query
 	return bq
 }
 
@@ -485,15 +486,22 @@ func (bq *BuildQuery) prepareQuery(ctx context.Context) error {
 func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 	var (
 		nodes       = []*Build{}
+		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
 		loadedTypes = [5]bool{
-			bq.withBuildToUser != nil,
-			bq.withBuildToTag != nil,
+			bq.withBuildToStatus != nil,
+			bq.withBuildToEnvironment != nil,
 			bq.withBuildToProvisionedNetwork != nil,
 			bq.withBuildToTeam != nil,
-			bq.withBuildToEnvironment != nil,
+			bq.withBuildToPlan != nil,
 		}
 	)
+	if bq.withBuildToEnvironment != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, build.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Build{config: bq.config}
 		nodes = append(nodes, node)
@@ -514,253 +522,143 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		return nodes, nil
 	}
 
-	if query := bq.withBuildToUser; query != nil {
+	if query := bq.withBuildToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.BuildToUser = []*User{}
 		}
 		query.withFKs = true
-		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(build.BuildToUserColumn, fks...))
+		query.Where(predicate.Status(func(s *sql.Selector) {
+			s.Where(sql.InValues(build.BuildToStatusColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.build_build_to_user
+			fk := n.build_build_to_status
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "build_build_to_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "build_build_to_status" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_status" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.BuildToUser = append(node.Edges.BuildToUser, n)
+			node.Edges.BuildToStatus = n
 		}
 	}
 
-	if query := bq.withBuildToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
+	if query := bq.withBuildToEnvironment; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Build)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.BuildToTag = []*Tag{}
+			if fk := nodes[i].build_build_to_environment; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(build.BuildToTagColumn, fks...))
-		}))
+		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.build_build_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "build_build_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_environment" returned %v`, n.ID)
 			}
-			node.Edges.BuildToTag = append(node.Edges.BuildToTag, n)
+			for i := range nodes {
+				nodes[i].Edges.BuildToEnvironment = n
+			}
 		}
 	}
 
 	if query := bq.withBuildToProvisionedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Build, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.BuildToProvisionedNetwork = []*ProvisionedNetwork{}
+		nodeids := make(map[int]*Build)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.BuildToProvisionedNetwork = []*ProvisionedNetwork{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Build)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   build.BuildToProvisionedNetworkTable,
-				Columns: build.BuildToProvisionedNetworkPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(build.BuildToProvisionedNetworkPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, bq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "BuildToProvisionedNetwork": %v`, err)
-		}
-		query.Where(provisionednetwork.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.ProvisionedNetwork(func(s *sql.Selector) {
+			s.Where(sql.InValues(build.BuildToProvisionedNetworkColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.provisioned_network_provisioned_network_to_build
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "provisioned_network_provisioned_network_to_build" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "BuildToProvisionedNetwork" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_network_provisioned_network_to_build" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.BuildToProvisionedNetwork = append(nodes[i].Edges.BuildToProvisionedNetwork, n)
-			}
+			node.Edges.BuildToProvisionedNetwork = append(node.Edges.BuildToProvisionedNetwork, n)
 		}
 	}
 
 	if query := bq.withBuildToTeam; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Build, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.BuildToTeam = []*Team{}
+		nodeids := make(map[int]*Build)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.BuildToTeam = []*Team{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Build)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   build.BuildToTeamTable,
-				Columns: build.BuildToTeamPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(build.BuildToTeamPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, bq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "BuildToTeam": %v`, err)
-		}
-		query.Where(team.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Team(func(s *sql.Selector) {
+			s.Where(sql.InValues(build.BuildToTeamColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.team_team_to_build
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "team_team_to_build" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "BuildToTeam" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "team_team_to_build" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.BuildToTeam = append(nodes[i].Edges.BuildToTeam, n)
-			}
+			node.Edges.BuildToTeam = append(node.Edges.BuildToTeam, n)
 		}
 	}
 
-	if query := bq.withBuildToEnvironment; query != nil {
+	if query := bq.withBuildToPlan; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Build, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.BuildToEnvironment = []*Environment{}
+		nodeids := make(map[int]*Build)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.BuildToPlan = []*Plan{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Build)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   build.BuildToEnvironmentTable,
-				Columns: build.BuildToEnvironmentPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(build.BuildToEnvironmentPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, bq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "BuildToEnvironment": %v`, err)
-		}
-		query.Where(environment.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Plan(func(s *sql.Selector) {
+			s.Where(sql.InValues(build.BuildToPlanColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.plan_plan_to_build
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_plan_to_build" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "BuildToEnvironment" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_build" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.BuildToEnvironment = append(nodes[i].Edges.BuildToEnvironment, n)
-			}
+			node.Edges.BuildToPlan = append(node.Edges.BuildToPlan, n)
 		}
 	}
 

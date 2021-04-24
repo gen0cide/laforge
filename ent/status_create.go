@@ -10,8 +10,12 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/team"
 )
 
 // StatusCreate is the builder for creating a Status entity.
@@ -27,9 +31,23 @@ func (sc *StatusCreate) SetState(s status.State) *StatusCreate {
 	return sc
 }
 
+// SetStatusFor sets the "status_for" field.
+func (sc *StatusCreate) SetStatusFor(sf status.StatusFor) *StatusCreate {
+	sc.mutation.SetStatusFor(sf)
+	return sc
+}
+
 // SetStartedAt sets the "started_at" field.
 func (sc *StatusCreate) SetStartedAt(t time.Time) *StatusCreate {
 	sc.mutation.SetStartedAt(t)
+	return sc
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableStartedAt(t *time.Time) *StatusCreate {
+	if t != nil {
+		sc.SetStartedAt(*t)
+	}
 	return sc
 }
 
@@ -39,9 +57,25 @@ func (sc *StatusCreate) SetEndedAt(t time.Time) *StatusCreate {
 	return sc
 }
 
+// SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableEndedAt(t *time.Time) *StatusCreate {
+	if t != nil {
+		sc.SetEndedAt(*t)
+	}
+	return sc
+}
+
 // SetFailed sets the "failed" field.
 func (sc *StatusCreate) SetFailed(b bool) *StatusCreate {
 	sc.mutation.SetFailed(b)
+	return sc
+}
+
+// SetNillableFailed sets the "failed" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableFailed(b *bool) *StatusCreate {
+	if b != nil {
+		sc.SetFailed(*b)
+	}
 	return sc
 }
 
@@ -51,25 +85,121 @@ func (sc *StatusCreate) SetCompleted(b bool) *StatusCreate {
 	return sc
 }
 
+// SetNillableCompleted sets the "completed" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableCompleted(b *bool) *StatusCreate {
+	if b != nil {
+		sc.SetCompleted(*b)
+	}
+	return sc
+}
+
 // SetError sets the "error" field.
 func (sc *StatusCreate) SetError(s string) *StatusCreate {
 	sc.mutation.SetError(s)
 	return sc
 }
 
-// AddStatusToTagIDs adds the "StatusToTag" edge to the Tag entity by IDs.
-func (sc *StatusCreate) AddStatusToTagIDs(ids ...int) *StatusCreate {
-	sc.mutation.AddStatusToTagIDs(ids...)
+// SetNillableError sets the "error" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableError(s *string) *StatusCreate {
+	if s != nil {
+		sc.SetError(*s)
+	}
 	return sc
 }
 
-// AddStatusToTag adds the "StatusToTag" edges to the Tag entity.
-func (sc *StatusCreate) AddStatusToTag(t ...*Tag) *StatusCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID.
+func (sc *StatusCreate) SetStatusToBuildID(id int) *StatusCreate {
+	sc.mutation.SetStatusToBuildID(id)
+	return sc
+}
+
+// SetNillableStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToBuildID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToBuildID(*id)
 	}
-	return sc.AddStatusToTagIDs(ids...)
+	return sc
+}
+
+// SetStatusToBuild sets the "StatusToBuild" edge to the Build entity.
+func (sc *StatusCreate) SetStatusToBuild(b *Build) *StatusCreate {
+	return sc.SetStatusToBuildID(b.ID)
+}
+
+// SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (sc *StatusCreate) SetStatusToProvisionedNetworkID(id int) *StatusCreate {
+	sc.mutation.SetStatusToProvisionedNetworkID(id)
+	return sc
+}
+
+// SetNillableStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToProvisionedNetworkID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToProvisionedNetworkID(*id)
+	}
+	return sc
+}
+
+// SetStatusToProvisionedNetwork sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (sc *StatusCreate) SetStatusToProvisionedNetwork(p *ProvisionedNetwork) *StatusCreate {
+	return sc.SetStatusToProvisionedNetworkID(p.ID)
+}
+
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (sc *StatusCreate) SetStatusToProvisionedHostID(id int) *StatusCreate {
+	sc.mutation.SetStatusToProvisionedHostID(id)
+	return sc
+}
+
+// SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToProvisionedHostID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToProvisionedHostID(*id)
+	}
+	return sc
+}
+
+// SetStatusToProvisionedHost sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (sc *StatusCreate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusCreate {
+	return sc.SetStatusToProvisionedHostID(p.ID)
+}
+
+// SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (sc *StatusCreate) SetStatusToProvisioningStepID(id int) *StatusCreate {
+	sc.mutation.SetStatusToProvisioningStepID(id)
+	return sc
+}
+
+// SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToProvisioningStepID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToProvisioningStepID(*id)
+	}
+	return sc
+}
+
+// SetStatusToProvisioningStep sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (sc *StatusCreate) SetStatusToProvisioningStep(p *ProvisioningStep) *StatusCreate {
+	return sc.SetStatusToProvisioningStepID(p.ID)
+}
+
+// SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
+func (sc *StatusCreate) SetStatusToTeamID(id int) *StatusCreate {
+	sc.mutation.SetStatusToTeamID(id)
+	return sc
+}
+
+// SetNillableStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToTeamID(id *int) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToTeamID(*id)
+	}
+	return sc
+}
+
+// SetStatusToTeam sets the "StatusToTeam" edge to the Team entity.
+func (sc *StatusCreate) SetStatusToTeam(t *Team) *StatusCreate {
+	return sc.SetStatusToTeamID(t.ID)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -83,6 +213,7 @@ func (sc *StatusCreate) Save(ctx context.Context) (*Status, error) {
 		err  error
 		node *Status
 	)
+	sc.defaults()
 	if len(sc.hooks) == 0 {
 		if err = sc.check(); err != nil {
 			return nil, err
@@ -121,6 +252,18 @@ func (sc *StatusCreate) SaveX(ctx context.Context) *Status {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (sc *StatusCreate) defaults() {
+	if _, ok := sc.mutation.Failed(); !ok {
+		v := status.DefaultFailed
+		sc.mutation.SetFailed(v)
+	}
+	if _, ok := sc.mutation.Completed(); !ok {
+		v := status.DefaultCompleted
+		sc.mutation.SetCompleted(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (sc *StatusCreate) check() error {
 	if _, ok := sc.mutation.State(); !ok {
@@ -131,20 +274,19 @@ func (sc *StatusCreate) check() error {
 			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
 		}
 	}
-	if _, ok := sc.mutation.StartedAt(); !ok {
-		return &ValidationError{Name: "started_at", err: errors.New("ent: missing required field \"started_at\"")}
+	if _, ok := sc.mutation.StatusFor(); !ok {
+		return &ValidationError{Name: "status_for", err: errors.New("ent: missing required field \"status_for\"")}
 	}
-	if _, ok := sc.mutation.EndedAt(); !ok {
-		return &ValidationError{Name: "ended_at", err: errors.New("ent: missing required field \"ended_at\"")}
+	if v, ok := sc.mutation.StatusFor(); ok {
+		if err := status.StatusForValidator(v); err != nil {
+			return &ValidationError{Name: "status_for", err: fmt.Errorf("ent: validator failed for field \"status_for\": %w", err)}
+		}
 	}
 	if _, ok := sc.mutation.Failed(); !ok {
 		return &ValidationError{Name: "failed", err: errors.New("ent: missing required field \"failed\"")}
 	}
 	if _, ok := sc.mutation.Completed(); !ok {
 		return &ValidationError{Name: "completed", err: errors.New("ent: missing required field \"completed\"")}
-	}
-	if _, ok := sc.mutation.Error(); !ok {
-		return &ValidationError{Name: "error", err: errors.New("ent: missing required field \"error\"")}
 	}
 	return nil
 }
@@ -180,6 +322,14 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Column: status.FieldState,
 		})
 		_node.State = value
+	}
+	if value, ok := sc.mutation.StatusFor(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: status.FieldStatusFor,
+		})
+		_node.StatusFor = value
 	}
 	if value, ok := sc.mutation.StartedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -221,17 +371,93 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 		})
 		_node.Error = value
 	}
-	if nodes := sc.mutation.StatusToTagIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.StatusToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   status.StatusToTagTable,
-			Columns: []string{status.StatusToTagColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToBuildTable,
+			Columns: []string{status.StatusToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedNetworkTable,
+			Columns: []string{status.StatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToProvisionedHostIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisionedHostTable,
+			Columns: []string{status.StatusToProvisionedHostColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToProvisioningStepIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisioningStepTable,
+			Columns: []string{status.StatusToProvisioningStepColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToTeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToTeamTable,
+			Columns: []string{status.StatusToTeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: team.FieldID,
 				},
 			},
 		}
@@ -257,6 +483,7 @@ func (scb *StatusCreateBulk) Save(ctx context.Context) ([]*Status, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*StatusMutation)
 				if !ok {

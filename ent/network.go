@@ -42,7 +42,7 @@ type Network struct {
 	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
 	HCLNetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	//
-	provisioned_network_provisioned_network_to_network *int
+
 }
 
 // NetworkEdges holds the relations/edges for other nodes in the graph.
@@ -109,8 +109,6 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case network.FieldHclID, network.FieldName, network.FieldCidr:
 			values[i] = &sql.NullString{}
-		case network.ForeignKeys[0]: // provisioned_network_provisioned_network_to_network
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
 		}
@@ -173,13 +171,6 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &n.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case network.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
-			} else if value.Valid {
-				n.provisioned_network_provisioned_network_to_network = new(int)
-				*n.provisioned_network_provisioned_network_to_network = int(value.Int64)
 			}
 		}
 	}

@@ -43,11 +43,6 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the FileDelete type.
-var ForeignKeys = []string{
-	"provisioning_step_provisioning_step_to_file_delete",
-}
-
 var (
 	// FileDeleteToEnvironmentPrimaryKey and FileDeleteToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the FileDeleteToEnvironment relation (M2M).
@@ -58,11 +53,6 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

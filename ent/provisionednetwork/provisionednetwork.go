@@ -12,8 +12,6 @@ const (
 	// FieldCidr holds the string denoting the cidr field in the database.
 	FieldCidr = "cidr"
 
-	// EdgeProvisionedNetworkToTag holds the string denoting the provisionednetworktotag edge name in mutations.
-	EdgeProvisionedNetworkToTag = "ProvisionedNetworkToTag"
 	// EdgeProvisionedNetworkToStatus holds the string denoting the provisionednetworktostatus edge name in mutations.
 	EdgeProvisionedNetworkToStatus = "ProvisionedNetworkToStatus"
 	// EdgeProvisionedNetworkToNetwork holds the string denoting the provisionednetworktonetwork edge name in mutations.
@@ -24,16 +22,11 @@ const (
 	EdgeProvisionedNetworkToTeam = "ProvisionedNetworkToTeam"
 	// EdgeProvisionedNetworkToProvisionedHost holds the string denoting the provisionednetworktoprovisionedhost edge name in mutations.
 	EdgeProvisionedNetworkToProvisionedHost = "ProvisionedNetworkToProvisionedHost"
+	// EdgeProvisionedNetworkToPlan holds the string denoting the provisionednetworktoplan edge name in mutations.
+	EdgeProvisionedNetworkToPlan = "ProvisionedNetworkToPlan"
 
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
-	// ProvisionedNetworkToTagTable is the table the holds the ProvisionedNetworkToTag relation/edge.
-	ProvisionedNetworkToTagTable = "tags"
-	// ProvisionedNetworkToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	ProvisionedNetworkToTagInverseTable = "tags"
-	// ProvisionedNetworkToTagColumn is the table column denoting the ProvisionedNetworkToTag relation/edge.
-	ProvisionedNetworkToTagColumn = "provisioned_network_provisioned_network_to_tag"
 	// ProvisionedNetworkToStatusTable is the table the holds the ProvisionedNetworkToStatus relation/edge.
 	ProvisionedNetworkToStatusTable = "status"
 	// ProvisionedNetworkToStatusInverseTable is the table name for the Status entity.
@@ -42,27 +35,40 @@ const (
 	// ProvisionedNetworkToStatusColumn is the table column denoting the ProvisionedNetworkToStatus relation/edge.
 	ProvisionedNetworkToStatusColumn = "provisioned_network_provisioned_network_to_status"
 	// ProvisionedNetworkToNetworkTable is the table the holds the ProvisionedNetworkToNetwork relation/edge.
-	ProvisionedNetworkToNetworkTable = "networks"
+	ProvisionedNetworkToNetworkTable = "provisioned_networks"
 	// ProvisionedNetworkToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	ProvisionedNetworkToNetworkInverseTable = "networks"
 	// ProvisionedNetworkToNetworkColumn is the table column denoting the ProvisionedNetworkToNetwork relation/edge.
 	ProvisionedNetworkToNetworkColumn = "provisioned_network_provisioned_network_to_network"
-	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge. The primary key declared below.
-	ProvisionedNetworkToBuildTable = "build_BuildToProvisionedNetwork"
+	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge.
+	ProvisionedNetworkToBuildTable = "provisioned_networks"
 	// ProvisionedNetworkToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	ProvisionedNetworkToBuildInverseTable = "builds"
-	// ProvisionedNetworkToTeamTable is the table the holds the ProvisionedNetworkToTeam relation/edge. The primary key declared below.
-	ProvisionedNetworkToTeamTable = "provisioned_network_ProvisionedNetworkToTeam"
+	// ProvisionedNetworkToBuildColumn is the table column denoting the ProvisionedNetworkToBuild relation/edge.
+	ProvisionedNetworkToBuildColumn = "provisioned_network_provisioned_network_to_build"
+	// ProvisionedNetworkToTeamTable is the table the holds the ProvisionedNetworkToTeam relation/edge.
+	ProvisionedNetworkToTeamTable = "provisioned_networks"
 	// ProvisionedNetworkToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	ProvisionedNetworkToTeamInverseTable = "teams"
-	// ProvisionedNetworkToProvisionedHostTable is the table the holds the ProvisionedNetworkToProvisionedHost relation/edge. The primary key declared below.
-	ProvisionedNetworkToProvisionedHostTable = "provisioned_host_ProvisionedHostToProvisionedNetwork"
+	// ProvisionedNetworkToTeamColumn is the table column denoting the ProvisionedNetworkToTeam relation/edge.
+	ProvisionedNetworkToTeamColumn = "provisioned_network_provisioned_network_to_team"
+	// ProvisionedNetworkToProvisionedHostTable is the table the holds the ProvisionedNetworkToProvisionedHost relation/edge.
+	ProvisionedNetworkToProvisionedHostTable = "provisioned_hosts"
 	// ProvisionedNetworkToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedNetworkToProvisionedHostInverseTable = "provisioned_hosts"
+	// ProvisionedNetworkToProvisionedHostColumn is the table column denoting the ProvisionedNetworkToProvisionedHost relation/edge.
+	ProvisionedNetworkToProvisionedHostColumn = "provisioned_host_provisioned_host_to_provisioned_network"
+	// ProvisionedNetworkToPlanTable is the table the holds the ProvisionedNetworkToPlan relation/edge.
+	ProvisionedNetworkToPlanTable = "provisioned_networks"
+	// ProvisionedNetworkToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisionedNetworkToPlanInverseTable = "plans"
+	// ProvisionedNetworkToPlanColumn is the table column denoting the ProvisionedNetworkToPlan relation/edge.
+	ProvisionedNetworkToPlanColumn = "plan_plan_to_provisioned_network"
 )
 
 // Columns holds all SQL columns for provisionednetwork fields.
@@ -72,22 +78,23 @@ var Columns = []string{
 	FieldCidr,
 }
 
-var (
-	// ProvisionedNetworkToBuildPrimaryKey and ProvisionedNetworkToBuildColumn2 are the table columns denoting the
-	// primary key for the ProvisionedNetworkToBuild relation (M2M).
-	ProvisionedNetworkToBuildPrimaryKey = []string{"build_id", "provisioned_network_id"}
-	// ProvisionedNetworkToTeamPrimaryKey and ProvisionedNetworkToTeamColumn2 are the table columns denoting the
-	// primary key for the ProvisionedNetworkToTeam relation (M2M).
-	ProvisionedNetworkToTeamPrimaryKey = []string{"provisioned_network_id", "team_id"}
-	// ProvisionedNetworkToProvisionedHostPrimaryKey and ProvisionedNetworkToProvisionedHostColumn2 are the table columns denoting the
-	// primary key for the ProvisionedNetworkToProvisionedHost relation (M2M).
-	ProvisionedNetworkToProvisionedHostPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedNetwork type.
+var ForeignKeys = []string{
+	"plan_plan_to_provisioned_network",
+	"provisioned_network_provisioned_network_to_network",
+	"provisioned_network_provisioned_network_to_build",
+	"provisioned_network_provisioned_network_to_team",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

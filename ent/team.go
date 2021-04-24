@@ -3,11 +3,12 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 )
 
@@ -18,89 +19,82 @@ type Team struct {
 	ID int `json:"id,omitempty"`
 	// TeamNumber holds the value of the "team_number" field.
 	TeamNumber int `json:"team_number,omitempty"`
-	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
-	// Revision holds the value of the "revision" field.
-	Revision int64 `json:"revision,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TeamQuery when eager-loading is set.
 	Edges TeamEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// TeamToUser holds the value of the TeamToUser edge.
-	HCLTeamToUser []*User `json:"TeamToUser,omitempty"`
 	// TeamToBuild holds the value of the TeamToBuild edge.
-	HCLTeamToBuild []*Build `json:"TeamToBuild,omitempty"`
-	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
-	HCLTeamToEnvironment []*Environment `json:"TeamToEnvironment,omitempty"`
-	// TeamToTag holds the value of the TeamToTag edge.
-	HCLTeamToTag []*Tag `json:"TeamToTag,omitempty"`
+	HCLTeamToBuild *Build `json:"TeamToBuild,omitempty"`
+	// TeamToStatus holds the value of the TeamToStatus edge.
+	HCLTeamToStatus *Status `json:"TeamToStatus,omitempty"`
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	HCLTeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
+	// TeamToPlan holds the value of the TeamToPlan edge.
+	HCLTeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
 	//
-
+	team_team_to_build *int
 }
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
 type TeamEdges struct {
-	// TeamToUser holds the value of the TeamToUser edge.
-	TeamToUser []*User `json:"TeamToUser,omitempty"`
 	// TeamToBuild holds the value of the TeamToBuild edge.
-	TeamToBuild []*Build `json:"TeamToBuild,omitempty"`
-	// TeamToEnvironment holds the value of the TeamToEnvironment edge.
-	TeamToEnvironment []*Environment `json:"TeamToEnvironment,omitempty"`
-	// TeamToTag holds the value of the TeamToTag edge.
-	TeamToTag []*Tag `json:"TeamToTag,omitempty"`
+	TeamToBuild *Build `json:"TeamToBuild,omitempty"`
+	// TeamToStatus holds the value of the TeamToStatus edge.
+	TeamToStatus *Status `json:"TeamToStatus,omitempty"`
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	TeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
+	// TeamToPlan holds the value of the TeamToPlan edge.
+	TeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
-}
-
-// TeamToUserOrErr returns the TeamToUser value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) TeamToUserOrErr() ([]*User, error) {
-	if e.loadedTypes[0] {
-		return e.TeamToUser, nil
-	}
-	return nil, &NotLoadedError{edge: "TeamToUser"}
+	loadedTypes [4]bool
 }
 
 // TeamToBuildOrErr returns the TeamToBuild value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) TeamToBuildOrErr() ([]*Build, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) TeamToBuildOrErr() (*Build, error) {
+	if e.loadedTypes[0] {
+		if e.TeamToBuild == nil {
+			// The edge TeamToBuild was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: build.Label}
+		}
 		return e.TeamToBuild, nil
 	}
 	return nil, &NotLoadedError{edge: "TeamToBuild"}
 }
 
-// TeamToEnvironmentOrErr returns the TeamToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) TeamToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[2] {
-		return e.TeamToEnvironment, nil
+// TeamToStatusOrErr returns the TeamToStatus value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) TeamToStatusOrErr() (*Status, error) {
+	if e.loadedTypes[1] {
+		if e.TeamToStatus == nil {
+			// The edge TeamToStatus was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: status.Label}
+		}
+		return e.TeamToStatus, nil
 	}
-	return nil, &NotLoadedError{edge: "TeamToEnvironment"}
-}
-
-// TeamToTagOrErr returns the TeamToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) TeamToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[3] {
-		return e.TeamToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "TeamToTag"}
+	return nil, &NotLoadedError{edge: "TeamToStatus"}
 }
 
 // TeamToProvisionedNetworkOrErr returns the TeamToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) TeamToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[2] {
 		return e.TeamToProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "TeamToProvisionedNetwork"}
+}
+
+// TeamToPlanOrErr returns the TeamToPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) TeamToPlanOrErr() ([]*Plan, error) {
+	if e.loadedTypes[3] {
+		return e.TeamToPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "TeamToPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -108,9 +102,9 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case team.FieldConfig:
-			values[i] = &[]byte{}
-		case team.FieldID, team.FieldTeamNumber, team.FieldRevision:
+		case team.FieldID, team.FieldTeamNumber:
+			values[i] = &sql.NullInt64{}
+		case team.ForeignKeys[0]: // team_team_to_build
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
@@ -139,29 +133,16 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.TeamNumber = int(value.Int64)
 			}
-		case team.FieldConfig:
-
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field config", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %v", err)
-				}
-			}
-		case team.FieldRevision:
+		case team.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field revision", values[i])
+				return fmt.Errorf("unexpected type %T for edge-field team_team_to_build", value)
 			} else if value.Valid {
-				t.Revision = value.Int64
+				t.team_team_to_build = new(int)
+				*t.team_team_to_build = int(value.Int64)
 			}
 		}
 	}
 	return nil
-}
-
-// QueryTeamToUser queries the "TeamToUser" edge of the Team entity.
-func (t *Team) QueryTeamToUser() *UserQuery {
-	return (&TeamClient{config: t.config}).QueryTeamToUser(t)
 }
 
 // QueryTeamToBuild queries the "TeamToBuild" edge of the Team entity.
@@ -169,19 +150,19 @@ func (t *Team) QueryTeamToBuild() *BuildQuery {
 	return (&TeamClient{config: t.config}).QueryTeamToBuild(t)
 }
 
-// QueryTeamToEnvironment queries the "TeamToEnvironment" edge of the Team entity.
-func (t *Team) QueryTeamToEnvironment() *EnvironmentQuery {
-	return (&TeamClient{config: t.config}).QueryTeamToEnvironment(t)
-}
-
-// QueryTeamToTag queries the "TeamToTag" edge of the Team entity.
-func (t *Team) QueryTeamToTag() *TagQuery {
-	return (&TeamClient{config: t.config}).QueryTeamToTag(t)
+// QueryTeamToStatus queries the "TeamToStatus" edge of the Team entity.
+func (t *Team) QueryTeamToStatus() *StatusQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToStatus(t)
 }
 
 // QueryTeamToProvisionedNetwork queries the "TeamToProvisionedNetwork" edge of the Team entity.
 func (t *Team) QueryTeamToProvisionedNetwork() *ProvisionedNetworkQuery {
 	return (&TeamClient{config: t.config}).QueryTeamToProvisionedNetwork(t)
+}
+
+// QueryTeamToPlan queries the "TeamToPlan" edge of the Team entity.
+func (t *Team) QueryTeamToPlan() *PlanQuery {
+	return (&TeamClient{config: t.config}).QueryTeamToPlan(t)
 }
 
 // Update returns a builder for updating this Team.
@@ -209,10 +190,6 @@ func (t *Team) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
 	builder.WriteString(", team_number=")
 	builder.WriteString(fmt.Sprintf("%v", t.TeamNumber))
-	builder.WriteString(", config=")
-	builder.WriteString(fmt.Sprintf("%v", t.Config))
-	builder.WriteString(", revision=")
-	builder.WriteString(fmt.Sprintf("%v", t.Revision))
 	builder.WriteByte(')')
 	return builder.String()
 }

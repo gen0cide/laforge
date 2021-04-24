@@ -5,7 +5,9 @@ package ent
 import (
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/schema"
+	"github.com/gen0cide/laforge/ent/status"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -28,4 +30,20 @@ func init() {
 	diskDescSize := diskFields[0].Descriptor()
 	// disk.SizeValidator is a validator for the "size" field. It is called by the builders before save.
 	disk.SizeValidator = diskDescSize.Validators[0].(func(int) error)
+	ginfilemiddlewareFields := schema.GinFileMiddleware{}.Fields()
+	_ = ginfilemiddlewareFields
+	// ginfilemiddlewareDescAccessed is the schema descriptor for accessed field.
+	ginfilemiddlewareDescAccessed := ginfilemiddlewareFields[2].Descriptor()
+	// ginfilemiddleware.DefaultAccessed holds the default value on creation for the accessed field.
+	ginfilemiddleware.DefaultAccessed = ginfilemiddlewareDescAccessed.Default.(bool)
+	statusFields := schema.Status{}.Fields()
+	_ = statusFields
+	// statusDescFailed is the schema descriptor for failed field.
+	statusDescFailed := statusFields[4].Descriptor()
+	// status.DefaultFailed holds the default value on creation for the failed field.
+	status.DefaultFailed = statusDescFailed.Default.(bool)
+	// statusDescCompleted is the schema descriptor for completed field.
+	statusDescCompleted := statusFields[5].Descriptor()
+	// status.DefaultCompleted holds the default value on creation for the completed field.
+	status.DefaultCompleted = statusDescCompleted.Default.(bool)
 }

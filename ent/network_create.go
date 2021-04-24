@@ -303,10 +303,10 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 	}
 	if nodes := nc.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

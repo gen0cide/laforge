@@ -333,7 +333,7 @@ func HasHostDependencyToDependOnHost() predicate.HostDependency {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToDependOnHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -345,7 +345,7 @@ func HasHostDependencyToDependOnHostWith(preds ...predicate.Host) predicate.Host
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToDependOnHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToDependOnHostTable, HostDependencyToDependOnHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -361,7 +361,7 @@ func HasHostDependencyToDependByHost() predicate.HostDependency {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToDependByHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -373,7 +373,7 @@ func HasHostDependencyToDependByHostWith(preds ...predicate.Host) predicate.Host
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToDependByHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToDependByHostTable, HostDependencyToDependByHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -389,7 +389,7 @@ func HasHostDependencyToNetwork() predicate.HostDependency {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToNetworkTable, HostDependencyToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToNetworkTable, HostDependencyToNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -401,7 +401,7 @@ func HasHostDependencyToNetworkWith(preds ...predicate.Network) predicate.HostDe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostDependencyToNetworkTable, HostDependencyToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, HostDependencyToNetworkTable, HostDependencyToNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -417,7 +417,7 @@ func HasHostDependencyToEnvironment() predicate.HostDependency {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -429,7 +429,7 @@ func HasHostDependencyToEnvironmentWith(preds ...predicate.Environment) predicat
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostDependencyToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, HostDependencyToEnvironmentTable, HostDependencyToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

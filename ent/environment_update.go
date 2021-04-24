@@ -27,7 +27,6 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/tag"
-	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -182,21 +181,6 @@ func (eu *EnvironmentUpdate) AddEnvironmentToCompetition(c ...*Competition) *Env
 		ids[i] = c[i].ID
 	}
 	return eu.AddEnvironmentToCompetitionIDs(ids...)
-}
-
-// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (eu *EnvironmentUpdate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddEnvironmentToBuildIDs(ids...)
-	return eu
-}
-
-// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
-func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return eu.AddEnvironmentToBuildIDs(ids...)
 }
 
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
@@ -379,19 +363,19 @@ func (eu *EnvironmentUpdate) AddEnvironmentToHostDependency(h ...*HostDependency
 	return eu.AddEnvironmentToHostDependencyIDs(ids...)
 }
 
-// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
-func (eu *EnvironmentUpdate) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddEnvironmentToTeamIDs(ids...)
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToBuildIDs(ids...)
 	return eu
 }
 
-// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
-func (eu *EnvironmentUpdate) AddEnvironmentToTeam(t ...*Team) *EnvironmentUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return eu.AddEnvironmentToTeamIDs(ids...)
+	return eu.AddEnvironmentToBuildIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -481,27 +465,6 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToCompetition(c ...*Competition) *
 		ids[i] = c[i].ID
 	}
 	return eu.RemoveEnvironmentToCompetitionIDs(ids...)
-}
-
-// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
-func (eu *EnvironmentUpdate) ClearEnvironmentToBuild() *EnvironmentUpdate {
-	eu.mutation.ClearEnvironmentToBuild()
-	return eu
-}
-
-// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveEnvironmentToBuildIDs(ids...)
-	return eu
-}
-
-// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return eu.RemoveEnvironmentToBuildIDs(ids...)
 }
 
 // ClearEnvironmentToIdentity clears all "EnvironmentToIdentity" edges to the Identity entity.
@@ -756,25 +719,25 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToHostDependency(h ...*HostDepende
 	return eu.RemoveEnvironmentToHostDependencyIDs(ids...)
 }
 
-// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to the Team entity.
-func (eu *EnvironmentUpdate) ClearEnvironmentToTeam() *EnvironmentUpdate {
-	eu.mutation.ClearEnvironmentToTeam()
+// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToBuild() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToBuild()
 	return eu
 }
 
-// RemoveEnvironmentToTeamIDs removes the "EnvironmentToTeam" edge to Team entities by IDs.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveEnvironmentToTeamIDs(ids...)
+// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToBuildIDs(ids...)
 	return eu
 }
 
-// RemoveEnvironmentToTeam removes "EnvironmentToTeam" edges to Team entities.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToTeam(t ...*Team) *EnvironmentUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return eu.RemoveEnvironmentToTeamIDs(ids...)
+	return eu.RemoveEnvironmentToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1145,60 +1108,6 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: competition.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if eu.mutation.EnvironmentToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.RemovedEnvironmentToBuildIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
 				},
 			},
 		}
@@ -1803,10 +1712,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1819,10 +1728,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToHostDependencyIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1838,10 +1747,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1855,33 +1764,33 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eu.mutation.EnvironmentToTeamCleared() {
+	if eu.mutation.EnvironmentToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.RemovedEnvironmentToTeamIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToTeamCleared() {
+	if nodes := eu.mutation.RemovedEnvironmentToBuildIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}
@@ -1890,17 +1799,17 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.EnvironmentToTeamIDs(); len(nodes) > 0 {
+	if nodes := eu.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}
@@ -2065,21 +1974,6 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToCompetition(c ...*Competition) 
 		ids[i] = c[i].ID
 	}
 	return euo.AddEnvironmentToCompetitionIDs(ids...)
-}
-
-// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddEnvironmentToBuildIDs(ids...)
-	return euo
-}
-
-// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return euo.AddEnvironmentToBuildIDs(ids...)
 }
 
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
@@ -2262,19 +2156,19 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToHostDependency(h ...*HostDepend
 	return euo.AddEnvironmentToHostDependencyIDs(ids...)
 }
 
-// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by IDs.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddEnvironmentToTeamIDs(ids...)
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToBuildIDs(ids...)
 	return euo
 }
 
-// AddEnvironmentToTeam adds the "EnvironmentToTeam" edges to the Team entity.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToTeam(t ...*Team) *EnvironmentUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return euo.AddEnvironmentToTeamIDs(ids...)
+	return euo.AddEnvironmentToBuildIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -2364,27 +2258,6 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToCompetition(c ...*Competitio
 		ids[i] = c[i].ID
 	}
 	return euo.RemoveEnvironmentToCompetitionIDs(ids...)
-}
-
-// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
-func (euo *EnvironmentUpdateOne) ClearEnvironmentToBuild() *EnvironmentUpdateOne {
-	euo.mutation.ClearEnvironmentToBuild()
-	return euo
-}
-
-// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveEnvironmentToBuildIDs(ids...)
-	return euo
-}
-
-// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return euo.RemoveEnvironmentToBuildIDs(ids...)
 }
 
 // ClearEnvironmentToIdentity clears all "EnvironmentToIdentity" edges to the Identity entity.
@@ -2639,25 +2512,25 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToHostDependency(h ...*HostDep
 	return euo.RemoveEnvironmentToHostDependencyIDs(ids...)
 }
 
-// ClearEnvironmentToTeam clears all "EnvironmentToTeam" edges to the Team entity.
-func (euo *EnvironmentUpdateOne) ClearEnvironmentToTeam() *EnvironmentUpdateOne {
-	euo.mutation.ClearEnvironmentToTeam()
+// ClearEnvironmentToBuild clears all "EnvironmentToBuild" edges to the Build entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToBuild() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToBuild()
 	return euo
 }
 
-// RemoveEnvironmentToTeamIDs removes the "EnvironmentToTeam" edge to Team entities by IDs.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTeamIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveEnvironmentToTeamIDs(ids...)
+// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to Build entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuildIDs(ids ...int) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToBuildIDs(ids...)
 	return euo
 }
 
-// RemoveEnvironmentToTeam removes "EnvironmentToTeam" edges to Team entities.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTeam(t ...*Team) *EnvironmentUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// RemoveEnvironmentToBuild removes "EnvironmentToBuild" edges to Build entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return euo.RemoveEnvironmentToTeamIDs(ids...)
+	return euo.RemoveEnvironmentToBuildIDs(ids...)
 }
 
 // Save executes the query and returns the updated Environment entity.
@@ -3033,60 +2906,6 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: competition.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if euo.mutation.EnvironmentToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.RemovedEnvironmentToBuildIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToBuildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToBuildTable,
-			Columns: environment.EnvironmentToBuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: build.FieldID,
 				},
 			},
 		}
@@ -3691,10 +3510,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3707,10 +3526,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToHostDependencyIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3726,10 +3545,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostDependencyTable,
-			Columns: environment.EnvironmentToHostDependencyPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3743,33 +3562,33 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if euo.mutation.EnvironmentToTeamCleared() {
+	if euo.mutation.EnvironmentToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.RemovedEnvironmentToTeamIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToTeamCleared() {
+	if nodes := euo.mutation.RemovedEnvironmentToBuildIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}
@@ -3778,17 +3597,17 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.EnvironmentToTeamIDs(); len(nodes) > 0 {
+	if nodes := euo.mutation.EnvironmentToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   environment.EnvironmentToTeamTable,
-			Columns: environment.EnvironmentToTeamPrimaryKey,
+			Table:   environment.EnvironmentToBuildTable,
+			Columns: []string{environment.EnvironmentToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: team.FieldID,
+					Column: build.FieldID,
 				},
 			},
 		}

@@ -10,28 +10,25 @@ const (
 	// FieldSubnetIP holds the string denoting the subnet_ip field in the database.
 	FieldSubnetIP = "subnet_ip"
 
-	// EdgeProvisionedHostToTag holds the string denoting the provisionedhosttotag edge name in mutations.
-	EdgeProvisionedHostToTag = "ProvisionedHostToTag"
 	// EdgeProvisionedHostToStatus holds the string denoting the provisionedhosttostatus edge name in mutations.
 	EdgeProvisionedHostToStatus = "ProvisionedHostToStatus"
 	// EdgeProvisionedHostToProvisionedNetwork holds the string denoting the provisionedhosttoprovisionednetwork edge name in mutations.
 	EdgeProvisionedHostToProvisionedNetwork = "ProvisionedHostToProvisionedNetwork"
 	// EdgeProvisionedHostToHost holds the string denoting the provisionedhosttohost edge name in mutations.
 	EdgeProvisionedHostToHost = "ProvisionedHostToHost"
+	// EdgeProvisionedHostToEndStepPlan holds the string denoting the provisionedhosttoendstepplan edge name in mutations.
+	EdgeProvisionedHostToEndStepPlan = "ProvisionedHostToEndStepPlan"
 	// EdgeProvisionedHostToProvisioningStep holds the string denoting the provisionedhosttoprovisioningstep edge name in mutations.
 	EdgeProvisionedHostToProvisioningStep = "ProvisionedHostToProvisioningStep"
 	// EdgeProvisionedHostToAgentStatus holds the string denoting the provisionedhosttoagentstatus edge name in mutations.
 	EdgeProvisionedHostToAgentStatus = "ProvisionedHostToAgentStatus"
+	// EdgeProvisionedHostToPlan holds the string denoting the provisionedhosttoplan edge name in mutations.
+	EdgeProvisionedHostToPlan = "ProvisionedHostToPlan"
+	// EdgeProvisionedHostToGinFileMiddleware holds the string denoting the provisionedhosttoginfilemiddleware edge name in mutations.
+	EdgeProvisionedHostToGinFileMiddleware = "ProvisionedHostToGinFileMiddleware"
 
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
-	// ProvisionedHostToTagTable is the table the holds the ProvisionedHostToTag relation/edge.
-	ProvisionedHostToTagTable = "tags"
-	// ProvisionedHostToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	ProvisionedHostToTagInverseTable = "tags"
-	// ProvisionedHostToTagColumn is the table column denoting the ProvisionedHostToTag relation/edge.
-	ProvisionedHostToTagColumn = "provisioned_host_provisioned_host_to_tag"
 	// ProvisionedHostToStatusTable is the table the holds the ProvisionedHostToStatus relation/edge.
 	ProvisionedHostToStatusTable = "status"
 	// ProvisionedHostToStatusInverseTable is the table name for the Status entity.
@@ -39,28 +36,53 @@ const (
 	ProvisionedHostToStatusInverseTable = "status"
 	// ProvisionedHostToStatusColumn is the table column denoting the ProvisionedHostToStatus relation/edge.
 	ProvisionedHostToStatusColumn = "provisioned_host_provisioned_host_to_status"
-	// ProvisionedHostToProvisionedNetworkTable is the table the holds the ProvisionedHostToProvisionedNetwork relation/edge. The primary key declared below.
-	ProvisionedHostToProvisionedNetworkTable = "provisioned_host_ProvisionedHostToProvisionedNetwork"
+	// ProvisionedHostToProvisionedNetworkTable is the table the holds the ProvisionedHostToProvisionedNetwork relation/edge.
+	ProvisionedHostToProvisionedNetworkTable = "provisioned_hosts"
 	// ProvisionedHostToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	ProvisionedHostToProvisionedNetworkInverseTable = "provisioned_networks"
+	// ProvisionedHostToProvisionedNetworkColumn is the table column denoting the ProvisionedHostToProvisionedNetwork relation/edge.
+	ProvisionedHostToProvisionedNetworkColumn = "provisioned_host_provisioned_host_to_provisioned_network"
 	// ProvisionedHostToHostTable is the table the holds the ProvisionedHostToHost relation/edge.
-	ProvisionedHostToHostTable = "hosts"
+	ProvisionedHostToHostTable = "provisioned_hosts"
 	// ProvisionedHostToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	ProvisionedHostToHostInverseTable = "hosts"
 	// ProvisionedHostToHostColumn is the table column denoting the ProvisionedHostToHost relation/edge.
 	ProvisionedHostToHostColumn = "provisioned_host_provisioned_host_to_host"
-	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge. The primary key declared below.
-	ProvisionedHostToProvisioningStepTable = "provisioning_step_ProvisioningStepToProvisionedHost"
+	// ProvisionedHostToEndStepPlanTable is the table the holds the ProvisionedHostToEndStepPlan relation/edge.
+	ProvisionedHostToEndStepPlanTable = "provisioned_hosts"
+	// ProvisionedHostToEndStepPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisionedHostToEndStepPlanInverseTable = "plans"
+	// ProvisionedHostToEndStepPlanColumn is the table column denoting the ProvisionedHostToEndStepPlan relation/edge.
+	ProvisionedHostToEndStepPlanColumn = "provisioned_host_provisioned_host_to_end_step_plan"
+	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge.
+	ProvisionedHostToProvisioningStepTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	ProvisionedHostToProvisioningStepInverseTable = "provisioning_steps"
+	// ProvisionedHostToProvisioningStepColumn is the table column denoting the ProvisionedHostToProvisioningStep relation/edge.
+	ProvisionedHostToProvisioningStepColumn = "provisioning_step_provisioning_step_to_provisioned_host"
 	// ProvisionedHostToAgentStatusTable is the table the holds the ProvisionedHostToAgentStatus relation/edge. The primary key declared below.
 	ProvisionedHostToAgentStatusTable = "agent_status_AgentStatusToProvisionedHost"
 	// ProvisionedHostToAgentStatusInverseTable is the table name for the AgentStatus entity.
 	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
 	ProvisionedHostToAgentStatusInverseTable = "agent_status"
+	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge.
+	ProvisionedHostToPlanTable = "plans"
+	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisionedHostToPlanInverseTable = "plans"
+	// ProvisionedHostToPlanColumn is the table column denoting the ProvisionedHostToPlan relation/edge.
+	ProvisionedHostToPlanColumn = "plan_plan_to_provisioned_host"
+	// ProvisionedHostToGinFileMiddlewareTable is the table the holds the ProvisionedHostToGinFileMiddleware relation/edge.
+	ProvisionedHostToGinFileMiddlewareTable = "provisioned_hosts"
+	// ProvisionedHostToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
+	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.
+	ProvisionedHostToGinFileMiddlewareInverseTable = "gin_file_middlewares"
+	// ProvisionedHostToGinFileMiddlewareColumn is the table column denoting the ProvisionedHostToGinFileMiddleware relation/edge.
+	ProvisionedHostToGinFileMiddlewareColumn = "gin_file_middleware_gin_file_middleware_to_provisioned_host"
 )
 
 // Columns holds all SQL columns for provisionedhost fields.
@@ -69,13 +91,15 @@ var Columns = []string{
 	FieldSubnetIP,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
+var ForeignKeys = []string{
+	"gin_file_middleware_gin_file_middleware_to_provisioned_host",
+	"provisioned_host_provisioned_host_to_provisioned_network",
+	"provisioned_host_provisioned_host_to_host",
+	"provisioned_host_provisioned_host_to_end_step_plan",
+}
+
 var (
-	// ProvisionedHostToProvisionedNetworkPrimaryKey and ProvisionedHostToProvisionedNetworkColumn2 are the table columns denoting the
-	// primary key for the ProvisionedHostToProvisionedNetwork relation (M2M).
-	ProvisionedHostToProvisionedNetworkPrimaryKey = []string{"provisioned_host_id", "provisioned_network_id"}
-	// ProvisionedHostToProvisioningStepPrimaryKey and ProvisionedHostToProvisioningStepColumn2 are the table columns denoting the
-	// primary key for the ProvisionedHostToProvisioningStep relation (M2M).
-	ProvisionedHostToProvisioningStepPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
 	// ProvisionedHostToAgentStatusPrimaryKey and ProvisionedHostToAgentStatusColumn2 are the table columns denoting the
 	// primary key for the ProvisionedHostToAgentStatus relation (M2M).
 	ProvisionedHostToAgentStatusPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
@@ -85,6 +109,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

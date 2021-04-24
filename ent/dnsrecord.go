@@ -42,7 +42,7 @@ type DNSRecord struct {
 	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
 	HCLDNSRecordToEnvironment []*Environment `json:"DNSRecordToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_dns_record *int
+
 }
 
 // DNSRecordEdges holds the relations/edges for other nodes in the graph.
@@ -87,8 +87,6 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case dnsrecord.FieldHclID, dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
 			values[i] = &sql.NullString{}
-		case dnsrecord.ForeignKeys[0]: // provisioning_step_provisioning_step_to_dns_record
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNSRecord", columns[i])
 		}
@@ -166,13 +164,6 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				if err := json.Unmarshal(*value, &dr.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case dnsrecord.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_dns_record", value)
-			} else if value.Valid {
-				dr.provisioning_step_provisioning_step_to_dns_record = new(int)
-				*dr.provisioning_step_provisioning_step_to_dns_record = int(value.Int64)
 			}
 		}
 	}

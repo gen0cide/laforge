@@ -32,7 +32,7 @@ type FileDelete struct {
 	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
 	HCLFileDeleteToEnvironment []*Environment `json:"FileDeleteToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_file_delete *int
+
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
@@ -75,8 +75,6 @@ func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case filedelete.FieldHclID, filedelete.FieldPath:
 			values[i] = &sql.NullString{}
-		case filedelete.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_delete
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDelete", columns[i])
 		}
@@ -118,13 +116,6 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 				if err := json.Unmarshal(*value, &fd.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case filedelete.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_delete", value)
-			} else if value.Valid {
-				fd.provisioning_step_provisioning_step_to_file_delete = new(int)
-				*fd.provisioning_step_provisioning_step_to_file_delete = int(value.Int64)
 			}
 		}
 	}

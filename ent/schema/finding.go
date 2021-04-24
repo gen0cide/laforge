@@ -34,7 +34,9 @@ func (Finding) Edges() []ent.Edge {
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("FindingToTag", Tag.Type),
 		edge.To("FindingToHost", Host.Type),
-		edge.From("FindingToScript", Script.Type).Ref("ScriptToFinding"),
-		edge.From("FindingToEnvironment", Environment.Type).Ref("EnvironmentToFinding"),
+		edge.From("FindingToScript", Script.Type).
+			Ref("ScriptToFinding"),
+		edge.From("FindingToEnvironment", Environment.Type).
+			Ref("EnvironmentToFinding"),
 	}
 }

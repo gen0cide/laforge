@@ -36,6 +36,8 @@ type Tx struct {
 	FileExtract *FileExtractClient
 	// Finding is the client for interacting with the Finding builders.
 	Finding *FindingClient
+	// GinFileMiddleware is the client for interacting with the GinFileMiddleware builders.
+	GinFileMiddleware *GinFileMiddlewareClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
 	// HostDependency is the client for interacting with the HostDependency builders.
@@ -46,6 +48,8 @@ type Tx struct {
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
 	Network *NetworkClient
+	// Plan is the client for interacting with the Plan builders.
+	Plan *PlanClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
@@ -209,11 +213,13 @@ func (tx *Tx) init() {
 	tx.FileDownload = NewFileDownloadClient(tx.config)
 	tx.FileExtract = NewFileExtractClient(tx.config)
 	tx.Finding = NewFindingClient(tx.config)
+	tx.GinFileMiddleware = NewGinFileMiddlewareClient(tx.config)
 	tx.Host = NewHostClient(tx.config)
 	tx.HostDependency = NewHostDependencyClient(tx.config)
 	tx.Identity = NewIdentityClient(tx.config)
 	tx.IncludedNetwork = NewIncludedNetworkClient(tx.config)
 	tx.Network = NewNetworkClient(tx.config)
+	tx.Plan = NewPlanClient(tx.config)
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)

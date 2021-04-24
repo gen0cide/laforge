@@ -153,6 +153,18 @@ func (f *FindingQuery) collectField(ctx *graphql.OperationContext, field graphql
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (gfm *GinFileMiddlewareQuery) CollectFields(ctx context.Context, satisfies ...string) *GinFileMiddlewareQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		gfm = gfm.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return gfm
+}
+
+func (gfm *GinFileMiddlewareQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *GinFileMiddlewareQuery {
+	return gfm
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (h *HostQuery) CollectFields(ctx context.Context, satisfies ...string) *HostQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		h = h.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
@@ -210,6 +222,18 @@ func (n *NetworkQuery) CollectFields(ctx context.Context, satisfies ...string) *
 
 func (n *NetworkQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *NetworkQuery {
 	return n
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pl *PlanQuery) CollectFields(ctx context.Context, satisfies ...string) *PlanQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pl = pl.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pl
+}
+
+func (pl *PlanQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *PlanQuery {
+	return pl
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

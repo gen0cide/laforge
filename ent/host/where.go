@@ -1063,7 +1063,7 @@ func HasDependOnHostToHostDependency() predicate.Host {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DependOnHostToHostDependencyTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DependOnHostToHostDependencyTable, DependOnHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, DependOnHostToHostDependencyTable, DependOnHostToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1075,7 +1075,7 @@ func HasDependOnHostToHostDependencyWith(preds ...predicate.HostDependency) pred
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DependOnHostToHostDependencyInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DependOnHostToHostDependencyTable, DependOnHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, DependOnHostToHostDependencyTable, DependOnHostToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1091,7 +1091,7 @@ func HasDependByHostToHostDependency() predicate.Host {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DependByHostToHostDependencyTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DependByHostToHostDependencyTable, DependByHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, DependByHostToHostDependencyTable, DependByHostToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1103,7 +1103,7 @@ func HasDependByHostToHostDependencyWith(preds ...predicate.HostDependency) pred
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DependByHostToHostDependencyInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DependByHostToHostDependencyTable, DependByHostToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, DependByHostToHostDependencyTable, DependByHostToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

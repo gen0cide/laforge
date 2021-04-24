@@ -436,10 +436,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nu.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -452,10 +452,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := nu.mutation.RemovedNetworkToHostDependencyIDs(); len(nodes) > 0 && !nu.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -471,10 +471,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := nu.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -971,10 +971,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nuo.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -987,10 +987,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nodes := nuo.mutation.RemovedNetworkToHostDependencyIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1006,10 +1006,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nodes := nuo.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToHostDependencyTable,
-			Columns: network.NetworkToHostDependencyPrimaryKey,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

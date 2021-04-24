@@ -29,7 +29,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Tag type.
 var ForeignKeys = []string{
 	"agent_status_agent_status_to_tag",
-	"build_build_to_tag",
 	"command_command_to_tag",
 	"competition_competition_to_tag",
 	"dns_dns_to_tag",
@@ -43,12 +42,7 @@ var ForeignKeys = []string{
 	"host_host_to_tag",
 	"included_network_included_network_to_tag",
 	"network_network_to_tag",
-	"provisioned_host_provisioned_host_to_tag",
-	"provisioned_network_provisioned_network_to_tag",
-	"provisioning_step_provisioning_step_to_tag",
 	"script_script_to_tag",
-	"status_status_to_tag",
-	"team_team_to_tag",
 	"user_user_to_tag",
 }
 

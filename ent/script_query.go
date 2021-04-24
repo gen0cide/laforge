@@ -33,7 +33,6 @@ type ScriptQuery struct {
 	withScriptToUser        *UserQuery
 	withScriptToFinding     *FindingQuery
 	withScriptToEnvironment *EnvironmentQuery
-	withFKs                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -450,7 +449,6 @@ func (sq *ScriptQuery) prepareQuery(ctx context.Context) error {
 func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 	var (
 		nodes       = []*Script{}
-		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [4]bool{
 			sq.withScriptToTag != nil,
@@ -459,9 +457,6 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 			sq.withScriptToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, script.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Script{config: sq.config}
 		nodes = append(nodes, node)

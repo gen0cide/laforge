@@ -51,8 +51,6 @@ type Environment struct {
 	HCLEnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
 	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
 	HCLEnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
-	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
-	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
 	HCLEnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
 	// EnvironmentToCommand holds the value of the EnvironmentToCommand edge.
@@ -77,8 +75,8 @@ type Environment struct {
 	HCLEnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
 	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
 	HCLEnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
-	// EnvironmentToTeam holds the value of the EnvironmentToTeam edge.
-	HCLEnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	//
 
 }
@@ -93,8 +91,6 @@ type EnvironmentEdges struct {
 	EnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
 	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
 	EnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
-	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
-	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
 	EnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
 	// EnvironmentToCommand holds the value of the EnvironmentToCommand edge.
@@ -119,11 +115,11 @@ type EnvironmentEdges struct {
 	EnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
 	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
 	EnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
-	// EnvironmentToTeam holds the value of the EnvironmentToTeam edge.
-	EnvironmentToTeam []*Team `json:"EnvironmentToTeam,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [18]bool
+	loadedTypes [17]bool
 }
 
 // EnvironmentToTagOrErr returns the EnvironmentToTag value or an error if the edge
@@ -162,19 +158,10 @@ func (e EnvironmentEdges) EnvironmentToCompetitionOrErr() ([]*Competition, error
 	return nil, &NotLoadedError{edge: "EnvironmentToCompetition"}
 }
 
-// EnvironmentToBuildOrErr returns the EnvironmentToBuild value or an error if the edge
-// was not loaded in eager-loading.
-func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
-	if e.loadedTypes[4] {
-		return e.EnvironmentToBuild, nil
-	}
-	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
-}
-
 // EnvironmentToIdentityOrErr returns the EnvironmentToIdentity value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToIdentityOrErr() ([]*Identity, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.EnvironmentToIdentity, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToIdentity"}
@@ -183,7 +170,7 @@ func (e EnvironmentEdges) EnvironmentToIdentityOrErr() ([]*Identity, error) {
 // EnvironmentToCommandOrErr returns the EnvironmentToCommand value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToCommandOrErr() ([]*Command, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.EnvironmentToCommand, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToCommand"}
@@ -192,7 +179,7 @@ func (e EnvironmentEdges) EnvironmentToCommandOrErr() ([]*Command, error) {
 // EnvironmentToScriptOrErr returns the EnvironmentToScript value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToScriptOrErr() ([]*Script, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.EnvironmentToScript, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToScript"}
@@ -201,7 +188,7 @@ func (e EnvironmentEdges) EnvironmentToScriptOrErr() ([]*Script, error) {
 // EnvironmentToFileDownloadOrErr returns the EnvironmentToFileDownload value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToFileDownloadOrErr() ([]*FileDownload, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.EnvironmentToFileDownload, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToFileDownload"}
@@ -210,7 +197,7 @@ func (e EnvironmentEdges) EnvironmentToFileDownloadOrErr() ([]*FileDownload, err
 // EnvironmentToFileDeleteOrErr returns the EnvironmentToFileDelete value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToFileDeleteOrErr() ([]*FileDelete, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.EnvironmentToFileDelete, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToFileDelete"}
@@ -219,7 +206,7 @@ func (e EnvironmentEdges) EnvironmentToFileDeleteOrErr() ([]*FileDelete, error) 
 // EnvironmentToFileExtractOrErr returns the EnvironmentToFileExtract value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToFileExtractOrErr() ([]*FileExtract, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[9] {
 		return e.EnvironmentToFileExtract, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToFileExtract"}
@@ -228,7 +215,7 @@ func (e EnvironmentEdges) EnvironmentToFileExtractOrErr() ([]*FileExtract, error
 // EnvironmentToIncludedNetworkOrErr returns the EnvironmentToIncludedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.EnvironmentToIncludedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToIncludedNetwork"}
@@ -237,7 +224,7 @@ func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwor
 // EnvironmentToFindingOrErr returns the EnvironmentToFinding value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToFindingOrErr() ([]*Finding, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[11] {
 		return e.EnvironmentToFinding, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToFinding"}
@@ -246,7 +233,7 @@ func (e EnvironmentEdges) EnvironmentToFindingOrErr() ([]*Finding, error) {
 // EnvironmentToDNSRecordOrErr returns the EnvironmentToDNSRecord value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToDNSRecordOrErr() ([]*DNSRecord, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[12] {
 		return e.EnvironmentToDNSRecord, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToDNSRecord"}
@@ -255,7 +242,7 @@ func (e EnvironmentEdges) EnvironmentToDNSRecordOrErr() ([]*DNSRecord, error) {
 // EnvironmentToDNSOrErr returns the EnvironmentToDNS value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToDNSOrErr() ([]*DNS, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[13] {
 		return e.EnvironmentToDNS, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToDNS"}
@@ -264,7 +251,7 @@ func (e EnvironmentEdges) EnvironmentToDNSOrErr() ([]*DNS, error) {
 // EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[14] {
 		return e.EnvironmentToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
@@ -273,19 +260,19 @@ func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
 // EnvironmentToHostDependencyOrErr returns the EnvironmentToHostDependency value or an error if the edge
 // was not loaded in eager-loading.
 func (e EnvironmentEdges) EnvironmentToHostDependencyOrErr() ([]*HostDependency, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[15] {
 		return e.EnvironmentToHostDependency, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToHostDependency"}
 }
 
-// EnvironmentToTeamOrErr returns the EnvironmentToTeam value or an error if the edge
+// EnvironmentToBuildOrErr returns the EnvironmentToBuild value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) EnvironmentToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[17] {
-		return e.EnvironmentToTeam, nil
+func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
+	if e.loadedTypes[16] {
+		return e.EnvironmentToBuild, nil
 	}
-	return nil, &NotLoadedError{edge: "EnvironmentToTeam"}
+	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -423,11 +410,6 @@ func (e *Environment) QueryEnvironmentToCompetition() *CompetitionQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToCompetition(e)
 }
 
-// QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
-func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
-	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
-}
-
 // QueryEnvironmentToIdentity queries the "EnvironmentToIdentity" edge of the Environment entity.
 func (e *Environment) QueryEnvironmentToIdentity() *IdentityQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIdentity(e)
@@ -488,9 +470,9 @@ func (e *Environment) QueryEnvironmentToHostDependency() *HostDependencyQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToHostDependency(e)
 }
 
-// QueryEnvironmentToTeam queries the "EnvironmentToTeam" edge of the Environment entity.
-func (e *Environment) QueryEnvironmentToTeam() *TeamQuery {
-	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToTeam(e)
+// QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
 }
 
 // Update returns a builder for updating this Environment.

@@ -29,7 +29,6 @@ type FileDownloadQuery struct {
 	// eager-loading edges.
 	withFileDownloadToTag         *TagQuery
 	withFileDownloadToEnvironment *EnvironmentQuery
-	withFKs                       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,16 +377,12 @@ func (fdq *FileDownloadQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, error) {
 	var (
 		nodes       = []*FileDownload{}
-		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [2]bool{
 			fdq.withFileDownloadToTag != nil,
 			fdq.withFileDownloadToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileDownload{config: fdq.config}
 		nodes = append(nodes, node)

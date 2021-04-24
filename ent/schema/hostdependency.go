@@ -24,10 +24,15 @@ func (HostDependency) Fields() []ent.Field {
 // Edges of the HostDependency.
 func (HostDependency) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("HostDependencyToDependOnHost", Host.Type),
-		edge.To("HostDependencyToDependByHost", Host.Type),
-		edge.To("HostDependencyToNetwork", Network.Type),
+		edge.To("HostDependencyToDependOnHost", Host.Type).
+			Unique(),
+		edge.To("HostDependencyToDependByHost", Host.Type).
+			Required().
+			Unique(),
+		edge.To("HostDependencyToNetwork", Network.Type).
+			Unique(),
 		edge.From("HostDependencyToEnvironment", Environment.Type).
-			Ref("EnvironmentToHostDependency"),
+			Ref("EnvironmentToHostDependency").
+			Unique(),
 	}
 }

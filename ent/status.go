@@ -8,7 +8,12 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/team"
 )
 
 // Status is the model entity for the Status schema.
@@ -18,6 +23,8 @@ type Status struct {
 	ID int `json:"id,omitempty"`
 	// State holds the value of the "state" field.
 	State status.State `json:"state,omitempty"`
+	// StatusFor holds the value of the "status_for" field.
+	StatusFor status.StatusFor `json:"status_for,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
 	StartedAt time.Time `json:"started_at,omitempty"`
 	// EndedAt holds the value of the "ended_at" field.
@@ -33,30 +40,109 @@ type Status struct {
 	Edges StatusEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// StatusToTag holds the value of the StatusToTag edge.
-	HCLStatusToTag []*Tag `json:"StatusToTag,omitempty"`
+	// StatusToBuild holds the value of the StatusToBuild edge.
+	HCLStatusToBuild *Build `json:"StatusToBuild,omitempty"`
+	// StatusToProvisionedNetwork holds the value of the StatusToProvisionedNetwork edge.
+	HCLStatusToProvisionedNetwork *ProvisionedNetwork `json:"StatusToProvisionedNetwork,omitempty"`
+	// StatusToProvisionedHost holds the value of the StatusToProvisionedHost edge.
+	HCLStatusToProvisionedHost *ProvisionedHost `json:"StatusToProvisionedHost,omitempty"`
+	// StatusToProvisioningStep holds the value of the StatusToProvisioningStep edge.
+	HCLStatusToProvisioningStep *ProvisioningStep `json:"StatusToProvisioningStep,omitempty"`
+	// StatusToTeam holds the value of the StatusToTeam edge.
+	HCLStatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	//
+	build_build_to_status                             *int
 	provisioned_host_provisioned_host_to_status       *int
 	provisioned_network_provisioned_network_to_status *int
 	provisioning_step_provisioning_step_to_status     *int
+	team_team_to_status                               *int
 }
 
 // StatusEdges holds the relations/edges for other nodes in the graph.
 type StatusEdges struct {
-	// StatusToTag holds the value of the StatusToTag edge.
-	StatusToTag []*Tag `json:"StatusToTag,omitempty"`
+	// StatusToBuild holds the value of the StatusToBuild edge.
+	StatusToBuild *Build `json:"StatusToBuild,omitempty"`
+	// StatusToProvisionedNetwork holds the value of the StatusToProvisionedNetwork edge.
+	StatusToProvisionedNetwork *ProvisionedNetwork `json:"StatusToProvisionedNetwork,omitempty"`
+	// StatusToProvisionedHost holds the value of the StatusToProvisionedHost edge.
+	StatusToProvisionedHost *ProvisionedHost `json:"StatusToProvisionedHost,omitempty"`
+	// StatusToProvisioningStep holds the value of the StatusToProvisioningStep edge.
+	StatusToProvisioningStep *ProvisioningStep `json:"StatusToProvisioningStep,omitempty"`
+	// StatusToTeam holds the value of the StatusToTeam edge.
+	StatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [5]bool
 }
 
-// StatusToTagOrErr returns the StatusToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e StatusEdges) StatusToTagOrErr() ([]*Tag, error) {
+// StatusToBuildOrErr returns the StatusToBuild value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToBuildOrErr() (*Build, error) {
 	if e.loadedTypes[0] {
-		return e.StatusToTag, nil
+		if e.StatusToBuild == nil {
+			// The edge StatusToBuild was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: build.Label}
+		}
+		return e.StatusToBuild, nil
 	}
-	return nil, &NotLoadedError{edge: "StatusToTag"}
+	return nil, &NotLoadedError{edge: "StatusToBuild"}
+}
+
+// StatusToProvisionedNetworkOrErr returns the StatusToProvisionedNetwork value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToProvisionedNetworkOrErr() (*ProvisionedNetwork, error) {
+	if e.loadedTypes[1] {
+		if e.StatusToProvisionedNetwork == nil {
+			// The edge StatusToProvisionedNetwork was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionednetwork.Label}
+		}
+		return e.StatusToProvisionedNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToProvisionedNetwork"}
+}
+
+// StatusToProvisionedHostOrErr returns the StatusToProvisionedHost value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToProvisionedHostOrErr() (*ProvisionedHost, error) {
+	if e.loadedTypes[2] {
+		if e.StatusToProvisionedHost == nil {
+			// The edge StatusToProvisionedHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionedhost.Label}
+		}
+		return e.StatusToProvisionedHost, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToProvisionedHost"}
+}
+
+// StatusToProvisioningStepOrErr returns the StatusToProvisioningStep value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToProvisioningStepOrErr() (*ProvisioningStep, error) {
+	if e.loadedTypes[3] {
+		if e.StatusToProvisioningStep == nil {
+			// The edge StatusToProvisioningStep was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisioningstep.Label}
+		}
+		return e.StatusToProvisioningStep, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToProvisioningStep"}
+}
+
+// StatusToTeamOrErr returns the StatusToTeam value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToTeamOrErr() (*Team, error) {
+	if e.loadedTypes[4] {
+		if e.StatusToTeam == nil {
+			// The edge StatusToTeam was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: team.Label}
+		}
+		return e.StatusToTeam, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToTeam"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,15 +154,19 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case status.FieldID:
 			values[i] = &sql.NullInt64{}
-		case status.FieldState, status.FieldError:
+		case status.FieldState, status.FieldStatusFor, status.FieldError:
 			values[i] = &sql.NullString{}
 		case status.FieldStartedAt, status.FieldEndedAt:
 			values[i] = &sql.NullTime{}
-		case status.ForeignKeys[0]: // provisioned_host_provisioned_host_to_status
+		case status.ForeignKeys[0]: // build_build_to_status
 			values[i] = &sql.NullInt64{}
-		case status.ForeignKeys[1]: // provisioned_network_provisioned_network_to_status
+		case status.ForeignKeys[1]: // provisioned_host_provisioned_host_to_status
 			values[i] = &sql.NullInt64{}
-		case status.ForeignKeys[2]: // provisioning_step_provisioning_step_to_status
+		case status.ForeignKeys[2]: // provisioned_network_provisioned_network_to_status
+			values[i] = &sql.NullInt64{}
+		case status.ForeignKeys[3]: // provisioning_step_provisioning_step_to_status
+			values[i] = &sql.NullInt64{}
+		case status.ForeignKeys[4]: // team_team_to_status
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
@@ -104,6 +194,12 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
 				s.State = status.State(value.String)
+			}
+		case status.FieldStatusFor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status_for", values[i])
+			} else if value.Valid {
+				s.StatusFor = status.StatusFor(value.String)
 			}
 		case status.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -137,33 +233,67 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 			}
 		case status.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field build_build_to_status", value)
+			} else if value.Valid {
+				s.build_build_to_status = new(int)
+				*s.build_build_to_status = int(value.Int64)
+			}
+		case status.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_status", value)
 			} else if value.Valid {
 				s.provisioned_host_provisioned_host_to_status = new(int)
 				*s.provisioned_host_provisioned_host_to_status = int(value.Int64)
 			}
-		case status.ForeignKeys[1]:
+		case status.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_status", value)
 			} else if value.Valid {
 				s.provisioned_network_provisioned_network_to_status = new(int)
 				*s.provisioned_network_provisioned_network_to_status = int(value.Int64)
 			}
-		case status.ForeignKeys[2]:
+		case status.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_status", value)
 			} else if value.Valid {
 				s.provisioning_step_provisioning_step_to_status = new(int)
 				*s.provisioning_step_provisioning_step_to_status = int(value.Int64)
 			}
+		case status.ForeignKeys[4]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field team_team_to_status", value)
+			} else if value.Valid {
+				s.team_team_to_status = new(int)
+				*s.team_team_to_status = int(value.Int64)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryStatusToTag queries the "StatusToTag" edge of the Status entity.
-func (s *Status) QueryStatusToTag() *TagQuery {
-	return (&StatusClient{config: s.config}).QueryStatusToTag(s)
+// QueryStatusToBuild queries the "StatusToBuild" edge of the Status entity.
+func (s *Status) QueryStatusToBuild() *BuildQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToBuild(s)
+}
+
+// QueryStatusToProvisionedNetwork queries the "StatusToProvisionedNetwork" edge of the Status entity.
+func (s *Status) QueryStatusToProvisionedNetwork() *ProvisionedNetworkQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToProvisionedNetwork(s)
+}
+
+// QueryStatusToProvisionedHost queries the "StatusToProvisionedHost" edge of the Status entity.
+func (s *Status) QueryStatusToProvisionedHost() *ProvisionedHostQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToProvisionedHost(s)
+}
+
+// QueryStatusToProvisioningStep queries the "StatusToProvisioningStep" edge of the Status entity.
+func (s *Status) QueryStatusToProvisioningStep() *ProvisioningStepQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToProvisioningStep(s)
+}
+
+// QueryStatusToTeam queries the "StatusToTeam" edge of the Status entity.
+func (s *Status) QueryStatusToTeam() *TeamQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToTeam(s)
 }
 
 // Update returns a builder for updating this Status.
@@ -191,6 +321,8 @@ func (s *Status) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", s.ID))
 	builder.WriteString(", state=")
 	builder.WriteString(fmt.Sprintf("%v", s.State))
+	builder.WriteString(", status_for=")
+	builder.WriteString(fmt.Sprintf("%v", s.StatusFor))
 	builder.WriteString(", started_at=")
 	builder.WriteString(s.StartedAt.Format(time.ANSIC))
 	builder.WriteString(", ended_at=")

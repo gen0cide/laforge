@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/graphql/graph"
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server"
@@ -34,6 +35,31 @@ func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
 		// h.ServeHTTP(c.Writer, c.Request)
 		c.Redirect(301, "/ui")
 		c.Abort()
+	}
+}
+
+// tempURLHandler Checks ENT to verify that the url results in a file
+func tempURLHandler(client *ent.Client) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		urlID := ctx.Param("url_id")
+		fileInfo, err := client.GinFileMiddleware.Query().Where(
+			ginfilemiddleware.And(
+				ginfilemiddleware.URLIDEQ(urlID),
+				ginfilemiddleware.AccessedEQ(false),
+			),
+		).
+			Only(ctx)
+		if err != nil {
+			ctx.AbortWithStatus(404)
+			return
+		}
+		ctx.File(fileInfo.FilePath)
+		_, err = fileInfo.Update().SetAccessed(true).Save(ctx)
+		if err != nil {
+			ctx.AbortWithStatus(404)
+			return
+		}
+		ctx.Next()
 	}
 }
 
@@ -77,19 +103,18 @@ func main() {
 	}
 
 	lis, err := net.Listen("tcp", server.Port)
-	
+
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	router := gin.Default()
 
-
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:	  []string{"*"},
-		AllowMethods:     []string{"GET","PUT", "PATCH"},
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		AllowCredentials: true,
 	}))
@@ -98,7 +123,7 @@ func main() {
 
 	if !ok {
 		port = defaultPort
-	} 
+	}
 	gqlHandler := graphqlHandler(client)
 	redirectHandler := redirectToRootHandler(client)
 	router.GET("/", redirectHandler)
@@ -113,39 +138,38 @@ func main() {
 		}
 	})
 	router.Static("/assets/", "./dist/assets")
-	router.Static("/agents/", "./agents")
-	router.GET("/playground",playgroundHandler())
+	router.GET("/playground", playgroundHandler())
+	// May want to put all this in a API sub group
 	router.POST("/query", gqlHandler)
 	router.GET("/query", gqlHandler)
+	router.GET("/download/:url_id", tempURLHandler(client))
 	go router.Run(port)
 
-
 	// secure server
-	certPem,certerr := static.ReadFile(server.CertFile)
+	certPem, certerr := static.ReadFile(server.CertFile)
 	if certerr != nil {
-        fmt.Println("File reading error", certerr)
-        return 
+		fmt.Println("File reading error", certerr)
+		return
 	}
-	keyPem,keyerr := static.ReadFile(server.KeyFile)
+	keyPem, keyerr := static.ReadFile(server.KeyFile)
 	if keyerr != nil {
-        fmt.Println("File reading error", keyerr)
-        return 
+		fmt.Println("File reading error", keyerr)
+		return
 	}
 
 	cert, tlserr := tls.X509KeyPair(certPem, keyPem)
 	if tlserr != nil {
-        fmt.Println("File reading error", tlserr)
-        return 
+		fmt.Println("File reading error", tlserr)
+		return
 	}
 
 	creds := credentials.NewServerTLSFromCert(&cert)
 	s := grpc.NewServer(grpc.Creds(creds))
 
-
 	log.Printf("Starting Laforge Server on port " + server.Port)
-	
+
 	pb.RegisterLaforgeServer(s, &server.Server{
-		Client: client,
+		Client:                     client,
 		UnimplementedLaforgeServer: pb.UnimplementedLaforgeServer{},
 	})
 	if err := s.Serve(lis); err != nil {

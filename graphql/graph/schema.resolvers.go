@@ -28,26 +28,6 @@ func (r *buildResolver) Tags(ctx context.Context, obj *ent.Build) ([]*ent.Tag, e
 	return t, nil
 }
 
-func (r *buildResolver) Config(ctx context.Context, obj *ent.Build) ([]*model.ConfigMap, error) {
-	results := make([]*model.ConfigMap, 0)
-
-	for k, v := range obj.Config {
-		results = append(results, &model.ConfigMap{k, v})
-	}
-
-	return results, nil
-}
-
-func (r *buildResolver) BuildToUser(ctx context.Context, obj *ent.Build) (*ent.User, error) {
-	u, err := obj.QueryBuildToUser().Only(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed querying Maintainer: %v", err)
-	}
-
-	return u, nil
-}
-
 func (r *commandResolver) Vars(ctx context.Context, obj *ent.Command) ([]*model.VarsMap, error) {
 	results := make([]*model.VarsMap, 0)
 

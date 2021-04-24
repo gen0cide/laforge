@@ -20,18 +20,18 @@ func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) ([]*Pro
 	return result, err
 }
 
-func (b *Build) BuildToUser(ctx context.Context) ([]*User, error) {
-	result, err := b.Edges.BuildToUserOrErr()
+func (b *Build) BuildToStatus(ctx context.Context) (*Status, error) {
+	result, err := b.Edges.BuildToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = b.QueryBuildToUser().All(ctx)
+		result, err = b.QueryBuildToStatus().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (b *Build) BuildToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := b.Edges.BuildToTagOrErr()
+func (b *Build) BuildToEnvironment(ctx context.Context) (*Environment, error) {
+	result, err := b.Edges.BuildToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = b.QueryBuildToTag().All(ctx)
+		result, err = b.QueryBuildToEnvironment().Only(ctx)
 	}
 	return result, err
 }
@@ -52,10 +52,10 @@ func (b *Build) BuildToTeam(ctx context.Context) ([]*Team, error) {
 	return result, err
 }
 
-func (b *Build) BuildToEnvironment(ctx context.Context) ([]*Environment, error) {
-	result, err := b.Edges.BuildToEnvironmentOrErr()
+func (b *Build) BuildToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := b.Edges.BuildToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = b.QueryBuildToEnvironment().All(ctx)
+		result, err = b.QueryBuildToPlan().All(ctx)
 	}
 	return result, err
 }
@@ -196,14 +196,6 @@ func (e *Environment) EnvironmentToCompetition(ctx context.Context) ([]*Competit
 	return result, err
 }
 
-func (e *Environment) EnvironmentToBuild(ctx context.Context) ([]*Build, error) {
-	result, err := e.Edges.EnvironmentToBuildOrErr()
-	if IsNotLoaded(err) {
-		result, err = e.QueryEnvironmentToBuild().All(ctx)
-	}
-	return result, err
-}
-
 func (e *Environment) EnvironmentToIdentity(ctx context.Context) ([]*Identity, error) {
 	result, err := e.Edges.EnvironmentToIdentityOrErr()
 	if IsNotLoaded(err) {
@@ -300,10 +292,10 @@ func (e *Environment) EnvironmentToHostDependency(ctx context.Context) ([]*HostD
 	return result, err
 }
 
-func (e *Environment) EnvironmentToTeam(ctx context.Context) ([]*Team, error) {
-	result, err := e.Edges.EnvironmentToTeamOrErr()
+func (e *Environment) EnvironmentToBuild(ctx context.Context) ([]*Build, error) {
+	result, err := e.Edges.EnvironmentToBuildOrErr()
 	if IsNotLoaded(err) {
-		result, err = e.QueryEnvironmentToTeam().All(ctx)
+		result, err = e.QueryEnvironmentToBuild().All(ctx)
 	}
 	return result, err
 }
@@ -396,6 +388,22 @@ func (f *Finding) FindingToEnvironment(ctx context.Context) ([]*Environment, err
 	return result, err
 }
 
+func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := gfm.Edges.GinFileMiddlewareToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = gfm.QueryGinFileMiddlewareToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := gfm.Edges.GinFileMiddlewareToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = gfm.QueryGinFileMiddlewareToProvisioningStep().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (h *Host) HostToDisk(ctx context.Context) ([]*Disk, error) {
 	result, err := h.Edges.HostToDiskOrErr()
 	if IsNotLoaded(err) {
@@ -452,36 +460,36 @@ func (h *Host) DependByHostToHostDependency(ctx context.Context) ([]*HostDepende
 	return result, err
 }
 
-func (hd *HostDependency) HostDependencyToDependOnHost(ctx context.Context) ([]*Host, error) {
+func (hd *HostDependency) HostDependencyToDependOnHost(ctx context.Context) (*Host, error) {
 	result, err := hd.Edges.HostDependencyToDependOnHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToDependOnHost().All(ctx)
+		result, err = hd.QueryHostDependencyToDependOnHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) ([]*Host, error) {
+func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) (*Host, error) {
 	result, err := hd.Edges.HostDependencyToDependByHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToDependByHost().All(ctx)
+		result, err = hd.QueryHostDependencyToDependByHost().Only(ctx)
 	}
 	return result, err
 }
 
-func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) ([]*Network, error) {
+func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) (*Network, error) {
 	result, err := hd.Edges.HostDependencyToNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToNetwork().All(ctx)
+		result, err = hd.QueryHostDependencyToNetwork().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := hd.Edges.HostDependencyToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = hd.QueryHostDependencyToEnvironment().All(ctx)
+		result, err = hd.QueryHostDependencyToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Identity) IdentityToEnvironment(ctx context.Context) ([]*Environment, error) {
@@ -556,36 +564,92 @@ func (n *Network) NetworkToIncludedNetwork(ctx context.Context) ([]*IncludedNetw
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := ph.Edges.ProvisionedHostToTagOrErr()
+func (pl *Plan) PrevPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := pl.Edges.PrevPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToTag().All(ctx)
+		result, err = pl.QueryPrevPlan().All(ctx)
 	}
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) ([]*Status, error) {
+func (pl *Plan) NextPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := pl.Edges.NextPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryNextPlan().All(ctx)
+	}
+	return result, err
+}
+
+func (pl *Plan) PlanToBuild(ctx context.Context) (*Build, error) {
+	result, err := pl.Edges.PlanToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToBuild().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pl *Plan) PlanToTeam(ctx context.Context) (*Team, error) {
+	result, err := pl.Edges.PlanToTeamOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToTeam().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pl *Plan) PlanToProvisionedNetwork(ctx context.Context) (*ProvisionedNetwork, error) {
+	result, err := pl.Edges.PlanToProvisionedNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisionedNetwork().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pl *Plan) PlanToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := pl.Edges.PlanToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pl *Plan) PlanToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := pl.Edges.PlanToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToProvisioningStep().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) (*Status, error) {
 	result, err := ph.Edges.ProvisionedHostToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToStatus().All(ctx)
+		result, err = ph.QueryProvisionedHostToStatus().Only(ctx)
 	}
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
+func (ph *ProvisionedHost) ProvisionedHostToProvisionedNetwork(ctx context.Context) (*ProvisionedNetwork, error) {
 	result, err := ph.Edges.ProvisionedHostToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToProvisionedNetwork().All(ctx)
+		result, err = ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 	}
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToHost(ctx context.Context) ([]*Host, error) {
+func (ph *ProvisionedHost) ProvisionedHostToHost(ctx context.Context) (*Host, error) {
 	result, err := ph.Edges.ProvisionedHostToHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToHost().All(ctx)
+		result, err = ph.QueryProvisionedHostToHost().Only(ctx)
 	}
 	return result, err
+}
+
+func (ph *ProvisionedHost) ProvisionedHostToEndStepPlan(ctx context.Context) (*Plan, error) {
+	result, err := ph.Edges.ProvisionedHostToEndStepPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToEndStepPlan().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }
 
 func (ph *ProvisionedHost) ProvisionedHostToProvisioningStep(ctx context.Context) ([]*ProvisioningStep, error) {
@@ -604,44 +668,52 @@ func (ph *ProvisionedHost) ProvisionedHostToAgentStatus(ctx context.Context) ([]
 	return result, err
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := pn.Edges.ProvisionedNetworkToTagOrErr()
+func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := ph.Edges.ProvisionedHostToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToTag().All(ctx)
+		result, err = ph.QueryProvisionedHostToPlan().All(ctx)
 	}
 	return result, err
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToStatus(ctx context.Context) ([]*Status, error) {
+func (ph *ProvisionedHost) ProvisionedHostToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
+	result, err := ph.Edges.ProvisionedHostToGinFileMiddlewareOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToGinFileMiddleware().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pn *ProvisionedNetwork) ProvisionedNetworkToStatus(ctx context.Context) (*Status, error) {
 	result, err := pn.Edges.ProvisionedNetworkToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToStatus().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToStatus().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToNetwork(ctx context.Context) ([]*Network, error) {
+func (pn *ProvisionedNetwork) ProvisionedNetworkToNetwork(ctx context.Context) (*Network, error) {
 	result, err := pn.Edges.ProvisionedNetworkToNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToNetwork().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToNetwork().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToBuild(ctx context.Context) ([]*Build, error) {
+func (pn *ProvisionedNetwork) ProvisionedNetworkToBuild(ctx context.Context) (*Build, error) {
 	result, err := pn.Edges.ProvisionedNetworkToBuildOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToBuild().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToBuild().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (pn *ProvisionedNetwork) ProvisionedNetworkToTeam(ctx context.Context) ([]*Team, error) {
+func (pn *ProvisionedNetwork) ProvisionedNetworkToTeam(ctx context.Context) (*Team, error) {
 	result, err := pn.Edges.ProvisionedNetworkToTeamOrErr()
 	if IsNotLoaded(err) {
-		result, err = pn.QueryProvisionedNetworkToTeam().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToTeam().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (pn *ProvisionedNetwork) ProvisionedNetworkToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
@@ -652,76 +724,92 @@ func (pn *ProvisionedNetwork) ProvisionedNetworkToProvisionedHost(ctx context.Co
 	return result, err
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := ps.Edges.ProvisioningStepToTagOrErr()
+func (pn *ProvisionedNetwork) ProvisionedNetworkToPlan(ctx context.Context) (*Plan, error) {
+	result, err := pn.Edges.ProvisionedNetworkToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToTag().All(ctx)
+		result, err = pn.QueryProvisionedNetworkToPlan().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToStatus(ctx context.Context) ([]*Status, error) {
+func (ps *ProvisioningStep) ProvisioningStepToStatus(ctx context.Context) (*Status, error) {
 	result, err := ps.Edges.ProvisioningStepToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToStatus().All(ctx)
+		result, err = ps.QueryProvisioningStepToStatus().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
+func (ps *ProvisioningStep) ProvisioningStepToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
 	result, err := ps.Edges.ProvisioningStepToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToProvisionedHost().All(ctx)
+		result, err = ps.QueryProvisioningStepToProvisionedHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToScript(ctx context.Context) ([]*Script, error) {
+func (ps *ProvisioningStep) ProvisioningStepToScript(ctx context.Context) (*Script, error) {
 	result, err := ps.Edges.ProvisioningStepToScriptOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToScript().All(ctx)
+		result, err = ps.QueryProvisioningStepToScript().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToCommand(ctx context.Context) ([]*Command, error) {
+func (ps *ProvisioningStep) ProvisioningStepToCommand(ctx context.Context) (*Command, error) {
 	result, err := ps.Edges.ProvisioningStepToCommandOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToCommand().All(ctx)
+		result, err = ps.QueryProvisioningStepToCommand().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToDNSRecord(ctx context.Context) ([]*DNSRecord, error) {
+func (ps *ProvisioningStep) ProvisioningStepToDNSRecord(ctx context.Context) (*DNSRecord, error) {
 	result, err := ps.Edges.ProvisioningStepToDNSRecordOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToDNSRecord().All(ctx)
+		result, err = ps.QueryProvisioningStepToDNSRecord().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileDelete(ctx context.Context) ([]*FileDelete, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileDelete(ctx context.Context) (*FileDelete, error) {
 	result, err := ps.Edges.ProvisioningStepToFileDeleteOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileDelete().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDelete().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileDownload(ctx context.Context) ([]*FileDownload, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileDownload(ctx context.Context) (*FileDownload, error) {
 	result, err := ps.Edges.ProvisioningStepToFileDownloadOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileDownload().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDownload().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) ([]*FileExtract, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) (*FileExtract, error) {
 	result, err := ps.Edges.ProvisioningStepToFileExtractOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileExtract().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileExtract().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) (*Plan, error) {
+	result, err := ps.Edges.ProvisioningStepToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToPlan().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
+	result, err := ps.Edges.ProvisioningStepToGinFileMiddlewareOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }
 
 func (s *Script) ScriptToTag(ctx context.Context) ([]*Tag, error) {
@@ -756,50 +844,74 @@ func (s *Script) ScriptToEnvironment(ctx context.Context) ([]*Environment, error
 	return result, err
 }
 
-func (s *Status) StatusToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := s.Edges.StatusToTagOrErr()
+func (s *Status) StatusToBuild(ctx context.Context) (*Build, error) {
+	result, err := s.Edges.StatusToBuildOrErr()
 	if IsNotLoaded(err) {
-		result, err = s.QueryStatusToTag().All(ctx)
+		result, err = s.QueryStatusToBuild().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (t *Team) TeamToUser(ctx context.Context) ([]*User, error) {
-	result, err := t.Edges.TeamToUserOrErr()
+func (s *Status) StatusToProvisionedNetwork(ctx context.Context) (*ProvisionedNetwork, error) {
+	result, err := s.Edges.StatusToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = t.QueryTeamToUser().All(ctx)
+		result, err = s.QueryStatusToProvisionedNetwork().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (t *Team) TeamToBuild(ctx context.Context) ([]*Build, error) {
+func (s *Status) StatusToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := s.Edges.StatusToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := s.Edges.StatusToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToProvisioningStep().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToTeam(ctx context.Context) (*Team, error) {
+	result, err := s.Edges.StatusToTeamOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToTeam().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (t *Team) TeamToBuild(ctx context.Context) (*Build, error) {
 	result, err := t.Edges.TeamToBuildOrErr()
 	if IsNotLoaded(err) {
-		result, err = t.QueryTeamToBuild().All(ctx)
+		result, err = t.QueryTeamToBuild().Only(ctx)
 	}
 	return result, err
 }
 
-func (t *Team) TeamToEnvironment(ctx context.Context) ([]*Environment, error) {
-	result, err := t.Edges.TeamToEnvironmentOrErr()
+func (t *Team) TeamToStatus(ctx context.Context) (*Status, error) {
+	result, err := t.Edges.TeamToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = t.QueryTeamToEnvironment().All(ctx)
+		result, err = t.QueryTeamToStatus().Only(ctx)
 	}
-	return result, err
-}
-
-func (t *Team) TeamToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := t.Edges.TeamToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = t.QueryTeamToTag().All(ctx)
-	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (t *Team) TeamToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
 	result, err := t.Edges.TeamToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
 		result, err = t.QueryTeamToProvisionedNetwork().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Team) TeamToPlan(ctx context.Context) ([]*Plan, error) {
+	result, err := t.Edges.TeamToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryTeamToPlan().All(ctx)
 	}
 	return result, err
 }

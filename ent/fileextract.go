@@ -36,7 +36,7 @@ type FileExtract struct {
 	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
 	HCLFileExtractToEnvironment []*Environment `json:"FileExtractToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_file_extract *int
+
 }
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
@@ -79,8 +79,6 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case fileextract.FieldHclID, fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
 			values[i] = &sql.NullString{}
-		case fileextract.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_extract
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileExtract", columns[i])
 		}
@@ -134,13 +132,6 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				if err := json.Unmarshal(*value, &fe.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case fileextract.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_extract", value)
-			} else if value.Valid {
-				fe.provisioning_step_provisioning_step_to_file_extract = new(int)
-				*fe.provisioning_step_provisioning_step_to_file_extract = int(value.Int64)
 			}
 		}
 	}

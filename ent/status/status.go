@@ -15,6 +15,8 @@ const (
 	FieldID = "id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
+	// FieldStatusFor holds the string denoting the status_for field in the database.
+	FieldStatusFor = "status_for"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
 	FieldStartedAt = "started_at"
 	// FieldEndedAt holds the string denoting the ended_at field in the database.
@@ -26,24 +28,61 @@ const (
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
 
-	// EdgeStatusToTag holds the string denoting the statustotag edge name in mutations.
-	EdgeStatusToTag = "StatusToTag"
+	// EdgeStatusToBuild holds the string denoting the statustobuild edge name in mutations.
+	EdgeStatusToBuild = "StatusToBuild"
+	// EdgeStatusToProvisionedNetwork holds the string denoting the statustoprovisionednetwork edge name in mutations.
+	EdgeStatusToProvisionedNetwork = "StatusToProvisionedNetwork"
+	// EdgeStatusToProvisionedHost holds the string denoting the statustoprovisionedhost edge name in mutations.
+	EdgeStatusToProvisionedHost = "StatusToProvisionedHost"
+	// EdgeStatusToProvisioningStep holds the string denoting the statustoprovisioningstep edge name in mutations.
+	EdgeStatusToProvisioningStep = "StatusToProvisioningStep"
+	// EdgeStatusToTeam holds the string denoting the statustoteam edge name in mutations.
+	EdgeStatusToTeam = "StatusToTeam"
 
 	// Table holds the table name of the status in the database.
 	Table = "status"
-	// StatusToTagTable is the table the holds the StatusToTag relation/edge.
-	StatusToTagTable = "tags"
-	// StatusToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	StatusToTagInverseTable = "tags"
-	// StatusToTagColumn is the table column denoting the StatusToTag relation/edge.
-	StatusToTagColumn = "status_status_to_tag"
+	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
+	StatusToBuildTable = "status"
+	// StatusToBuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	StatusToBuildInverseTable = "builds"
+	// StatusToBuildColumn is the table column denoting the StatusToBuild relation/edge.
+	StatusToBuildColumn = "build_build_to_status"
+	// StatusToProvisionedNetworkTable is the table the holds the StatusToProvisionedNetwork relation/edge.
+	StatusToProvisionedNetworkTable = "status"
+	// StatusToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
+	StatusToProvisionedNetworkInverseTable = "provisioned_networks"
+	// StatusToProvisionedNetworkColumn is the table column denoting the StatusToProvisionedNetwork relation/edge.
+	StatusToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_status"
+	// StatusToProvisionedHostTable is the table the holds the StatusToProvisionedHost relation/edge.
+	StatusToProvisionedHostTable = "status"
+	// StatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
+	StatusToProvisionedHostInverseTable = "provisioned_hosts"
+	// StatusToProvisionedHostColumn is the table column denoting the StatusToProvisionedHost relation/edge.
+	StatusToProvisionedHostColumn = "provisioned_host_provisioned_host_to_status"
+	// StatusToProvisioningStepTable is the table the holds the StatusToProvisioningStep relation/edge.
+	StatusToProvisioningStepTable = "status"
+	// StatusToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
+	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
+	StatusToProvisioningStepInverseTable = "provisioning_steps"
+	// StatusToProvisioningStepColumn is the table column denoting the StatusToProvisioningStep relation/edge.
+	StatusToProvisioningStepColumn = "provisioning_step_provisioning_step_to_status"
+	// StatusToTeamTable is the table the holds the StatusToTeam relation/edge.
+	StatusToTeamTable = "status"
+	// StatusToTeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	StatusToTeamInverseTable = "teams"
+	// StatusToTeamColumn is the table column denoting the StatusToTeam relation/edge.
+	StatusToTeamColumn = "team_team_to_status"
 )
 
 // Columns holds all SQL columns for status fields.
 var Columns = []string{
 	FieldID,
 	FieldState,
+	FieldStatusFor,
 	FieldStartedAt,
 	FieldEndedAt,
 	FieldFailed,
@@ -53,9 +92,11 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Status type.
 var ForeignKeys = []string{
+	"build_build_to_status",
 	"provisioned_host_provisioned_host_to_status",
 	"provisioned_network_provisioned_network_to_status",
 	"provisioning_step_provisioning_step_to_status",
+	"team_team_to_status",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -73,11 +114,19 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// DefaultFailed holds the default value on creation for the "failed" field.
+	DefaultFailed bool
+	// DefaultCompleted holds the default value on creation for the "completed" field.
+	DefaultCompleted bool
+)
+
 // State defines the type for the "state" enum field.
 type State string
 
 // State values.
 const (
+	StatePLANNING   State = "PLANNING"
 	StateAWAITING   State = "AWAITING"
 	StateINPROGRESS State = "INPROGRESS"
 	StateFAILED     State = "FAILED"
@@ -92,10 +141,36 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StateAWAITING, StateINPROGRESS, StateFAILED, StateCOMPLETE, StateTAINTED:
+	case StatePLANNING, StateAWAITING, StateINPROGRESS, StateFAILED, StateCOMPLETE, StateTAINTED:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for state field: %q", s)
+	}
+}
+
+// StatusFor defines the type for the "status_for" enum field.
+type StatusFor string
+
+// StatusFor values.
+const (
+	StatusForBuild              StatusFor = "Build"
+	StatusForTeam               StatusFor = "Team"
+	StatusForProvisionedNetwork StatusFor = "ProvisionedNetwork"
+	StatusForProvisionedHost    StatusFor = "ProvisionedHost"
+	StatusForProvisioningStep   StatusFor = "ProvisioningStep"
+)
+
+func (sf StatusFor) String() string {
+	return string(sf)
+}
+
+// StatusForValidator is a validator for the "status_for" field enum values. It is called by the builders before save.
+func StatusForValidator(sf StatusFor) error {
+	switch sf {
+	case StatusForBuild, StatusForTeam, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep:
+		return nil
+	default:
+		return fmt.Errorf("status: invalid enum value for status_for field: %q", sf)
 	}
 }
 
@@ -113,6 +188,24 @@ func (s *State) UnmarshalGQL(val interface{}) error {
 	*s = State(str)
 	if err := StateValidator(*s); err != nil {
 		return fmt.Errorf("%s is not a valid State", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (sf StatusFor) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(sf.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (sf *StatusFor) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*sf = StatusFor(str)
+	if err := StatusForValidator(*sf); err != nil {
+		return fmt.Errorf("%s is not a valid StatusFor", str)
 	}
 	return nil
 }

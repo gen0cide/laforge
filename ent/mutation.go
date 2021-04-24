@@ -20,11 +20,13 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -60,11 +62,13 @@ const (
 	TypeFileDownload       = "FileDownload"
 	TypeFileExtract        = "FileExtract"
 	TypeFinding            = "Finding"
+	TypeGinFileMiddleware  = "GinFileMiddleware"
 	TypeHost               = "Host"
 	TypeHostDependency     = "HostDependency"
 	TypeIdentity           = "Identity"
 	TypeIncludedNetwork    = "IncludedNetwork"
 	TypeNetwork            = "Network"
+	TypePlan               = "Plan"
 	TypeProvisionedHost    = "ProvisionedHost"
 	TypeProvisionedNetwork = "ProvisionedNetwork"
 	TypeProvisioningStep   = "ProvisioningStep"
@@ -1579,23 +1583,20 @@ type BuildMutation struct {
 	id                                *int
 	revision                          *int
 	addrevision                       *int
-	_config                           *map[string]string
 	clearedFields                     map[string]struct{}
-	_BuildToUser                      map[int]struct{}
-	removed_BuildToUser               map[int]struct{}
-	cleared_BuildToUser               bool
-	_BuildToTag                       map[int]struct{}
-	removed_BuildToTag                map[int]struct{}
-	cleared_BuildToTag                bool
+	_BuildToStatus                    *int
+	cleared_BuildToStatus             bool
+	_BuildToEnvironment               *int
+	cleared_BuildToEnvironment        bool
 	_BuildToProvisionedNetwork        map[int]struct{}
 	removed_BuildToProvisionedNetwork map[int]struct{}
 	cleared_BuildToProvisionedNetwork bool
 	_BuildToTeam                      map[int]struct{}
 	removed_BuildToTeam               map[int]struct{}
 	cleared_BuildToTeam               bool
-	_BuildToEnvironment               map[int]struct{}
-	removed_BuildToEnvironment        map[int]struct{}
-	cleared_BuildToEnvironment        bool
+	_BuildToPlan                      map[int]struct{}
+	removed_BuildToPlan               map[int]struct{}
+	cleared_BuildToPlan               bool
 	done                              bool
 	oldValue                          func(context.Context) (*Build, error)
 	predicates                        []predicate.Build
@@ -1736,146 +1737,82 @@ func (m *BuildMutation) ResetRevision() {
 	m.addrevision = nil
 }
 
-// SetConfig sets the "config" field.
-func (m *BuildMutation) SetConfig(value map[string]string) {
-	m._config = &value
+// SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by id.
+func (m *BuildMutation) SetBuildToStatusID(id int) {
+	m._BuildToStatus = &id
 }
 
-// Config returns the value of the "config" field in the mutation.
-func (m *BuildMutation) Config() (r map[string]string, exists bool) {
-	v := m._config
-	if v == nil {
-		return
-	}
-	return *v, true
+// ClearBuildToStatus clears the "BuildToStatus" edge to the Status entity.
+func (m *BuildMutation) ClearBuildToStatus() {
+	m.cleared_BuildToStatus = true
 }
 
-// OldConfig returns the old "config" field's value of the Build entity.
-// If the Build object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BuildMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldConfig is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldConfig requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
-	}
-	return oldValue.Config, nil
+// BuildToStatusCleared returns if the "BuildToStatus" edge to the Status entity was cleared.
+func (m *BuildMutation) BuildToStatusCleared() bool {
+	return m.cleared_BuildToStatus
 }
 
-// ResetConfig resets all changes to the "config" field.
-func (m *BuildMutation) ResetConfig() {
-	m._config = nil
-}
-
-// AddBuildToUserIDs adds the "BuildToUser" edge to the User entity by ids.
-func (m *BuildMutation) AddBuildToUserIDs(ids ...int) {
-	if m._BuildToUser == nil {
-		m._BuildToUser = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._BuildToUser[ids[i]] = struct{}{}
-	}
-}
-
-// ClearBuildToUser clears the "BuildToUser" edge to the User entity.
-func (m *BuildMutation) ClearBuildToUser() {
-	m.cleared_BuildToUser = true
-}
-
-// BuildToUserCleared returns if the "BuildToUser" edge to the User entity was cleared.
-func (m *BuildMutation) BuildToUserCleared() bool {
-	return m.cleared_BuildToUser
-}
-
-// RemoveBuildToUserIDs removes the "BuildToUser" edge to the User entity by IDs.
-func (m *BuildMutation) RemoveBuildToUserIDs(ids ...int) {
-	if m.removed_BuildToUser == nil {
-		m.removed_BuildToUser = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_BuildToUser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBuildToUser returns the removed IDs of the "BuildToUser" edge to the User entity.
-func (m *BuildMutation) RemovedBuildToUserIDs() (ids []int) {
-	for id := range m.removed_BuildToUser {
-		ids = append(ids, id)
+// BuildToStatusID returns the "BuildToStatus" edge ID in the mutation.
+func (m *BuildMutation) BuildToStatusID() (id int, exists bool) {
+	if m._BuildToStatus != nil {
+		return *m._BuildToStatus, true
 	}
 	return
 }
 
-// BuildToUserIDs returns the "BuildToUser" edge IDs in the mutation.
-func (m *BuildMutation) BuildToUserIDs() (ids []int) {
-	for id := range m._BuildToUser {
-		ids = append(ids, id)
+// BuildToStatusIDs returns the "BuildToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BuildToStatusID instead. It exists only for internal usage by the builders.
+func (m *BuildMutation) BuildToStatusIDs() (ids []int) {
+	if id := m._BuildToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetBuildToUser resets all changes to the "BuildToUser" edge.
-func (m *BuildMutation) ResetBuildToUser() {
-	m._BuildToUser = nil
-	m.cleared_BuildToUser = false
-	m.removed_BuildToUser = nil
+// ResetBuildToStatus resets all changes to the "BuildToStatus" edge.
+func (m *BuildMutation) ResetBuildToStatus() {
+	m._BuildToStatus = nil
+	m.cleared_BuildToStatus = false
 }
 
-// AddBuildToTagIDs adds the "BuildToTag" edge to the Tag entity by ids.
-func (m *BuildMutation) AddBuildToTagIDs(ids ...int) {
-	if m._BuildToTag == nil {
-		m._BuildToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._BuildToTag[ids[i]] = struct{}{}
-	}
+// SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by id.
+func (m *BuildMutation) SetBuildToEnvironmentID(id int) {
+	m._BuildToEnvironment = &id
 }
 
-// ClearBuildToTag clears the "BuildToTag" edge to the Tag entity.
-func (m *BuildMutation) ClearBuildToTag() {
-	m.cleared_BuildToTag = true
+// ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
+func (m *BuildMutation) ClearBuildToEnvironment() {
+	m.cleared_BuildToEnvironment = true
 }
 
-// BuildToTagCleared returns if the "BuildToTag" edge to the Tag entity was cleared.
-func (m *BuildMutation) BuildToTagCleared() bool {
-	return m.cleared_BuildToTag
+// BuildToEnvironmentCleared returns if the "BuildToEnvironment" edge to the Environment entity was cleared.
+func (m *BuildMutation) BuildToEnvironmentCleared() bool {
+	return m.cleared_BuildToEnvironment
 }
 
-// RemoveBuildToTagIDs removes the "BuildToTag" edge to the Tag entity by IDs.
-func (m *BuildMutation) RemoveBuildToTagIDs(ids ...int) {
-	if m.removed_BuildToTag == nil {
-		m.removed_BuildToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_BuildToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBuildToTag returns the removed IDs of the "BuildToTag" edge to the Tag entity.
-func (m *BuildMutation) RemovedBuildToTagIDs() (ids []int) {
-	for id := range m.removed_BuildToTag {
-		ids = append(ids, id)
+// BuildToEnvironmentID returns the "BuildToEnvironment" edge ID in the mutation.
+func (m *BuildMutation) BuildToEnvironmentID() (id int, exists bool) {
+	if m._BuildToEnvironment != nil {
+		return *m._BuildToEnvironment, true
 	}
 	return
 }
 
-// BuildToTagIDs returns the "BuildToTag" edge IDs in the mutation.
-func (m *BuildMutation) BuildToTagIDs() (ids []int) {
-	for id := range m._BuildToTag {
-		ids = append(ids, id)
+// BuildToEnvironmentIDs returns the "BuildToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BuildToEnvironmentID instead. It exists only for internal usage by the builders.
+func (m *BuildMutation) BuildToEnvironmentIDs() (ids []int) {
+	if id := m._BuildToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetBuildToTag resets all changes to the "BuildToTag" edge.
-func (m *BuildMutation) ResetBuildToTag() {
-	m._BuildToTag = nil
-	m.cleared_BuildToTag = false
-	m.removed_BuildToTag = nil
+// ResetBuildToEnvironment resets all changes to the "BuildToEnvironment" edge.
+func (m *BuildMutation) ResetBuildToEnvironment() {
+	m._BuildToEnvironment = nil
+	m.cleared_BuildToEnvironment = false
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
@@ -1984,57 +1921,57 @@ func (m *BuildMutation) ResetBuildToTeam() {
 	m.removed_BuildToTeam = nil
 }
 
-// AddBuildToEnvironmentIDs adds the "BuildToEnvironment" edge to the Environment entity by ids.
-func (m *BuildMutation) AddBuildToEnvironmentIDs(ids ...int) {
-	if m._BuildToEnvironment == nil {
-		m._BuildToEnvironment = make(map[int]struct{})
+// AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by ids.
+func (m *BuildMutation) AddBuildToPlanIDs(ids ...int) {
+	if m._BuildToPlan == nil {
+		m._BuildToPlan = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._BuildToEnvironment[ids[i]] = struct{}{}
+		m._BuildToPlan[ids[i]] = struct{}{}
 	}
 }
 
-// ClearBuildToEnvironment clears the "BuildToEnvironment" edge to the Environment entity.
-func (m *BuildMutation) ClearBuildToEnvironment() {
-	m.cleared_BuildToEnvironment = true
+// ClearBuildToPlan clears the "BuildToPlan" edge to the Plan entity.
+func (m *BuildMutation) ClearBuildToPlan() {
+	m.cleared_BuildToPlan = true
 }
 
-// BuildToEnvironmentCleared returns if the "BuildToEnvironment" edge to the Environment entity was cleared.
-func (m *BuildMutation) BuildToEnvironmentCleared() bool {
-	return m.cleared_BuildToEnvironment
+// BuildToPlanCleared returns if the "BuildToPlan" edge to the Plan entity was cleared.
+func (m *BuildMutation) BuildToPlanCleared() bool {
+	return m.cleared_BuildToPlan
 }
 
-// RemoveBuildToEnvironmentIDs removes the "BuildToEnvironment" edge to the Environment entity by IDs.
-func (m *BuildMutation) RemoveBuildToEnvironmentIDs(ids ...int) {
-	if m.removed_BuildToEnvironment == nil {
-		m.removed_BuildToEnvironment = make(map[int]struct{})
+// RemoveBuildToPlanIDs removes the "BuildToPlan" edge to the Plan entity by IDs.
+func (m *BuildMutation) RemoveBuildToPlanIDs(ids ...int) {
+	if m.removed_BuildToPlan == nil {
+		m.removed_BuildToPlan = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removed_BuildToEnvironment[ids[i]] = struct{}{}
+		m.removed_BuildToPlan[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedBuildToEnvironment returns the removed IDs of the "BuildToEnvironment" edge to the Environment entity.
-func (m *BuildMutation) RemovedBuildToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_BuildToEnvironment {
+// RemovedBuildToPlan returns the removed IDs of the "BuildToPlan" edge to the Plan entity.
+func (m *BuildMutation) RemovedBuildToPlanIDs() (ids []int) {
+	for id := range m.removed_BuildToPlan {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// BuildToEnvironmentIDs returns the "BuildToEnvironment" edge IDs in the mutation.
-func (m *BuildMutation) BuildToEnvironmentIDs() (ids []int) {
-	for id := range m._BuildToEnvironment {
+// BuildToPlanIDs returns the "BuildToPlan" edge IDs in the mutation.
+func (m *BuildMutation) BuildToPlanIDs() (ids []int) {
+	for id := range m._BuildToPlan {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetBuildToEnvironment resets all changes to the "BuildToEnvironment" edge.
-func (m *BuildMutation) ResetBuildToEnvironment() {
-	m._BuildToEnvironment = nil
-	m.cleared_BuildToEnvironment = false
-	m.removed_BuildToEnvironment = nil
+// ResetBuildToPlan resets all changes to the "BuildToPlan" edge.
+func (m *BuildMutation) ResetBuildToPlan() {
+	m._BuildToPlan = nil
+	m.cleared_BuildToPlan = false
+	m.removed_BuildToPlan = nil
 }
 
 // Op returns the operation name.
@@ -2051,12 +1988,9 @@ func (m *BuildMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BuildMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 1)
 	if m.revision != nil {
 		fields = append(fields, build.FieldRevision)
-	}
-	if m._config != nil {
-		fields = append(fields, build.FieldConfig)
 	}
 	return fields
 }
@@ -2068,8 +2002,6 @@ func (m *BuildMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case build.FieldRevision:
 		return m.Revision()
-	case build.FieldConfig:
-		return m.Config()
 	}
 	return nil, false
 }
@@ -2081,8 +2013,6 @@ func (m *BuildMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case build.FieldRevision:
 		return m.OldRevision(ctx)
-	case build.FieldConfig:
-		return m.OldConfig(ctx)
 	}
 	return nil, fmt.Errorf("unknown Build field %s", name)
 }
@@ -2098,13 +2028,6 @@ func (m *BuildMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRevision(v)
-		return nil
-	case build.FieldConfig:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetConfig(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Build field %s", name)
@@ -2173,9 +2096,6 @@ func (m *BuildMutation) ResetField(name string) error {
 	case build.FieldRevision:
 		m.ResetRevision()
 		return nil
-	case build.FieldConfig:
-		m.ResetConfig()
-		return nil
 	}
 	return fmt.Errorf("unknown Build field %s", name)
 }
@@ -2183,11 +2103,11 @@ func (m *BuildMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BuildMutation) AddedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m._BuildToUser != nil {
-		edges = append(edges, build.EdgeBuildToUser)
+	if m._BuildToStatus != nil {
+		edges = append(edges, build.EdgeBuildToStatus)
 	}
-	if m._BuildToTag != nil {
-		edges = append(edges, build.EdgeBuildToTag)
+	if m._BuildToEnvironment != nil {
+		edges = append(edges, build.EdgeBuildToEnvironment)
 	}
 	if m._BuildToProvisionedNetwork != nil {
 		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
@@ -2195,8 +2115,8 @@ func (m *BuildMutation) AddedEdges() []string {
 	if m._BuildToTeam != nil {
 		edges = append(edges, build.EdgeBuildToTeam)
 	}
-	if m._BuildToEnvironment != nil {
-		edges = append(edges, build.EdgeBuildToEnvironment)
+	if m._BuildToPlan != nil {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2205,18 +2125,14 @@ func (m *BuildMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeBuildToUser:
-		ids := make([]ent.Value, 0, len(m._BuildToUser))
-		for id := range m._BuildToUser {
-			ids = append(ids, id)
+	case build.EdgeBuildToStatus:
+		if id := m._BuildToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
-	case build.EdgeBuildToTag:
-		ids := make([]ent.Value, 0, len(m._BuildToTag))
-		for id := range m._BuildToTag {
-			ids = append(ids, id)
+	case build.EdgeBuildToEnvironment:
+		if id := m._BuildToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case build.EdgeBuildToProvisionedNetwork:
 		ids := make([]ent.Value, 0, len(m._BuildToProvisionedNetwork))
 		for id := range m._BuildToProvisionedNetwork {
@@ -2229,9 +2145,9 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeBuildToEnvironment:
-		ids := make([]ent.Value, 0, len(m._BuildToEnvironment))
-		for id := range m._BuildToEnvironment {
+	case build.EdgeBuildToPlan:
+		ids := make([]ent.Value, 0, len(m._BuildToPlan))
+		for id := range m._BuildToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2242,20 +2158,14 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BuildMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.removed_BuildToUser != nil {
-		edges = append(edges, build.EdgeBuildToUser)
-	}
-	if m.removed_BuildToTag != nil {
-		edges = append(edges, build.EdgeBuildToTag)
-	}
 	if m.removed_BuildToProvisionedNetwork != nil {
 		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
 	}
 	if m.removed_BuildToTeam != nil {
 		edges = append(edges, build.EdgeBuildToTeam)
 	}
-	if m.removed_BuildToEnvironment != nil {
-		edges = append(edges, build.EdgeBuildToEnvironment)
+	if m.removed_BuildToPlan != nil {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2264,18 +2174,6 @@ func (m *BuildMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case build.EdgeBuildToUser:
-		ids := make([]ent.Value, 0, len(m.removed_BuildToUser))
-		for id := range m.removed_BuildToUser {
-			ids = append(ids, id)
-		}
-		return ids
-	case build.EdgeBuildToTag:
-		ids := make([]ent.Value, 0, len(m.removed_BuildToTag))
-		for id := range m.removed_BuildToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case build.EdgeBuildToProvisionedNetwork:
 		ids := make([]ent.Value, 0, len(m.removed_BuildToProvisionedNetwork))
 		for id := range m.removed_BuildToProvisionedNetwork {
@@ -2288,9 +2186,9 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeBuildToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_BuildToEnvironment))
-		for id := range m.removed_BuildToEnvironment {
+	case build.EdgeBuildToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToPlan))
+		for id := range m.removed_BuildToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2301,11 +2199,11 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BuildMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.cleared_BuildToUser {
-		edges = append(edges, build.EdgeBuildToUser)
+	if m.cleared_BuildToStatus {
+		edges = append(edges, build.EdgeBuildToStatus)
 	}
-	if m.cleared_BuildToTag {
-		edges = append(edges, build.EdgeBuildToTag)
+	if m.cleared_BuildToEnvironment {
+		edges = append(edges, build.EdgeBuildToEnvironment)
 	}
 	if m.cleared_BuildToProvisionedNetwork {
 		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
@@ -2313,8 +2211,8 @@ func (m *BuildMutation) ClearedEdges() []string {
 	if m.cleared_BuildToTeam {
 		edges = append(edges, build.EdgeBuildToTeam)
 	}
-	if m.cleared_BuildToEnvironment {
-		edges = append(edges, build.EdgeBuildToEnvironment)
+	if m.cleared_BuildToPlan {
+		edges = append(edges, build.EdgeBuildToPlan)
 	}
 	return edges
 }
@@ -2323,16 +2221,16 @@ func (m *BuildMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *BuildMutation) EdgeCleared(name string) bool {
 	switch name {
-	case build.EdgeBuildToUser:
-		return m.cleared_BuildToUser
-	case build.EdgeBuildToTag:
-		return m.cleared_BuildToTag
+	case build.EdgeBuildToStatus:
+		return m.cleared_BuildToStatus
+	case build.EdgeBuildToEnvironment:
+		return m.cleared_BuildToEnvironment
 	case build.EdgeBuildToProvisionedNetwork:
 		return m.cleared_BuildToProvisionedNetwork
 	case build.EdgeBuildToTeam:
 		return m.cleared_BuildToTeam
-	case build.EdgeBuildToEnvironment:
-		return m.cleared_BuildToEnvironment
+	case build.EdgeBuildToPlan:
+		return m.cleared_BuildToPlan
 	}
 	return false
 }
@@ -2341,6 +2239,12 @@ func (m *BuildMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BuildMutation) ClearEdge(name string) error {
 	switch name {
+	case build.EdgeBuildToStatus:
+		m.ClearBuildToStatus()
+		return nil
+	case build.EdgeBuildToEnvironment:
+		m.ClearBuildToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Build unique edge %s", name)
 }
@@ -2349,11 +2253,11 @@ func (m *BuildMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *BuildMutation) ResetEdge(name string) error {
 	switch name {
-	case build.EdgeBuildToUser:
-		m.ResetBuildToUser()
+	case build.EdgeBuildToStatus:
+		m.ResetBuildToStatus()
 		return nil
-	case build.EdgeBuildToTag:
-		m.ResetBuildToTag()
+	case build.EdgeBuildToEnvironment:
+		m.ResetBuildToEnvironment()
 		return nil
 	case build.EdgeBuildToProvisionedNetwork:
 		m.ResetBuildToProvisionedNetwork()
@@ -2361,8 +2265,8 @@ func (m *BuildMutation) ResetEdge(name string) error {
 	case build.EdgeBuildToTeam:
 		m.ResetBuildToTeam()
 		return nil
-	case build.EdgeBuildToEnvironment:
-		m.ResetBuildToEnvironment()
+	case build.EdgeBuildToPlan:
+		m.ResetBuildToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Build edge %s", name)
@@ -6406,9 +6310,6 @@ type EnvironmentMutation struct {
 	_EnvironmentToCompetition            map[int]struct{}
 	removed_EnvironmentToCompetition     map[int]struct{}
 	cleared_EnvironmentToCompetition     bool
-	_EnvironmentToBuild                  map[int]struct{}
-	removed_EnvironmentToBuild           map[int]struct{}
-	cleared_EnvironmentToBuild           bool
 	_EnvironmentToIdentity               map[int]struct{}
 	removed_EnvironmentToIdentity        map[int]struct{}
 	cleared_EnvironmentToIdentity        bool
@@ -6445,9 +6346,9 @@ type EnvironmentMutation struct {
 	_EnvironmentToHostDependency         map[int]struct{}
 	removed_EnvironmentToHostDependency  map[int]struct{}
 	cleared_EnvironmentToHostDependency  bool
-	_EnvironmentToTeam                   map[int]struct{}
-	removed_EnvironmentToTeam            map[int]struct{}
-	cleared_EnvironmentToTeam            bool
+	_EnvironmentToBuild                  map[int]struct{}
+	removed_EnvironmentToBuild           map[int]struct{}
+	cleared_EnvironmentToBuild           bool
 	done                                 bool
 	oldValue                             func(context.Context) (*Environment, error)
 	predicates                           []predicate.Environment
@@ -7180,59 +7081,6 @@ func (m *EnvironmentMutation) ResetEnvironmentToCompetition() {
 	m.removed_EnvironmentToCompetition = nil
 }
 
-// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToBuildIDs(ids ...int) {
-	if m._EnvironmentToBuild == nil {
-		m._EnvironmentToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._EnvironmentToBuild[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEnvironmentToBuild clears the "EnvironmentToBuild" edge to the Build entity.
-func (m *EnvironmentMutation) ClearEnvironmentToBuild() {
-	m.cleared_EnvironmentToBuild = true
-}
-
-// EnvironmentToBuildCleared returns if the "EnvironmentToBuild" edge to the Build entity was cleared.
-func (m *EnvironmentMutation) EnvironmentToBuildCleared() bool {
-	return m.cleared_EnvironmentToBuild
-}
-
-// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...int) {
-	if m.removed_EnvironmentToBuild == nil {
-		m.removed_EnvironmentToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_EnvironmentToBuild[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEnvironmentToBuild returns the removed IDs of the "EnvironmentToBuild" edge to the Build entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []int) {
-	for id := range m.removed_EnvironmentToBuild {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EnvironmentToBuildIDs returns the "EnvironmentToBuild" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToBuildIDs() (ids []int) {
-	for id := range m._EnvironmentToBuild {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEnvironmentToBuild resets all changes to the "EnvironmentToBuild" edge.
-func (m *EnvironmentMutation) ResetEnvironmentToBuild() {
-	m._EnvironmentToBuild = nil
-	m.cleared_EnvironmentToBuild = false
-	m.removed_EnvironmentToBuild = nil
-}
-
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by ids.
 func (m *EnvironmentMutation) AddEnvironmentToIdentityIDs(ids ...int) {
 	if m._EnvironmentToIdentity == nil {
@@ -7869,57 +7717,57 @@ func (m *EnvironmentMutation) ResetEnvironmentToHostDependency() {
 	m.removed_EnvironmentToHostDependency = nil
 }
 
-// AddEnvironmentToTeamIDs adds the "EnvironmentToTeam" edge to the Team entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToTeamIDs(ids ...int) {
-	if m._EnvironmentToTeam == nil {
-		m._EnvironmentToTeam = make(map[int]struct{})
+// AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToBuildIDs(ids ...int) {
+	if m._EnvironmentToBuild == nil {
+		m._EnvironmentToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._EnvironmentToTeam[ids[i]] = struct{}{}
+		m._EnvironmentToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// ClearEnvironmentToTeam clears the "EnvironmentToTeam" edge to the Team entity.
-func (m *EnvironmentMutation) ClearEnvironmentToTeam() {
-	m.cleared_EnvironmentToTeam = true
+// ClearEnvironmentToBuild clears the "EnvironmentToBuild" edge to the Build entity.
+func (m *EnvironmentMutation) ClearEnvironmentToBuild() {
+	m.cleared_EnvironmentToBuild = true
 }
 
-// EnvironmentToTeamCleared returns if the "EnvironmentToTeam" edge to the Team entity was cleared.
-func (m *EnvironmentMutation) EnvironmentToTeamCleared() bool {
-	return m.cleared_EnvironmentToTeam
+// EnvironmentToBuildCleared returns if the "EnvironmentToBuild" edge to the Build entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToBuildCleared() bool {
+	return m.cleared_EnvironmentToBuild
 }
 
-// RemoveEnvironmentToTeamIDs removes the "EnvironmentToTeam" edge to the Team entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToTeamIDs(ids ...int) {
-	if m.removed_EnvironmentToTeam == nil {
-		m.removed_EnvironmentToTeam = make(map[int]struct{})
+// RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to the Build entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...int) {
+	if m.removed_EnvironmentToBuild == nil {
+		m.removed_EnvironmentToBuild = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.removed_EnvironmentToTeam[ids[i]] = struct{}{}
+		m.removed_EnvironmentToBuild[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedEnvironmentToTeam returns the removed IDs of the "EnvironmentToTeam" edge to the Team entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToTeamIDs() (ids []int) {
-	for id := range m.removed_EnvironmentToTeam {
+// RemovedEnvironmentToBuild returns the removed IDs of the "EnvironmentToBuild" edge to the Build entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []int) {
+	for id := range m.removed_EnvironmentToBuild {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// EnvironmentToTeamIDs returns the "EnvironmentToTeam" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToTeamIDs() (ids []int) {
-	for id := range m._EnvironmentToTeam {
+// EnvironmentToBuildIDs returns the "EnvironmentToBuild" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToBuildIDs() (ids []int) {
+	for id := range m._EnvironmentToBuild {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetEnvironmentToTeam resets all changes to the "EnvironmentToTeam" edge.
-func (m *EnvironmentMutation) ResetEnvironmentToTeam() {
-	m._EnvironmentToTeam = nil
-	m.cleared_EnvironmentToTeam = false
-	m.removed_EnvironmentToTeam = nil
+// ResetEnvironmentToBuild resets all changes to the "EnvironmentToBuild" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToBuild() {
+	m._EnvironmentToBuild = nil
+	m.cleared_EnvironmentToBuild = false
+	m.removed_EnvironmentToBuild = nil
 }
 
 // Op returns the operation name.
@@ -8232,7 +8080,7 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m._EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -8244,9 +8092,6 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 	}
 	if m._EnvironmentToCompetition != nil {
 		edges = append(edges, environment.EdgeEnvironmentToCompetition)
-	}
-	if m._EnvironmentToBuild != nil {
-		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	if m._EnvironmentToIdentity != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
@@ -8284,8 +8129,8 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 	if m._EnvironmentToHostDependency != nil {
 		edges = append(edges, environment.EdgeEnvironmentToHostDependency)
 	}
-	if m._EnvironmentToTeam != nil {
-		edges = append(edges, environment.EdgeEnvironmentToTeam)
+	if m._EnvironmentToBuild != nil {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	return edges
 }
@@ -8315,12 +8160,6 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 	case environment.EdgeEnvironmentToCompetition:
 		ids := make([]ent.Value, 0, len(m._EnvironmentToCompetition))
 		for id := range m._EnvironmentToCompetition {
-			ids = append(ids, id)
-		}
-		return ids
-	case environment.EdgeEnvironmentToBuild:
-		ids := make([]ent.Value, 0, len(m._EnvironmentToBuild))
-		for id := range m._EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8396,9 +8235,9 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeEnvironmentToTeam:
-		ids := make([]ent.Value, 0, len(m._EnvironmentToTeam))
-		for id := range m._EnvironmentToTeam {
+	case environment.EdgeEnvironmentToBuild:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToBuild))
+		for id := range m._EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8408,7 +8247,7 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m.removed_EnvironmentToTag != nil {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -8420,9 +8259,6 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 	}
 	if m.removed_EnvironmentToCompetition != nil {
 		edges = append(edges, environment.EdgeEnvironmentToCompetition)
-	}
-	if m.removed_EnvironmentToBuild != nil {
-		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	if m.removed_EnvironmentToIdentity != nil {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
@@ -8460,8 +8296,8 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 	if m.removed_EnvironmentToHostDependency != nil {
 		edges = append(edges, environment.EdgeEnvironmentToHostDependency)
 	}
-	if m.removed_EnvironmentToTeam != nil {
-		edges = append(edges, environment.EdgeEnvironmentToTeam)
+	if m.removed_EnvironmentToBuild != nil {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	return edges
 }
@@ -8491,12 +8327,6 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 	case environment.EdgeEnvironmentToCompetition:
 		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToCompetition))
 		for id := range m.removed_EnvironmentToCompetition {
-			ids = append(ids, id)
-		}
-		return ids
-	case environment.EdgeEnvironmentToBuild:
-		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToBuild))
-		for id := range m.removed_EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8572,9 +8402,9 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case environment.EdgeEnvironmentToTeam:
-		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToTeam))
-		for id := range m.removed_EnvironmentToTeam {
+	case environment.EdgeEnvironmentToBuild:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToBuild))
+		for id := range m.removed_EnvironmentToBuild {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8584,7 +8414,7 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m.cleared_EnvironmentToTag {
 		edges = append(edges, environment.EdgeEnvironmentToTag)
 	}
@@ -8596,9 +8426,6 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 	}
 	if m.cleared_EnvironmentToCompetition {
 		edges = append(edges, environment.EdgeEnvironmentToCompetition)
-	}
-	if m.cleared_EnvironmentToBuild {
-		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	if m.cleared_EnvironmentToIdentity {
 		edges = append(edges, environment.EdgeEnvironmentToIdentity)
@@ -8636,8 +8463,8 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 	if m.cleared_EnvironmentToHostDependency {
 		edges = append(edges, environment.EdgeEnvironmentToHostDependency)
 	}
-	if m.cleared_EnvironmentToTeam {
-		edges = append(edges, environment.EdgeEnvironmentToTeam)
+	if m.cleared_EnvironmentToBuild {
+		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
 	return edges
 }
@@ -8654,8 +8481,6 @@ func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 		return m.cleared_EnvironmentToHost
 	case environment.EdgeEnvironmentToCompetition:
 		return m.cleared_EnvironmentToCompetition
-	case environment.EdgeEnvironmentToBuild:
-		return m.cleared_EnvironmentToBuild
 	case environment.EdgeEnvironmentToIdentity:
 		return m.cleared_EnvironmentToIdentity
 	case environment.EdgeEnvironmentToCommand:
@@ -8680,8 +8505,8 @@ func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 		return m.cleared_EnvironmentToNetwork
 	case environment.EdgeEnvironmentToHostDependency:
 		return m.cleared_EnvironmentToHostDependency
-	case environment.EdgeEnvironmentToTeam:
-		return m.cleared_EnvironmentToTeam
+	case environment.EdgeEnvironmentToBuild:
+		return m.cleared_EnvironmentToBuild
 	}
 	return false
 }
@@ -8709,9 +8534,6 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 		return nil
 	case environment.EdgeEnvironmentToCompetition:
 		m.ResetEnvironmentToCompetition()
-		return nil
-	case environment.EdgeEnvironmentToBuild:
-		m.ResetEnvironmentToBuild()
 		return nil
 	case environment.EdgeEnvironmentToIdentity:
 		m.ResetEnvironmentToIdentity()
@@ -8749,8 +8571,8 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 	case environment.EdgeEnvironmentToHostDependency:
 		m.ResetEnvironmentToHostDependency()
 		return nil
-	case environment.EdgeEnvironmentToTeam:
-		m.ResetEnvironmentToTeam()
+	case environment.EdgeEnvironmentToBuild:
+		m.ResetEnvironmentToBuild()
 		return nil
 	}
 	return fmt.Errorf("unknown Environment edge %s", name)
@@ -11872,6 +11694,529 @@ func (m *FindingMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Finding edge %s", name)
 }
 
+// GinFileMiddlewareMutation represents an operation that mutates the GinFileMiddleware nodes in the graph.
+type GinFileMiddlewareMutation struct {
+	config
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	url_id                                      *string
+	file_path                                   *string
+	accessed                                    *bool
+	clearedFields                               map[string]struct{}
+	_GinFileMiddlewareToProvisionedHost         *int
+	cleared_GinFileMiddlewareToProvisionedHost  bool
+	_GinFileMiddlewareToProvisioningStep        *int
+	cleared_GinFileMiddlewareToProvisioningStep bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*GinFileMiddleware, error)
+	predicates                                  []predicate.GinFileMiddleware
+}
+
+var _ ent.Mutation = (*GinFileMiddlewareMutation)(nil)
+
+// ginfilemiddlewareOption allows management of the mutation configuration using functional options.
+type ginfilemiddlewareOption func(*GinFileMiddlewareMutation)
+
+// newGinFileMiddlewareMutation creates new mutation for the GinFileMiddleware entity.
+func newGinFileMiddlewareMutation(c config, op Op, opts ...ginfilemiddlewareOption) *GinFileMiddlewareMutation {
+	m := &GinFileMiddlewareMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGinFileMiddleware,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGinFileMiddlewareID sets the ID field of the mutation.
+func withGinFileMiddlewareID(id int) ginfilemiddlewareOption {
+	return func(m *GinFileMiddlewareMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GinFileMiddleware
+		)
+		m.oldValue = func(ctx context.Context) (*GinFileMiddleware, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GinFileMiddleware.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGinFileMiddleware sets the old GinFileMiddleware of the mutation.
+func withGinFileMiddleware(node *GinFileMiddleware) ginfilemiddlewareOption {
+	return func(m *GinFileMiddlewareMutation) {
+		m.oldValue = func(context.Context) (*GinFileMiddleware, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GinFileMiddlewareMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GinFileMiddlewareMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *GinFileMiddlewareMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetURLID sets the "url_id" field.
+func (m *GinFileMiddlewareMutation) SetURLID(s string) {
+	m.url_id = &s
+}
+
+// URLID returns the value of the "url_id" field in the mutation.
+func (m *GinFileMiddlewareMutation) URLID() (r string, exists bool) {
+	v := m.url_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURLID returns the old "url_id" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldURLID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldURLID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldURLID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURLID: %w", err)
+	}
+	return oldValue.URLID, nil
+}
+
+// ResetURLID resets all changes to the "url_id" field.
+func (m *GinFileMiddlewareMutation) ResetURLID() {
+	m.url_id = nil
+}
+
+// SetFilePath sets the "file_path" field.
+func (m *GinFileMiddlewareMutation) SetFilePath(s string) {
+	m.file_path = &s
+}
+
+// FilePath returns the value of the "file_path" field in the mutation.
+func (m *GinFileMiddlewareMutation) FilePath() (r string, exists bool) {
+	v := m.file_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFilePath returns the old "file_path" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldFilePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFilePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFilePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFilePath: %w", err)
+	}
+	return oldValue.FilePath, nil
+}
+
+// ResetFilePath resets all changes to the "file_path" field.
+func (m *GinFileMiddlewareMutation) ResetFilePath() {
+	m.file_path = nil
+}
+
+// SetAccessed sets the "accessed" field.
+func (m *GinFileMiddlewareMutation) SetAccessed(b bool) {
+	m.accessed = &b
+}
+
+// Accessed returns the value of the "accessed" field in the mutation.
+func (m *GinFileMiddlewareMutation) Accessed() (r bool, exists bool) {
+	v := m.accessed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessed returns the old "accessed" field's value of the GinFileMiddleware entity.
+// If the GinFileMiddleware object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GinFileMiddlewareMutation) OldAccessed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAccessed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAccessed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessed: %w", err)
+	}
+	return oldValue.Accessed, nil
+}
+
+// ResetAccessed resets all changes to the "accessed" field.
+func (m *GinFileMiddlewareMutation) ResetAccessed() {
+	m.accessed = nil
+}
+
+// SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisionedHostID(id int) {
+	m._GinFileMiddlewareToProvisionedHost = &id
+}
+
+// ClearGinFileMiddlewareToProvisionedHost clears the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisionedHost() {
+	m.cleared_GinFileMiddlewareToProvisionedHost = true
+}
+
+// GinFileMiddlewareToProvisionedHostCleared returns if the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostCleared() bool {
+	return m.cleared_GinFileMiddlewareToProvisionedHost
+}
+
+// GinFileMiddlewareToProvisionedHostID returns the "GinFileMiddlewareToProvisionedHost" edge ID in the mutation.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostID() (id int, exists bool) {
+	if m._GinFileMiddlewareToProvisionedHost != nil {
+		return *m._GinFileMiddlewareToProvisionedHost, true
+	}
+	return
+}
+
+// GinFileMiddlewareToProvisionedHostIDs returns the "GinFileMiddlewareToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GinFileMiddlewareToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostIDs() (ids []int) {
+	if id := m._GinFileMiddlewareToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGinFileMiddlewareToProvisionedHost resets all changes to the "GinFileMiddlewareToProvisionedHost" edge.
+func (m *GinFileMiddlewareMutation) ResetGinFileMiddlewareToProvisionedHost() {
+	m._GinFileMiddlewareToProvisionedHost = nil
+	m.cleared_GinFileMiddlewareToProvisionedHost = false
+}
+
+// SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisioningStepID(id int) {
+	m._GinFileMiddlewareToProvisioningStep = &id
+}
+
+// ClearGinFileMiddlewareToProvisioningStep clears the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisioningStep() {
+	m.cleared_GinFileMiddlewareToProvisioningStep = true
+}
+
+// GinFileMiddlewareToProvisioningStepCleared returns if the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepCleared() bool {
+	return m.cleared_GinFileMiddlewareToProvisioningStep
+}
+
+// GinFileMiddlewareToProvisioningStepID returns the "GinFileMiddlewareToProvisioningStep" edge ID in the mutation.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepID() (id int, exists bool) {
+	if m._GinFileMiddlewareToProvisioningStep != nil {
+		return *m._GinFileMiddlewareToProvisioningStep, true
+	}
+	return
+}
+
+// GinFileMiddlewareToProvisioningStepIDs returns the "GinFileMiddlewareToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GinFileMiddlewareToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepIDs() (ids []int) {
+	if id := m._GinFileMiddlewareToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGinFileMiddlewareToProvisioningStep resets all changes to the "GinFileMiddlewareToProvisioningStep" edge.
+func (m *GinFileMiddlewareMutation) ResetGinFileMiddlewareToProvisioningStep() {
+	m._GinFileMiddlewareToProvisioningStep = nil
+	m.cleared_GinFileMiddlewareToProvisioningStep = false
+}
+
+// Op returns the operation name.
+func (m *GinFileMiddlewareMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (GinFileMiddleware).
+func (m *GinFileMiddlewareMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GinFileMiddlewareMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.url_id != nil {
+		fields = append(fields, ginfilemiddleware.FieldURLID)
+	}
+	if m.file_path != nil {
+		fields = append(fields, ginfilemiddleware.FieldFilePath)
+	}
+	if m.accessed != nil {
+		fields = append(fields, ginfilemiddleware.FieldAccessed)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GinFileMiddlewareMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ginfilemiddleware.FieldURLID:
+		return m.URLID()
+	case ginfilemiddleware.FieldFilePath:
+		return m.FilePath()
+	case ginfilemiddleware.FieldAccessed:
+		return m.Accessed()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GinFileMiddlewareMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ginfilemiddleware.FieldURLID:
+		return m.OldURLID(ctx)
+	case ginfilemiddleware.FieldFilePath:
+		return m.OldFilePath(ctx)
+	case ginfilemiddleware.FieldAccessed:
+		return m.OldAccessed(ctx)
+	}
+	return nil, fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GinFileMiddlewareMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ginfilemiddleware.FieldURLID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURLID(v)
+		return nil
+	case ginfilemiddleware.FieldFilePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFilePath(v)
+		return nil
+	case ginfilemiddleware.FieldAccessed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessed(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GinFileMiddlewareMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GinFileMiddlewareMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GinFileMiddlewareMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GinFileMiddleware numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GinFileMiddlewareMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GinFileMiddlewareMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GinFileMiddleware nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ResetField(name string) error {
+	switch name {
+	case ginfilemiddleware.FieldURLID:
+		m.ResetURLID()
+		return nil
+	case ginfilemiddleware.FieldFilePath:
+		m.ResetFilePath()
+		return nil
+	case ginfilemiddleware.FieldAccessed:
+		m.ResetAccessed()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GinFileMiddlewareMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._GinFileMiddlewareToProvisionedHost != nil {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost)
+	}
+	if m._GinFileMiddlewareToProvisioningStep != nil {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GinFileMiddlewareMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		if id := m._GinFileMiddlewareToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		if id := m._GinFileMiddlewareToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GinFileMiddlewareMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GinFileMiddlewareMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GinFileMiddlewareMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_GinFileMiddlewareToProvisionedHost {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost)
+	}
+	if m.cleared_GinFileMiddlewareToProvisioningStep {
+		edges = append(edges, ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GinFileMiddlewareMutation) EdgeCleared(name string) bool {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		return m.cleared_GinFileMiddlewareToProvisionedHost
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		return m.cleared_GinFileMiddlewareToProvisioningStep
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ClearEdge(name string) error {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		m.ClearGinFileMiddlewareToProvisionedHost()
+		return nil
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		m.ClearGinFileMiddlewareToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GinFileMiddlewareMutation) ResetEdge(name string) error {
+	switch name {
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisionedHost:
+		m.ResetGinFileMiddlewareToProvisionedHost()
+		return nil
+	case ginfilemiddleware.EdgeGinFileMiddlewareToProvisioningStep:
+		m.ResetGinFileMiddlewareToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown GinFileMiddleware edge %s", name)
+}
+
 // HostMutation represents an operation that mutates the Host nodes in the graph.
 type HostMutation struct {
 	config
@@ -13512,17 +13857,13 @@ type HostDependencyMutation struct {
 	host_id                              *string
 	network_id                           *string
 	clearedFields                        map[string]struct{}
-	_HostDependencyToDependOnHost        map[int]struct{}
-	removed_HostDependencyToDependOnHost map[int]struct{}
+	_HostDependencyToDependOnHost        *int
 	cleared_HostDependencyToDependOnHost bool
-	_HostDependencyToDependByHost        map[int]struct{}
-	removed_HostDependencyToDependByHost map[int]struct{}
+	_HostDependencyToDependByHost        *int
 	cleared_HostDependencyToDependByHost bool
-	_HostDependencyToNetwork             map[int]struct{}
-	removed_HostDependencyToNetwork      map[int]struct{}
+	_HostDependencyToNetwork             *int
 	cleared_HostDependencyToNetwork      bool
-	_HostDependencyToEnvironment         map[int]struct{}
-	removed_HostDependencyToEnvironment  map[int]struct{}
+	_HostDependencyToEnvironment         *int
 	cleared_HostDependencyToEnvironment  bool
 	done                                 bool
 	oldValue                             func(context.Context) (*HostDependency, error)
@@ -13680,14 +14021,9 @@ func (m *HostDependencyMutation) ResetNetworkID() {
 	m.network_id = nil
 }
 
-// AddHostDependencyToDependOnHostIDs adds the "HostDependencyToDependOnHost" edge to the Host entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToDependOnHostIDs(ids ...int) {
-	if m._HostDependencyToDependOnHost == nil {
-		m._HostDependencyToDependOnHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToDependOnHost[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToDependOnHostID(id int) {
+	m._HostDependencyToDependOnHost = &id
 }
 
 // ClearHostDependencyToDependOnHost clears the "HostDependencyToDependOnHost" edge to the Host entity.
@@ -13700,28 +14036,20 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostCleared() bool {
 	return m.cleared_HostDependencyToDependOnHost
 }
 
-// RemoveHostDependencyToDependOnHostIDs removes the "HostDependencyToDependOnHost" edge to the Host entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToDependOnHostIDs(ids ...int) {
-	if m.removed_HostDependencyToDependOnHost == nil {
-		m.removed_HostDependencyToDependOnHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToDependOnHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToDependOnHost returns the removed IDs of the "HostDependencyToDependOnHost" edge to the Host entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToDependOnHostIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToDependOnHost {
-		ids = append(ids, id)
+// HostDependencyToDependOnHostID returns the "HostDependencyToDependOnHost" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToDependOnHostID() (id int, exists bool) {
+	if m._HostDependencyToDependOnHost != nil {
+		return *m._HostDependencyToDependOnHost, true
 	}
 	return
 }
 
 // HostDependencyToDependOnHostIDs returns the "HostDependencyToDependOnHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToDependOnHostID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []int) {
-	for id := range m._HostDependencyToDependOnHost {
-		ids = append(ids, id)
+	if id := m._HostDependencyToDependOnHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13730,17 +14058,11 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToDependOnHost() {
 	m._HostDependencyToDependOnHost = nil
 	m.cleared_HostDependencyToDependOnHost = false
-	m.removed_HostDependencyToDependOnHost = nil
 }
 
-// AddHostDependencyToDependByHostIDs adds the "HostDependencyToDependByHost" edge to the Host entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToDependByHostIDs(ids ...int) {
-	if m._HostDependencyToDependByHost == nil {
-		m._HostDependencyToDependByHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToDependByHost[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToDependByHostID(id int) {
+	m._HostDependencyToDependByHost = &id
 }
 
 // ClearHostDependencyToDependByHost clears the "HostDependencyToDependByHost" edge to the Host entity.
@@ -13753,28 +14075,20 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostCleared() bool {
 	return m.cleared_HostDependencyToDependByHost
 }
 
-// RemoveHostDependencyToDependByHostIDs removes the "HostDependencyToDependByHost" edge to the Host entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToDependByHostIDs(ids ...int) {
-	if m.removed_HostDependencyToDependByHost == nil {
-		m.removed_HostDependencyToDependByHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToDependByHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToDependByHost returns the removed IDs of the "HostDependencyToDependByHost" edge to the Host entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToDependByHostIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToDependByHost {
-		ids = append(ids, id)
+// HostDependencyToDependByHostID returns the "HostDependencyToDependByHost" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToDependByHostID() (id int, exists bool) {
+	if m._HostDependencyToDependByHost != nil {
+		return *m._HostDependencyToDependByHost, true
 	}
 	return
 }
 
 // HostDependencyToDependByHostIDs returns the "HostDependencyToDependByHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToDependByHostID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []int) {
-	for id := range m._HostDependencyToDependByHost {
-		ids = append(ids, id)
+	if id := m._HostDependencyToDependByHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13783,17 +14097,11 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToDependByHost() {
 	m._HostDependencyToDependByHost = nil
 	m.cleared_HostDependencyToDependByHost = false
-	m.removed_HostDependencyToDependByHost = nil
 }
 
-// AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToNetworkIDs(ids ...int) {
-	if m._HostDependencyToNetwork == nil {
-		m._HostDependencyToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToNetwork[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToNetworkID(id int) {
+	m._HostDependencyToNetwork = &id
 }
 
 // ClearHostDependencyToNetwork clears the "HostDependencyToNetwork" edge to the Network entity.
@@ -13806,28 +14114,20 @@ func (m *HostDependencyMutation) HostDependencyToNetworkCleared() bool {
 	return m.cleared_HostDependencyToNetwork
 }
 
-// RemoveHostDependencyToNetworkIDs removes the "HostDependencyToNetwork" edge to the Network entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToNetworkIDs(ids ...int) {
-	if m.removed_HostDependencyToNetwork == nil {
-		m.removed_HostDependencyToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToNetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToNetwork returns the removed IDs of the "HostDependencyToNetwork" edge to the Network entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToNetworkIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToNetwork {
-		ids = append(ids, id)
+// HostDependencyToNetworkID returns the "HostDependencyToNetwork" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToNetworkID() (id int, exists bool) {
+	if m._HostDependencyToNetwork != nil {
+		return *m._HostDependencyToNetwork, true
 	}
 	return
 }
 
 // HostDependencyToNetworkIDs returns the "HostDependencyToNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToNetworkID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
-	for id := range m._HostDependencyToNetwork {
-		ids = append(ids, id)
+	if id := m._HostDependencyToNetwork; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13836,17 +14136,11 @@ func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToNetwork() {
 	m._HostDependencyToNetwork = nil
 	m.cleared_HostDependencyToNetwork = false
-	m.removed_HostDependencyToNetwork = nil
 }
 
-// AddHostDependencyToEnvironmentIDs adds the "HostDependencyToEnvironment" edge to the Environment entity by ids.
-func (m *HostDependencyMutation) AddHostDependencyToEnvironmentIDs(ids ...int) {
-	if m._HostDependencyToEnvironment == nil {
-		m._HostDependencyToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostDependencyToEnvironment[ids[i]] = struct{}{}
-	}
+// SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by id.
+func (m *HostDependencyMutation) SetHostDependencyToEnvironmentID(id int) {
+	m._HostDependencyToEnvironment = &id
 }
 
 // ClearHostDependencyToEnvironment clears the "HostDependencyToEnvironment" edge to the Environment entity.
@@ -13859,28 +14153,20 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentCleared() bool {
 	return m.cleared_HostDependencyToEnvironment
 }
 
-// RemoveHostDependencyToEnvironmentIDs removes the "HostDependencyToEnvironment" edge to the Environment entity by IDs.
-func (m *HostDependencyMutation) RemoveHostDependencyToEnvironmentIDs(ids ...int) {
-	if m.removed_HostDependencyToEnvironment == nil {
-		m.removed_HostDependencyToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostDependencyToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostDependencyToEnvironment returns the removed IDs of the "HostDependencyToEnvironment" edge to the Environment entity.
-func (m *HostDependencyMutation) RemovedHostDependencyToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_HostDependencyToEnvironment {
-		ids = append(ids, id)
+// HostDependencyToEnvironmentID returns the "HostDependencyToEnvironment" edge ID in the mutation.
+func (m *HostDependencyMutation) HostDependencyToEnvironmentID() (id int, exists bool) {
+	if m._HostDependencyToEnvironment != nil {
+		return *m._HostDependencyToEnvironment, true
 	}
 	return
 }
 
 // HostDependencyToEnvironmentIDs returns the "HostDependencyToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostDependencyToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []int) {
-	for id := range m._HostDependencyToEnvironment {
-		ids = append(ids, id)
+	if id := m._HostDependencyToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13889,7 +14175,6 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []int) {
 func (m *HostDependencyMutation) ResetHostDependencyToEnvironment() {
 	m._HostDependencyToEnvironment = nil
 	m.cleared_HostDependencyToEnvironment = false
-	m.removed_HostDependencyToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -14043,29 +14328,21 @@ func (m *HostDependencyMutation) AddedEdges() []string {
 func (m *HostDependencyMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case hostdependency.EdgeHostDependencyToDependOnHost:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToDependOnHost))
-		for id := range m._HostDependencyToDependOnHost {
-			ids = append(ids, id)
+		if id := m._HostDependencyToDependOnHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToDependByHost:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToDependByHost))
-		for id := range m._HostDependencyToDependByHost {
-			ids = append(ids, id)
+		if id := m._HostDependencyToDependByHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToNetwork:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToNetwork))
-		for id := range m._HostDependencyToNetwork {
-			ids = append(ids, id)
+		if id := m._HostDependencyToNetwork; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case hostdependency.EdgeHostDependencyToEnvironment:
-		ids := make([]ent.Value, 0, len(m._HostDependencyToEnvironment))
-		for id := range m._HostDependencyToEnvironment {
-			ids = append(ids, id)
+		if id := m._HostDependencyToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -14073,18 +14350,6 @@ func (m *HostDependencyMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HostDependencyMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removed_HostDependencyToDependOnHost != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToDependOnHost)
-	}
-	if m.removed_HostDependencyToDependByHost != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToDependByHost)
-	}
-	if m.removed_HostDependencyToNetwork != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToNetwork)
-	}
-	if m.removed_HostDependencyToEnvironment != nil {
-		edges = append(edges, hostdependency.EdgeHostDependencyToEnvironment)
-	}
 	return edges
 }
 
@@ -14092,30 +14357,6 @@ func (m *HostDependencyMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *HostDependencyMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case hostdependency.EdgeHostDependencyToDependOnHost:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToDependOnHost))
-		for id := range m.removed_HostDependencyToDependOnHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToDependByHost:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToDependByHost))
-		for id := range m.removed_HostDependencyToDependByHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToNetwork:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToNetwork))
-		for id := range m.removed_HostDependencyToNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case hostdependency.EdgeHostDependencyToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_HostDependencyToEnvironment))
-		for id := range m.removed_HostDependencyToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -14158,6 +14399,18 @@ func (m *HostDependencyMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *HostDependencyMutation) ClearEdge(name string) error {
 	switch name {
+	case hostdependency.EdgeHostDependencyToDependOnHost:
+		m.ClearHostDependencyToDependOnHost()
+		return nil
+	case hostdependency.EdgeHostDependencyToDependByHost:
+		m.ClearHostDependencyToDependByHost()
+		return nil
+	case hostdependency.EdgeHostDependencyToNetwork:
+		m.ClearHostDependencyToNetwork()
+		return nil
+	case hostdependency.EdgeHostDependencyToEnvironment:
+		m.ClearHostDependencyToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown HostDependency unique edge %s", name)
 }
@@ -16567,6 +16820,939 @@ func (m *NetworkMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Network edge %s", name)
 }
 
+// PlanMutation represents an operation that mutates the Plan nodes in the graph.
+type PlanMutation struct {
+	config
+	op                               Op
+	typ                              string
+	id                               *int
+	step_number                      *int
+	addstep_number                   *int
+	_type                            *plan.Type
+	build_id                         *int
+	addbuild_id                      *int
+	clearedFields                    map[string]struct{}
+	_PrevPlan                        map[int]struct{}
+	removed_PrevPlan                 map[int]struct{}
+	cleared_PrevPlan                 bool
+	_NextPlan                        map[int]struct{}
+	removed_NextPlan                 map[int]struct{}
+	cleared_NextPlan                 bool
+	_PlanToBuild                     *int
+	cleared_PlanToBuild              bool
+	_PlanToTeam                      *int
+	cleared_PlanToTeam               bool
+	_PlanToProvisionedNetwork        *int
+	cleared_PlanToProvisionedNetwork bool
+	_PlanToProvisionedHost           *int
+	cleared_PlanToProvisionedHost    bool
+	_PlanToProvisioningStep          *int
+	cleared_PlanToProvisioningStep   bool
+	done                             bool
+	oldValue                         func(context.Context) (*Plan, error)
+	predicates                       []predicate.Plan
+}
+
+var _ ent.Mutation = (*PlanMutation)(nil)
+
+// planOption allows management of the mutation configuration using functional options.
+type planOption func(*PlanMutation)
+
+// newPlanMutation creates new mutation for the Plan entity.
+func newPlanMutation(c config, op Op, opts ...planOption) *PlanMutation {
+	m := &PlanMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePlan,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPlanID sets the ID field of the mutation.
+func withPlanID(id int) planOption {
+	return func(m *PlanMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Plan
+		)
+		m.oldValue = func(ctx context.Context) (*Plan, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Plan.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPlan sets the old Plan of the mutation.
+func withPlan(node *Plan) planOption {
+	return func(m *PlanMutation) {
+		m.oldValue = func(context.Context) (*Plan, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PlanMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PlanMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *PlanMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetStepNumber sets the "step_number" field.
+func (m *PlanMutation) SetStepNumber(i int) {
+	m.step_number = &i
+	m.addstep_number = nil
+}
+
+// StepNumber returns the value of the "step_number" field in the mutation.
+func (m *PlanMutation) StepNumber() (r int, exists bool) {
+	v := m.step_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStepNumber returns the old "step_number" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldStepNumber(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStepNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStepNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStepNumber: %w", err)
+	}
+	return oldValue.StepNumber, nil
+}
+
+// AddStepNumber adds i to the "step_number" field.
+func (m *PlanMutation) AddStepNumber(i int) {
+	if m.addstep_number != nil {
+		*m.addstep_number += i
+	} else {
+		m.addstep_number = &i
+	}
+}
+
+// AddedStepNumber returns the value that was added to the "step_number" field in this mutation.
+func (m *PlanMutation) AddedStepNumber() (r int, exists bool) {
+	v := m.addstep_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStepNumber resets all changes to the "step_number" field.
+func (m *PlanMutation) ResetStepNumber() {
+	m.step_number = nil
+	m.addstep_number = nil
+}
+
+// SetType sets the "type" field.
+func (m *PlanMutation) SetType(pl plan.Type) {
+	m._type = &pl
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *PlanMutation) GetType() (r plan.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldType(ctx context.Context) (v plan.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *PlanMutation) ResetType() {
+	m._type = nil
+}
+
+// SetBuildID sets the "build_id" field.
+func (m *PlanMutation) SetBuildID(i int) {
+	m.build_id = &i
+	m.addbuild_id = nil
+}
+
+// BuildID returns the value of the "build_id" field in the mutation.
+func (m *PlanMutation) BuildID() (r int, exists bool) {
+	v := m.build_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBuildID returns the old "build_id" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldBuildID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBuildID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBuildID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBuildID: %w", err)
+	}
+	return oldValue.BuildID, nil
+}
+
+// AddBuildID adds i to the "build_id" field.
+func (m *PlanMutation) AddBuildID(i int) {
+	if m.addbuild_id != nil {
+		*m.addbuild_id += i
+	} else {
+		m.addbuild_id = &i
+	}
+}
+
+// AddedBuildID returns the value that was added to the "build_id" field in this mutation.
+func (m *PlanMutation) AddedBuildID() (r int, exists bool) {
+	v := m.addbuild_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBuildID resets all changes to the "build_id" field.
+func (m *PlanMutation) ResetBuildID() {
+	m.build_id = nil
+	m.addbuild_id = nil
+}
+
+// AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by ids.
+func (m *PlanMutation) AddPrevPlanIDs(ids ...int) {
+	if m._PrevPlan == nil {
+		m._PrevPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._PrevPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPrevPlan clears the "PrevPlan" edge to the Plan entity.
+func (m *PlanMutation) ClearPrevPlan() {
+	m.cleared_PrevPlan = true
+}
+
+// PrevPlanCleared returns if the "PrevPlan" edge to the Plan entity was cleared.
+func (m *PlanMutation) PrevPlanCleared() bool {
+	return m.cleared_PrevPlan
+}
+
+// RemovePrevPlanIDs removes the "PrevPlan" edge to the Plan entity by IDs.
+func (m *PlanMutation) RemovePrevPlanIDs(ids ...int) {
+	if m.removed_PrevPlan == nil {
+		m.removed_PrevPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_PrevPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrevPlan returns the removed IDs of the "PrevPlan" edge to the Plan entity.
+func (m *PlanMutation) RemovedPrevPlanIDs() (ids []int) {
+	for id := range m.removed_PrevPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PrevPlanIDs returns the "PrevPlan" edge IDs in the mutation.
+func (m *PlanMutation) PrevPlanIDs() (ids []int) {
+	for id := range m._PrevPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPrevPlan resets all changes to the "PrevPlan" edge.
+func (m *PlanMutation) ResetPrevPlan() {
+	m._PrevPlan = nil
+	m.cleared_PrevPlan = false
+	m.removed_PrevPlan = nil
+}
+
+// AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by ids.
+func (m *PlanMutation) AddNextPlanIDs(ids ...int) {
+	if m._NextPlan == nil {
+		m._NextPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._NextPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNextPlan clears the "NextPlan" edge to the Plan entity.
+func (m *PlanMutation) ClearNextPlan() {
+	m.cleared_NextPlan = true
+}
+
+// NextPlanCleared returns if the "NextPlan" edge to the Plan entity was cleared.
+func (m *PlanMutation) NextPlanCleared() bool {
+	return m.cleared_NextPlan
+}
+
+// RemoveNextPlanIDs removes the "NextPlan" edge to the Plan entity by IDs.
+func (m *PlanMutation) RemoveNextPlanIDs(ids ...int) {
+	if m.removed_NextPlan == nil {
+		m.removed_NextPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_NextPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNextPlan returns the removed IDs of the "NextPlan" edge to the Plan entity.
+func (m *PlanMutation) RemovedNextPlanIDs() (ids []int) {
+	for id := range m.removed_NextPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NextPlanIDs returns the "NextPlan" edge IDs in the mutation.
+func (m *PlanMutation) NextPlanIDs() (ids []int) {
+	for id := range m._NextPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNextPlan resets all changes to the "NextPlan" edge.
+func (m *PlanMutation) ResetNextPlan() {
+	m._NextPlan = nil
+	m.cleared_NextPlan = false
+	m.removed_NextPlan = nil
+}
+
+// SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by id.
+func (m *PlanMutation) SetPlanToBuildID(id int) {
+	m._PlanToBuild = &id
+}
+
+// ClearPlanToBuild clears the "PlanToBuild" edge to the Build entity.
+func (m *PlanMutation) ClearPlanToBuild() {
+	m.cleared_PlanToBuild = true
+}
+
+// PlanToBuildCleared returns if the "PlanToBuild" edge to the Build entity was cleared.
+func (m *PlanMutation) PlanToBuildCleared() bool {
+	return m.cleared_PlanToBuild
+}
+
+// PlanToBuildID returns the "PlanToBuild" edge ID in the mutation.
+func (m *PlanMutation) PlanToBuildID() (id int, exists bool) {
+	if m._PlanToBuild != nil {
+		return *m._PlanToBuild, true
+	}
+	return
+}
+
+// PlanToBuildIDs returns the "PlanToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToBuildID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToBuildIDs() (ids []int) {
+	if id := m._PlanToBuild; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToBuild resets all changes to the "PlanToBuild" edge.
+func (m *PlanMutation) ResetPlanToBuild() {
+	m._PlanToBuild = nil
+	m.cleared_PlanToBuild = false
+}
+
+// SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by id.
+func (m *PlanMutation) SetPlanToTeamID(id int) {
+	m._PlanToTeam = &id
+}
+
+// ClearPlanToTeam clears the "PlanToTeam" edge to the Team entity.
+func (m *PlanMutation) ClearPlanToTeam() {
+	m.cleared_PlanToTeam = true
+}
+
+// PlanToTeamCleared returns if the "PlanToTeam" edge to the Team entity was cleared.
+func (m *PlanMutation) PlanToTeamCleared() bool {
+	return m.cleared_PlanToTeam
+}
+
+// PlanToTeamID returns the "PlanToTeam" edge ID in the mutation.
+func (m *PlanMutation) PlanToTeamID() (id int, exists bool) {
+	if m._PlanToTeam != nil {
+		return *m._PlanToTeam, true
+	}
+	return
+}
+
+// PlanToTeamIDs returns the "PlanToTeam" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToTeamID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToTeamIDs() (ids []int) {
+	if id := m._PlanToTeam; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToTeam resets all changes to the "PlanToTeam" edge.
+func (m *PlanMutation) ResetPlanToTeam() {
+	m._PlanToTeam = nil
+	m.cleared_PlanToTeam = false
+}
+
+// SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
+func (m *PlanMutation) SetPlanToProvisionedNetworkID(id int) {
+	m._PlanToProvisionedNetwork = &id
+}
+
+// ClearPlanToProvisionedNetwork clears the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (m *PlanMutation) ClearPlanToProvisionedNetwork() {
+	m.cleared_PlanToProvisionedNetwork = true
+}
+
+// PlanToProvisionedNetworkCleared returns if the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+func (m *PlanMutation) PlanToProvisionedNetworkCleared() bool {
+	return m.cleared_PlanToProvisionedNetwork
+}
+
+// PlanToProvisionedNetworkID returns the "PlanToProvisionedNetwork" edge ID in the mutation.
+func (m *PlanMutation) PlanToProvisionedNetworkID() (id int, exists bool) {
+	if m._PlanToProvisionedNetwork != nil {
+		return *m._PlanToProvisionedNetwork, true
+	}
+	return
+}
+
+// PlanToProvisionedNetworkIDs returns the "PlanToProvisionedNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToProvisionedNetworkID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToProvisionedNetworkIDs() (ids []int) {
+	if id := m._PlanToProvisionedNetwork; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToProvisionedNetwork resets all changes to the "PlanToProvisionedNetwork" edge.
+func (m *PlanMutation) ResetPlanToProvisionedNetwork() {
+	m._PlanToProvisionedNetwork = nil
+	m.cleared_PlanToProvisionedNetwork = false
+}
+
+// SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *PlanMutation) SetPlanToProvisionedHostID(id int) {
+	m._PlanToProvisionedHost = &id
+}
+
+// ClearPlanToProvisionedHost clears the "PlanToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *PlanMutation) ClearPlanToProvisionedHost() {
+	m.cleared_PlanToProvisionedHost = true
+}
+
+// PlanToProvisionedHostCleared returns if the "PlanToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *PlanMutation) PlanToProvisionedHostCleared() bool {
+	return m.cleared_PlanToProvisionedHost
+}
+
+// PlanToProvisionedHostID returns the "PlanToProvisionedHost" edge ID in the mutation.
+func (m *PlanMutation) PlanToProvisionedHostID() (id int, exists bool) {
+	if m._PlanToProvisionedHost != nil {
+		return *m._PlanToProvisionedHost, true
+	}
+	return
+}
+
+// PlanToProvisionedHostIDs returns the "PlanToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToProvisionedHostIDs() (ids []int) {
+	if id := m._PlanToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToProvisionedHost resets all changes to the "PlanToProvisionedHost" edge.
+func (m *PlanMutation) ResetPlanToProvisionedHost() {
+	m._PlanToProvisionedHost = nil
+	m.cleared_PlanToProvisionedHost = false
+}
+
+// SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *PlanMutation) SetPlanToProvisioningStepID(id int) {
+	m._PlanToProvisioningStep = &id
+}
+
+// ClearPlanToProvisioningStep clears the "PlanToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *PlanMutation) ClearPlanToProvisioningStep() {
+	m.cleared_PlanToProvisioningStep = true
+}
+
+// PlanToProvisioningStepCleared returns if the "PlanToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *PlanMutation) PlanToProvisioningStepCleared() bool {
+	return m.cleared_PlanToProvisioningStep
+}
+
+// PlanToProvisioningStepID returns the "PlanToProvisioningStep" edge ID in the mutation.
+func (m *PlanMutation) PlanToProvisioningStepID() (id int, exists bool) {
+	if m._PlanToProvisioningStep != nil {
+		return *m._PlanToProvisioningStep, true
+	}
+	return
+}
+
+// PlanToProvisioningStepIDs returns the "PlanToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToProvisioningStepIDs() (ids []int) {
+	if id := m._PlanToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToProvisioningStep resets all changes to the "PlanToProvisioningStep" edge.
+func (m *PlanMutation) ResetPlanToProvisioningStep() {
+	m._PlanToProvisioningStep = nil
+	m.cleared_PlanToProvisioningStep = false
+}
+
+// Op returns the operation name.
+func (m *PlanMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Plan).
+func (m *PlanMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PlanMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.step_number != nil {
+		fields = append(fields, plan.FieldStepNumber)
+	}
+	if m._type != nil {
+		fields = append(fields, plan.FieldType)
+	}
+	if m.build_id != nil {
+		fields = append(fields, plan.FieldBuildID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PlanMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.StepNumber()
+	case plan.FieldType:
+		return m.GetType()
+	case plan.FieldBuildID:
+		return m.BuildID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.OldStepNumber(ctx)
+	case plan.FieldType:
+		return m.OldType(ctx)
+	case plan.FieldBuildID:
+		return m.OldBuildID(ctx)
+	}
+	return nil, fmt.Errorf("unknown Plan field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlanMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case plan.FieldStepNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStepNumber(v)
+		return nil
+	case plan.FieldType:
+		v, ok := value.(plan.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case plan.FieldBuildID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBuildID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Plan field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PlanMutation) AddedFields() []string {
+	var fields []string
+	if m.addstep_number != nil {
+		fields = append(fields, plan.FieldStepNumber)
+	}
+	if m.addbuild_id != nil {
+		fields = append(fields, plan.FieldBuildID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PlanMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case plan.FieldStepNumber:
+		return m.AddedStepNumber()
+	case plan.FieldBuildID:
+		return m.AddedBuildID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlanMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case plan.FieldStepNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStepNumber(v)
+		return nil
+	case plan.FieldBuildID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBuildID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Plan numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PlanMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PlanMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PlanMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Plan nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PlanMutation) ResetField(name string) error {
+	switch name {
+	case plan.FieldStepNumber:
+		m.ResetStepNumber()
+		return nil
+	case plan.FieldType:
+		m.ResetType()
+		return nil
+	case plan.FieldBuildID:
+		m.ResetBuildID()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PlanMutation) AddedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m._PrevPlan != nil {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
+	if m._NextPlan != nil {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	if m._PlanToBuild != nil {
+		edges = append(edges, plan.EdgePlanToBuild)
+	}
+	if m._PlanToTeam != nil {
+		edges = append(edges, plan.EdgePlanToTeam)
+	}
+	if m._PlanToProvisionedNetwork != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedNetwork)
+	}
+	if m._PlanToProvisionedHost != nil {
+		edges = append(edges, plan.EdgePlanToProvisionedHost)
+	}
+	if m._PlanToProvisioningStep != nil {
+		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PlanMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case plan.EdgePrevPlan:
+		ids := make([]ent.Value, 0, len(m._PrevPlan))
+		for id := range m._PrevPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgeNextPlan:
+		ids := make([]ent.Value, 0, len(m._NextPlan))
+		for id := range m._NextPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgePlanToBuild:
+		if id := m._PlanToBuild; id != nil {
+			return []ent.Value{*id}
+		}
+	case plan.EdgePlanToTeam:
+		if id := m._PlanToTeam; id != nil {
+			return []ent.Value{*id}
+		}
+	case plan.EdgePlanToProvisionedNetwork:
+		if id := m._PlanToProvisionedNetwork; id != nil {
+			return []ent.Value{*id}
+		}
+	case plan.EdgePlanToProvisionedHost:
+		if id := m._PlanToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
+	case plan.EdgePlanToProvisioningStep:
+		if id := m._PlanToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PlanMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.removed_PrevPlan != nil {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
+	if m.removed_NextPlan != nil {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PlanMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case plan.EdgePrevPlan:
+		ids := make([]ent.Value, 0, len(m.removed_PrevPlan))
+		for id := range m.removed_PrevPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case plan.EdgeNextPlan:
+		ids := make([]ent.Value, 0, len(m.removed_NextPlan))
+		for id := range m.removed_NextPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PlanMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.cleared_PrevPlan {
+		edges = append(edges, plan.EdgePrevPlan)
+	}
+	if m.cleared_NextPlan {
+		edges = append(edges, plan.EdgeNextPlan)
+	}
+	if m.cleared_PlanToBuild {
+		edges = append(edges, plan.EdgePlanToBuild)
+	}
+	if m.cleared_PlanToTeam {
+		edges = append(edges, plan.EdgePlanToTeam)
+	}
+	if m.cleared_PlanToProvisionedNetwork {
+		edges = append(edges, plan.EdgePlanToProvisionedNetwork)
+	}
+	if m.cleared_PlanToProvisionedHost {
+		edges = append(edges, plan.EdgePlanToProvisionedHost)
+	}
+	if m.cleared_PlanToProvisioningStep {
+		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PlanMutation) EdgeCleared(name string) bool {
+	switch name {
+	case plan.EdgePrevPlan:
+		return m.cleared_PrevPlan
+	case plan.EdgeNextPlan:
+		return m.cleared_NextPlan
+	case plan.EdgePlanToBuild:
+		return m.cleared_PlanToBuild
+	case plan.EdgePlanToTeam:
+		return m.cleared_PlanToTeam
+	case plan.EdgePlanToProvisionedNetwork:
+		return m.cleared_PlanToProvisionedNetwork
+	case plan.EdgePlanToProvisionedHost:
+		return m.cleared_PlanToProvisionedHost
+	case plan.EdgePlanToProvisioningStep:
+		return m.cleared_PlanToProvisioningStep
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PlanMutation) ClearEdge(name string) error {
+	switch name {
+	case plan.EdgePlanToBuild:
+		m.ClearPlanToBuild()
+		return nil
+	case plan.EdgePlanToTeam:
+		m.ClearPlanToTeam()
+		return nil
+	case plan.EdgePlanToProvisionedNetwork:
+		m.ClearPlanToProvisionedNetwork()
+		return nil
+	case plan.EdgePlanToProvisionedHost:
+		m.ClearPlanToProvisionedHost()
+		return nil
+	case plan.EdgePlanToProvisioningStep:
+		m.ClearPlanToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PlanMutation) ResetEdge(name string) error {
+	switch name {
+	case plan.EdgePrevPlan:
+		m.ResetPrevPlan()
+		return nil
+	case plan.EdgeNextPlan:
+		m.ResetNextPlan()
+		return nil
+	case plan.EdgePlanToBuild:
+		m.ResetPlanToBuild()
+		return nil
+	case plan.EdgePlanToTeam:
+		m.ResetPlanToTeam()
+		return nil
+	case plan.EdgePlanToProvisionedNetwork:
+		m.ResetPlanToProvisionedNetwork()
+		return nil
+	case plan.EdgePlanToProvisionedHost:
+		m.ResetPlanToProvisionedHost()
+		return nil
+	case plan.EdgePlanToProvisioningStep:
+		m.ResetPlanToProvisioningStep()
+		return nil
+	}
+	return fmt.Errorf("unknown Plan edge %s", name)
+}
+
 // ProvisionedHostMutation represents an operation that mutates the ProvisionedHost nodes in the graph.
 type ProvisionedHostMutation struct {
 	config
@@ -16575,24 +17761,25 @@ type ProvisionedHostMutation struct {
 	id                                          *int
 	subnet_ip                                   *string
 	clearedFields                               map[string]struct{}
-	_ProvisionedHostToTag                       map[int]struct{}
-	removed_ProvisionedHostToTag                map[int]struct{}
-	cleared_ProvisionedHostToTag                bool
-	_ProvisionedHostToStatus                    map[int]struct{}
-	removed_ProvisionedHostToStatus             map[int]struct{}
+	_ProvisionedHostToStatus                    *int
 	cleared_ProvisionedHostToStatus             bool
-	_ProvisionedHostToProvisionedNetwork        map[int]struct{}
-	removed_ProvisionedHostToProvisionedNetwork map[int]struct{}
+	_ProvisionedHostToProvisionedNetwork        *int
 	cleared_ProvisionedHostToProvisionedNetwork bool
-	_ProvisionedHostToHost                      map[int]struct{}
-	removed_ProvisionedHostToHost               map[int]struct{}
+	_ProvisionedHostToHost                      *int
 	cleared_ProvisionedHostToHost               bool
+	_ProvisionedHostToEndStepPlan               *int
+	cleared_ProvisionedHostToEndStepPlan        bool
 	_ProvisionedHostToProvisioningStep          map[int]struct{}
 	removed_ProvisionedHostToProvisioningStep   map[int]struct{}
 	cleared_ProvisionedHostToProvisioningStep   bool
 	_ProvisionedHostToAgentStatus               map[int]struct{}
 	removed_ProvisionedHostToAgentStatus        map[int]struct{}
 	cleared_ProvisionedHostToAgentStatus        bool
+	_ProvisionedHostToPlan                      map[int]struct{}
+	removed_ProvisionedHostToPlan               map[int]struct{}
+	cleared_ProvisionedHostToPlan               bool
+	_ProvisionedHostToGinFileMiddleware         *int
+	cleared_ProvisionedHostToGinFileMiddleware  bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedHost, error)
 	predicates                                  []predicate.ProvisionedHost
@@ -16713,67 +17900,9 @@ func (m *ProvisionedHostMutation) ResetSubnetIP() {
 	m.subnet_ip = nil
 }
 
-// AddProvisionedHostToTagIDs adds the "ProvisionedHostToTag" edge to the Tag entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToTagIDs(ids ...int) {
-	if m._ProvisionedHostToTag == nil {
-		m._ProvisionedHostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProvisionedHostToTag clears the "ProvisionedHostToTag" edge to the Tag entity.
-func (m *ProvisionedHostMutation) ClearProvisionedHostToTag() {
-	m.cleared_ProvisionedHostToTag = true
-}
-
-// ProvisionedHostToTagCleared returns if the "ProvisionedHostToTag" edge to the Tag entity was cleared.
-func (m *ProvisionedHostMutation) ProvisionedHostToTagCleared() bool {
-	return m.cleared_ProvisionedHostToTag
-}
-
-// RemoveProvisionedHostToTagIDs removes the "ProvisionedHostToTag" edge to the Tag entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToTagIDs(ids ...int) {
-	if m.removed_ProvisionedHostToTag == nil {
-		m.removed_ProvisionedHostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToTag returns the removed IDs of the "ProvisionedHostToTag" edge to the Tag entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToTagIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisionedHostToTagIDs returns the "ProvisionedHostToTag" edge IDs in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToTagIDs() (ids []int) {
-	for id := range m._ProvisionedHostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisionedHostToTag resets all changes to the "ProvisionedHostToTag" edge.
-func (m *ProvisionedHostMutation) ResetProvisionedHostToTag() {
-	m._ProvisionedHostToTag = nil
-	m.cleared_ProvisionedHostToTag = false
-	m.removed_ProvisionedHostToTag = nil
-}
-
-// AddProvisionedHostToStatuIDs adds the "ProvisionedHostToStatus" edge to the Status entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToStatuIDs(ids ...int) {
-	if m._ProvisionedHostToStatus == nil {
-		m._ProvisionedHostToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToStatus[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToStatusID(id int) {
+	m._ProvisionedHostToStatus = &id
 }
 
 // ClearProvisionedHostToStatus clears the "ProvisionedHostToStatus" edge to the Status entity.
@@ -16786,28 +17915,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusCleared() bool {
 	return m.cleared_ProvisionedHostToStatus
 }
 
-// RemoveProvisionedHostToStatuIDs removes the "ProvisionedHostToStatus" edge to the Status entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToStatuIDs(ids ...int) {
-	if m.removed_ProvisionedHostToStatus == nil {
-		m.removed_ProvisionedHostToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToStatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToStatus returns the removed IDs of the "ProvisionedHostToStatus" edge to the Status entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToStatusIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToStatus {
-		ids = append(ids, id)
+// ProvisionedHostToStatusID returns the "ProvisionedHostToStatus" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusID() (id int, exists bool) {
+	if m._ProvisionedHostToStatus != nil {
+		return *m._ProvisionedHostToStatus, true
 	}
 	return
 }
 
 // ProvisionedHostToStatusIDs returns the "ProvisionedHostToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToStatusID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
-	for id := range m._ProvisionedHostToStatus {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -16816,17 +17937,11 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToStatus() {
 	m._ProvisionedHostToStatus = nil
 	m.cleared_ProvisionedHostToStatus = false
-	m.removed_ProvisionedHostToStatus = nil
 }
 
-// AddProvisionedHostToProvisionedNetworkIDs adds the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToProvisionedNetworkIDs(ids ...int) {
-	if m._ProvisionedHostToProvisionedNetwork == nil {
-		m._ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToProvisionedNetworkID(id int) {
+	m._ProvisionedHostToProvisionedNetwork = &id
 }
 
 // ClearProvisionedHostToProvisionedNetwork clears the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity.
@@ -16839,28 +17954,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkCleared() b
 	return m.cleared_ProvisionedHostToProvisionedNetwork
 }
 
-// RemoveProvisionedHostToProvisionedNetworkIDs removes the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisionedNetworkIDs(ids ...int) {
-	if m.removed_ProvisionedHostToProvisionedNetwork == nil {
-		m.removed_ProvisionedHostToProvisionedNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToProvisionedNetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToProvisionedNetwork returns the removed IDs of the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisionedNetworkIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToProvisionedNetwork {
-		ids = append(ids, id)
+// ProvisionedHostToProvisionedNetworkID returns the "ProvisionedHostToProvisionedNetwork" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkID() (id int, exists bool) {
+	if m._ProvisionedHostToProvisionedNetwork != nil {
+		return *m._ProvisionedHostToProvisionedNetwork, true
 	}
 	return
 }
 
 // ProvisionedHostToProvisionedNetworkIDs returns the "ProvisionedHostToProvisionedNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToProvisionedNetworkID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids []int) {
-	for id := range m._ProvisionedHostToProvisionedNetwork {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToProvisionedNetwork; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -16869,17 +17976,11 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids 
 func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisionedNetwork() {
 	m._ProvisionedHostToProvisionedNetwork = nil
 	m.cleared_ProvisionedHostToProvisionedNetwork = false
-	m.removed_ProvisionedHostToProvisionedNetwork = nil
 }
 
-// AddProvisionedHostToHostIDs adds the "ProvisionedHostToHost" edge to the Host entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToHostIDs(ids ...int) {
-	if m._ProvisionedHostToHost == nil {
-		m._ProvisionedHostToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToHost[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToHostID(id int) {
+	m._ProvisionedHostToHost = &id
 }
 
 // ClearProvisionedHostToHost clears the "ProvisionedHostToHost" edge to the Host entity.
@@ -16892,28 +17993,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostCleared() bool {
 	return m.cleared_ProvisionedHostToHost
 }
 
-// RemoveProvisionedHostToHostIDs removes the "ProvisionedHostToHost" edge to the Host entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToHostIDs(ids ...int) {
-	if m.removed_ProvisionedHostToHost == nil {
-		m.removed_ProvisionedHostToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToHost returns the removed IDs of the "ProvisionedHostToHost" edge to the Host entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToHostIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToHost {
-		ids = append(ids, id)
+// ProvisionedHostToHostID returns the "ProvisionedHostToHost" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToHostID() (id int, exists bool) {
+	if m._ProvisionedHostToHost != nil {
+		return *m._ProvisionedHostToHost, true
 	}
 	return
 }
 
 // ProvisionedHostToHostIDs returns the "ProvisionedHostToHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToHostID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
-	for id := range m._ProvisionedHostToHost {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -16922,7 +18015,45 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToHost() {
 	m._ProvisionedHostToHost = nil
 	m.cleared_ProvisionedHostToHost = false
-	m.removed_ProvisionedHostToHost = nil
+}
+
+// SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToEndStepPlanID(id int) {
+	m._ProvisionedHostToEndStepPlan = &id
+}
+
+// ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToEndStepPlan() {
+	m.cleared_ProvisionedHostToEndStepPlan = true
+}
+
+// ProvisionedHostToEndStepPlanCleared returns if the "ProvisionedHostToEndStepPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanCleared() bool {
+	return m.cleared_ProvisionedHostToEndStepPlan
+}
+
+// ProvisionedHostToEndStepPlanID returns the "ProvisionedHostToEndStepPlan" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanID() (id int, exists bool) {
+	if m._ProvisionedHostToEndStepPlan != nil {
+		return *m._ProvisionedHostToEndStepPlan, true
+	}
+	return
+}
+
+// ProvisionedHostToEndStepPlanIDs returns the "ProvisionedHostToEndStepPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToEndStepPlanID instead. It exists only for internal usage by the builders.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanIDs() (ids []int) {
+	if id := m._ProvisionedHostToEndStepPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisionedHostToEndStepPlan resets all changes to the "ProvisionedHostToEndStepPlan" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToEndStepPlan() {
+	m._ProvisionedHostToEndStepPlan = nil
+	m.cleared_ProvisionedHostToEndStepPlan = false
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by ids.
@@ -17029,6 +18160,98 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
 	m._ProvisionedHostToAgentStatus = nil
 	m.cleared_ProvisionedHostToAgentStatus = false
 	m.removed_ProvisionedHostToAgentStatus = nil
+}
+
+// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToPlanIDs(ids ...int) {
+	if m._ProvisionedHostToPlan == nil {
+		m._ProvisionedHostToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedHostToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToPlan() {
+	m.cleared_ProvisionedHostToPlan = true
+}
+
+// ProvisionedHostToPlanCleared returns if the "ProvisionedHostToPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanCleared() bool {
+	return m.cleared_ProvisionedHostToPlan
+}
+
+// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToPlanIDs(ids ...int) {
+	if m.removed_ProvisionedHostToPlan == nil {
+		m.removed_ProvisionedHostToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedHostToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedHostToPlan returns the removed IDs of the "ProvisionedHostToPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToPlanIDs() (ids []int) {
+	for id := range m.removed_ProvisionedHostToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedHostToPlanIDs returns the "ProvisionedHostToPlan" edge IDs in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []int) {
+	for id := range m._ProvisionedHostToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedHostToPlan resets all changes to the "ProvisionedHostToPlan" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToPlan() {
+	m._ProvisionedHostToPlan = nil
+	m.cleared_ProvisionedHostToPlan = false
+	m.removed_ProvisionedHostToPlan = nil
+}
+
+// SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToGinFileMiddlewareID(id int) {
+	m._ProvisionedHostToGinFileMiddleware = &id
+}
+
+// ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToGinFileMiddleware() {
+	m.cleared_ProvisionedHostToGinFileMiddleware = true
+}
+
+// ProvisionedHostToGinFileMiddlewareCleared returns if the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareCleared() bool {
+	return m.cleared_ProvisionedHostToGinFileMiddleware
+}
+
+// ProvisionedHostToGinFileMiddlewareID returns the "ProvisionedHostToGinFileMiddleware" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareID() (id int, exists bool) {
+	if m._ProvisionedHostToGinFileMiddleware != nil {
+		return *m._ProvisionedHostToGinFileMiddleware, true
+	}
+	return
+}
+
+// ProvisionedHostToGinFileMiddlewareIDs returns the "ProvisionedHostToGinFileMiddleware" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareIDs() (ids []int) {
+	if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisionedHostToGinFileMiddleware resets all changes to the "ProvisionedHostToGinFileMiddleware" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToGinFileMiddleware() {
+	m._ProvisionedHostToGinFileMiddleware = nil
+	m.cleared_ProvisionedHostToGinFileMiddleware = false
 }
 
 // Op returns the operation name.
@@ -17144,10 +18367,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m._ProvisionedHostToTag != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
+	edges := make([]string, 0, 8)
 	if m._ProvisionedHostToStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -17157,11 +18377,20 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	if m._ProvisionedHostToHost != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
 	}
+	if m._ProvisionedHostToEndStepPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToEndStepPlan)
+	}
 	if m._ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
 	if m._ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m._ProvisionedHostToPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
+	}
+	if m._ProvisionedHostToGinFileMiddleware != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToGinFileMiddleware)
 	}
 	return edges
 }
@@ -17170,30 +18399,22 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToTag))
-		for id := range m._ProvisionedHostToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToStatus:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToStatus))
-		for id := range m._ProvisionedHostToStatus {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisionedNetwork))
-		for id := range m._ProvisionedHostToProvisionedNetwork {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToProvisionedNetwork; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToHost:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToHost))
-		for id := range m._ProvisionedHostToHost {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		if id := m._ProvisionedHostToEndStepPlan; id != nil {
+			return []ent.Value{*id}
+		}
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisioningStep))
 		for id := range m._ProvisionedHostToProvisioningStep {
@@ -17206,30 +18427,31 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToPlan))
+		for id := range m._ProvisionedHostToPlan {
+			ids = append(ids, id)
+		}
+		return ids
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.removed_ProvisionedHostToTag != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
-	if m.removed_ProvisionedHostToStatus != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
-	}
-	if m.removed_ProvisionedHostToProvisionedNetwork != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisionedNetwork)
-	}
-	if m.removed_ProvisionedHostToHost != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
-	}
+	edges := make([]string, 0, 8)
 	if m.removed_ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
 	if m.removed_ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.removed_ProvisionedHostToPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
 	}
 	return edges
 }
@@ -17238,30 +18460,6 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToTag))
-		for id := range m.removed_ProvisionedHostToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToStatus:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToStatus))
-		for id := range m.removed_ProvisionedHostToStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisionedNetwork))
-		for id := range m.removed_ProvisionedHostToProvisionedNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToHost:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToHost))
-		for id := range m.removed_ProvisionedHostToHost {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToProvisioningStep))
 		for id := range m.removed_ProvisionedHostToProvisioningStep {
@@ -17274,16 +18472,19 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToPlan))
+		for id := range m.removed_ProvisionedHostToPlan {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.cleared_ProvisionedHostToTag {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToTag)
-	}
+	edges := make([]string, 0, 8)
 	if m.cleared_ProvisionedHostToStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -17293,11 +18494,20 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	if m.cleared_ProvisionedHostToHost {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
 	}
+	if m.cleared_ProvisionedHostToEndStepPlan {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToEndStepPlan)
+	}
 	if m.cleared_ProvisionedHostToProvisioningStep {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
 	if m.cleared_ProvisionedHostToAgentStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.cleared_ProvisionedHostToPlan {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
+	}
+	if m.cleared_ProvisionedHostToGinFileMiddleware {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToGinFileMiddleware)
 	}
 	return edges
 }
@@ -17306,18 +18516,22 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		return m.cleared_ProvisionedHostToTag
 	case provisionedhost.EdgeProvisionedHostToStatus:
 		return m.cleared_ProvisionedHostToStatus
 	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
 		return m.cleared_ProvisionedHostToProvisionedNetwork
 	case provisionedhost.EdgeProvisionedHostToHost:
 		return m.cleared_ProvisionedHostToHost
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		return m.cleared_ProvisionedHostToEndStepPlan
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		return m.cleared_ProvisionedHostToProvisioningStep
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		return m.cleared_ProvisionedHostToAgentStatus
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		return m.cleared_ProvisionedHostToPlan
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		return m.cleared_ProvisionedHostToGinFileMiddleware
 	}
 	return false
 }
@@ -17326,6 +18540,21 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 	switch name {
+	case provisionedhost.EdgeProvisionedHostToStatus:
+		m.ClearProvisionedHostToStatus()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToProvisionedNetwork:
+		m.ClearProvisionedHostToProvisionedNetwork()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToHost:
+		m.ClearProvisionedHostToHost()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		m.ClearProvisionedHostToEndStepPlan()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		m.ClearProvisionedHostToGinFileMiddleware()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost unique edge %s", name)
 }
@@ -17334,9 +18563,6 @@ func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionedhost.EdgeProvisionedHostToTag:
-		m.ResetProvisionedHostToTag()
-		return nil
 	case provisionedhost.EdgeProvisionedHostToStatus:
 		m.ResetProvisionedHostToStatus()
 		return nil
@@ -17346,11 +18572,20 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 	case provisionedhost.EdgeProvisionedHostToHost:
 		m.ResetProvisionedHostToHost()
 		return nil
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		m.ResetProvisionedHostToEndStepPlan()
+		return nil
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		m.ResetProvisionedHostToProvisioningStep()
 		return nil
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		m.ResetProvisionedHostToAgentStatus()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		m.ResetProvisionedHostToPlan()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
+		m.ResetProvisionedHostToGinFileMiddleware()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost edge %s", name)
@@ -17365,24 +18600,19 @@ type ProvisionedNetworkMutation struct {
 	name                                        *string
 	cidr                                        *string
 	clearedFields                               map[string]struct{}
-	_ProvisionedNetworkToTag                    map[int]struct{}
-	removed_ProvisionedNetworkToTag             map[int]struct{}
-	cleared_ProvisionedNetworkToTag             bool
-	_ProvisionedNetworkToStatus                 map[int]struct{}
-	removed_ProvisionedNetworkToStatus          map[int]struct{}
+	_ProvisionedNetworkToStatus                 *int
 	cleared_ProvisionedNetworkToStatus          bool
-	_ProvisionedNetworkToNetwork                map[int]struct{}
-	removed_ProvisionedNetworkToNetwork         map[int]struct{}
+	_ProvisionedNetworkToNetwork                *int
 	cleared_ProvisionedNetworkToNetwork         bool
-	_ProvisionedNetworkToBuild                  map[int]struct{}
-	removed_ProvisionedNetworkToBuild           map[int]struct{}
+	_ProvisionedNetworkToBuild                  *int
 	cleared_ProvisionedNetworkToBuild           bool
-	_ProvisionedNetworkToTeam                   map[int]struct{}
-	removed_ProvisionedNetworkToTeam            map[int]struct{}
+	_ProvisionedNetworkToTeam                   *int
 	cleared_ProvisionedNetworkToTeam            bool
 	_ProvisionedNetworkToProvisionedHost        map[int]struct{}
 	removed_ProvisionedNetworkToProvisionedHost map[int]struct{}
 	cleared_ProvisionedNetworkToProvisionedHost bool
+	_ProvisionedNetworkToPlan                   *int
+	cleared_ProvisionedNetworkToPlan            bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedNetwork, error)
 	predicates                                  []predicate.ProvisionedNetwork
@@ -17539,67 +18769,9 @@ func (m *ProvisionedNetworkMutation) ResetCidr() {
 	m.cidr = nil
 }
 
-// AddProvisionedNetworkToTagIDs adds the "ProvisionedNetworkToTag" edge to the Tag entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToTagIDs(ids ...int) {
-	if m._ProvisionedNetworkToTag == nil {
-		m._ProvisionedNetworkToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProvisionedNetworkToTag clears the "ProvisionedNetworkToTag" edge to the Tag entity.
-func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToTag() {
-	m.cleared_ProvisionedNetworkToTag = true
-}
-
-// ProvisionedNetworkToTagCleared returns if the "ProvisionedNetworkToTag" edge to the Tag entity was cleared.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTagCleared() bool {
-	return m.cleared_ProvisionedNetworkToTag
-}
-
-// RemoveProvisionedNetworkToTagIDs removes the "ProvisionedNetworkToTag" edge to the Tag entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToTagIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToTag == nil {
-		m.removed_ProvisionedNetworkToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToTag returns the removed IDs of the "ProvisionedNetworkToTag" edge to the Tag entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToTagIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisionedNetworkToTagIDs returns the "ProvisionedNetworkToTag" edge IDs in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTagIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisionedNetworkToTag resets all changes to the "ProvisionedNetworkToTag" edge.
-func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToTag() {
-	m._ProvisionedNetworkToTag = nil
-	m.cleared_ProvisionedNetworkToTag = false
-	m.removed_ProvisionedNetworkToTag = nil
-}
-
-// AddProvisionedNetworkToStatuIDs adds the "ProvisionedNetworkToStatus" edge to the Status entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToStatuIDs(ids ...int) {
-	if m._ProvisionedNetworkToStatus == nil {
-		m._ProvisionedNetworkToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToStatus[ids[i]] = struct{}{}
-	}
+// SetProvisionedNetworkToStatusID sets the "ProvisionedNetworkToStatus" edge to the Status entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToStatusID(id int) {
+	m._ProvisionedNetworkToStatus = &id
 }
 
 // ClearProvisionedNetworkToStatus clears the "ProvisionedNetworkToStatus" edge to the Status entity.
@@ -17612,28 +18784,20 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusCleared() bool {
 	return m.cleared_ProvisionedNetworkToStatus
 }
 
-// RemoveProvisionedNetworkToStatuIDs removes the "ProvisionedNetworkToStatus" edge to the Status entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToStatuIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToStatus == nil {
-		m.removed_ProvisionedNetworkToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToStatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToStatus returns the removed IDs of the "ProvisionedNetworkToStatus" edge to the Status entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToStatusIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToStatus {
-		ids = append(ids, id)
+// ProvisionedNetworkToStatusID returns the "ProvisionedNetworkToStatus" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusID() (id int, exists bool) {
+	if m._ProvisionedNetworkToStatus != nil {
+		return *m._ProvisionedNetworkToStatus, true
 	}
 	return
 }
 
 // ProvisionedNetworkToStatusIDs returns the "ProvisionedNetworkToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToStatusID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToStatus {
-		ids = append(ids, id)
+	if id := m._ProvisionedNetworkToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -17642,17 +18806,11 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusIDs() (ids []int)
 func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToStatus() {
 	m._ProvisionedNetworkToStatus = nil
 	m.cleared_ProvisionedNetworkToStatus = false
-	m.removed_ProvisionedNetworkToStatus = nil
 }
 
-// AddProvisionedNetworkToNetworkIDs adds the "ProvisionedNetworkToNetwork" edge to the Network entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToNetworkIDs(ids ...int) {
-	if m._ProvisionedNetworkToNetwork == nil {
-		m._ProvisionedNetworkToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToNetwork[ids[i]] = struct{}{}
-	}
+// SetProvisionedNetworkToNetworkID sets the "ProvisionedNetworkToNetwork" edge to the Network entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToNetworkID(id int) {
+	m._ProvisionedNetworkToNetwork = &id
 }
 
 // ClearProvisionedNetworkToNetwork clears the "ProvisionedNetworkToNetwork" edge to the Network entity.
@@ -17665,28 +18823,20 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkCleared() bool {
 	return m.cleared_ProvisionedNetworkToNetwork
 }
 
-// RemoveProvisionedNetworkToNetworkIDs removes the "ProvisionedNetworkToNetwork" edge to the Network entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToNetworkIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToNetwork == nil {
-		m.removed_ProvisionedNetworkToNetwork = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToNetwork[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToNetwork returns the removed IDs of the "ProvisionedNetworkToNetwork" edge to the Network entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToNetworkIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToNetwork {
-		ids = append(ids, id)
+// ProvisionedNetworkToNetworkID returns the "ProvisionedNetworkToNetwork" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkID() (id int, exists bool) {
+	if m._ProvisionedNetworkToNetwork != nil {
+		return *m._ProvisionedNetworkToNetwork, true
 	}
 	return
 }
 
 // ProvisionedNetworkToNetworkIDs returns the "ProvisionedNetworkToNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToNetworkID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToNetwork {
-		ids = append(ids, id)
+	if id := m._ProvisionedNetworkToNetwork; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -17695,17 +18845,11 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkIDs() (ids []int
 func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToNetwork() {
 	m._ProvisionedNetworkToNetwork = nil
 	m.cleared_ProvisionedNetworkToNetwork = false
-	m.removed_ProvisionedNetworkToNetwork = nil
 }
 
-// AddProvisionedNetworkToBuildIDs adds the "ProvisionedNetworkToBuild" edge to the Build entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToBuildIDs(ids ...int) {
-	if m._ProvisionedNetworkToBuild == nil {
-		m._ProvisionedNetworkToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToBuild[ids[i]] = struct{}{}
-	}
+// SetProvisionedNetworkToBuildID sets the "ProvisionedNetworkToBuild" edge to the Build entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToBuildID(id int) {
+	m._ProvisionedNetworkToBuild = &id
 }
 
 // ClearProvisionedNetworkToBuild clears the "ProvisionedNetworkToBuild" edge to the Build entity.
@@ -17718,28 +18862,20 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildCleared() bool {
 	return m.cleared_ProvisionedNetworkToBuild
 }
 
-// RemoveProvisionedNetworkToBuildIDs removes the "ProvisionedNetworkToBuild" edge to the Build entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToBuildIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToBuild == nil {
-		m.removed_ProvisionedNetworkToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToBuild[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToBuild returns the removed IDs of the "ProvisionedNetworkToBuild" edge to the Build entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToBuildIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToBuild {
-		ids = append(ids, id)
+// ProvisionedNetworkToBuildID returns the "ProvisionedNetworkToBuild" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildID() (id int, exists bool) {
+	if m._ProvisionedNetworkToBuild != nil {
+		return *m._ProvisionedNetworkToBuild, true
 	}
 	return
 }
 
 // ProvisionedNetworkToBuildIDs returns the "ProvisionedNetworkToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToBuildID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToBuild {
-		ids = append(ids, id)
+	if id := m._ProvisionedNetworkToBuild; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -17748,17 +18884,11 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildIDs() (ids []int) 
 func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToBuild() {
 	m._ProvisionedNetworkToBuild = nil
 	m.cleared_ProvisionedNetworkToBuild = false
-	m.removed_ProvisionedNetworkToBuild = nil
 }
 
-// AddProvisionedNetworkToTeamIDs adds the "ProvisionedNetworkToTeam" edge to the Team entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToTeamIDs(ids ...int) {
-	if m._ProvisionedNetworkToTeam == nil {
-		m._ProvisionedNetworkToTeam = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedNetworkToTeam[ids[i]] = struct{}{}
-	}
+// SetProvisionedNetworkToTeamID sets the "ProvisionedNetworkToTeam" edge to the Team entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToTeamID(id int) {
+	m._ProvisionedNetworkToTeam = &id
 }
 
 // ClearProvisionedNetworkToTeam clears the "ProvisionedNetworkToTeam" edge to the Team entity.
@@ -17771,28 +18901,20 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamCleared() bool {
 	return m.cleared_ProvisionedNetworkToTeam
 }
 
-// RemoveProvisionedNetworkToTeamIDs removes the "ProvisionedNetworkToTeam" edge to the Team entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToTeamIDs(ids ...int) {
-	if m.removed_ProvisionedNetworkToTeam == nil {
-		m.removed_ProvisionedNetworkToTeam = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedNetworkToTeam[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedNetworkToTeam returns the removed IDs of the "ProvisionedNetworkToTeam" edge to the Team entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToTeamIDs() (ids []int) {
-	for id := range m.removed_ProvisionedNetworkToTeam {
-		ids = append(ids, id)
+// ProvisionedNetworkToTeamID returns the "ProvisionedNetworkToTeam" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamID() (id int, exists bool) {
+	if m._ProvisionedNetworkToTeam != nil {
+		return *m._ProvisionedNetworkToTeam, true
 	}
 	return
 }
 
 // ProvisionedNetworkToTeamIDs returns the "ProvisionedNetworkToTeam" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToTeamID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamIDs() (ids []int) {
-	for id := range m._ProvisionedNetworkToTeam {
-		ids = append(ids, id)
+	if id := m._ProvisionedNetworkToTeam; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -17801,7 +18923,6 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamIDs() (ids []int) {
 func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToTeam() {
 	m._ProvisionedNetworkToTeam = nil
 	m.cleared_ProvisionedNetworkToTeam = false
-	m.removed_ProvisionedNetworkToTeam = nil
 }
 
 // AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by ids.
@@ -17855,6 +18976,45 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToProvisionedHost() 
 	m._ProvisionedNetworkToProvisionedHost = nil
 	m.cleared_ProvisionedNetworkToProvisionedHost = false
 	m.removed_ProvisionedNetworkToProvisionedHost = nil
+}
+
+// SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by id.
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToPlanID(id int) {
+	m._ProvisionedNetworkToPlan = &id
+}
+
+// ClearProvisionedNetworkToPlan clears the "ProvisionedNetworkToPlan" edge to the Plan entity.
+func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToPlan() {
+	m.cleared_ProvisionedNetworkToPlan = true
+}
+
+// ProvisionedNetworkToPlanCleared returns if the "ProvisionedNetworkToPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanCleared() bool {
+	return m.cleared_ProvisionedNetworkToPlan
+}
+
+// ProvisionedNetworkToPlanID returns the "ProvisionedNetworkToPlan" edge ID in the mutation.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanID() (id int, exists bool) {
+	if m._ProvisionedNetworkToPlan != nil {
+		return *m._ProvisionedNetworkToPlan, true
+	}
+	return
+}
+
+// ProvisionedNetworkToPlanIDs returns the "ProvisionedNetworkToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedNetworkToPlanID instead. It exists only for internal usage by the builders.
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []int) {
+	if id := m._ProvisionedNetworkToPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisionedNetworkToPlan resets all changes to the "ProvisionedNetworkToPlan" edge.
+func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToPlan() {
+	m._ProvisionedNetworkToPlan = nil
+	m.cleared_ProvisionedNetworkToPlan = false
 }
 
 // Op returns the operation name.
@@ -17988,9 +19148,6 @@ func (m *ProvisionedNetworkMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 	edges := make([]string, 0, 6)
-	if m._ProvisionedNetworkToTag != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
-	}
 	if m._ProvisionedNetworkToStatus != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
 	}
@@ -18006,6 +19163,9 @@ func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 	if m._ProvisionedNetworkToProvisionedHost != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
+	if m._ProvisionedNetworkToPlan != nil {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
+	}
 	return edges
 }
 
@@ -18013,42 +19173,32 @@ func (m *ProvisionedNetworkMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeProvisionedNetworkToTag:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToTag))
-		for id := range m._ProvisionedNetworkToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToStatus:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToStatus))
-		for id := range m._ProvisionedNetworkToStatus {
-			ids = append(ids, id)
+		if id := m._ProvisionedNetworkToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToNetwork))
-		for id := range m._ProvisionedNetworkToNetwork {
-			ids = append(ids, id)
+		if id := m._ProvisionedNetworkToNetwork; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToBuild:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToBuild))
-		for id := range m._ProvisionedNetworkToBuild {
-			ids = append(ids, id)
+		if id := m._ProvisionedNetworkToBuild; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToTeam:
-		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToTeam))
-		for id := range m._ProvisionedNetworkToTeam {
-			ids = append(ids, id)
+		if id := m._ProvisionedNetworkToTeam; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		ids := make([]ent.Value, 0, len(m._ProvisionedNetworkToProvisionedHost))
 		for id := range m._ProvisionedNetworkToProvisionedHost {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		if id := m._ProvisionedNetworkToPlan; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
@@ -18056,21 +19206,6 @@ func (m *ProvisionedNetworkMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 6)
-	if m.removed_ProvisionedNetworkToTag != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
-	}
-	if m.removed_ProvisionedNetworkToStatus != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
-	}
-	if m.removed_ProvisionedNetworkToNetwork != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToNetwork)
-	}
-	if m.removed_ProvisionedNetworkToBuild != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToBuild)
-	}
-	if m.removed_ProvisionedNetworkToTeam != nil {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTeam)
-	}
 	if m.removed_ProvisionedNetworkToProvisionedHost != nil {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
@@ -18081,36 +19216,6 @@ func (m *ProvisionedNetworkMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisionednetwork.EdgeProvisionedNetworkToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToTag))
-		for id := range m.removed_ProvisionedNetworkToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionednetwork.EdgeProvisionedNetworkToStatus:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToStatus))
-		for id := range m.removed_ProvisionedNetworkToStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToNetwork))
-		for id := range m.removed_ProvisionedNetworkToNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionednetwork.EdgeProvisionedNetworkToBuild:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToBuild))
-		for id := range m.removed_ProvisionedNetworkToBuild {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionednetwork.EdgeProvisionedNetworkToTeam:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToTeam))
-		for id := range m.removed_ProvisionedNetworkToTeam {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.removed_ProvisionedNetworkToProvisionedHost))
 		for id := range m.removed_ProvisionedNetworkToProvisionedHost {
@@ -18124,9 +19229,6 @@ func (m *ProvisionedNetworkMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 6)
-	if m.cleared_ProvisionedNetworkToTag {
-		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToTag)
-	}
 	if m.cleared_ProvisionedNetworkToStatus {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToStatus)
 	}
@@ -18142,6 +19244,9 @@ func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 	if m.cleared_ProvisionedNetworkToProvisionedHost {
 		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToProvisionedHost)
 	}
+	if m.cleared_ProvisionedNetworkToPlan {
+		edges = append(edges, provisionednetwork.EdgeProvisionedNetworkToPlan)
+	}
 	return edges
 }
 
@@ -18149,8 +19254,6 @@ func (m *ProvisionedNetworkMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisionednetwork.EdgeProvisionedNetworkToTag:
-		return m.cleared_ProvisionedNetworkToTag
 	case provisionednetwork.EdgeProvisionedNetworkToStatus:
 		return m.cleared_ProvisionedNetworkToStatus
 	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
@@ -18161,6 +19264,8 @@ func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedNetworkToTeam
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		return m.cleared_ProvisionedNetworkToProvisionedHost
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		return m.cleared_ProvisionedNetworkToPlan
 	}
 	return false
 }
@@ -18169,6 +19274,21 @@ func (m *ProvisionedNetworkMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisionedNetworkMutation) ClearEdge(name string) error {
 	switch name {
+	case provisionednetwork.EdgeProvisionedNetworkToStatus:
+		m.ClearProvisionedNetworkToStatus()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToNetwork:
+		m.ClearProvisionedNetworkToNetwork()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToBuild:
+		m.ClearProvisionedNetworkToBuild()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToTeam:
+		m.ClearProvisionedNetworkToTeam()
+		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		m.ClearProvisionedNetworkToPlan()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork unique edge %s", name)
 }
@@ -18177,9 +19297,6 @@ func (m *ProvisionedNetworkMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case provisionednetwork.EdgeProvisionedNetworkToTag:
-		m.ResetProvisionedNetworkToTag()
-		return nil
 	case provisionednetwork.EdgeProvisionedNetworkToStatus:
 		m.ResetProvisionedNetworkToStatus()
 		return nil
@@ -18195,6 +19312,9 @@ func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 	case provisionednetwork.EdgeProvisionedNetworkToProvisionedHost:
 		m.ResetProvisionedNetworkToProvisionedHost()
 		return nil
+	case provisionednetwork.EdgeProvisionedNetworkToPlan:
+		m.ResetProvisionedNetworkToPlan()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedNetwork edge %s", name)
 }
@@ -18202,43 +19322,36 @@ func (m *ProvisionedNetworkMutation) ResetEdge(name string) error {
 // ProvisioningStepMutation represents an operation that mutates the ProvisioningStep nodes in the graph.
 type ProvisioningStepMutation struct {
 	config
-	op                                        Op
-	typ                                       string
-	id                                        *int
-	provisioner_type                          *string
-	step_number                               *int
-	addstep_number                            *int
-	clearedFields                             map[string]struct{}
-	_ProvisioningStepToTag                    map[int]struct{}
-	removed_ProvisioningStepToTag             map[int]struct{}
-	cleared_ProvisioningStepToTag             bool
-	_ProvisioningStepToStatus                 map[int]struct{}
-	removed_ProvisioningStepToStatus          map[int]struct{}
-	cleared_ProvisioningStepToStatus          bool
-	_ProvisioningStepToProvisionedHost        map[int]struct{}
-	removed_ProvisioningStepToProvisionedHost map[int]struct{}
-	cleared_ProvisioningStepToProvisionedHost bool
-	_ProvisioningStepToScript                 map[int]struct{}
-	removed_ProvisioningStepToScript          map[int]struct{}
-	cleared_ProvisioningStepToScript          bool
-	_ProvisioningStepToCommand                map[int]struct{}
-	removed_ProvisioningStepToCommand         map[int]struct{}
-	cleared_ProvisioningStepToCommand         bool
-	_ProvisioningStepToDNSRecord              map[int]struct{}
-	removed_ProvisioningStepToDNSRecord       map[int]struct{}
-	cleared_ProvisioningStepToDNSRecord       bool
-	_ProvisioningStepToFileDelete             map[int]struct{}
-	removed_ProvisioningStepToFileDelete      map[int]struct{}
-	cleared_ProvisioningStepToFileDelete      bool
-	_ProvisioningStepToFileDownload           map[int]struct{}
-	removed_ProvisioningStepToFileDownload    map[int]struct{}
-	cleared_ProvisioningStepToFileDownload    bool
-	_ProvisioningStepToFileExtract            map[int]struct{}
-	removed_ProvisioningStepToFileExtract     map[int]struct{}
-	cleared_ProvisioningStepToFileExtract     bool
-	done                                      bool
-	oldValue                                  func(context.Context) (*ProvisioningStep, error)
-	predicates                                []predicate.ProvisioningStep
+	op                                          Op
+	typ                                         string
+	id                                          *int
+	_type                                       *provisioningstep.Type
+	step_number                                 *int
+	addstep_number                              *int
+	clearedFields                               map[string]struct{}
+	_ProvisioningStepToStatus                   *int
+	cleared_ProvisioningStepToStatus            bool
+	_ProvisioningStepToProvisionedHost          *int
+	cleared_ProvisioningStepToProvisionedHost   bool
+	_ProvisioningStepToScript                   *int
+	cleared_ProvisioningStepToScript            bool
+	_ProvisioningStepToCommand                  *int
+	cleared_ProvisioningStepToCommand           bool
+	_ProvisioningStepToDNSRecord                *int
+	cleared_ProvisioningStepToDNSRecord         bool
+	_ProvisioningStepToFileDelete               *int
+	cleared_ProvisioningStepToFileDelete        bool
+	_ProvisioningStepToFileDownload             *int
+	cleared_ProvisioningStepToFileDownload      bool
+	_ProvisioningStepToFileExtract              *int
+	cleared_ProvisioningStepToFileExtract       bool
+	_ProvisioningStepToPlan                     *int
+	cleared_ProvisioningStepToPlan              bool
+	_ProvisioningStepToGinFileMiddleware        *int
+	cleared_ProvisioningStepToGinFileMiddleware bool
+	done                                        bool
+	oldValue                                    func(context.Context) (*ProvisioningStep, error)
+	predicates                                  []predicate.ProvisioningStep
 }
 
 var _ ent.Mutation = (*ProvisioningStepMutation)(nil)
@@ -18320,40 +19433,40 @@ func (m *ProvisioningStepMutation) ID() (id int, exists bool) {
 	return *m.id, true
 }
 
-// SetProvisionerType sets the "provisioner_type" field.
-func (m *ProvisioningStepMutation) SetProvisionerType(s string) {
-	m.provisioner_type = &s
+// SetType sets the "type" field.
+func (m *ProvisioningStepMutation) SetType(pr provisioningstep.Type) {
+	m._type = &pr
 }
 
-// ProvisionerType returns the value of the "provisioner_type" field in the mutation.
-func (m *ProvisioningStepMutation) ProvisionerType() (r string, exists bool) {
-	v := m.provisioner_type
+// GetType returns the value of the "type" field in the mutation.
+func (m *ProvisioningStepMutation) GetType() (r provisioningstep.Type, exists bool) {
+	v := m._type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProvisionerType returns the old "provisioner_type" field's value of the ProvisioningStep entity.
+// OldType returns the old "type" field's value of the ProvisioningStep entity.
 // If the ProvisioningStep object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProvisioningStepMutation) OldProvisionerType(ctx context.Context) (v string, err error) {
+func (m *ProvisioningStepMutation) OldType(ctx context.Context) (v provisioningstep.Type, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldProvisionerType is only allowed on UpdateOne operations")
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldProvisionerType requires an ID field in the mutation")
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvisionerType: %w", err)
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
 	}
-	return oldValue.ProvisionerType, nil
+	return oldValue.Type, nil
 }
 
-// ResetProvisionerType resets all changes to the "provisioner_type" field.
-func (m *ProvisioningStepMutation) ResetProvisionerType() {
-	m.provisioner_type = nil
+// ResetType resets all changes to the "type" field.
+func (m *ProvisioningStepMutation) ResetType() {
+	m._type = nil
 }
 
 // SetStepNumber sets the "step_number" field.
@@ -18412,67 +19525,9 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 	m.addstep_number = nil
 }
 
-// AddProvisioningStepToTagIDs adds the "ProvisioningStepToTag" edge to the Tag entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToTagIDs(ids ...int) {
-	if m._ProvisioningStepToTag == nil {
-		m._ProvisioningStepToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProvisioningStepToTag clears the "ProvisioningStepToTag" edge to the Tag entity.
-func (m *ProvisioningStepMutation) ClearProvisioningStepToTag() {
-	m.cleared_ProvisioningStepToTag = true
-}
-
-// ProvisioningStepToTagCleared returns if the "ProvisioningStepToTag" edge to the Tag entity was cleared.
-func (m *ProvisioningStepMutation) ProvisioningStepToTagCleared() bool {
-	return m.cleared_ProvisioningStepToTag
-}
-
-// RemoveProvisioningStepToTagIDs removes the "ProvisioningStepToTag" edge to the Tag entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToTagIDs(ids ...int) {
-	if m.removed_ProvisioningStepToTag == nil {
-		m.removed_ProvisioningStepToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToTag returns the removed IDs of the "ProvisioningStepToTag" edge to the Tag entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToTagIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisioningStepToTagIDs returns the "ProvisioningStepToTag" edge IDs in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToTagIDs() (ids []int) {
-	for id := range m._ProvisioningStepToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisioningStepToTag resets all changes to the "ProvisioningStepToTag" edge.
-func (m *ProvisioningStepMutation) ResetProvisioningStepToTag() {
-	m._ProvisioningStepToTag = nil
-	m.cleared_ProvisioningStepToTag = false
-	m.removed_ProvisioningStepToTag = nil
-}
-
-// AddProvisioningStepToStatuIDs adds the "ProvisioningStepToStatus" edge to the Status entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToStatuIDs(ids ...int) {
-	if m._ProvisioningStepToStatus == nil {
-		m._ProvisioningStepToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToStatus[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToStatusID(id int) {
+	m._ProvisioningStepToStatus = &id
 }
 
 // ClearProvisioningStepToStatus clears the "ProvisioningStepToStatus" edge to the Status entity.
@@ -18485,28 +19540,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusCleared() bool {
 	return m.cleared_ProvisioningStepToStatus
 }
 
-// RemoveProvisioningStepToStatuIDs removes the "ProvisioningStepToStatus" edge to the Status entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToStatuIDs(ids ...int) {
-	if m.removed_ProvisioningStepToStatus == nil {
-		m.removed_ProvisioningStepToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToStatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToStatus returns the removed IDs of the "ProvisioningStepToStatus" edge to the Status entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToStatusIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToStatus {
-		ids = append(ids, id)
+// ProvisioningStepToStatusID returns the "ProvisioningStepToStatus" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusID() (id int, exists bool) {
+	if m._ProvisioningStepToStatus != nil {
+		return *m._ProvisioningStepToStatus, true
 	}
 	return
 }
 
 // ProvisioningStepToStatusIDs returns the "ProvisioningStepToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToStatusID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
-	for id := range m._ProvisioningStepToStatus {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18515,17 +19562,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToStatus() {
 	m._ProvisioningStepToStatus = nil
 	m.cleared_ProvisioningStepToStatus = false
-	m.removed_ProvisioningStepToStatus = nil
 }
 
-// AddProvisioningStepToProvisionedHostIDs adds the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToProvisionedHostIDs(ids ...int) {
-	if m._ProvisioningStepToProvisionedHost == nil {
-		m._ProvisioningStepToProvisionedHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToProvisionedHostID(id int) {
+	m._ProvisioningStepToProvisionedHost = &id
 }
 
 // ClearProvisioningStepToProvisionedHost clears the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
@@ -18538,28 +19579,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostCleared() bo
 	return m.cleared_ProvisioningStepToProvisionedHost
 }
 
-// RemoveProvisioningStepToProvisionedHostIDs removes the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToProvisionedHostIDs(ids ...int) {
-	if m.removed_ProvisioningStepToProvisionedHost == nil {
-		m.removed_ProvisioningStepToProvisionedHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToProvisionedHost returns the removed IDs of the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToProvisionedHostIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToProvisionedHost {
-		ids = append(ids, id)
+// ProvisioningStepToProvisionedHostID returns the "ProvisioningStepToProvisionedHost" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostID() (id int, exists bool) {
+	if m._ProvisioningStepToProvisionedHost != nil {
+		return *m._ProvisioningStepToProvisionedHost, true
 	}
 	return
 }
 
 // ProvisioningStepToProvisionedHostIDs returns the "ProvisioningStepToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToProvisionedHostID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids []int) {
-	for id := range m._ProvisioningStepToProvisionedHost {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToProvisionedHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18568,17 +19601,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids [
 func (m *ProvisioningStepMutation) ResetProvisioningStepToProvisionedHost() {
 	m._ProvisioningStepToProvisionedHost = nil
 	m.cleared_ProvisioningStepToProvisionedHost = false
-	m.removed_ProvisioningStepToProvisionedHost = nil
 }
 
-// AddProvisioningStepToScriptIDs adds the "ProvisioningStepToScript" edge to the Script entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToScriptIDs(ids ...int) {
-	if m._ProvisioningStepToScript == nil {
-		m._ProvisioningStepToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToScript[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToScriptID(id int) {
+	m._ProvisioningStepToScript = &id
 }
 
 // ClearProvisioningStepToScript clears the "ProvisioningStepToScript" edge to the Script entity.
@@ -18591,28 +19618,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptCleared() bool {
 	return m.cleared_ProvisioningStepToScript
 }
 
-// RemoveProvisioningStepToScriptIDs removes the "ProvisioningStepToScript" edge to the Script entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToScriptIDs(ids ...int) {
-	if m.removed_ProvisioningStepToScript == nil {
-		m.removed_ProvisioningStepToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToScript[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToScript returns the removed IDs of the "ProvisioningStepToScript" edge to the Script entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToScriptIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToScript {
-		ids = append(ids, id)
+// ProvisioningStepToScriptID returns the "ProvisioningStepToScript" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptID() (id int, exists bool) {
+	if m._ProvisioningStepToScript != nil {
+		return *m._ProvisioningStepToScript, true
 	}
 	return
 }
 
 // ProvisioningStepToScriptIDs returns the "ProvisioningStepToScript" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToScriptID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
-	for id := range m._ProvisioningStepToScript {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToScript; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18621,17 +19640,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToScript() {
 	m._ProvisioningStepToScript = nil
 	m.cleared_ProvisioningStepToScript = false
-	m.removed_ProvisioningStepToScript = nil
 }
 
-// AddProvisioningStepToCommandIDs adds the "ProvisioningStepToCommand" edge to the Command entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToCommandIDs(ids ...int) {
-	if m._ProvisioningStepToCommand == nil {
-		m._ProvisioningStepToCommand = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToCommand[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToCommandID(id int) {
+	m._ProvisioningStepToCommand = &id
 }
 
 // ClearProvisioningStepToCommand clears the "ProvisioningStepToCommand" edge to the Command entity.
@@ -18644,28 +19657,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandCleared() bool {
 	return m.cleared_ProvisioningStepToCommand
 }
 
-// RemoveProvisioningStepToCommandIDs removes the "ProvisioningStepToCommand" edge to the Command entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToCommandIDs(ids ...int) {
-	if m.removed_ProvisioningStepToCommand == nil {
-		m.removed_ProvisioningStepToCommand = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToCommand[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToCommand returns the removed IDs of the "ProvisioningStepToCommand" edge to the Command entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToCommandIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToCommand {
-		ids = append(ids, id)
+// ProvisioningStepToCommandID returns the "ProvisioningStepToCommand" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandID() (id int, exists bool) {
+	if m._ProvisioningStepToCommand != nil {
+		return *m._ProvisioningStepToCommand, true
 	}
 	return
 }
 
 // ProvisioningStepToCommandIDs returns the "ProvisioningStepToCommand" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToCommandID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
-	for id := range m._ProvisioningStepToCommand {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToCommand; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18674,17 +19679,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToCommand() {
 	m._ProvisioningStepToCommand = nil
 	m.cleared_ProvisioningStepToCommand = false
-	m.removed_ProvisioningStepToCommand = nil
 }
 
-// AddProvisioningStepToDNSRecordIDs adds the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToDNSRecordIDs(ids ...int) {
-	if m._ProvisioningStepToDNSRecord == nil {
-		m._ProvisioningStepToDNSRecord = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToDNSRecordID(id int) {
+	m._ProvisioningStepToDNSRecord = &id
 }
 
 // ClearProvisioningStepToDNSRecord clears the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
@@ -18697,28 +19696,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordCleared() bool {
 	return m.cleared_ProvisioningStepToDNSRecord
 }
 
-// RemoveProvisioningStepToDNSRecordIDs removes the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToDNSRecordIDs(ids ...int) {
-	if m.removed_ProvisioningStepToDNSRecord == nil {
-		m.removed_ProvisioningStepToDNSRecord = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToDNSRecord returns the removed IDs of the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToDNSRecordIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToDNSRecord {
-		ids = append(ids, id)
+// ProvisioningStepToDNSRecordID returns the "ProvisioningStepToDNSRecord" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordID() (id int, exists bool) {
+	if m._ProvisioningStepToDNSRecord != nil {
+		return *m._ProvisioningStepToDNSRecord, true
 	}
 	return
 }
 
 // ProvisioningStepToDNSRecordIDs returns the "ProvisioningStepToDNSRecord" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToDNSRecordID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) {
-	for id := range m._ProvisioningStepToDNSRecord {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToDNSRecord; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18727,17 +19718,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) 
 func (m *ProvisioningStepMutation) ResetProvisioningStepToDNSRecord() {
 	m._ProvisioningStepToDNSRecord = nil
 	m.cleared_ProvisioningStepToDNSRecord = false
-	m.removed_ProvisioningStepToDNSRecord = nil
 }
 
-// AddProvisioningStepToFileDeleteIDs adds the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileDeleteIDs(ids ...int) {
-	if m._ProvisioningStepToFileDelete == nil {
-		m._ProvisioningStepToFileDelete = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileDelete[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDeleteID(id int) {
+	m._ProvisioningStepToFileDelete = &id
 }
 
 // ClearProvisioningStepToFileDelete clears the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
@@ -18750,28 +19735,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteCleared() bool {
 	return m.cleared_ProvisioningStepToFileDelete
 }
 
-// RemoveProvisioningStepToFileDeleteIDs removes the "ProvisioningStepToFileDelete" edge to the FileDelete entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDeleteIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileDelete == nil {
-		m.removed_ProvisioningStepToFileDelete = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileDelete[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileDelete returns the removed IDs of the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDeleteIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileDelete {
-		ids = append(ids, id)
+// ProvisioningStepToFileDeleteID returns the "ProvisioningStepToFileDelete" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteID() (id int, exists bool) {
+	if m._ProvisioningStepToFileDelete != nil {
+		return *m._ProvisioningStepToFileDelete, true
 	}
 	return
 }
 
 // ProvisioningStepToFileDeleteIDs returns the "ProvisioningStepToFileDelete" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileDeleteID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileDelete {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileDelete; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18780,17 +19757,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int)
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDelete() {
 	m._ProvisioningStepToFileDelete = nil
 	m.cleared_ProvisioningStepToFileDelete = false
-	m.removed_ProvisioningStepToFileDelete = nil
 }
 
-// AddProvisioningStepToFileDownloadIDs adds the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileDownloadIDs(ids ...int) {
-	if m._ProvisioningStepToFileDownload == nil {
-		m._ProvisioningStepToFileDownload = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileDownload[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDownloadID(id int) {
+	m._ProvisioningStepToFileDownload = &id
 }
 
 // ClearProvisioningStepToFileDownload clears the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
@@ -18803,28 +19774,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadCleared() bool 
 	return m.cleared_ProvisioningStepToFileDownload
 }
 
-// RemoveProvisioningStepToFileDownloadIDs removes the "ProvisioningStepToFileDownload" edge to the FileDownload entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDownloadIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileDownload == nil {
-		m.removed_ProvisioningStepToFileDownload = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileDownload[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileDownload returns the removed IDs of the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDownloadIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileDownload {
-		ids = append(ids, id)
+// ProvisioningStepToFileDownloadID returns the "ProvisioningStepToFileDownload" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadID() (id int, exists bool) {
+	if m._ProvisioningStepToFileDownload != nil {
+		return *m._ProvisioningStepToFileDownload, true
 	}
 	return
 }
 
 // ProvisioningStepToFileDownloadIDs returns the "ProvisioningStepToFileDownload" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileDownloadID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileDownload {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileDownload; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18833,17 +19796,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []in
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDownload() {
 	m._ProvisioningStepToFileDownload = nil
 	m.cleared_ProvisioningStepToFileDownload = false
-	m.removed_ProvisioningStepToFileDownload = nil
 }
 
-// AddProvisioningStepToFileExtractIDs adds the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileExtractIDs(ids ...int) {
-	if m._ProvisioningStepToFileExtract == nil {
-		m._ProvisioningStepToFileExtract = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileExtract[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileExtractID(id int) {
+	m._ProvisioningStepToFileExtract = &id
 }
 
 // ClearProvisioningStepToFileExtract clears the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
@@ -18856,28 +19813,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractCleared() bool {
 	return m.cleared_ProvisioningStepToFileExtract
 }
 
-// RemoveProvisioningStepToFileExtractIDs removes the "ProvisioningStepToFileExtract" edge to the FileExtract entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileExtractIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileExtract == nil {
-		m.removed_ProvisioningStepToFileExtract = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileExtract[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileExtract returns the removed IDs of the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileExtractIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileExtract {
-		ids = append(ids, id)
+// ProvisioningStepToFileExtractID returns the "ProvisioningStepToFileExtract" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractID() (id int, exists bool) {
+	if m._ProvisioningStepToFileExtract != nil {
+		return *m._ProvisioningStepToFileExtract, true
 	}
 	return
 }
 
 // ProvisioningStepToFileExtractIDs returns the "ProvisioningStepToFileExtract" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileExtractID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileExtract {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileExtract; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18886,7 +19835,84 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileExtract() {
 	m._ProvisioningStepToFileExtract = nil
 	m.cleared_ProvisioningStepToFileExtract = false
-	m.removed_ProvisioningStepToFileExtract = nil
+}
+
+// SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToPlanID(id int) {
+	m._ProvisioningStepToPlan = &id
+}
+
+// ClearProvisioningStepToPlan clears the "ProvisioningStepToPlan" edge to the Plan entity.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToPlan() {
+	m.cleared_ProvisioningStepToPlan = true
+}
+
+// ProvisioningStepToPlanCleared returns if the "ProvisioningStepToPlan" edge to the Plan entity was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanCleared() bool {
+	return m.cleared_ProvisioningStepToPlan
+}
+
+// ProvisioningStepToPlanID returns the "ProvisioningStepToPlan" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanID() (id int, exists bool) {
+	if m._ProvisioningStepToPlan != nil {
+		return *m._ProvisioningStepToPlan, true
+	}
+	return
+}
+
+// ProvisioningStepToPlanIDs returns the "ProvisioningStepToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToPlanID instead. It exists only for internal usage by the builders.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []int) {
+	if id := m._ProvisioningStepToPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisioningStepToPlan resets all changes to the "ProvisioningStepToPlan" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
+	m._ProvisioningStepToPlan = nil
+	m.cleared_ProvisioningStepToPlan = false
+}
+
+// SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToGinFileMiddlewareID(id int) {
+	m._ProvisioningStepToGinFileMiddleware = &id
+}
+
+// ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToGinFileMiddleware() {
+	m.cleared_ProvisioningStepToGinFileMiddleware = true
+}
+
+// ProvisioningStepToGinFileMiddlewareCleared returns if the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareCleared() bool {
+	return m.cleared_ProvisioningStepToGinFileMiddleware
+}
+
+// ProvisioningStepToGinFileMiddlewareID returns the "ProvisioningStepToGinFileMiddleware" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareID() (id int, exists bool) {
+	if m._ProvisioningStepToGinFileMiddleware != nil {
+		return *m._ProvisioningStepToGinFileMiddleware, true
+	}
+	return
+}
+
+// ProvisioningStepToGinFileMiddlewareIDs returns the "ProvisioningStepToGinFileMiddleware" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareIDs() (ids []int) {
+	if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisioningStepToGinFileMiddleware resets all changes to the "ProvisioningStepToGinFileMiddleware" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToGinFileMiddleware() {
+	m._ProvisioningStepToGinFileMiddleware = nil
+	m.cleared_ProvisioningStepToGinFileMiddleware = false
 }
 
 // Op returns the operation name.
@@ -18904,8 +19930,8 @@ func (m *ProvisioningStepMutation) Type() string {
 // AddedFields().
 func (m *ProvisioningStepMutation) Fields() []string {
 	fields := make([]string, 0, 2)
-	if m.provisioner_type != nil {
-		fields = append(fields, provisioningstep.FieldProvisionerType)
+	if m._type != nil {
+		fields = append(fields, provisioningstep.FieldType)
 	}
 	if m.step_number != nil {
 		fields = append(fields, provisioningstep.FieldStepNumber)
@@ -18918,8 +19944,8 @@ func (m *ProvisioningStepMutation) Fields() []string {
 // schema.
 func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		return m.ProvisionerType()
+	case provisioningstep.FieldType:
+		return m.GetType()
 	case provisioningstep.FieldStepNumber:
 		return m.StepNumber()
 	}
@@ -18931,8 +19957,8 @@ func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		return m.OldProvisionerType(ctx)
+	case provisioningstep.FieldType:
+		return m.OldType(ctx)
 	case provisioningstep.FieldStepNumber:
 		return m.OldStepNumber(ctx)
 	}
@@ -18944,12 +19970,12 @@ func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (e
 // type.
 func (m *ProvisioningStepMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		v, ok := value.(string)
+	case provisioningstep.FieldType:
+		v, ok := value.(provisioningstep.Type)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProvisionerType(v)
+		m.SetType(v)
 		return nil
 	case provisioningstep.FieldStepNumber:
 		v, ok := value.(int)
@@ -19022,8 +20048,8 @@ func (m *ProvisioningStepMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProvisioningStepMutation) ResetField(name string) error {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		m.ResetProvisionerType()
+	case provisioningstep.FieldType:
+		m.ResetType()
 		return nil
 	case provisioningstep.FieldStepNumber:
 		m.ResetStepNumber()
@@ -19034,10 +20060,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m._ProvisioningStepToTag != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
+	edges := make([]string, 0, 10)
 	if m._ProvisioningStepToStatus != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -19062,6 +20085,12 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	if m._ProvisioningStepToFileExtract != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
+	if m._ProvisioningStepToPlan != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
+	if m._ProvisioningStepToGinFileMiddleware != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
+	}
 	return edges
 }
 
@@ -19069,94 +20098,53 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToTag))
-		for id := range m._ProvisioningStepToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToStatus:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToStatus))
-		for id := range m._ProvisioningStepToStatus {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToProvisionedHost))
-		for id := range m._ProvisioningStepToProvisionedHost {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToProvisionedHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToScript:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToScript))
-		for id := range m._ProvisioningStepToScript {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToScript; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToCommand:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToCommand))
-		for id := range m._ProvisioningStepToCommand {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToCommand; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToDNSRecord:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToDNSRecord))
-		for id := range m._ProvisioningStepToDNSRecord {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToDNSRecord; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileDelete:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDelete))
-		for id := range m._ProvisioningStepToFileDelete {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileDelete; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileDownload:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDownload))
-		for id := range m._ProvisioningStepToFileDownload {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileDownload; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileExtract))
-		for id := range m._ProvisioningStepToFileExtract {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileExtract; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		if id := m._ProvisioningStepToPlan; id != nil {
+			return []ent.Value{*id}
+		}
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m.removed_ProvisioningStepToTag != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
-	if m.removed_ProvisioningStepToStatus != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
-	}
-	if m.removed_ProvisioningStepToProvisionedHost != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToProvisionedHost)
-	}
-	if m.removed_ProvisioningStepToScript != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToScript)
-	}
-	if m.removed_ProvisioningStepToCommand != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToCommand)
-	}
-	if m.removed_ProvisioningStepToDNSRecord != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
-	}
-	if m.removed_ProvisioningStepToFileDelete != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDelete)
-	}
-	if m.removed_ProvisioningStepToFileDownload != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDownload)
-	}
-	if m.removed_ProvisioningStepToFileExtract != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
-	}
+	edges := make([]string, 0, 10)
 	return edges
 }
 
@@ -19164,70 +20152,13 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToTag))
-		for id := range m.removed_ProvisioningStepToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToStatus:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToStatus))
-		for id := range m.removed_ProvisioningStepToStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToProvisionedHost))
-		for id := range m.removed_ProvisioningStepToProvisionedHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToScript:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToScript))
-		for id := range m.removed_ProvisioningStepToScript {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToCommand:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToCommand))
-		for id := range m.removed_ProvisioningStepToCommand {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToDNSRecord:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToDNSRecord))
-		for id := range m.removed_ProvisioningStepToDNSRecord {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileDelete:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDelete))
-		for id := range m.removed_ProvisioningStepToFileDelete {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileDownload:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDownload))
-		for id := range m.removed_ProvisioningStepToFileDownload {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileExtract:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileExtract))
-		for id := range m.removed_ProvisioningStepToFileExtract {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m.cleared_ProvisioningStepToTag {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
+	edges := make([]string, 0, 10)
 	if m.cleared_ProvisioningStepToStatus {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -19252,6 +20183,12 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	if m.cleared_ProvisioningStepToFileExtract {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
 	}
+	if m.cleared_ProvisioningStepToPlan {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
+	if m.cleared_ProvisioningStepToGinFileMiddleware {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
+	}
 	return edges
 }
 
@@ -19259,8 +20196,6 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		return m.cleared_ProvisioningStepToTag
 	case provisioningstep.EdgeProvisioningStepToStatus:
 		return m.cleared_ProvisioningStepToStatus
 	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
@@ -19277,6 +20212,10 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisioningStepToFileDownload
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
 		return m.cleared_ProvisioningStepToFileExtract
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		return m.cleared_ProvisioningStepToPlan
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		return m.cleared_ProvisioningStepToGinFileMiddleware
 	}
 	return false
 }
@@ -19285,6 +20224,36 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 	switch name {
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		m.ClearProvisioningStepToStatus()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		m.ClearProvisioningStepToProvisionedHost()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToScript:
+		m.ClearProvisioningStepToScript()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		m.ClearProvisioningStepToCommand()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		m.ClearProvisioningStepToDNSRecord()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		m.ClearProvisioningStepToFileDelete()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		m.ClearProvisioningStepToFileDownload()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		m.ClearProvisioningStepToFileExtract()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		m.ClearProvisioningStepToPlan()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		m.ClearProvisioningStepToGinFileMiddleware()
+		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep unique edge %s", name)
 }
@@ -19293,9 +20262,6 @@ func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		m.ResetProvisioningStepToTag()
-		return nil
 	case provisioningstep.EdgeProvisioningStepToStatus:
 		m.ResetProvisioningStepToStatus()
 		return nil
@@ -19319,6 +20285,12 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
 		m.ResetProvisioningStepToFileExtract()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		m.ResetProvisioningStepToPlan()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
+		m.ResetProvisioningStepToGinFileMiddleware()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
@@ -20723,22 +21695,30 @@ func (m *ScriptMutation) ResetEdge(name string) error {
 // StatusMutation represents an operation that mutates the Status nodes in the graph.
 type StatusMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	state               *status.State
-	started_at          *time.Time
-	ended_at            *time.Time
-	failed              *bool
-	completed           *bool
-	error               *string
-	clearedFields       map[string]struct{}
-	_StatusToTag        map[int]struct{}
-	removed_StatusToTag map[int]struct{}
-	cleared_StatusToTag bool
-	done                bool
-	oldValue            func(context.Context) (*Status, error)
-	predicates          []predicate.Status
+	op                                 Op
+	typ                                string
+	id                                 *int
+	state                              *status.State
+	status_for                         *status.StatusFor
+	started_at                         *time.Time
+	ended_at                           *time.Time
+	failed                             *bool
+	completed                          *bool
+	error                              *string
+	clearedFields                      map[string]struct{}
+	_StatusToBuild                     *int
+	cleared_StatusToBuild              bool
+	_StatusToProvisionedNetwork        *int
+	cleared_StatusToProvisionedNetwork bool
+	_StatusToProvisionedHost           *int
+	cleared_StatusToProvisionedHost    bool
+	_StatusToProvisioningStep          *int
+	cleared_StatusToProvisioningStep   bool
+	_StatusToTeam                      *int
+	cleared_StatusToTeam               bool
+	done                               bool
+	oldValue                           func(context.Context) (*Status, error)
+	predicates                         []predicate.Status
 }
 
 var _ ent.Mutation = (*StatusMutation)(nil)
@@ -20856,6 +21836,42 @@ func (m *StatusMutation) ResetState() {
 	m.state = nil
 }
 
+// SetStatusFor sets the "status_for" field.
+func (m *StatusMutation) SetStatusFor(sf status.StatusFor) {
+	m.status_for = &sf
+}
+
+// StatusFor returns the value of the "status_for" field in the mutation.
+func (m *StatusMutation) StatusFor() (r status.StatusFor, exists bool) {
+	v := m.status_for
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusFor returns the old "status_for" field's value of the Status entity.
+// If the Status object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StatusMutation) OldStatusFor(ctx context.Context) (v status.StatusFor, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStatusFor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStatusFor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusFor: %w", err)
+	}
+	return oldValue.StatusFor, nil
+}
+
+// ResetStatusFor resets all changes to the "status_for" field.
+func (m *StatusMutation) ResetStatusFor() {
+	m.status_for = nil
+}
+
 // SetStartedAt sets the "started_at" field.
 func (m *StatusMutation) SetStartedAt(t time.Time) {
 	m.started_at = &t
@@ -20887,9 +21903,22 @@ func (m *StatusMutation) OldStartedAt(ctx context.Context) (v time.Time, err err
 	return oldValue.StartedAt, nil
 }
 
+// ClearStartedAt clears the value of the "started_at" field.
+func (m *StatusMutation) ClearStartedAt() {
+	m.started_at = nil
+	m.clearedFields[status.FieldStartedAt] = struct{}{}
+}
+
+// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
+func (m *StatusMutation) StartedAtCleared() bool {
+	_, ok := m.clearedFields[status.FieldStartedAt]
+	return ok
+}
+
 // ResetStartedAt resets all changes to the "started_at" field.
 func (m *StatusMutation) ResetStartedAt() {
 	m.started_at = nil
+	delete(m.clearedFields, status.FieldStartedAt)
 }
 
 // SetEndedAt sets the "ended_at" field.
@@ -20923,9 +21952,22 @@ func (m *StatusMutation) OldEndedAt(ctx context.Context) (v time.Time, err error
 	return oldValue.EndedAt, nil
 }
 
+// ClearEndedAt clears the value of the "ended_at" field.
+func (m *StatusMutation) ClearEndedAt() {
+	m.ended_at = nil
+	m.clearedFields[status.FieldEndedAt] = struct{}{}
+}
+
+// EndedAtCleared returns if the "ended_at" field was cleared in this mutation.
+func (m *StatusMutation) EndedAtCleared() bool {
+	_, ok := m.clearedFields[status.FieldEndedAt]
+	return ok
+}
+
 // ResetEndedAt resets all changes to the "ended_at" field.
 func (m *StatusMutation) ResetEndedAt() {
 	m.ended_at = nil
+	delete(m.clearedFields, status.FieldEndedAt)
 }
 
 // SetFailed sets the "failed" field.
@@ -21031,62 +22073,217 @@ func (m *StatusMutation) OldError(ctx context.Context) (v string, err error) {
 	return oldValue.Error, nil
 }
 
+// ClearError clears the value of the "error" field.
+func (m *StatusMutation) ClearError() {
+	m.error = nil
+	m.clearedFields[status.FieldError] = struct{}{}
+}
+
+// ErrorCleared returns if the "error" field was cleared in this mutation.
+func (m *StatusMutation) ErrorCleared() bool {
+	_, ok := m.clearedFields[status.FieldError]
+	return ok
+}
+
 // ResetError resets all changes to the "error" field.
 func (m *StatusMutation) ResetError() {
 	m.error = nil
+	delete(m.clearedFields, status.FieldError)
 }
 
-// AddStatusToTagIDs adds the "StatusToTag" edge to the Tag entity by ids.
-func (m *StatusMutation) AddStatusToTagIDs(ids ...int) {
-	if m._StatusToTag == nil {
-		m._StatusToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._StatusToTag[ids[i]] = struct{}{}
-	}
+// SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by id.
+func (m *StatusMutation) SetStatusToBuildID(id int) {
+	m._StatusToBuild = &id
 }
 
-// ClearStatusToTag clears the "StatusToTag" edge to the Tag entity.
-func (m *StatusMutation) ClearStatusToTag() {
-	m.cleared_StatusToTag = true
+// ClearStatusToBuild clears the "StatusToBuild" edge to the Build entity.
+func (m *StatusMutation) ClearStatusToBuild() {
+	m.cleared_StatusToBuild = true
 }
 
-// StatusToTagCleared returns if the "StatusToTag" edge to the Tag entity was cleared.
-func (m *StatusMutation) StatusToTagCleared() bool {
-	return m.cleared_StatusToTag
+// StatusToBuildCleared returns if the "StatusToBuild" edge to the Build entity was cleared.
+func (m *StatusMutation) StatusToBuildCleared() bool {
+	return m.cleared_StatusToBuild
 }
 
-// RemoveStatusToTagIDs removes the "StatusToTag" edge to the Tag entity by IDs.
-func (m *StatusMutation) RemoveStatusToTagIDs(ids ...int) {
-	if m.removed_StatusToTag == nil {
-		m.removed_StatusToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_StatusToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedStatusToTag returns the removed IDs of the "StatusToTag" edge to the Tag entity.
-func (m *StatusMutation) RemovedStatusToTagIDs() (ids []int) {
-	for id := range m.removed_StatusToTag {
-		ids = append(ids, id)
+// StatusToBuildID returns the "StatusToBuild" edge ID in the mutation.
+func (m *StatusMutation) StatusToBuildID() (id int, exists bool) {
+	if m._StatusToBuild != nil {
+		return *m._StatusToBuild, true
 	}
 	return
 }
 
-// StatusToTagIDs returns the "StatusToTag" edge IDs in the mutation.
-func (m *StatusMutation) StatusToTagIDs() (ids []int) {
-	for id := range m._StatusToTag {
-		ids = append(ids, id)
+// StatusToBuildIDs returns the "StatusToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToBuildID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToBuildIDs() (ids []int) {
+	if id := m._StatusToBuild; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetStatusToTag resets all changes to the "StatusToTag" edge.
-func (m *StatusMutation) ResetStatusToTag() {
-	m._StatusToTag = nil
-	m.cleared_StatusToTag = false
-	m.removed_StatusToTag = nil
+// ResetStatusToBuild resets all changes to the "StatusToBuild" edge.
+func (m *StatusMutation) ResetStatusToBuild() {
+	m._StatusToBuild = nil
+	m.cleared_StatusToBuild = false
+}
+
+// SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
+func (m *StatusMutation) SetStatusToProvisionedNetworkID(id int) {
+	m._StatusToProvisionedNetwork = &id
+}
+
+// ClearStatusToProvisionedNetwork clears the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (m *StatusMutation) ClearStatusToProvisionedNetwork() {
+	m.cleared_StatusToProvisionedNetwork = true
+}
+
+// StatusToProvisionedNetworkCleared returns if the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+func (m *StatusMutation) StatusToProvisionedNetworkCleared() bool {
+	return m.cleared_StatusToProvisionedNetwork
+}
+
+// StatusToProvisionedNetworkID returns the "StatusToProvisionedNetwork" edge ID in the mutation.
+func (m *StatusMutation) StatusToProvisionedNetworkID() (id int, exists bool) {
+	if m._StatusToProvisionedNetwork != nil {
+		return *m._StatusToProvisionedNetwork, true
+	}
+	return
+}
+
+// StatusToProvisionedNetworkIDs returns the "StatusToProvisionedNetwork" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToProvisionedNetworkID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToProvisionedNetworkIDs() (ids []int) {
+	if id := m._StatusToProvisionedNetwork; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToProvisionedNetwork resets all changes to the "StatusToProvisionedNetwork" edge.
+func (m *StatusMutation) ResetStatusToProvisionedNetwork() {
+	m._StatusToProvisionedNetwork = nil
+	m.cleared_StatusToProvisionedNetwork = false
+}
+
+// SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *StatusMutation) SetStatusToProvisionedHostID(id int) {
+	m._StatusToProvisionedHost = &id
+}
+
+// ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *StatusMutation) ClearStatusToProvisionedHost() {
+	m.cleared_StatusToProvisionedHost = true
+}
+
+// StatusToProvisionedHostCleared returns if the "StatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *StatusMutation) StatusToProvisionedHostCleared() bool {
+	return m.cleared_StatusToProvisionedHost
+}
+
+// StatusToProvisionedHostID returns the "StatusToProvisionedHost" edge ID in the mutation.
+func (m *StatusMutation) StatusToProvisionedHostID() (id int, exists bool) {
+	if m._StatusToProvisionedHost != nil {
+		return *m._StatusToProvisionedHost, true
+	}
+	return
+}
+
+// StatusToProvisionedHostIDs returns the "StatusToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToProvisionedHostIDs() (ids []int) {
+	if id := m._StatusToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToProvisionedHost resets all changes to the "StatusToProvisionedHost" edge.
+func (m *StatusMutation) ResetStatusToProvisionedHost() {
+	m._StatusToProvisionedHost = nil
+	m.cleared_StatusToProvisionedHost = false
+}
+
+// SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *StatusMutation) SetStatusToProvisioningStepID(id int) {
+	m._StatusToProvisioningStep = &id
+}
+
+// ClearStatusToProvisioningStep clears the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *StatusMutation) ClearStatusToProvisioningStep() {
+	m.cleared_StatusToProvisioningStep = true
+}
+
+// StatusToProvisioningStepCleared returns if the "StatusToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *StatusMutation) StatusToProvisioningStepCleared() bool {
+	return m.cleared_StatusToProvisioningStep
+}
+
+// StatusToProvisioningStepID returns the "StatusToProvisioningStep" edge ID in the mutation.
+func (m *StatusMutation) StatusToProvisioningStepID() (id int, exists bool) {
+	if m._StatusToProvisioningStep != nil {
+		return *m._StatusToProvisioningStep, true
+	}
+	return
+}
+
+// StatusToProvisioningStepIDs returns the "StatusToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToProvisioningStepIDs() (ids []int) {
+	if id := m._StatusToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToProvisioningStep resets all changes to the "StatusToProvisioningStep" edge.
+func (m *StatusMutation) ResetStatusToProvisioningStep() {
+	m._StatusToProvisioningStep = nil
+	m.cleared_StatusToProvisioningStep = false
+}
+
+// SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by id.
+func (m *StatusMutation) SetStatusToTeamID(id int) {
+	m._StatusToTeam = &id
+}
+
+// ClearStatusToTeam clears the "StatusToTeam" edge to the Team entity.
+func (m *StatusMutation) ClearStatusToTeam() {
+	m.cleared_StatusToTeam = true
+}
+
+// StatusToTeamCleared returns if the "StatusToTeam" edge to the Team entity was cleared.
+func (m *StatusMutation) StatusToTeamCleared() bool {
+	return m.cleared_StatusToTeam
+}
+
+// StatusToTeamID returns the "StatusToTeam" edge ID in the mutation.
+func (m *StatusMutation) StatusToTeamID() (id int, exists bool) {
+	if m._StatusToTeam != nil {
+		return *m._StatusToTeam, true
+	}
+	return
+}
+
+// StatusToTeamIDs returns the "StatusToTeam" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToTeamID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToTeamIDs() (ids []int) {
+	if id := m._StatusToTeam; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToTeam resets all changes to the "StatusToTeam" edge.
+func (m *StatusMutation) ResetStatusToTeam() {
+	m._StatusToTeam = nil
+	m.cleared_StatusToTeam = false
 }
 
 // Op returns the operation name.
@@ -21103,9 +22300,12 @@ func (m *StatusMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StatusMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.state != nil {
 		fields = append(fields, status.FieldState)
+	}
+	if m.status_for != nil {
+		fields = append(fields, status.FieldStatusFor)
 	}
 	if m.started_at != nil {
 		fields = append(fields, status.FieldStartedAt)
@@ -21132,6 +22332,8 @@ func (m *StatusMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case status.FieldState:
 		return m.State()
+	case status.FieldStatusFor:
+		return m.StatusFor()
 	case status.FieldStartedAt:
 		return m.StartedAt()
 	case status.FieldEndedAt:
@@ -21153,6 +22355,8 @@ func (m *StatusMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case status.FieldState:
 		return m.OldState(ctx)
+	case status.FieldStatusFor:
+		return m.OldStatusFor(ctx)
 	case status.FieldStartedAt:
 		return m.OldStartedAt(ctx)
 	case status.FieldEndedAt:
@@ -21178,6 +22382,13 @@ func (m *StatusMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetState(v)
+		return nil
+	case status.FieldStatusFor:
+		v, ok := value.(status.StatusFor)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusFor(v)
 		return nil
 	case status.FieldStartedAt:
 		v, ok := value.(time.Time)
@@ -21243,7 +22454,17 @@ func (m *StatusMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *StatusMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(status.FieldStartedAt) {
+		fields = append(fields, status.FieldStartedAt)
+	}
+	if m.FieldCleared(status.FieldEndedAt) {
+		fields = append(fields, status.FieldEndedAt)
+	}
+	if m.FieldCleared(status.FieldError) {
+		fields = append(fields, status.FieldError)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -21256,6 +22477,17 @@ func (m *StatusMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *StatusMutation) ClearField(name string) error {
+	switch name {
+	case status.FieldStartedAt:
+		m.ClearStartedAt()
+		return nil
+	case status.FieldEndedAt:
+		m.ClearEndedAt()
+		return nil
+	case status.FieldError:
+		m.ClearError()
+		return nil
+	}
 	return fmt.Errorf("unknown Status nullable field %s", name)
 }
 
@@ -21265,6 +22497,9 @@ func (m *StatusMutation) ResetField(name string) error {
 	switch name {
 	case status.FieldState:
 		m.ResetState()
+		return nil
+	case status.FieldStatusFor:
+		m.ResetStatusFor()
 		return nil
 	case status.FieldStartedAt:
 		m.ResetStartedAt()
@@ -21287,9 +22522,21 @@ func (m *StatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m._StatusToTag != nil {
-		edges = append(edges, status.EdgeStatusToTag)
+	edges := make([]string, 0, 5)
+	if m._StatusToBuild != nil {
+		edges = append(edges, status.EdgeStatusToBuild)
+	}
+	if m._StatusToProvisionedNetwork != nil {
+		edges = append(edges, status.EdgeStatusToProvisionedNetwork)
+	}
+	if m._StatusToProvisionedHost != nil {
+		edges = append(edges, status.EdgeStatusToProvisionedHost)
+	}
+	if m._StatusToProvisioningStep != nil {
+		edges = append(edges, status.EdgeStatusToProvisioningStep)
+	}
+	if m._StatusToTeam != nil {
+		edges = append(edges, status.EdgeStatusToTeam)
 	}
 	return edges
 }
@@ -21298,22 +22545,33 @@ func (m *StatusMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case status.EdgeStatusToTag:
-		ids := make([]ent.Value, 0, len(m._StatusToTag))
-		for id := range m._StatusToTag {
-			ids = append(ids, id)
+	case status.EdgeStatusToBuild:
+		if id := m._StatusToBuild; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
+	case status.EdgeStatusToProvisionedNetwork:
+		if id := m._StatusToProvisionedNetwork; id != nil {
+			return []ent.Value{*id}
+		}
+	case status.EdgeStatusToProvisionedHost:
+		if id := m._StatusToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
+	case status.EdgeStatusToProvisioningStep:
+		if id := m._StatusToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
+	case status.EdgeStatusToTeam:
+		if id := m._StatusToTeam; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removed_StatusToTag != nil {
-		edges = append(edges, status.EdgeStatusToTag)
-	}
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -21321,21 +22579,27 @@ func (m *StatusMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case status.EdgeStatusToTag:
-		ids := make([]ent.Value, 0, len(m.removed_StatusToTag))
-		for id := range m.removed_StatusToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.cleared_StatusToTag {
-		edges = append(edges, status.EdgeStatusToTag)
+	edges := make([]string, 0, 5)
+	if m.cleared_StatusToBuild {
+		edges = append(edges, status.EdgeStatusToBuild)
+	}
+	if m.cleared_StatusToProvisionedNetwork {
+		edges = append(edges, status.EdgeStatusToProvisionedNetwork)
+	}
+	if m.cleared_StatusToProvisionedHost {
+		edges = append(edges, status.EdgeStatusToProvisionedHost)
+	}
+	if m.cleared_StatusToProvisioningStep {
+		edges = append(edges, status.EdgeStatusToProvisioningStep)
+	}
+	if m.cleared_StatusToTeam {
+		edges = append(edges, status.EdgeStatusToTeam)
 	}
 	return edges
 }
@@ -21344,8 +22608,16 @@ func (m *StatusMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *StatusMutation) EdgeCleared(name string) bool {
 	switch name {
-	case status.EdgeStatusToTag:
-		return m.cleared_StatusToTag
+	case status.EdgeStatusToBuild:
+		return m.cleared_StatusToBuild
+	case status.EdgeStatusToProvisionedNetwork:
+		return m.cleared_StatusToProvisionedNetwork
+	case status.EdgeStatusToProvisionedHost:
+		return m.cleared_StatusToProvisionedHost
+	case status.EdgeStatusToProvisioningStep:
+		return m.cleared_StatusToProvisioningStep
+	case status.EdgeStatusToTeam:
+		return m.cleared_StatusToTeam
 	}
 	return false
 }
@@ -21354,6 +22626,21 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *StatusMutation) ClearEdge(name string) error {
 	switch name {
+	case status.EdgeStatusToBuild:
+		m.ClearStatusToBuild()
+		return nil
+	case status.EdgeStatusToProvisionedNetwork:
+		m.ClearStatusToProvisionedNetwork()
+		return nil
+	case status.EdgeStatusToProvisionedHost:
+		m.ClearStatusToProvisionedHost()
+		return nil
+	case status.EdgeStatusToProvisioningStep:
+		m.ClearStatusToProvisioningStep()
+		return nil
+	case status.EdgeStatusToTeam:
+		m.ClearStatusToTeam()
+		return nil
 	}
 	return fmt.Errorf("unknown Status unique edge %s", name)
 }
@@ -21362,8 +22649,20 @@ func (m *StatusMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *StatusMutation) ResetEdge(name string) error {
 	switch name {
-	case status.EdgeStatusToTag:
-		m.ResetStatusToTag()
+	case status.EdgeStatusToBuild:
+		m.ResetStatusToBuild()
+		return nil
+	case status.EdgeStatusToProvisionedNetwork:
+		m.ResetStatusToProvisionedNetwork()
+		return nil
+	case status.EdgeStatusToProvisionedHost:
+		m.ResetStatusToProvisionedHost()
+		return nil
+	case status.EdgeStatusToProvisioningStep:
+		m.ResetStatusToProvisioningStep()
+		return nil
+	case status.EdgeStatusToTeam:
+		m.ResetStatusToTeam()
 		return nil
 	}
 	return fmt.Errorf("unknown Status edge %s", name)
@@ -21772,25 +23071,17 @@ type TeamMutation struct {
 	id                               *int
 	team_number                      *int
 	addteam_number                   *int
-	_config                          *map[string]string
-	revision                         *int64
-	addrevision                      *int64
 	clearedFields                    map[string]struct{}
-	_TeamToUser                      map[int]struct{}
-	removed_TeamToUser               map[int]struct{}
-	cleared_TeamToUser               bool
-	_TeamToBuild                     map[int]struct{}
-	removed_TeamToBuild              map[int]struct{}
+	_TeamToBuild                     *int
 	cleared_TeamToBuild              bool
-	_TeamToEnvironment               map[int]struct{}
-	removed_TeamToEnvironment        map[int]struct{}
-	cleared_TeamToEnvironment        bool
-	_TeamToTag                       map[int]struct{}
-	removed_TeamToTag                map[int]struct{}
-	cleared_TeamToTag                bool
+	_TeamToStatus                    *int
+	cleared_TeamToStatus             bool
 	_TeamToProvisionedNetwork        map[int]struct{}
 	removed_TeamToProvisionedNetwork map[int]struct{}
 	cleared_TeamToProvisionedNetwork bool
+	_TeamToPlan                      map[int]struct{}
+	removed_TeamToPlan               map[int]struct{}
+	cleared_TeamToPlan               bool
 	done                             bool
 	oldValue                         func(context.Context) (*Team, error)
 	predicates                       []predicate.Team
@@ -21931,159 +23222,9 @@ func (m *TeamMutation) ResetTeamNumber() {
 	m.addteam_number = nil
 }
 
-// SetConfig sets the "config" field.
-func (m *TeamMutation) SetConfig(value map[string]string) {
-	m._config = &value
-}
-
-// Config returns the value of the "config" field in the mutation.
-func (m *TeamMutation) Config() (r map[string]string, exists bool) {
-	v := m._config
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldConfig returns the old "config" field's value of the Team entity.
-// If the Team object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TeamMutation) OldConfig(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldConfig is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldConfig requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
-	}
-	return oldValue.Config, nil
-}
-
-// ResetConfig resets all changes to the "config" field.
-func (m *TeamMutation) ResetConfig() {
-	m._config = nil
-}
-
-// SetRevision sets the "revision" field.
-func (m *TeamMutation) SetRevision(i int64) {
-	m.revision = &i
-	m.addrevision = nil
-}
-
-// Revision returns the value of the "revision" field in the mutation.
-func (m *TeamMutation) Revision() (r int64, exists bool) {
-	v := m.revision
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRevision returns the old "revision" field's value of the Team entity.
-// If the Team object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TeamMutation) OldRevision(ctx context.Context) (v int64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldRevision is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldRevision requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRevision: %w", err)
-	}
-	return oldValue.Revision, nil
-}
-
-// AddRevision adds i to the "revision" field.
-func (m *TeamMutation) AddRevision(i int64) {
-	if m.addrevision != nil {
-		*m.addrevision += i
-	} else {
-		m.addrevision = &i
-	}
-}
-
-// AddedRevision returns the value that was added to the "revision" field in this mutation.
-func (m *TeamMutation) AddedRevision() (r int64, exists bool) {
-	v := m.addrevision
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetRevision resets all changes to the "revision" field.
-func (m *TeamMutation) ResetRevision() {
-	m.revision = nil
-	m.addrevision = nil
-}
-
-// AddTeamToUserIDs adds the "TeamToUser" edge to the User entity by ids.
-func (m *TeamMutation) AddTeamToUserIDs(ids ...int) {
-	if m._TeamToUser == nil {
-		m._TeamToUser = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._TeamToUser[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTeamToUser clears the "TeamToUser" edge to the User entity.
-func (m *TeamMutation) ClearTeamToUser() {
-	m.cleared_TeamToUser = true
-}
-
-// TeamToUserCleared returns if the "TeamToUser" edge to the User entity was cleared.
-func (m *TeamMutation) TeamToUserCleared() bool {
-	return m.cleared_TeamToUser
-}
-
-// RemoveTeamToUserIDs removes the "TeamToUser" edge to the User entity by IDs.
-func (m *TeamMutation) RemoveTeamToUserIDs(ids ...int) {
-	if m.removed_TeamToUser == nil {
-		m.removed_TeamToUser = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_TeamToUser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTeamToUser returns the removed IDs of the "TeamToUser" edge to the User entity.
-func (m *TeamMutation) RemovedTeamToUserIDs() (ids []int) {
-	for id := range m.removed_TeamToUser {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TeamToUserIDs returns the "TeamToUser" edge IDs in the mutation.
-func (m *TeamMutation) TeamToUserIDs() (ids []int) {
-	for id := range m._TeamToUser {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTeamToUser resets all changes to the "TeamToUser" edge.
-func (m *TeamMutation) ResetTeamToUser() {
-	m._TeamToUser = nil
-	m.cleared_TeamToUser = false
-	m.removed_TeamToUser = nil
-}
-
-// AddTeamToBuildIDs adds the "TeamToBuild" edge to the Build entity by ids.
-func (m *TeamMutation) AddTeamToBuildIDs(ids ...int) {
-	if m._TeamToBuild == nil {
-		m._TeamToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._TeamToBuild[ids[i]] = struct{}{}
-	}
+// SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by id.
+func (m *TeamMutation) SetTeamToBuildID(id int) {
+	m._TeamToBuild = &id
 }
 
 // ClearTeamToBuild clears the "TeamToBuild" edge to the Build entity.
@@ -22096,28 +23237,20 @@ func (m *TeamMutation) TeamToBuildCleared() bool {
 	return m.cleared_TeamToBuild
 }
 
-// RemoveTeamToBuildIDs removes the "TeamToBuild" edge to the Build entity by IDs.
-func (m *TeamMutation) RemoveTeamToBuildIDs(ids ...int) {
-	if m.removed_TeamToBuild == nil {
-		m.removed_TeamToBuild = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_TeamToBuild[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTeamToBuild returns the removed IDs of the "TeamToBuild" edge to the Build entity.
-func (m *TeamMutation) RemovedTeamToBuildIDs() (ids []int) {
-	for id := range m.removed_TeamToBuild {
-		ids = append(ids, id)
+// TeamToBuildID returns the "TeamToBuild" edge ID in the mutation.
+func (m *TeamMutation) TeamToBuildID() (id int, exists bool) {
+	if m._TeamToBuild != nil {
+		return *m._TeamToBuild, true
 	}
 	return
 }
 
 // TeamToBuildIDs returns the "TeamToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamToBuildID instead. It exists only for internal usage by the builders.
 func (m *TeamMutation) TeamToBuildIDs() (ids []int) {
-	for id := range m._TeamToBuild {
-		ids = append(ids, id)
+	if id := m._TeamToBuild; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -22126,113 +23259,45 @@ func (m *TeamMutation) TeamToBuildIDs() (ids []int) {
 func (m *TeamMutation) ResetTeamToBuild() {
 	m._TeamToBuild = nil
 	m.cleared_TeamToBuild = false
-	m.removed_TeamToBuild = nil
 }
 
-// AddTeamToEnvironmentIDs adds the "TeamToEnvironment" edge to the Environment entity by ids.
-func (m *TeamMutation) AddTeamToEnvironmentIDs(ids ...int) {
-	if m._TeamToEnvironment == nil {
-		m._TeamToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._TeamToEnvironment[ids[i]] = struct{}{}
-	}
+// SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by id.
+func (m *TeamMutation) SetTeamToStatusID(id int) {
+	m._TeamToStatus = &id
 }
 
-// ClearTeamToEnvironment clears the "TeamToEnvironment" edge to the Environment entity.
-func (m *TeamMutation) ClearTeamToEnvironment() {
-	m.cleared_TeamToEnvironment = true
+// ClearTeamToStatus clears the "TeamToStatus" edge to the Status entity.
+func (m *TeamMutation) ClearTeamToStatus() {
+	m.cleared_TeamToStatus = true
 }
 
-// TeamToEnvironmentCleared returns if the "TeamToEnvironment" edge to the Environment entity was cleared.
-func (m *TeamMutation) TeamToEnvironmentCleared() bool {
-	return m.cleared_TeamToEnvironment
+// TeamToStatusCleared returns if the "TeamToStatus" edge to the Status entity was cleared.
+func (m *TeamMutation) TeamToStatusCleared() bool {
+	return m.cleared_TeamToStatus
 }
 
-// RemoveTeamToEnvironmentIDs removes the "TeamToEnvironment" edge to the Environment entity by IDs.
-func (m *TeamMutation) RemoveTeamToEnvironmentIDs(ids ...int) {
-	if m.removed_TeamToEnvironment == nil {
-		m.removed_TeamToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_TeamToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTeamToEnvironment returns the removed IDs of the "TeamToEnvironment" edge to the Environment entity.
-func (m *TeamMutation) RemovedTeamToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_TeamToEnvironment {
-		ids = append(ids, id)
+// TeamToStatusID returns the "TeamToStatus" edge ID in the mutation.
+func (m *TeamMutation) TeamToStatusID() (id int, exists bool) {
+	if m._TeamToStatus != nil {
+		return *m._TeamToStatus, true
 	}
 	return
 }
 
-// TeamToEnvironmentIDs returns the "TeamToEnvironment" edge IDs in the mutation.
-func (m *TeamMutation) TeamToEnvironmentIDs() (ids []int) {
-	for id := range m._TeamToEnvironment {
-		ids = append(ids, id)
+// TeamToStatusIDs returns the "TeamToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamToStatusID instead. It exists only for internal usage by the builders.
+func (m *TeamMutation) TeamToStatusIDs() (ids []int) {
+	if id := m._TeamToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTeamToEnvironment resets all changes to the "TeamToEnvironment" edge.
-func (m *TeamMutation) ResetTeamToEnvironment() {
-	m._TeamToEnvironment = nil
-	m.cleared_TeamToEnvironment = false
-	m.removed_TeamToEnvironment = nil
-}
-
-// AddTeamToTagIDs adds the "TeamToTag" edge to the Tag entity by ids.
-func (m *TeamMutation) AddTeamToTagIDs(ids ...int) {
-	if m._TeamToTag == nil {
-		m._TeamToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._TeamToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTeamToTag clears the "TeamToTag" edge to the Tag entity.
-func (m *TeamMutation) ClearTeamToTag() {
-	m.cleared_TeamToTag = true
-}
-
-// TeamToTagCleared returns if the "TeamToTag" edge to the Tag entity was cleared.
-func (m *TeamMutation) TeamToTagCleared() bool {
-	return m.cleared_TeamToTag
-}
-
-// RemoveTeamToTagIDs removes the "TeamToTag" edge to the Tag entity by IDs.
-func (m *TeamMutation) RemoveTeamToTagIDs(ids ...int) {
-	if m.removed_TeamToTag == nil {
-		m.removed_TeamToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_TeamToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTeamToTag returns the removed IDs of the "TeamToTag" edge to the Tag entity.
-func (m *TeamMutation) RemovedTeamToTagIDs() (ids []int) {
-	for id := range m.removed_TeamToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TeamToTagIDs returns the "TeamToTag" edge IDs in the mutation.
-func (m *TeamMutation) TeamToTagIDs() (ids []int) {
-	for id := range m._TeamToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTeamToTag resets all changes to the "TeamToTag" edge.
-func (m *TeamMutation) ResetTeamToTag() {
-	m._TeamToTag = nil
-	m.cleared_TeamToTag = false
-	m.removed_TeamToTag = nil
+// ResetTeamToStatus resets all changes to the "TeamToStatus" edge.
+func (m *TeamMutation) ResetTeamToStatus() {
+	m._TeamToStatus = nil
+	m.cleared_TeamToStatus = false
 }
 
 // AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
@@ -22288,6 +23353,59 @@ func (m *TeamMutation) ResetTeamToProvisionedNetwork() {
 	m.removed_TeamToProvisionedNetwork = nil
 }
 
+// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by ids.
+func (m *TeamMutation) AddTeamToPlanIDs(ids ...int) {
+	if m._TeamToPlan == nil {
+		m._TeamToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._TeamToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTeamToPlan clears the "TeamToPlan" edge to the Plan entity.
+func (m *TeamMutation) ClearTeamToPlan() {
+	m.cleared_TeamToPlan = true
+}
+
+// TeamToPlanCleared returns if the "TeamToPlan" edge to the Plan entity was cleared.
+func (m *TeamMutation) TeamToPlanCleared() bool {
+	return m.cleared_TeamToPlan
+}
+
+// RemoveTeamToPlanIDs removes the "TeamToPlan" edge to the Plan entity by IDs.
+func (m *TeamMutation) RemoveTeamToPlanIDs(ids ...int) {
+	if m.removed_TeamToPlan == nil {
+		m.removed_TeamToPlan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removed_TeamToPlan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeamToPlan returns the removed IDs of the "TeamToPlan" edge to the Plan entity.
+func (m *TeamMutation) RemovedTeamToPlanIDs() (ids []int) {
+	for id := range m.removed_TeamToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TeamToPlanIDs returns the "TeamToPlan" edge IDs in the mutation.
+func (m *TeamMutation) TeamToPlanIDs() (ids []int) {
+	for id := range m._TeamToPlan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeamToPlan resets all changes to the "TeamToPlan" edge.
+func (m *TeamMutation) ResetTeamToPlan() {
+	m._TeamToPlan = nil
+	m.cleared_TeamToPlan = false
+	m.removed_TeamToPlan = nil
+}
+
 // Op returns the operation name.
 func (m *TeamMutation) Op() Op {
 	return m.op
@@ -22302,15 +23420,9 @@ func (m *TeamMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 1)
 	if m.team_number != nil {
 		fields = append(fields, team.FieldTeamNumber)
-	}
-	if m._config != nil {
-		fields = append(fields, team.FieldConfig)
-	}
-	if m.revision != nil {
-		fields = append(fields, team.FieldRevision)
 	}
 	return fields
 }
@@ -22322,10 +23434,6 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldTeamNumber:
 		return m.TeamNumber()
-	case team.FieldConfig:
-		return m.Config()
-	case team.FieldRevision:
-		return m.Revision()
 	}
 	return nil, false
 }
@@ -22337,10 +23445,6 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case team.FieldTeamNumber:
 		return m.OldTeamNumber(ctx)
-	case team.FieldConfig:
-		return m.OldConfig(ctx)
-	case team.FieldRevision:
-		return m.OldRevision(ctx)
 	}
 	return nil, fmt.Errorf("unknown Team field %s", name)
 }
@@ -22357,20 +23461,6 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTeamNumber(v)
 		return nil
-	case team.FieldConfig:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetConfig(v)
-		return nil
-	case team.FieldRevision:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRevision(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Team field %s", name)
 }
@@ -22382,9 +23472,6 @@ func (m *TeamMutation) AddedFields() []string {
 	if m.addteam_number != nil {
 		fields = append(fields, team.FieldTeamNumber)
 	}
-	if m.addrevision != nil {
-		fields = append(fields, team.FieldRevision)
-	}
 	return fields
 }
 
@@ -22395,8 +23482,6 @@ func (m *TeamMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldTeamNumber:
 		return m.AddedTeamNumber()
-	case team.FieldRevision:
-		return m.AddedRevision()
 	}
 	return nil, false
 }
@@ -22412,13 +23497,6 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTeamNumber(v)
-		return nil
-	case team.FieldRevision:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRevision(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Team numeric field %s", name)
@@ -22450,33 +23528,24 @@ func (m *TeamMutation) ResetField(name string) error {
 	case team.FieldTeamNumber:
 		m.ResetTeamNumber()
 		return nil
-	case team.FieldConfig:
-		m.ResetConfig()
-		return nil
-	case team.FieldRevision:
-		m.ResetRevision()
-		return nil
 	}
 	return fmt.Errorf("unknown Team field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m._TeamToUser != nil {
-		edges = append(edges, team.EdgeTeamToUser)
-	}
+	edges := make([]string, 0, 4)
 	if m._TeamToBuild != nil {
 		edges = append(edges, team.EdgeTeamToBuild)
 	}
-	if m._TeamToEnvironment != nil {
-		edges = append(edges, team.EdgeTeamToEnvironment)
-	}
-	if m._TeamToTag != nil {
-		edges = append(edges, team.EdgeTeamToTag)
+	if m._TeamToStatus != nil {
+		edges = append(edges, team.EdgeTeamToStatus)
 	}
 	if m._TeamToProvisionedNetwork != nil {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m._TeamToPlan != nil {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22485,33 +23554,23 @@ func (m *TeamMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case team.EdgeTeamToUser:
-		ids := make([]ent.Value, 0, len(m._TeamToUser))
-		for id := range m._TeamToUser {
-			ids = append(ids, id)
-		}
-		return ids
 	case team.EdgeTeamToBuild:
-		ids := make([]ent.Value, 0, len(m._TeamToBuild))
-		for id := range m._TeamToBuild {
-			ids = append(ids, id)
+		if id := m._TeamToBuild; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
-	case team.EdgeTeamToEnvironment:
-		ids := make([]ent.Value, 0, len(m._TeamToEnvironment))
-		for id := range m._TeamToEnvironment {
-			ids = append(ids, id)
+	case team.EdgeTeamToStatus:
+		if id := m._TeamToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
-	case team.EdgeTeamToTag:
-		ids := make([]ent.Value, 0, len(m._TeamToTag))
-		for id := range m._TeamToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case team.EdgeTeamToProvisionedNetwork:
 		ids := make([]ent.Value, 0, len(m._TeamToProvisionedNetwork))
 		for id := range m._TeamToProvisionedNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case team.EdgeTeamToPlan:
+		ids := make([]ent.Value, 0, len(m._TeamToPlan))
+		for id := range m._TeamToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22521,21 +23580,12 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.removed_TeamToUser != nil {
-		edges = append(edges, team.EdgeTeamToUser)
-	}
-	if m.removed_TeamToBuild != nil {
-		edges = append(edges, team.EdgeTeamToBuild)
-	}
-	if m.removed_TeamToEnvironment != nil {
-		edges = append(edges, team.EdgeTeamToEnvironment)
-	}
-	if m.removed_TeamToTag != nil {
-		edges = append(edges, team.EdgeTeamToTag)
-	}
+	edges := make([]string, 0, 4)
 	if m.removed_TeamToProvisionedNetwork != nil {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m.removed_TeamToPlan != nil {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22544,33 +23594,15 @@ func (m *TeamMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case team.EdgeTeamToUser:
-		ids := make([]ent.Value, 0, len(m.removed_TeamToUser))
-		for id := range m.removed_TeamToUser {
-			ids = append(ids, id)
-		}
-		return ids
-	case team.EdgeTeamToBuild:
-		ids := make([]ent.Value, 0, len(m.removed_TeamToBuild))
-		for id := range m.removed_TeamToBuild {
-			ids = append(ids, id)
-		}
-		return ids
-	case team.EdgeTeamToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_TeamToEnvironment))
-		for id := range m.removed_TeamToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
-	case team.EdgeTeamToTag:
-		ids := make([]ent.Value, 0, len(m.removed_TeamToTag))
-		for id := range m.removed_TeamToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case team.EdgeTeamToProvisionedNetwork:
 		ids := make([]ent.Value, 0, len(m.removed_TeamToProvisionedNetwork))
 		for id := range m.removed_TeamToProvisionedNetwork {
+			ids = append(ids, id)
+		}
+		return ids
+	case team.EdgeTeamToPlan:
+		ids := make([]ent.Value, 0, len(m.removed_TeamToPlan))
+		for id := range m.removed_TeamToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22580,21 +23612,18 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.cleared_TeamToUser {
-		edges = append(edges, team.EdgeTeamToUser)
-	}
+	edges := make([]string, 0, 4)
 	if m.cleared_TeamToBuild {
 		edges = append(edges, team.EdgeTeamToBuild)
 	}
-	if m.cleared_TeamToEnvironment {
-		edges = append(edges, team.EdgeTeamToEnvironment)
-	}
-	if m.cleared_TeamToTag {
-		edges = append(edges, team.EdgeTeamToTag)
+	if m.cleared_TeamToStatus {
+		edges = append(edges, team.EdgeTeamToStatus)
 	}
 	if m.cleared_TeamToProvisionedNetwork {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
+	}
+	if m.cleared_TeamToPlan {
+		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -22603,16 +23632,14 @@ func (m *TeamMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *TeamMutation) EdgeCleared(name string) bool {
 	switch name {
-	case team.EdgeTeamToUser:
-		return m.cleared_TeamToUser
 	case team.EdgeTeamToBuild:
 		return m.cleared_TeamToBuild
-	case team.EdgeTeamToEnvironment:
-		return m.cleared_TeamToEnvironment
-	case team.EdgeTeamToTag:
-		return m.cleared_TeamToTag
+	case team.EdgeTeamToStatus:
+		return m.cleared_TeamToStatus
 	case team.EdgeTeamToProvisionedNetwork:
 		return m.cleared_TeamToProvisionedNetwork
+	case team.EdgeTeamToPlan:
+		return m.cleared_TeamToPlan
 	}
 	return false
 }
@@ -22621,6 +23648,12 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *TeamMutation) ClearEdge(name string) error {
 	switch name {
+	case team.EdgeTeamToBuild:
+		m.ClearTeamToBuild()
+		return nil
+	case team.EdgeTeamToStatus:
+		m.ClearTeamToStatus()
+		return nil
 	}
 	return fmt.Errorf("unknown Team unique edge %s", name)
 }
@@ -22629,20 +23662,17 @@ func (m *TeamMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TeamMutation) ResetEdge(name string) error {
 	switch name {
-	case team.EdgeTeamToUser:
-		m.ResetTeamToUser()
-		return nil
 	case team.EdgeTeamToBuild:
 		m.ResetTeamToBuild()
 		return nil
-	case team.EdgeTeamToEnvironment:
-		m.ResetTeamToEnvironment()
-		return nil
-	case team.EdgeTeamToTag:
-		m.ResetTeamToTag()
+	case team.EdgeTeamToStatus:
+		m.ResetTeamToStatus()
 		return nil
 	case team.EdgeTeamToProvisionedNetwork:
 		m.ResetTeamToProvisionedNetwork()
+		return nil
+	case team.EdgeTeamToPlan:
+		m.ResetTeamToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)

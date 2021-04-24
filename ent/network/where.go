@@ -528,7 +528,7 @@ func HasNetworkToHostDependency() predicate.Network {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToHostDependencyTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToHostDependencyTable, NetworkToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, NetworkToHostDependencyTable, NetworkToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -540,7 +540,7 @@ func HasNetworkToHostDependencyWith(preds ...predicate.HostDependency) predicate
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToHostDependencyInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToHostDependencyTable, NetworkToHostDependencyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, NetworkToHostDependencyTable, NetworkToHostDependencyColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

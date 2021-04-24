@@ -38,8 +38,6 @@ const (
 	EdgeEnvironmentToHost = "EnvironmentToHost"
 	// EdgeEnvironmentToCompetition holds the string denoting the environmenttocompetition edge name in mutations.
 	EdgeEnvironmentToCompetition = "EnvironmentToCompetition"
-	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
-	EdgeEnvironmentToBuild = "EnvironmentToBuild"
 	// EdgeEnvironmentToIdentity holds the string denoting the environmenttoidentity edge name in mutations.
 	EdgeEnvironmentToIdentity = "EnvironmentToIdentity"
 	// EdgeEnvironmentToCommand holds the string denoting the environmenttocommand edge name in mutations.
@@ -64,8 +62,8 @@ const (
 	EdgeEnvironmentToNetwork = "EnvironmentToNetwork"
 	// EdgeEnvironmentToHostDependency holds the string denoting the environmenttohostdependency edge name in mutations.
 	EdgeEnvironmentToHostDependency = "EnvironmentToHostDependency"
-	// EdgeEnvironmentToTeam holds the string denoting the environmenttoteam edge name in mutations.
-	EdgeEnvironmentToTeam = "EnvironmentToTeam"
+	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
+	EdgeEnvironmentToBuild = "EnvironmentToBuild"
 
 	// Table holds the table name of the environment in the database.
 	Table = "environments"
@@ -91,11 +89,6 @@ const (
 	// EnvironmentToCompetitionInverseTable is the table name for the Competition entity.
 	// It exists in this package in order to avoid circular dependency with the "competition" package.
 	EnvironmentToCompetitionInverseTable = "competitions"
-	// EnvironmentToBuildTable is the table the holds the EnvironmentToBuild relation/edge. The primary key declared below.
-	EnvironmentToBuildTable = "environment_EnvironmentToBuild"
-	// EnvironmentToBuildInverseTable is the table name for the Build entity.
-	// It exists in this package in order to avoid circular dependency with the "build" package.
-	EnvironmentToBuildInverseTable = "builds"
 	// EnvironmentToIdentityTable is the table the holds the EnvironmentToIdentity relation/edge. The primary key declared below.
 	EnvironmentToIdentityTable = "environment_EnvironmentToIdentity"
 	// EnvironmentToIdentityInverseTable is the table name for the Identity entity.
@@ -151,16 +144,20 @@ const (
 	// EnvironmentToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	EnvironmentToNetworkInverseTable = "networks"
-	// EnvironmentToHostDependencyTable is the table the holds the EnvironmentToHostDependency relation/edge. The primary key declared below.
-	EnvironmentToHostDependencyTable = "environment_EnvironmentToHostDependency"
+	// EnvironmentToHostDependencyTable is the table the holds the EnvironmentToHostDependency relation/edge.
+	EnvironmentToHostDependencyTable = "host_dependencies"
 	// EnvironmentToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	EnvironmentToHostDependencyInverseTable = "host_dependencies"
-	// EnvironmentToTeamTable is the table the holds the EnvironmentToTeam relation/edge. The primary key declared below.
-	EnvironmentToTeamTable = "team_TeamToEnvironment"
-	// EnvironmentToTeamInverseTable is the table name for the Team entity.
-	// It exists in this package in order to avoid circular dependency with the "team" package.
-	EnvironmentToTeamInverseTable = "teams"
+	// EnvironmentToHostDependencyColumn is the table column denoting the EnvironmentToHostDependency relation/edge.
+	EnvironmentToHostDependencyColumn = "environment_environment_to_host_dependency"
+	// EnvironmentToBuildTable is the table the holds the EnvironmentToBuild relation/edge.
+	EnvironmentToBuildTable = "builds"
+	// EnvironmentToBuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	EnvironmentToBuildInverseTable = "builds"
+	// EnvironmentToBuildColumn is the table column denoting the EnvironmentToBuild relation/edge.
+	EnvironmentToBuildColumn = "build_build_to_environment"
 )
 
 // Columns holds all SQL columns for environment fields.
@@ -189,9 +186,6 @@ var (
 	// EnvironmentToCompetitionPrimaryKey and EnvironmentToCompetitionColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToCompetition relation (M2M).
 	EnvironmentToCompetitionPrimaryKey = []string{"environment_id", "competition_id"}
-	// EnvironmentToBuildPrimaryKey and EnvironmentToBuildColumn2 are the table columns denoting the
-	// primary key for the EnvironmentToBuild relation (M2M).
-	EnvironmentToBuildPrimaryKey = []string{"environment_id", "build_id"}
 	// EnvironmentToIdentityPrimaryKey and EnvironmentToIdentityColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToIdentity relation (M2M).
 	EnvironmentToIdentityPrimaryKey = []string{"environment_id", "identity_id"}
@@ -225,12 +219,6 @@ var (
 	// EnvironmentToNetworkPrimaryKey and EnvironmentToNetworkColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToNetwork relation (M2M).
 	EnvironmentToNetworkPrimaryKey = []string{"environment_id", "network_id"}
-	// EnvironmentToHostDependencyPrimaryKey and EnvironmentToHostDependencyColumn2 are the table columns denoting the
-	// primary key for the EnvironmentToHostDependency relation (M2M).
-	EnvironmentToHostDependencyPrimaryKey = []string{"environment_id", "host_dependency_id"}
-	// EnvironmentToTeamPrimaryKey and EnvironmentToTeamColumn2 are the table columns denoting the
-	// primary key for the EnvironmentToTeam relation (M2M).
-	EnvironmentToTeamPrimaryKey = []string{"team_id", "environment_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

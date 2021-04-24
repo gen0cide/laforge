@@ -64,11 +64,6 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the FileDownload type.
-var ForeignKeys = []string{
-	"provisioning_step_provisioning_step_to_file_download",
-}
-
 var (
 	// FileDownloadToEnvironmentPrimaryKey and FileDownloadToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the FileDownloadToEnvironment relation (M2M).
@@ -79,11 +74,6 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

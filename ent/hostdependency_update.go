@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -41,64 +42,72 @@ func (hdu *HostDependencyUpdate) SetNetworkID(s string) *HostDependencyUpdate {
 	return hdu
 }
 
-// AddHostDependencyToDependOnHostIDs adds the "HostDependencyToDependOnHost" edge to the Host entity by IDs.
-func (hdu *HostDependencyUpdate) AddHostDependencyToDependOnHostIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.AddHostDependencyToDependOnHostIDs(ids...)
+// SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID.
+func (hdu *HostDependencyUpdate) SetHostDependencyToDependOnHostID(id int) *HostDependencyUpdate {
+	hdu.mutation.SetHostDependencyToDependOnHostID(id)
 	return hdu
 }
 
-// AddHostDependencyToDependOnHost adds the "HostDependencyToDependOnHost" edges to the Host entity.
-func (hdu *HostDependencyUpdate) AddHostDependencyToDependOnHost(h ...*Host) *HostDependencyUpdate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
+// SetNillableHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID if the given value is not nil.
+func (hdu *HostDependencyUpdate) SetNillableHostDependencyToDependOnHostID(id *int) *HostDependencyUpdate {
+	if id != nil {
+		hdu = hdu.SetHostDependencyToDependOnHostID(*id)
 	}
-	return hdu.AddHostDependencyToDependOnHostIDs(ids...)
-}
-
-// AddHostDependencyToDependByHostIDs adds the "HostDependencyToDependByHost" edge to the Host entity by IDs.
-func (hdu *HostDependencyUpdate) AddHostDependencyToDependByHostIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.AddHostDependencyToDependByHostIDs(ids...)
 	return hdu
 }
 
-// AddHostDependencyToDependByHost adds the "HostDependencyToDependByHost" edges to the Host entity.
-func (hdu *HostDependencyUpdate) AddHostDependencyToDependByHost(h ...*Host) *HostDependencyUpdate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hdu.AddHostDependencyToDependByHostIDs(ids...)
+// SetHostDependencyToDependOnHost sets the "HostDependencyToDependOnHost" edge to the Host entity.
+func (hdu *HostDependencyUpdate) SetHostDependencyToDependOnHost(h *Host) *HostDependencyUpdate {
+	return hdu.SetHostDependencyToDependOnHostID(h.ID)
 }
 
-// AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by IDs.
-func (hdu *HostDependencyUpdate) AddHostDependencyToNetworkIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.AddHostDependencyToNetworkIDs(ids...)
+// SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID.
+func (hdu *HostDependencyUpdate) SetHostDependencyToDependByHostID(id int) *HostDependencyUpdate {
+	hdu.mutation.SetHostDependencyToDependByHostID(id)
 	return hdu
 }
 
-// AddHostDependencyToNetwork adds the "HostDependencyToNetwork" edges to the Network entity.
-func (hdu *HostDependencyUpdate) AddHostDependencyToNetwork(n ...*Network) *HostDependencyUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return hdu.AddHostDependencyToNetworkIDs(ids...)
+// SetHostDependencyToDependByHost sets the "HostDependencyToDependByHost" edge to the Host entity.
+func (hdu *HostDependencyUpdate) SetHostDependencyToDependByHost(h *Host) *HostDependencyUpdate {
+	return hdu.SetHostDependencyToDependByHostID(h.ID)
 }
 
-// AddHostDependencyToEnvironmentIDs adds the "HostDependencyToEnvironment" edge to the Environment entity by IDs.
-func (hdu *HostDependencyUpdate) AddHostDependencyToEnvironmentIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.AddHostDependencyToEnvironmentIDs(ids...)
+// SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID.
+func (hdu *HostDependencyUpdate) SetHostDependencyToNetworkID(id int) *HostDependencyUpdate {
+	hdu.mutation.SetHostDependencyToNetworkID(id)
 	return hdu
 }
 
-// AddHostDependencyToEnvironment adds the "HostDependencyToEnvironment" edges to the Environment entity.
-func (hdu *HostDependencyUpdate) AddHostDependencyToEnvironment(e ...*Environment) *HostDependencyUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID if the given value is not nil.
+func (hdu *HostDependencyUpdate) SetNillableHostDependencyToNetworkID(id *int) *HostDependencyUpdate {
+	if id != nil {
+		hdu = hdu.SetHostDependencyToNetworkID(*id)
 	}
-	return hdu.AddHostDependencyToEnvironmentIDs(ids...)
+	return hdu
+}
+
+// SetHostDependencyToNetwork sets the "HostDependencyToNetwork" edge to the Network entity.
+func (hdu *HostDependencyUpdate) SetHostDependencyToNetwork(n *Network) *HostDependencyUpdate {
+	return hdu.SetHostDependencyToNetworkID(n.ID)
+}
+
+// SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID.
+func (hdu *HostDependencyUpdate) SetHostDependencyToEnvironmentID(id int) *HostDependencyUpdate {
+	hdu.mutation.SetHostDependencyToEnvironmentID(id)
+	return hdu
+}
+
+// SetNillableHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (hdu *HostDependencyUpdate) SetNillableHostDependencyToEnvironmentID(id *int) *HostDependencyUpdate {
+	if id != nil {
+		hdu = hdu.SetHostDependencyToEnvironmentID(*id)
+	}
+	return hdu
+}
+
+// SetHostDependencyToEnvironment sets the "HostDependencyToEnvironment" edge to the Environment entity.
+func (hdu *HostDependencyUpdate) SetHostDependencyToEnvironment(e *Environment) *HostDependencyUpdate {
+	return hdu.SetHostDependencyToEnvironmentID(e.ID)
 }
 
 // Mutation returns the HostDependencyMutation object of the builder.
@@ -106,88 +115,28 @@ func (hdu *HostDependencyUpdate) Mutation() *HostDependencyMutation {
 	return hdu.mutation
 }
 
-// ClearHostDependencyToDependOnHost clears all "HostDependencyToDependOnHost" edges to the Host entity.
+// ClearHostDependencyToDependOnHost clears the "HostDependencyToDependOnHost" edge to the Host entity.
 func (hdu *HostDependencyUpdate) ClearHostDependencyToDependOnHost() *HostDependencyUpdate {
 	hdu.mutation.ClearHostDependencyToDependOnHost()
 	return hdu
 }
 
-// RemoveHostDependencyToDependOnHostIDs removes the "HostDependencyToDependOnHost" edge to Host entities by IDs.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToDependOnHostIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.RemoveHostDependencyToDependOnHostIDs(ids...)
-	return hdu
-}
-
-// RemoveHostDependencyToDependOnHost removes "HostDependencyToDependOnHost" edges to Host entities.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToDependOnHost(h ...*Host) *HostDependencyUpdate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hdu.RemoveHostDependencyToDependOnHostIDs(ids...)
-}
-
-// ClearHostDependencyToDependByHost clears all "HostDependencyToDependByHost" edges to the Host entity.
+// ClearHostDependencyToDependByHost clears the "HostDependencyToDependByHost" edge to the Host entity.
 func (hdu *HostDependencyUpdate) ClearHostDependencyToDependByHost() *HostDependencyUpdate {
 	hdu.mutation.ClearHostDependencyToDependByHost()
 	return hdu
 }
 
-// RemoveHostDependencyToDependByHostIDs removes the "HostDependencyToDependByHost" edge to Host entities by IDs.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToDependByHostIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.RemoveHostDependencyToDependByHostIDs(ids...)
-	return hdu
-}
-
-// RemoveHostDependencyToDependByHost removes "HostDependencyToDependByHost" edges to Host entities.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToDependByHost(h ...*Host) *HostDependencyUpdate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hdu.RemoveHostDependencyToDependByHostIDs(ids...)
-}
-
-// ClearHostDependencyToNetwork clears all "HostDependencyToNetwork" edges to the Network entity.
+// ClearHostDependencyToNetwork clears the "HostDependencyToNetwork" edge to the Network entity.
 func (hdu *HostDependencyUpdate) ClearHostDependencyToNetwork() *HostDependencyUpdate {
 	hdu.mutation.ClearHostDependencyToNetwork()
 	return hdu
 }
 
-// RemoveHostDependencyToNetworkIDs removes the "HostDependencyToNetwork" edge to Network entities by IDs.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToNetworkIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.RemoveHostDependencyToNetworkIDs(ids...)
-	return hdu
-}
-
-// RemoveHostDependencyToNetwork removes "HostDependencyToNetwork" edges to Network entities.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToNetwork(n ...*Network) *HostDependencyUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return hdu.RemoveHostDependencyToNetworkIDs(ids...)
-}
-
-// ClearHostDependencyToEnvironment clears all "HostDependencyToEnvironment" edges to the Environment entity.
+// ClearHostDependencyToEnvironment clears the "HostDependencyToEnvironment" edge to the Environment entity.
 func (hdu *HostDependencyUpdate) ClearHostDependencyToEnvironment() *HostDependencyUpdate {
 	hdu.mutation.ClearHostDependencyToEnvironment()
 	return hdu
-}
-
-// RemoveHostDependencyToEnvironmentIDs removes the "HostDependencyToEnvironment" edge to Environment entities by IDs.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToEnvironmentIDs(ids ...int) *HostDependencyUpdate {
-	hdu.mutation.RemoveHostDependencyToEnvironmentIDs(ids...)
-	return hdu
-}
-
-// RemoveHostDependencyToEnvironment removes "HostDependencyToEnvironment" edges to Environment entities.
-func (hdu *HostDependencyUpdate) RemoveHostDependencyToEnvironment(e ...*Environment) *HostDependencyUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return hdu.RemoveHostDependencyToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -197,12 +146,18 @@ func (hdu *HostDependencyUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(hdu.hooks) == 0 {
+		if err = hdu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = hdu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*HostDependencyMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = hdu.check(); err != nil {
+				return 0, err
 			}
 			hdu.mutation = mutation
 			affected, err = hdu.sqlSave(ctx)
@@ -241,6 +196,14 @@ func (hdu *HostDependencyUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (hdu *HostDependencyUpdate) check() error {
+	if _, ok := hdu.mutation.HostDependencyToDependByHostID(); hdu.mutation.HostDependencyToDependByHostCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"HostDependencyToDependByHost\"")
+	}
+	return nil
+}
+
 func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -275,10 +238,10 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if hdu.mutation.HostDependencyToDependOnHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependOnHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -286,34 +249,15 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 					Column: host.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hdu.mutation.RemovedHostDependencyToDependOnHostIDs(); len(nodes) > 0 && !hdu.mutation.HostDependencyToDependOnHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: host.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hdu.mutation.HostDependencyToDependOnHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependOnHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -329,10 +273,10 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if hdu.mutation.HostDependencyToDependByHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependByHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -340,34 +284,15 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 					Column: host.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hdu.mutation.RemovedHostDependencyToDependByHostIDs(); len(nodes) > 0 && !hdu.mutation.HostDependencyToDependByHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: host.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hdu.mutation.HostDependencyToDependByHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependByHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -383,10 +308,10 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if hdu.mutation.HostDependencyToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -394,34 +319,15 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 					Column: network.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hdu.mutation.RemovedHostDependencyToNetworkIDs(); len(nodes) > 0 && !hdu.mutation.HostDependencyToNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hdu.mutation.HostDependencyToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -437,10 +343,10 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if hdu.mutation.HostDependencyToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -448,34 +354,15 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hdu.mutation.RemovedHostDependencyToEnvironmentIDs(); len(nodes) > 0 && !hdu.mutation.HostDependencyToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hdu.mutation.HostDependencyToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -519,64 +406,72 @@ func (hduo *HostDependencyUpdateOne) SetNetworkID(s string) *HostDependencyUpdat
 	return hduo
 }
 
-// AddHostDependencyToDependOnHostIDs adds the "HostDependencyToDependOnHost" edge to the Host entity by IDs.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToDependOnHostIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.AddHostDependencyToDependOnHostIDs(ids...)
+// SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependOnHostID(id int) *HostDependencyUpdateOne {
+	hduo.mutation.SetHostDependencyToDependOnHostID(id)
 	return hduo
 }
 
-// AddHostDependencyToDependOnHost adds the "HostDependencyToDependOnHost" edges to the Host entity.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToDependOnHost(h ...*Host) *HostDependencyUpdateOne {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
+// SetNillableHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID if the given value is not nil.
+func (hduo *HostDependencyUpdateOne) SetNillableHostDependencyToDependOnHostID(id *int) *HostDependencyUpdateOne {
+	if id != nil {
+		hduo = hduo.SetHostDependencyToDependOnHostID(*id)
 	}
-	return hduo.AddHostDependencyToDependOnHostIDs(ids...)
-}
-
-// AddHostDependencyToDependByHostIDs adds the "HostDependencyToDependByHost" edge to the Host entity by IDs.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToDependByHostIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.AddHostDependencyToDependByHostIDs(ids...)
 	return hduo
 }
 
-// AddHostDependencyToDependByHost adds the "HostDependencyToDependByHost" edges to the Host entity.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToDependByHost(h ...*Host) *HostDependencyUpdateOne {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hduo.AddHostDependencyToDependByHostIDs(ids...)
+// SetHostDependencyToDependOnHost sets the "HostDependencyToDependOnHost" edge to the Host entity.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependOnHost(h *Host) *HostDependencyUpdateOne {
+	return hduo.SetHostDependencyToDependOnHostID(h.ID)
 }
 
-// AddHostDependencyToNetworkIDs adds the "HostDependencyToNetwork" edge to the Network entity by IDs.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToNetworkIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.AddHostDependencyToNetworkIDs(ids...)
+// SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependByHostID(id int) *HostDependencyUpdateOne {
+	hduo.mutation.SetHostDependencyToDependByHostID(id)
 	return hduo
 }
 
-// AddHostDependencyToNetwork adds the "HostDependencyToNetwork" edges to the Network entity.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToNetwork(n ...*Network) *HostDependencyUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return hduo.AddHostDependencyToNetworkIDs(ids...)
+// SetHostDependencyToDependByHost sets the "HostDependencyToDependByHost" edge to the Host entity.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependByHost(h *Host) *HostDependencyUpdateOne {
+	return hduo.SetHostDependencyToDependByHostID(h.ID)
 }
 
-// AddHostDependencyToEnvironmentIDs adds the "HostDependencyToEnvironment" edge to the Environment entity by IDs.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToEnvironmentIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.AddHostDependencyToEnvironmentIDs(ids...)
+// SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToNetworkID(id int) *HostDependencyUpdateOne {
+	hduo.mutation.SetHostDependencyToNetworkID(id)
 	return hduo
 }
 
-// AddHostDependencyToEnvironment adds the "HostDependencyToEnvironment" edges to the Environment entity.
-func (hduo *HostDependencyUpdateOne) AddHostDependencyToEnvironment(e ...*Environment) *HostDependencyUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID if the given value is not nil.
+func (hduo *HostDependencyUpdateOne) SetNillableHostDependencyToNetworkID(id *int) *HostDependencyUpdateOne {
+	if id != nil {
+		hduo = hduo.SetHostDependencyToNetworkID(*id)
 	}
-	return hduo.AddHostDependencyToEnvironmentIDs(ids...)
+	return hduo
+}
+
+// SetHostDependencyToNetwork sets the "HostDependencyToNetwork" edge to the Network entity.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToNetwork(n *Network) *HostDependencyUpdateOne {
+	return hduo.SetHostDependencyToNetworkID(n.ID)
+}
+
+// SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToEnvironmentID(id int) *HostDependencyUpdateOne {
+	hduo.mutation.SetHostDependencyToEnvironmentID(id)
+	return hduo
+}
+
+// SetNillableHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (hduo *HostDependencyUpdateOne) SetNillableHostDependencyToEnvironmentID(id *int) *HostDependencyUpdateOne {
+	if id != nil {
+		hduo = hduo.SetHostDependencyToEnvironmentID(*id)
+	}
+	return hduo
+}
+
+// SetHostDependencyToEnvironment sets the "HostDependencyToEnvironment" edge to the Environment entity.
+func (hduo *HostDependencyUpdateOne) SetHostDependencyToEnvironment(e *Environment) *HostDependencyUpdateOne {
+	return hduo.SetHostDependencyToEnvironmentID(e.ID)
 }
 
 // Mutation returns the HostDependencyMutation object of the builder.
@@ -584,88 +479,28 @@ func (hduo *HostDependencyUpdateOne) Mutation() *HostDependencyMutation {
 	return hduo.mutation
 }
 
-// ClearHostDependencyToDependOnHost clears all "HostDependencyToDependOnHost" edges to the Host entity.
+// ClearHostDependencyToDependOnHost clears the "HostDependencyToDependOnHost" edge to the Host entity.
 func (hduo *HostDependencyUpdateOne) ClearHostDependencyToDependOnHost() *HostDependencyUpdateOne {
 	hduo.mutation.ClearHostDependencyToDependOnHost()
 	return hduo
 }
 
-// RemoveHostDependencyToDependOnHostIDs removes the "HostDependencyToDependOnHost" edge to Host entities by IDs.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToDependOnHostIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.RemoveHostDependencyToDependOnHostIDs(ids...)
-	return hduo
-}
-
-// RemoveHostDependencyToDependOnHost removes "HostDependencyToDependOnHost" edges to Host entities.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToDependOnHost(h ...*Host) *HostDependencyUpdateOne {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hduo.RemoveHostDependencyToDependOnHostIDs(ids...)
-}
-
-// ClearHostDependencyToDependByHost clears all "HostDependencyToDependByHost" edges to the Host entity.
+// ClearHostDependencyToDependByHost clears the "HostDependencyToDependByHost" edge to the Host entity.
 func (hduo *HostDependencyUpdateOne) ClearHostDependencyToDependByHost() *HostDependencyUpdateOne {
 	hduo.mutation.ClearHostDependencyToDependByHost()
 	return hduo
 }
 
-// RemoveHostDependencyToDependByHostIDs removes the "HostDependencyToDependByHost" edge to Host entities by IDs.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToDependByHostIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.RemoveHostDependencyToDependByHostIDs(ids...)
-	return hduo
-}
-
-// RemoveHostDependencyToDependByHost removes "HostDependencyToDependByHost" edges to Host entities.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToDependByHost(h ...*Host) *HostDependencyUpdateOne {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return hduo.RemoveHostDependencyToDependByHostIDs(ids...)
-}
-
-// ClearHostDependencyToNetwork clears all "HostDependencyToNetwork" edges to the Network entity.
+// ClearHostDependencyToNetwork clears the "HostDependencyToNetwork" edge to the Network entity.
 func (hduo *HostDependencyUpdateOne) ClearHostDependencyToNetwork() *HostDependencyUpdateOne {
 	hduo.mutation.ClearHostDependencyToNetwork()
 	return hduo
 }
 
-// RemoveHostDependencyToNetworkIDs removes the "HostDependencyToNetwork" edge to Network entities by IDs.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToNetworkIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.RemoveHostDependencyToNetworkIDs(ids...)
-	return hduo
-}
-
-// RemoveHostDependencyToNetwork removes "HostDependencyToNetwork" edges to Network entities.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToNetwork(n ...*Network) *HostDependencyUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return hduo.RemoveHostDependencyToNetworkIDs(ids...)
-}
-
-// ClearHostDependencyToEnvironment clears all "HostDependencyToEnvironment" edges to the Environment entity.
+// ClearHostDependencyToEnvironment clears the "HostDependencyToEnvironment" edge to the Environment entity.
 func (hduo *HostDependencyUpdateOne) ClearHostDependencyToEnvironment() *HostDependencyUpdateOne {
 	hduo.mutation.ClearHostDependencyToEnvironment()
 	return hduo
-}
-
-// RemoveHostDependencyToEnvironmentIDs removes the "HostDependencyToEnvironment" edge to Environment entities by IDs.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToEnvironmentIDs(ids ...int) *HostDependencyUpdateOne {
-	hduo.mutation.RemoveHostDependencyToEnvironmentIDs(ids...)
-	return hduo
-}
-
-// RemoveHostDependencyToEnvironment removes "HostDependencyToEnvironment" edges to Environment entities.
-func (hduo *HostDependencyUpdateOne) RemoveHostDependencyToEnvironment(e ...*Environment) *HostDependencyUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return hduo.RemoveHostDependencyToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated HostDependency entity.
@@ -675,12 +510,18 @@ func (hduo *HostDependencyUpdateOne) Save(ctx context.Context) (*HostDependency,
 		node *HostDependency
 	)
 	if len(hduo.hooks) == 0 {
+		if err = hduo.check(); err != nil {
+			return nil, err
+		}
 		node, err = hduo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*HostDependencyMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = hduo.check(); err != nil {
+				return nil, err
 			}
 			hduo.mutation = mutation
 			node, err = hduo.sqlSave(ctx)
@@ -717,6 +558,14 @@ func (hduo *HostDependencyUpdateOne) ExecX(ctx context.Context) {
 	if err := hduo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (hduo *HostDependencyUpdateOne) check() error {
+	if _, ok := hduo.mutation.HostDependencyToDependByHostID(); hduo.mutation.HostDependencyToDependByHostCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"HostDependencyToDependByHost\"")
+	}
+	return nil
 }
 
 func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDependency, err error) {
@@ -758,10 +607,10 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 	}
 	if hduo.mutation.HostDependencyToDependOnHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependOnHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -769,34 +618,15 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 					Column: host.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hduo.mutation.RemovedHostDependencyToDependOnHostIDs(); len(nodes) > 0 && !hduo.mutation.HostDependencyToDependOnHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: host.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hduo.mutation.HostDependencyToDependOnHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependOnHostTable,
-			Columns: hostdependency.HostDependencyToDependOnHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependOnHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -812,10 +642,10 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 	}
 	if hduo.mutation.HostDependencyToDependByHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependByHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -823,34 +653,15 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 					Column: host.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hduo.mutation.RemovedHostDependencyToDependByHostIDs(); len(nodes) > 0 && !hduo.mutation.HostDependencyToDependByHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: host.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hduo.mutation.HostDependencyToDependByHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToDependByHostTable,
-			Columns: hostdependency.HostDependencyToDependByHostPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToDependByHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -866,10 +677,10 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 	}
 	if hduo.mutation.HostDependencyToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -877,34 +688,15 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 					Column: network.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hduo.mutation.RemovedHostDependencyToNetworkIDs(); len(nodes) > 0 && !hduo.mutation.HostDependencyToNetworkCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: network.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hduo.mutation.HostDependencyToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   hostdependency.HostDependencyToNetworkTable,
-			Columns: hostdependency.HostDependencyToNetworkPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -920,10 +712,10 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 	}
 	if hduo.mutation.HostDependencyToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -931,34 +723,15 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := hduo.mutation.RemovedHostDependencyToEnvironmentIDs(); len(nodes) > 0 && !hduo.mutation.HostDependencyToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := hduo.mutation.HostDependencyToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   hostdependency.HostDependencyToEnvironmentTable,
-			Columns: hostdependency.HostDependencyToEnvironmentPrimaryKey,
+			Columns: []string{hostdependency.HostDependencyToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

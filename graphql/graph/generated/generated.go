@@ -81,8 +81,6 @@ type ComplexityRoot struct {
 
 	Build struct {
 		BuildToTeam func(childComplexity int) int
-		BuildToUser func(childComplexity int) int
-		Config      func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Revision    func(childComplexity int) int
 		Tags        func(childComplexity int) int
@@ -349,8 +347,6 @@ type ComplexityRoot struct {
 
 type BuildResolver interface {
 	Tags(ctx context.Context, obj *ent.Build) ([]*ent.Tag, error)
-	Config(ctx context.Context, obj *ent.Build) ([]*model.ConfigMap, error)
-	BuildToUser(ctx context.Context, obj *ent.Build) (*ent.User, error)
 }
 type CommandResolver interface {
 	Vars(ctx context.Context, obj *ent.Command) ([]*model.VarsMap, error)
@@ -573,20 +569,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Build.BuildToTeam(childComplexity), true
-
-	case "Build.buildToUser":
-		if e.complexity.Build.BuildToUser == nil {
-			break
-		}
-
-		return e.complexity.Build.BuildToUser(childComplexity), true
-
-	case "Build.config":
-		if e.complexity.Build.Config == nil {
-			break
-		}
-
-		return e.complexity.Build.Config(childComplexity), true
 
 	case "Build.id":
 		if e.complexity.Build.ID == nil {
@@ -2162,8 +2144,6 @@ type Build {
   id: ID!
   revision: Int!
   tags: [Tag]
-  config: [configMap]
-  buildToUser: User!
   buildToTeam: [Team]!
 }
 
@@ -3006,73 +2986,6 @@ func (ec *executionContext) _Build_tags(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*ent.Tag)
 	fc.Result = res
 	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐTag(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Build_config(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Build",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Build().Config(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.ConfigMap)
-	fc.Result = res
-	return ec.marshalOconfigMap2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐConfigMap(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Build_buildToUser(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Build",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Build().BuildToUser(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Build_buildToTeam(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
@@ -10745,31 +10658,6 @@ func (ec *executionContext) _Build(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Build_tags(ctx, field, obj)
-				return res
-			})
-		case "config":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Build_config(ctx, field, obj)
-				return res
-			})
-		case "buildToUser":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Build_buildToUser(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			})
 		case "buildToTeam":
