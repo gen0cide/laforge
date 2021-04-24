@@ -22,24 +22,23 @@ type Tag struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description                                map[string]string `json:"description,omitempty"`
-	agent_status_agent_status_to_tag           *int
-	command_command_to_tag                     *int
-	competition_competition_to_tag             *int
-	dns_dns_to_tag                             *int
-	dns_record_dns_record_to_tag               *int
-	disk_disk_to_tag                           *int
-	environment_environment_to_tag             *int
-	file_delete_file_delete_to_tag             *int
-	file_download_file_download_to_tag         *int
-	file_extract_file_extract_to_tag           *int
-	finding_finding_to_tag                     *int
-	host_host_to_tag                           *int
-	included_network_included_network_to_tag   *int
-	network_network_to_tag                     *int
-	provisioning_step_provisioning_step_to_tag *int
-	script_script_to_tag                       *int
-	user_user_to_tag                           *int
+	Description                              map[string]string `json:"description,omitempty"`
+	agent_status_agent_status_to_tag         *int
+	command_command_to_tag                   *int
+	competition_competition_to_tag           *int
+	dns_dns_to_tag                           *int
+	dns_record_dns_record_to_tag             *int
+	disk_disk_to_tag                         *int
+	environment_environment_to_tag           *int
+	file_delete_file_delete_to_tag           *int
+	file_download_file_download_to_tag       *int
+	file_extract_file_extract_to_tag         *int
+	finding_finding_to_tag                   *int
+	host_host_to_tag                         *int
+	included_network_included_network_to_tag *int
+	network_network_to_tag                   *int
+	script_script_to_tag                     *int
+	user_user_to_tag                         *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -83,11 +82,9 @@ func (*Tag) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case tag.ForeignKeys[13]: // network_network_to_tag
 			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[14]: // provisioning_step_provisioning_step_to_tag
+		case tag.ForeignKeys[14]: // script_script_to_tag
 			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[15]: // script_script_to_tag
-			values[i] = &sql.NullInt64{}
-		case tag.ForeignKeys[16]: // user_user_to_tag
+		case tag.ForeignKeys[15]: // user_user_to_tag
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
@@ -231,19 +228,12 @@ func (t *Tag) assignValues(columns []string, values []interface{}) error {
 			}
 		case tag.ForeignKeys[14]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_tag", value)
-			} else if value.Valid {
-				t.provisioning_step_provisioning_step_to_tag = new(int)
-				*t.provisioning_step_provisioning_step_to_tag = int(value.Int64)
-			}
-		case tag.ForeignKeys[15]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field script_script_to_tag", value)
 			} else if value.Valid {
 				t.script_script_to_tag = new(int)
 				*t.script_script_to_tag = int(value.Int64)
 			}
-		case tag.ForeignKeys[16]:
+		case tag.ForeignKeys[15]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
 			} else if value.Valid {

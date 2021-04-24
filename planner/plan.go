@@ -12,12 +12,19 @@ import (
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/grpc"
@@ -268,7 +275,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, prevPlan)
 			}
 		}
-		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToPlan().Only(ctx)
+		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToEndStepPlan().Only(ctx)
 		if err != nil && err != err.(*ent.NotFoundError) {
 			log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
 			return nil, err
@@ -295,7 +302,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetProvisionedHostToHost(entHost).
 		Save(ctx)
 
-	_, err = client.Plan.Create().
+	endPlanNode, err := client.Plan.Create().
 		AddPrevPlan(prevPlans...).
 		SetType(plan.TypeProvisionHost).
 		SetBuildID(prevPlan.BuildID).
@@ -340,5 +347,201 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		}
 	}
 
+	for stepNumber, pStep := range entHost.ProvisionSteps {
+		stepNumber = stepNumber + 1
+		entProvisioningStep, err := createProvisioningStep(ctx, client, pStep, stepNumber, entProvisionedHost, endPlanNode)
+		if err != nil {
+			return nil, err
+		}
+		endPlanNode, err = entProvisioningStep.QueryProvisioningStepToPlan().Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	_, err = entProvisionedHost.Update().SetProvisionedHostToEndStepPlan(endPlanNode).Save(ctx)
+	if err != nil {
+		log.Fatalf("Unable to Update The End Step. Err: %v", err)
+		return nil, err
+	}
+
 	return entProvisionedHost, nil
+}
+
+func createProvisioningStep(ctx context.Context, client *ent.Client, hclID string, stepNumber int, pHost *ent.ProvisionedHost, prevPlan *ent.Plan) (*ent.ProvisioningStep, error) {
+	var entProvisioningStep *ent.ProvisioningStep
+	currentEnviroment, err := pHost.QueryProvisionedHostToHost().QueryHostToEnvironment().Only(ctx)
+	if err != nil {
+		log.Fatalf("Failed to Query Current Enviroment for Provisoned Host %v. Err: %v", pHost.ID, err)
+		return nil, err
+	}
+	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisionedHost)
+	if err != nil {
+		return nil, err
+	}
+	entScript, err := client.Script.Query().Where(
+		script.And(
+			script.HasScriptToEnvironmentWith(
+				environment.IDEQ(currentEnviroment.ID),
+			),
+			script.HclIDEQ(hclID),
+		),
+	).Only(ctx)
+	if err != nil {
+		if err != err.(*ent.NotFoundError) {
+			log.Fatalf("Failed to Query Script %v. Err: %v", hclID, err)
+			return nil, err
+		} else {
+			entCommand, err := client.Command.Query().Where(
+				command.And(
+					command.HasCommandToEnvironmentWith(
+						environment.IDEQ(currentEnviroment.ID),
+					),
+					command.HclIDEQ(hclID),
+				)).Only(ctx)
+			if err != nil {
+				if err != err.(*ent.NotFoundError) {
+					log.Fatalf("Failed to Query Command %v. Err: %v", hclID, err)
+					return nil, err
+				} else {
+					entFileDownload, err := client.FileDownload.Query().Where(
+						filedownload.And(
+							filedownload.HasFileDownloadToEnvironmentWith(
+								environment.IDEQ(currentEnviroment.ID),
+							),
+							filedownload.HclIDEQ(hclID),
+						)).Only(ctx)
+					if err != nil {
+						if err != err.(*ent.NotFoundError) {
+							log.Fatalf("Failed to Query FileDownload %v. Err: %v", hclID, err)
+							return nil, err
+						} else {
+							entFileExtract, err := client.FileExtract.Query().Where(
+								fileextract.And(
+									fileextract.HasFileExtractToEnvironmentWith(
+										environment.IDEQ(currentEnviroment.ID),
+									),
+									fileextract.HclIDEQ(hclID),
+								)).Only(ctx)
+							if err != nil {
+								if err != err.(*ent.NotFoundError) {
+									log.Fatalf("Failed to Query FileExtract %v. Err: %v", hclID, err)
+									return nil, err
+								} else {
+									entFileDelete, err := client.FileDelete.Query().Where(
+										filedelete.And(
+											filedelete.HasFileDeleteToEnvironmentWith(
+												environment.IDEQ(currentEnviroment.ID),
+											),
+											filedelete.HclIDEQ(hclID),
+										)).Only(ctx)
+									if err != nil {
+										if err != err.(*ent.NotFoundError) {
+											log.Fatalf("Failed to Query FileDelete %v. Err: %v", hclID, err)
+											return nil, err
+										} else {
+											entDNSRecord, err := client.DNSRecord.Query().Where(
+												dnsrecord.And(
+													dnsrecord.HasDNSRecordToEnvironmentWith(
+														environment.IDEQ(currentEnviroment.ID),
+													),
+													dnsrecord.HclIDEQ(hclID),
+												)).Only(ctx)
+											if err != nil {
+												if err != err.(*ent.NotFoundError) {
+													log.Fatalf("Failed to Query FileDelete %v. Err: %v", hclID, err)
+													return nil, err
+												} else {
+													log.Fatalf("No Provisioning Steps found for %v. Err: %v", hclID, err)
+													return nil, err
+												}
+											} else {
+												entProvisioningStep, err = client.ProvisioningStep.Create().
+													SetStepNumber(stepNumber).
+													SetType(provisioningstep.TypeDNSRecord).SetProvisioningStepToDNSRecord(entDNSRecord).
+													SetProvisioningStepToStatus(entStatus).
+													Save(ctx)
+												if err != nil {
+													log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+													return nil, err
+												}
+											}
+										}
+									} else {
+										entProvisioningStep, err = client.ProvisioningStep.Create().
+											SetStepNumber(stepNumber).
+											SetType(provisioningstep.TypeFileDelete).SetProvisioningStepToFileDelete(entFileDelete).
+											SetProvisioningStepToStatus(entStatus).
+											Save(ctx)
+										if err != nil {
+											log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+											return nil, err
+										}
+									}
+								}
+							} else {
+								entProvisioningStep, err = client.ProvisioningStep.Create().
+									SetStepNumber(stepNumber).
+									SetType(provisioningstep.TypeFileExtract).SetProvisioningStepToFileExtract(entFileExtract).
+									SetProvisioningStepToStatus(entStatus).
+									Save(ctx)
+								if err != nil {
+									log.Fatalf("Failed to Creat Provisioning Step for FileExtract %v. Err: %v", hclID, err)
+									return nil, err
+								}
+							}
+						}
+					} else {
+						entProvisioningStep, err = client.ProvisioningStep.Create().
+							SetStepNumber(stepNumber).
+							SetType(provisioningstep.TypeFileDownload).
+							SetProvisioningStepToFileDownload(entFileDownload).
+							SetProvisioningStepToStatus(entStatus).
+							Save(ctx)
+						if err != nil {
+							log.Fatalf("Failed to Creat Provisioning Step for FileDownload %v. Err: %v", hclID, err)
+							return nil, err
+						}
+					}
+				}
+			} else {
+				entProvisioningStep, err = client.ProvisioningStep.Create().
+					SetStepNumber(stepNumber).
+					SetType(provisioningstep.TypeCommand).
+					SetProvisioningStepToCommand(entCommand).
+					SetProvisioningStepToStatus(entStatus).
+					Save(ctx)
+				if err != nil {
+					log.Fatalf("Failed to Creat Provisioning Step for Command %v. Err: %v", hclID, err)
+					return nil, err
+				}
+			}
+		}
+	} else {
+		entProvisioningStep, err = client.ProvisioningStep.Create().
+			SetStepNumber(stepNumber).
+			SetType(provisioningstep.TypeScript).
+			SetProvisioningStepToScript(entScript).
+			SetProvisioningStepToStatus(entStatus).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Creat Provisioning Step for Script %v. Err: %v", hclID, err)
+			return nil, err
+		}
+	}
+
+	_, err = client.Plan.Create().
+		AddPrevPlan(prevPlan).
+		SetType(plan.TypeExecuteStep).
+		SetBuildID(prevPlan.BuildID).
+		SetPlanToProvisioningStep(entProvisioningStep).
+		SetStepNumber(prevPlan.StepNumber + 1).
+		Save(ctx)
+
+	if err != nil {
+		log.Fatalf("Failed to Creat Plan Node for Provisioning Step %v. Err: %v", entProvisioningStep.ID, err)
+		return nil, err
+	}
+
+	return entProvisioningStep, nil
+
 }

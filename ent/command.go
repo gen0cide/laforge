@@ -50,7 +50,7 @@ type Command struct {
 	// CommandToEnvironment holds the value of the CommandToEnvironment edge.
 	HCLCommandToEnvironment []*Environment `json:"CommandToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_command *int
+
 }
 
 // CommandEdges holds the relations/edges for other nodes in the graph.
@@ -106,8 +106,6 @@ func (*Command) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case command.FieldHclID, command.FieldName, command.FieldDescription, command.FieldProgram:
 			values[i] = &sql.NullString{}
-		case command.ForeignKeys[0]: // provisioning_step_provisioning_step_to_command
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Command", columns[i])
 		}
@@ -203,13 +201,6 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &c.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case command.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_command", value)
-			} else if value.Valid {
-				c.provisioning_step_provisioning_step_to_command = new(int)
-				*c.provisioning_step_provisioning_step_to_command = int(value.Int64)
 			}
 		}
 	}

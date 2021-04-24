@@ -65,6 +65,25 @@ func (phc *ProvisionedHostCreate) SetProvisionedHostToHost(h *Host) *Provisioned
 	return phc.SetProvisionedHostToHostID(h.ID)
 }
 
+// SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToEndStepPlanID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToEndStepPlanID(id)
+	return phc
+}
+
+// SetNillableProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phc *ProvisionedHostCreate) SetNillableProvisionedHostToEndStepPlanID(id *int) *ProvisionedHostCreate {
+	if id != nil {
+		phc = phc.SetProvisionedHostToEndStepPlanID(*id)
+	}
+	return phc
+}
+
+// SetProvisionedHostToEndStepPlan sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToEndStepPlan(p *Plan) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToEndStepPlanID(p.ID)
+}
+
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phc *ProvisionedHostCreate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostCreate {
 	phc.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
@@ -284,12 +303,31 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := phc.mutation.ProvisionedHostToEndStepPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToEndStepPlanTable,
+			Columns: []string{provisionedhost.ProvisionedHostToEndStepPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := phc.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

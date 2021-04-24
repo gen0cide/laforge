@@ -17767,6 +17767,8 @@ type ProvisionedHostMutation struct {
 	cleared_ProvisionedHostToProvisionedNetwork bool
 	_ProvisionedHostToHost                      *int
 	cleared_ProvisionedHostToHost               bool
+	_ProvisionedHostToEndStepPlan               *int
+	cleared_ProvisionedHostToEndStepPlan        bool
 	_ProvisionedHostToProvisioningStep          map[int]struct{}
 	removed_ProvisionedHostToProvisioningStep   map[int]struct{}
 	cleared_ProvisionedHostToProvisioningStep   bool
@@ -18013,6 +18015,45 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToHost() {
 	m._ProvisionedHostToHost = nil
 	m.cleared_ProvisionedHostToHost = false
+}
+
+// SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToEndStepPlanID(id int) {
+	m._ProvisionedHostToEndStepPlan = &id
+}
+
+// ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToEndStepPlan() {
+	m.cleared_ProvisionedHostToEndStepPlan = true
+}
+
+// ProvisionedHostToEndStepPlanCleared returns if the "ProvisionedHostToEndStepPlan" edge to the Plan entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanCleared() bool {
+	return m.cleared_ProvisionedHostToEndStepPlan
+}
+
+// ProvisionedHostToEndStepPlanID returns the "ProvisionedHostToEndStepPlan" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanID() (id int, exists bool) {
+	if m._ProvisionedHostToEndStepPlan != nil {
+		return *m._ProvisionedHostToEndStepPlan, true
+	}
+	return
+}
+
+// ProvisionedHostToEndStepPlanIDs returns the "ProvisionedHostToEndStepPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToEndStepPlanID instead. It exists only for internal usage by the builders.
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanIDs() (ids []int) {
+	if id := m._ProvisionedHostToEndStepPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvisionedHostToEndStepPlan resets all changes to the "ProvisionedHostToEndStepPlan" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToEndStepPlan() {
+	m._ProvisionedHostToEndStepPlan = nil
+	m.cleared_ProvisionedHostToEndStepPlan = false
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by ids.
@@ -18326,7 +18367,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m._ProvisionedHostToStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -18335,6 +18376,9 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m._ProvisionedHostToHost != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
+	}
+	if m._ProvisionedHostToEndStepPlan != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToEndStepPlan)
 	}
 	if m._ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
@@ -18367,6 +18411,10 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 		if id := m._ProvisionedHostToHost; id != nil {
 			return []ent.Value{*id}
 		}
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		if id := m._ProvisionedHostToEndStepPlan; id != nil {
+			return []ent.Value{*id}
+		}
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		ids := make([]ent.Value, 0, len(m._ProvisionedHostToProvisioningStep))
 		for id := range m._ProvisionedHostToProvisioningStep {
@@ -18395,7 +18443,7 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removed_ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
@@ -18436,7 +18484,7 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.cleared_ProvisionedHostToStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -18445,6 +18493,9 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisionedHostToHost {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToHost)
+	}
+	if m.cleared_ProvisionedHostToEndStepPlan {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToEndStepPlan)
 	}
 	if m.cleared_ProvisionedHostToProvisioningStep {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
@@ -18471,6 +18522,8 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedHostToProvisionedNetwork
 	case provisionedhost.EdgeProvisionedHostToHost:
 		return m.cleared_ProvisionedHostToHost
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		return m.cleared_ProvisionedHostToEndStepPlan
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		return m.cleared_ProvisionedHostToProvisioningStep
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
@@ -18496,6 +18549,9 @@ func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 	case provisionedhost.EdgeProvisionedHostToHost:
 		m.ClearProvisionedHostToHost()
 		return nil
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		m.ClearProvisionedHostToEndStepPlan()
+		return nil
 	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
 		m.ClearProvisionedHostToGinFileMiddleware()
 		return nil
@@ -18515,6 +18571,9 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 		return nil
 	case provisionedhost.EdgeProvisionedHostToHost:
 		m.ResetProvisionedHostToHost()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
+		m.ResetProvisionedHostToEndStepPlan()
 		return nil
 	case provisionedhost.EdgeProvisionedHostToProvisioningStep:
 		m.ResetProvisionedHostToProvisioningStep()
@@ -19266,39 +19325,27 @@ type ProvisioningStepMutation struct {
 	op                                          Op
 	typ                                         string
 	id                                          *int
-	provisioner_type                            *string
+	_type                                       *provisioningstep.Type
 	step_number                                 *int
 	addstep_number                              *int
 	clearedFields                               map[string]struct{}
-	_ProvisioningStepToTag                      map[int]struct{}
-	removed_ProvisioningStepToTag               map[int]struct{}
-	cleared_ProvisioningStepToTag               bool
-	_ProvisioningStepToStatus                   map[int]struct{}
-	removed_ProvisioningStepToStatus            map[int]struct{}
+	_ProvisioningStepToStatus                   *int
 	cleared_ProvisioningStepToStatus            bool
-	_ProvisioningStepToProvisionedHost          map[int]struct{}
-	removed_ProvisioningStepToProvisionedHost   map[int]struct{}
+	_ProvisioningStepToProvisionedHost          *int
 	cleared_ProvisioningStepToProvisionedHost   bool
-	_ProvisioningStepToScript                   map[int]struct{}
-	removed_ProvisioningStepToScript            map[int]struct{}
+	_ProvisioningStepToScript                   *int
 	cleared_ProvisioningStepToScript            bool
-	_ProvisioningStepToCommand                  map[int]struct{}
-	removed_ProvisioningStepToCommand           map[int]struct{}
+	_ProvisioningStepToCommand                  *int
 	cleared_ProvisioningStepToCommand           bool
-	_ProvisioningStepToDNSRecord                map[int]struct{}
-	removed_ProvisioningStepToDNSRecord         map[int]struct{}
+	_ProvisioningStepToDNSRecord                *int
 	cleared_ProvisioningStepToDNSRecord         bool
-	_ProvisioningStepToFileDelete               map[int]struct{}
-	removed_ProvisioningStepToFileDelete        map[int]struct{}
+	_ProvisioningStepToFileDelete               *int
 	cleared_ProvisioningStepToFileDelete        bool
-	_ProvisioningStepToFileDownload             map[int]struct{}
-	removed_ProvisioningStepToFileDownload      map[int]struct{}
+	_ProvisioningStepToFileDownload             *int
 	cleared_ProvisioningStepToFileDownload      bool
-	_ProvisioningStepToFileExtract              map[int]struct{}
-	removed_ProvisioningStepToFileExtract       map[int]struct{}
+	_ProvisioningStepToFileExtract              *int
 	cleared_ProvisioningStepToFileExtract       bool
-	_ProvisioningStepToPlan                     map[int]struct{}
-	removed_ProvisioningStepToPlan              map[int]struct{}
+	_ProvisioningStepToPlan                     *int
 	cleared_ProvisioningStepToPlan              bool
 	_ProvisioningStepToGinFileMiddleware        *int
 	cleared_ProvisioningStepToGinFileMiddleware bool
@@ -19386,40 +19433,40 @@ func (m *ProvisioningStepMutation) ID() (id int, exists bool) {
 	return *m.id, true
 }
 
-// SetProvisionerType sets the "provisioner_type" field.
-func (m *ProvisioningStepMutation) SetProvisionerType(s string) {
-	m.provisioner_type = &s
+// SetType sets the "type" field.
+func (m *ProvisioningStepMutation) SetType(pr provisioningstep.Type) {
+	m._type = &pr
 }
 
-// ProvisionerType returns the value of the "provisioner_type" field in the mutation.
-func (m *ProvisioningStepMutation) ProvisionerType() (r string, exists bool) {
-	v := m.provisioner_type
+// GetType returns the value of the "type" field in the mutation.
+func (m *ProvisioningStepMutation) GetType() (r provisioningstep.Type, exists bool) {
+	v := m._type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProvisionerType returns the old "provisioner_type" field's value of the ProvisioningStep entity.
+// OldType returns the old "type" field's value of the ProvisioningStep entity.
 // If the ProvisioningStep object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProvisioningStepMutation) OldProvisionerType(ctx context.Context) (v string, err error) {
+func (m *ProvisioningStepMutation) OldType(ctx context.Context) (v provisioningstep.Type, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldProvisionerType is only allowed on UpdateOne operations")
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldProvisionerType requires an ID field in the mutation")
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvisionerType: %w", err)
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
 	}
-	return oldValue.ProvisionerType, nil
+	return oldValue.Type, nil
 }
 
-// ResetProvisionerType resets all changes to the "provisioner_type" field.
-func (m *ProvisioningStepMutation) ResetProvisionerType() {
-	m.provisioner_type = nil
+// ResetType resets all changes to the "type" field.
+func (m *ProvisioningStepMutation) ResetType() {
+	m._type = nil
 }
 
 // SetStepNumber sets the "step_number" field.
@@ -19478,67 +19525,9 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 	m.addstep_number = nil
 }
 
-// AddProvisioningStepToTagIDs adds the "ProvisioningStepToTag" edge to the Tag entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToTagIDs(ids ...int) {
-	if m._ProvisioningStepToTag == nil {
-		m._ProvisioningStepToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProvisioningStepToTag clears the "ProvisioningStepToTag" edge to the Tag entity.
-func (m *ProvisioningStepMutation) ClearProvisioningStepToTag() {
-	m.cleared_ProvisioningStepToTag = true
-}
-
-// ProvisioningStepToTagCleared returns if the "ProvisioningStepToTag" edge to the Tag entity was cleared.
-func (m *ProvisioningStepMutation) ProvisioningStepToTagCleared() bool {
-	return m.cleared_ProvisioningStepToTag
-}
-
-// RemoveProvisioningStepToTagIDs removes the "ProvisioningStepToTag" edge to the Tag entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToTagIDs(ids ...int) {
-	if m.removed_ProvisioningStepToTag == nil {
-		m.removed_ProvisioningStepToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToTag returns the removed IDs of the "ProvisioningStepToTag" edge to the Tag entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToTagIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvisioningStepToTagIDs returns the "ProvisioningStepToTag" edge IDs in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToTagIDs() (ids []int) {
-	for id := range m._ProvisioningStepToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProvisioningStepToTag resets all changes to the "ProvisioningStepToTag" edge.
-func (m *ProvisioningStepMutation) ResetProvisioningStepToTag() {
-	m._ProvisioningStepToTag = nil
-	m.cleared_ProvisioningStepToTag = false
-	m.removed_ProvisioningStepToTag = nil
-}
-
-// AddProvisioningStepToStatuIDs adds the "ProvisioningStepToStatus" edge to the Status entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToStatuIDs(ids ...int) {
-	if m._ProvisioningStepToStatus == nil {
-		m._ProvisioningStepToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToStatus[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToStatusID(id int) {
+	m._ProvisioningStepToStatus = &id
 }
 
 // ClearProvisioningStepToStatus clears the "ProvisioningStepToStatus" edge to the Status entity.
@@ -19551,28 +19540,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusCleared() bool {
 	return m.cleared_ProvisioningStepToStatus
 }
 
-// RemoveProvisioningStepToStatuIDs removes the "ProvisioningStepToStatus" edge to the Status entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToStatuIDs(ids ...int) {
-	if m.removed_ProvisioningStepToStatus == nil {
-		m.removed_ProvisioningStepToStatus = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToStatus[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToStatus returns the removed IDs of the "ProvisioningStepToStatus" edge to the Status entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToStatusIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToStatus {
-		ids = append(ids, id)
+// ProvisioningStepToStatusID returns the "ProvisioningStepToStatus" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusID() (id int, exists bool) {
+	if m._ProvisioningStepToStatus != nil {
+		return *m._ProvisioningStepToStatus, true
 	}
 	return
 }
 
 // ProvisioningStepToStatusIDs returns the "ProvisioningStepToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToStatusID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
-	for id := range m._ProvisioningStepToStatus {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToStatus; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19581,17 +19562,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToStatus() {
 	m._ProvisioningStepToStatus = nil
 	m.cleared_ProvisioningStepToStatus = false
-	m.removed_ProvisioningStepToStatus = nil
 }
 
-// AddProvisioningStepToProvisionedHostIDs adds the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToProvisionedHostIDs(ids ...int) {
-	if m._ProvisioningStepToProvisionedHost == nil {
-		m._ProvisioningStepToProvisionedHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToProvisionedHostID(id int) {
+	m._ProvisioningStepToProvisionedHost = &id
 }
 
 // ClearProvisioningStepToProvisionedHost clears the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
@@ -19604,28 +19579,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostCleared() bo
 	return m.cleared_ProvisioningStepToProvisionedHost
 }
 
-// RemoveProvisioningStepToProvisionedHostIDs removes the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToProvisionedHostIDs(ids ...int) {
-	if m.removed_ProvisioningStepToProvisionedHost == nil {
-		m.removed_ProvisioningStepToProvisionedHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToProvisionedHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToProvisionedHost returns the removed IDs of the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToProvisionedHostIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToProvisionedHost {
-		ids = append(ids, id)
+// ProvisioningStepToProvisionedHostID returns the "ProvisioningStepToProvisionedHost" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostID() (id int, exists bool) {
+	if m._ProvisioningStepToProvisionedHost != nil {
+		return *m._ProvisioningStepToProvisionedHost, true
 	}
 	return
 }
 
 // ProvisioningStepToProvisionedHostIDs returns the "ProvisioningStepToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToProvisionedHostID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids []int) {
-	for id := range m._ProvisioningStepToProvisionedHost {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToProvisionedHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19634,17 +19601,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids [
 func (m *ProvisioningStepMutation) ResetProvisioningStepToProvisionedHost() {
 	m._ProvisioningStepToProvisionedHost = nil
 	m.cleared_ProvisioningStepToProvisionedHost = false
-	m.removed_ProvisioningStepToProvisionedHost = nil
 }
 
-// AddProvisioningStepToScriptIDs adds the "ProvisioningStepToScript" edge to the Script entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToScriptIDs(ids ...int) {
-	if m._ProvisioningStepToScript == nil {
-		m._ProvisioningStepToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToScript[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToScriptID(id int) {
+	m._ProvisioningStepToScript = &id
 }
 
 // ClearProvisioningStepToScript clears the "ProvisioningStepToScript" edge to the Script entity.
@@ -19657,28 +19618,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptCleared() bool {
 	return m.cleared_ProvisioningStepToScript
 }
 
-// RemoveProvisioningStepToScriptIDs removes the "ProvisioningStepToScript" edge to the Script entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToScriptIDs(ids ...int) {
-	if m.removed_ProvisioningStepToScript == nil {
-		m.removed_ProvisioningStepToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToScript[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToScript returns the removed IDs of the "ProvisioningStepToScript" edge to the Script entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToScriptIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToScript {
-		ids = append(ids, id)
+// ProvisioningStepToScriptID returns the "ProvisioningStepToScript" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptID() (id int, exists bool) {
+	if m._ProvisioningStepToScript != nil {
+		return *m._ProvisioningStepToScript, true
 	}
 	return
 }
 
 // ProvisioningStepToScriptIDs returns the "ProvisioningStepToScript" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToScriptID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
-	for id := range m._ProvisioningStepToScript {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToScript; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19687,17 +19640,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToScript() {
 	m._ProvisioningStepToScript = nil
 	m.cleared_ProvisioningStepToScript = false
-	m.removed_ProvisioningStepToScript = nil
 }
 
-// AddProvisioningStepToCommandIDs adds the "ProvisioningStepToCommand" edge to the Command entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToCommandIDs(ids ...int) {
-	if m._ProvisioningStepToCommand == nil {
-		m._ProvisioningStepToCommand = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToCommand[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToCommandID(id int) {
+	m._ProvisioningStepToCommand = &id
 }
 
 // ClearProvisioningStepToCommand clears the "ProvisioningStepToCommand" edge to the Command entity.
@@ -19710,28 +19657,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandCleared() bool {
 	return m.cleared_ProvisioningStepToCommand
 }
 
-// RemoveProvisioningStepToCommandIDs removes the "ProvisioningStepToCommand" edge to the Command entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToCommandIDs(ids ...int) {
-	if m.removed_ProvisioningStepToCommand == nil {
-		m.removed_ProvisioningStepToCommand = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToCommand[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToCommand returns the removed IDs of the "ProvisioningStepToCommand" edge to the Command entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToCommandIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToCommand {
-		ids = append(ids, id)
+// ProvisioningStepToCommandID returns the "ProvisioningStepToCommand" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandID() (id int, exists bool) {
+	if m._ProvisioningStepToCommand != nil {
+		return *m._ProvisioningStepToCommand, true
 	}
 	return
 }
 
 // ProvisioningStepToCommandIDs returns the "ProvisioningStepToCommand" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToCommandID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
-	for id := range m._ProvisioningStepToCommand {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToCommand; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19740,17 +19679,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToCommand() {
 	m._ProvisioningStepToCommand = nil
 	m.cleared_ProvisioningStepToCommand = false
-	m.removed_ProvisioningStepToCommand = nil
 }
 
-// AddProvisioningStepToDNSRecordIDs adds the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToDNSRecordIDs(ids ...int) {
-	if m._ProvisioningStepToDNSRecord == nil {
-		m._ProvisioningStepToDNSRecord = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToDNSRecordID(id int) {
+	m._ProvisioningStepToDNSRecord = &id
 }
 
 // ClearProvisioningStepToDNSRecord clears the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
@@ -19763,28 +19696,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordCleared() bool {
 	return m.cleared_ProvisioningStepToDNSRecord
 }
 
-// RemoveProvisioningStepToDNSRecordIDs removes the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToDNSRecordIDs(ids ...int) {
-	if m.removed_ProvisioningStepToDNSRecord == nil {
-		m.removed_ProvisioningStepToDNSRecord = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToDNSRecord[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToDNSRecord returns the removed IDs of the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToDNSRecordIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToDNSRecord {
-		ids = append(ids, id)
+// ProvisioningStepToDNSRecordID returns the "ProvisioningStepToDNSRecord" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordID() (id int, exists bool) {
+	if m._ProvisioningStepToDNSRecord != nil {
+		return *m._ProvisioningStepToDNSRecord, true
 	}
 	return
 }
 
 // ProvisioningStepToDNSRecordIDs returns the "ProvisioningStepToDNSRecord" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToDNSRecordID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) {
-	for id := range m._ProvisioningStepToDNSRecord {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToDNSRecord; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19793,17 +19718,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) 
 func (m *ProvisioningStepMutation) ResetProvisioningStepToDNSRecord() {
 	m._ProvisioningStepToDNSRecord = nil
 	m.cleared_ProvisioningStepToDNSRecord = false
-	m.removed_ProvisioningStepToDNSRecord = nil
 }
 
-// AddProvisioningStepToFileDeleteIDs adds the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileDeleteIDs(ids ...int) {
-	if m._ProvisioningStepToFileDelete == nil {
-		m._ProvisioningStepToFileDelete = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileDelete[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDeleteID(id int) {
+	m._ProvisioningStepToFileDelete = &id
 }
 
 // ClearProvisioningStepToFileDelete clears the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
@@ -19816,28 +19735,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteCleared() bool {
 	return m.cleared_ProvisioningStepToFileDelete
 }
 
-// RemoveProvisioningStepToFileDeleteIDs removes the "ProvisioningStepToFileDelete" edge to the FileDelete entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDeleteIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileDelete == nil {
-		m.removed_ProvisioningStepToFileDelete = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileDelete[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileDelete returns the removed IDs of the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDeleteIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileDelete {
-		ids = append(ids, id)
+// ProvisioningStepToFileDeleteID returns the "ProvisioningStepToFileDelete" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteID() (id int, exists bool) {
+	if m._ProvisioningStepToFileDelete != nil {
+		return *m._ProvisioningStepToFileDelete, true
 	}
 	return
 }
 
 // ProvisioningStepToFileDeleteIDs returns the "ProvisioningStepToFileDelete" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileDeleteID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileDelete {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileDelete; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19846,17 +19757,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int)
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDelete() {
 	m._ProvisioningStepToFileDelete = nil
 	m.cleared_ProvisioningStepToFileDelete = false
-	m.removed_ProvisioningStepToFileDelete = nil
 }
 
-// AddProvisioningStepToFileDownloadIDs adds the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileDownloadIDs(ids ...int) {
-	if m._ProvisioningStepToFileDownload == nil {
-		m._ProvisioningStepToFileDownload = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileDownload[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDownloadID(id int) {
+	m._ProvisioningStepToFileDownload = &id
 }
 
 // ClearProvisioningStepToFileDownload clears the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
@@ -19869,28 +19774,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadCleared() bool 
 	return m.cleared_ProvisioningStepToFileDownload
 }
 
-// RemoveProvisioningStepToFileDownloadIDs removes the "ProvisioningStepToFileDownload" edge to the FileDownload entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileDownloadIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileDownload == nil {
-		m.removed_ProvisioningStepToFileDownload = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileDownload[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileDownload returns the removed IDs of the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileDownloadIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileDownload {
-		ids = append(ids, id)
+// ProvisioningStepToFileDownloadID returns the "ProvisioningStepToFileDownload" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadID() (id int, exists bool) {
+	if m._ProvisioningStepToFileDownload != nil {
+		return *m._ProvisioningStepToFileDownload, true
 	}
 	return
 }
 
 // ProvisioningStepToFileDownloadIDs returns the "ProvisioningStepToFileDownload" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileDownloadID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileDownload {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileDownload; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19899,17 +19796,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []in
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDownload() {
 	m._ProvisioningStepToFileDownload = nil
 	m.cleared_ProvisioningStepToFileDownload = false
-	m.removed_ProvisioningStepToFileDownload = nil
 }
 
-// AddProvisioningStepToFileExtractIDs adds the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToFileExtractIDs(ids ...int) {
-	if m._ProvisioningStepToFileExtract == nil {
-		m._ProvisioningStepToFileExtract = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToFileExtract[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileExtractID(id int) {
+	m._ProvisioningStepToFileExtract = &id
 }
 
 // ClearProvisioningStepToFileExtract clears the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
@@ -19922,28 +19813,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractCleared() bool {
 	return m.cleared_ProvisioningStepToFileExtract
 }
 
-// RemoveProvisioningStepToFileExtractIDs removes the "ProvisioningStepToFileExtract" edge to the FileExtract entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToFileExtractIDs(ids ...int) {
-	if m.removed_ProvisioningStepToFileExtract == nil {
-		m.removed_ProvisioningStepToFileExtract = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToFileExtract[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToFileExtract returns the removed IDs of the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToFileExtractIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToFileExtract {
-		ids = append(ids, id)
+// ProvisioningStepToFileExtractID returns the "ProvisioningStepToFileExtract" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractID() (id int, exists bool) {
+	if m._ProvisioningStepToFileExtract != nil {
+		return *m._ProvisioningStepToFileExtract, true
 	}
 	return
 }
 
 // ProvisioningStepToFileExtractIDs returns the "ProvisioningStepToFileExtract" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToFileExtractID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int) {
-	for id := range m._ProvisioningStepToFileExtract {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToFileExtract; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -19952,17 +19835,11 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int
 func (m *ProvisioningStepMutation) ResetProvisioningStepToFileExtract() {
 	m._ProvisioningStepToFileExtract = nil
 	m.cleared_ProvisioningStepToFileExtract = false
-	m.removed_ProvisioningStepToFileExtract = nil
 }
 
-// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by ids.
-func (m *ProvisioningStepMutation) AddProvisioningStepToPlanIDs(ids ...int) {
-	if m._ProvisioningStepToPlan == nil {
-		m._ProvisioningStepToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisioningStepToPlan[ids[i]] = struct{}{}
-	}
+// SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by id.
+func (m *ProvisioningStepMutation) SetProvisioningStepToPlanID(id int) {
+	m._ProvisioningStepToPlan = &id
 }
 
 // ClearProvisioningStepToPlan clears the "ProvisioningStepToPlan" edge to the Plan entity.
@@ -19975,28 +19852,20 @@ func (m *ProvisioningStepMutation) ProvisioningStepToPlanCleared() bool {
 	return m.cleared_ProvisioningStepToPlan
 }
 
-// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
-func (m *ProvisioningStepMutation) RemoveProvisioningStepToPlanIDs(ids ...int) {
-	if m.removed_ProvisioningStepToPlan == nil {
-		m.removed_ProvisioningStepToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisioningStepToPlan[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisioningStepToPlan returns the removed IDs of the "ProvisioningStepToPlan" edge to the Plan entity.
-func (m *ProvisioningStepMutation) RemovedProvisioningStepToPlanIDs() (ids []int) {
-	for id := range m.removed_ProvisioningStepToPlan {
-		ids = append(ids, id)
+// ProvisioningStepToPlanID returns the "ProvisioningStepToPlan" edge ID in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanID() (id int, exists bool) {
+	if m._ProvisioningStepToPlan != nil {
+		return *m._ProvisioningStepToPlan, true
 	}
 	return
 }
 
 // ProvisioningStepToPlanIDs returns the "ProvisioningStepToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisioningStepToPlanID instead. It exists only for internal usage by the builders.
 func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []int) {
-	for id := range m._ProvisioningStepToPlan {
-		ids = append(ids, id)
+	if id := m._ProvisioningStepToPlan; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -20005,7 +19874,6 @@ func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []int) {
 func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
 	m._ProvisioningStepToPlan = nil
 	m.cleared_ProvisioningStepToPlan = false
-	m.removed_ProvisioningStepToPlan = nil
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
@@ -20062,8 +19930,8 @@ func (m *ProvisioningStepMutation) Type() string {
 // AddedFields().
 func (m *ProvisioningStepMutation) Fields() []string {
 	fields := make([]string, 0, 2)
-	if m.provisioner_type != nil {
-		fields = append(fields, provisioningstep.FieldProvisionerType)
+	if m._type != nil {
+		fields = append(fields, provisioningstep.FieldType)
 	}
 	if m.step_number != nil {
 		fields = append(fields, provisioningstep.FieldStepNumber)
@@ -20076,8 +19944,8 @@ func (m *ProvisioningStepMutation) Fields() []string {
 // schema.
 func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		return m.ProvisionerType()
+	case provisioningstep.FieldType:
+		return m.GetType()
 	case provisioningstep.FieldStepNumber:
 		return m.StepNumber()
 	}
@@ -20089,8 +19957,8 @@ func (m *ProvisioningStepMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		return m.OldProvisionerType(ctx)
+	case provisioningstep.FieldType:
+		return m.OldType(ctx)
 	case provisioningstep.FieldStepNumber:
 		return m.OldStepNumber(ctx)
 	}
@@ -20102,12 +19970,12 @@ func (m *ProvisioningStepMutation) OldField(ctx context.Context, name string) (e
 // type.
 func (m *ProvisioningStepMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		v, ok := value.(string)
+	case provisioningstep.FieldType:
+		v, ok := value.(provisioningstep.Type)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProvisionerType(v)
+		m.SetType(v)
 		return nil
 	case provisioningstep.FieldStepNumber:
 		v, ok := value.(int)
@@ -20180,8 +20048,8 @@ func (m *ProvisioningStepMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProvisioningStepMutation) ResetField(name string) error {
 	switch name {
-	case provisioningstep.FieldProvisionerType:
-		m.ResetProvisionerType()
+	case provisioningstep.FieldType:
+		m.ResetType()
 		return nil
 	case provisioningstep.FieldStepNumber:
 		m.ResetStepNumber()
@@ -20192,10 +20060,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
-	if m._ProvisioningStepToTag != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
+	edges := make([]string, 0, 10)
 	if m._ProvisioningStepToStatus != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -20233,66 +20098,42 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToTag))
-		for id := range m._ProvisioningStepToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToStatus:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToStatus))
-		for id := range m._ProvisioningStepToStatus {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToStatus; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToProvisionedHost))
-		for id := range m._ProvisioningStepToProvisionedHost {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToProvisionedHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToScript:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToScript))
-		for id := range m._ProvisioningStepToScript {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToScript; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToCommand:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToCommand))
-		for id := range m._ProvisioningStepToCommand {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToCommand; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToDNSRecord:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToDNSRecord))
-		for id := range m._ProvisioningStepToDNSRecord {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToDNSRecord; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileDelete:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDelete))
-		for id := range m._ProvisioningStepToFileDelete {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileDelete; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileDownload:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileDownload))
-		for id := range m._ProvisioningStepToFileDownload {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileDownload; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToFileExtract:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToFileExtract))
-		for id := range m._ProvisioningStepToFileExtract {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToFileExtract; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToPlan:
-		ids := make([]ent.Value, 0, len(m._ProvisioningStepToPlan))
-		for id := range m._ProvisioningStepToPlan {
-			ids = append(ids, id)
+		if id := m._ProvisioningStepToPlan; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
 		if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
 			return []ent.Value{*id}
@@ -20303,37 +20144,7 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
-	if m.removed_ProvisioningStepToTag != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
-	if m.removed_ProvisioningStepToStatus != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
-	}
-	if m.removed_ProvisioningStepToProvisionedHost != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToProvisionedHost)
-	}
-	if m.removed_ProvisioningStepToScript != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToScript)
-	}
-	if m.removed_ProvisioningStepToCommand != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToCommand)
-	}
-	if m.removed_ProvisioningStepToDNSRecord != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToDNSRecord)
-	}
-	if m.removed_ProvisioningStepToFileDelete != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDelete)
-	}
-	if m.removed_ProvisioningStepToFileDownload != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileDownload)
-	}
-	if m.removed_ProvisioningStepToFileExtract != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToFileExtract)
-	}
-	if m.removed_ProvisioningStepToPlan != nil {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
-	}
+	edges := make([]string, 0, 10)
 	return edges
 }
 
@@ -20341,76 +20152,13 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToTag))
-		for id := range m.removed_ProvisioningStepToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToStatus:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToStatus))
-		for id := range m.removed_ProvisioningStepToStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToProvisionedHost))
-		for id := range m.removed_ProvisioningStepToProvisionedHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToScript:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToScript))
-		for id := range m.removed_ProvisioningStepToScript {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToCommand:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToCommand))
-		for id := range m.removed_ProvisioningStepToCommand {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToDNSRecord:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToDNSRecord))
-		for id := range m.removed_ProvisioningStepToDNSRecord {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileDelete:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDelete))
-		for id := range m.removed_ProvisioningStepToFileDelete {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileDownload:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileDownload))
-		for id := range m.removed_ProvisioningStepToFileDownload {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToFileExtract:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToFileExtract))
-		for id := range m.removed_ProvisioningStepToFileExtract {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisioningstep.EdgeProvisioningStepToPlan:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToPlan))
-		for id := range m.removed_ProvisioningStepToPlan {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
-	if m.cleared_ProvisioningStepToTag {
-		edges = append(edges, provisioningstep.EdgeProvisioningStepToTag)
-	}
+	edges := make([]string, 0, 10)
 	if m.cleared_ProvisioningStepToStatus {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -20448,8 +20196,6 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		return m.cleared_ProvisioningStepToTag
 	case provisioningstep.EdgeProvisioningStepToStatus:
 		return m.cleared_ProvisioningStepToStatus
 	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
@@ -20478,6 +20224,33 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 	switch name {
+	case provisioningstep.EdgeProvisioningStepToStatus:
+		m.ClearProvisioningStepToStatus()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToProvisionedHost:
+		m.ClearProvisioningStepToProvisionedHost()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToScript:
+		m.ClearProvisioningStepToScript()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToCommand:
+		m.ClearProvisioningStepToCommand()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToDNSRecord:
+		m.ClearProvisioningStepToDNSRecord()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileDelete:
+		m.ClearProvisioningStepToFileDelete()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileDownload:
+		m.ClearProvisioningStepToFileDownload()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToFileExtract:
+		m.ClearProvisioningStepToFileExtract()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToPlan:
+		m.ClearProvisioningStepToPlan()
+		return nil
 	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
 		m.ClearProvisioningStepToGinFileMiddleware()
 		return nil
@@ -20489,9 +20262,6 @@ func (m *ProvisioningStepMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 	switch name {
-	case provisioningstep.EdgeProvisioningStepToTag:
-		m.ResetProvisioningStepToTag()
-		return nil
 	case provisioningstep.EdgeProvisioningStepToStatus:
 		m.ResetProvisioningStepToStatus()
 		return nil
@@ -21942,6 +21712,8 @@ type StatusMutation struct {
 	cleared_StatusToProvisionedNetwork bool
 	_StatusToProvisionedHost           *int
 	cleared_StatusToProvisionedHost    bool
+	_StatusToProvisioningStep          *int
+	cleared_StatusToProvisioningStep   bool
 	_StatusToTeam                      *int
 	cleared_StatusToTeam               bool
 	done                               bool
@@ -22436,6 +22208,45 @@ func (m *StatusMutation) ResetStatusToProvisionedHost() {
 	m.cleared_StatusToProvisionedHost = false
 }
 
+// SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *StatusMutation) SetStatusToProvisioningStepID(id int) {
+	m._StatusToProvisioningStep = &id
+}
+
+// ClearStatusToProvisioningStep clears the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *StatusMutation) ClearStatusToProvisioningStep() {
+	m.cleared_StatusToProvisioningStep = true
+}
+
+// StatusToProvisioningStepCleared returns if the "StatusToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *StatusMutation) StatusToProvisioningStepCleared() bool {
+	return m.cleared_StatusToProvisioningStep
+}
+
+// StatusToProvisioningStepID returns the "StatusToProvisioningStep" edge ID in the mutation.
+func (m *StatusMutation) StatusToProvisioningStepID() (id int, exists bool) {
+	if m._StatusToProvisioningStep != nil {
+		return *m._StatusToProvisioningStep, true
+	}
+	return
+}
+
+// StatusToProvisioningStepIDs returns the "StatusToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToProvisioningStepIDs() (ids []int) {
+	if id := m._StatusToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToProvisioningStep resets all changes to the "StatusToProvisioningStep" edge.
+func (m *StatusMutation) ResetStatusToProvisioningStep() {
+	m._StatusToProvisioningStep = nil
+	m.cleared_StatusToProvisioningStep = false
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by id.
 func (m *StatusMutation) SetStatusToTeamID(id int) {
 	m._StatusToTeam = &id
@@ -22711,7 +22522,7 @@ func (m *StatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m._StatusToBuild != nil {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -22720,6 +22531,9 @@ func (m *StatusMutation) AddedEdges() []string {
 	}
 	if m._StatusToProvisionedHost != nil {
 		edges = append(edges, status.EdgeStatusToProvisionedHost)
+	}
+	if m._StatusToProvisioningStep != nil {
+		edges = append(edges, status.EdgeStatusToProvisioningStep)
 	}
 	if m._StatusToTeam != nil {
 		edges = append(edges, status.EdgeStatusToTeam)
@@ -22743,6 +22557,10 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 		if id := m._StatusToProvisionedHost; id != nil {
 			return []ent.Value{*id}
 		}
+	case status.EdgeStatusToProvisioningStep:
+		if id := m._StatusToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
 	case status.EdgeStatusToTeam:
 		if id := m._StatusToTeam; id != nil {
 			return []ent.Value{*id}
@@ -22753,7 +22571,7 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -22767,7 +22585,7 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleared_StatusToBuild {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -22776,6 +22594,9 @@ func (m *StatusMutation) ClearedEdges() []string {
 	}
 	if m.cleared_StatusToProvisionedHost {
 		edges = append(edges, status.EdgeStatusToProvisionedHost)
+	}
+	if m.cleared_StatusToProvisioningStep {
+		edges = append(edges, status.EdgeStatusToProvisioningStep)
 	}
 	if m.cleared_StatusToTeam {
 		edges = append(edges, status.EdgeStatusToTeam)
@@ -22793,6 +22614,8 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 		return m.cleared_StatusToProvisionedNetwork
 	case status.EdgeStatusToProvisionedHost:
 		return m.cleared_StatusToProvisionedHost
+	case status.EdgeStatusToProvisioningStep:
+		return m.cleared_StatusToProvisioningStep
 	case status.EdgeStatusToTeam:
 		return m.cleared_StatusToTeam
 	}
@@ -22811,6 +22634,9 @@ func (m *StatusMutation) ClearEdge(name string) error {
 		return nil
 	case status.EdgeStatusToProvisionedHost:
 		m.ClearStatusToProvisionedHost()
+		return nil
+	case status.EdgeStatusToProvisioningStep:
+		m.ClearStatusToProvisioningStep()
 		return nil
 	case status.EdgeStatusToTeam:
 		m.ClearStatusToTeam()
@@ -22831,6 +22657,9 @@ func (m *StatusMutation) ResetEdge(name string) error {
 		return nil
 	case status.EdgeStatusToProvisionedHost:
 		m.ResetStatusToProvisionedHost()
+		return nil
+	case status.EdgeStatusToProvisioningStep:
+		m.ResetStatusToProvisioningStep()
 		return nil
 	case status.EdgeStatusToTeam:
 		m.ResetStatusToTeam()

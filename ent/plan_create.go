@@ -399,7 +399,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisioningStepTable,
 			Columns: []string{plan.PlanToProvisioningStepColumn},

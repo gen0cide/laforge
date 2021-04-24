@@ -14,7 +14,15 @@ type ProvisioningStep struct {
 // Fields of the ProvisioningStep.
 func (ProvisioningStep) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("provisioner_type"),
+		field.Enum("type").
+			Values(
+				"Script",
+				"Command",
+				"DNSRecord",
+				"FileDelete",
+				"FileDownload",
+				"FileExtract",
+			),
 		field.Int("step_number"),
 	}
 }
@@ -22,17 +30,25 @@ func (ProvisioningStep) Fields() []ent.Field {
 // Edges of the ProvisioningStep.
 func (ProvisioningStep) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ProvisioningStepToTag", Tag.Type),
-		edge.To("ProvisioningStepToStatus", Status.Type),
-		edge.To("ProvisioningStepToProvisionedHost", ProvisionedHost.Type),
-		edge.To("ProvisioningStepToScript", Script.Type),
-		edge.To("ProvisioningStepToCommand", Command.Type),
-		edge.To("ProvisioningStepToDNSRecord", DNSRecord.Type),
-		edge.To("ProvisioningStepToFileDelete", FileDelete.Type),
-		edge.To("ProvisioningStepToFileDownload", FileDownload.Type),
-		edge.To("ProvisioningStepToFileExtract", FileExtract.Type),
+		edge.To("ProvisioningStepToStatus", Status.Type).
+			Unique(),
+		edge.To("ProvisioningStepToProvisionedHost", ProvisionedHost.Type).
+			Unique(),
+		edge.To("ProvisioningStepToScript", Script.Type).
+			Unique(),
+		edge.To("ProvisioningStepToCommand", Command.Type).
+			Unique(),
+		edge.To("ProvisioningStepToDNSRecord", DNSRecord.Type).
+			Unique(),
+		edge.To("ProvisioningStepToFileDelete", FileDelete.Type).
+			Unique(),
+		edge.To("ProvisioningStepToFileDownload", FileDownload.Type).
+			Unique(),
+		edge.To("ProvisioningStepToFileExtract", FileExtract.Type).
+			Unique(),
 		edge.From("ProvisioningStepToPlan", Plan.Type).
-			Ref("PlanToProvisioningStep"),
+			Ref("PlanToProvisioningStep").
+			Unique(),
 		edge.From("ProvisioningStepToGinFileMiddleware", GinFileMiddleware.Type).
 			Ref("GinFileMiddlewareToProvisioningStep").
 			Unique(),

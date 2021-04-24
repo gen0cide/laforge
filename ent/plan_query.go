@@ -213,7 +213,7 @@ func (pq *PlanQuery) QueryPlanToProvisioningStep() *ProvisioningStepQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -568,7 +568,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			pq.withPlanToProvisioningStep != nil,
 		}
 	)
-	if pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedHost != nil || pq.withPlanToProvisioningStep != nil {
+	if pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedHost != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -826,27 +826,30 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 	}
 
 	if query := pq.withPlanToProvisioningStep; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Plan)
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Plan)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_provisioning_step; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
-			}
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
 		}
-		query.Where(provisioningstep.IDIn(ids...))
+		query.withFKs = true
+		query.Where(predicate.ProvisioningStep(func(s *sql.Selector) {
+			s.Where(sql.InValues(plan.PlanToProvisioningStepColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			fk := n.plan_plan_to_provisioning_step
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_plan_to_provisioning_step" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.PlanToProvisioningStep = n
-			}
+			node.Edges.PlanToProvisioningStep = n
 		}
 	}
 

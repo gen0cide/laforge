@@ -46,10 +46,9 @@ type Plan struct {
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
 	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	//
-	plan_plan_to_build             *int
-	plan_plan_to_team              *int
-	plan_plan_to_provisioned_host  *int
-	plan_plan_to_provisioning_step *int
+	plan_plan_to_build            *int
+	plan_plan_to_team             *int
+	plan_plan_to_provisioned_host *int
 }
 
 // PlanEdges holds the relations/edges for other nodes in the graph.
@@ -176,8 +175,6 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case plan.ForeignKeys[2]: // plan_plan_to_provisioned_host
 			values[i] = &sql.NullInt64{}
-		case plan.ForeignKeys[3]: // plan_plan_to_provisioning_step
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
 		}
@@ -237,13 +234,6 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				pl.plan_plan_to_provisioned_host = new(int)
 				*pl.plan_plan_to_provisioned_host = int(value.Int64)
-			}
-		case plan.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioning_step", value)
-			} else if value.Valid {
-				pl.plan_plan_to_provisioning_step = new(int)
-				*pl.plan_plan_to_provisioning_step = int(value.Int64)
 			}
 		}
 	}

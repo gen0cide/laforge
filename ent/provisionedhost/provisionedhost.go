@@ -16,6 +16,8 @@ const (
 	EdgeProvisionedHostToProvisionedNetwork = "ProvisionedHostToProvisionedNetwork"
 	// EdgeProvisionedHostToHost holds the string denoting the provisionedhosttohost edge name in mutations.
 	EdgeProvisionedHostToHost = "ProvisionedHostToHost"
+	// EdgeProvisionedHostToEndStepPlan holds the string denoting the provisionedhosttoendstepplan edge name in mutations.
+	EdgeProvisionedHostToEndStepPlan = "ProvisionedHostToEndStepPlan"
 	// EdgeProvisionedHostToProvisioningStep holds the string denoting the provisionedhosttoprovisioningstep edge name in mutations.
 	EdgeProvisionedHostToProvisioningStep = "ProvisionedHostToProvisioningStep"
 	// EdgeProvisionedHostToAgentStatus holds the string denoting the provisionedhosttoagentstatus edge name in mutations.
@@ -48,11 +50,20 @@ const (
 	ProvisionedHostToHostInverseTable = "hosts"
 	// ProvisionedHostToHostColumn is the table column denoting the ProvisionedHostToHost relation/edge.
 	ProvisionedHostToHostColumn = "provisioned_host_provisioned_host_to_host"
-	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge. The primary key declared below.
-	ProvisionedHostToProvisioningStepTable = "provisioning_step_ProvisioningStepToProvisionedHost"
+	// ProvisionedHostToEndStepPlanTable is the table the holds the ProvisionedHostToEndStepPlan relation/edge.
+	ProvisionedHostToEndStepPlanTable = "provisioned_hosts"
+	// ProvisionedHostToEndStepPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	ProvisionedHostToEndStepPlanInverseTable = "plans"
+	// ProvisionedHostToEndStepPlanColumn is the table column denoting the ProvisionedHostToEndStepPlan relation/edge.
+	ProvisionedHostToEndStepPlanColumn = "provisioned_host_provisioned_host_to_end_step_plan"
+	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge.
+	ProvisionedHostToProvisioningStepTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	ProvisionedHostToProvisioningStepInverseTable = "provisioning_steps"
+	// ProvisionedHostToProvisioningStepColumn is the table column denoting the ProvisionedHostToProvisioningStep relation/edge.
+	ProvisionedHostToProvisioningStepColumn = "provisioning_step_provisioning_step_to_provisioned_host"
 	// ProvisionedHostToAgentStatusTable is the table the holds the ProvisionedHostToAgentStatus relation/edge. The primary key declared below.
 	ProvisionedHostToAgentStatusTable = "agent_status_AgentStatusToProvisionedHost"
 	// ProvisionedHostToAgentStatusInverseTable is the table name for the AgentStatus entity.
@@ -85,12 +96,10 @@ var ForeignKeys = []string{
 	"gin_file_middleware_gin_file_middleware_to_provisioned_host",
 	"provisioned_host_provisioned_host_to_provisioned_network",
 	"provisioned_host_provisioned_host_to_host",
+	"provisioned_host_provisioned_host_to_end_step_plan",
 }
 
 var (
-	// ProvisionedHostToProvisioningStepPrimaryKey and ProvisionedHostToProvisioningStepColumn2 are the table columns denoting the
-	// primary key for the ProvisionedHostToProvisioningStep relation (M2M).
-	ProvisionedHostToProvisioningStepPrimaryKey = []string{"provisioning_step_id", "provisioned_host_id"}
 	// ProvisionedHostToAgentStatusPrimaryKey and ProvisionedHostToAgentStatusColumn2 are the table columns denoting the
 	// primary key for the ProvisionedHostToAgentStatus relation (M2M).
 	ProvisionedHostToAgentStatusPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}

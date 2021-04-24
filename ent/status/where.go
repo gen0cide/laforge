@@ -641,6 +641,34 @@ func HasStatusToProvisionedHostWith(preds ...predicate.ProvisionedHost) predicat
 	})
 }
 
+// HasStatusToProvisioningStep applies the HasEdge predicate on the "StatusToProvisioningStep" edge.
+func HasStatusToProvisioningStep() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisioningStepTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisioningStepTable, StatusToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToProvisioningStepWith applies the HasEdge predicate on the "StatusToProvisioningStep" edge with a given conditions (other predicates).
+func HasStatusToProvisioningStepWith(preds ...predicate.ProvisioningStep) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisioningStepInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisioningStepTable, StatusToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasStatusToTeam applies the HasEdge predicate on the "StatusToTeam" edge.
 func HasStatusToTeam() predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {

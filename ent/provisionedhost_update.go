@@ -73,6 +73,25 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToHost(h *Host) *Provisioned
 	return phu.SetProvisionedHostToHostID(h.ID)
 }
 
+// SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlanID(id int) *ProvisionedHostUpdate {
+	phu.mutation.SetProvisionedHostToEndStepPlanID(id)
+	return phu
+}
+
+// SetNillableProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToEndStepPlanID(id *int) *ProvisionedHostUpdate {
+	if id != nil {
+		phu = phu.SetProvisionedHostToEndStepPlanID(*id)
+	}
+	return phu
+}
+
+// SetProvisionedHostToEndStepPlan sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlan(p *Plan) *ProvisionedHostUpdate {
+	return phu.SetProvisionedHostToEndStepPlanID(p.ID)
+}
+
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
@@ -157,6 +176,12 @@ func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisionedNetwork() *Pr
 // ClearProvisionedHostToHost clears the "ProvisionedHostToHost" edge to the Host entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToHost() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToHost()
+	return phu
+}
+
+// ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToEndStepPlan() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToEndStepPlan()
 	return phu
 }
 
@@ -430,12 +455,47 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if phu.mutation.ProvisionedHostToEndStepPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToEndStepPlanTable,
+			Columns: []string{provisionedhost.ProvisionedHostToEndStepPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToEndStepPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToEndStepPlanTable,
+			Columns: []string{provisionedhost.ProvisionedHostToEndStepPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if phu.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -448,10 +508,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.RemovedProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -467,10 +527,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -684,6 +744,25 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToHost(h *Host) *Provisi
 	return phuo.SetProvisionedHostToHostID(h.ID)
 }
 
+// SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlanID(id int) *ProvisionedHostUpdateOne {
+	phuo.mutation.SetProvisionedHostToEndStepPlanID(id)
+	return phuo
+}
+
+// SetNillableProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToEndStepPlanID(id *int) *ProvisionedHostUpdateOne {
+	if id != nil {
+		phuo = phuo.SetProvisionedHostToEndStepPlanID(*id)
+	}
+	return phuo
+}
+
+// SetProvisionedHostToEndStepPlan sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlan(p *Plan) *ProvisionedHostUpdateOne {
+	return phuo.SetProvisionedHostToEndStepPlanID(p.ID)
+}
+
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
@@ -768,6 +847,12 @@ func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisionedNetwork()
 // ClearProvisionedHostToHost clears the "ProvisionedHostToHost" edge to the Host entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToHost() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToHost()
+	return phuo
+}
+
+// ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToEndStepPlan() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToEndStepPlan()
 	return phuo
 }
 
@@ -1046,12 +1131,47 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if phuo.mutation.ProvisionedHostToEndStepPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToEndStepPlanTable,
+			Columns: []string{provisionedhost.ProvisionedHostToEndStepPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToEndStepPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToEndStepPlanTable,
+			Columns: []string{provisionedhost.ProvisionedHostToEndStepPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if phuo.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1064,10 +1184,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.RemovedProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToProvisioningStepCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1083,10 +1203,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToProvisioningStepTable,
-			Columns: provisionedhost.ProvisionedHostToProvisioningStepPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToProvisioningStepColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

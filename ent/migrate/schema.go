@@ -68,22 +68,13 @@ var (
 		{Name: "timeout", Type: field.TypeInt},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_command", Type: field.TypeInt, Nullable: true},
 	}
 	// CommandsTable holds the schema information for the "commands" table.
 	CommandsTable = &schema.Table{
-		Name:       "commands",
-		Columns:    CommandsColumns,
-		PrimaryKey: []*schema.Column{CommandsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "commands_provisioning_steps_ProvisioningStepToCommand",
-				Columns: []*schema.Column{CommandsColumns[12]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "commands",
+		Columns:     CommandsColumns,
+		PrimaryKey:  []*schema.Column{CommandsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// CompetitionsColumns holds the columns for the "competitions" table.
 	CompetitionsColumns = []*schema.Column{
@@ -128,22 +119,13 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeInt, Nullable: true},
 	}
 	// DNSRecordsTable holds the schema information for the "dns_records" table.
 	DNSRecordsTable = &schema.Table{
-		Name:       "dns_records",
-		Columns:    DNSRecordsColumns,
-		PrimaryKey: []*schema.Column{DNSRecordsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "dns_records_provisioning_steps_ProvisioningStepToDNSRecord",
-				Columns: []*schema.Column{DNSRecordsColumns[9]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "dns_records",
+		Columns:     DNSRecordsColumns,
+		PrimaryKey:  []*schema.Column{DNSRecordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// DisksColumns holds the columns for the "disks" table.
 	DisksColumns = []*schema.Column{
@@ -185,22 +167,13 @@ var (
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDeletesTable holds the schema information for the "file_deletes" table.
 	FileDeletesTable = &schema.Table{
-		Name:       "file_deletes",
-		Columns:    FileDeletesColumns,
-		PrimaryKey: []*schema.Column{FileDeletesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "file_deletes_provisioning_steps_ProvisioningStepToFileDelete",
-				Columns: []*schema.Column{FileDeletesColumns[4]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "file_deletes",
+		Columns:     FileDeletesColumns,
+		PrimaryKey:  []*schema.Column{FileDeletesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// FileDownloadsColumns holds the columns for the "file_downloads" table.
 	FileDownloadsColumns = []*schema.Column{
@@ -215,22 +188,13 @@ var (
 		{Name: "md5", Type: field.TypeString},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDownloadsTable holds the schema information for the "file_downloads" table.
 	FileDownloadsTable = &schema.Table{
-		Name:       "file_downloads",
-		Columns:    FileDownloadsColumns,
-		PrimaryKey: []*schema.Column{FileDownloadsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "file_downloads_provisioning_steps_ProvisioningStepToFileDownload",
-				Columns: []*schema.Column{FileDownloadsColumns[11]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "file_downloads",
+		Columns:     FileDownloadsColumns,
+		PrimaryKey:  []*schema.Column{FileDownloadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// FileExtractsColumns holds the columns for the "file_extracts" table.
 	FileExtractsColumns = []*schema.Column{
@@ -240,22 +204,13 @@ var (
 		{Name: "destination", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeInt, Nullable: true},
 	}
 	// FileExtractsTable holds the schema information for the "file_extracts" table.
 	FileExtractsTable = &schema.Table{
-		Name:       "file_extracts",
-		Columns:    FileExtractsColumns,
-		PrimaryKey: []*schema.Column{FileExtractsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "file_extracts_provisioning_steps_ProvisioningStepToFileExtract",
-				Columns: []*schema.Column{FileExtractsColumns[6]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "file_extracts",
+		Columns:     FileExtractsColumns,
+		PrimaryKey:  []*schema.Column{FileExtractsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// FindingsColumns holds the columns for the "findings" table.
 	FindingsColumns = []*schema.Column{
@@ -426,7 +381,6 @@ var (
 		{Name: "plan_plan_to_build", Type: field.TypeInt, Nullable: true},
 		{Name: "plan_plan_to_team", Type: field.TypeInt, Nullable: true},
 		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Nullable: true},
-		{Name: "plan_plan_to_provisioning_step", Type: field.TypeInt, Nullable: true},
 	}
 	// PlansTable holds the schema information for the "plans" table.
 	PlansTable = &schema.Table{
@@ -455,13 +409,6 @@ var (
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
-			{
-				Symbol:  "plans_provisioning_steps_PlanToProvisioningStep",
-				Columns: []*schema.Column{PlansColumns[7]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 	}
 	// ProvisionedHostsColumns holds the columns for the "provisioned_hosts" table.
@@ -471,6 +418,7 @@ var (
 		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_end_step_plan", Type: field.TypeInt, Nullable: true},
 	}
 	// ProvisionedHostsTable holds the schema information for the "provisioned_hosts" table.
 	ProvisionedHostsTable = &schema.Table{
@@ -497,6 +445,13 @@ var (
 				Columns: []*schema.Column{ProvisionedHostsColumns[4]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioned_hosts_plans_ProvisionedHostToEndStepPlan",
+				Columns: []*schema.Column{ProvisionedHostsColumns[5]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -550,9 +505,17 @@ var (
 	// ProvisioningStepsColumns holds the columns for the "provisioning_steps" table.
 	ProvisioningStepsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "provisioner_type", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"Script", "Command", "DNSRecord", "FileDelete", "FileDownload", "FileExtract"}},
 		{Name: "step_number", Type: field.TypeInt},
 		{Name: "gin_file_middleware_gin_file_middleware_to_provisioning_step", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "plan_plan_to_provisioning_step", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_provisioned_host", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_command", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeInt, Nullable: true},
 	}
 	// ProvisioningStepsTable holds the schema information for the "provisioning_steps" table.
 	ProvisioningStepsTable = &schema.Table{
@@ -565,6 +528,62 @@ var (
 				Columns: []*schema.Column{ProvisioningStepsColumns[3]},
 
 				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_plans_PlanToProvisioningStep",
+				Columns: []*schema.Column{ProvisioningStepsColumns[4]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_provisioned_hosts_ProvisioningStepToProvisionedHost",
+				Columns: []*schema.Column{ProvisioningStepsColumns[5]},
+
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_scripts_ProvisioningStepToScript",
+				Columns: []*schema.Column{ProvisioningStepsColumns[6]},
+
+				RefColumns: []*schema.Column{ScriptsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_commands_ProvisioningStepToCommand",
+				Columns: []*schema.Column{ProvisioningStepsColumns[7]},
+
+				RefColumns: []*schema.Column{CommandsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_dns_records_ProvisioningStepToDNSRecord",
+				Columns: []*schema.Column{ProvisioningStepsColumns[8]},
+
+				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_file_deletes_ProvisioningStepToFileDelete",
+				Columns: []*schema.Column{ProvisioningStepsColumns[9]},
+
+				RefColumns: []*schema.Column{FileDeletesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_file_downloads_ProvisioningStepToFileDownload",
+				Columns: []*schema.Column{ProvisioningStepsColumns[10]},
+
+				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioning_steps_file_extracts_ProvisioningStepToFileExtract",
+				Columns: []*schema.Column{ProvisioningStepsColumns[11]},
+
+				RefColumns: []*schema.Column{FileExtractsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -586,28 +605,19 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeInt, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
 	ScriptsTable = &schema.Table{
-		Name:       "scripts",
-		Columns:    ScriptsColumns,
-		PrimaryKey: []*schema.Column{ScriptsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "scripts_provisioning_steps_ProvisioningStepToScript",
-				Columns: []*schema.Column{ScriptsColumns[15]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+		Name:        "scripts",
+		Columns:     ScriptsColumns,
+		PrimaryKey:  []*schema.Column{ScriptsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
-		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork", "ProvisionedHost"}},
+		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "failed", Type: field.TypeBool},
@@ -616,7 +626,7 @@ var (
 		{Name: "build_build_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeInt, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "team_team_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
@@ -682,7 +692,6 @@ var (
 		{Name: "host_host_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "included_network_included_network_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "network_network_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "script_script_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "user_user_to_tag", Type: field.TypeInt, Nullable: true},
 	}
@@ -791,22 +800,15 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_provisioning_steps_ProvisioningStepToTag",
-				Columns: []*schema.Column{TagsColumns[18]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_scripts_ScriptToTag",
-				Columns: []*schema.Column{TagsColumns[19]},
+				Columns: []*schema.Column{TagsColumns[18]},
 
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "tags_users_UserToTag",
-				Columns: []*schema.Column{TagsColumns[20]},
+				Columns: []*schema.Column{TagsColumns[19]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -1422,33 +1424,6 @@ var (
 			},
 		},
 	}
-	// ProvisioningStepProvisioningStepToProvisionedHostColumns holds the columns for the "provisioning_step_ProvisioningStepToProvisionedHost" table.
-	ProvisioningStepProvisioningStepToProvisionedHostColumns = []*schema.Column{
-		{Name: "provisioning_step_id", Type: field.TypeInt},
-		{Name: "provisioned_host_id", Type: field.TypeInt},
-	}
-	// ProvisioningStepProvisioningStepToProvisionedHostTable holds the schema information for the "provisioning_step_ProvisioningStepToProvisionedHost" table.
-	ProvisioningStepProvisioningStepToProvisionedHostTable = &schema.Table{
-		Name:       "provisioning_step_ProvisioningStepToProvisionedHost",
-		Columns:    ProvisioningStepProvisioningStepToProvisionedHostColumns,
-		PrimaryKey: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[0], ProvisioningStepProvisioningStepToProvisionedHostColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "provisioning_step_ProvisioningStepToProvisionedHost_provisioning_step_id",
-				Columns: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[0]},
-
-				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "provisioning_step_ProvisioningStepToProvisionedHost_provisioned_host_id",
-				Columns: []*schema.Column{ProvisioningStepProvisioningStepToProvisionedHostColumns[1]},
-
-				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// ScriptScriptToFindingColumns holds the columns for the "script_ScriptToFinding" table.
 	ScriptScriptToFindingColumns = []*schema.Column{
 		{Name: "script_id", Type: field.TypeInt},
@@ -1525,18 +1500,12 @@ var (
 		IncludedNetworkIncludedNetworkToHostTable,
 		IncludedNetworkIncludedNetworkToNetworkTable,
 		PlanNextPlanTable,
-		ProvisioningStepProvisioningStepToProvisionedHostTable,
 		ScriptScriptToFindingTable,
 	}
 )
 
 func init() {
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	CommandsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	DNSRecordsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	FileDeletesTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	FileDownloadsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	FileExtractsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	HostsTable.ForeignKeys[0].RefTable = FindingsTable
 	HostDependenciesTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[1].RefTable = HostsTable
@@ -1545,16 +1514,23 @@ func init() {
 	PlansTable.ForeignKeys[0].RefTable = BuildsTable
 	PlansTable.ForeignKeys[1].RefTable = TeamsTable
 	PlansTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
-	PlansTable.ForeignKeys[3].RefTable = ProvisioningStepsTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ProvisionedHostsTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
 	ProvisionedHostsTable.ForeignKeys[2].RefTable = HostsTable
+	ProvisionedHostsTable.ForeignKeys[3].RefTable = PlansTable
 	ProvisionedNetworksTable.ForeignKeys[0].RefTable = PlansTable
 	ProvisionedNetworksTable.ForeignKeys[1].RefTable = NetworksTable
 	ProvisionedNetworksTable.ForeignKeys[2].RefTable = BuildsTable
 	ProvisionedNetworksTable.ForeignKeys[3].RefTable = TeamsTable
 	ProvisioningStepsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
-	ScriptsTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	ProvisioningStepsTable.ForeignKeys[1].RefTable = PlansTable
+	ProvisioningStepsTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
+	ProvisioningStepsTable.ForeignKeys[3].RefTable = ScriptsTable
+	ProvisioningStepsTable.ForeignKeys[4].RefTable = CommandsTable
+	ProvisioningStepsTable.ForeignKeys[5].RefTable = DNSRecordsTable
+	ProvisioningStepsTable.ForeignKeys[6].RefTable = FileDeletesTable
+	ProvisioningStepsTable.ForeignKeys[7].RefTable = FileDownloadsTable
+	ProvisioningStepsTable.ForeignKeys[8].RefTable = FileExtractsTable
 	StatusTable.ForeignKeys[0].RefTable = BuildsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
@@ -1574,9 +1550,8 @@ func init() {
 	TagsTable.ForeignKeys[11].RefTable = HostsTable
 	TagsTable.ForeignKeys[12].RefTable = IncludedNetworksTable
 	TagsTable.ForeignKeys[13].RefTable = NetworksTable
-	TagsTable.ForeignKeys[14].RefTable = ProvisioningStepsTable
-	TagsTable.ForeignKeys[15].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[16].RefTable = UsersTable
+	TagsTable.ForeignKeys[14].RefTable = ScriptsTable
+	TagsTable.ForeignKeys[15].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = BuildsTable
 	UsersTable.ForeignKeys[0].RefTable = CommandsTable
 	UsersTable.ForeignKeys[1].RefTable = FindingsTable
@@ -1622,8 +1597,6 @@ func init() {
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
 	PlanNextPlanTable.ForeignKeys[0].RefTable = PlansTable
 	PlanNextPlanTable.ForeignKeys[1].RefTable = PlansTable
-	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
-	ProvisioningStepProvisioningStepToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	ScriptScriptToFindingTable.ForeignKeys[0].RefTable = ScriptsTable
 	ScriptScriptToFindingTable.ForeignKeys[1].RefTable = FindingsTable
 }

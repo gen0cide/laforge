@@ -30,6 +30,8 @@ func (ProvisionedHost) Edges() []ent.Edge {
 		edge.To("ProvisionedHostToHost", Host.Type).
 			Required().
 			Unique(),
+		edge.To("ProvisionedHostToEndStepPlan", Plan.Type).
+			Unique(),
 		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).
 			Ref("ProvisioningStepToProvisionedHost"),
 		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).

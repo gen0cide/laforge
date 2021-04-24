@@ -34,6 +34,8 @@ const (
 	EdgeStatusToProvisionedNetwork = "StatusToProvisionedNetwork"
 	// EdgeStatusToProvisionedHost holds the string denoting the statustoprovisionedhost edge name in mutations.
 	EdgeStatusToProvisionedHost = "StatusToProvisionedHost"
+	// EdgeStatusToProvisioningStep holds the string denoting the statustoprovisioningstep edge name in mutations.
+	EdgeStatusToProvisioningStep = "StatusToProvisioningStep"
 	// EdgeStatusToTeam holds the string denoting the statustoteam edge name in mutations.
 	EdgeStatusToTeam = "StatusToTeam"
 
@@ -60,6 +62,13 @@ const (
 	StatusToProvisionedHostInverseTable = "provisioned_hosts"
 	// StatusToProvisionedHostColumn is the table column denoting the StatusToProvisionedHost relation/edge.
 	StatusToProvisionedHostColumn = "provisioned_host_provisioned_host_to_status"
+	// StatusToProvisioningStepTable is the table the holds the StatusToProvisioningStep relation/edge.
+	StatusToProvisioningStepTable = "status"
+	// StatusToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
+	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
+	StatusToProvisioningStepInverseTable = "provisioning_steps"
+	// StatusToProvisioningStepColumn is the table column denoting the StatusToProvisioningStep relation/edge.
+	StatusToProvisioningStepColumn = "provisioning_step_provisioning_step_to_status"
 	// StatusToTeamTable is the table the holds the StatusToTeam relation/edge.
 	StatusToTeamTable = "status"
 	// StatusToTeamInverseTable is the table name for the Team entity.
@@ -148,6 +157,7 @@ const (
 	StatusForTeam               StatusFor = "Team"
 	StatusForProvisionedNetwork StatusFor = "ProvisionedNetwork"
 	StatusForProvisionedHost    StatusFor = "ProvisionedHost"
+	StatusForProvisioningStep   StatusFor = "ProvisioningStep"
 )
 
 func (sf StatusFor) String() string {
@@ -157,7 +167,7 @@ func (sf StatusFor) String() string {
 // StatusForValidator is a validator for the "status_for" field enum values. It is called by the builders before save.
 func StatusForValidator(sf StatusFor) error {
 	switch sf {
-	case StatusForBuild, StatusForTeam, StatusForProvisionedNetwork, StatusForProvisionedHost:
+	case StatusForBuild, StatusForTeam, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for status_for field: %q", sf)

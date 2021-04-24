@@ -58,7 +58,7 @@ type Script struct {
 	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
 	HCLScriptToEnvironment []*Environment `json:"ScriptToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_script *int
+
 }
 
 // ScriptEdges holds the relations/edges for other nodes in the graph.
@@ -125,8 +125,6 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
 			values[i] = &sql.NullString{}
-		case script.ForeignKeys[0]: // provisioning_step_provisioning_step_to_script
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
 		}
@@ -240,13 +238,6 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &s.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case script.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_script", value)
-			} else if value.Valid {
-				s.provisioning_step_provisioning_step_to_script = new(int)
-				*s.provisioning_step_provisioning_step_to_script = int(value.Int64)
 			}
 		}
 	}

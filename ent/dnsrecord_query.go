@@ -29,7 +29,6 @@ type DNSRecordQuery struct {
 	// eager-loading edges.
 	withDNSRecordToTag         *TagQuery
 	withDNSRecordToEnvironment *EnvironmentQuery
-	withFKs                    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,16 +377,12 @@ func (drq *DNSRecordQuery) prepareQuery(ctx context.Context) error {
 func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 	var (
 		nodes       = []*DNSRecord{}
-		withFKs     = drq.withFKs
 		_spec       = drq.querySpec()
 		loadedTypes = [2]bool{
 			drq.withDNSRecordToTag != nil,
 			drq.withDNSRecordToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, dnsrecord.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &DNSRecord{config: drq.config}
 		nodes = append(nodes, node)

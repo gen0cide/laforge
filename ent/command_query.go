@@ -31,7 +31,6 @@ type CommandQuery struct {
 	withCommandToUser        *UserQuery
 	withCommandToTag         *TagQuery
 	withCommandToEnvironment *EnvironmentQuery
-	withFKs                  bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -414,7 +413,6 @@ func (cq *CommandQuery) prepareQuery(ctx context.Context) error {
 func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 	var (
 		nodes       = []*Command{}
-		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
 		loadedTypes = [3]bool{
 			cq.withCommandToUser != nil,
@@ -422,9 +420,6 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 			cq.withCommandToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, command.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Command{config: cq.config}
 		nodes = append(nodes, node)

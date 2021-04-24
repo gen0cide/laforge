@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
@@ -32,6 +33,8 @@ type ProvisionedHost struct {
 	HCLProvisionedHostToProvisionedNetwork *ProvisionedNetwork `json:"ProvisionedHostToProvisionedNetwork,omitempty"`
 	// ProvisionedHostToHost holds the value of the ProvisionedHostToHost edge.
 	HCLProvisionedHostToHost *Host `json:"ProvisionedHostToHost,omitempty"`
+	// ProvisionedHostToEndStepPlan holds the value of the ProvisionedHostToEndStepPlan edge.
+	HCLProvisionedHostToEndStepPlan *Plan `json:"ProvisionedHostToEndStepPlan,omitempty"`
 	// ProvisionedHostToProvisioningStep holds the value of the ProvisionedHostToProvisioningStep edge.
 	HCLProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
@@ -44,6 +47,7 @@ type ProvisionedHost struct {
 	gin_file_middleware_gin_file_middleware_to_provisioned_host *int
 	provisioned_host_provisioned_host_to_provisioned_network    *int
 	provisioned_host_provisioned_host_to_host                   *int
+	provisioned_host_provisioned_host_to_end_step_plan          *int
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
@@ -54,6 +58,8 @@ type ProvisionedHostEdges struct {
 	ProvisionedHostToProvisionedNetwork *ProvisionedNetwork `json:"ProvisionedHostToProvisionedNetwork,omitempty"`
 	// ProvisionedHostToHost holds the value of the ProvisionedHostToHost edge.
 	ProvisionedHostToHost *Host `json:"ProvisionedHostToHost,omitempty"`
+	// ProvisionedHostToEndStepPlan holds the value of the ProvisionedHostToEndStepPlan edge.
+	ProvisionedHostToEndStepPlan *Plan `json:"ProvisionedHostToEndStepPlan,omitempty"`
 	// ProvisionedHostToProvisioningStep holds the value of the ProvisionedHostToProvisioningStep edge.
 	ProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
@@ -64,7 +70,7 @@ type ProvisionedHostEdges struct {
 	ProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // ProvisionedHostToStatusOrErr returns the ProvisionedHostToStatus value or an error if the edge
@@ -109,10 +115,24 @@ func (e ProvisionedHostEdges) ProvisionedHostToHostOrErr() (*Host, error) {
 	return nil, &NotLoadedError{edge: "ProvisionedHostToHost"}
 }
 
+// ProvisionedHostToEndStepPlanOrErr returns the ProvisionedHostToEndStepPlan value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProvisionedHostEdges) ProvisionedHostToEndStepPlanOrErr() (*Plan, error) {
+	if e.loadedTypes[3] {
+		if e.ProvisionedHostToEndStepPlan == nil {
+			// The edge ProvisionedHostToEndStepPlan was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: plan.Label}
+		}
+		return e.ProvisionedHostToEndStepPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToEndStepPlan"}
+}
+
 // ProvisionedHostToProvisioningStepOrErr returns the ProvisionedHostToProvisioningStep value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) ProvisionedHostToProvisioningStepOrErr() ([]*ProvisioningStep, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.ProvisionedHostToProvisioningStep, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedHostToProvisioningStep"}
@@ -121,7 +141,7 @@ func (e ProvisionedHostEdges) ProvisionedHostToProvisioningStepOrErr() ([]*Provi
 // ProvisionedHostToAgentStatusOrErr returns the ProvisionedHostToAgentStatus value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatus, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.ProvisionedHostToAgentStatus, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentStatus"}
@@ -130,7 +150,7 @@ func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatu
 // ProvisionedHostToPlanOrErr returns the ProvisionedHostToPlan value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() ([]*Plan, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.ProvisionedHostToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedHostToPlan"}
@@ -139,7 +159,7 @@ func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() ([]*Plan, error) {
 // ProvisionedHostToGinFileMiddlewareOrErr returns the ProvisionedHostToGinFileMiddleware value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ProvisionedHostEdges) ProvisionedHostToGinFileMiddlewareOrErr() (*GinFileMiddleware, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		if e.ProvisionedHostToGinFileMiddleware == nil {
 			// The edge ProvisionedHostToGinFileMiddleware was loaded in eager-loading,
 			// but was not found.
@@ -164,6 +184,8 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 		case provisionedhost.ForeignKeys[1]: // provisioned_host_provisioned_host_to_provisioned_network
 			values[i] = &sql.NullInt64{}
 		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_host
+			values[i] = &sql.NullInt64{}
+		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_end_step_plan
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
@@ -213,6 +235,13 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 				ph.provisioned_host_provisioned_host_to_host = new(int)
 				*ph.provisioned_host_provisioned_host_to_host = int(value.Int64)
 			}
+		case provisionedhost.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_end_step_plan", value)
+			} else if value.Valid {
+				ph.provisioned_host_provisioned_host_to_end_step_plan = new(int)
+				*ph.provisioned_host_provisioned_host_to_end_step_plan = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -231,6 +260,11 @@ func (ph *ProvisionedHost) QueryProvisionedHostToProvisionedNetwork() *Provision
 // QueryProvisionedHostToHost queries the "ProvisionedHostToHost" edge of the ProvisionedHost entity.
 func (ph *ProvisionedHost) QueryProvisionedHostToHost() *HostQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToHost(ph)
+}
+
+// QueryProvisionedHostToEndStepPlan queries the "ProvisionedHostToEndStepPlan" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToEndStepPlan() *PlanQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToEndStepPlan(ph)
 }
 
 // QueryProvisionedHostToProvisioningStep queries the "ProvisionedHostToProvisioningStep" edge of the ProvisionedHost entity.

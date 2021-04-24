@@ -21,7 +21,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisioningStepUpdate is the builder for updating ProvisioningStep entities.
@@ -37,9 +36,9 @@ func (psu *ProvisioningStepUpdate) Where(ps ...predicate.ProvisioningStep) *Prov
 	return psu
 }
 
-// SetProvisionerType sets the "provisioner_type" field.
-func (psu *ProvisioningStepUpdate) SetProvisionerType(s string) *ProvisioningStepUpdate {
-	psu.mutation.SetProvisionerType(s)
+// SetType sets the "type" field.
+func (psu *ProvisioningStepUpdate) SetType(pr provisioningstep.Type) *ProvisioningStepUpdate {
+	psu.mutation.SetType(pr)
 	return psu
 }
 
@@ -56,154 +55,175 @@ func (psu *ProvisioningStepUpdate) AddStepNumber(i int) *ProvisioningStepUpdate 
 	return psu
 }
 
-// AddProvisioningStepToTagIDs adds the "ProvisioningStepToTag" edge to the Tag entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToTagIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToTagIDs(ids...)
+// SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToStatusID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToStatusID(id)
 	return psu
 }
 
-// AddProvisioningStepToTag adds the "ProvisioningStepToTag" edges to the Tag entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToTag(t ...*Tag) *ProvisioningStepUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToStatusID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToStatusID(*id)
 	}
-	return psu.AddProvisioningStepToTagIDs(ids...)
-}
-
-// AddProvisioningStepToStatuIDs adds the "ProvisioningStepToStatus" edge to the Status entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToStatuIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToStatuIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToStatus adds the "ProvisioningStepToStatus" edges to the Status entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToStatus(s ...*Status) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.AddProvisioningStepToStatuIDs(ids...)
+// SetProvisioningStepToStatus sets the "ProvisioningStepToStatus" edge to the Status entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToStatus(s *Status) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToStatusID(s.ID)
 }
 
-// AddProvisioningStepToProvisionedHostIDs adds the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToProvisionedHostIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToProvisionedHostIDs(ids...)
+// SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToProvisionedHostID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToProvisionedHostID(id)
 	return psu
 }
 
-// AddProvisioningStepToProvisionedHost adds the "ProvisioningStepToProvisionedHost" edges to the ProvisionedHost entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToProvisionedHost(p ...*ProvisionedHost) *ProvisioningStepUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToProvisionedHostID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToProvisionedHostID(*id)
 	}
-	return psu.AddProvisioningStepToProvisionedHostIDs(ids...)
-}
-
-// AddProvisioningStepToScriptIDs adds the "ProvisioningStepToScript" edge to the Script entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToScriptIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToScriptIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToScript adds the "ProvisioningStepToScript" edges to the Script entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToScript(s ...*Script) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.AddProvisioningStepToScriptIDs(ids...)
+// SetProvisioningStepToProvisionedHost sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToProvisionedHost(p *ProvisionedHost) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToProvisionedHostID(p.ID)
 }
 
-// AddProvisioningStepToCommandIDs adds the "ProvisioningStepToCommand" edge to the Command entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToCommandIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToCommandIDs(ids...)
+// SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToScriptID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToScriptID(id)
 	return psu
 }
 
-// AddProvisioningStepToCommand adds the "ProvisioningStepToCommand" edges to the Command entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToCommand(c ...*Command) *ProvisioningStepUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToScriptID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToScriptID(*id)
 	}
-	return psu.AddProvisioningStepToCommandIDs(ids...)
-}
-
-// AddProvisioningStepToDNSRecordIDs adds the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToDNSRecordIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToDNSRecordIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToDNSRecord adds the "ProvisioningStepToDNSRecord" edges to the DNSRecord entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToDNSRecord(d ...*DNSRecord) *ProvisioningStepUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return psu.AddProvisioningStepToDNSRecordIDs(ids...)
+// SetProvisioningStepToScript sets the "ProvisioningStepToScript" edge to the Script entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToScript(s *Script) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToScriptID(s.ID)
 }
 
-// AddProvisioningStepToFileDeleteIDs adds the "ProvisioningStepToFileDelete" edge to the FileDelete entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToFileDeleteIDs(ids...)
+// SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToCommandID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToCommandID(id)
 	return psu
 }
 
-// AddProvisioningStepToFileDelete adds the "ProvisioningStepToFileDelete" edges to the FileDelete entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// SetNillableProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToCommandID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToCommandID(*id)
 	}
-	return psu.AddProvisioningStepToFileDeleteIDs(ids...)
-}
-
-// AddProvisioningStepToFileDownloadIDs adds the "ProvisioningStepToFileDownload" edge to the FileDownload entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToFileDownloadIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToFileDownload adds the "ProvisioningStepToFileDownload" edges to the FileDownload entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psu.AddProvisioningStepToFileDownloadIDs(ids...)
+// SetProvisioningStepToCommand sets the "ProvisioningStepToCommand" edge to the Command entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToCommand(c *Command) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToCommandID(c.ID)
 }
 
-// AddProvisioningStepToFileExtractIDs adds the "ProvisioningStepToFileExtract" edge to the FileExtract entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToFileExtractIDs(ids...)
+// SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToDNSRecordID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToDNSRecordID(id)
 	return psu
 }
 
-// AddProvisioningStepToFileExtract adds the "ProvisioningStepToFileExtract" edges to the FileExtract entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// SetNillableProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToDNSRecordID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToDNSRecordID(*id)
 	}
-	return psu.AddProvisioningStepToFileExtractIDs(ids...)
-}
-
-// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.AddProvisioningStepToPlanIDs(ids...)
 	return psu
 }
 
-// AddProvisioningStepToPlan adds the "ProvisioningStepToPlan" edges to the Plan entity.
-func (psu *ProvisioningStepUpdate) AddProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetProvisioningStepToDNSRecord sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToDNSRecord(d *DNSRecord) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToDNSRecordID(d.ID)
+}
+
+// SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDeleteID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToFileDeleteID(id)
+	return psu
+}
+
+// SetNillableProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDeleteID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToFileDeleteID(*id)
 	}
-	return psu.AddProvisioningStepToPlanIDs(ids...)
+	return psu
+}
+
+// SetProvisioningStepToFileDelete sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDelete(f *FileDelete) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToFileDeleteID(f.ID)
+}
+
+// SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDownloadID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToFileDownloadID(id)
+	return psu
+}
+
+// SetNillableProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDownloadID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToFileDownloadID(*id)
+	}
+	return psu
+}
+
+// SetProvisioningStepToFileDownload sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDownload(f *FileDownload) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToFileDownloadID(f.ID)
+}
+
+// SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileExtractID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToFileExtractID(id)
+	return psu
+}
+
+// SetNillableProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileExtractID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToFileExtractID(*id)
+	}
+	return psu
+}
+
+// SetProvisioningStepToFileExtract sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileExtract(f *FileExtract) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToFileExtractID(f.ID)
+}
+
+// SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlanID(id int) *ProvisioningStepUpdate {
+	psu.mutation.SetProvisioningStepToPlanID(id)
+	return psu
+}
+
+// SetNillableProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToPlanID(id *int) *ProvisioningStepUpdate {
+	if id != nil {
+		psu = psu.SetProvisioningStepToPlanID(*id)
+	}
+	return psu
+}
+
+// SetProvisioningStepToPlan sets the "ProvisioningStepToPlan" edge to the Plan entity.
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlan(p *Plan) *ProvisioningStepUpdate {
+	return psu.SetProvisioningStepToPlanID(p.ID)
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -230,214 +250,58 @@ func (psu *ProvisioningStepUpdate) Mutation() *ProvisioningStepMutation {
 	return psu.mutation
 }
 
-// ClearProvisioningStepToTag clears all "ProvisioningStepToTag" edges to the Tag entity.
-func (psu *ProvisioningStepUpdate) ClearProvisioningStepToTag() *ProvisioningStepUpdate {
-	psu.mutation.ClearProvisioningStepToTag()
-	return psu
-}
-
-// RemoveProvisioningStepToTagIDs removes the "ProvisioningStepToTag" edge to Tag entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToTagIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToTagIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToTag removes "ProvisioningStepToTag" edges to Tag entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToTag(t ...*Tag) *ProvisioningStepUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psu.RemoveProvisioningStepToTagIDs(ids...)
-}
-
-// ClearProvisioningStepToStatus clears all "ProvisioningStepToStatus" edges to the Status entity.
+// ClearProvisioningStepToStatus clears the "ProvisioningStepToStatus" edge to the Status entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToStatus() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToStatus()
 	return psu
 }
 
-// RemoveProvisioningStepToStatuIDs removes the "ProvisioningStepToStatus" edge to Status entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToStatuIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToStatuIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToStatus removes "ProvisioningStepToStatus" edges to Status entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToStatus(s ...*Status) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.RemoveProvisioningStepToStatuIDs(ids...)
-}
-
-// ClearProvisioningStepToProvisionedHost clears all "ProvisioningStepToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearProvisioningStepToProvisionedHost clears the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToProvisionedHost() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToProvisionedHost()
 	return psu
 }
 
-// RemoveProvisioningStepToProvisionedHostIDs removes the "ProvisioningStepToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToProvisionedHostIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToProvisionedHostIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToProvisionedHost removes "ProvisioningStepToProvisionedHost" edges to ProvisionedHost entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToProvisionedHost(p ...*ProvisionedHost) *ProvisioningStepUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return psu.RemoveProvisioningStepToProvisionedHostIDs(ids...)
-}
-
-// ClearProvisioningStepToScript clears all "ProvisioningStepToScript" edges to the Script entity.
+// ClearProvisioningStepToScript clears the "ProvisioningStepToScript" edge to the Script entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToScript() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToScript()
 	return psu
 }
 
-// RemoveProvisioningStepToScriptIDs removes the "ProvisioningStepToScript" edge to Script entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToScriptIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToScriptIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToScript removes "ProvisioningStepToScript" edges to Script entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToScript(s ...*Script) *ProvisioningStepUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psu.RemoveProvisioningStepToScriptIDs(ids...)
-}
-
-// ClearProvisioningStepToCommand clears all "ProvisioningStepToCommand" edges to the Command entity.
+// ClearProvisioningStepToCommand clears the "ProvisioningStepToCommand" edge to the Command entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToCommand() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToCommand()
 	return psu
 }
 
-// RemoveProvisioningStepToCommandIDs removes the "ProvisioningStepToCommand" edge to Command entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToCommandIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToCommandIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToCommand removes "ProvisioningStepToCommand" edges to Command entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToCommand(c ...*Command) *ProvisioningStepUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return psu.RemoveProvisioningStepToCommandIDs(ids...)
-}
-
-// ClearProvisioningStepToDNSRecord clears all "ProvisioningStepToDNSRecord" edges to the DNSRecord entity.
+// ClearProvisioningStepToDNSRecord clears the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToDNSRecord() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToDNSRecord()
 	return psu
 }
 
-// RemoveProvisioningStepToDNSRecordIDs removes the "ProvisioningStepToDNSRecord" edge to DNSRecord entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToDNSRecordIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToDNSRecordIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToDNSRecord removes "ProvisioningStepToDNSRecord" edges to DNSRecord entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToDNSRecord(d ...*DNSRecord) *ProvisioningStepUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return psu.RemoveProvisioningStepToDNSRecordIDs(ids...)
-}
-
-// ClearProvisioningStepToFileDelete clears all "ProvisioningStepToFileDelete" edges to the FileDelete entity.
+// ClearProvisioningStepToFileDelete clears the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileDelete() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToFileDelete()
 	return psu
 }
 
-// RemoveProvisioningStepToFileDeleteIDs removes the "ProvisioningStepToFileDelete" edge to FileDelete entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToFileDeleteIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToFileDelete removes "ProvisioningStepToFileDelete" edges to FileDelete entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psu.RemoveProvisioningStepToFileDeleteIDs(ids...)
-}
-
-// ClearProvisioningStepToFileDownload clears all "ProvisioningStepToFileDownload" edges to the FileDownload entity.
+// ClearProvisioningStepToFileDownload clears the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileDownload() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToFileDownload()
 	return psu
 }
 
-// RemoveProvisioningStepToFileDownloadIDs removes the "ProvisioningStepToFileDownload" edge to FileDownload entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToFileDownloadIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToFileDownload removes "ProvisioningStepToFileDownload" edges to FileDownload entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psu.RemoveProvisioningStepToFileDownloadIDs(ids...)
-}
-
-// ClearProvisioningStepToFileExtract clears all "ProvisioningStepToFileExtract" edges to the FileExtract entity.
+// ClearProvisioningStepToFileExtract clears the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileExtract() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToFileExtract()
 	return psu
 }
 
-// RemoveProvisioningStepToFileExtractIDs removes the "ProvisioningStepToFileExtract" edge to FileExtract entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToFileExtractIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToFileExtract removes "ProvisioningStepToFileExtract" edges to FileExtract entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psu.RemoveProvisioningStepToFileExtractIDs(ids...)
-}
-
-// ClearProvisioningStepToPlan clears all "ProvisioningStepToPlan" edges to the Plan entity.
+// ClearProvisioningStepToPlan clears the "ProvisioningStepToPlan" edge to the Plan entity.
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToPlan() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToPlan()
 	return psu
-}
-
-// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to Plan entities by IDs.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdate {
-	psu.mutation.RemoveProvisioningStepToPlanIDs(ids...)
-	return psu
-}
-
-// RemoveProvisioningStepToPlan removes "ProvisioningStepToPlan" edges to Plan entities.
-func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return psu.RemoveProvisioningStepToPlanIDs(ids...)
 }
 
 // ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -453,12 +317,18 @@ func (psu *ProvisioningStepUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(psu.hooks) == 0 {
+		if err = psu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = psu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*ProvisioningStepMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = psu.check(); err != nil {
+				return 0, err
 			}
 			psu.mutation = mutation
 			affected, err = psu.sqlSave(ctx)
@@ -497,6 +367,16 @@ func (psu *ProvisioningStepUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (psu *ProvisioningStepUpdate) check() error {
+	if v, ok := psu.mutation.GetType(); ok {
+		if err := provisioningstep.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+		}
+	}
+	return nil
+}
+
 func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -515,11 +395,11 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			}
 		}
 	}
-	if value, ok := psu.mutation.ProvisionerType(); ok {
+	if value, ok := psu.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeEnum,
 			Value:  value,
-			Column: provisioningstep.FieldProvisionerType,
+			Column: provisioningstep.FieldType,
 		})
 	}
 	if value, ok := psu.mutation.StepNumber(); ok {
@@ -536,63 +416,9 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Column: provisioningstep.FieldStepNumber,
 		})
 	}
-	if psu.mutation.ProvisioningStepToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToTagIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.ProvisioningStepToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if psu.mutation.ProvisioningStepToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToStatusTable,
 			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
@@ -603,31 +429,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: status.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToStatusIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToStatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToStatusTable,
-			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToStatusTable,
 			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
@@ -646,10 +453,10 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -657,34 +464,15 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToProvisionedHostIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -700,7 +488,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToScriptTable,
 			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
@@ -711,31 +499,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: script.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToScriptIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToScriptCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToScriptTable,
-			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: script.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToScriptTable,
 			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
@@ -754,7 +523,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToCommandTable,
 			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
@@ -765,31 +534,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: command.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToCommandIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToCommandCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToCommandTable,
-			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: command.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToCommandIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToCommandTable,
 			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
@@ -808,7 +558,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
 			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
@@ -819,31 +569,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: dnsrecord.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToDNSRecordIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToDNSRecordCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
-			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: dnsrecord.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToDNSRecordIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
 			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
@@ -862,7 +593,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
@@ -873,31 +604,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: filedelete.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToFileDeleteIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileDeleteCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: filedelete.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
@@ -916,7 +628,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
@@ -927,31 +639,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: filedownload.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToFileDownloadIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileDownloadCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: filedownload.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToFileDownloadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
@@ -970,7 +663,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
@@ -981,31 +674,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: fileextract.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToFileExtractIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToFileExtractCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: fileextract.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToFileExtractIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
@@ -1024,7 +698,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if psu.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
 			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
@@ -1035,31 +709,12 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psu.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psu.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
 			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
@@ -1129,9 +784,9 @@ type ProvisioningStepUpdateOne struct {
 	mutation *ProvisioningStepMutation
 }
 
-// SetProvisionerType sets the "provisioner_type" field.
-func (psuo *ProvisioningStepUpdateOne) SetProvisionerType(s string) *ProvisioningStepUpdateOne {
-	psuo.mutation.SetProvisionerType(s)
+// SetType sets the "type" field.
+func (psuo *ProvisioningStepUpdateOne) SetType(pr provisioningstep.Type) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetType(pr)
 	return psuo
 }
 
@@ -1148,154 +803,175 @@ func (psuo *ProvisioningStepUpdateOne) AddStepNumber(i int) *ProvisioningStepUpd
 	return psuo
 }
 
-// AddProvisioningStepToTagIDs adds the "ProvisioningStepToTag" edge to the Tag entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToTagIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToTagIDs(ids...)
+// SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToStatusID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToStatusID(id)
 	return psuo
 }
 
-// AddProvisioningStepToTag adds the "ProvisioningStepToTag" edges to the Tag entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToTag(t ...*Tag) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToStatusID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToStatusID(*id)
 	}
-	return psuo.AddProvisioningStepToTagIDs(ids...)
-}
-
-// AddProvisioningStepToStatuIDs adds the "ProvisioningStepToStatus" edge to the Status entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToStatuIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToStatuIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToStatus adds the "ProvisioningStepToStatus" edges to the Status entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToStatus(s ...*Status) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.AddProvisioningStepToStatuIDs(ids...)
+// SetProvisioningStepToStatus sets the "ProvisioningStepToStatus" edge to the Status entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToStatus(s *Status) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToStatusID(s.ID)
 }
 
-// AddProvisioningStepToProvisionedHostIDs adds the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToProvisionedHostIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToProvisionedHostIDs(ids...)
+// SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToProvisionedHostID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToProvisionedHostID(id)
 	return psuo
 }
 
-// AddProvisioningStepToProvisionedHost adds the "ProvisioningStepToProvisionedHost" edges to the ProvisionedHost entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToProvisionedHost(p ...*ProvisionedHost) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToProvisionedHostID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToProvisionedHostID(*id)
 	}
-	return psuo.AddProvisioningStepToProvisionedHostIDs(ids...)
-}
-
-// AddProvisioningStepToScriptIDs adds the "ProvisioningStepToScript" edge to the Script entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToScriptIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToScriptIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToScript adds the "ProvisioningStepToScript" edges to the Script entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToScript(s ...*Script) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.AddProvisioningStepToScriptIDs(ids...)
+// SetProvisioningStepToProvisionedHost sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToProvisionedHost(p *ProvisionedHost) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToProvisionedHostID(p.ID)
 }
 
-// AddProvisioningStepToCommandIDs adds the "ProvisioningStepToCommand" edge to the Command entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToCommandIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToCommandIDs(ids...)
+// SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToScriptID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToScriptID(id)
 	return psuo
 }
 
-// AddProvisioningStepToCommand adds the "ProvisioningStepToCommand" edges to the Command entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToCommand(c ...*Command) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToScriptID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToScriptID(*id)
 	}
-	return psuo.AddProvisioningStepToCommandIDs(ids...)
-}
-
-// AddProvisioningStepToDNSRecordIDs adds the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToDNSRecordIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToDNSRecordIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToDNSRecord adds the "ProvisioningStepToDNSRecord" edges to the DNSRecord entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToDNSRecord(d ...*DNSRecord) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return psuo.AddProvisioningStepToDNSRecordIDs(ids...)
+// SetProvisioningStepToScript sets the "ProvisioningStepToScript" edge to the Script entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToScript(s *Script) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToScriptID(s.ID)
 }
 
-// AddProvisioningStepToFileDeleteIDs adds the "ProvisioningStepToFileDelete" edge to the FileDelete entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToFileDeleteIDs(ids...)
+// SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToCommandID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToCommandID(id)
 	return psuo
 }
 
-// AddProvisioningStepToFileDelete adds the "ProvisioningStepToFileDelete" edges to the FileDelete entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// SetNillableProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToCommandID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToCommandID(*id)
 	}
-	return psuo.AddProvisioningStepToFileDeleteIDs(ids...)
-}
-
-// AddProvisioningStepToFileDownloadIDs adds the "ProvisioningStepToFileDownload" edge to the FileDownload entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToFileDownloadIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToFileDownload adds the "ProvisioningStepToFileDownload" edges to the FileDownload entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psuo.AddProvisioningStepToFileDownloadIDs(ids...)
+// SetProvisioningStepToCommand sets the "ProvisioningStepToCommand" edge to the Command entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToCommand(c *Command) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToCommandID(c.ID)
 }
 
-// AddProvisioningStepToFileExtractIDs adds the "ProvisioningStepToFileExtract" edge to the FileExtract entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToFileExtractIDs(ids...)
+// SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToDNSRecordID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToDNSRecordID(id)
 	return psuo
 }
 
-// AddProvisioningStepToFileExtract adds the "ProvisioningStepToFileExtract" edges to the FileExtract entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// SetNillableProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToDNSRecordID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToDNSRecordID(*id)
 	}
-	return psuo.AddProvisioningStepToFileExtractIDs(ids...)
-}
-
-// AddProvisioningStepToPlanIDs adds the "ProvisioningStepToPlan" edge to the Plan entity by IDs.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.AddProvisioningStepToPlanIDs(ids...)
 	return psuo
 }
 
-// AddProvisioningStepToPlan adds the "ProvisioningStepToPlan" edges to the Plan entity.
-func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetProvisioningStepToDNSRecord sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToDNSRecord(d *DNSRecord) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToDNSRecordID(d.ID)
+}
+
+// SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDeleteID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToFileDeleteID(id)
+	return psuo
+}
+
+// SetNillableProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDeleteID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToFileDeleteID(*id)
 	}
-	return psuo.AddProvisioningStepToPlanIDs(ids...)
+	return psuo
+}
+
+// SetProvisioningStepToFileDelete sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDelete(f *FileDelete) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToFileDeleteID(f.ID)
+}
+
+// SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDownloadID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToFileDownloadID(id)
+	return psuo
+}
+
+// SetNillableProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDownloadID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToFileDownloadID(*id)
+	}
+	return psuo
+}
+
+// SetProvisioningStepToFileDownload sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDownload(f *FileDownload) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToFileDownloadID(f.ID)
+}
+
+// SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileExtractID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToFileExtractID(id)
+	return psuo
+}
+
+// SetNillableProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileExtractID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToFileExtractID(*id)
+	}
+	return psuo
+}
+
+// SetProvisioningStepToFileExtract sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileExtract(f *FileExtract) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToFileExtractID(f.ID)
+}
+
+// SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlanID(id int) *ProvisioningStepUpdateOne {
+	psuo.mutation.SetProvisioningStepToPlanID(id)
+	return psuo
+}
+
+// SetNillableProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToPlanID(id *int) *ProvisioningStepUpdateOne {
+	if id != nil {
+		psuo = psuo.SetProvisioningStepToPlanID(*id)
+	}
+	return psuo
+}
+
+// SetProvisioningStepToPlan sets the "ProvisioningStepToPlan" edge to the Plan entity.
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlan(p *Plan) *ProvisioningStepUpdateOne {
+	return psuo.SetProvisioningStepToPlanID(p.ID)
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -1322,214 +998,58 @@ func (psuo *ProvisioningStepUpdateOne) Mutation() *ProvisioningStepMutation {
 	return psuo.mutation
 }
 
-// ClearProvisioningStepToTag clears all "ProvisioningStepToTag" edges to the Tag entity.
-func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToTag() *ProvisioningStepUpdateOne {
-	psuo.mutation.ClearProvisioningStepToTag()
-	return psuo
-}
-
-// RemoveProvisioningStepToTagIDs removes the "ProvisioningStepToTag" edge to Tag entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToTagIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToTagIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToTag removes "ProvisioningStepToTag" edges to Tag entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToTag(t ...*Tag) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return psuo.RemoveProvisioningStepToTagIDs(ids...)
-}
-
-// ClearProvisioningStepToStatus clears all "ProvisioningStepToStatus" edges to the Status entity.
+// ClearProvisioningStepToStatus clears the "ProvisioningStepToStatus" edge to the Status entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToStatus() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToStatus()
 	return psuo
 }
 
-// RemoveProvisioningStepToStatuIDs removes the "ProvisioningStepToStatus" edge to Status entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToStatuIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToStatuIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToStatus removes "ProvisioningStepToStatus" edges to Status entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToStatus(s ...*Status) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.RemoveProvisioningStepToStatuIDs(ids...)
-}
-
-// ClearProvisioningStepToProvisionedHost clears all "ProvisioningStepToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearProvisioningStepToProvisionedHost clears the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToProvisionedHost() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToProvisionedHost()
 	return psuo
 }
 
-// RemoveProvisioningStepToProvisionedHostIDs removes the "ProvisioningStepToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToProvisionedHostIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToProvisionedHostIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToProvisionedHost removes "ProvisioningStepToProvisionedHost" edges to ProvisionedHost entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToProvisionedHost(p ...*ProvisionedHost) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return psuo.RemoveProvisioningStepToProvisionedHostIDs(ids...)
-}
-
-// ClearProvisioningStepToScript clears all "ProvisioningStepToScript" edges to the Script entity.
+// ClearProvisioningStepToScript clears the "ProvisioningStepToScript" edge to the Script entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToScript() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToScript()
 	return psuo
 }
 
-// RemoveProvisioningStepToScriptIDs removes the "ProvisioningStepToScript" edge to Script entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToScriptIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToScriptIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToScript removes "ProvisioningStepToScript" edges to Script entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToScript(s ...*Script) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return psuo.RemoveProvisioningStepToScriptIDs(ids...)
-}
-
-// ClearProvisioningStepToCommand clears all "ProvisioningStepToCommand" edges to the Command entity.
+// ClearProvisioningStepToCommand clears the "ProvisioningStepToCommand" edge to the Command entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToCommand() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToCommand()
 	return psuo
 }
 
-// RemoveProvisioningStepToCommandIDs removes the "ProvisioningStepToCommand" edge to Command entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToCommandIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToCommandIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToCommand removes "ProvisioningStepToCommand" edges to Command entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToCommand(c ...*Command) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return psuo.RemoveProvisioningStepToCommandIDs(ids...)
-}
-
-// ClearProvisioningStepToDNSRecord clears all "ProvisioningStepToDNSRecord" edges to the DNSRecord entity.
+// ClearProvisioningStepToDNSRecord clears the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToDNSRecord() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToDNSRecord()
 	return psuo
 }
 
-// RemoveProvisioningStepToDNSRecordIDs removes the "ProvisioningStepToDNSRecord" edge to DNSRecord entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToDNSRecordIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToDNSRecordIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToDNSRecord removes "ProvisioningStepToDNSRecord" edges to DNSRecord entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToDNSRecord(d ...*DNSRecord) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return psuo.RemoveProvisioningStepToDNSRecordIDs(ids...)
-}
-
-// ClearProvisioningStepToFileDelete clears all "ProvisioningStepToFileDelete" edges to the FileDelete entity.
+// ClearProvisioningStepToFileDelete clears the "ProvisioningStepToFileDelete" edge to the FileDelete entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileDelete() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToFileDelete()
 	return psuo
 }
 
-// RemoveProvisioningStepToFileDeleteIDs removes the "ProvisioningStepToFileDelete" edge to FileDelete entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDeleteIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToFileDeleteIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToFileDelete removes "ProvisioningStepToFileDelete" edges to FileDelete entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDelete(f ...*FileDelete) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psuo.RemoveProvisioningStepToFileDeleteIDs(ids...)
-}
-
-// ClearProvisioningStepToFileDownload clears all "ProvisioningStepToFileDownload" edges to the FileDownload entity.
+// ClearProvisioningStepToFileDownload clears the "ProvisioningStepToFileDownload" edge to the FileDownload entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileDownload() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToFileDownload()
 	return psuo
 }
 
-// RemoveProvisioningStepToFileDownloadIDs removes the "ProvisioningStepToFileDownload" edge to FileDownload entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDownloadIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToFileDownloadIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToFileDownload removes "ProvisioningStepToFileDownload" edges to FileDownload entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileDownload(f ...*FileDownload) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psuo.RemoveProvisioningStepToFileDownloadIDs(ids...)
-}
-
-// ClearProvisioningStepToFileExtract clears all "ProvisioningStepToFileExtract" edges to the FileExtract entity.
+// ClearProvisioningStepToFileExtract clears the "ProvisioningStepToFileExtract" edge to the FileExtract entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileExtract() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToFileExtract()
 	return psuo
 }
 
-// RemoveProvisioningStepToFileExtractIDs removes the "ProvisioningStepToFileExtract" edge to FileExtract entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileExtractIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToFileExtractIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToFileExtract removes "ProvisioningStepToFileExtract" edges to FileExtract entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToFileExtract(f ...*FileExtract) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return psuo.RemoveProvisioningStepToFileExtractIDs(ids...)
-}
-
-// ClearProvisioningStepToPlan clears all "ProvisioningStepToPlan" edges to the Plan entity.
+// ClearProvisioningStepToPlan clears the "ProvisioningStepToPlan" edge to the Plan entity.
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToPlan() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToPlan()
 	return psuo
-}
-
-// RemoveProvisioningStepToPlanIDs removes the "ProvisioningStepToPlan" edge to Plan entities by IDs.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToPlanIDs(ids ...int) *ProvisioningStepUpdateOne {
-	psuo.mutation.RemoveProvisioningStepToPlanIDs(ids...)
-	return psuo
-}
-
-// RemoveProvisioningStepToPlan removes "ProvisioningStepToPlan" edges to Plan entities.
-func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToPlan(p ...*Plan) *ProvisioningStepUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return psuo.RemoveProvisioningStepToPlanIDs(ids...)
 }
 
 // ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -1545,12 +1065,18 @@ func (psuo *ProvisioningStepUpdateOne) Save(ctx context.Context) (*ProvisioningS
 		node *ProvisioningStep
 	)
 	if len(psuo.hooks) == 0 {
+		if err = psuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = psuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*ProvisioningStepMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = psuo.check(); err != nil {
+				return nil, err
 			}
 			psuo.mutation = mutation
 			node, err = psuo.sqlSave(ctx)
@@ -1589,6 +1115,16 @@ func (psuo *ProvisioningStepUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (psuo *ProvisioningStepUpdateOne) check() error {
+	if v, ok := psuo.mutation.GetType(); ok {
+		if err := provisioningstep.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+		}
+	}
+	return nil
+}
+
 func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *ProvisioningStep, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -1612,11 +1148,11 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			}
 		}
 	}
-	if value, ok := psuo.mutation.ProvisionerType(); ok {
+	if value, ok := psuo.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeEnum,
 			Value:  value,
-			Column: provisioningstep.FieldProvisionerType,
+			Column: provisioningstep.FieldType,
 		})
 	}
 	if value, ok := psuo.mutation.StepNumber(); ok {
@@ -1633,63 +1169,9 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Column: provisioningstep.FieldStepNumber,
 		})
 	}
-	if psuo.mutation.ProvisioningStepToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToTagIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.ProvisioningStepToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToTagTable,
-			Columns: []string{provisioningstep.ProvisioningStepToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if psuo.mutation.ProvisioningStepToStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToStatusTable,
 			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
@@ -1700,31 +1182,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: status.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToStatusIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToStatusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToStatusTable,
-			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: status.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToStatusTable,
 			Columns: []string{provisioningstep.ProvisioningStepToStatusColumn},
@@ -1743,10 +1206,10 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1754,34 +1217,15 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToProvisionedHostIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-			Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
+			Columns: []string{provisioningstep.ProvisioningStepToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1797,7 +1241,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToScriptTable,
 			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
@@ -1808,31 +1252,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: script.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToScriptIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToScriptCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToScriptTable,
-			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: script.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToScriptTable,
 			Columns: []string{provisioningstep.ProvisioningStepToScriptColumn},
@@ -1851,7 +1276,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToCommandTable,
 			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
@@ -1862,31 +1287,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: command.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToCommandIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToCommandCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToCommandTable,
-			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: command.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToCommandIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToCommandTable,
 			Columns: []string{provisioningstep.ProvisioningStepToCommandColumn},
@@ -1905,7 +1311,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
 			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
@@ -1916,31 +1322,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: dnsrecord.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToDNSRecordIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToDNSRecordCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
-			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: dnsrecord.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToDNSRecordIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToDNSRecordTable,
 			Columns: []string{provisioningstep.ProvisioningStepToDNSRecordColumn},
@@ -1959,7 +1346,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
@@ -1970,31 +1357,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: filedelete.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToFileDeleteIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileDeleteCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: filedelete.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDeleteTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDeleteColumn},
@@ -2013,7 +1381,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
@@ -2024,31 +1392,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: filedownload.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToFileDownloadIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileDownloadCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: filedownload.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToFileDownloadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileDownloadTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileDownloadColumn},
@@ -2067,7 +1416,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
@@ -2078,31 +1427,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: fileextract.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToFileExtractIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToFileExtractCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
-			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: fileextract.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToFileExtractIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   provisioningstep.ProvisioningStepToFileExtractTable,
 			Columns: []string{provisioningstep.ProvisioningStepToFileExtractColumn},
@@ -2121,7 +1451,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 	}
 	if psuo.mutation.ProvisioningStepToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
 			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
@@ -2132,31 +1462,12 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := psuo.mutation.RemovedProvisioningStepToPlanIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisioningstep.ProvisioningStepToPlanTable,
-			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := psuo.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisioningstep.ProvisioningStepToPlanTable,
 			Columns: []string{provisioningstep.ProvisioningStepToPlanColumn},

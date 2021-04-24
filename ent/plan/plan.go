@@ -70,7 +70,7 @@ const (
 	// PlanToProvisionedHostColumn is the table column denoting the PlanToProvisionedHost relation/edge.
 	PlanToProvisionedHostColumn = "plan_plan_to_provisioned_host"
 	// PlanToProvisioningStepTable is the table the holds the PlanToProvisioningStep relation/edge.
-	PlanToProvisioningStepTable = "plans"
+	PlanToProvisioningStepTable = "provisioning_steps"
 	// PlanToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	PlanToProvisioningStepInverseTable = "provisioning_steps"
@@ -91,7 +91,6 @@ var ForeignKeys = []string{
 	"plan_plan_to_build",
 	"plan_plan_to_team",
 	"plan_plan_to_provisioned_host",
-	"plan_plan_to_provisioning_step",
 }
 
 var (

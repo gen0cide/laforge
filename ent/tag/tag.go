@@ -42,7 +42,6 @@ var ForeignKeys = []string{
 	"host_host_to_tag",
 	"included_network_included_network_to_tag",
 	"network_network_to_tag",
-	"provisioning_step_provisioning_step_to_tag",
 	"script_script_to_tag",
 	"user_user_to_tag",
 }

@@ -644,6 +644,14 @@ func (ph *ProvisionedHost) ProvisionedHostToHost(ctx context.Context) (*Host, er
 	return result, err
 }
 
+func (ph *ProvisionedHost) ProvisionedHostToEndStepPlan(ctx context.Context) (*Plan, error) {
+	result, err := ph.Edges.ProvisionedHostToEndStepPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToEndStepPlan().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (ph *ProvisionedHost) ProvisionedHostToProvisioningStep(ctx context.Context) ([]*ProvisioningStep, error) {
 	result, err := ph.Edges.ProvisionedHostToProvisioningStepOrErr()
 	if IsNotLoaded(err) {
@@ -724,84 +732,76 @@ func (pn *ProvisionedNetwork) ProvisionedNetworkToPlan(ctx context.Context) (*Pl
 	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := ps.Edges.ProvisioningStepToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (ps *ProvisioningStep) ProvisioningStepToStatus(ctx context.Context) ([]*Status, error) {
+func (ps *ProvisioningStep) ProvisioningStepToStatus(ctx context.Context) (*Status, error) {
 	result, err := ps.Edges.ProvisioningStepToStatusOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToStatus().All(ctx)
+		result, err = ps.QueryProvisioningStepToStatus().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
+func (ps *ProvisioningStep) ProvisioningStepToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
 	result, err := ps.Edges.ProvisioningStepToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToProvisionedHost().All(ctx)
+		result, err = ps.QueryProvisioningStepToProvisionedHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToScript(ctx context.Context) ([]*Script, error) {
+func (ps *ProvisioningStep) ProvisioningStepToScript(ctx context.Context) (*Script, error) {
 	result, err := ps.Edges.ProvisioningStepToScriptOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToScript().All(ctx)
+		result, err = ps.QueryProvisioningStepToScript().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToCommand(ctx context.Context) ([]*Command, error) {
+func (ps *ProvisioningStep) ProvisioningStepToCommand(ctx context.Context) (*Command, error) {
 	result, err := ps.Edges.ProvisioningStepToCommandOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToCommand().All(ctx)
+		result, err = ps.QueryProvisioningStepToCommand().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToDNSRecord(ctx context.Context) ([]*DNSRecord, error) {
+func (ps *ProvisioningStep) ProvisioningStepToDNSRecord(ctx context.Context) (*DNSRecord, error) {
 	result, err := ps.Edges.ProvisioningStepToDNSRecordOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToDNSRecord().All(ctx)
+		result, err = ps.QueryProvisioningStepToDNSRecord().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileDelete(ctx context.Context) ([]*FileDelete, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileDelete(ctx context.Context) (*FileDelete, error) {
 	result, err := ps.Edges.ProvisioningStepToFileDeleteOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileDelete().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDelete().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileDownload(ctx context.Context) ([]*FileDownload, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileDownload(ctx context.Context) (*FileDownload, error) {
 	result, err := ps.Edges.ProvisioningStepToFileDownloadOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileDownload().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileDownload().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) ([]*FileExtract, error) {
+func (ps *ProvisioningStep) ProvisioningStepToFileExtract(ctx context.Context) (*FileExtract, error) {
 	result, err := ps.Edges.ProvisioningStepToFileExtractOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToFileExtract().All(ctx)
+		result, err = ps.QueryProvisioningStepToFileExtract().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) ([]*Plan, error) {
+func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) (*Plan, error) {
 	result, err := ps.Edges.ProvisioningStepToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = ps.QueryProvisioningStepToPlan().All(ctx)
+		result, err = ps.QueryProvisioningStepToPlan().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
@@ -864,6 +864,14 @@ func (s *Status) StatusToProvisionedHost(ctx context.Context) (*ProvisionedHost,
 	result, err := s.Edges.StatusToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryStatusToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := s.Edges.StatusToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToProvisioningStep().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

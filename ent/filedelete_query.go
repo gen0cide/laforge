@@ -29,7 +29,6 @@ type FileDeleteQuery struct {
 	// eager-loading edges.
 	withFileDeleteToTag         *TagQuery
 	withFileDeleteToEnvironment *EnvironmentQuery
-	withFKs                     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -378,16 +377,12 @@ func (fdq *FileDeleteQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 	var (
 		nodes       = []*FileDelete{}
-		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
 		loadedTypes = [2]bool{
 			fdq.withFileDeleteToTag != nil,
 			fdq.withFileDeleteToEnvironment != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, filedelete.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileDelete{config: fdq.config}
 		nodes = append(nodes, node)

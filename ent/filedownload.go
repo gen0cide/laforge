@@ -46,7 +46,7 @@ type FileDownload struct {
 	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
 	HCLFileDownloadToEnvironment []*Environment `json:"FileDownloadToEnvironment,omitempty"`
 	//
-	provisioning_step_provisioning_step_to_file_download *int
+
 }
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
@@ -91,8 +91,6 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case filedownload.FieldHclID, filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
 			values[i] = &sql.NullString{}
-		case filedownload.ForeignKeys[0]: // provisioning_step_provisioning_step_to_file_download
-			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDownload", columns[i])
 		}
@@ -176,13 +174,6 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				if err := json.Unmarshal(*value, &fd.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
-			}
-		case filedownload.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_file_download", value)
-			} else if value.Valid {
-				fd.provisioning_step_provisioning_step_to_file_download = new(int)
-				*fd.provisioning_step_provisioning_step_to_file_download = int(value.Int64)
 			}
 		}
 	}

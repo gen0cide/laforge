@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 )
@@ -188,6 +189,25 @@ func (su *StatusUpdate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusUp
 	return su.SetStatusToProvisionedHostID(p.ID)
 }
 
+// SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (su *StatusUpdate) SetStatusToProvisioningStepID(id int) *StatusUpdate {
+	su.mutation.SetStatusToProvisioningStepID(id)
+	return su
+}
+
+// SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (su *StatusUpdate) SetNillableStatusToProvisioningStepID(id *int) *StatusUpdate {
+	if id != nil {
+		su = su.SetStatusToProvisioningStepID(*id)
+	}
+	return su
+}
+
+// SetStatusToProvisioningStep sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (su *StatusUpdate) SetStatusToProvisioningStep(p *ProvisioningStep) *StatusUpdate {
+	return su.SetStatusToProvisioningStepID(p.ID)
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
 func (su *StatusUpdate) SetStatusToTeamID(id int) *StatusUpdate {
 	su.mutation.SetStatusToTeamID(id)
@@ -227,6 +247,12 @@ func (su *StatusUpdate) ClearStatusToProvisionedNetwork() *StatusUpdate {
 // ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (su *StatusUpdate) ClearStatusToProvisionedHost() *StatusUpdate {
 	su.mutation.ClearStatusToProvisionedHost()
+	return su
+}
+
+// ClearStatusToProvisioningStep clears the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (su *StatusUpdate) ClearStatusToProvisioningStep() *StatusUpdate {
+	su.mutation.ClearStatusToProvisioningStep()
 	return su
 }
 
@@ -498,6 +524,41 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.StatusToProvisioningStepCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisioningStepTable,
+			Columns: []string{status.StatusToProvisioningStepColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.StatusToProvisioningStepIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisioningStepTable,
+			Columns: []string{status.StatusToProvisioningStepColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if su.mutation.StatusToTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -708,6 +769,25 @@ func (suo *StatusUpdateOne) SetStatusToProvisionedHost(p *ProvisionedHost) *Stat
 	return suo.SetStatusToProvisionedHostID(p.ID)
 }
 
+// SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
+func (suo *StatusUpdateOne) SetStatusToProvisioningStepID(id int) *StatusUpdateOne {
+	suo.mutation.SetStatusToProvisioningStepID(id)
+	return suo
+}
+
+// SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
+func (suo *StatusUpdateOne) SetNillableStatusToProvisioningStepID(id *int) *StatusUpdateOne {
+	if id != nil {
+		suo = suo.SetStatusToProvisioningStepID(*id)
+	}
+	return suo
+}
+
+// SetStatusToProvisioningStep sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (suo *StatusUpdateOne) SetStatusToProvisioningStep(p *ProvisioningStep) *StatusUpdateOne {
+	return suo.SetStatusToProvisioningStepID(p.ID)
+}
+
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
 func (suo *StatusUpdateOne) SetStatusToTeamID(id int) *StatusUpdateOne {
 	suo.mutation.SetStatusToTeamID(id)
@@ -747,6 +827,12 @@ func (suo *StatusUpdateOne) ClearStatusToProvisionedNetwork() *StatusUpdateOne {
 // ClearStatusToProvisionedHost clears the "StatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (suo *StatusUpdateOne) ClearStatusToProvisionedHost() *StatusUpdateOne {
 	suo.mutation.ClearStatusToProvisionedHost()
+	return suo
+}
+
+// ClearStatusToProvisioningStep clears the "StatusToProvisioningStep" edge to the ProvisioningStep entity.
+func (suo *StatusUpdateOne) ClearStatusToProvisioningStep() *StatusUpdateOne {
+	suo.mutation.ClearStatusToProvisioningStep()
 	return suo
 }
 
@@ -1015,6 +1101,41 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.StatusToProvisioningStepCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisioningStepTable,
+			Columns: []string{status.StatusToProvisioningStepColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.StatusToProvisioningStepIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToProvisioningStepTable,
+			Columns: []string{status.StatusToProvisioningStepColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: provisioningstep.FieldID,
 				},
 			},
 		}

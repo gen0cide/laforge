@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 )
@@ -31,6 +32,7 @@ type StatusQuery struct {
 	withStatusToBuild              *BuildQuery
 	withStatusToProvisionedNetwork *ProvisionedNetworkQuery
 	withStatusToProvisionedHost    *ProvisionedHostQuery
+	withStatusToProvisioningStep   *ProvisioningStepQuery
 	withStatusToTeam               *TeamQuery
 	withFKs                        bool
 	// intermediate query (i.e. traversal path).
@@ -121,6 +123,28 @@ func (sq *StatusQuery) QueryStatusToProvisionedHost() *ProvisionedHostQuery {
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedHostTable, status.StatusToProvisionedHostColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisioningStep chains the current query on the "StatusToProvisioningStep" edge.
+func (sq *StatusQuery) QueryStatusToProvisioningStep() *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisioningStepTable, status.StatusToProvisioningStepColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -334,6 +358,7 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		withStatusToBuild:              sq.withStatusToBuild.Clone(),
 		withStatusToProvisionedNetwork: sq.withStatusToProvisionedNetwork.Clone(),
 		withStatusToProvisionedHost:    sq.withStatusToProvisionedHost.Clone(),
+		withStatusToProvisioningStep:   sq.withStatusToProvisioningStep.Clone(),
 		withStatusToTeam:               sq.withStatusToTeam.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
@@ -371,6 +396,17 @@ func (sq *StatusQuery) WithStatusToProvisionedHost(opts ...func(*ProvisionedHost
 		opt(query)
 	}
 	sq.withStatusToProvisionedHost = query
+	return sq
+}
+
+// WithStatusToProvisioningStep tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToProvisioningStep" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToProvisioningStep(opts ...func(*ProvisioningStepQuery)) *StatusQuery {
+	query := &ProvisioningStepQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToProvisioningStep = query
 	return sq
 }
 
@@ -451,14 +487,15 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		nodes       = []*Status{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			sq.withStatusToBuild != nil,
 			sq.withStatusToProvisionedNetwork != nil,
 			sq.withStatusToProvisionedHost != nil,
+			sq.withStatusToProvisioningStep != nil,
 			sq.withStatusToTeam != nil,
 		}
 	)
-	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToTeam != nil {
+	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToProvisioningStep != nil || sq.withStatusToTeam != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -555,6 +592,31 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.StatusToProvisionedHost = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToProvisioningStep; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Status)
+		for i := range nodes {
+			if fk := nodes[i].provisioning_step_provisioning_step_to_status; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(provisioningstep.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToProvisioningStep = n
 			}
 		}
 	}

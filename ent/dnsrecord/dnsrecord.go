@@ -58,11 +58,6 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.
-var ForeignKeys = []string{
-	"provisioning_step_provisioning_step_to_dns_record",
-}
-
 var (
 	// DNSRecordToEnvironmentPrimaryKey and DNSRecordToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the DNSRecordToEnvironment relation (M2M).
@@ -73,11 +68,6 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

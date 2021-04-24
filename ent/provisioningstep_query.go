@@ -24,7 +24,6 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // ProvisioningStepQuery is the builder for querying ProvisioningStep entities.
@@ -36,7 +35,6 @@ type ProvisioningStepQuery struct {
 	fields     []string
 	predicates []predicate.ProvisioningStep
 	// eager-loading edges.
-	withProvisioningStepToTag               *TagQuery
 	withProvisioningStepToStatus            *StatusQuery
 	withProvisioningStepToProvisionedHost   *ProvisionedHostQuery
 	withProvisioningStepToScript            *ScriptQuery
@@ -77,28 +75,6 @@ func (psq *ProvisioningStepQuery) Order(o ...OrderFunc) *ProvisioningStepQuery {
 	return psq
 }
 
-// QueryProvisioningStepToTag chains the current query on the "ProvisioningStepToTag" edge.
-func (psq *ProvisioningStepQuery) QueryProvisioningStepToTag() *TagQuery {
-	query := &TagQuery{config: psq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := psq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := psq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToTagTable, provisioningstep.ProvisioningStepToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryProvisioningStepToStatus chains the current query on the "ProvisioningStepToStatus" edge.
 func (psq *ProvisioningStepQuery) QueryProvisioningStepToStatus() *StatusQuery {
 	query := &StatusQuery{config: psq.config}
@@ -113,7 +89,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToStatus() *StatusQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToStatusTable, provisioningstep.ProvisioningStepToStatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, provisioningstep.ProvisioningStepToStatusTable, provisioningstep.ProvisioningStepToStatusColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -135,7 +111,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToProvisionedHost() *Prov
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, provisioningstep.ProvisioningStepToProvisionedHostTable, provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToProvisionedHostTable, provisioningstep.ProvisioningStepToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -157,7 +133,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToScript() *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToScriptTable, provisioningstep.ProvisioningStepToScriptColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToScriptTable, provisioningstep.ProvisioningStepToScriptColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -179,7 +155,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToCommand() *CommandQuery
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(command.Table, command.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToCommandTable, provisioningstep.ProvisioningStepToCommandColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToCommandTable, provisioningstep.ProvisioningStepToCommandColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -201,7 +177,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToDNSRecord() *DNSRecordQ
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToDNSRecordTable, provisioningstep.ProvisioningStepToDNSRecordColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToDNSRecordTable, provisioningstep.ProvisioningStepToDNSRecordColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -223,7 +199,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToFileDelete() *FileDelet
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(filedelete.Table, filedelete.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileDeleteTable, provisioningstep.ProvisioningStepToFileDeleteColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileDeleteTable, provisioningstep.ProvisioningStepToFileDeleteColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -245,7 +221,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToFileDownload() *FileDow
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(filedownload.Table, filedownload.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileDownloadTable, provisioningstep.ProvisioningStepToFileDownloadColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileDownloadTable, provisioningstep.ProvisioningStepToFileDownloadColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -267,7 +243,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToFileExtract() *FileExtr
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(fileextract.Table, fileextract.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ProvisioningStepToFileExtractTable, provisioningstep.ProvisioningStepToFileExtractColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileExtractTable, provisioningstep.ProvisioningStepToFileExtractColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -289,7 +265,7 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToPlan() *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
 		return fromU, nil
@@ -500,7 +476,6 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		offset:                                  psq.offset,
 		order:                                   append([]OrderFunc{}, psq.order...),
 		predicates:                              append([]predicate.ProvisioningStep{}, psq.predicates...),
-		withProvisioningStepToTag:               psq.withProvisioningStepToTag.Clone(),
 		withProvisioningStepToStatus:            psq.withProvisioningStepToStatus.Clone(),
 		withProvisioningStepToProvisionedHost:   psq.withProvisioningStepToProvisionedHost.Clone(),
 		withProvisioningStepToScript:            psq.withProvisioningStepToScript.Clone(),
@@ -515,17 +490,6 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		sql:  psq.sql.Clone(),
 		path: psq.path,
 	}
-}
-
-// WithProvisioningStepToTag tells the query-builder to eager-load the nodes that are connected to
-// the "ProvisioningStepToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (psq *ProvisioningStepQuery) WithProvisioningStepToTag(opts ...func(*TagQuery)) *ProvisioningStepQuery {
-	query := &TagQuery{config: psq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	psq.withProvisioningStepToTag = query
-	return psq
 }
 
 // WithProvisioningStepToStatus tells the query-builder to eager-load the nodes that are connected to
@@ -644,12 +608,12 @@ func (psq *ProvisioningStepQuery) WithProvisioningStepToGinFileMiddleware(opts .
 // Example:
 //
 //	var v []struct {
-//		ProvisionerType string `json:"provisioner_type,omitempty"`
+//		Type provisioningstep.Type `json:"type,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ProvisioningStep.Query().
-//		GroupBy(provisioningstep.FieldProvisionerType).
+//		GroupBy(provisioningstep.FieldType).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -671,11 +635,11 @@ func (psq *ProvisioningStepQuery) GroupBy(field string, fields ...string) *Provi
 // Example:
 //
 //	var v []struct {
-//		ProvisionerType string `json:"provisioner_type,omitempty"`
+//		Type provisioningstep.Type `json:"type,omitempty"`
 //	}
 //
 //	client.ProvisioningStep.Query().
-//		Select(provisioningstep.FieldProvisionerType).
+//		Select(provisioningstep.FieldType).
 //		Scan(ctx, &v)
 //
 func (psq *ProvisioningStepQuery) Select(field string, fields ...string) *ProvisioningStepSelect {
@@ -704,8 +668,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		nodes       = []*ProvisioningStep{}
 		withFKs     = psq.withFKs
 		_spec       = psq.querySpec()
-		loadedTypes = [11]bool{
-			psq.withProvisioningStepToTag != nil,
+		loadedTypes = [10]bool{
 			psq.withProvisioningStepToStatus != nil,
 			psq.withProvisioningStepToProvisionedHost != nil,
 			psq.withProvisioningStepToScript != nil,
@@ -718,7 +681,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			psq.withProvisioningStepToGinFileMiddleware != nil,
 		}
 	)
-	if psq.withProvisioningStepToGinFileMiddleware != nil {
+	if psq.withProvisioningStepToProvisionedHost != nil || psq.withProvisioningStepToScript != nil || psq.withProvisioningStepToCommand != nil || psq.withProvisioningStepToDNSRecord != nil || psq.withProvisioningStepToFileDelete != nil || psq.withProvisioningStepToFileDownload != nil || psq.withProvisioningStepToFileExtract != nil || psq.withProvisioningStepToPlan != nil || psq.withProvisioningStepToGinFileMiddleware != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -744,42 +707,12 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		return nodes, nil
 	}
 
-	if query := psq.withProvisioningStepToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.ProvisioningStepToTag = append(node.Edges.ProvisioningStepToTag, n)
-		}
-	}
-
 	if query := psq.withProvisioningStepToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*ProvisioningStep)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToStatus = []*Status{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Status(func(s *sql.Selector) {
@@ -798,274 +731,207 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			if !ok {
 				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_status" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.ProvisioningStepToStatus = append(node.Edges.ProvisioningStepToStatus, n)
+			node.Edges.ProvisioningStepToStatus = n
 		}
 	}
 
 	if query := psq.withProvisioningStepToProvisionedHost; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*ProvisioningStep, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.ProvisioningStepToProvisionedHost = []*ProvisionedHost{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
+		for i := range nodes {
+			if fk := nodes[i].provisioning_step_provisioning_step_to_provisioned_host; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*ProvisioningStep)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   provisioningstep.ProvisioningStepToProvisionedHostTable,
-				Columns: provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(provisioningstep.ProvisioningStepToProvisionedHostPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, psq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "ProvisioningStepToProvisionedHost": %v`, err)
-		}
-		query.Where(provisionedhost.IDIn(edgeids...))
+		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "ProvisioningStepToProvisionedHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_provisioned_host" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.ProvisioningStepToProvisionedHost = append(nodes[i].Edges.ProvisioningStepToProvisionedHost, n)
+				nodes[i].Edges.ProvisioningStepToProvisionedHost = n
 			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToScript; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToScript = []*Script{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_script; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Script(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToScriptColumn, fks...))
-		}))
+		query.Where(script.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_script
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_script" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_script" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_script" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToScript = append(node.Edges.ProvisioningStepToScript, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToScript = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToCommand; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToCommand = []*Command{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_command; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Command(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToCommandColumn, fks...))
-		}))
+		query.Where(command.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_command
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_command" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_command" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_command" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToCommand = append(node.Edges.ProvisioningStepToCommand, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToCommand = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToDNSRecord; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToDNSRecord = []*DNSRecord{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_dns_record; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.DNSRecord(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToDNSRecordColumn, fks...))
-		}))
+		query.Where(dnsrecord.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_dns_record
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_dns_record" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_dns_record" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_dns_record" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToDNSRecord = append(node.Edges.ProvisioningStepToDNSRecord, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToDNSRecord = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToFileDelete; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToFileDelete = []*FileDelete{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_file_delete; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.FileDelete(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToFileDeleteColumn, fks...))
-		}))
+		query.Where(filedelete.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_file_delete
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_file_delete" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_delete" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_delete" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToFileDelete = append(node.Edges.ProvisioningStepToFileDelete, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToFileDelete = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToFileDownload; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToFileDownload = []*FileDownload{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_file_download; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.FileDownload(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToFileDownloadColumn, fks...))
-		}))
+		query.Where(filedownload.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_file_download
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_file_download" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_download" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_download" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToFileDownload = append(node.Edges.ProvisioningStepToFileDownload, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToFileDownload = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToFileExtract; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToFileExtract = []*FileExtract{}
+			if fk := nodes[i].provisioning_step_provisioning_step_to_file_extract; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.FileExtract(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToFileExtractColumn, fks...))
-		}))
+		query.Where(fileextract.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.provisioning_step_provisioning_step_to_file_extract
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "provisioning_step_provisioning_step_to_file_extract" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_extract" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioning_step_provisioning_step_to_file_extract" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToFileExtract = append(node.Edges.ProvisioningStepToFileExtract, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToFileExtract = n
+			}
 		}
 	}
 
 	if query := psq.withProvisioningStepToPlan; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.ProvisioningStepToPlan = []*Plan{}
+			if fk := nodes[i].plan_plan_to_provisioning_step; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Plan(func(s *sql.Selector) {
-			s.Where(sql.InValues(provisioningstep.ProvisioningStepToPlanColumn, fks...))
-		}))
+		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.plan_plan_to_provisioning_step
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "plan_plan_to_provisioning_step" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioning_step" returned %v`, n.ID)
 			}
-			node.Edges.ProvisioningStepToPlan = append(node.Edges.ProvisioningStepToPlan, n)
+			for i := range nodes {
+				nodes[i].Edges.ProvisioningStepToPlan = n
+			}
 		}
 	}
 
