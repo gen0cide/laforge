@@ -32,7 +32,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var renderFiles = false
+var RenderFiles = false
 
 func main() {
 	var wg sync.WaitGroup
@@ -335,7 +335,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		log.Fatalf("Unable to Resolve Absolute File Path. Err: %v", err)
 		return nil, err
 	}
-	if renderFiles {
+	if RenderFiles {
 		grpc.BuildAgent(fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
 		entTmpUrl, err := utils.CreateTempURL(ctx, client, binaryName)
 		if err != nil {
@@ -527,6 +527,9 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			log.Fatalf("Failed to Creat Provisioning Step for Script %v. Err: %v", hclID, err)
 			return nil, err
 		}
+		// if RenderFiles {
+
+		// }
 	}
 
 	_, err = client.Plan.Create().
