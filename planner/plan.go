@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -295,8 +297,10 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 
 	}
 
-	// When get Internet combine CIDR in pNetwork with LastOctet in entHost
-	subnetIP := fmt.Sprint(entHost.LastOctet)
+	subnetIP, err := calcIP(pNetwork.Cidr, entHost.LastOctet)
+	if err != nil {
+		return nil, err
+	}
 
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisionedHost)
 	if err != nil {
@@ -353,6 +357,39 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		if err != nil {
 			return nil, err
 		}
+	}
+	userDataScriptID, ok := entHost.Vars["user_data_script_id"]
+	if ok {
+		userDataScript, err := client.Script.Query().Where(script.HclIDEQ(userDataScriptID)).Only(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Query Script %v. Err: %v", userDataScriptID, err)
+			return nil, err
+		}
+		entUserDataProvisioningStep, err := client.ProvisioningStep.Create().
+			SetStepNumber(0).
+			SetType(provisioningstep.TypeScript).
+			SetProvisioningStepToScript(userDataScript).
+			SetProvisioningStepToProvisionedHost(entProvisionedHost).
+			Save(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Create Provisioning Step for Script %v. Err: %v", userDataScriptID, err)
+			return nil, err
+		}
+		if RenderFiles {
+			filePath, err := renderScript(ctx, client, entUserDataProvisioningStep)
+			if err != nil {
+				return nil, err
+			}
+			entTmpUrl, err := utils.CreateTempURL(ctx, client, filePath)
+			if err != nil {
+				return nil, err
+			}
+			_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisioningStep(entUserDataProvisioningStep).Save(ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 	}
 
 	for stepNumber, pStep := range entHost.ProvisionSteps {
@@ -470,7 +507,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 													SetProvisioningStepToProvisionedHost(pHost).
 													Save(ctx)
 												if err != nil {
-													log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+													log.Fatalf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
 													return nil, err
 												}
 											}
@@ -483,7 +520,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 											SetProvisioningStepToProvisionedHost(pHost).
 											Save(ctx)
 										if err != nil {
-											log.Fatalf("Failed to Creat Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+											log.Fatalf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
 											return nil, err
 										}
 									}
@@ -497,7 +534,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 									SetProvisioningStepToProvisionedHost(pHost).
 									Save(ctx)
 								if err != nil {
-									log.Fatalf("Failed to Creat Provisioning Step for FileExtract %v. Err: %v", hclID, err)
+									log.Fatalf("Failed to Create Provisioning Step for FileExtract %v. Err: %v", hclID, err)
 									return nil, err
 								}
 							}
@@ -511,7 +548,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							SetProvisioningStepToProvisionedHost(pHost).
 							Save(ctx)
 						if err != nil {
-							log.Fatalf("Failed to Creat Provisioning Step for FileDownload %v. Err: %v", hclID, err)
+							log.Fatalf("Failed to Create Provisioning Step for FileDownload %v. Err: %v", hclID, err)
 							return nil, err
 						}
 					}
@@ -525,7 +562,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 					SetProvisioningStepToProvisionedHost(pHost).
 					Save(ctx)
 				if err != nil {
-					log.Fatalf("Failed to Creat Provisioning Step for Command %v. Err: %v", hclID, err)
+					log.Fatalf("Failed to Create Provisioning Step for Command %v. Err: %v", hclID, err)
 					return nil, err
 				}
 			}
@@ -539,7 +576,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			SetProvisioningStepToProvisionedHost(pHost).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Creat Provisioning Step for Script %v. Err: %v", hclID, err)
+			log.Fatalf("Failed to Create Provisioning Step for Script %v. Err: %v", hclID, err)
 			return nil, err
 		}
 		if RenderFiles {
@@ -555,7 +592,6 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			if err != nil {
 				return nil, err
 			}
-
 		}
 	}
 
@@ -568,7 +604,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		Save(ctx)
 
 	if err != nil {
-		log.Fatalf("Failed to Creat Plan Node for Provisioning Step %v. Err: %v", entProvisioningStep.ID, err)
+		log.Fatalf("Failed to Create Plan Node for Provisioning Step %v. Err: %v", entProvisioningStep.ID, err)
 		return nil, err
 	}
 
@@ -623,4 +659,32 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 	err = t.Execute(f, templeteData)
 	f.Close()
 	return fileName, nil
+}
+
+// CalcIP is used to calculate the IP of a host within a given subnet
+func calcIP(subnet string, lastOctect int) (string, error) {
+	ip, _, err := net.ParseCIDR(subnet)
+	if err != nil {
+		log.Fatalf("Invalid Subner %v. Err: %v", subnet, err)
+		return "", err
+	}
+	offset32 := uint32(lastOctect)
+	ip32 := IPv42Int(ip)
+	newIP := Int2IPv4(ip32 + offset32)
+	return newIP.To4().String(), nil
+}
+
+// IPv42Int converts net.IP address objects to their uint32 representation
+func IPv42Int(ip net.IP) uint32 {
+	if len(ip) == 16 {
+		return binary.BigEndian.Uint32(ip[12:16])
+	}
+	return binary.BigEndian.Uint32(ip)
+}
+
+// Int2IPv4 converts uint32s to their net.IP object
+func Int2IPv4(nn uint32) net.IP {
+	ip := make(net.IP, 4)
+	binary.BigEndian.PutUint32(ip, nn)
+	return ip
 }

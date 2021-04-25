@@ -325,6 +325,9 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 		}
 		for _, x := range element.DefinedFileDownload {
 			_, found := combinedConfigs.FileDownload[x.HclID]
+			dir := path.Dir(element.Filename)
+			absPath := path.Join(dir, x.Source)
+			x.AbsPath = absPath
 			if !found {
 				combinedConfigs.FileDownload[x.HclID] = x
 				continue
