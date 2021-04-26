@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -64,6 +63,14 @@ func (hdu *HostDependencyUpdate) SetHostDependencyToDependOnHost(h *Host) *HostD
 // SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID.
 func (hdu *HostDependencyUpdate) SetHostDependencyToDependByHostID(id int) *HostDependencyUpdate {
 	hdu.mutation.SetHostDependencyToDependByHostID(id)
+	return hdu
+}
+
+// SetNillableHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID if the given value is not nil.
+func (hdu *HostDependencyUpdate) SetNillableHostDependencyToDependByHostID(id *int) *HostDependencyUpdate {
+	if id != nil {
+		hdu = hdu.SetHostDependencyToDependByHostID(*id)
+	}
 	return hdu
 }
 
@@ -146,18 +153,12 @@ func (hdu *HostDependencyUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(hdu.hooks) == 0 {
-		if err = hdu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = hdu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*HostDependencyMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = hdu.check(); err != nil {
-				return 0, err
 			}
 			hdu.mutation = mutation
 			affected, err = hdu.sqlSave(ctx)
@@ -194,14 +195,6 @@ func (hdu *HostDependencyUpdate) ExecX(ctx context.Context) {
 	if err := hdu.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (hdu *HostDependencyUpdate) check() error {
-	if _, ok := hdu.mutation.HostDependencyToDependByHostID(); hdu.mutation.HostDependencyToDependByHostCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"HostDependencyToDependByHost\"")
-	}
-	return nil
 }
 
 func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -431,6 +424,14 @@ func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependByHostID(id int) *
 	return hduo
 }
 
+// SetNillableHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID if the given value is not nil.
+func (hduo *HostDependencyUpdateOne) SetNillableHostDependencyToDependByHostID(id *int) *HostDependencyUpdateOne {
+	if id != nil {
+		hduo = hduo.SetHostDependencyToDependByHostID(*id)
+	}
+	return hduo
+}
+
 // SetHostDependencyToDependByHost sets the "HostDependencyToDependByHost" edge to the Host entity.
 func (hduo *HostDependencyUpdateOne) SetHostDependencyToDependByHost(h *Host) *HostDependencyUpdateOne {
 	return hduo.SetHostDependencyToDependByHostID(h.ID)
@@ -510,18 +511,12 @@ func (hduo *HostDependencyUpdateOne) Save(ctx context.Context) (*HostDependency,
 		node *HostDependency
 	)
 	if len(hduo.hooks) == 0 {
-		if err = hduo.check(); err != nil {
-			return nil, err
-		}
 		node, err = hduo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*HostDependencyMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = hduo.check(); err != nil {
-				return nil, err
 			}
 			hduo.mutation = mutation
 			node, err = hduo.sqlSave(ctx)
@@ -558,14 +553,6 @@ func (hduo *HostDependencyUpdateOne) ExecX(ctx context.Context) {
 	if err := hduo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (hduo *HostDependencyUpdateOne) check() error {
-	if _, ok := hduo.mutation.HostDependencyToDependByHostID(); hduo.mutation.HostDependencyToDependByHostCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"HostDependencyToDependByHost\"")
-	}
-	return nil
 }
 
 func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDependency, err error) {

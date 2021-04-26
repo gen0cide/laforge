@@ -27,7 +27,6 @@ func (HostDependency) Edges() []ent.Edge {
 		edge.To("HostDependencyToDependOnHost", Host.Type).
 			Unique(),
 		edge.To("HostDependencyToDependByHost", Host.Type).
-			Required().
 			Unique(),
 		edge.To("HostDependencyToNetwork", Network.Type).
 			Unique(),

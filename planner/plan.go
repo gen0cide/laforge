@@ -36,7 +36,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var RenderFiles = true
+var RenderFiles = false
 
 func main() {
 	var wg sync.WaitGroup
@@ -55,18 +55,14 @@ func main() {
 		log.Fatalf("Failed to find Environment %v. Err: %v", 1, err)
 	}
 
-	entBuild, _ := createBuild(ctx, client, entEnvironment)
+	entBuild, _ := CreateBuild(ctx, client, entEnvironment, &wg)
 	if err != nil {
 		log.Fatalf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
 	}
 	fmt.Println(entBuild)
-
-	for teamNumber := 0; teamNumber <= entEnvironment.TeamCount; teamNumber++ {
-		wg.Add(1)
-		go createTeam(ctx, client, entBuild, teamNumber, &wg)
-	}
 	wg.Wait()
 }
+
 func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor status.StatusFor) (*ent.Status, error) {
 	entStatus, err := client.Status.Create().SetState(status.StatePLANNING).SetStatusFor(statusFor).Save(ctx)
 	if err != nil {
@@ -76,7 +72,7 @@ func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor sta
 	return entStatus, nil
 }
 
-func createBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.Environment) (*ent.Build, error) {
+func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.Environment, wg *sync.WaitGroup) (*ent.Build, error) {
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForBuild)
 	if err != nil {
 		return nil, err
@@ -106,6 +102,10 @@ func createBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		log.Fatalf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
+	for teamNumber := 0; teamNumber <= entEnvironment.TeamCount; teamNumber++ {
+		wg.Add(1)
+		go createTeam(ctx, client, entBuild, teamNumber, wg)
+	}
 	return entBuild, nil
 }
 
@@ -125,7 +125,7 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		log.Fatalf("Failed to create Team Number %v for Build %v. Err: %v", teamNumber, entBuild.ID, err)
 		return nil, err
 	}
-	buildPlanNode, err := entBuild.QueryBuildToPlan().Only(ctx)
+	buildPlanNode, err := entBuild.QueryBuildToPlan().Where(plan.StepNumberEQ(0)).Only(ctx)
 	if err != nil {
 		log.Fatalf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
@@ -135,6 +135,7 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		SetType(plan.TypeStartTeam).
 		SetBuildID(entBuild.ID).
 		SetPlanToTeam(entTeam).
+		SetPlanToBuild(entBuild).
 		SetStepNumber(1).
 		Save(ctx)
 	if err != nil {
@@ -155,7 +156,8 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 		entHosts, err := pNetwork.
 			QueryProvisionedNetworkToNetwork().
 			QueryNetworkToIncludedNetwork().
-			QueryIncludedNetworkToHost().All(ctx)
+			QueryIncludedNetworkToHost().
+			All(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Hosts for Network %v. Err: %v", pNetwork.Name, err)
 			return nil, err
@@ -201,6 +203,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		SetType(plan.TypeProvisionNetwork).
 		SetBuildID(entBuild.ID).
 		SetPlanToProvisionedNetwork(entProvisionedNetwork).
+		SetPlanToBuild(entBuild).
 		SetStepNumber(teamPlanNode.StepNumber + 1).
 		Save(ctx)
 	if err != nil {
@@ -320,6 +323,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetBuildID(prevPlan.BuildID).
 		SetPlanToProvisionedHost(entProvisionedHost).
 		SetStepNumber(planStepNumber).
+		SetPlanToBuild(currentBuild).
 		Save(ctx)
 
 	if err != nil {
@@ -415,6 +419,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 func createProvisioningStep(ctx context.Context, client *ent.Client, hclID string, stepNumber int, pHost *ent.ProvisionedHost, prevPlan *ent.Plan) (*ent.ProvisioningStep, error) {
 	var entProvisioningStep *ent.ProvisioningStep
 	currentEnviroment, err := pHost.QueryProvisionedHostToHost().QueryHostToEnvironment().Only(ctx)
+	currentBuild := pHost.QueryProvisionedHostToProvisionedNetwork().QueryProvisionedNetworkToBuild().WithBuildToEnvironment().OnlyX(ctx)
 	if err != nil {
 		log.Fatalf("Failed to Query Current Enviroment for Provisoned Host %v. Err: %v", pHost.ID, err)
 		return nil, err
@@ -601,6 +606,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		SetBuildID(prevPlan.BuildID).
 		SetPlanToProvisioningStep(entProvisioningStep).
 		SetStepNumber(prevPlan.StepNumber + 1).
+		SetPlanToBuild(currentBuild).
 		Save(ctx)
 
 	if err != nil {

@@ -489,7 +489,7 @@ func (hd *HostDependency) HostDependencyToDependByHost(ctx context.Context) (*Ho
 	if IsNotLoaded(err) {
 		result, err = hd.QueryHostDependencyToDependByHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (hd *HostDependency) HostDependencyToNetwork(ctx context.Context) (*Network, error) {

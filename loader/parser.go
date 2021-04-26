@@ -481,7 +481,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 			SetDescription(cEnviroment.Description).
 			SetExposedVdiPorts(cEnviroment.ExposedVdiPorts).
 			SetName(cEnviroment.Name).
-			SetRevision(cEnviroment.Revision).
+			SetRevision(entEnvironment.Revision + 1).
 			SetTags(cEnviroment.Tags).
 			SetTeamCount(cEnviroment.TeamCount).
 			ClearEnvironmentToCompetition().

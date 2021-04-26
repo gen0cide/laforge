@@ -59,6 +59,14 @@ func (hdc *HostDependencyCreate) SetHostDependencyToDependByHostID(id int) *Host
 	return hdc
 }
 
+// SetNillableHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID if the given value is not nil.
+func (hdc *HostDependencyCreate) SetNillableHostDependencyToDependByHostID(id *int) *HostDependencyCreate {
+	if id != nil {
+		hdc = hdc.SetHostDependencyToDependByHostID(*id)
+	}
+	return hdc
+}
+
 // SetHostDependencyToDependByHost sets the "HostDependencyToDependByHost" edge to the Host entity.
 func (hdc *HostDependencyCreate) SetHostDependencyToDependByHost(h *Host) *HostDependencyCreate {
 	return hdc.SetHostDependencyToDependByHostID(h.ID)
@@ -158,9 +166,6 @@ func (hdc *HostDependencyCreate) check() error {
 	}
 	if _, ok := hdc.mutation.NetworkID(); !ok {
 		return &ValidationError{Name: "network_id", err: errors.New("ent: missing required field \"network_id\"")}
-	}
-	if _, ok := hdc.mutation.HostDependencyToDependByHostID(); !ok {
-		return &ValidationError{Name: "HostDependencyToDependByHost", err: errors.New("ent: missing required edge \"HostDependencyToDependByHost\"")}
 	}
 	return nil
 }
