@@ -20,8 +20,6 @@ const (
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 
-	// EdgeDNSToTag holds the string denoting the dnstotag edge name in mutations.
-	EdgeDNSToTag = "DNSToTag"
 	// EdgeDNSToEnvironment holds the string denoting the dnstoenvironment edge name in mutations.
 	EdgeDNSToEnvironment = "DNSToEnvironment"
 	// EdgeDNSToCompetition holds the string denoting the dnstocompetition edge name in mutations.
@@ -29,13 +27,6 @@ const (
 
 	// Table holds the table name of the dns in the database.
 	Table = "dn_ss"
-	// DNSToTagTable is the table the holds the DNSToTag relation/edge.
-	DNSToTagTable = "tags"
-	// DNSToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	DNSToTagInverseTable = "tags"
-	// DNSToTagColumn is the table column denoting the DNSToTag relation/edge.
-	DNSToTagColumn = "dns_dns_to_tag"
 	// DNSToEnvironmentTable is the table the holds the DNSToEnvironment relation/edge. The primary key declared below.
 	DNSToEnvironmentTable = "environment_EnvironmentToDNS"
 	// DNSToEnvironmentInverseTable is the table name for the Environment entity.

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 )
 
@@ -41,38 +42,30 @@ type FileDownload struct {
 	Edges FileDownloadEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
-	HCLFileDownloadToTag []*Tag `json:"FileDownloadToTag,omitempty"`
 	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
-	HCLFileDownloadToEnvironment []*Environment `json:"FileDownloadToEnvironment,omitempty"`
+	HCLFileDownloadToEnvironment *Environment `json:"FileDownloadToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_file_download *int
 }
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
 type FileDownloadEdges struct {
-	// FileDownloadToTag holds the value of the FileDownloadToTag edge.
-	FileDownloadToTag []*Tag `json:"FileDownloadToTag,omitempty"`
 	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
-	FileDownloadToEnvironment []*Environment `json:"FileDownloadToEnvironment,omitempty"`
+	FileDownloadToEnvironment *Environment `json:"FileDownloadToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// FileDownloadToTagOrErr returns the FileDownloadToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileDownloadEdges) FileDownloadToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.FileDownloadToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "FileDownloadToTag"}
+	loadedTypes [1]bool
 }
 
 // FileDownloadToEnvironmentOrErr returns the FileDownloadToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileDownloadEdges) FileDownloadToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FileDownloadEdges) FileDownloadToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[0] {
+		if e.FileDownloadToEnvironment == nil {
+			// The edge FileDownloadToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.FileDownloadToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "FileDownloadToEnvironment"}
@@ -91,6 +84,8 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case filedownload.FieldHclID, filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
 			values[i] = &sql.NullString{}
+		case filedownload.ForeignKeys[0]: // environment_environment_to_file_download
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDownload", columns[i])
 		}
@@ -175,14 +170,16 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case filedownload.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_download", value)
+			} else if value.Valid {
+				fd.environment_environment_to_file_download = new(int)
+				*fd.environment_environment_to_file_download = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryFileDownloadToTag queries the "FileDownloadToTag" edge of the FileDownload entity.
-func (fd *FileDownload) QueryFileDownloadToTag() *TagQuery {
-	return (&FileDownloadClient{config: fd.config}).QueryFileDownloadToTag(fd)
 }
 
 // QueryFileDownloadToEnvironment queries the "FileDownloadToEnvironment" edge of the FileDownload entity.

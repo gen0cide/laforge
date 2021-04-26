@@ -147,7 +147,7 @@ func (pq *PlanQuery) QueryPlanToTeam() *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -191,7 +191,7 @@ func (pq *PlanQuery) QueryPlanToProvisionedHost() *ProvisionedHostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -568,7 +568,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			pq.withPlanToProvisioningStep != nil,
 		}
 	)
-	if pq.withPlanToBuild != nil || pq.withPlanToTeam != nil || pq.withPlanToProvisionedHost != nil {
+	if pq.withPlanToBuild != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -748,27 +748,30 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 	}
 
 	if query := pq.withPlanToTeam; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Plan)
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Plan)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_team; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
-			}
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
 		}
-		query.Where(team.IDIn(ids...))
+		query.withFKs = true
+		query.Where(predicate.Team(func(s *sql.Selector) {
+			s.Where(sql.InValues(plan.PlanToTeamColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			fk := n.plan_plan_to_team
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_plan_to_team" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_team" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_team" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.PlanToTeam = n
-			}
+			node.Edges.PlanToTeam = n
 		}
 	}
 
@@ -801,27 +804,30 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 	}
 
 	if query := pq.withPlanToProvisionedHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Plan)
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Plan)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_provisioned_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
-			}
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
 		}
-		query.Where(provisionedhost.IDIn(ids...))
+		query.withFKs = true
+		query.Where(predicate.ProvisionedHost(func(s *sql.Selector) {
+			s.Where(sql.InValues(plan.PlanToProvisionedHostColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			fk := n.plan_plan_to_provisioned_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_plan_to_provisioned_host" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioned_host" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_provisioned_host" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.PlanToProvisionedHost = n
-			}
+			node.Edges.PlanToProvisionedHost = n
 		}
 	}
 

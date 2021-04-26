@@ -52,7 +52,6 @@ func (Environment) Fields() []ent.Field {
 // Edges of the Environment.
 func (Environment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("EnvironmentToTag", Tag.Type),
 		edge.To("EnvironmentToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("EnvironmentToHost", Host.Type),

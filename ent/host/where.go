@@ -923,7 +923,7 @@ func HasHostToDisk() predicate.Host {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostToDiskTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostToDiskTable, HostToDiskPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, false, HostToDiskTable, HostToDiskColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -935,7 +935,7 @@ func HasHostToDiskWith(preds ...predicate.Disk) predicate.Host {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostToDiskInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, HostToDiskTable, HostToDiskPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, false, HostToDiskTable, HostToDiskColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -973,41 +973,13 @@ func HasHostToUserWith(preds ...predicate.User) predicate.Host {
 	})
 }
 
-// HasHostToTag applies the HasEdge predicate on the "HostToTag" edge.
-func HasHostToTag() predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostToTagTable, HostToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasHostToTagWith applies the HasEdge predicate on the "HostToTag" edge with a given conditions (other predicates).
-func HasHostToTagWith(preds ...predicate.Tag) predicate.Host {
-	return predicate.Host(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostToTagTable, HostToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasHostToEnvironment applies the HasEdge predicate on the "HostToEnvironment" edge.
 func HasHostToEnvironment() predicate.Host {
 	return predicate.Host(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, HostToEnvironmentTable, HostToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, HostToEnvironmentTable, HostToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1019,7 +991,7 @@ func HasHostToEnvironmentWith(preds ...predicate.Environment) predicate.Host {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(HostToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, HostToEnvironmentTable, HostToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, HostToEnvironmentTable, HostToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

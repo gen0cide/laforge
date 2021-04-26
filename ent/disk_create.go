@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DiskCreate is the builder for creating a Disk entity.
@@ -27,34 +26,23 @@ func (dc *DiskCreate) SetSize(i int) *DiskCreate {
 	return dc
 }
 
-// AddDiskToTagIDs adds the "DiskToTag" edge to the Tag entity by IDs.
-func (dc *DiskCreate) AddDiskToTagIDs(ids ...int) *DiskCreate {
-	dc.mutation.AddDiskToTagIDs(ids...)
+// SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
+func (dc *DiskCreate) SetDiskToHostID(id int) *DiskCreate {
+	dc.mutation.SetDiskToHostID(id)
 	return dc
 }
 
-// AddDiskToTag adds the "DiskToTag" edges to the Tag entity.
-func (dc *DiskCreate) AddDiskToTag(t ...*Tag) *DiskCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
+func (dc *DiskCreate) SetNillableDiskToHostID(id *int) *DiskCreate {
+	if id != nil {
+		dc = dc.SetDiskToHostID(*id)
 	}
-	return dc.AddDiskToTagIDs(ids...)
-}
-
-// AddDiskToHostIDs adds the "DiskToHost" edge to the Host entity by IDs.
-func (dc *DiskCreate) AddDiskToHostIDs(ids ...int) *DiskCreate {
-	dc.mutation.AddDiskToHostIDs(ids...)
 	return dc
 }
 
-// AddDiskToHost adds the "DiskToHost" edges to the Host entity.
-func (dc *DiskCreate) AddDiskToHost(h ...*Host) *DiskCreate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return dc.AddDiskToHostIDs(ids...)
+// SetDiskToHost sets the "DiskToHost" edge to the Host entity.
+func (dc *DiskCreate) SetDiskToHost(h *Host) *DiskCreate {
+	return dc.SetDiskToHostID(h.ID)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -151,31 +139,12 @@ func (dc *DiskCreate) createSpec() (*Disk, *sqlgraph.CreateSpec) {
 		})
 		_node.Size = value
 	}
-	if nodes := dc.mutation.DiskToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.DiskToTagTable,
-			Columns: []string{disk.DiskToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := dc.mutation.DiskToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   disk.DiskToHostTable,
-			Columns: disk.DiskToHostPrimaryKey,
+			Columns: []string{disk.DiskToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

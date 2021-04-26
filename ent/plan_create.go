@@ -342,7 +342,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToTeamTable,
 			Columns: []string{plan.PlanToTeamColumn},
@@ -380,7 +380,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.PlanToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   plan.PlanToProvisionedHostTable,
 			Columns: []string{plan.PlanToProvisionedHostColumn},

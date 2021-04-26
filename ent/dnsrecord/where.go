@@ -584,41 +584,13 @@ func DisabledNEQ(v bool) predicate.DNSRecord {
 	})
 }
 
-// HasDNSRecordToTag applies the HasEdge predicate on the "DNSRecordToTag" edge.
-func HasDNSRecordToTag() predicate.DNSRecord {
-	return predicate.DNSRecord(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSRecordToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasDNSRecordToTagWith applies the HasEdge predicate on the "DNSRecordToTag" edge with a given conditions (other predicates).
-func HasDNSRecordToTagWith(preds ...predicate.Tag) predicate.DNSRecord {
-	return predicate.DNSRecord(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSRecordToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSRecordToTagTable, DNSRecordToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasDNSRecordToEnvironment applies the HasEdge predicate on the "DNSRecordToEnvironment" edge.
 func HasDNSRecordToEnvironment() predicate.DNSRecord {
 	return predicate.DNSRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DNSRecordToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -630,7 +602,7 @@ func HasDNSRecordToEnvironmentWith(preds ...predicate.Environment) predicate.DNS
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DNSRecordToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, DNSRecordToEnvironmentTable, DNSRecordToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

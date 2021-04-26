@@ -174,41 +174,13 @@ func SizeLTE(v int) predicate.Disk {
 	})
 }
 
-// HasDiskToTag applies the HasEdge predicate on the "DiskToTag" edge.
-func HasDiskToTag() predicate.Disk {
-	return predicate.Disk(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DiskToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DiskToTagTable, DiskToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasDiskToTagWith applies the HasEdge predicate on the "DiskToTag" edge with a given conditions (other predicates).
-func HasDiskToTagWith(preds ...predicate.Tag) predicate.Disk {
-	return predicate.Disk(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DiskToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DiskToTagTable, DiskToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasDiskToHost applies the HasEdge predicate on the "DiskToHost" edge.
 func HasDiskToHost() predicate.Disk {
 	return predicate.Disk(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DiskToHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DiskToHostTable, DiskToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, DiskToHostTable, DiskToHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -220,7 +192,7 @@ func HasDiskToHostWith(preds ...predicate.Host) predicate.Disk {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DiskToHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DiskToHostTable, DiskToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, DiskToHostTable, DiskToHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

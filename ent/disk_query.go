@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DiskQuery is the builder for querying Disk entities.
@@ -27,8 +25,8 @@ type DiskQuery struct {
 	fields     []string
 	predicates []predicate.Disk
 	// eager-loading edges.
-	withDiskToTag  *TagQuery
 	withDiskToHost *HostQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +56,6 @@ func (dq *DiskQuery) Order(o ...OrderFunc) *DiskQuery {
 	return dq
 }
 
-// QueryDiskToTag chains the current query on the "DiskToTag" edge.
-func (dq *DiskQuery) QueryDiskToTag() *TagQuery {
-	query := &TagQuery{config: dq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := dq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(disk.Table, disk.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, disk.DiskToTagTable, disk.DiskToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryDiskToHost chains the current query on the "DiskToHost" edge.
 func (dq *DiskQuery) QueryDiskToHost() *HostQuery {
 	query := &HostQuery{config: dq.config}
@@ -94,7 +70,7 @@ func (dq *DiskQuery) QueryDiskToHost() *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(disk.Table, disk.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, disk.DiskToHostTable, disk.DiskToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, disk.DiskToHostTable, disk.DiskToHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -283,23 +259,11 @@ func (dq *DiskQuery) Clone() *DiskQuery {
 		offset:         dq.offset,
 		order:          append([]OrderFunc{}, dq.order...),
 		predicates:     append([]predicate.Disk{}, dq.predicates...),
-		withDiskToTag:  dq.withDiskToTag.Clone(),
 		withDiskToHost: dq.withDiskToHost.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
-}
-
-// WithDiskToTag tells the query-builder to eager-load the nodes that are connected to
-// the "DiskToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DiskQuery) WithDiskToTag(opts ...func(*TagQuery)) *DiskQuery {
-	query := &TagQuery{config: dq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	dq.withDiskToTag = query
-	return dq
 }
 
 // WithDiskToHost tells the query-builder to eager-load the nodes that are connected to
@@ -377,12 +341,18 @@ func (dq *DiskQuery) prepareQuery(ctx context.Context) error {
 func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 	var (
 		nodes       = []*Disk{}
+		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
-			dq.withDiskToTag != nil,
+		loadedTypes = [1]bool{
 			dq.withDiskToHost != nil,
 		}
 	)
+	if dq.withDiskToHost != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, disk.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Disk{config: dq.config}
 		nodes = append(nodes, node)
@@ -403,95 +373,27 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		return nodes, nil
 	}
 
-	if query := dq.withDiskToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Disk)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.DiskToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(disk.DiskToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.disk_disk_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "disk_disk_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "disk_disk_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.DiskToTag = append(node.Edges.DiskToTag, n)
-		}
-	}
-
 	if query := dq.withDiskToHost; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Disk, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.DiskToHost = []*Host{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Disk)
+		for i := range nodes {
+			if fk := nodes[i].host_host_to_disk; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Disk)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   disk.DiskToHostTable,
-				Columns: disk.DiskToHostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(disk.DiskToHostPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, dq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DiskToHost": %v`, err)
-		}
-		query.Where(host.IDIn(edgeids...))
+		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "DiskToHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "host_host_to_disk" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.DiskToHost = append(nodes[i].Edges.DiskToHost, n)
+				nodes[i].Edges.DiskToHost = n
 			}
 		}
 	}

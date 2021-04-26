@@ -923,7 +923,7 @@ func HasIdentityToEnvironment() predicate.Identity {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(IdentityToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, IdentityToEnvironmentTable, IdentityToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, IdentityToEnvironmentTable, IdentityToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -935,7 +935,7 @@ func HasIdentityToEnvironmentWith(preds ...predicate.Environment) predicate.Iden
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(IdentityToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, IdentityToEnvironmentTable, IdentityToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, IdentityToEnvironmentTable, IdentityToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

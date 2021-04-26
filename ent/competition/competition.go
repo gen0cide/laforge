@@ -16,8 +16,6 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeCompetitionToTag holds the string denoting the competitiontotag edge name in mutations.
-	EdgeCompetitionToTag = "CompetitionToTag"
 	// EdgeCompetitionToDNS holds the string denoting the competitiontodns edge name in mutations.
 	EdgeCompetitionToDNS = "CompetitionToDNS"
 	// EdgeCompetitionToEnvironment holds the string denoting the competitiontoenvironment edge name in mutations.
@@ -27,13 +25,6 @@ const (
 
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
-	// CompetitionToTagTable is the table the holds the CompetitionToTag relation/edge.
-	CompetitionToTagTable = "tags"
-	// CompetitionToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	CompetitionToTagInverseTable = "tags"
-	// CompetitionToTagColumn is the table column denoting the CompetitionToTag relation/edge.
-	CompetitionToTagColumn = "competition_competition_to_tag"
 	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge. The primary key declared below.
 	CompetitionToDNSTable = "competition_CompetitionToDNS"
 	// CompetitionToDNSInverseTable is the table name for the DNS entity.

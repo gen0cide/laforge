@@ -40,8 +40,6 @@ const (
 	EdgeHostToDisk = "HostToDisk"
 	// EdgeHostToUser holds the string denoting the hosttouser edge name in mutations.
 	EdgeHostToUser = "HostToUser"
-	// EdgeHostToTag holds the string denoting the hosttotag edge name in mutations.
-	EdgeHostToTag = "HostToTag"
 	// EdgeHostToEnvironment holds the string denoting the hosttoenvironment edge name in mutations.
 	EdgeHostToEnvironment = "HostToEnvironment"
 	// EdgeHostToIncludedNetwork holds the string denoting the hosttoincludednetwork edge name in mutations.
@@ -53,11 +51,13 @@ const (
 
 	// Table holds the table name of the host in the database.
 	Table = "hosts"
-	// HostToDiskTable is the table the holds the HostToDisk relation/edge. The primary key declared below.
-	HostToDiskTable = "host_HostToDisk"
+	// HostToDiskTable is the table the holds the HostToDisk relation/edge.
+	HostToDiskTable = "disks"
 	// HostToDiskInverseTable is the table name for the Disk entity.
 	// It exists in this package in order to avoid circular dependency with the "disk" package.
 	HostToDiskInverseTable = "disks"
+	// HostToDiskColumn is the table column denoting the HostToDisk relation/edge.
+	HostToDiskColumn = "host_host_to_disk"
 	// HostToUserTable is the table the holds the HostToUser relation/edge.
 	HostToUserTable = "users"
 	// HostToUserInverseTable is the table name for the User entity.
@@ -65,18 +65,13 @@ const (
 	HostToUserInverseTable = "users"
 	// HostToUserColumn is the table column denoting the HostToUser relation/edge.
 	HostToUserColumn = "host_host_to_user"
-	// HostToTagTable is the table the holds the HostToTag relation/edge.
-	HostToTagTable = "tags"
-	// HostToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	HostToTagInverseTable = "tags"
-	// HostToTagColumn is the table column denoting the HostToTag relation/edge.
-	HostToTagColumn = "host_host_to_tag"
-	// HostToEnvironmentTable is the table the holds the HostToEnvironment relation/edge. The primary key declared below.
-	HostToEnvironmentTable = "environment_EnvironmentToHost"
+	// HostToEnvironmentTable is the table the holds the HostToEnvironment relation/edge.
+	HostToEnvironmentTable = "hosts"
 	// HostToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	HostToEnvironmentInverseTable = "environments"
+	// HostToEnvironmentColumn is the table column denoting the HostToEnvironment relation/edge.
+	HostToEnvironmentColumn = "environment_environment_to_host"
 	// HostToIncludedNetworkTable is the table the holds the HostToIncludedNetwork relation/edge. The primary key declared below.
 	HostToIncludedNetworkTable = "included_network_IncludedNetworkToHost"
 	// HostToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
@@ -119,16 +114,10 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Host type.
 var ForeignKeys = []string{
-	"finding_finding_to_host",
+	"environment_environment_to_host",
 }
 
 var (
-	// HostToDiskPrimaryKey and HostToDiskColumn2 are the table columns denoting the
-	// primary key for the HostToDisk relation (M2M).
-	HostToDiskPrimaryKey = []string{"host_id", "disk_id"}
-	// HostToEnvironmentPrimaryKey and HostToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the HostToEnvironment relation (M2M).
-	HostToEnvironmentPrimaryKey = []string{"environment_id", "host_id"}
 	// HostToIncludedNetworkPrimaryKey and HostToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the HostToIncludedNetwork relation (M2M).
 	HostToIncludedNetworkPrimaryKey = []string{"included_network_id", "host_id"}

@@ -12,21 +12,9 @@ type configMap {
   value: String!
 }
 
-type Disk {
-  size: Int!
-}
-
-type User {
-  id: ID!
-  name: String!
-  uuid: String!
-  email: String!
-}
-
-type Tag {
-  id: ID!
-  name: String!
-  description: String # Will need to update Tags
+type tagMap {
+  key: String!
+  value: String!
 }
 
 enum FindingSeverity {
@@ -46,211 +34,42 @@ enum FindingDifficulty {
   NullDifficulty
 }
 
-type Finding {
-  name: String!
-  description: String!
-  severity: FindingSeverity!
-  difficulty: FindingDifficulty!
-  findingToUser: User!
-  findingToTag: [Tag]
-  findingToHost: Host!
-}
-
-type DNSRecord {
-  id: ID!
-  hcl_id: String!
-  name: String!
-  values: [String]!
-  type: String!
-  zone: String!
-  vars: [varsMap]
-  dnsRecordToTag: [Tag]
-  disabled: Boolean!
-}
-
-type Script {
-  id: ID!
-  hcl_id: String!
-  name: String!
-  language: String!
-  description: String!
-  source: String!
-  sourceType: String!
-  cooldown: Int!
-  timeout: Int!
-  ignoreErrors: Boolean!
-  args: [String]!
-  disabled: Boolean!
-  vars: [varsMap]
-  scriptToTag: [Tag]
-  absPath: String!
-  scriptToUser: User!
-  scriptToFinding: [Finding]!
-}
-type Command {
-  id: ID!
-  name: String!
-  description: String!
-  program: String!
-  args: [String]!
-  ignoreErrors: Boolean!
-  cooldown: Int!
-  timeout: Int!
-  disabled: Boolean!
-  vars: [varsMap]
-  tags: [Tag]
-  commandToUser: User!
-}
-type FileDownload {
-  id: ID!
-  hcl_id: String!
-  sourceType: String!
-  source: String!
-  destination: String!
-  templete: Boolean!
-  perms: String!
-  disabled: Boolean!
-  md5: String!
-  absPath: String!
-  fileDownloadToTag: [Tag]
-}
-type FileDelete {
-  id: ID!
-  hcl_id: String!
-  path: String!
-}
-type FileExtract {
-  id: ID!
-  hcl_id: String!
-  source: String!
-  destination: String!
-  type: String!
-}
-
-type Host {
-  id: ID!
-  hcl_id: String!
-  hostname: String!
-  OS: String!
-  lastOctet: Int!
-  allowMacChanges: Boolean!
-  exposedTCPPorts: [String]!
-  exposedUDPPorts: [String]!
-  overridePassword: String!
-  vars: [varsMap]
-  userGroups: [String]!
-  dependsOn: [Host]!
-  hostToUser: User!
-  hostToTag: [Tag]
-  hostToDisk: Disk!
-}
-
-type Network {
-  id: ID!
-  hcl_id: String!
-  name: String!
-  cidr: String!
-  vdiVisible: Boolean!
-  vars: [varsMap]
-  networkToTag: [Tag]
-}
-
-type DNS {
-  id: ID!
-  hcl_id: String!
-  type: String!
-  rootDomain: String!
-  DNSServers: [String]!
-  NTPServer: [String]!
-  config: [configMap]
-}
-
-type Identity {
-  id: ID!
-  hcl_id: String!
-  first_name: String!
-  last_name: String!
-  email: String!
-  password: String!
-  description: String!
-  avatar_file: String!
-  vars: [varsMap]
-}
-
-type Build {
-  id: ID!
-  revision: Int!
-  tags: [Tag]
-  buildToTeam: [Team]!
-}
-
-type Environment {
-  id: ID!
-  hcl_id: String!
-  CompetitionID: String!
-  Name: String!
-  Description: String!
-  Builder: String!
-  TeamCount: Int!
-  AdminCIDRs: [String]!
-  ExposedVDIPorts: [String]!
-  tags: [Tag]
-  config: [configMap]
-  environmentToUser: [User]!
-  environmentToNetwork: [Network]!
-  environmentToHost: [Host]!
-  environmentToBuild: [Build]!
-  environmentToCompetition: Competition!
-  environmentToIdentity: [Identity]!
-}
-
-type Competition {
-  id: ID!
-  hcl_id: String!
-  rootPassword: String!
-  config: [configMap]
-  competitionToDNS: DNS!
-}
-
-type Team {
-  id: ID!
-  teamNumber: Int!
-  config: [configMap]
-  revision: Int!
-  teamToUser: User!
-  teamToBuild: Build!
-  teamToEnvironment: Environment!
-  teamToTag: [Tag]
-  teamToProvisionedNetwork: [ProvisionedNetwork]!
-}
-
-type ProvisionedNetwork {
-  id: ID!
-  name: String!
-  cidr: String!
-  provisionedNetworkToProvisionedHost: [ProvisionedHost]!
-  provisionedNetworkToStatus: Status!
-  provisionedNetworkToNetwork: Network!
-  provisionedNetworkToBuild: Build!
-}
-
 enum ProvisionStatus {
-  ProvStatusUndefined
-  ProvStatusPlanning
-  ProvStatusAwaiting
-  ProvStatusInProgress
-  ProvStatusFailed
-  ProvStatusComplete
-  ProvStatusTainted
+  PLANNING
+  AWAITING
+  INPROGRESS
+  FAILED
+  COMPLETE
+  TAINTED
+  UNDEFINED
 }
 
-type Status {
-  state: ProvisionStatus!
-  startedAt: String!
-  endedAt: String!
-  failed: Boolean!
-  completed: Boolean!
-  error: String!
+enum ProvisionStatusFor {
+  Build
+  Team
+  ProvisionedNetwork
+  ProvisionedHost
+  ProvisioningStep
+  Undefined
+}
+
+enum PlanType {
+  start_build
+  start_team
+  provision_network
+  provision_host
+  execute_step
+  undefined
+}
+
+enum ProvisioningStepType {
+  Script
+  Command
+  DNSRecord
+  FileDelete
+  FileDownload
+  FileExtract
+  Undefined
 }
 
 type AgentStatus {
@@ -270,39 +89,306 @@ type AgentStatus {
   timestamp: Int!
 }
 
+type Build {
+  id: ID!
+  revision: Int!
+  buildToStatus: Status!
+  buildToEnvironment: Environment!
+  buildToCompetition: Competition!
+  buildToProvisionedNetwork: [ProvisionedNetwork]!
+  buildToTeam: [Team]!
+  buildToPlan: [Plan]!
+}
+
+type Command {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  description: String!
+  program: String!
+  args: [String]!
+  ignoreErrors: Boolean!
+  disabled: Boolean!
+  cooldown: Int!
+  timeout: Int!
+  vars: [varsMap]
+  tags: [tagMap]
+  CommandToEnvironment: Environment!
+}
+
+type Competition {
+  id: ID!
+  hcl_id: String!
+  root_password: String!
+  config: [configMap]
+  tags: [tagMap]
+  competitionToDNS: [DNS]!
+  CompetitionToEnvironment: Environment!
+  CompetitionToBuild: [Build]!
+}
+
+type Disk {
+  size: Int!
+  DiskToHost: Host!
+}
+
+type DNS {
+  id: ID!
+  hcl_id: String!
+  type: String!
+  root_domain: String!
+  dns_servers: [String]!
+  ntp_servers: [String]!
+  config: [configMap]
+  DNSToEnvironment: [Environment]!
+  DNSToCompetition: [Competition]!
+}
+
+type DNSRecord {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  values: [String]!
+  type: String!
+  zone: String!
+  vars: [varsMap]!
+  disabled: Boolean!
+  tags: [tagMap]!
+  DNSRecordToEnvironment: Environment!
+}
+
+type Environment {
+  id: ID!
+  hcl_id: String!
+  competition_id: String!
+  name: String!
+  description: String!
+  builder: String!
+  team_count: Int!
+  revision: Int!
+  admin_cidrs: [String]!
+  exposed_vdi_ports: [String]!
+  config: [configMap]
+  tags: [tagMap]
+  EnvironmentToUser: [User]!
+  EnvironmentToHost: [Host]!
+  EnvironmentToCompetition: [Competition]!
+  EnvironmentToIdentity: [Identity]!
+  EnvironmentToCommand: [Command]!
+  EnvironmentToScript: [Script]!
+  EnvironmentToFileDownload: [FileDownload]!
+  EnvironmentToFileDelete: [FileDelete]!
+  EnvironmentToFileExtract: [FileExtract]!
+  EnvironmentToDNSRecord: [DNSRecord]!
+  EnvironmentToDNS: [DNS]!
+  EnvironmentToNetwork: [Network]!
+  EnvironmentToBuild: [Build]!
+}
+
+type FileDelete {
+  id: ID!
+  hcl_id: String!
+  path: String!
+  tags: [tagMap]!
+  FileDeleteToEnvironment: Environment!
+}
+
+type FileDownload {
+  id: ID!
+  hcl_id: String!
+  sourceType: String!
+  source: String!
+  destination: String!
+  template: Boolean!
+  perms: String!
+  disabled: Boolean!
+  md5: String!
+  absPath: String!
+  tags: [tagMap]!
+  FileDownloadToEnvironment: Environment!
+}
+
+type FileExtract {
+  id: ID!
+  hcl_id: String!
+  source: String!
+  destination: String!
+  type: String!
+  tags: [tagMap]!
+  FileExtractToEnvironment: Environment!
+}
+
+type Finding {
+  name: String!
+  description: String!
+  severity: FindingSeverity!
+  difficulty: FindingDifficulty!
+  tags: [tagMap]!
+  FindingToUser: [User]!
+  FindingToScript: Script!
+  FindingToEnvironment: Environment!
+}
+
+type Host {
+  id: ID!
+  hcl_id: String!
+  hostname: String!
+  description: String!
+  OS: String!
+  last_octet: Int!
+  instance_size: String!
+  allow_mac_changes: Boolean!
+  exposed_tcp_ports: [String]!
+  exposed_udp_ports: [String]!
+  override_password: String!
+  vars: [varsMap]
+  user_groups: [String]!
+  provision_steps: [String]!
+  tags: [tagMap]!
+  HostToDisk: Disk!
+  HostToEnvironment: Environment!
+}
+
+type Identity {
+  id: ID!
+  hcl_id: String!
+  first_name: String!
+  last_name: String!
+  email: String!
+  password: String!
+  description: String!
+  avatar_file: String!
+  vars: [varsMap]!
+  tags: [tagMap]!
+  IdentityToEnvironment: Environment!
+}
+
+type Network {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  cidr: String!
+  vdi_visible: Boolean!
+  vars: [varsMap]
+  tags: [tagMap]!
+  NetworkToEnvironment: Environment!
+}
+
+type Plan {
+  id: ID!
+  step_number: Int!
+  type: PlanType!
+  build_id: Int!
+  NextPlan: [Plan]!
+  PrevPlan: [Plan]!
+  PlanToBuild: Build!
+  PlanToTeam: Team!
+  PlanToProvisionedNetwork: ProvisionedNetwork!
+  PlanToProvisionedHost: ProvisionedHost!
+  PlanToProvisioningStep: ProvisioningStep!
+}
+
 type ProvisionedHost {
   id: ID!
-  subnetIP: String!
-  provisionedHostToStatus: Status!
-  provisionedHostToProvisionedNetwork: ProvisionedNetwork!
-  provisionedHostToProvisioningStep: [ProvisioningStep]!
-  provisionedHostToHost: Host!
-  combinedOutput: String # Link to WebSocket
-  provisionedHostToAgentStatus: AgentStatus
+  subnet_ip: String!
+  ### TODO: Does Not Exist Yet
+  combined_output: String
+  ###
+  ProvisionedHostToStatus: Status!
+  ProvisionedHostToProvisionedNetwork: ProvisionedNetwork!
+  ProvisionedHostToHost: Host!
+  ProvisionedHostToProvisioningStep: [ProvisioningStep]!
+  ProvisionedHostToAgentStatus: AgentStatus
+  ProvisionedHostToPlan: Plan!
+}
+
+type ProvisionedNetwork {
+  id: ID!
+  name: String!
+  cidr: String!
+  ProvisionedNetworkToStatus: Status!
+  ProvisionedNetworkToNetwork: Network!
+  ProvisionedNetworkToBuild: Build!
+  ProvisionedNetworkToTeam: Team!
+  ProvisionedNetworkToProvisionedHost: [ProvisionedHost]!
+  ProvisionedNetworkToPlan: Plan!  
 }
 
 type ProvisioningStep {
   id: ID!
-  provisionType: String!
-  stepNumber: Int!
-  provisioningStepToProvisionedHost: ProvisionedHost!
-  provisioningStepToStatus: Status!
-  provisioningStepToScript: Script
-  provisioningStepToCommand: Command
-  provisioningStepToDNSRecord: DNSRecord
-  provisioningStepToFileDownload: FileDownload
-  provisioningStepToFileDelete: FileDelete
-  provisioningStepToFileExtract: FileExtract
+  type: ProvisioningStepType!
+  step_number: Int!
+  ProvisioningStepToStatus: Status!
+  ProvisioningStepToProvisionedHost: ProvisionedHost!
+  ProvisioningStepToScript: Script
+  ProvisioningStepToCommand: Command
+  ProvisioningStepToDNSRecord: DNSRecord
+  ProvisioningStepToFileDelete: FileDelete
+  ProvisioningStepToFileDownload: FileDownload
+  ProvisioningStepToFileExtract: FileExtract
+  ProvisioningStepToPlan: Plan
 }
 
+type Script {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  language: String!
+  description: String!
+  source: String!
+  source_type: String!
+  cooldown: Int!
+  timeout: Int!
+  ignore_errors: Boolean!
+  args: [String]!
+  disabled: Boolean!
+  vars: [varsMap]
+  absPath: String!
+  tags: [tagMap]
+  scriptToFinding: [Finding]!
+  ScriptToEnvironment: Environment!
+}
+
+type Status {
+  state: ProvisionStatus!
+  status_for: ProvisionStatusFor!
+  started_at: String!
+  ended_at: String!
+  failed: Boolean!
+  completed: Boolean!
+  error: String
+}
+
+type Team {
+  id: ID!
+  team_number: Int!
+  TeamToBuild: Build!
+  TeamToStatus: Status!
+  TeamToProvisionedNetwork: [ProvisionedNetwork]!
+  TeamToPlan: Plan!
+}
+
+## TODO: May need to remove/repurpose in ent and here
+type User {
+  id: ID!
+  name: String!
+  uuid: String!
+  email: String!
+}
+###
+
 type Query {
-  environments: [Environment]!
-  environment(envUUID: String!): Environment!
-  provisionedHost(proHostUUID: String!): ProvisionedHost!
-  provisionedNetwork(proNetUUID: String!): ProvisionedNetwork!
-  provisionedStep(proStepUUID: String!): ProvisioningStep!
+  environments: [Environment]
+  environment(envUUID: String!): Environment
+  provisionedHost(proHostUUID: String!): ProvisionedHost
+  provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
+  provisionedStep(proStepUUID: String!): ProvisioningStep
+  plan(planUUID: String!): Plan
+  build(buildUUID: String!): Build
 }
 
 type Mutation {
-  executePlan(buildUUID: String!): Build!
+  loadEnviroment(envFilePath: String!): [Environment]
+  createBuild(envUUID: String!): Build
+  executePlan(buildUUID: String!): Build
 }

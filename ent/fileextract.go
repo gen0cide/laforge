@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 )
 
@@ -31,38 +32,30 @@ type FileExtract struct {
 	Edges FileExtractEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// FileExtractToTag holds the value of the FileExtractToTag edge.
-	HCLFileExtractToTag []*Tag `json:"FileExtractToTag,omitempty"`
 	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
-	HCLFileExtractToEnvironment []*Environment `json:"FileExtractToEnvironment,omitempty"`
+	HCLFileExtractToEnvironment *Environment `json:"FileExtractToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_file_extract *int
 }
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
 type FileExtractEdges struct {
-	// FileExtractToTag holds the value of the FileExtractToTag edge.
-	FileExtractToTag []*Tag `json:"FileExtractToTag,omitempty"`
 	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
-	FileExtractToEnvironment []*Environment `json:"FileExtractToEnvironment,omitempty"`
+	FileExtractToEnvironment *Environment `json:"FileExtractToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// FileExtractToTagOrErr returns the FileExtractToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileExtractEdges) FileExtractToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.FileExtractToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "FileExtractToTag"}
+	loadedTypes [1]bool
 }
 
 // FileExtractToEnvironmentOrErr returns the FileExtractToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileExtractEdges) FileExtractToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FileExtractEdges) FileExtractToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[0] {
+		if e.FileExtractToEnvironment == nil {
+			// The edge FileExtractToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.FileExtractToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "FileExtractToEnvironment"}
@@ -79,6 +72,8 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case fileextract.FieldHclID, fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
 			values[i] = &sql.NullString{}
+		case fileextract.ForeignKeys[0]: // environment_environment_to_file_extract
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileExtract", columns[i])
 		}
@@ -133,14 +128,16 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case fileextract.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_extract", value)
+			} else if value.Valid {
+				fe.environment_environment_to_file_extract = new(int)
+				*fe.environment_environment_to_file_extract = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryFileExtractToTag queries the "FileExtractToTag" edge of the FileExtract entity.
-func (fe *FileExtract) QueryFileExtractToTag() *TagQuery {
-	return (&FileExtractClient{config: fe.config}).QueryFileExtractToTag(fe)
 }
 
 // QueryFileExtractToEnvironment queries the "FileExtractToEnvironment" edge of the FileExtract entity.

@@ -81,19 +81,23 @@ func (iu *IdentityUpdate) SetTags(m map[string]string) *IdentityUpdate {
 	return iu
 }
 
-// AddIdentityToEnvironmentIDs adds the "IdentityToEnvironment" edge to the Environment entity by IDs.
-func (iu *IdentityUpdate) AddIdentityToEnvironmentIDs(ids ...int) *IdentityUpdate {
-	iu.mutation.AddIdentityToEnvironmentIDs(ids...)
+// SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID.
+func (iu *IdentityUpdate) SetIdentityToEnvironmentID(id int) *IdentityUpdate {
+	iu.mutation.SetIdentityToEnvironmentID(id)
 	return iu
 }
 
-// AddIdentityToEnvironment adds the "IdentityToEnvironment" edges to the Environment entity.
-func (iu *IdentityUpdate) AddIdentityToEnvironment(e ...*Environment) *IdentityUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (iu *IdentityUpdate) SetNillableIdentityToEnvironmentID(id *int) *IdentityUpdate {
+	if id != nil {
+		iu = iu.SetIdentityToEnvironmentID(*id)
 	}
-	return iu.AddIdentityToEnvironmentIDs(ids...)
+	return iu
+}
+
+// SetIdentityToEnvironment sets the "IdentityToEnvironment" edge to the Environment entity.
+func (iu *IdentityUpdate) SetIdentityToEnvironment(e *Environment) *IdentityUpdate {
+	return iu.SetIdentityToEnvironmentID(e.ID)
 }
 
 // Mutation returns the IdentityMutation object of the builder.
@@ -101,25 +105,10 @@ func (iu *IdentityUpdate) Mutation() *IdentityMutation {
 	return iu.mutation
 }
 
-// ClearIdentityToEnvironment clears all "IdentityToEnvironment" edges to the Environment entity.
+// ClearIdentityToEnvironment clears the "IdentityToEnvironment" edge to the Environment entity.
 func (iu *IdentityUpdate) ClearIdentityToEnvironment() *IdentityUpdate {
 	iu.mutation.ClearIdentityToEnvironment()
 	return iu
-}
-
-// RemoveIdentityToEnvironmentIDs removes the "IdentityToEnvironment" edge to Environment entities by IDs.
-func (iu *IdentityUpdate) RemoveIdentityToEnvironmentIDs(ids ...int) *IdentityUpdate {
-	iu.mutation.RemoveIdentityToEnvironmentIDs(ids...)
-	return iu
-}
-
-// RemoveIdentityToEnvironment removes "IdentityToEnvironment" edges to Environment entities.
-func (iu *IdentityUpdate) RemoveIdentityToEnvironment(e ...*Environment) *IdentityUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iu.RemoveIdentityToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -256,10 +245,10 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.IdentityToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
+			Columns: []string{identity.IdentityToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -267,34 +256,15 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedIdentityToEnvironmentIDs(); len(nodes) > 0 && !iu.mutation.IdentityToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iu.mutation.IdentityToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
+			Columns: []string{identity.IdentityToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -380,19 +350,23 @@ func (iuo *IdentityUpdateOne) SetTags(m map[string]string) *IdentityUpdateOne {
 	return iuo
 }
 
-// AddIdentityToEnvironmentIDs adds the "IdentityToEnvironment" edge to the Environment entity by IDs.
-func (iuo *IdentityUpdateOne) AddIdentityToEnvironmentIDs(ids ...int) *IdentityUpdateOne {
-	iuo.mutation.AddIdentityToEnvironmentIDs(ids...)
+// SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID.
+func (iuo *IdentityUpdateOne) SetIdentityToEnvironmentID(id int) *IdentityUpdateOne {
+	iuo.mutation.SetIdentityToEnvironmentID(id)
 	return iuo
 }
 
-// AddIdentityToEnvironment adds the "IdentityToEnvironment" edges to the Environment entity.
-func (iuo *IdentityUpdateOne) AddIdentityToEnvironment(e ...*Environment) *IdentityUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (iuo *IdentityUpdateOne) SetNillableIdentityToEnvironmentID(id *int) *IdentityUpdateOne {
+	if id != nil {
+		iuo = iuo.SetIdentityToEnvironmentID(*id)
 	}
-	return iuo.AddIdentityToEnvironmentIDs(ids...)
+	return iuo
+}
+
+// SetIdentityToEnvironment sets the "IdentityToEnvironment" edge to the Environment entity.
+func (iuo *IdentityUpdateOne) SetIdentityToEnvironment(e *Environment) *IdentityUpdateOne {
+	return iuo.SetIdentityToEnvironmentID(e.ID)
 }
 
 // Mutation returns the IdentityMutation object of the builder.
@@ -400,25 +374,10 @@ func (iuo *IdentityUpdateOne) Mutation() *IdentityMutation {
 	return iuo.mutation
 }
 
-// ClearIdentityToEnvironment clears all "IdentityToEnvironment" edges to the Environment entity.
+// ClearIdentityToEnvironment clears the "IdentityToEnvironment" edge to the Environment entity.
 func (iuo *IdentityUpdateOne) ClearIdentityToEnvironment() *IdentityUpdateOne {
 	iuo.mutation.ClearIdentityToEnvironment()
 	return iuo
-}
-
-// RemoveIdentityToEnvironmentIDs removes the "IdentityToEnvironment" edge to Environment entities by IDs.
-func (iuo *IdentityUpdateOne) RemoveIdentityToEnvironmentIDs(ids ...int) *IdentityUpdateOne {
-	iuo.mutation.RemoveIdentityToEnvironmentIDs(ids...)
-	return iuo
-}
-
-// RemoveIdentityToEnvironment removes "IdentityToEnvironment" edges to Environment entities.
-func (iuo *IdentityUpdateOne) RemoveIdentityToEnvironment(e ...*Environment) *IdentityUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iuo.RemoveIdentityToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated Identity entity.
@@ -560,10 +519,10 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 	}
 	if iuo.mutation.IdentityToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
+			Columns: []string{identity.IdentityToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -571,34 +530,15 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedIdentityToEnvironmentIDs(); len(nodes) > 0 && !iuo.mutation.IdentityToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iuo.mutation.IdentityToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
+			Columns: []string{identity.IdentityToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

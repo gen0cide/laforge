@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileDownloadQuery is the builder for querying FileDownload entities.
@@ -27,8 +25,8 @@ type FileDownloadQuery struct {
 	fields     []string
 	predicates []predicate.FileDownload
 	// eager-loading edges.
-	withFileDownloadToTag         *TagQuery
 	withFileDownloadToEnvironment *EnvironmentQuery
+	withFKs                       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +56,6 @@ func (fdq *FileDownloadQuery) Order(o ...OrderFunc) *FileDownloadQuery {
 	return fdq
 }
 
-// QueryFileDownloadToTag chains the current query on the "FileDownloadToTag" edge.
-func (fdq *FileDownloadQuery) QueryFileDownloadToTag() *TagQuery {
-	query := &TagQuery{config: fdq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := fdq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := fdq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(filedownload.Table, filedownload.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.FileDownloadToTagTable, filedownload.FileDownloadToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryFileDownloadToEnvironment chains the current query on the "FileDownloadToEnvironment" edge.
 func (fdq *FileDownloadQuery) QueryFileDownloadToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: fdq.config}
@@ -94,7 +70,7 @@ func (fdq *FileDownloadQuery) QueryFileDownloadToEnvironment() *EnvironmentQuery
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedownload.Table, filedownload.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fdq.driver.Dialect(), step)
 		return fromU, nil
@@ -283,23 +259,11 @@ func (fdq *FileDownloadQuery) Clone() *FileDownloadQuery {
 		offset:                        fdq.offset,
 		order:                         append([]OrderFunc{}, fdq.order...),
 		predicates:                    append([]predicate.FileDownload{}, fdq.predicates...),
-		withFileDownloadToTag:         fdq.withFileDownloadToTag.Clone(),
 		withFileDownloadToEnvironment: fdq.withFileDownloadToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  fdq.sql.Clone(),
 		path: fdq.path,
 	}
-}
-
-// WithFileDownloadToTag tells the query-builder to eager-load the nodes that are connected to
-// the "FileDownloadToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (fdq *FileDownloadQuery) WithFileDownloadToTag(opts ...func(*TagQuery)) *FileDownloadQuery {
-	query := &TagQuery{config: fdq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	fdq.withFileDownloadToTag = query
-	return fdq
 }
 
 // WithFileDownloadToEnvironment tells the query-builder to eager-load the nodes that are connected to
@@ -377,12 +341,18 @@ func (fdq *FileDownloadQuery) prepareQuery(ctx context.Context) error {
 func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, error) {
 	var (
 		nodes       = []*FileDownload{}
+		withFKs     = fdq.withFKs
 		_spec       = fdq.querySpec()
-		loadedTypes = [2]bool{
-			fdq.withFileDownloadToTag != nil,
+		loadedTypes = [1]bool{
 			fdq.withFileDownloadToEnvironment != nil,
 		}
 	)
+	if fdq.withFileDownloadToEnvironment != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileDownload{config: fdq.config}
 		nodes = append(nodes, node)
@@ -403,95 +373,27 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 		return nodes, nil
 	}
 
-	if query := fdq.withFileDownloadToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*FileDownload)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.FileDownloadToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(filedownload.FileDownloadToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.file_download_file_download_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_download_file_download_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_download_file_download_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.FileDownloadToTag = append(node.Edges.FileDownloadToTag, n)
-		}
-	}
-
 	if query := fdq.withFileDownloadToEnvironment; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*FileDownload, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.FileDownloadToEnvironment = []*Environment{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*FileDownload)
+		for i := range nodes {
+			if fk := nodes[i].environment_environment_to_file_download; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*FileDownload)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   filedownload.FileDownloadToEnvironmentTable,
-				Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(filedownload.FileDownloadToEnvironmentPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, fdq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "FileDownloadToEnvironment": %v`, err)
-		}
-		query.Where(environment.IDIn(edgeids...))
+		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "FileDownloadToEnvironment" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_file_download" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.FileDownloadToEnvironment = append(nodes[i].Edges.FileDownloadToEnvironment, n)
+				nodes[i].Edges.FileDownloadToEnvironment = n
 			}
 		}
 	}

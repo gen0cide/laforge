@@ -49,12 +49,13 @@ func (Host) Fields() []ent.Field {
 func (Host) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("HostToDisk", Disk.Type).
-			StructTag(`hcl:"disk,block"`),
+			StructTag(`hcl:"disk,block"`).
+			Unique(),
 		edge.To("HostToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
-		edge.To("HostToTag", Tag.Type),
 		edge.From("HostToEnvironment", Environment.Type).
-			Ref("EnvironmentToHost"),
+			Ref("EnvironmentToHost").
+			Unique(),
 		edge.From("HostToIncludedNetwork", IncludedNetwork.Type).
 			Ref("IncludedNetworkToHost"),
 		edge.From("DependOnHostToHostDependency", HostDependency.Type).

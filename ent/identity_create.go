@@ -74,19 +74,23 @@ func (ic *IdentityCreate) SetTags(m map[string]string) *IdentityCreate {
 	return ic
 }
 
-// AddIdentityToEnvironmentIDs adds the "IdentityToEnvironment" edge to the Environment entity by IDs.
-func (ic *IdentityCreate) AddIdentityToEnvironmentIDs(ids ...int) *IdentityCreate {
-	ic.mutation.AddIdentityToEnvironmentIDs(ids...)
+// SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID.
+func (ic *IdentityCreate) SetIdentityToEnvironmentID(id int) *IdentityCreate {
+	ic.mutation.SetIdentityToEnvironmentID(id)
 	return ic
 }
 
-// AddIdentityToEnvironment adds the "IdentityToEnvironment" edges to the Environment entity.
-func (ic *IdentityCreate) AddIdentityToEnvironment(e ...*Environment) *IdentityCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (ic *IdentityCreate) SetNillableIdentityToEnvironmentID(id *int) *IdentityCreate {
+	if id != nil {
+		ic = ic.SetIdentityToEnvironmentID(*id)
 	}
-	return ic.AddIdentityToEnvironmentIDs(ids...)
+	return ic
+}
+
+// SetIdentityToEnvironment sets the "IdentityToEnvironment" edge to the Environment entity.
+func (ic *IdentityCreate) SetIdentityToEnvironment(e *Environment) *IdentityCreate {
+	return ic.SetIdentityToEnvironmentID(e.ID)
 }
 
 // Mutation returns the IdentityMutation object of the builder.
@@ -268,10 +272,10 @@ func (ic *IdentityCreate) createSpec() (*Identity, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ic.mutation.IdentityToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   identity.IdentityToEnvironmentTable,
-			Columns: identity.IdentityToEnvironmentPrimaryKey,
+			Columns: []string{identity.IdentityToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

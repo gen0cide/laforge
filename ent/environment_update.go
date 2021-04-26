@@ -26,7 +26,6 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -121,21 +120,6 @@ func (eu *EnvironmentUpdate) SetConfig(m map[string]string) *EnvironmentUpdate {
 func (eu *EnvironmentUpdate) SetTags(m map[string]string) *EnvironmentUpdate {
 	eu.mutation.SetTags(m)
 	return eu
-}
-
-// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
-func (eu *EnvironmentUpdate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.AddEnvironmentToTagIDs(ids...)
-	return eu
-}
-
-// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
-func (eu *EnvironmentUpdate) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return eu.AddEnvironmentToTagIDs(ids...)
 }
 
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
@@ -381,27 +365,6 @@ func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpda
 // Mutation returns the EnvironmentMutation object of the builder.
 func (eu *EnvironmentUpdate) Mutation() *EnvironmentMutation {
 	return eu.mutation
-}
-
-// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to the Tag entity.
-func (eu *EnvironmentUpdate) ClearEnvironmentToTag() *EnvironmentUpdate {
-	eu.mutation.ClearEnvironmentToTag()
-	return eu
-}
-
-// RemoveEnvironmentToTagIDs removes the "EnvironmentToTag" edge to Tag entities by IDs.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToTagIDs(ids ...int) *EnvironmentUpdate {
-	eu.mutation.RemoveEnvironmentToTagIDs(ids...)
-	return eu
-}
-
-// RemoveEnvironmentToTag removes "EnvironmentToTag" edges to Tag entities.
-func (eu *EnvironmentUpdate) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return eu.RemoveEnvironmentToTagIDs(ids...)
 }
 
 // ClearEnvironmentToUser clears all "EnvironmentToUser" edges to the User entity.
@@ -900,60 +863,6 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: environment.FieldTags,
 		})
 	}
-	if eu.mutation.EnvironmentToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.RemovedEnvironmentToTagIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.EnvironmentToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if eu.mutation.EnvironmentToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1010,10 +919,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1026,10 +935,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToHostIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1045,10 +954,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1118,10 +1027,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToIdentityCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1134,10 +1043,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToIdentityIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToIdentityCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1153,10 +1062,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1172,10 +1081,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1188,10 +1097,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToCommandIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1207,10 +1116,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToCommandIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1226,10 +1135,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1242,10 +1151,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToScriptIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1261,10 +1170,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1280,10 +1189,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1296,10 +1205,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToFileDownloadIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1315,10 +1224,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1334,10 +1243,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1350,10 +1259,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToFileDeleteIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1369,10 +1278,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1388,10 +1297,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1404,10 +1313,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToFileExtractIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1423,10 +1332,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1496,10 +1405,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1512,10 +1421,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToFindingIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1531,10 +1440,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1550,10 +1459,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1566,10 +1475,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToDNSRecordIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1585,10 +1494,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToDNSRecordIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1658,10 +1567,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if eu.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1674,10 +1583,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.RemovedEnvironmentToNetworkIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1693,10 +1602,10 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := eu.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1914,21 +1823,6 @@ func (euo *EnvironmentUpdateOne) SetConfig(m map[string]string) *EnvironmentUpda
 func (euo *EnvironmentUpdateOne) SetTags(m map[string]string) *EnvironmentUpdateOne {
 	euo.mutation.SetTags(m)
 	return euo
-}
-
-// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToTagIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.AddEnvironmentToTagIDs(ids...)
-	return euo
-}
-
-// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
-func (euo *EnvironmentUpdateOne) AddEnvironmentToTag(t ...*Tag) *EnvironmentUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return euo.AddEnvironmentToTagIDs(ids...)
 }
 
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
@@ -2174,27 +2068,6 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *Environment
 // Mutation returns the EnvironmentMutation object of the builder.
 func (euo *EnvironmentUpdateOne) Mutation() *EnvironmentMutation {
 	return euo.mutation
-}
-
-// ClearEnvironmentToTag clears all "EnvironmentToTag" edges to the Tag entity.
-func (euo *EnvironmentUpdateOne) ClearEnvironmentToTag() *EnvironmentUpdateOne {
-	euo.mutation.ClearEnvironmentToTag()
-	return euo
-}
-
-// RemoveEnvironmentToTagIDs removes the "EnvironmentToTag" edge to Tag entities by IDs.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTagIDs(ids ...int) *EnvironmentUpdateOne {
-	euo.mutation.RemoveEnvironmentToTagIDs(ids...)
-	return euo
-}
-
-// RemoveEnvironmentToTag removes "EnvironmentToTag" edges to Tag entities.
-func (euo *EnvironmentUpdateOne) RemoveEnvironmentToTag(t ...*Tag) *EnvironmentUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return euo.RemoveEnvironmentToTagIDs(ids...)
 }
 
 // ClearEnvironmentToUser clears all "EnvironmentToUser" edges to the User entity.
@@ -2698,60 +2571,6 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 			Column: environment.FieldTags,
 		})
 	}
-	if euo.mutation.EnvironmentToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.RemovedEnvironmentToTagIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.EnvironmentToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if euo.mutation.EnvironmentToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -2808,10 +2627,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2824,10 +2643,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToHostIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2843,10 +2662,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2916,10 +2735,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToIdentityCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2932,10 +2751,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToIdentityIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToIdentityCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2951,10 +2770,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2970,10 +2789,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -2986,10 +2805,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToCommandIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToCommandCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3005,10 +2824,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToCommandIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3024,10 +2843,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3040,10 +2859,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToScriptIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToScriptCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3059,10 +2878,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3078,10 +2897,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3094,10 +2913,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToFileDownloadIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileDownloadCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3113,10 +2932,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3132,10 +2951,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3148,10 +2967,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToFileDeleteIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileDeleteCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3167,10 +2986,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3186,10 +3005,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3202,10 +3021,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToFileExtractIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFileExtractCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3221,10 +3040,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3294,10 +3113,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3310,10 +3129,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToFindingIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3329,10 +3148,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3348,10 +3167,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3364,10 +3183,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToDNSRecordIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToDNSRecordCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3383,10 +3202,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToDNSRecordIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3456,10 +3275,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if euo.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3472,10 +3291,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.RemovedEnvironmentToNetworkIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -3491,10 +3310,10 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	}
 	if nodes := euo.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

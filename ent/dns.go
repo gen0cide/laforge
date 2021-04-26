@@ -33,8 +33,6 @@ type DNS struct {
 	Edges DNSEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// DNSToTag holds the value of the DNSToTag edge.
-	HCLDNSToTag []*Tag `json:"DNSToTag,omitempty"`
 	// DNSToEnvironment holds the value of the DNSToEnvironment edge.
 	HCLDNSToEnvironment []*Environment `json:"DNSToEnvironment,omitempty"`
 	// DNSToCompetition holds the value of the DNSToCompetition edge.
@@ -45,30 +43,19 @@ type DNS struct {
 
 // DNSEdges holds the relations/edges for other nodes in the graph.
 type DNSEdges struct {
-	// DNSToTag holds the value of the DNSToTag edge.
-	DNSToTag []*Tag `json:"DNSToTag,omitempty"`
 	// DNSToEnvironment holds the value of the DNSToEnvironment edge.
 	DNSToEnvironment []*Environment `json:"DNSToEnvironment,omitempty"`
 	// DNSToCompetition holds the value of the DNSToCompetition edge.
 	DNSToCompetition []*Competition `json:"DNSToCompetition,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
-}
-
-// DNSToTagOrErr returns the DNSToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e DNSEdges) DNSToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.DNSToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "DNSToTag"}
+	loadedTypes [2]bool
 }
 
 // DNSToEnvironmentOrErr returns the DNSToEnvironment value or an error if the edge
 // was not loaded in eager-loading.
 func (e DNSEdges) DNSToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.DNSToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "DNSToEnvironment"}
@@ -77,7 +64,7 @@ func (e DNSEdges) DNSToEnvironmentOrErr() ([]*Environment, error) {
 // DNSToCompetitionOrErr returns the DNSToCompetition value or an error if the edge
 // was not loaded in eager-loading.
 func (e DNSEdges) DNSToCompetitionOrErr() ([]*Competition, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.DNSToCompetition, nil
 	}
 	return nil, &NotLoadedError{edge: "DNSToCompetition"}
@@ -163,11 +150,6 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
-}
-
-// QueryDNSToTag queries the "DNSToTag" edge of the DNS entity.
-func (d *DNS) QueryDNSToTag() *TagQuery {
-	return (&DNSClient{config: d.config}).QueryDNSToTag(d)
 }
 
 // QueryDNSToEnvironment queries the "DNSToEnvironment" edge of the DNS entity.

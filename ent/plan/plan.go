@@ -49,7 +49,7 @@ const (
 	// PlanToBuildColumn is the table column denoting the PlanToBuild relation/edge.
 	PlanToBuildColumn = "plan_plan_to_build"
 	// PlanToTeamTable is the table the holds the PlanToTeam relation/edge.
-	PlanToTeamTable = "plans"
+	PlanToTeamTable = "teams"
 	// PlanToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	PlanToTeamInverseTable = "teams"
@@ -63,7 +63,7 @@ const (
 	// PlanToProvisionedNetworkColumn is the table column denoting the PlanToProvisionedNetwork relation/edge.
 	PlanToProvisionedNetworkColumn = "plan_plan_to_provisioned_network"
 	// PlanToProvisionedHostTable is the table the holds the PlanToProvisionedHost relation/edge.
-	PlanToProvisionedHostTable = "plans"
+	PlanToProvisionedHostTable = "provisioned_hosts"
 	// PlanToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	PlanToProvisionedHostInverseTable = "provisioned_hosts"
@@ -89,8 +89,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the Plan type.
 var ForeignKeys = []string{
 	"plan_plan_to_build",
-	"plan_plan_to_team",
-	"plan_plan_to_provisioned_host",
 }
 
 var (

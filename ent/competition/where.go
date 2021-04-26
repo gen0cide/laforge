@@ -327,34 +327,6 @@ func RootPasswordContainsFold(v string) predicate.Competition {
 	})
 }
 
-// HasCompetitionToTag applies the HasEdge predicate on the "CompetitionToTag" edge.
-func HasCompetitionToTag() predicate.Competition {
-	return predicate.Competition(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CompetitionToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToTagTable, CompetitionToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCompetitionToTagWith applies the HasEdge predicate on the "CompetitionToTag" edge with a given conditions (other predicates).
-func HasCompetitionToTagWith(preds ...predicate.Tag) predicate.Competition {
-	return predicate.Competition(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CompetitionToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CompetitionToTagTable, CompetitionToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasCompetitionToDNS applies the HasEdge predicate on the "CompetitionToDNS" edge.
 func HasCompetitionToDNS() predicate.Competition {
 	return predicate.Competition(func(s *sql.Selector) {

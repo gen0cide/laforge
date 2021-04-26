@@ -114,19 +114,23 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 	return phc.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostCreate {
-	phc.mutation.AddProvisionedHostToPlanIDs(ids...)
+// SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToPlanID(id int) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToPlanID(id)
 	return phc
 }
 
-// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
-func (phc *ProvisionedHostCreate) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phc *ProvisionedHostCreate) SetNillableProvisionedHostToPlanID(id *int) *ProvisionedHostCreate {
+	if id != nil {
+		phc = phc.SetProvisionedHostToPlanID(*id)
 	}
-	return phc.AddProvisionedHostToPlanIDs(ids...)
+	return phc
+}
+
+// SetProvisionedHostToPlan sets the "ProvisionedHostToPlan" edge to the Plan entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToPlan(p *Plan) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToPlanID(p.ID)
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -362,7 +366,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	}
 	if nodes := phc.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
 			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},

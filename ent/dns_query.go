@@ -16,7 +16,6 @@ import (
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSQuery is the builder for querying DNS entities.
@@ -28,7 +27,6 @@ type DNSQuery struct {
 	fields     []string
 	predicates []predicate.DNS
 	// eager-loading edges.
-	withDNSToTag         *TagQuery
 	withDNSToEnvironment *EnvironmentQuery
 	withDNSToCompetition *CompetitionQuery
 	// intermediate query (i.e. traversal path).
@@ -58,28 +56,6 @@ func (dq *DNSQuery) Offset(offset int) *DNSQuery {
 func (dq *DNSQuery) Order(o ...OrderFunc) *DNSQuery {
 	dq.order = append(dq.order, o...)
 	return dq
-}
-
-// QueryDNSToTag chains the current query on the "DNSToTag" edge.
-func (dq *DNSQuery) QueryDNSToTag() *TagQuery {
-	query := &TagQuery{config: dq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := dq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dns.Table, dns.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dns.DNSToTagTable, dns.DNSToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryDNSToEnvironment chains the current query on the "DNSToEnvironment" edge.
@@ -307,24 +283,12 @@ func (dq *DNSQuery) Clone() *DNSQuery {
 		offset:               dq.offset,
 		order:                append([]OrderFunc{}, dq.order...),
 		predicates:           append([]predicate.DNS{}, dq.predicates...),
-		withDNSToTag:         dq.withDNSToTag.Clone(),
 		withDNSToEnvironment: dq.withDNSToEnvironment.Clone(),
 		withDNSToCompetition: dq.withDNSToCompetition.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
-}
-
-// WithDNSToTag tells the query-builder to eager-load the nodes that are connected to
-// the "DNSToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DNSQuery) WithDNSToTag(opts ...func(*TagQuery)) *DNSQuery {
-	query := &TagQuery{config: dq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	dq.withDNSToTag = query
-	return dq
 }
 
 // WithDNSToEnvironment tells the query-builder to eager-load the nodes that are connected to
@@ -414,8 +378,7 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 	var (
 		nodes       = []*DNS{}
 		_spec       = dq.querySpec()
-		loadedTypes = [3]bool{
-			dq.withDNSToTag != nil,
+		loadedTypes = [2]bool{
 			dq.withDNSToEnvironment != nil,
 			dq.withDNSToCompetition != nil,
 		}
@@ -438,35 +401,6 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-
-	if query := dq.withDNSToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*DNS)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.DNSToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(dns.DNSToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.dns_dns_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "dns_dns_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "dns_dns_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.DNSToTag = append(node.Edges.DNSToTag, n)
-		}
 	}
 
 	if query := dq.withDNSToEnvironment; query != nil {

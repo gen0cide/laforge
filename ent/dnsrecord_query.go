@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSRecordQuery is the builder for querying DNSRecord entities.
@@ -27,8 +25,8 @@ type DNSRecordQuery struct {
 	fields     []string
 	predicates []predicate.DNSRecord
 	// eager-loading edges.
-	withDNSRecordToTag         *TagQuery
 	withDNSRecordToEnvironment *EnvironmentQuery
+	withFKs                    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +56,6 @@ func (drq *DNSRecordQuery) Order(o ...OrderFunc) *DNSRecordQuery {
 	return drq
 }
 
-// QueryDNSRecordToTag chains the current query on the "DNSRecordToTag" edge.
-func (drq *DNSRecordQuery) QueryDNSRecordToTag() *TagQuery {
-	query := &TagQuery{config: drq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := drq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := drq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsrecord.DNSRecordToTagTable, dnsrecord.DNSRecordToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryDNSRecordToEnvironment chains the current query on the "DNSRecordToEnvironment" edge.
 func (drq *DNSRecordQuery) QueryDNSRecordToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: drq.config}
@@ -94,7 +70,7 @@ func (drq *DNSRecordQuery) QueryDNSRecordToEnvironment() *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
 		return fromU, nil
@@ -283,23 +259,11 @@ func (drq *DNSRecordQuery) Clone() *DNSRecordQuery {
 		offset:                     drq.offset,
 		order:                      append([]OrderFunc{}, drq.order...),
 		predicates:                 append([]predicate.DNSRecord{}, drq.predicates...),
-		withDNSRecordToTag:         drq.withDNSRecordToTag.Clone(),
 		withDNSRecordToEnvironment: drq.withDNSRecordToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  drq.sql.Clone(),
 		path: drq.path,
 	}
-}
-
-// WithDNSRecordToTag tells the query-builder to eager-load the nodes that are connected to
-// the "DNSRecordToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (drq *DNSRecordQuery) WithDNSRecordToTag(opts ...func(*TagQuery)) *DNSRecordQuery {
-	query := &TagQuery{config: drq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	drq.withDNSRecordToTag = query
-	return drq
 }
 
 // WithDNSRecordToEnvironment tells the query-builder to eager-load the nodes that are connected to
@@ -377,12 +341,18 @@ func (drq *DNSRecordQuery) prepareQuery(ctx context.Context) error {
 func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 	var (
 		nodes       = []*DNSRecord{}
+		withFKs     = drq.withFKs
 		_spec       = drq.querySpec()
-		loadedTypes = [2]bool{
-			drq.withDNSRecordToTag != nil,
+		loadedTypes = [1]bool{
 			drq.withDNSRecordToEnvironment != nil,
 		}
 	)
+	if drq.withDNSRecordToEnvironment != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, dnsrecord.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &DNSRecord{config: drq.config}
 		nodes = append(nodes, node)
@@ -403,95 +373,27 @@ func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 		return nodes, nil
 	}
 
-	if query := drq.withDNSRecordToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*DNSRecord)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.DNSRecordToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(dnsrecord.DNSRecordToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.dns_record_dns_record_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "dns_record_dns_record_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "dns_record_dns_record_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.DNSRecordToTag = append(node.Edges.DNSRecordToTag, n)
-		}
-	}
-
 	if query := drq.withDNSRecordToEnvironment; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*DNSRecord, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.DNSRecordToEnvironment = []*Environment{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*DNSRecord)
+		for i := range nodes {
+			if fk := nodes[i].environment_environment_to_dns_record; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*DNSRecord)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   dnsrecord.DNSRecordToEnvironmentTable,
-				Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(dnsrecord.DNSRecordToEnvironmentPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, drq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DNSRecordToEnvironment": %v`, err)
-		}
-		query.Where(environment.IDIn(edgeids...))
+		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "DNSRecordToEnvironment" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_dns_record" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.DNSRecordToEnvironment = append(nodes[i].Edges.DNSRecordToEnvironment, n)
+				nodes[i].Edges.DNSRecordToEnvironment = n
 			}
 		}
 	}

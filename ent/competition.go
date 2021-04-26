@@ -30,8 +30,6 @@ type Competition struct {
 	Edges CompetitionEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// CompetitionToTag holds the value of the CompetitionToTag edge.
-	HCLCompetitionToTag []*Tag `json:"CompetitionToTag,omitempty"`
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
 	HCLCompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
@@ -44,8 +42,6 @@ type Competition struct {
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
 type CompetitionEdges struct {
-	// CompetitionToTag holds the value of the CompetitionToTag edge.
-	CompetitionToTag []*Tag `json:"CompetitionToTag,omitempty"`
 	// CompetitionToDNS holds the value of the CompetitionToDNS edge.
 	CompetitionToDNS []*DNS `json:"CompetitionToDNS,omitempty" hcl:"dns,block"`
 	// CompetitionToEnvironment holds the value of the CompetitionToEnvironment edge.
@@ -54,22 +50,13 @@ type CompetitionEdges struct {
 	CompetitionToBuild []*Build `json:"CompetitionToBuild,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-}
-
-// CompetitionToTagOrErr returns the CompetitionToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e CompetitionEdges) CompetitionToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.CompetitionToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "CompetitionToTag"}
+	loadedTypes [3]bool
 }
 
 // CompetitionToDNSOrErr returns the CompetitionToDNS value or an error if the edge
 // was not loaded in eager-loading.
 func (e CompetitionEdges) CompetitionToDNSOrErr() ([]*DNS, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.CompetitionToDNS, nil
 	}
 	return nil, &NotLoadedError{edge: "CompetitionToDNS"}
@@ -78,7 +65,7 @@ func (e CompetitionEdges) CompetitionToDNSOrErr() ([]*DNS, error) {
 // CompetitionToEnvironmentOrErr returns the CompetitionToEnvironment value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e CompetitionEdges) CompetitionToEnvironmentOrErr() (*Environment, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.CompetitionToEnvironment == nil {
 			// The edge CompetitionToEnvironment was loaded in eager-loading,
 			// but was not found.
@@ -92,7 +79,7 @@ func (e CompetitionEdges) CompetitionToEnvironmentOrErr() (*Environment, error) 
 // CompetitionToBuildOrErr returns the CompetitionToBuild value or an error if the edge
 // was not loaded in eager-loading.
 func (e CompetitionEdges) CompetitionToBuildOrErr() ([]*Build, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.CompetitionToBuild, nil
 	}
 	return nil, &NotLoadedError{edge: "CompetitionToBuild"}
@@ -172,11 +159,6 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 		}
 	}
 	return nil
-}
-
-// QueryCompetitionToTag queries the "CompetitionToTag" edge of the Competition entity.
-func (c *Competition) QueryCompetitionToTag() *TagQuery {
-	return (&CompetitionClient{config: c.config}).QueryCompetitionToTag(c)
 }
 
 // QueryCompetitionToDNS queries the "CompetitionToDNS" edge of the Competition entity.

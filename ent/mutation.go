@@ -110,9 +110,6 @@ type AgentStatusMutation struct {
 	_Timestamp                           *int64
 	add_Timestamp                        *int64
 	clearedFields                        map[string]struct{}
-	_AgentStatusToTag                    map[int]struct{}
-	removed_AgentStatusToTag             map[int]struct{}
-	cleared_AgentStatusToTag             bool
 	_AgentStatusToProvisionedHost        map[int]struct{}
 	removed_AgentStatusToProvisionedHost map[int]struct{}
 	cleared_AgentStatusToProvisionedHost bool
@@ -904,59 +901,6 @@ func (m *AgentStatusMutation) ResetTimestamp() {
 	m.add_Timestamp = nil
 }
 
-// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by ids.
-func (m *AgentStatusMutation) AddAgentStatusToTagIDs(ids ...int) {
-	if m._AgentStatusToTag == nil {
-		m._AgentStatusToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._AgentStatusToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAgentStatusToTag clears the "AgentStatusToTag" edge to the Tag entity.
-func (m *AgentStatusMutation) ClearAgentStatusToTag() {
-	m.cleared_AgentStatusToTag = true
-}
-
-// AgentStatusToTagCleared returns if the "AgentStatusToTag" edge to the Tag entity was cleared.
-func (m *AgentStatusMutation) AgentStatusToTagCleared() bool {
-	return m.cleared_AgentStatusToTag
-}
-
-// RemoveAgentStatusToTagIDs removes the "AgentStatusToTag" edge to the Tag entity by IDs.
-func (m *AgentStatusMutation) RemoveAgentStatusToTagIDs(ids ...int) {
-	if m.removed_AgentStatusToTag == nil {
-		m.removed_AgentStatusToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_AgentStatusToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAgentStatusToTag returns the removed IDs of the "AgentStatusToTag" edge to the Tag entity.
-func (m *AgentStatusMutation) RemovedAgentStatusToTagIDs() (ids []int) {
-	for id := range m.removed_AgentStatusToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AgentStatusToTagIDs returns the "AgentStatusToTag" edge IDs in the mutation.
-func (m *AgentStatusMutation) AgentStatusToTagIDs() (ids []int) {
-	for id := range m._AgentStatusToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAgentStatusToTag resets all changes to the "AgentStatusToTag" edge.
-func (m *AgentStatusMutation) ResetAgentStatusToTag() {
-	m._AgentStatusToTag = nil
-	m.cleared_AgentStatusToTag = false
-	m.removed_AgentStatusToTag = nil
-}
-
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ids.
 func (m *AgentStatusMutation) AddAgentStatusToProvisionedHostIDs(ids ...int) {
 	if m._AgentStatusToProvisionedHost == nil {
@@ -1467,10 +1411,7 @@ func (m *AgentStatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentStatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._AgentStatusToTag != nil {
-		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._AgentStatusToProvisionedHost != nil {
 		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
@@ -1481,12 +1422,6 @@ func (m *AgentStatusMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case agentstatus.EdgeAgentStatusToTag:
-		ids := make([]ent.Value, 0, len(m._AgentStatusToTag))
-		for id := range m._AgentStatusToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case agentstatus.EdgeAgentStatusToProvisionedHost:
 		ids := make([]ent.Value, 0, len(m._AgentStatusToProvisionedHost))
 		for id := range m._AgentStatusToProvisionedHost {
@@ -1499,10 +1434,7 @@ func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentStatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_AgentStatusToTag != nil {
-		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.removed_AgentStatusToProvisionedHost != nil {
 		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
@@ -1513,12 +1445,6 @@ func (m *AgentStatusMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case agentstatus.EdgeAgentStatusToTag:
-		ids := make([]ent.Value, 0, len(m.removed_AgentStatusToTag))
-		for id := range m.removed_AgentStatusToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case agentstatus.EdgeAgentStatusToProvisionedHost:
 		ids := make([]ent.Value, 0, len(m.removed_AgentStatusToProvisionedHost))
 		for id := range m.removed_AgentStatusToProvisionedHost {
@@ -1531,10 +1457,7 @@ func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentStatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_AgentStatusToTag {
-		edges = append(edges, agentstatus.EdgeAgentStatusToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_AgentStatusToProvisionedHost {
 		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
 	}
@@ -1545,8 +1468,6 @@ func (m *AgentStatusMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *AgentStatusMutation) EdgeCleared(name string) bool {
 	switch name {
-	case agentstatus.EdgeAgentStatusToTag:
-		return m.cleared_AgentStatusToTag
 	case agentstatus.EdgeAgentStatusToProvisionedHost:
 		return m.cleared_AgentStatusToProvisionedHost
 	}
@@ -1565,9 +1486,6 @@ func (m *AgentStatusMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AgentStatusMutation) ResetEdge(name string) error {
 	switch name {
-	case agentstatus.EdgeAgentStatusToTag:
-		m.ResetAgentStatusToTag()
-		return nil
 	case agentstatus.EdgeAgentStatusToProvisionedHost:
 		m.ResetAgentStatusToProvisionedHost()
 		return nil
@@ -2354,11 +2272,7 @@ type CommandMutation struct {
 	_CommandToUser               map[int]struct{}
 	removed_CommandToUser        map[int]struct{}
 	cleared_CommandToUser        bool
-	_CommandToTag                map[int]struct{}
-	removed_CommandToTag         map[int]struct{}
-	cleared_CommandToTag         bool
-	_CommandToEnvironment        map[int]struct{}
-	removed_CommandToEnvironment map[int]struct{}
+	_CommandToEnvironment        *int
 	cleared_CommandToEnvironment bool
 	done                         bool
 	oldValue                     func(context.Context) (*Command, error)
@@ -2933,67 +2847,9 @@ func (m *CommandMutation) ResetCommandToUser() {
 	m.removed_CommandToUser = nil
 }
 
-// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by ids.
-func (m *CommandMutation) AddCommandToTagIDs(ids ...int) {
-	if m._CommandToTag == nil {
-		m._CommandToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._CommandToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCommandToTag clears the "CommandToTag" edge to the Tag entity.
-func (m *CommandMutation) ClearCommandToTag() {
-	m.cleared_CommandToTag = true
-}
-
-// CommandToTagCleared returns if the "CommandToTag" edge to the Tag entity was cleared.
-func (m *CommandMutation) CommandToTagCleared() bool {
-	return m.cleared_CommandToTag
-}
-
-// RemoveCommandToTagIDs removes the "CommandToTag" edge to the Tag entity by IDs.
-func (m *CommandMutation) RemoveCommandToTagIDs(ids ...int) {
-	if m.removed_CommandToTag == nil {
-		m.removed_CommandToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_CommandToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCommandToTag returns the removed IDs of the "CommandToTag" edge to the Tag entity.
-func (m *CommandMutation) RemovedCommandToTagIDs() (ids []int) {
-	for id := range m.removed_CommandToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CommandToTagIDs returns the "CommandToTag" edge IDs in the mutation.
-func (m *CommandMutation) CommandToTagIDs() (ids []int) {
-	for id := range m._CommandToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCommandToTag resets all changes to the "CommandToTag" edge.
-func (m *CommandMutation) ResetCommandToTag() {
-	m._CommandToTag = nil
-	m.cleared_CommandToTag = false
-	m.removed_CommandToTag = nil
-}
-
-// AddCommandToEnvironmentIDs adds the "CommandToEnvironment" edge to the Environment entity by ids.
-func (m *CommandMutation) AddCommandToEnvironmentIDs(ids ...int) {
-	if m._CommandToEnvironment == nil {
-		m._CommandToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._CommandToEnvironment[ids[i]] = struct{}{}
-	}
+// SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by id.
+func (m *CommandMutation) SetCommandToEnvironmentID(id int) {
+	m._CommandToEnvironment = &id
 }
 
 // ClearCommandToEnvironment clears the "CommandToEnvironment" edge to the Environment entity.
@@ -3006,28 +2862,20 @@ func (m *CommandMutation) CommandToEnvironmentCleared() bool {
 	return m.cleared_CommandToEnvironment
 }
 
-// RemoveCommandToEnvironmentIDs removes the "CommandToEnvironment" edge to the Environment entity by IDs.
-func (m *CommandMutation) RemoveCommandToEnvironmentIDs(ids ...int) {
-	if m.removed_CommandToEnvironment == nil {
-		m.removed_CommandToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_CommandToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCommandToEnvironment returns the removed IDs of the "CommandToEnvironment" edge to the Environment entity.
-func (m *CommandMutation) RemovedCommandToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_CommandToEnvironment {
-		ids = append(ids, id)
+// CommandToEnvironmentID returns the "CommandToEnvironment" edge ID in the mutation.
+func (m *CommandMutation) CommandToEnvironmentID() (id int, exists bool) {
+	if m._CommandToEnvironment != nil {
+		return *m._CommandToEnvironment, true
 	}
 	return
 }
 
 // CommandToEnvironmentIDs returns the "CommandToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CommandToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *CommandMutation) CommandToEnvironmentIDs() (ids []int) {
-	for id := range m._CommandToEnvironment {
-		ids = append(ids, id)
+	if id := m._CommandToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -3036,7 +2884,6 @@ func (m *CommandMutation) CommandToEnvironmentIDs() (ids []int) {
 func (m *CommandMutation) ResetCommandToEnvironment() {
 	m._CommandToEnvironment = nil
 	m.cleared_CommandToEnvironment = false
-	m.removed_CommandToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -3349,12 +3196,9 @@ func (m *CommandMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CommandMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m._CommandToUser != nil {
 		edges = append(edges, command.EdgeCommandToUser)
-	}
-	if m._CommandToTag != nil {
-		edges = append(edges, command.EdgeCommandToTag)
 	}
 	if m._CommandToEnvironment != nil {
 		edges = append(edges, command.EdgeCommandToEnvironment)
@@ -3372,33 +3216,19 @@ func (m *CommandMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case command.EdgeCommandToTag:
-		ids := make([]ent.Value, 0, len(m._CommandToTag))
-		for id := range m._CommandToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case command.EdgeCommandToEnvironment:
-		ids := make([]ent.Value, 0, len(m._CommandToEnvironment))
-		for id := range m._CommandToEnvironment {
-			ids = append(ids, id)
+		if id := m._CommandToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CommandMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.removed_CommandToUser != nil {
 		edges = append(edges, command.EdgeCommandToUser)
-	}
-	if m.removed_CommandToTag != nil {
-		edges = append(edges, command.EdgeCommandToTag)
-	}
-	if m.removed_CommandToEnvironment != nil {
-		edges = append(edges, command.EdgeCommandToEnvironment)
 	}
 	return edges
 }
@@ -3413,30 +3243,15 @@ func (m *CommandMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case command.EdgeCommandToTag:
-		ids := make([]ent.Value, 0, len(m.removed_CommandToTag))
-		for id := range m.removed_CommandToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case command.EdgeCommandToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_CommandToEnvironment))
-		for id := range m.removed_CommandToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CommandMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.cleared_CommandToUser {
 		edges = append(edges, command.EdgeCommandToUser)
-	}
-	if m.cleared_CommandToTag {
-		edges = append(edges, command.EdgeCommandToTag)
 	}
 	if m.cleared_CommandToEnvironment {
 		edges = append(edges, command.EdgeCommandToEnvironment)
@@ -3450,8 +3265,6 @@ func (m *CommandMutation) EdgeCleared(name string) bool {
 	switch name {
 	case command.EdgeCommandToUser:
 		return m.cleared_CommandToUser
-	case command.EdgeCommandToTag:
-		return m.cleared_CommandToTag
 	case command.EdgeCommandToEnvironment:
 		return m.cleared_CommandToEnvironment
 	}
@@ -3462,6 +3275,9 @@ func (m *CommandMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *CommandMutation) ClearEdge(name string) error {
 	switch name {
+	case command.EdgeCommandToEnvironment:
+		m.ClearCommandToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Command unique edge %s", name)
 }
@@ -3472,9 +3288,6 @@ func (m *CommandMutation) ResetEdge(name string) error {
 	switch name {
 	case command.EdgeCommandToUser:
 		m.ResetCommandToUser()
-		return nil
-	case command.EdgeCommandToTag:
-		m.ResetCommandToTag()
 		return nil
 	case command.EdgeCommandToEnvironment:
 		m.ResetCommandToEnvironment()
@@ -3494,9 +3307,6 @@ type CompetitionMutation struct {
 	_config                          *map[string]string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_CompetitionToTag                map[int]struct{}
-	removed_CompetitionToTag         map[int]struct{}
-	cleared_CompetitionToTag         bool
 	_CompetitionToDNS                map[int]struct{}
 	removed_CompetitionToDNS         map[int]struct{}
 	cleared_CompetitionToDNS         bool
@@ -3731,59 +3541,6 @@ func (m *CompetitionMutation) OldTags(ctx context.Context) (v map[string]string,
 // ResetTags resets all changes to the "tags" field.
 func (m *CompetitionMutation) ResetTags() {
 	m.tags = nil
-}
-
-// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by ids.
-func (m *CompetitionMutation) AddCompetitionToTagIDs(ids ...int) {
-	if m._CompetitionToTag == nil {
-		m._CompetitionToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._CompetitionToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCompetitionToTag clears the "CompetitionToTag" edge to the Tag entity.
-func (m *CompetitionMutation) ClearCompetitionToTag() {
-	m.cleared_CompetitionToTag = true
-}
-
-// CompetitionToTagCleared returns if the "CompetitionToTag" edge to the Tag entity was cleared.
-func (m *CompetitionMutation) CompetitionToTagCleared() bool {
-	return m.cleared_CompetitionToTag
-}
-
-// RemoveCompetitionToTagIDs removes the "CompetitionToTag" edge to the Tag entity by IDs.
-func (m *CompetitionMutation) RemoveCompetitionToTagIDs(ids ...int) {
-	if m.removed_CompetitionToTag == nil {
-		m.removed_CompetitionToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_CompetitionToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCompetitionToTag returns the removed IDs of the "CompetitionToTag" edge to the Tag entity.
-func (m *CompetitionMutation) RemovedCompetitionToTagIDs() (ids []int) {
-	for id := range m.removed_CompetitionToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CompetitionToTagIDs returns the "CompetitionToTag" edge IDs in the mutation.
-func (m *CompetitionMutation) CompetitionToTagIDs() (ids []int) {
-	for id := range m._CompetitionToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCompetitionToTag resets all changes to the "CompetitionToTag" edge.
-func (m *CompetitionMutation) ResetCompetitionToTag() {
-	m._CompetitionToTag = nil
-	m.cleared_CompetitionToTag = false
-	m.removed_CompetitionToTag = nil
 }
 
 // AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by ids.
@@ -4095,10 +3852,7 @@ func (m *CompetitionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CompetitionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m._CompetitionToTag != nil {
-		edges = append(edges, competition.EdgeCompetitionToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m._CompetitionToDNS != nil {
 		edges = append(edges, competition.EdgeCompetitionToDNS)
 	}
@@ -4115,12 +3869,6 @@ func (m *CompetitionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *CompetitionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case competition.EdgeCompetitionToTag:
-		ids := make([]ent.Value, 0, len(m._CompetitionToTag))
-		for id := range m._CompetitionToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case competition.EdgeCompetitionToDNS:
 		ids := make([]ent.Value, 0, len(m._CompetitionToDNS))
 		for id := range m._CompetitionToDNS {
@@ -4143,10 +3891,7 @@ func (m *CompetitionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CompetitionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removed_CompetitionToTag != nil {
-		edges = append(edges, competition.EdgeCompetitionToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m.removed_CompetitionToDNS != nil {
 		edges = append(edges, competition.EdgeCompetitionToDNS)
 	}
@@ -4160,12 +3905,6 @@ func (m *CompetitionMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *CompetitionMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case competition.EdgeCompetitionToTag:
-		ids := make([]ent.Value, 0, len(m.removed_CompetitionToTag))
-		for id := range m.removed_CompetitionToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case competition.EdgeCompetitionToDNS:
 		ids := make([]ent.Value, 0, len(m.removed_CompetitionToDNS))
 		for id := range m.removed_CompetitionToDNS {
@@ -4184,10 +3923,7 @@ func (m *CompetitionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CompetitionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.cleared_CompetitionToTag {
-		edges = append(edges, competition.EdgeCompetitionToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m.cleared_CompetitionToDNS {
 		edges = append(edges, competition.EdgeCompetitionToDNS)
 	}
@@ -4204,8 +3940,6 @@ func (m *CompetitionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *CompetitionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case competition.EdgeCompetitionToTag:
-		return m.cleared_CompetitionToTag
 	case competition.EdgeCompetitionToDNS:
 		return m.cleared_CompetitionToDNS
 	case competition.EdgeCompetitionToEnvironment:
@@ -4231,9 +3965,6 @@ func (m *CompetitionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CompetitionMutation) ResetEdge(name string) error {
 	switch name {
-	case competition.EdgeCompetitionToTag:
-		m.ResetCompetitionToTag()
-		return nil
 	case competition.EdgeCompetitionToDNS:
 		m.ResetCompetitionToDNS()
 		return nil
@@ -4260,9 +3991,6 @@ type DNSMutation struct {
 	ntp_servers              *[]string
 	_config                  *map[string]string
 	clearedFields            map[string]struct{}
-	_DNSToTag                map[int]struct{}
-	removed_DNSToTag         map[int]struct{}
-	cleared_DNSToTag         bool
 	_DNSToEnvironment        map[int]struct{}
 	removed_DNSToEnvironment map[int]struct{}
 	cleared_DNSToEnvironment bool
@@ -4569,59 +4297,6 @@ func (m *DNSMutation) ResetConfig() {
 	m._config = nil
 }
 
-// AddDNSToTagIDs adds the "DNSToTag" edge to the Tag entity by ids.
-func (m *DNSMutation) AddDNSToTagIDs(ids ...int) {
-	if m._DNSToTag == nil {
-		m._DNSToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._DNSToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDNSToTag clears the "DNSToTag" edge to the Tag entity.
-func (m *DNSMutation) ClearDNSToTag() {
-	m.cleared_DNSToTag = true
-}
-
-// DNSToTagCleared returns if the "DNSToTag" edge to the Tag entity was cleared.
-func (m *DNSMutation) DNSToTagCleared() bool {
-	return m.cleared_DNSToTag
-}
-
-// RemoveDNSToTagIDs removes the "DNSToTag" edge to the Tag entity by IDs.
-func (m *DNSMutation) RemoveDNSToTagIDs(ids ...int) {
-	if m.removed_DNSToTag == nil {
-		m.removed_DNSToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_DNSToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDNSToTag returns the removed IDs of the "DNSToTag" edge to the Tag entity.
-func (m *DNSMutation) RemovedDNSToTagIDs() (ids []int) {
-	for id := range m.removed_DNSToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DNSToTagIDs returns the "DNSToTag" edge IDs in the mutation.
-func (m *DNSMutation) DNSToTagIDs() (ids []int) {
-	for id := range m._DNSToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDNSToTag resets all changes to the "DNSToTag" edge.
-func (m *DNSMutation) ResetDNSToTag() {
-	m._DNSToTag = nil
-	m.cleared_DNSToTag = false
-	m.removed_DNSToTag = nil
-}
-
 // AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by ids.
 func (m *DNSMutation) AddDNSToEnvironmentIDs(ids ...int) {
 	if m._DNSToEnvironment == nil {
@@ -4926,10 +4601,7 @@ func (m *DNSMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DNSMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m._DNSToTag != nil {
-		edges = append(edges, dns.EdgeDNSToTag)
-	}
+	edges := make([]string, 0, 2)
 	if m._DNSToEnvironment != nil {
 		edges = append(edges, dns.EdgeDNSToEnvironment)
 	}
@@ -4943,12 +4615,6 @@ func (m *DNSMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *DNSMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case dns.EdgeDNSToTag:
-		ids := make([]ent.Value, 0, len(m._DNSToTag))
-		for id := range m._DNSToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case dns.EdgeDNSToEnvironment:
 		ids := make([]ent.Value, 0, len(m._DNSToEnvironment))
 		for id := range m._DNSToEnvironment {
@@ -4967,10 +4633,7 @@ func (m *DNSMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DNSMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removed_DNSToTag != nil {
-		edges = append(edges, dns.EdgeDNSToTag)
-	}
+	edges := make([]string, 0, 2)
 	if m.removed_DNSToEnvironment != nil {
 		edges = append(edges, dns.EdgeDNSToEnvironment)
 	}
@@ -4984,12 +4647,6 @@ func (m *DNSMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *DNSMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dns.EdgeDNSToTag:
-		ids := make([]ent.Value, 0, len(m.removed_DNSToTag))
-		for id := range m.removed_DNSToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case dns.EdgeDNSToEnvironment:
 		ids := make([]ent.Value, 0, len(m.removed_DNSToEnvironment))
 		for id := range m.removed_DNSToEnvironment {
@@ -5008,10 +4665,7 @@ func (m *DNSMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DNSMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.cleared_DNSToTag {
-		edges = append(edges, dns.EdgeDNSToTag)
-	}
+	edges := make([]string, 0, 2)
 	if m.cleared_DNSToEnvironment {
 		edges = append(edges, dns.EdgeDNSToEnvironment)
 	}
@@ -5025,8 +4679,6 @@ func (m *DNSMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *DNSMutation) EdgeCleared(name string) bool {
 	switch name {
-	case dns.EdgeDNSToTag:
-		return m.cleared_DNSToTag
 	case dns.EdgeDNSToEnvironment:
 		return m.cleared_DNSToEnvironment
 	case dns.EdgeDNSToCompetition:
@@ -5047,9 +4699,6 @@ func (m *DNSMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DNSMutation) ResetEdge(name string) error {
 	switch name {
-	case dns.EdgeDNSToTag:
-		m.ResetDNSToTag()
-		return nil
 	case dns.EdgeDNSToEnvironment:
 		m.ResetDNSToEnvironment()
 		return nil
@@ -5075,11 +4724,7 @@ type DNSRecordMutation struct {
 	disabled                       *bool
 	tags                           *map[string]string
 	clearedFields                  map[string]struct{}
-	_DNSRecordToTag                map[int]struct{}
-	removed_DNSRecordToTag         map[int]struct{}
-	cleared_DNSRecordToTag         bool
-	_DNSRecordToEnvironment        map[int]struct{}
-	removed_DNSRecordToEnvironment map[int]struct{}
+	_DNSRecordToEnvironment        *int
 	cleared_DNSRecordToEnvironment bool
 	done                           bool
 	oldValue                       func(context.Context) (*DNSRecord, error)
@@ -5453,67 +5098,9 @@ func (m *DNSRecordMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by ids.
-func (m *DNSRecordMutation) AddDNSRecordToTagIDs(ids ...int) {
-	if m._DNSRecordToTag == nil {
-		m._DNSRecordToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._DNSRecordToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDNSRecordToTag clears the "DNSRecordToTag" edge to the Tag entity.
-func (m *DNSRecordMutation) ClearDNSRecordToTag() {
-	m.cleared_DNSRecordToTag = true
-}
-
-// DNSRecordToTagCleared returns if the "DNSRecordToTag" edge to the Tag entity was cleared.
-func (m *DNSRecordMutation) DNSRecordToTagCleared() bool {
-	return m.cleared_DNSRecordToTag
-}
-
-// RemoveDNSRecordToTagIDs removes the "DNSRecordToTag" edge to the Tag entity by IDs.
-func (m *DNSRecordMutation) RemoveDNSRecordToTagIDs(ids ...int) {
-	if m.removed_DNSRecordToTag == nil {
-		m.removed_DNSRecordToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_DNSRecordToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDNSRecordToTag returns the removed IDs of the "DNSRecordToTag" edge to the Tag entity.
-func (m *DNSRecordMutation) RemovedDNSRecordToTagIDs() (ids []int) {
-	for id := range m.removed_DNSRecordToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DNSRecordToTagIDs returns the "DNSRecordToTag" edge IDs in the mutation.
-func (m *DNSRecordMutation) DNSRecordToTagIDs() (ids []int) {
-	for id := range m._DNSRecordToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDNSRecordToTag resets all changes to the "DNSRecordToTag" edge.
-func (m *DNSRecordMutation) ResetDNSRecordToTag() {
-	m._DNSRecordToTag = nil
-	m.cleared_DNSRecordToTag = false
-	m.removed_DNSRecordToTag = nil
-}
-
-// AddDNSRecordToEnvironmentIDs adds the "DNSRecordToEnvironment" edge to the Environment entity by ids.
-func (m *DNSRecordMutation) AddDNSRecordToEnvironmentIDs(ids ...int) {
-	if m._DNSRecordToEnvironment == nil {
-		m._DNSRecordToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._DNSRecordToEnvironment[ids[i]] = struct{}{}
-	}
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by id.
+func (m *DNSRecordMutation) SetDNSRecordToEnvironmentID(id int) {
+	m._DNSRecordToEnvironment = &id
 }
 
 // ClearDNSRecordToEnvironment clears the "DNSRecordToEnvironment" edge to the Environment entity.
@@ -5526,28 +5113,20 @@ func (m *DNSRecordMutation) DNSRecordToEnvironmentCleared() bool {
 	return m.cleared_DNSRecordToEnvironment
 }
 
-// RemoveDNSRecordToEnvironmentIDs removes the "DNSRecordToEnvironment" edge to the Environment entity by IDs.
-func (m *DNSRecordMutation) RemoveDNSRecordToEnvironmentIDs(ids ...int) {
-	if m.removed_DNSRecordToEnvironment == nil {
-		m.removed_DNSRecordToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_DNSRecordToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDNSRecordToEnvironment returns the removed IDs of the "DNSRecordToEnvironment" edge to the Environment entity.
-func (m *DNSRecordMutation) RemovedDNSRecordToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_DNSRecordToEnvironment {
-		ids = append(ids, id)
+// DNSRecordToEnvironmentID returns the "DNSRecordToEnvironment" edge ID in the mutation.
+func (m *DNSRecordMutation) DNSRecordToEnvironmentID() (id int, exists bool) {
+	if m._DNSRecordToEnvironment != nil {
+		return *m._DNSRecordToEnvironment, true
 	}
 	return
 }
 
 // DNSRecordToEnvironmentIDs returns the "DNSRecordToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DNSRecordToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *DNSRecordMutation) DNSRecordToEnvironmentIDs() (ids []int) {
-	for id := range m._DNSRecordToEnvironment {
-		ids = append(ids, id)
+	if id := m._DNSRecordToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -5556,7 +5135,6 @@ func (m *DNSRecordMutation) DNSRecordToEnvironmentIDs() (ids []int) {
 func (m *DNSRecordMutation) ResetDNSRecordToEnvironment() {
 	m._DNSRecordToEnvironment = nil
 	m.cleared_DNSRecordToEnvironment = false
-	m.removed_DNSRecordToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -5791,10 +5369,7 @@ func (m *DNSRecordMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DNSRecordMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._DNSRecordToTag != nil {
-		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._DNSRecordToEnvironment != nil {
 		edges = append(edges, dnsrecord.EdgeDNSRecordToEnvironment)
 	}
@@ -5805,31 +5380,17 @@ func (m *DNSRecordMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *DNSRecordMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case dnsrecord.EdgeDNSRecordToTag:
-		ids := make([]ent.Value, 0, len(m._DNSRecordToTag))
-		for id := range m._DNSRecordToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case dnsrecord.EdgeDNSRecordToEnvironment:
-		ids := make([]ent.Value, 0, len(m._DNSRecordToEnvironment))
-		for id := range m._DNSRecordToEnvironment {
-			ids = append(ids, id)
+		if id := m._DNSRecordToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DNSRecordMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_DNSRecordToTag != nil {
-		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
-	}
-	if m.removed_DNSRecordToEnvironment != nil {
-		edges = append(edges, dnsrecord.EdgeDNSRecordToEnvironment)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -5837,28 +5398,13 @@ func (m *DNSRecordMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *DNSRecordMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dnsrecord.EdgeDNSRecordToTag:
-		ids := make([]ent.Value, 0, len(m.removed_DNSRecordToTag))
-		for id := range m.removed_DNSRecordToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case dnsrecord.EdgeDNSRecordToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_DNSRecordToEnvironment))
-		for id := range m.removed_DNSRecordToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DNSRecordMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_DNSRecordToTag {
-		edges = append(edges, dnsrecord.EdgeDNSRecordToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_DNSRecordToEnvironment {
 		edges = append(edges, dnsrecord.EdgeDNSRecordToEnvironment)
 	}
@@ -5869,8 +5415,6 @@ func (m *DNSRecordMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *DNSRecordMutation) EdgeCleared(name string) bool {
 	switch name {
-	case dnsrecord.EdgeDNSRecordToTag:
-		return m.cleared_DNSRecordToTag
 	case dnsrecord.EdgeDNSRecordToEnvironment:
 		return m.cleared_DNSRecordToEnvironment
 	}
@@ -5881,6 +5425,9 @@ func (m *DNSRecordMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DNSRecordMutation) ClearEdge(name string) error {
 	switch name {
+	case dnsrecord.EdgeDNSRecordToEnvironment:
+		m.ClearDNSRecordToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown DNSRecord unique edge %s", name)
 }
@@ -5889,9 +5436,6 @@ func (m *DNSRecordMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DNSRecordMutation) ResetEdge(name string) error {
 	switch name {
-	case dnsrecord.EdgeDNSRecordToTag:
-		m.ResetDNSRecordToTag()
-		return nil
 	case dnsrecord.EdgeDNSRecordToEnvironment:
 		m.ResetDNSRecordToEnvironment()
 		return nil
@@ -5908,11 +5452,7 @@ type DiskMutation struct {
 	size               *int
 	addsize            *int
 	clearedFields      map[string]struct{}
-	_DiskToTag         map[int]struct{}
-	removed_DiskToTag  map[int]struct{}
-	cleared_DiskToTag  bool
-	_DiskToHost        map[int]struct{}
-	removed_DiskToHost map[int]struct{}
+	_DiskToHost        *int
 	cleared_DiskToHost bool
 	done               bool
 	oldValue           func(context.Context) (*Disk, error)
@@ -6054,67 +5594,9 @@ func (m *DiskMutation) ResetSize() {
 	m.addsize = nil
 }
 
-// AddDiskToTagIDs adds the "DiskToTag" edge to the Tag entity by ids.
-func (m *DiskMutation) AddDiskToTagIDs(ids ...int) {
-	if m._DiskToTag == nil {
-		m._DiskToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._DiskToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDiskToTag clears the "DiskToTag" edge to the Tag entity.
-func (m *DiskMutation) ClearDiskToTag() {
-	m.cleared_DiskToTag = true
-}
-
-// DiskToTagCleared returns if the "DiskToTag" edge to the Tag entity was cleared.
-func (m *DiskMutation) DiskToTagCleared() bool {
-	return m.cleared_DiskToTag
-}
-
-// RemoveDiskToTagIDs removes the "DiskToTag" edge to the Tag entity by IDs.
-func (m *DiskMutation) RemoveDiskToTagIDs(ids ...int) {
-	if m.removed_DiskToTag == nil {
-		m.removed_DiskToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_DiskToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDiskToTag returns the removed IDs of the "DiskToTag" edge to the Tag entity.
-func (m *DiskMutation) RemovedDiskToTagIDs() (ids []int) {
-	for id := range m.removed_DiskToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DiskToTagIDs returns the "DiskToTag" edge IDs in the mutation.
-func (m *DiskMutation) DiskToTagIDs() (ids []int) {
-	for id := range m._DiskToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDiskToTag resets all changes to the "DiskToTag" edge.
-func (m *DiskMutation) ResetDiskToTag() {
-	m._DiskToTag = nil
-	m.cleared_DiskToTag = false
-	m.removed_DiskToTag = nil
-}
-
-// AddDiskToHostIDs adds the "DiskToHost" edge to the Host entity by ids.
-func (m *DiskMutation) AddDiskToHostIDs(ids ...int) {
-	if m._DiskToHost == nil {
-		m._DiskToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._DiskToHost[ids[i]] = struct{}{}
-	}
+// SetDiskToHostID sets the "DiskToHost" edge to the Host entity by id.
+func (m *DiskMutation) SetDiskToHostID(id int) {
+	m._DiskToHost = &id
 }
 
 // ClearDiskToHost clears the "DiskToHost" edge to the Host entity.
@@ -6127,28 +5609,20 @@ func (m *DiskMutation) DiskToHostCleared() bool {
 	return m.cleared_DiskToHost
 }
 
-// RemoveDiskToHostIDs removes the "DiskToHost" edge to the Host entity by IDs.
-func (m *DiskMutation) RemoveDiskToHostIDs(ids ...int) {
-	if m.removed_DiskToHost == nil {
-		m.removed_DiskToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_DiskToHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDiskToHost returns the removed IDs of the "DiskToHost" edge to the Host entity.
-func (m *DiskMutation) RemovedDiskToHostIDs() (ids []int) {
-	for id := range m.removed_DiskToHost {
-		ids = append(ids, id)
+// DiskToHostID returns the "DiskToHost" edge ID in the mutation.
+func (m *DiskMutation) DiskToHostID() (id int, exists bool) {
+	if m._DiskToHost != nil {
+		return *m._DiskToHost, true
 	}
 	return
 }
 
 // DiskToHostIDs returns the "DiskToHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DiskToHostID instead. It exists only for internal usage by the builders.
 func (m *DiskMutation) DiskToHostIDs() (ids []int) {
-	for id := range m._DiskToHost {
-		ids = append(ids, id)
+	if id := m._DiskToHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -6157,7 +5631,6 @@ func (m *DiskMutation) DiskToHostIDs() (ids []int) {
 func (m *DiskMutation) ResetDiskToHost() {
 	m._DiskToHost = nil
 	m.cleared_DiskToHost = false
-	m.removed_DiskToHost = nil
 }
 
 // Op returns the operation name.
@@ -6288,10 +5761,7 @@ func (m *DiskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DiskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._DiskToTag != nil {
-		edges = append(edges, disk.EdgeDiskToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._DiskToHost != nil {
 		edges = append(edges, disk.EdgeDiskToHost)
 	}
@@ -6302,31 +5772,17 @@ func (m *DiskMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *DiskMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case disk.EdgeDiskToTag:
-		ids := make([]ent.Value, 0, len(m._DiskToTag))
-		for id := range m._DiskToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case disk.EdgeDiskToHost:
-		ids := make([]ent.Value, 0, len(m._DiskToHost))
-		for id := range m._DiskToHost {
-			ids = append(ids, id)
+		if id := m._DiskToHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DiskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_DiskToTag != nil {
-		edges = append(edges, disk.EdgeDiskToTag)
-	}
-	if m.removed_DiskToHost != nil {
-		edges = append(edges, disk.EdgeDiskToHost)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -6334,28 +5790,13 @@ func (m *DiskMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *DiskMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case disk.EdgeDiskToTag:
-		ids := make([]ent.Value, 0, len(m.removed_DiskToTag))
-		for id := range m.removed_DiskToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case disk.EdgeDiskToHost:
-		ids := make([]ent.Value, 0, len(m.removed_DiskToHost))
-		for id := range m.removed_DiskToHost {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DiskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_DiskToTag {
-		edges = append(edges, disk.EdgeDiskToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_DiskToHost {
 		edges = append(edges, disk.EdgeDiskToHost)
 	}
@@ -6366,8 +5807,6 @@ func (m *DiskMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *DiskMutation) EdgeCleared(name string) bool {
 	switch name {
-	case disk.EdgeDiskToTag:
-		return m.cleared_DiskToTag
 	case disk.EdgeDiskToHost:
 		return m.cleared_DiskToHost
 	}
@@ -6378,6 +5817,9 @@ func (m *DiskMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DiskMutation) ClearEdge(name string) error {
 	switch name {
+	case disk.EdgeDiskToHost:
+		m.ClearDiskToHost()
+		return nil
 	}
 	return fmt.Errorf("unknown Disk unique edge %s", name)
 }
@@ -6386,9 +5828,6 @@ func (m *DiskMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DiskMutation) ResetEdge(name string) error {
 	switch name {
-	case disk.EdgeDiskToTag:
-		m.ResetDiskToTag()
-		return nil
 	case disk.EdgeDiskToHost:
 		m.ResetDiskToHost()
 		return nil
@@ -6416,9 +5855,6 @@ type EnvironmentMutation struct {
 	_config                              *map[string]string
 	tags                                 *map[string]string
 	clearedFields                        map[string]struct{}
-	_EnvironmentToTag                    map[int]struct{}
-	removed_EnvironmentToTag             map[int]struct{}
-	cleared_EnvironmentToTag             bool
 	_EnvironmentToUser                   map[int]struct{}
 	removed_EnvironmentToUser            map[int]struct{}
 	cleared_EnvironmentToUser            bool
@@ -6985,59 +6421,6 @@ func (m *EnvironmentMutation) OldTags(ctx context.Context) (v map[string]string,
 // ResetTags resets all changes to the "tags" field.
 func (m *EnvironmentMutation) ResetTags() {
 	m.tags = nil
-}
-
-// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToTagIDs(ids ...int) {
-	if m._EnvironmentToTag == nil {
-		m._EnvironmentToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._EnvironmentToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEnvironmentToTag clears the "EnvironmentToTag" edge to the Tag entity.
-func (m *EnvironmentMutation) ClearEnvironmentToTag() {
-	m.cleared_EnvironmentToTag = true
-}
-
-// EnvironmentToTagCleared returns if the "EnvironmentToTag" edge to the Tag entity was cleared.
-func (m *EnvironmentMutation) EnvironmentToTagCleared() bool {
-	return m.cleared_EnvironmentToTag
-}
-
-// RemoveEnvironmentToTagIDs removes the "EnvironmentToTag" edge to the Tag entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToTagIDs(ids ...int) {
-	if m.removed_EnvironmentToTag == nil {
-		m.removed_EnvironmentToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_EnvironmentToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEnvironmentToTag returns the removed IDs of the "EnvironmentToTag" edge to the Tag entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToTagIDs() (ids []int) {
-	for id := range m.removed_EnvironmentToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EnvironmentToTagIDs returns the "EnvironmentToTag" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToTagIDs() (ids []int) {
-	for id := range m._EnvironmentToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEnvironmentToTag resets all changes to the "EnvironmentToTag" edge.
-func (m *EnvironmentMutation) ResetEnvironmentToTag() {
-	m._EnvironmentToTag = nil
-	m.cleared_EnvironmentToTag = false
-	m.removed_EnvironmentToTag = nil
 }
 
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by ids.
@@ -8198,10 +7581,7 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 17)
-	if m._EnvironmentToTag != nil {
-		edges = append(edges, environment.EdgeEnvironmentToTag)
-	}
+	edges := make([]string, 0, 16)
 	if m._EnvironmentToUser != nil {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -8257,12 +7637,6 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case environment.EdgeEnvironmentToTag:
-		ids := make([]ent.Value, 0, len(m._EnvironmentToTag))
-		for id := range m._EnvironmentToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case environment.EdgeEnvironmentToUser:
 		ids := make([]ent.Value, 0, len(m._EnvironmentToUser))
 		for id := range m._EnvironmentToUser {
@@ -8365,10 +7739,7 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 17)
-	if m.removed_EnvironmentToTag != nil {
-		edges = append(edges, environment.EdgeEnvironmentToTag)
-	}
+	edges := make([]string, 0, 16)
 	if m.removed_EnvironmentToUser != nil {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -8424,12 +7795,6 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case environment.EdgeEnvironmentToTag:
-		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToTag))
-		for id := range m.removed_EnvironmentToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case environment.EdgeEnvironmentToUser:
 		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToUser))
 		for id := range m.removed_EnvironmentToUser {
@@ -8532,10 +7897,7 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 17)
-	if m.cleared_EnvironmentToTag {
-		edges = append(edges, environment.EdgeEnvironmentToTag)
-	}
+	edges := make([]string, 0, 16)
 	if m.cleared_EnvironmentToUser {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -8591,8 +7953,6 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 	switch name {
-	case environment.EdgeEnvironmentToTag:
-		return m.cleared_EnvironmentToTag
 	case environment.EdgeEnvironmentToUser:
 		return m.cleared_EnvironmentToUser
 	case environment.EdgeEnvironmentToHost:
@@ -8641,9 +8001,6 @@ func (m *EnvironmentMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *EnvironmentMutation) ResetEdge(name string) error {
 	switch name {
-	case environment.EdgeEnvironmentToTag:
-		m.ResetEnvironmentToTag()
-		return nil
 	case environment.EdgeEnvironmentToUser:
 		m.ResetEnvironmentToUser()
 		return nil
@@ -8706,11 +8063,7 @@ type FileDeleteMutation struct {
 	_path                           *string
 	tags                            *map[string]string
 	clearedFields                   map[string]struct{}
-	_FileDeleteToTag                map[int]struct{}
-	removed_FileDeleteToTag         map[int]struct{}
-	cleared_FileDeleteToTag         bool
-	_FileDeleteToEnvironment        map[int]struct{}
-	removed_FileDeleteToEnvironment map[int]struct{}
+	_FileDeleteToEnvironment        *int
 	cleared_FileDeleteToEnvironment bool
 	done                            bool
 	oldValue                        func(context.Context) (*FileDelete, error)
@@ -8904,67 +8257,9 @@ func (m *FileDeleteMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by ids.
-func (m *FileDeleteMutation) AddFileDeleteToTagIDs(ids ...int) {
-	if m._FileDeleteToTag == nil {
-		m._FileDeleteToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileDeleteToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFileDeleteToTag clears the "FileDeleteToTag" edge to the Tag entity.
-func (m *FileDeleteMutation) ClearFileDeleteToTag() {
-	m.cleared_FileDeleteToTag = true
-}
-
-// FileDeleteToTagCleared returns if the "FileDeleteToTag" edge to the Tag entity was cleared.
-func (m *FileDeleteMutation) FileDeleteToTagCleared() bool {
-	return m.cleared_FileDeleteToTag
-}
-
-// RemoveFileDeleteToTagIDs removes the "FileDeleteToTag" edge to the Tag entity by IDs.
-func (m *FileDeleteMutation) RemoveFileDeleteToTagIDs(ids ...int) {
-	if m.removed_FileDeleteToTag == nil {
-		m.removed_FileDeleteToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileDeleteToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileDeleteToTag returns the removed IDs of the "FileDeleteToTag" edge to the Tag entity.
-func (m *FileDeleteMutation) RemovedFileDeleteToTagIDs() (ids []int) {
-	for id := range m.removed_FileDeleteToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FileDeleteToTagIDs returns the "FileDeleteToTag" edge IDs in the mutation.
-func (m *FileDeleteMutation) FileDeleteToTagIDs() (ids []int) {
-	for id := range m._FileDeleteToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFileDeleteToTag resets all changes to the "FileDeleteToTag" edge.
-func (m *FileDeleteMutation) ResetFileDeleteToTag() {
-	m._FileDeleteToTag = nil
-	m.cleared_FileDeleteToTag = false
-	m.removed_FileDeleteToTag = nil
-}
-
-// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by ids.
-func (m *FileDeleteMutation) AddFileDeleteToEnvironmentIDs(ids ...int) {
-	if m._FileDeleteToEnvironment == nil {
-		m._FileDeleteToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileDeleteToEnvironment[ids[i]] = struct{}{}
-	}
+// SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by id.
+func (m *FileDeleteMutation) SetFileDeleteToEnvironmentID(id int) {
+	m._FileDeleteToEnvironment = &id
 }
 
 // ClearFileDeleteToEnvironment clears the "FileDeleteToEnvironment" edge to the Environment entity.
@@ -8977,28 +8272,20 @@ func (m *FileDeleteMutation) FileDeleteToEnvironmentCleared() bool {
 	return m.cleared_FileDeleteToEnvironment
 }
 
-// RemoveFileDeleteToEnvironmentIDs removes the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
-func (m *FileDeleteMutation) RemoveFileDeleteToEnvironmentIDs(ids ...int) {
-	if m.removed_FileDeleteToEnvironment == nil {
-		m.removed_FileDeleteToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileDeleteToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileDeleteToEnvironment returns the removed IDs of the "FileDeleteToEnvironment" edge to the Environment entity.
-func (m *FileDeleteMutation) RemovedFileDeleteToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_FileDeleteToEnvironment {
-		ids = append(ids, id)
+// FileDeleteToEnvironmentID returns the "FileDeleteToEnvironment" edge ID in the mutation.
+func (m *FileDeleteMutation) FileDeleteToEnvironmentID() (id int, exists bool) {
+	if m._FileDeleteToEnvironment != nil {
+		return *m._FileDeleteToEnvironment, true
 	}
 	return
 }
 
 // FileDeleteToEnvironmentIDs returns the "FileDeleteToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FileDeleteToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *FileDeleteMutation) FileDeleteToEnvironmentIDs() (ids []int) {
-	for id := range m._FileDeleteToEnvironment {
-		ids = append(ids, id)
+	if id := m._FileDeleteToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -9007,7 +8294,6 @@ func (m *FileDeleteMutation) FileDeleteToEnvironmentIDs() (ids []int) {
 func (m *FileDeleteMutation) ResetFileDeleteToEnvironment() {
 	m._FileDeleteToEnvironment = nil
 	m.cleared_FileDeleteToEnvironment = false
-	m.removed_FileDeleteToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -9157,10 +8443,7 @@ func (m *FileDeleteMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileDeleteMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._FileDeleteToTag != nil {
-		edges = append(edges, filedelete.EdgeFileDeleteToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._FileDeleteToEnvironment != nil {
 		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
 	}
@@ -9171,31 +8454,17 @@ func (m *FileDeleteMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *FileDeleteMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case filedelete.EdgeFileDeleteToTag:
-		ids := make([]ent.Value, 0, len(m._FileDeleteToTag))
-		for id := range m._FileDeleteToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case filedelete.EdgeFileDeleteToEnvironment:
-		ids := make([]ent.Value, 0, len(m._FileDeleteToEnvironment))
-		for id := range m._FileDeleteToEnvironment {
-			ids = append(ids, id)
+		if id := m._FileDeleteToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileDeleteMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_FileDeleteToTag != nil {
-		edges = append(edges, filedelete.EdgeFileDeleteToTag)
-	}
-	if m.removed_FileDeleteToEnvironment != nil {
-		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -9203,28 +8472,13 @@ func (m *FileDeleteMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *FileDeleteMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case filedelete.EdgeFileDeleteToTag:
-		ids := make([]ent.Value, 0, len(m.removed_FileDeleteToTag))
-		for id := range m.removed_FileDeleteToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case filedelete.EdgeFileDeleteToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_FileDeleteToEnvironment))
-		for id := range m.removed_FileDeleteToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileDeleteMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_FileDeleteToTag {
-		edges = append(edges, filedelete.EdgeFileDeleteToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_FileDeleteToEnvironment {
 		edges = append(edges, filedelete.EdgeFileDeleteToEnvironment)
 	}
@@ -9235,8 +8489,6 @@ func (m *FileDeleteMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *FileDeleteMutation) EdgeCleared(name string) bool {
 	switch name {
-	case filedelete.EdgeFileDeleteToTag:
-		return m.cleared_FileDeleteToTag
 	case filedelete.EdgeFileDeleteToEnvironment:
 		return m.cleared_FileDeleteToEnvironment
 	}
@@ -9247,6 +8499,9 @@ func (m *FileDeleteMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *FileDeleteMutation) ClearEdge(name string) error {
 	switch name {
+	case filedelete.EdgeFileDeleteToEnvironment:
+		m.ClearFileDeleteToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown FileDelete unique edge %s", name)
 }
@@ -9255,9 +8510,6 @@ func (m *FileDeleteMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *FileDeleteMutation) ResetEdge(name string) error {
 	switch name {
-	case filedelete.EdgeFileDeleteToTag:
-		m.ResetFileDeleteToTag()
-		return nil
 	case filedelete.EdgeFileDeleteToEnvironment:
 		m.ResetFileDeleteToEnvironment()
 		return nil
@@ -9282,11 +8534,7 @@ type FileDownloadMutation struct {
 	abs_path                          *string
 	tags                              *map[string]string
 	clearedFields                     map[string]struct{}
-	_FileDownloadToTag                map[int]struct{}
-	removed_FileDownloadToTag         map[int]struct{}
-	cleared_FileDownloadToTag         bool
-	_FileDownloadToEnvironment        map[int]struct{}
-	removed_FileDownloadToEnvironment map[int]struct{}
+	_FileDownloadToEnvironment        *int
 	cleared_FileDownloadToEnvironment bool
 	done                              bool
 	oldValue                          func(context.Context) (*FileDownload, error)
@@ -9732,67 +8980,9 @@ func (m *FileDownloadMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddFileDownloadToTagIDs adds the "FileDownloadToTag" edge to the Tag entity by ids.
-func (m *FileDownloadMutation) AddFileDownloadToTagIDs(ids ...int) {
-	if m._FileDownloadToTag == nil {
-		m._FileDownloadToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileDownloadToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFileDownloadToTag clears the "FileDownloadToTag" edge to the Tag entity.
-func (m *FileDownloadMutation) ClearFileDownloadToTag() {
-	m.cleared_FileDownloadToTag = true
-}
-
-// FileDownloadToTagCleared returns if the "FileDownloadToTag" edge to the Tag entity was cleared.
-func (m *FileDownloadMutation) FileDownloadToTagCleared() bool {
-	return m.cleared_FileDownloadToTag
-}
-
-// RemoveFileDownloadToTagIDs removes the "FileDownloadToTag" edge to the Tag entity by IDs.
-func (m *FileDownloadMutation) RemoveFileDownloadToTagIDs(ids ...int) {
-	if m.removed_FileDownloadToTag == nil {
-		m.removed_FileDownloadToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileDownloadToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileDownloadToTag returns the removed IDs of the "FileDownloadToTag" edge to the Tag entity.
-func (m *FileDownloadMutation) RemovedFileDownloadToTagIDs() (ids []int) {
-	for id := range m.removed_FileDownloadToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FileDownloadToTagIDs returns the "FileDownloadToTag" edge IDs in the mutation.
-func (m *FileDownloadMutation) FileDownloadToTagIDs() (ids []int) {
-	for id := range m._FileDownloadToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFileDownloadToTag resets all changes to the "FileDownloadToTag" edge.
-func (m *FileDownloadMutation) ResetFileDownloadToTag() {
-	m._FileDownloadToTag = nil
-	m.cleared_FileDownloadToTag = false
-	m.removed_FileDownloadToTag = nil
-}
-
-// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by ids.
-func (m *FileDownloadMutation) AddFileDownloadToEnvironmentIDs(ids ...int) {
-	if m._FileDownloadToEnvironment == nil {
-		m._FileDownloadToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileDownloadToEnvironment[ids[i]] = struct{}{}
-	}
+// SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by id.
+func (m *FileDownloadMutation) SetFileDownloadToEnvironmentID(id int) {
+	m._FileDownloadToEnvironment = &id
 }
 
 // ClearFileDownloadToEnvironment clears the "FileDownloadToEnvironment" edge to the Environment entity.
@@ -9805,28 +8995,20 @@ func (m *FileDownloadMutation) FileDownloadToEnvironmentCleared() bool {
 	return m.cleared_FileDownloadToEnvironment
 }
 
-// RemoveFileDownloadToEnvironmentIDs removes the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
-func (m *FileDownloadMutation) RemoveFileDownloadToEnvironmentIDs(ids ...int) {
-	if m.removed_FileDownloadToEnvironment == nil {
-		m.removed_FileDownloadToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileDownloadToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileDownloadToEnvironment returns the removed IDs of the "FileDownloadToEnvironment" edge to the Environment entity.
-func (m *FileDownloadMutation) RemovedFileDownloadToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_FileDownloadToEnvironment {
-		ids = append(ids, id)
+// FileDownloadToEnvironmentID returns the "FileDownloadToEnvironment" edge ID in the mutation.
+func (m *FileDownloadMutation) FileDownloadToEnvironmentID() (id int, exists bool) {
+	if m._FileDownloadToEnvironment != nil {
+		return *m._FileDownloadToEnvironment, true
 	}
 	return
 }
 
 // FileDownloadToEnvironmentIDs returns the "FileDownloadToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FileDownloadToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *FileDownloadMutation) FileDownloadToEnvironmentIDs() (ids []int) {
-	for id := range m._FileDownloadToEnvironment {
-		ids = append(ids, id)
+	if id := m._FileDownloadToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -9835,7 +9017,6 @@ func (m *FileDownloadMutation) FileDownloadToEnvironmentIDs() (ids []int) {
 func (m *FileDownloadMutation) ResetFileDownloadToEnvironment() {
 	m._FileDownloadToEnvironment = nil
 	m.cleared_FileDownloadToEnvironment = false
-	m.removed_FileDownloadToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -10104,10 +9285,7 @@ func (m *FileDownloadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileDownloadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._FileDownloadToTag != nil {
-		edges = append(edges, filedownload.EdgeFileDownloadToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._FileDownloadToEnvironment != nil {
 		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
 	}
@@ -10118,31 +9296,17 @@ func (m *FileDownloadMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *FileDownloadMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case filedownload.EdgeFileDownloadToTag:
-		ids := make([]ent.Value, 0, len(m._FileDownloadToTag))
-		for id := range m._FileDownloadToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case filedownload.EdgeFileDownloadToEnvironment:
-		ids := make([]ent.Value, 0, len(m._FileDownloadToEnvironment))
-		for id := range m._FileDownloadToEnvironment {
-			ids = append(ids, id)
+		if id := m._FileDownloadToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileDownloadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_FileDownloadToTag != nil {
-		edges = append(edges, filedownload.EdgeFileDownloadToTag)
-	}
-	if m.removed_FileDownloadToEnvironment != nil {
-		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -10150,28 +9314,13 @@ func (m *FileDownloadMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *FileDownloadMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case filedownload.EdgeFileDownloadToTag:
-		ids := make([]ent.Value, 0, len(m.removed_FileDownloadToTag))
-		for id := range m.removed_FileDownloadToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case filedownload.EdgeFileDownloadToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_FileDownloadToEnvironment))
-		for id := range m.removed_FileDownloadToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileDownloadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_FileDownloadToTag {
-		edges = append(edges, filedownload.EdgeFileDownloadToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_FileDownloadToEnvironment {
 		edges = append(edges, filedownload.EdgeFileDownloadToEnvironment)
 	}
@@ -10182,8 +9331,6 @@ func (m *FileDownloadMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *FileDownloadMutation) EdgeCleared(name string) bool {
 	switch name {
-	case filedownload.EdgeFileDownloadToTag:
-		return m.cleared_FileDownloadToTag
 	case filedownload.EdgeFileDownloadToEnvironment:
 		return m.cleared_FileDownloadToEnvironment
 	}
@@ -10194,6 +9341,9 @@ func (m *FileDownloadMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *FileDownloadMutation) ClearEdge(name string) error {
 	switch name {
+	case filedownload.EdgeFileDownloadToEnvironment:
+		m.ClearFileDownloadToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown FileDownload unique edge %s", name)
 }
@@ -10202,9 +9352,6 @@ func (m *FileDownloadMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *FileDownloadMutation) ResetEdge(name string) error {
 	switch name {
-	case filedownload.EdgeFileDownloadToTag:
-		m.ResetFileDownloadToTag()
-		return nil
 	case filedownload.EdgeFileDownloadToEnvironment:
 		m.ResetFileDownloadToEnvironment()
 		return nil
@@ -10224,11 +9371,7 @@ type FileExtractMutation struct {
 	_type                            *string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_FileExtractToTag                map[int]struct{}
-	removed_FileExtractToTag         map[int]struct{}
-	cleared_FileExtractToTag         bool
-	_FileExtractToEnvironment        map[int]struct{}
-	removed_FileExtractToEnvironment map[int]struct{}
+	_FileExtractToEnvironment        *int
 	cleared_FileExtractToEnvironment bool
 	done                             bool
 	oldValue                         func(context.Context) (*FileExtract, error)
@@ -10494,67 +9637,9 @@ func (m *FileExtractMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddFileExtractToTagIDs adds the "FileExtractToTag" edge to the Tag entity by ids.
-func (m *FileExtractMutation) AddFileExtractToTagIDs(ids ...int) {
-	if m._FileExtractToTag == nil {
-		m._FileExtractToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileExtractToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFileExtractToTag clears the "FileExtractToTag" edge to the Tag entity.
-func (m *FileExtractMutation) ClearFileExtractToTag() {
-	m.cleared_FileExtractToTag = true
-}
-
-// FileExtractToTagCleared returns if the "FileExtractToTag" edge to the Tag entity was cleared.
-func (m *FileExtractMutation) FileExtractToTagCleared() bool {
-	return m.cleared_FileExtractToTag
-}
-
-// RemoveFileExtractToTagIDs removes the "FileExtractToTag" edge to the Tag entity by IDs.
-func (m *FileExtractMutation) RemoveFileExtractToTagIDs(ids ...int) {
-	if m.removed_FileExtractToTag == nil {
-		m.removed_FileExtractToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileExtractToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileExtractToTag returns the removed IDs of the "FileExtractToTag" edge to the Tag entity.
-func (m *FileExtractMutation) RemovedFileExtractToTagIDs() (ids []int) {
-	for id := range m.removed_FileExtractToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FileExtractToTagIDs returns the "FileExtractToTag" edge IDs in the mutation.
-func (m *FileExtractMutation) FileExtractToTagIDs() (ids []int) {
-	for id := range m._FileExtractToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFileExtractToTag resets all changes to the "FileExtractToTag" edge.
-func (m *FileExtractMutation) ResetFileExtractToTag() {
-	m._FileExtractToTag = nil
-	m.cleared_FileExtractToTag = false
-	m.removed_FileExtractToTag = nil
-}
-
-// AddFileExtractToEnvironmentIDs adds the "FileExtractToEnvironment" edge to the Environment entity by ids.
-func (m *FileExtractMutation) AddFileExtractToEnvironmentIDs(ids ...int) {
-	if m._FileExtractToEnvironment == nil {
-		m._FileExtractToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FileExtractToEnvironment[ids[i]] = struct{}{}
-	}
+// SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by id.
+func (m *FileExtractMutation) SetFileExtractToEnvironmentID(id int) {
+	m._FileExtractToEnvironment = &id
 }
 
 // ClearFileExtractToEnvironment clears the "FileExtractToEnvironment" edge to the Environment entity.
@@ -10567,28 +9652,20 @@ func (m *FileExtractMutation) FileExtractToEnvironmentCleared() bool {
 	return m.cleared_FileExtractToEnvironment
 }
 
-// RemoveFileExtractToEnvironmentIDs removes the "FileExtractToEnvironment" edge to the Environment entity by IDs.
-func (m *FileExtractMutation) RemoveFileExtractToEnvironmentIDs(ids ...int) {
-	if m.removed_FileExtractToEnvironment == nil {
-		m.removed_FileExtractToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FileExtractToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFileExtractToEnvironment returns the removed IDs of the "FileExtractToEnvironment" edge to the Environment entity.
-func (m *FileExtractMutation) RemovedFileExtractToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_FileExtractToEnvironment {
-		ids = append(ids, id)
+// FileExtractToEnvironmentID returns the "FileExtractToEnvironment" edge ID in the mutation.
+func (m *FileExtractMutation) FileExtractToEnvironmentID() (id int, exists bool) {
+	if m._FileExtractToEnvironment != nil {
+		return *m._FileExtractToEnvironment, true
 	}
 	return
 }
 
 // FileExtractToEnvironmentIDs returns the "FileExtractToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FileExtractToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *FileExtractMutation) FileExtractToEnvironmentIDs() (ids []int) {
-	for id := range m._FileExtractToEnvironment {
-		ids = append(ids, id)
+	if id := m._FileExtractToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -10597,7 +9674,6 @@ func (m *FileExtractMutation) FileExtractToEnvironmentIDs() (ids []int) {
 func (m *FileExtractMutation) ResetFileExtractToEnvironment() {
 	m._FileExtractToEnvironment = nil
 	m.cleared_FileExtractToEnvironment = false
-	m.removed_FileExtractToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -10781,10 +9857,7 @@ func (m *FileExtractMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileExtractMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._FileExtractToTag != nil {
-		edges = append(edges, fileextract.EdgeFileExtractToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m._FileExtractToEnvironment != nil {
 		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
 	}
@@ -10795,31 +9868,17 @@ func (m *FileExtractMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *FileExtractMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case fileextract.EdgeFileExtractToTag:
-		ids := make([]ent.Value, 0, len(m._FileExtractToTag))
-		for id := range m._FileExtractToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case fileextract.EdgeFileExtractToEnvironment:
-		ids := make([]ent.Value, 0, len(m._FileExtractToEnvironment))
-		for id := range m._FileExtractToEnvironment {
-			ids = append(ids, id)
+		if id := m._FileExtractToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileExtractMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_FileExtractToTag != nil {
-		edges = append(edges, fileextract.EdgeFileExtractToTag)
-	}
-	if m.removed_FileExtractToEnvironment != nil {
-		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -10827,28 +9886,13 @@ func (m *FileExtractMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *FileExtractMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case fileextract.EdgeFileExtractToTag:
-		ids := make([]ent.Value, 0, len(m.removed_FileExtractToTag))
-		for id := range m.removed_FileExtractToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case fileextract.EdgeFileExtractToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_FileExtractToEnvironment))
-		for id := range m.removed_FileExtractToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileExtractMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_FileExtractToTag {
-		edges = append(edges, fileextract.EdgeFileExtractToTag)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleared_FileExtractToEnvironment {
 		edges = append(edges, fileextract.EdgeFileExtractToEnvironment)
 	}
@@ -10859,8 +9903,6 @@ func (m *FileExtractMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *FileExtractMutation) EdgeCleared(name string) bool {
 	switch name {
-	case fileextract.EdgeFileExtractToTag:
-		return m.cleared_FileExtractToTag
 	case fileextract.EdgeFileExtractToEnvironment:
 		return m.cleared_FileExtractToEnvironment
 	}
@@ -10871,6 +9913,9 @@ func (m *FileExtractMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *FileExtractMutation) ClearEdge(name string) error {
 	switch name {
+	case fileextract.EdgeFileExtractToEnvironment:
+		m.ClearFileExtractToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown FileExtract unique edge %s", name)
 }
@@ -10879,9 +9924,6 @@ func (m *FileExtractMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *FileExtractMutation) ResetEdge(name string) error {
 	switch name {
-	case fileextract.EdgeFileExtractToTag:
-		m.ResetFileExtractToTag()
-		return nil
 	case fileextract.EdgeFileExtractToEnvironment:
 		m.ResetFileExtractToEnvironment()
 		return nil
@@ -10904,17 +9946,11 @@ type FindingMutation struct {
 	_FindingToUser               map[int]struct{}
 	removed_FindingToUser        map[int]struct{}
 	cleared_FindingToUser        bool
-	_FindingToTag                map[int]struct{}
-	removed_FindingToTag         map[int]struct{}
-	cleared_FindingToTag         bool
-	_FindingToHost               map[int]struct{}
-	removed_FindingToHost        map[int]struct{}
+	_FindingToHost               *int
 	cleared_FindingToHost        bool
-	_FindingToScript             map[int]struct{}
-	removed_FindingToScript      map[int]struct{}
+	_FindingToScript             *int
 	cleared_FindingToScript      bool
-	_FindingToEnvironment        map[int]struct{}
-	removed_FindingToEnvironment map[int]struct{}
+	_FindingToEnvironment        *int
 	cleared_FindingToEnvironment bool
 	done                         bool
 	oldValue                     func(context.Context) (*Finding, error)
@@ -11233,67 +10269,9 @@ func (m *FindingMutation) ResetFindingToUser() {
 	m.removed_FindingToUser = nil
 }
 
-// AddFindingToTagIDs adds the "FindingToTag" edge to the Tag entity by ids.
-func (m *FindingMutation) AddFindingToTagIDs(ids ...int) {
-	if m._FindingToTag == nil {
-		m._FindingToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FindingToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFindingToTag clears the "FindingToTag" edge to the Tag entity.
-func (m *FindingMutation) ClearFindingToTag() {
-	m.cleared_FindingToTag = true
-}
-
-// FindingToTagCleared returns if the "FindingToTag" edge to the Tag entity was cleared.
-func (m *FindingMutation) FindingToTagCleared() bool {
-	return m.cleared_FindingToTag
-}
-
-// RemoveFindingToTagIDs removes the "FindingToTag" edge to the Tag entity by IDs.
-func (m *FindingMutation) RemoveFindingToTagIDs(ids ...int) {
-	if m.removed_FindingToTag == nil {
-		m.removed_FindingToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FindingToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindingToTag returns the removed IDs of the "FindingToTag" edge to the Tag entity.
-func (m *FindingMutation) RemovedFindingToTagIDs() (ids []int) {
-	for id := range m.removed_FindingToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FindingToTagIDs returns the "FindingToTag" edge IDs in the mutation.
-func (m *FindingMutation) FindingToTagIDs() (ids []int) {
-	for id := range m._FindingToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFindingToTag resets all changes to the "FindingToTag" edge.
-func (m *FindingMutation) ResetFindingToTag() {
-	m._FindingToTag = nil
-	m.cleared_FindingToTag = false
-	m.removed_FindingToTag = nil
-}
-
-// AddFindingToHostIDs adds the "FindingToHost" edge to the Host entity by ids.
-func (m *FindingMutation) AddFindingToHostIDs(ids ...int) {
-	if m._FindingToHost == nil {
-		m._FindingToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FindingToHost[ids[i]] = struct{}{}
-	}
+// SetFindingToHostID sets the "FindingToHost" edge to the Host entity by id.
+func (m *FindingMutation) SetFindingToHostID(id int) {
+	m._FindingToHost = &id
 }
 
 // ClearFindingToHost clears the "FindingToHost" edge to the Host entity.
@@ -11306,28 +10284,20 @@ func (m *FindingMutation) FindingToHostCleared() bool {
 	return m.cleared_FindingToHost
 }
 
-// RemoveFindingToHostIDs removes the "FindingToHost" edge to the Host entity by IDs.
-func (m *FindingMutation) RemoveFindingToHostIDs(ids ...int) {
-	if m.removed_FindingToHost == nil {
-		m.removed_FindingToHost = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FindingToHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindingToHost returns the removed IDs of the "FindingToHost" edge to the Host entity.
-func (m *FindingMutation) RemovedFindingToHostIDs() (ids []int) {
-	for id := range m.removed_FindingToHost {
-		ids = append(ids, id)
+// FindingToHostID returns the "FindingToHost" edge ID in the mutation.
+func (m *FindingMutation) FindingToHostID() (id int, exists bool) {
+	if m._FindingToHost != nil {
+		return *m._FindingToHost, true
 	}
 	return
 }
 
 // FindingToHostIDs returns the "FindingToHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FindingToHostID instead. It exists only for internal usage by the builders.
 func (m *FindingMutation) FindingToHostIDs() (ids []int) {
-	for id := range m._FindingToHost {
-		ids = append(ids, id)
+	if id := m._FindingToHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -11336,17 +10306,11 @@ func (m *FindingMutation) FindingToHostIDs() (ids []int) {
 func (m *FindingMutation) ResetFindingToHost() {
 	m._FindingToHost = nil
 	m.cleared_FindingToHost = false
-	m.removed_FindingToHost = nil
 }
 
-// AddFindingToScriptIDs adds the "FindingToScript" edge to the Script entity by ids.
-func (m *FindingMutation) AddFindingToScriptIDs(ids ...int) {
-	if m._FindingToScript == nil {
-		m._FindingToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FindingToScript[ids[i]] = struct{}{}
-	}
+// SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by id.
+func (m *FindingMutation) SetFindingToScriptID(id int) {
+	m._FindingToScript = &id
 }
 
 // ClearFindingToScript clears the "FindingToScript" edge to the Script entity.
@@ -11359,28 +10323,20 @@ func (m *FindingMutation) FindingToScriptCleared() bool {
 	return m.cleared_FindingToScript
 }
 
-// RemoveFindingToScriptIDs removes the "FindingToScript" edge to the Script entity by IDs.
-func (m *FindingMutation) RemoveFindingToScriptIDs(ids ...int) {
-	if m.removed_FindingToScript == nil {
-		m.removed_FindingToScript = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FindingToScript[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindingToScript returns the removed IDs of the "FindingToScript" edge to the Script entity.
-func (m *FindingMutation) RemovedFindingToScriptIDs() (ids []int) {
-	for id := range m.removed_FindingToScript {
-		ids = append(ids, id)
+// FindingToScriptID returns the "FindingToScript" edge ID in the mutation.
+func (m *FindingMutation) FindingToScriptID() (id int, exists bool) {
+	if m._FindingToScript != nil {
+		return *m._FindingToScript, true
 	}
 	return
 }
 
 // FindingToScriptIDs returns the "FindingToScript" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FindingToScriptID instead. It exists only for internal usage by the builders.
 func (m *FindingMutation) FindingToScriptIDs() (ids []int) {
-	for id := range m._FindingToScript {
-		ids = append(ids, id)
+	if id := m._FindingToScript; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -11389,17 +10345,11 @@ func (m *FindingMutation) FindingToScriptIDs() (ids []int) {
 func (m *FindingMutation) ResetFindingToScript() {
 	m._FindingToScript = nil
 	m.cleared_FindingToScript = false
-	m.removed_FindingToScript = nil
 }
 
-// AddFindingToEnvironmentIDs adds the "FindingToEnvironment" edge to the Environment entity by ids.
-func (m *FindingMutation) AddFindingToEnvironmentIDs(ids ...int) {
-	if m._FindingToEnvironment == nil {
-		m._FindingToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._FindingToEnvironment[ids[i]] = struct{}{}
-	}
+// SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by id.
+func (m *FindingMutation) SetFindingToEnvironmentID(id int) {
+	m._FindingToEnvironment = &id
 }
 
 // ClearFindingToEnvironment clears the "FindingToEnvironment" edge to the Environment entity.
@@ -11412,28 +10362,20 @@ func (m *FindingMutation) FindingToEnvironmentCleared() bool {
 	return m.cleared_FindingToEnvironment
 }
 
-// RemoveFindingToEnvironmentIDs removes the "FindingToEnvironment" edge to the Environment entity by IDs.
-func (m *FindingMutation) RemoveFindingToEnvironmentIDs(ids ...int) {
-	if m.removed_FindingToEnvironment == nil {
-		m.removed_FindingToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_FindingToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindingToEnvironment returns the removed IDs of the "FindingToEnvironment" edge to the Environment entity.
-func (m *FindingMutation) RemovedFindingToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_FindingToEnvironment {
-		ids = append(ids, id)
+// FindingToEnvironmentID returns the "FindingToEnvironment" edge ID in the mutation.
+func (m *FindingMutation) FindingToEnvironmentID() (id int, exists bool) {
+	if m._FindingToEnvironment != nil {
+		return *m._FindingToEnvironment, true
 	}
 	return
 }
 
 // FindingToEnvironmentIDs returns the "FindingToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FindingToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *FindingMutation) FindingToEnvironmentIDs() (ids []int) {
-	for id := range m._FindingToEnvironment {
-		ids = append(ids, id)
+	if id := m._FindingToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -11442,7 +10384,6 @@ func (m *FindingMutation) FindingToEnvironmentIDs() (ids []int) {
 func (m *FindingMutation) ResetFindingToEnvironment() {
 	m._FindingToEnvironment = nil
 	m.cleared_FindingToEnvironment = false
-	m.removed_FindingToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -11626,12 +10567,9 @@ func (m *FindingMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FindingMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m._FindingToUser != nil {
 		edges = append(edges, finding.EdgeFindingToUser)
-	}
-	if m._FindingToTag != nil {
-		edges = append(edges, finding.EdgeFindingToTag)
 	}
 	if m._FindingToHost != nil {
 		edges = append(edges, finding.EdgeFindingToHost)
@@ -11655,51 +10593,27 @@ func (m *FindingMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeFindingToTag:
-		ids := make([]ent.Value, 0, len(m._FindingToTag))
-		for id := range m._FindingToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case finding.EdgeFindingToHost:
-		ids := make([]ent.Value, 0, len(m._FindingToHost))
-		for id := range m._FindingToHost {
-			ids = append(ids, id)
+		if id := m._FindingToHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case finding.EdgeFindingToScript:
-		ids := make([]ent.Value, 0, len(m._FindingToScript))
-		for id := range m._FindingToScript {
-			ids = append(ids, id)
+		if id := m._FindingToScript; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case finding.EdgeFindingToEnvironment:
-		ids := make([]ent.Value, 0, len(m._FindingToEnvironment))
-		for id := range m._FindingToEnvironment {
-			ids = append(ids, id)
+		if id := m._FindingToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FindingMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.removed_FindingToUser != nil {
 		edges = append(edges, finding.EdgeFindingToUser)
-	}
-	if m.removed_FindingToTag != nil {
-		edges = append(edges, finding.EdgeFindingToTag)
-	}
-	if m.removed_FindingToHost != nil {
-		edges = append(edges, finding.EdgeFindingToHost)
-	}
-	if m.removed_FindingToScript != nil {
-		edges = append(edges, finding.EdgeFindingToScript)
-	}
-	if m.removed_FindingToEnvironment != nil {
-		edges = append(edges, finding.EdgeFindingToEnvironment)
 	}
 	return edges
 }
@@ -11714,42 +10628,15 @@ func (m *FindingMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case finding.EdgeFindingToTag:
-		ids := make([]ent.Value, 0, len(m.removed_FindingToTag))
-		for id := range m.removed_FindingToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case finding.EdgeFindingToHost:
-		ids := make([]ent.Value, 0, len(m.removed_FindingToHost))
-		for id := range m.removed_FindingToHost {
-			ids = append(ids, id)
-		}
-		return ids
-	case finding.EdgeFindingToScript:
-		ids := make([]ent.Value, 0, len(m.removed_FindingToScript))
-		for id := range m.removed_FindingToScript {
-			ids = append(ids, id)
-		}
-		return ids
-	case finding.EdgeFindingToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_FindingToEnvironment))
-		for id := range m.removed_FindingToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FindingMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.cleared_FindingToUser {
 		edges = append(edges, finding.EdgeFindingToUser)
-	}
-	if m.cleared_FindingToTag {
-		edges = append(edges, finding.EdgeFindingToTag)
 	}
 	if m.cleared_FindingToHost {
 		edges = append(edges, finding.EdgeFindingToHost)
@@ -11769,8 +10656,6 @@ func (m *FindingMutation) EdgeCleared(name string) bool {
 	switch name {
 	case finding.EdgeFindingToUser:
 		return m.cleared_FindingToUser
-	case finding.EdgeFindingToTag:
-		return m.cleared_FindingToTag
 	case finding.EdgeFindingToHost:
 		return m.cleared_FindingToHost
 	case finding.EdgeFindingToScript:
@@ -11785,6 +10670,15 @@ func (m *FindingMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *FindingMutation) ClearEdge(name string) error {
 	switch name {
+	case finding.EdgeFindingToHost:
+		m.ClearFindingToHost()
+		return nil
+	case finding.EdgeFindingToScript:
+		m.ClearFindingToScript()
+		return nil
+	case finding.EdgeFindingToEnvironment:
+		m.ClearFindingToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Finding unique edge %s", name)
 }
@@ -11795,9 +10689,6 @@ func (m *FindingMutation) ResetEdge(name string) error {
 	switch name {
 	case finding.EdgeFindingToUser:
 		m.ResetFindingToUser()
-		return nil
-	case finding.EdgeFindingToTag:
-		m.ResetFindingToTag()
 		return nil
 	case finding.EdgeFindingToHost:
 		m.ResetFindingToHost()
@@ -12357,17 +11248,12 @@ type HostMutation struct {
 	provision_steps                      *[]string
 	tags                                 *map[string]string
 	clearedFields                        map[string]struct{}
-	_HostToDisk                          map[int]struct{}
-	removed_HostToDisk                   map[int]struct{}
+	_HostToDisk                          *int
 	cleared_HostToDisk                   bool
 	_HostToUser                          map[int]struct{}
 	removed_HostToUser                   map[int]struct{}
 	cleared_HostToUser                   bool
-	_HostToTag                           map[int]struct{}
-	removed_HostToTag                    map[int]struct{}
-	cleared_HostToTag                    bool
-	_HostToEnvironment                   map[int]struct{}
-	removed_HostToEnvironment            map[int]struct{}
+	_HostToEnvironment                   *int
 	cleared_HostToEnvironment            bool
 	_HostToIncludedNetwork               map[int]struct{}
 	removed_HostToIncludedNetwork        map[int]struct{}
@@ -12999,14 +11885,9 @@ func (m *HostMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddHostToDiskIDs adds the "HostToDisk" edge to the Disk entity by ids.
-func (m *HostMutation) AddHostToDiskIDs(ids ...int) {
-	if m._HostToDisk == nil {
-		m._HostToDisk = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostToDisk[ids[i]] = struct{}{}
-	}
+// SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by id.
+func (m *HostMutation) SetHostToDiskID(id int) {
+	m._HostToDisk = &id
 }
 
 // ClearHostToDisk clears the "HostToDisk" edge to the Disk entity.
@@ -13019,28 +11900,20 @@ func (m *HostMutation) HostToDiskCleared() bool {
 	return m.cleared_HostToDisk
 }
 
-// RemoveHostToDiskIDs removes the "HostToDisk" edge to the Disk entity by IDs.
-func (m *HostMutation) RemoveHostToDiskIDs(ids ...int) {
-	if m.removed_HostToDisk == nil {
-		m.removed_HostToDisk = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostToDisk[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostToDisk returns the removed IDs of the "HostToDisk" edge to the Disk entity.
-func (m *HostMutation) RemovedHostToDiskIDs() (ids []int) {
-	for id := range m.removed_HostToDisk {
-		ids = append(ids, id)
+// HostToDiskID returns the "HostToDisk" edge ID in the mutation.
+func (m *HostMutation) HostToDiskID() (id int, exists bool) {
+	if m._HostToDisk != nil {
+		return *m._HostToDisk, true
 	}
 	return
 }
 
 // HostToDiskIDs returns the "HostToDisk" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostToDiskID instead. It exists only for internal usage by the builders.
 func (m *HostMutation) HostToDiskIDs() (ids []int) {
-	for id := range m._HostToDisk {
-		ids = append(ids, id)
+	if id := m._HostToDisk; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13049,7 +11922,6 @@ func (m *HostMutation) HostToDiskIDs() (ids []int) {
 func (m *HostMutation) ResetHostToDisk() {
 	m._HostToDisk = nil
 	m.cleared_HostToDisk = false
-	m.removed_HostToDisk = nil
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by ids.
@@ -13105,67 +11977,9 @@ func (m *HostMutation) ResetHostToUser() {
 	m.removed_HostToUser = nil
 }
 
-// AddHostToTagIDs adds the "HostToTag" edge to the Tag entity by ids.
-func (m *HostMutation) AddHostToTagIDs(ids ...int) {
-	if m._HostToTag == nil {
-		m._HostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearHostToTag clears the "HostToTag" edge to the Tag entity.
-func (m *HostMutation) ClearHostToTag() {
-	m.cleared_HostToTag = true
-}
-
-// HostToTagCleared returns if the "HostToTag" edge to the Tag entity was cleared.
-func (m *HostMutation) HostToTagCleared() bool {
-	return m.cleared_HostToTag
-}
-
-// RemoveHostToTagIDs removes the "HostToTag" edge to the Tag entity by IDs.
-func (m *HostMutation) RemoveHostToTagIDs(ids ...int) {
-	if m.removed_HostToTag == nil {
-		m.removed_HostToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostToTag returns the removed IDs of the "HostToTag" edge to the Tag entity.
-func (m *HostMutation) RemovedHostToTagIDs() (ids []int) {
-	for id := range m.removed_HostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// HostToTagIDs returns the "HostToTag" edge IDs in the mutation.
-func (m *HostMutation) HostToTagIDs() (ids []int) {
-	for id := range m._HostToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetHostToTag resets all changes to the "HostToTag" edge.
-func (m *HostMutation) ResetHostToTag() {
-	m._HostToTag = nil
-	m.cleared_HostToTag = false
-	m.removed_HostToTag = nil
-}
-
-// AddHostToEnvironmentIDs adds the "HostToEnvironment" edge to the Environment entity by ids.
-func (m *HostMutation) AddHostToEnvironmentIDs(ids ...int) {
-	if m._HostToEnvironment == nil {
-		m._HostToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._HostToEnvironment[ids[i]] = struct{}{}
-	}
+// SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by id.
+func (m *HostMutation) SetHostToEnvironmentID(id int) {
+	m._HostToEnvironment = &id
 }
 
 // ClearHostToEnvironment clears the "HostToEnvironment" edge to the Environment entity.
@@ -13178,28 +11992,20 @@ func (m *HostMutation) HostToEnvironmentCleared() bool {
 	return m.cleared_HostToEnvironment
 }
 
-// RemoveHostToEnvironmentIDs removes the "HostToEnvironment" edge to the Environment entity by IDs.
-func (m *HostMutation) RemoveHostToEnvironmentIDs(ids ...int) {
-	if m.removed_HostToEnvironment == nil {
-		m.removed_HostToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_HostToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHostToEnvironment returns the removed IDs of the "HostToEnvironment" edge to the Environment entity.
-func (m *HostMutation) RemovedHostToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_HostToEnvironment {
-		ids = append(ids, id)
+// HostToEnvironmentID returns the "HostToEnvironment" edge ID in the mutation.
+func (m *HostMutation) HostToEnvironmentID() (id int, exists bool) {
+	if m._HostToEnvironment != nil {
+		return *m._HostToEnvironment, true
 	}
 	return
 }
 
 // HostToEnvironmentIDs returns the "HostToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HostToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *HostMutation) HostToEnvironmentIDs() (ids []int) {
-	for id := range m._HostToEnvironment {
-		ids = append(ids, id)
+	if id := m._HostToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -13208,7 +12014,6 @@ func (m *HostMutation) HostToEnvironmentIDs() (ids []int) {
 func (m *HostMutation) ResetHostToEnvironment() {
 	m._HostToEnvironment = nil
 	m.cleared_HostToEnvironment = false
-	m.removed_HostToEnvironment = nil
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by ids.
@@ -13728,15 +12533,12 @@ func (m *HostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *HostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m._HostToDisk != nil {
 		edges = append(edges, host.EdgeHostToDisk)
 	}
 	if m._HostToUser != nil {
 		edges = append(edges, host.EdgeHostToUser)
-	}
-	if m._HostToTag != nil {
-		edges = append(edges, host.EdgeHostToTag)
 	}
 	if m._HostToEnvironment != nil {
 		edges = append(edges, host.EdgeHostToEnvironment)
@@ -13758,29 +12560,19 @@ func (m *HostMutation) AddedEdges() []string {
 func (m *HostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case host.EdgeHostToDisk:
-		ids := make([]ent.Value, 0, len(m._HostToDisk))
-		for id := range m._HostToDisk {
-			ids = append(ids, id)
+		if id := m._HostToDisk; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case host.EdgeHostToUser:
 		ids := make([]ent.Value, 0, len(m._HostToUser))
 		for id := range m._HostToUser {
 			ids = append(ids, id)
 		}
 		return ids
-	case host.EdgeHostToTag:
-		ids := make([]ent.Value, 0, len(m._HostToTag))
-		for id := range m._HostToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case host.EdgeHostToEnvironment:
-		ids := make([]ent.Value, 0, len(m._HostToEnvironment))
-		for id := range m._HostToEnvironment {
-			ids = append(ids, id)
+		if id := m._HostToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case host.EdgeHostToIncludedNetwork:
 		ids := make([]ent.Value, 0, len(m._HostToIncludedNetwork))
 		for id := range m._HostToIncludedNetwork {
@@ -13805,18 +12597,9 @@ func (m *HostMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
-	if m.removed_HostToDisk != nil {
-		edges = append(edges, host.EdgeHostToDisk)
-	}
+	edges := make([]string, 0, 6)
 	if m.removed_HostToUser != nil {
 		edges = append(edges, host.EdgeHostToUser)
-	}
-	if m.removed_HostToTag != nil {
-		edges = append(edges, host.EdgeHostToTag)
-	}
-	if m.removed_HostToEnvironment != nil {
-		edges = append(edges, host.EdgeHostToEnvironment)
 	}
 	if m.removed_HostToIncludedNetwork != nil {
 		edges = append(edges, host.EdgeHostToIncludedNetwork)
@@ -13834,27 +12617,9 @@ func (m *HostMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *HostMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case host.EdgeHostToDisk:
-		ids := make([]ent.Value, 0, len(m.removed_HostToDisk))
-		for id := range m.removed_HostToDisk {
-			ids = append(ids, id)
-		}
-		return ids
 	case host.EdgeHostToUser:
 		ids := make([]ent.Value, 0, len(m.removed_HostToUser))
 		for id := range m.removed_HostToUser {
-			ids = append(ids, id)
-		}
-		return ids
-	case host.EdgeHostToTag:
-		ids := make([]ent.Value, 0, len(m.removed_HostToTag))
-		for id := range m.removed_HostToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case host.EdgeHostToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_HostToEnvironment))
-		for id := range m.removed_HostToEnvironment {
 			ids = append(ids, id)
 		}
 		return ids
@@ -13882,15 +12647,12 @@ func (m *HostMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *HostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.cleared_HostToDisk {
 		edges = append(edges, host.EdgeHostToDisk)
 	}
 	if m.cleared_HostToUser {
 		edges = append(edges, host.EdgeHostToUser)
-	}
-	if m.cleared_HostToTag {
-		edges = append(edges, host.EdgeHostToTag)
 	}
 	if m.cleared_HostToEnvironment {
 		edges = append(edges, host.EdgeHostToEnvironment)
@@ -13915,8 +12677,6 @@ func (m *HostMutation) EdgeCleared(name string) bool {
 		return m.cleared_HostToDisk
 	case host.EdgeHostToUser:
 		return m.cleared_HostToUser
-	case host.EdgeHostToTag:
-		return m.cleared_HostToTag
 	case host.EdgeHostToEnvironment:
 		return m.cleared_HostToEnvironment
 	case host.EdgeHostToIncludedNetwork:
@@ -13933,6 +12693,12 @@ func (m *HostMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *HostMutation) ClearEdge(name string) error {
 	switch name {
+	case host.EdgeHostToDisk:
+		m.ClearHostToDisk()
+		return nil
+	case host.EdgeHostToEnvironment:
+		m.ClearHostToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Host unique edge %s", name)
 }
@@ -13946,9 +12712,6 @@ func (m *HostMutation) ResetEdge(name string) error {
 		return nil
 	case host.EdgeHostToUser:
 		m.ResetHostToUser()
-		return nil
-	case host.EdgeHostToTag:
-		m.ResetHostToTag()
 		return nil
 	case host.EdgeHostToEnvironment:
 		m.ResetHostToEnvironment()
@@ -14569,8 +13332,7 @@ type IdentityMutation struct {
 	vars                          *map[string]string
 	tags                          *map[string]string
 	clearedFields                 map[string]struct{}
-	_IdentityToEnvironment        map[int]struct{}
-	removed_IdentityToEnvironment map[int]struct{}
+	_IdentityToEnvironment        *int
 	cleared_IdentityToEnvironment bool
 	done                          bool
 	oldValue                      func(context.Context) (*Identity, error)
@@ -14980,14 +13742,9 @@ func (m *IdentityMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddIdentityToEnvironmentIDs adds the "IdentityToEnvironment" edge to the Environment entity by ids.
-func (m *IdentityMutation) AddIdentityToEnvironmentIDs(ids ...int) {
-	if m._IdentityToEnvironment == nil {
-		m._IdentityToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._IdentityToEnvironment[ids[i]] = struct{}{}
-	}
+// SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by id.
+func (m *IdentityMutation) SetIdentityToEnvironmentID(id int) {
+	m._IdentityToEnvironment = &id
 }
 
 // ClearIdentityToEnvironment clears the "IdentityToEnvironment" edge to the Environment entity.
@@ -15000,28 +13757,20 @@ func (m *IdentityMutation) IdentityToEnvironmentCleared() bool {
 	return m.cleared_IdentityToEnvironment
 }
 
-// RemoveIdentityToEnvironmentIDs removes the "IdentityToEnvironment" edge to the Environment entity by IDs.
-func (m *IdentityMutation) RemoveIdentityToEnvironmentIDs(ids ...int) {
-	if m.removed_IdentityToEnvironment == nil {
-		m.removed_IdentityToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_IdentityToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedIdentityToEnvironment returns the removed IDs of the "IdentityToEnvironment" edge to the Environment entity.
-func (m *IdentityMutation) RemovedIdentityToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_IdentityToEnvironment {
-		ids = append(ids, id)
+// IdentityToEnvironmentID returns the "IdentityToEnvironment" edge ID in the mutation.
+func (m *IdentityMutation) IdentityToEnvironmentID() (id int, exists bool) {
+	if m._IdentityToEnvironment != nil {
+		return *m._IdentityToEnvironment, true
 	}
 	return
 }
 
 // IdentityToEnvironmentIDs returns the "IdentityToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IdentityToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *IdentityMutation) IdentityToEnvironmentIDs() (ids []int) {
-	for id := range m._IdentityToEnvironment {
-		ids = append(ids, id)
+	if id := m._IdentityToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -15030,7 +13779,6 @@ func (m *IdentityMutation) IdentityToEnvironmentIDs() (ids []int) {
 func (m *IdentityMutation) ResetIdentityToEnvironment() {
 	m._IdentityToEnvironment = nil
 	m.cleared_IdentityToEnvironment = false
-	m.removed_IdentityToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -15294,11 +14042,9 @@ func (m *IdentityMutation) AddedEdges() []string {
 func (m *IdentityMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case identity.EdgeIdentityToEnvironment:
-		ids := make([]ent.Value, 0, len(m._IdentityToEnvironment))
-		for id := range m._IdentityToEnvironment {
-			ids = append(ids, id)
+		if id := m._IdentityToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -15306,9 +14052,6 @@ func (m *IdentityMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IdentityMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removed_IdentityToEnvironment != nil {
-		edges = append(edges, identity.EdgeIdentityToEnvironment)
-	}
 	return edges
 }
 
@@ -15316,12 +14059,6 @@ func (m *IdentityMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *IdentityMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case identity.EdgeIdentityToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_IdentityToEnvironment))
-		for id := range m.removed_IdentityToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -15349,6 +14086,9 @@ func (m *IdentityMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *IdentityMutation) ClearEdge(name string) error {
 	switch name {
+	case identity.EdgeIdentityToEnvironment:
+		m.ClearIdentityToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Identity unique edge %s", name)
 }
@@ -16056,11 +14796,7 @@ type NetworkMutation struct {
 	vars                             *map[string]string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_NetworkToTag                    map[int]struct{}
-	removed_NetworkToTag             map[int]struct{}
-	cleared_NetworkToTag             bool
-	_NetworkToEnvironment            map[int]struct{}
-	removed_NetworkToEnvironment     map[int]struct{}
+	_NetworkToEnvironment            *int
 	cleared_NetworkToEnvironment     bool
 	_NetworkToHostDependency         map[int]struct{}
 	removed_NetworkToHostDependency  map[int]struct{}
@@ -16368,67 +15104,9 @@ func (m *NetworkMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by ids.
-func (m *NetworkMutation) AddNetworkToTagIDs(ids ...int) {
-	if m._NetworkToTag == nil {
-		m._NetworkToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._NetworkToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearNetworkToTag clears the "NetworkToTag" edge to the Tag entity.
-func (m *NetworkMutation) ClearNetworkToTag() {
-	m.cleared_NetworkToTag = true
-}
-
-// NetworkToTagCleared returns if the "NetworkToTag" edge to the Tag entity was cleared.
-func (m *NetworkMutation) NetworkToTagCleared() bool {
-	return m.cleared_NetworkToTag
-}
-
-// RemoveNetworkToTagIDs removes the "NetworkToTag" edge to the Tag entity by IDs.
-func (m *NetworkMutation) RemoveNetworkToTagIDs(ids ...int) {
-	if m.removed_NetworkToTag == nil {
-		m.removed_NetworkToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_NetworkToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedNetworkToTag returns the removed IDs of the "NetworkToTag" edge to the Tag entity.
-func (m *NetworkMutation) RemovedNetworkToTagIDs() (ids []int) {
-	for id := range m.removed_NetworkToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// NetworkToTagIDs returns the "NetworkToTag" edge IDs in the mutation.
-func (m *NetworkMutation) NetworkToTagIDs() (ids []int) {
-	for id := range m._NetworkToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetNetworkToTag resets all changes to the "NetworkToTag" edge.
-func (m *NetworkMutation) ResetNetworkToTag() {
-	m._NetworkToTag = nil
-	m.cleared_NetworkToTag = false
-	m.removed_NetworkToTag = nil
-}
-
-// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by ids.
-func (m *NetworkMutation) AddNetworkToEnvironmentIDs(ids ...int) {
-	if m._NetworkToEnvironment == nil {
-		m._NetworkToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._NetworkToEnvironment[ids[i]] = struct{}{}
-	}
+// SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by id.
+func (m *NetworkMutation) SetNetworkToEnvironmentID(id int) {
+	m._NetworkToEnvironment = &id
 }
 
 // ClearNetworkToEnvironment clears the "NetworkToEnvironment" edge to the Environment entity.
@@ -16441,28 +15119,20 @@ func (m *NetworkMutation) NetworkToEnvironmentCleared() bool {
 	return m.cleared_NetworkToEnvironment
 }
 
-// RemoveNetworkToEnvironmentIDs removes the "NetworkToEnvironment" edge to the Environment entity by IDs.
-func (m *NetworkMutation) RemoveNetworkToEnvironmentIDs(ids ...int) {
-	if m.removed_NetworkToEnvironment == nil {
-		m.removed_NetworkToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_NetworkToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedNetworkToEnvironment returns the removed IDs of the "NetworkToEnvironment" edge to the Environment entity.
-func (m *NetworkMutation) RemovedNetworkToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_NetworkToEnvironment {
-		ids = append(ids, id)
+// NetworkToEnvironmentID returns the "NetworkToEnvironment" edge ID in the mutation.
+func (m *NetworkMutation) NetworkToEnvironmentID() (id int, exists bool) {
+	if m._NetworkToEnvironment != nil {
+		return *m._NetworkToEnvironment, true
 	}
 	return
 }
 
 // NetworkToEnvironmentIDs returns the "NetworkToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NetworkToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *NetworkMutation) NetworkToEnvironmentIDs() (ids []int) {
-	for id := range m._NetworkToEnvironment {
-		ids = append(ids, id)
+	if id := m._NetworkToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -16471,7 +15141,6 @@ func (m *NetworkMutation) NetworkToEnvironmentIDs() (ids []int) {
 func (m *NetworkMutation) ResetNetworkToEnvironment() {
 	m._NetworkToEnvironment = nil
 	m.cleared_NetworkToEnvironment = false
-	m.removed_NetworkToEnvironment = nil
 }
 
 // AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by ids.
@@ -16778,10 +15447,7 @@ func (m *NetworkMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NetworkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m._NetworkToTag != nil {
-		edges = append(edges, network.EdgeNetworkToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m._NetworkToEnvironment != nil {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
 	}
@@ -16798,18 +15464,10 @@ func (m *NetworkMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *NetworkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case network.EdgeNetworkToTag:
-		ids := make([]ent.Value, 0, len(m._NetworkToTag))
-		for id := range m._NetworkToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case network.EdgeNetworkToEnvironment:
-		ids := make([]ent.Value, 0, len(m._NetworkToEnvironment))
-		for id := range m._NetworkToEnvironment {
-			ids = append(ids, id)
+		if id := m._NetworkToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case network.EdgeNetworkToHostDependency:
 		ids := make([]ent.Value, 0, len(m._NetworkToHostDependency))
 		for id := range m._NetworkToHostDependency {
@@ -16828,13 +15486,7 @@ func (m *NetworkMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NetworkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removed_NetworkToTag != nil {
-		edges = append(edges, network.EdgeNetworkToTag)
-	}
-	if m.removed_NetworkToEnvironment != nil {
-		edges = append(edges, network.EdgeNetworkToEnvironment)
-	}
+	edges := make([]string, 0, 3)
 	if m.removed_NetworkToHostDependency != nil {
 		edges = append(edges, network.EdgeNetworkToHostDependency)
 	}
@@ -16848,18 +15500,6 @@ func (m *NetworkMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *NetworkMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case network.EdgeNetworkToTag:
-		ids := make([]ent.Value, 0, len(m.removed_NetworkToTag))
-		for id := range m.removed_NetworkToTag {
-			ids = append(ids, id)
-		}
-		return ids
-	case network.EdgeNetworkToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_NetworkToEnvironment))
-		for id := range m.removed_NetworkToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	case network.EdgeNetworkToHostDependency:
 		ids := make([]ent.Value, 0, len(m.removed_NetworkToHostDependency))
 		for id := range m.removed_NetworkToHostDependency {
@@ -16878,10 +15518,7 @@ func (m *NetworkMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NetworkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.cleared_NetworkToTag {
-		edges = append(edges, network.EdgeNetworkToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m.cleared_NetworkToEnvironment {
 		edges = append(edges, network.EdgeNetworkToEnvironment)
 	}
@@ -16898,8 +15535,6 @@ func (m *NetworkMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *NetworkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case network.EdgeNetworkToTag:
-		return m.cleared_NetworkToTag
 	case network.EdgeNetworkToEnvironment:
 		return m.cleared_NetworkToEnvironment
 	case network.EdgeNetworkToHostDependency:
@@ -16914,6 +15549,9 @@ func (m *NetworkMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *NetworkMutation) ClearEdge(name string) error {
 	switch name {
+	case network.EdgeNetworkToEnvironment:
+		m.ClearNetworkToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Network unique edge %s", name)
 }
@@ -16922,9 +15560,6 @@ func (m *NetworkMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NetworkMutation) ResetEdge(name string) error {
 	switch name {
-	case network.EdgeNetworkToTag:
-		m.ResetNetworkToTag()
-		return nil
 	case network.EdgeNetworkToEnvironment:
 		m.ResetNetworkToEnvironment()
 		return nil
@@ -17893,8 +16528,7 @@ type ProvisionedHostMutation struct {
 	_ProvisionedHostToAgentStatus               map[int]struct{}
 	removed_ProvisionedHostToAgentStatus        map[int]struct{}
 	cleared_ProvisionedHostToAgentStatus        bool
-	_ProvisionedHostToPlan                      map[int]struct{}
-	removed_ProvisionedHostToPlan               map[int]struct{}
+	_ProvisionedHostToPlan                      *int
 	cleared_ProvisionedHostToPlan               bool
 	_ProvisionedHostToGinFileMiddleware         *int
 	cleared_ProvisionedHostToGinFileMiddleware  bool
@@ -18280,14 +16914,9 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
 	m.removed_ProvisionedHostToAgentStatus = nil
 }
 
-// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToPlanIDs(ids ...int) {
-	if m._ProvisionedHostToPlan == nil {
-		m._ProvisionedHostToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ProvisionedHostToPlan[ids[i]] = struct{}{}
-	}
+// SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by id.
+func (m *ProvisionedHostMutation) SetProvisionedHostToPlanID(id int) {
+	m._ProvisionedHostToPlan = &id
 }
 
 // ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
@@ -18300,28 +16929,20 @@ func (m *ProvisionedHostMutation) ProvisionedHostToPlanCleared() bool {
 	return m.cleared_ProvisionedHostToPlan
 }
 
-// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToPlanIDs(ids ...int) {
-	if m.removed_ProvisionedHostToPlan == nil {
-		m.removed_ProvisionedHostToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ProvisionedHostToPlan[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProvisionedHostToPlan returns the removed IDs of the "ProvisionedHostToPlan" edge to the Plan entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToPlanIDs() (ids []int) {
-	for id := range m.removed_ProvisionedHostToPlan {
-		ids = append(ids, id)
+// ProvisionedHostToPlanID returns the "ProvisionedHostToPlan" edge ID in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanID() (id int, exists bool) {
+	if m._ProvisionedHostToPlan != nil {
+		return *m._ProvisionedHostToPlan, true
 	}
 	return
 }
 
 // ProvisionedHostToPlanIDs returns the "ProvisionedHostToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProvisionedHostToPlanID instead. It exists only for internal usage by the builders.
 func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []int) {
-	for id := range m._ProvisionedHostToPlan {
-		ids = append(ids, id)
+	if id := m._ProvisionedHostToPlan; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -18330,7 +16951,6 @@ func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []int) {
 func (m *ProvisionedHostMutation) ResetProvisionedHostToPlan() {
 	m._ProvisionedHostToPlan = nil
 	m.cleared_ProvisionedHostToPlan = false
-	m.removed_ProvisionedHostToPlan = nil
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
@@ -18546,11 +17166,9 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case provisionedhost.EdgeProvisionedHostToPlan:
-		ids := make([]ent.Value, 0, len(m._ProvisionedHostToPlan))
-		for id := range m._ProvisionedHostToPlan {
-			ids = append(ids, id)
+		if id := m._ProvisionedHostToPlan; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
 		if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
 			return []ent.Value{*id}
@@ -18568,9 +17186,6 @@ func (m *ProvisionedHostMutation) RemovedEdges() []string {
 	if m.removed_ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
 	}
-	if m.removed_ProvisionedHostToPlan != nil {
-		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
-	}
 	return edges
 }
 
@@ -18587,12 +17202,6 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToAgentStatus))
 		for id := range m.removed_ProvisionedHostToAgentStatus {
-			ids = append(ids, id)
-		}
-		return ids
-	case provisionedhost.EdgeProvisionedHostToPlan:
-		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToPlan))
-		for id := range m.removed_ProvisionedHostToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -18669,6 +17278,9 @@ func (m *ProvisionedHostMutation) ClearEdge(name string) error {
 		return nil
 	case provisionedhost.EdgeProvisionedHostToEndStepPlan:
 		m.ClearProvisionedHostToEndStepPlan()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToPlan:
+		m.ClearProvisionedHostToPlan()
 		return nil
 	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
 		m.ClearProvisionedHostToGinFileMiddleware()
@@ -20437,17 +19049,13 @@ type ScriptMutation struct {
 	abs_path                    *string
 	tags                        *map[string]string
 	clearedFields               map[string]struct{}
-	_ScriptToTag                map[int]struct{}
-	removed_ScriptToTag         map[int]struct{}
-	cleared_ScriptToTag         bool
 	_ScriptToUser               map[int]struct{}
 	removed_ScriptToUser        map[int]struct{}
 	cleared_ScriptToUser        bool
 	_ScriptToFinding            map[int]struct{}
 	removed_ScriptToFinding     map[int]struct{}
 	cleared_ScriptToFinding     bool
-	_ScriptToEnvironment        map[int]struct{}
-	removed_ScriptToEnvironment map[int]struct{}
+	_ScriptToEnvironment        *int
 	cleared_ScriptToEnvironment bool
 	done                        bool
 	oldValue                    func(context.Context) (*Script, error)
@@ -21077,59 +19685,6 @@ func (m *ScriptMutation) ResetTags() {
 	m.tags = nil
 }
 
-// AddScriptToTagIDs adds the "ScriptToTag" edge to the Tag entity by ids.
-func (m *ScriptMutation) AddScriptToTagIDs(ids ...int) {
-	if m._ScriptToTag == nil {
-		m._ScriptToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ScriptToTag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearScriptToTag clears the "ScriptToTag" edge to the Tag entity.
-func (m *ScriptMutation) ClearScriptToTag() {
-	m.cleared_ScriptToTag = true
-}
-
-// ScriptToTagCleared returns if the "ScriptToTag" edge to the Tag entity was cleared.
-func (m *ScriptMutation) ScriptToTagCleared() bool {
-	return m.cleared_ScriptToTag
-}
-
-// RemoveScriptToTagIDs removes the "ScriptToTag" edge to the Tag entity by IDs.
-func (m *ScriptMutation) RemoveScriptToTagIDs(ids ...int) {
-	if m.removed_ScriptToTag == nil {
-		m.removed_ScriptToTag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ScriptToTag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedScriptToTag returns the removed IDs of the "ScriptToTag" edge to the Tag entity.
-func (m *ScriptMutation) RemovedScriptToTagIDs() (ids []int) {
-	for id := range m.removed_ScriptToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ScriptToTagIDs returns the "ScriptToTag" edge IDs in the mutation.
-func (m *ScriptMutation) ScriptToTagIDs() (ids []int) {
-	for id := range m._ScriptToTag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetScriptToTag resets all changes to the "ScriptToTag" edge.
-func (m *ScriptMutation) ResetScriptToTag() {
-	m._ScriptToTag = nil
-	m.cleared_ScriptToTag = false
-	m.removed_ScriptToTag = nil
-}
-
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by ids.
 func (m *ScriptMutation) AddScriptToUserIDs(ids ...int) {
 	if m._ScriptToUser == nil {
@@ -21236,14 +19791,9 @@ func (m *ScriptMutation) ResetScriptToFinding() {
 	m.removed_ScriptToFinding = nil
 }
 
-// AddScriptToEnvironmentIDs adds the "ScriptToEnvironment" edge to the Environment entity by ids.
-func (m *ScriptMutation) AddScriptToEnvironmentIDs(ids ...int) {
-	if m._ScriptToEnvironment == nil {
-		m._ScriptToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._ScriptToEnvironment[ids[i]] = struct{}{}
-	}
+// SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by id.
+func (m *ScriptMutation) SetScriptToEnvironmentID(id int) {
+	m._ScriptToEnvironment = &id
 }
 
 // ClearScriptToEnvironment clears the "ScriptToEnvironment" edge to the Environment entity.
@@ -21256,28 +19806,20 @@ func (m *ScriptMutation) ScriptToEnvironmentCleared() bool {
 	return m.cleared_ScriptToEnvironment
 }
 
-// RemoveScriptToEnvironmentIDs removes the "ScriptToEnvironment" edge to the Environment entity by IDs.
-func (m *ScriptMutation) RemoveScriptToEnvironmentIDs(ids ...int) {
-	if m.removed_ScriptToEnvironment == nil {
-		m.removed_ScriptToEnvironment = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_ScriptToEnvironment[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedScriptToEnvironment returns the removed IDs of the "ScriptToEnvironment" edge to the Environment entity.
-func (m *ScriptMutation) RemovedScriptToEnvironmentIDs() (ids []int) {
-	for id := range m.removed_ScriptToEnvironment {
-		ids = append(ids, id)
+// ScriptToEnvironmentID returns the "ScriptToEnvironment" edge ID in the mutation.
+func (m *ScriptMutation) ScriptToEnvironmentID() (id int, exists bool) {
+	if m._ScriptToEnvironment != nil {
+		return *m._ScriptToEnvironment, true
 	}
 	return
 }
 
 // ScriptToEnvironmentIDs returns the "ScriptToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ScriptToEnvironmentID instead. It exists only for internal usage by the builders.
 func (m *ScriptMutation) ScriptToEnvironmentIDs() (ids []int) {
-	for id := range m._ScriptToEnvironment {
-		ids = append(ids, id)
+	if id := m._ScriptToEnvironment; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -21286,7 +19828,6 @@ func (m *ScriptMutation) ScriptToEnvironmentIDs() (ids []int) {
 func (m *ScriptMutation) ResetScriptToEnvironment() {
 	m._ScriptToEnvironment = nil
 	m.cleared_ScriptToEnvironment = false
-	m.removed_ScriptToEnvironment = nil
 }
 
 // Op returns the operation name.
@@ -21650,10 +20191,7 @@ func (m *ScriptMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ScriptMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m._ScriptToTag != nil {
-		edges = append(edges, script.EdgeScriptToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m._ScriptToUser != nil {
 		edges = append(edges, script.EdgeScriptToUser)
 	}
@@ -21670,12 +20208,6 @@ func (m *ScriptMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ScriptMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case script.EdgeScriptToTag:
-		ids := make([]ent.Value, 0, len(m._ScriptToTag))
-		for id := range m._ScriptToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case script.EdgeScriptToUser:
 		ids := make([]ent.Value, 0, len(m._ScriptToUser))
 		for id := range m._ScriptToUser {
@@ -21689,29 +20221,21 @@ func (m *ScriptMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case script.EdgeScriptToEnvironment:
-		ids := make([]ent.Value, 0, len(m._ScriptToEnvironment))
-		for id := range m._ScriptToEnvironment {
-			ids = append(ids, id)
+		if id := m._ScriptToEnvironment; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ScriptMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removed_ScriptToTag != nil {
-		edges = append(edges, script.EdgeScriptToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m.removed_ScriptToUser != nil {
 		edges = append(edges, script.EdgeScriptToUser)
 	}
 	if m.removed_ScriptToFinding != nil {
 		edges = append(edges, script.EdgeScriptToFinding)
-	}
-	if m.removed_ScriptToEnvironment != nil {
-		edges = append(edges, script.EdgeScriptToEnvironment)
 	}
 	return edges
 }
@@ -21720,12 +20244,6 @@ func (m *ScriptMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ScriptMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case script.EdgeScriptToTag:
-		ids := make([]ent.Value, 0, len(m.removed_ScriptToTag))
-		for id := range m.removed_ScriptToTag {
-			ids = append(ids, id)
-		}
-		return ids
 	case script.EdgeScriptToUser:
 		ids := make([]ent.Value, 0, len(m.removed_ScriptToUser))
 		for id := range m.removed_ScriptToUser {
@@ -21738,22 +20256,13 @@ func (m *ScriptMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case script.EdgeScriptToEnvironment:
-		ids := make([]ent.Value, 0, len(m.removed_ScriptToEnvironment))
-		for id := range m.removed_ScriptToEnvironment {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ScriptMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.cleared_ScriptToTag {
-		edges = append(edges, script.EdgeScriptToTag)
-	}
+	edges := make([]string, 0, 3)
 	if m.cleared_ScriptToUser {
 		edges = append(edges, script.EdgeScriptToUser)
 	}
@@ -21770,8 +20279,6 @@ func (m *ScriptMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ScriptMutation) EdgeCleared(name string) bool {
 	switch name {
-	case script.EdgeScriptToTag:
-		return m.cleared_ScriptToTag
 	case script.EdgeScriptToUser:
 		return m.cleared_ScriptToUser
 	case script.EdgeScriptToFinding:
@@ -21786,6 +20293,9 @@ func (m *ScriptMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ScriptMutation) ClearEdge(name string) error {
 	switch name {
+	case script.EdgeScriptToEnvironment:
+		m.ClearScriptToEnvironment()
+		return nil
 	}
 	return fmt.Errorf("unknown Script unique edge %s", name)
 }
@@ -21794,9 +20304,6 @@ func (m *ScriptMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ScriptMutation) ResetEdge(name string) error {
 	switch name {
-	case script.EdgeScriptToTag:
-		m.ResetScriptToTag()
-		return nil
 	case script.EdgeScriptToUser:
 		m.ResetScriptToUser()
 		return nil
@@ -23197,8 +21704,7 @@ type TeamMutation struct {
 	_TeamToProvisionedNetwork        map[int]struct{}
 	removed_TeamToProvisionedNetwork map[int]struct{}
 	cleared_TeamToProvisionedNetwork bool
-	_TeamToPlan                      map[int]struct{}
-	removed_TeamToPlan               map[int]struct{}
+	_TeamToPlan                      *int
 	cleared_TeamToPlan               bool
 	done                             bool
 	oldValue                         func(context.Context) (*Team, error)
@@ -23471,14 +21977,9 @@ func (m *TeamMutation) ResetTeamToProvisionedNetwork() {
 	m.removed_TeamToProvisionedNetwork = nil
 }
 
-// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by ids.
-func (m *TeamMutation) AddTeamToPlanIDs(ids ...int) {
-	if m._TeamToPlan == nil {
-		m._TeamToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._TeamToPlan[ids[i]] = struct{}{}
-	}
+// SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by id.
+func (m *TeamMutation) SetTeamToPlanID(id int) {
+	m._TeamToPlan = &id
 }
 
 // ClearTeamToPlan clears the "TeamToPlan" edge to the Plan entity.
@@ -23491,28 +21992,20 @@ func (m *TeamMutation) TeamToPlanCleared() bool {
 	return m.cleared_TeamToPlan
 }
 
-// RemoveTeamToPlanIDs removes the "TeamToPlan" edge to the Plan entity by IDs.
-func (m *TeamMutation) RemoveTeamToPlanIDs(ids ...int) {
-	if m.removed_TeamToPlan == nil {
-		m.removed_TeamToPlan = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.removed_TeamToPlan[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTeamToPlan returns the removed IDs of the "TeamToPlan" edge to the Plan entity.
-func (m *TeamMutation) RemovedTeamToPlanIDs() (ids []int) {
-	for id := range m.removed_TeamToPlan {
-		ids = append(ids, id)
+// TeamToPlanID returns the "TeamToPlan" edge ID in the mutation.
+func (m *TeamMutation) TeamToPlanID() (id int, exists bool) {
+	if m._TeamToPlan != nil {
+		return *m._TeamToPlan, true
 	}
 	return
 }
 
 // TeamToPlanIDs returns the "TeamToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamToPlanID instead. It exists only for internal usage by the builders.
 func (m *TeamMutation) TeamToPlanIDs() (ids []int) {
-	for id := range m._TeamToPlan {
-		ids = append(ids, id)
+	if id := m._TeamToPlan; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -23521,7 +22014,6 @@ func (m *TeamMutation) TeamToPlanIDs() (ids []int) {
 func (m *TeamMutation) ResetTeamToPlan() {
 	m._TeamToPlan = nil
 	m.cleared_TeamToPlan = false
-	m.removed_TeamToPlan = nil
 }
 
 // Op returns the operation name.
@@ -23687,11 +22179,9 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case team.EdgeTeamToPlan:
-		ids := make([]ent.Value, 0, len(m._TeamToPlan))
-		for id := range m._TeamToPlan {
-			ids = append(ids, id)
+		if id := m._TeamToPlan; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -23701,9 +22191,6 @@ func (m *TeamMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.removed_TeamToProvisionedNetwork != nil {
 		edges = append(edges, team.EdgeTeamToProvisionedNetwork)
-	}
-	if m.removed_TeamToPlan != nil {
-		edges = append(edges, team.EdgeTeamToPlan)
 	}
 	return edges
 }
@@ -23715,12 +22202,6 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 	case team.EdgeTeamToProvisionedNetwork:
 		ids := make([]ent.Value, 0, len(m.removed_TeamToProvisionedNetwork))
 		for id := range m.removed_TeamToProvisionedNetwork {
-			ids = append(ids, id)
-		}
-		return ids
-	case team.EdgeTeamToPlan:
-		ids := make([]ent.Value, 0, len(m.removed_TeamToPlan))
-		for id := range m.removed_TeamToPlan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -23771,6 +22252,9 @@ func (m *TeamMutation) ClearEdge(name string) error {
 		return nil
 	case team.EdgeTeamToStatus:
 		m.ClearTeamToStatus()
+		return nil
+	case team.EdgeTeamToPlan:
+		m.ClearTeamToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Team unique edge %s", name)

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileExtractCreate is the builder for creating a FileExtract entity.
@@ -51,34 +50,23 @@ func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
 	return fec
 }
 
-// AddFileExtractToTagIDs adds the "FileExtractToTag" edge to the Tag entity by IDs.
-func (fec *FileExtractCreate) AddFileExtractToTagIDs(ids ...int) *FileExtractCreate {
-	fec.mutation.AddFileExtractToTagIDs(ids...)
+// SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
+func (fec *FileExtractCreate) SetFileExtractToEnvironmentID(id int) *FileExtractCreate {
+	fec.mutation.SetFileExtractToEnvironmentID(id)
 	return fec
 }
 
-// AddFileExtractToTag adds the "FileExtractToTag" edges to the Tag entity.
-func (fec *FileExtractCreate) AddFileExtractToTag(t ...*Tag) *FileExtractCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fec *FileExtractCreate) SetNillableFileExtractToEnvironmentID(id *int) *FileExtractCreate {
+	if id != nil {
+		fec = fec.SetFileExtractToEnvironmentID(*id)
 	}
-	return fec.AddFileExtractToTagIDs(ids...)
-}
-
-// AddFileExtractToEnvironmentIDs adds the "FileExtractToEnvironment" edge to the Environment entity by IDs.
-func (fec *FileExtractCreate) AddFileExtractToEnvironmentIDs(ids ...int) *FileExtractCreate {
-	fec.mutation.AddFileExtractToEnvironmentIDs(ids...)
 	return fec
 }
 
-// AddFileExtractToEnvironment adds the "FileExtractToEnvironment" edges to the Environment entity.
-func (fec *FileExtractCreate) AddFileExtractToEnvironment(e ...*Environment) *FileExtractCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fec.AddFileExtractToEnvironmentIDs(ids...)
+// SetFileExtractToEnvironment sets the "FileExtractToEnvironment" edge to the Environment entity.
+func (fec *FileExtractCreate) SetFileExtractToEnvironment(e *Environment) *FileExtractCreate {
+	return fec.SetFileExtractToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -214,31 +202,12 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		})
 		_node.Tags = value
 	}
-	if nodes := fec.mutation.FileExtractToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.FileExtractToTagTable,
-			Columns: []string{fileextract.FileExtractToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := fec.mutation.FileExtractToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   fileextract.FileExtractToEnvironmentTable,
-			Columns: fileextract.FileExtractToEnvironmentPrimaryKey,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

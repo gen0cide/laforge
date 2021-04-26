@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/environment"
 )
 
 // Command is the model entity for the Command schema.
@@ -45,25 +46,21 @@ type Command struct {
 	// Edges put into the main struct to be loaded via hcl
 	// CommandToUser holds the value of the CommandToUser edge.
 	HCLCommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
-	// CommandToTag holds the value of the CommandToTag edge.
-	HCLCommandToTag []*Tag `json:"CommandToTag,omitempty"`
 	// CommandToEnvironment holds the value of the CommandToEnvironment edge.
-	HCLCommandToEnvironment []*Environment `json:"CommandToEnvironment,omitempty"`
+	HCLCommandToEnvironment *Environment `json:"CommandToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_command *int
 }
 
 // CommandEdges holds the relations/edges for other nodes in the graph.
 type CommandEdges struct {
 	// CommandToUser holds the value of the CommandToUser edge.
 	CommandToUser []*User `json:"CommandToUser,omitempty" hcl:"maintainer,block"`
-	// CommandToTag holds the value of the CommandToTag edge.
-	CommandToTag []*Tag `json:"CommandToTag,omitempty"`
 	// CommandToEnvironment holds the value of the CommandToEnvironment edge.
-	CommandToEnvironment []*Environment `json:"CommandToEnvironment,omitempty"`
+	CommandToEnvironment *Environment `json:"CommandToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // CommandToUserOrErr returns the CommandToUser value or an error if the edge
@@ -75,19 +72,15 @@ func (e CommandEdges) CommandToUserOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "CommandToUser"}
 }
 
-// CommandToTagOrErr returns the CommandToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e CommandEdges) CommandToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[1] {
-		return e.CommandToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "CommandToTag"}
-}
-
 // CommandToEnvironmentOrErr returns the CommandToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e CommandEdges) CommandToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[2] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CommandEdges) CommandToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[1] {
+		if e.CommandToEnvironment == nil {
+			// The edge CommandToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.CommandToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "CommandToEnvironment"}
@@ -106,6 +99,8 @@ func (*Command) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case command.FieldHclID, command.FieldName, command.FieldDescription, command.FieldProgram:
 			values[i] = &sql.NullString{}
+		case command.ForeignKeys[0]: // environment_environment_to_command
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Command", columns[i])
 		}
@@ -202,6 +197,13 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case command.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_command", value)
+			} else if value.Valid {
+				c.environment_environment_to_command = new(int)
+				*c.environment_environment_to_command = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -210,11 +212,6 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 // QueryCommandToUser queries the "CommandToUser" edge of the Command entity.
 func (c *Command) QueryCommandToUser() *UserQuery {
 	return (&CommandClient{config: c.config}).QueryCommandToUser(c)
-}
-
-// QueryCommandToTag queries the "CommandToTag" edge of the Command entity.
-func (c *Command) QueryCommandToTag() *TagQuery {
-	return (&CommandClient{config: c.config}).QueryCommandToTag(c)
 }
 
 // QueryCommandToEnvironment queries the "CommandToEnvironment" edge of the Command entity.

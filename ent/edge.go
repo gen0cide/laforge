@@ -4,14 +4,6 @@ package ent
 
 import "context"
 
-func (as *AgentStatus) AgentStatusToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := as.Edges.AgentStatusToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = as.QueryAgentStatusToTag().All(ctx)
-	}
-	return result, err
-}
-
 func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
 	result, err := as.Edges.AgentStatusToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
@@ -76,28 +68,12 @@ func (c *Command) CommandToUser(ctx context.Context) ([]*User, error) {
 	return result, err
 }
 
-func (c *Command) CommandToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := c.Edges.CommandToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = c.QueryCommandToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (c *Command) CommandToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (c *Command) CommandToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := c.Edges.CommandToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = c.QueryCommandToEnvironment().All(ctx)
+		result, err = c.QueryCommandToEnvironment().Only(ctx)
 	}
-	return result, err
-}
-
-func (c *Competition) CompetitionToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := c.Edges.CompetitionToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = c.QueryCompetitionToTag().All(ctx)
-	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (c *Competition) CompetitionToDNS(ctx context.Context) ([]*DNS, error) {
@@ -124,14 +100,6 @@ func (c *Competition) CompetitionToBuild(ctx context.Context) ([]*Build, error) 
 	return result, err
 }
 
-func (d *DNS) DNSToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := d.Edges.DNSToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = d.QueryDNSToTag().All(ctx)
-	}
-	return result, err
-}
-
 func (d *DNS) DNSToEnvironment(ctx context.Context) ([]*Environment, error) {
 	result, err := d.Edges.DNSToEnvironmentOrErr()
 	if IsNotLoaded(err) {
@@ -148,44 +116,20 @@ func (d *DNS) DNSToCompetition(ctx context.Context) ([]*Competition, error) {
 	return result, err
 }
 
-func (dr *DNSRecord) DNSRecordToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := dr.Edges.DNSRecordToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = dr.QueryDNSRecordToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (dr *DNSRecord) DNSRecordToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (dr *DNSRecord) DNSRecordToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := dr.Edges.DNSRecordToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = dr.QueryDNSRecordToEnvironment().All(ctx)
+		result, err = dr.QueryDNSRecordToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (d *Disk) DiskToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := d.Edges.DiskToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = d.QueryDiskToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (d *Disk) DiskToHost(ctx context.Context) ([]*Host, error) {
+func (d *Disk) DiskToHost(ctx context.Context) (*Host, error) {
 	result, err := d.Edges.DiskToHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = d.QueryDiskToHost().All(ctx)
+		result, err = d.QueryDiskToHost().Only(ctx)
 	}
-	return result, err
-}
-
-func (e *Environment) EnvironmentToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := e.Edges.EnvironmentToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = e.QueryEnvironmentToTag().All(ctx)
-	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (e *Environment) EnvironmentToUser(ctx context.Context) ([]*User, error) {
@@ -316,52 +260,28 @@ func (e *Environment) EnvironmentToBuild(ctx context.Context) ([]*Build, error) 
 	return result, err
 }
 
-func (fd *FileDelete) FileDeleteToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := fd.Edges.FileDeleteToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = fd.QueryFileDeleteToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (fd *FileDelete) FileDeleteToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (fd *FileDelete) FileDeleteToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := fd.Edges.FileDeleteToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = fd.QueryFileDeleteToEnvironment().All(ctx)
+		result, err = fd.QueryFileDeleteToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (fd *FileDownload) FileDownloadToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := fd.Edges.FileDownloadToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = fd.QueryFileDownloadToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (fd *FileDownload) FileDownloadToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (fd *FileDownload) FileDownloadToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := fd.Edges.FileDownloadToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = fd.QueryFileDownloadToEnvironment().All(ctx)
+		result, err = fd.QueryFileDownloadToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (fe *FileExtract) FileExtractToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := fe.Edges.FileExtractToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = fe.QueryFileExtractToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (fe *FileExtract) FileExtractToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (fe *FileExtract) FileExtractToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := fe.Edges.FileExtractToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = fe.QueryFileExtractToEnvironment().All(ctx)
+		result, err = fe.QueryFileExtractToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (f *Finding) FindingToUser(ctx context.Context) ([]*User, error) {
@@ -372,36 +292,28 @@ func (f *Finding) FindingToUser(ctx context.Context) ([]*User, error) {
 	return result, err
 }
 
-func (f *Finding) FindingToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := f.Edges.FindingToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = f.QueryFindingToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (f *Finding) FindingToHost(ctx context.Context) ([]*Host, error) {
+func (f *Finding) FindingToHost(ctx context.Context) (*Host, error) {
 	result, err := f.Edges.FindingToHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = f.QueryFindingToHost().All(ctx)
+		result, err = f.QueryFindingToHost().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (f *Finding) FindingToScript(ctx context.Context) ([]*Script, error) {
+func (f *Finding) FindingToScript(ctx context.Context) (*Script, error) {
 	result, err := f.Edges.FindingToScriptOrErr()
 	if IsNotLoaded(err) {
-		result, err = f.QueryFindingToScript().All(ctx)
+		result, err = f.QueryFindingToScript().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
-func (f *Finding) FindingToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (f *Finding) FindingToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := f.Edges.FindingToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = f.QueryFindingToEnvironment().All(ctx)
+		result, err = f.QueryFindingToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
@@ -420,12 +332,12 @@ func (gfm *GinFileMiddleware) GinFileMiddlewareToProvisioningStep(ctx context.Co
 	return result, MaskNotFound(err)
 }
 
-func (h *Host) HostToDisk(ctx context.Context) ([]*Disk, error) {
+func (h *Host) HostToDisk(ctx context.Context) (*Disk, error) {
 	result, err := h.Edges.HostToDiskOrErr()
 	if IsNotLoaded(err) {
-		result, err = h.QueryHostToDisk().All(ctx)
+		result, err = h.QueryHostToDisk().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (h *Host) HostToUser(ctx context.Context) ([]*User, error) {
@@ -436,20 +348,12 @@ func (h *Host) HostToUser(ctx context.Context) ([]*User, error) {
 	return result, err
 }
 
-func (h *Host) HostToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := h.Edges.HostToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = h.QueryHostToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (h *Host) HostToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (h *Host) HostToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := h.Edges.HostToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = h.QueryHostToEnvironment().All(ctx)
+		result, err = h.QueryHostToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (h *Host) HostToIncludedNetwork(ctx context.Context) ([]*IncludedNetwork, error) {
@@ -508,12 +412,12 @@ func (hd *HostDependency) HostDependencyToEnvironment(ctx context.Context) (*Env
 	return result, MaskNotFound(err)
 }
 
-func (i *Identity) IdentityToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (i *Identity) IdentityToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := i.Edges.IdentityToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = i.QueryIdentityToEnvironment().All(ctx)
+		result, err = i.QueryIdentityToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (in *IncludedNetwork) IncludedNetworkToTag(ctx context.Context) ([]*Tag, error) {
@@ -548,20 +452,12 @@ func (in *IncludedNetwork) IncludedNetworkToEnvironment(ctx context.Context) ([]
 	return result, err
 }
 
-func (n *Network) NetworkToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := n.Edges.NetworkToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = n.QueryNetworkToTag().All(ctx)
-	}
-	return result, err
-}
-
-func (n *Network) NetworkToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (n *Network) NetworkToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := n.Edges.NetworkToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = n.QueryNetworkToEnvironment().All(ctx)
+		result, err = n.QueryNetworkToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (n *Network) NetworkToHostDependency(ctx context.Context) ([]*HostDependency, error) {
@@ -684,12 +580,12 @@ func (ph *ProvisionedHost) ProvisionedHostToAgentStatus(ctx context.Context) ([]
 	return result, err
 }
 
-func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) ([]*Plan, error) {
+func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) (*Plan, error) {
 	result, err := ph.Edges.ProvisionedHostToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = ph.QueryProvisionedHostToPlan().All(ctx)
+		result, err = ph.QueryProvisionedHostToPlan().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (ph *ProvisionedHost) ProvisionedHostToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {
@@ -828,14 +724,6 @@ func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Cont
 	return result, MaskNotFound(err)
 }
 
-func (s *Script) ScriptToTag(ctx context.Context) ([]*Tag, error) {
-	result, err := s.Edges.ScriptToTagOrErr()
-	if IsNotLoaded(err) {
-		result, err = s.QueryScriptToTag().All(ctx)
-	}
-	return result, err
-}
-
 func (s *Script) ScriptToUser(ctx context.Context) ([]*User, error) {
 	result, err := s.Edges.ScriptToUserOrErr()
 	if IsNotLoaded(err) {
@@ -852,12 +740,12 @@ func (s *Script) ScriptToFinding(ctx context.Context) ([]*Finding, error) {
 	return result, err
 }
 
-func (s *Script) ScriptToEnvironment(ctx context.Context) ([]*Environment, error) {
+func (s *Script) ScriptToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := s.Edges.ScriptToEnvironmentOrErr()
 	if IsNotLoaded(err) {
-		result, err = s.QueryScriptToEnvironment().All(ctx)
+		result, err = s.QueryScriptToEnvironment().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (s *Status) StatusToBuild(ctx context.Context) (*Build, error) {
@@ -924,12 +812,12 @@ func (t *Team) TeamToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetw
 	return result, err
 }
 
-func (t *Team) TeamToPlan(ctx context.Context) ([]*Plan, error) {
+func (t *Team) TeamToPlan(ctx context.Context) (*Plan, error) {
 	result, err := t.Edges.TeamToPlanOrErr()
 	if IsNotLoaded(err) {
-		result, err = t.QueryTeamToPlan().All(ctx)
+		result, err = t.QueryTeamToPlan().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (u *User) UserToTag(ctx context.Context) ([]*Tag, error) {

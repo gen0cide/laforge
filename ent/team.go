@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 )
@@ -31,8 +32,9 @@ type Team struct {
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	HCLTeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
 	// TeamToPlan holds the value of the TeamToPlan edge.
-	HCLTeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
+	HCLTeamToPlan *Plan `json:"TeamToPlan,omitempty"`
 	//
+	plan_plan_to_team  *int
 	team_team_to_build *int
 }
 
@@ -45,7 +47,7 @@ type TeamEdges struct {
 	// TeamToProvisionedNetwork holds the value of the TeamToProvisionedNetwork edge.
 	TeamToProvisionedNetwork []*ProvisionedNetwork `json:"TeamToProvisionedNetwork,omitempty"`
 	// TeamToPlan holds the value of the TeamToPlan edge.
-	TeamToPlan []*Plan `json:"TeamToPlan,omitempty"`
+	TeamToPlan *Plan `json:"TeamToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -89,9 +91,14 @@ func (e TeamEdges) TeamToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error
 }
 
 // TeamToPlanOrErr returns the TeamToPlan value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) TeamToPlanOrErr() ([]*Plan, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) TeamToPlanOrErr() (*Plan, error) {
 	if e.loadedTypes[3] {
+		if e.TeamToPlan == nil {
+			// The edge TeamToPlan was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: plan.Label}
+		}
 		return e.TeamToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "TeamToPlan"}
@@ -104,7 +111,9 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case team.FieldID, team.FieldTeamNumber:
 			values[i] = &sql.NullInt64{}
-		case team.ForeignKeys[0]: // team_team_to_build
+		case team.ForeignKeys[0]: // plan_plan_to_team
+			values[i] = &sql.NullInt64{}
+		case team.ForeignKeys[1]: // team_team_to_build
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
@@ -134,6 +143,13 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 				t.TeamNumber = int(value.Int64)
 			}
 		case team.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_team", value)
+			} else if value.Valid {
+				t.plan_plan_to_team = new(int)
+				*t.plan_plan_to_team = int(value.Int64)
+			}
+		case team.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field team_team_to_build", value)
 			} else if value.Valid {

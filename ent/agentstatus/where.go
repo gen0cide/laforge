@@ -1393,34 +1393,6 @@ func TimestampLTE(v int64) predicate.AgentStatus {
 	})
 }
 
-// HasAgentStatusToTag applies the HasEdge predicate on the "AgentStatusToTag" edge.
-func HasAgentStatusToTag() predicate.AgentStatus {
-	return predicate.AgentStatus(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AgentStatusToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AgentStatusToTagTable, AgentStatusToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentStatusToTagWith applies the HasEdge predicate on the "AgentStatusToTag" edge with a given conditions (other predicates).
-func HasAgentStatusToTagWith(preds ...predicate.Tag) predicate.AgentStatus {
-	return predicate.AgentStatus(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AgentStatusToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AgentStatusToTagTable, AgentStatusToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasAgentStatusToProvisionedHost applies the HasEdge predicate on the "AgentStatusToProvisionedHost" edge.
 func HasAgentStatusToProvisionedHost() predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {

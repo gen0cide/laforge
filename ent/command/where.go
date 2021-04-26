@@ -799,41 +799,13 @@ func HasCommandToUserWith(preds ...predicate.User) predicate.Command {
 	})
 }
 
-// HasCommandToTag applies the HasEdge predicate on the "CommandToTag" edge.
-func HasCommandToTag() predicate.Command {
-	return predicate.Command(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CommandToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CommandToTagTable, CommandToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCommandToTagWith applies the HasEdge predicate on the "CommandToTag" edge with a given conditions (other predicates).
-func HasCommandToTagWith(preds ...predicate.Tag) predicate.Command {
-	return predicate.Command(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CommandToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CommandToTagTable, CommandToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasCommandToEnvironment applies the HasEdge predicate on the "CommandToEnvironment" edge.
 func HasCommandToEnvironment() predicate.Command {
 	return predicate.Command(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CommandToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, CommandToEnvironmentTable, CommandToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, CommandToEnvironmentTable, CommandToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -845,7 +817,7 @@ func HasCommandToEnvironmentWith(preds ...predicate.Environment) predicate.Comma
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CommandToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, CommandToEnvironmentTable, CommandToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, CommandToEnvironmentTable, CommandToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -13,7 +13,6 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -69,64 +68,61 @@ func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
 	return fc.AddFindingToUserIDs(ids...)
 }
 
-// AddFindingToTagIDs adds the "FindingToTag" edge to the Tag entity by IDs.
-func (fc *FindingCreate) AddFindingToTagIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddFindingToTagIDs(ids...)
+// SetFindingToHostID sets the "FindingToHost" edge to the Host entity by ID.
+func (fc *FindingCreate) SetFindingToHostID(id int) *FindingCreate {
+	fc.mutation.SetFindingToHostID(id)
 	return fc
 }
 
-// AddFindingToTag adds the "FindingToTag" edges to the Tag entity.
-func (fc *FindingCreate) AddFindingToTag(t ...*Tag) *FindingCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFindingToHostID sets the "FindingToHost" edge to the Host entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToHostID(id *int) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToHostID(*id)
 	}
-	return fc.AddFindingToTagIDs(ids...)
-}
-
-// AddFindingToHostIDs adds the "FindingToHost" edge to the Host entity by IDs.
-func (fc *FindingCreate) AddFindingToHostIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddFindingToHostIDs(ids...)
 	return fc
 }
 
-// AddFindingToHost adds the "FindingToHost" edges to the Host entity.
-func (fc *FindingCreate) AddFindingToHost(h ...*Host) *FindingCreate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return fc.AddFindingToHostIDs(ids...)
+// SetFindingToHost sets the "FindingToHost" edge to the Host entity.
+func (fc *FindingCreate) SetFindingToHost(h *Host) *FindingCreate {
+	return fc.SetFindingToHostID(h.ID)
 }
 
-// AddFindingToScriptIDs adds the "FindingToScript" edge to the Script entity by IDs.
-func (fc *FindingCreate) AddFindingToScriptIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddFindingToScriptIDs(ids...)
+// SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID.
+func (fc *FindingCreate) SetFindingToScriptID(id int) *FindingCreate {
+	fc.mutation.SetFindingToScriptID(id)
 	return fc
 }
 
-// AddFindingToScript adds the "FindingToScript" edges to the Script entity.
-func (fc *FindingCreate) AddFindingToScript(s ...*Script) *FindingCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToScriptID(id *int) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToScriptID(*id)
 	}
-	return fc.AddFindingToScriptIDs(ids...)
-}
-
-// AddFindingToEnvironmentIDs adds the "FindingToEnvironment" edge to the Environment entity by IDs.
-func (fc *FindingCreate) AddFindingToEnvironmentIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddFindingToEnvironmentIDs(ids...)
 	return fc
 }
 
-// AddFindingToEnvironment adds the "FindingToEnvironment" edges to the Environment entity.
-func (fc *FindingCreate) AddFindingToEnvironment(e ...*Environment) *FindingCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetFindingToScript sets the "FindingToScript" edge to the Script entity.
+func (fc *FindingCreate) SetFindingToScript(s *Script) *FindingCreate {
+	return fc.SetFindingToScriptID(s.ID)
+}
+
+// SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID.
+func (fc *FindingCreate) SetFindingToEnvironmentID(id int) *FindingCreate {
+	fc.mutation.SetFindingToEnvironmentID(id)
+	return fc
+}
+
+// SetNillableFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToEnvironmentID(id *int) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToEnvironmentID(*id)
 	}
-	return fc.AddFindingToEnvironmentIDs(ids...)
+	return fc
+}
+
+// SetFindingToEnvironment sets the "FindingToEnvironment" edge to the Environment entity.
+func (fc *FindingCreate) SetFindingToEnvironment(e *Environment) *FindingCreate {
+	return fc.SetFindingToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FindingMutation object of the builder.
@@ -291,28 +287,9 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.FindingToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   finding.FindingToTagTable,
-			Columns: []string{finding.FindingToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := fc.mutation.FindingToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   finding.FindingToHostTable,
 			Columns: []string{finding.FindingToHostColumn},
@@ -331,10 +308,10 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 	}
 	if nodes := fc.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   finding.FindingToScriptTable,
-			Columns: finding.FindingToScriptPrimaryKey,
+			Columns: []string{finding.FindingToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -350,10 +327,10 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 	}
 	if nodes := fc.mutation.FindingToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   finding.FindingToEnvironmentTable,
-			Columns: finding.FindingToEnvironmentPrimaryKey,
+			Columns: []string{finding.FindingToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

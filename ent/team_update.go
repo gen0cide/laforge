@@ -89,19 +89,23 @@ func (tu *TeamUpdate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *Tea
 	return tu.AddTeamToProvisionedNetworkIDs(ids...)
 }
 
-// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by IDs.
-func (tu *TeamUpdate) AddTeamToPlanIDs(ids ...int) *TeamUpdate {
-	tu.mutation.AddTeamToPlanIDs(ids...)
+// SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
+func (tu *TeamUpdate) SetTeamToPlanID(id int) *TeamUpdate {
+	tu.mutation.SetTeamToPlanID(id)
 	return tu
 }
 
-// AddTeamToPlan adds the "TeamToPlan" edges to the Plan entity.
-func (tu *TeamUpdate) AddTeamToPlan(p ...*Plan) *TeamUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (tu *TeamUpdate) SetNillableTeamToPlanID(id *int) *TeamUpdate {
+	if id != nil {
+		tu = tu.SetTeamToPlanID(*id)
 	}
-	return tu.AddTeamToPlanIDs(ids...)
+	return tu
+}
+
+// SetTeamToPlan sets the "TeamToPlan" edge to the Plan entity.
+func (tu *TeamUpdate) SetTeamToPlan(p *Plan) *TeamUpdate {
+	return tu.SetTeamToPlanID(p.ID)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -142,25 +146,10 @@ func (tu *TeamUpdate) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *
 	return tu.RemoveTeamToProvisionedNetworkIDs(ids...)
 }
 
-// ClearTeamToPlan clears all "TeamToPlan" edges to the Plan entity.
+// ClearTeamToPlan clears the "TeamToPlan" edge to the Plan entity.
 func (tu *TeamUpdate) ClearTeamToPlan() *TeamUpdate {
 	tu.mutation.ClearTeamToPlan()
 	return tu
-}
-
-// RemoveTeamToPlanIDs removes the "TeamToPlan" edge to Plan entities by IDs.
-func (tu *TeamUpdate) RemoveTeamToPlanIDs(ids ...int) *TeamUpdate {
-	tu.mutation.RemoveTeamToPlanIDs(ids...)
-	return tu
-}
-
-// RemoveTeamToPlan removes "TeamToPlan" edges to Plan entities.
-func (tu *TeamUpdate) RemoveTeamToPlan(p ...*Plan) *TeamUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return tu.RemoveTeamToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -386,7 +375,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if tu.mutation.TeamToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
 			Columns: []string{team.TeamToPlanColumn},
@@ -397,31 +386,12 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedTeamToPlanIDs(); len(nodes) > 0 && !tu.mutation.TeamToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.TeamToPlanTable,
-			Columns: []string{team.TeamToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := tu.mutation.TeamToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
 			Columns: []string{team.TeamToPlanColumn},
@@ -514,19 +484,23 @@ func (tuo *TeamUpdateOne) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) 
 	return tuo.AddTeamToProvisionedNetworkIDs(ids...)
 }
 
-// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by IDs.
-func (tuo *TeamUpdateOne) AddTeamToPlanIDs(ids ...int) *TeamUpdateOne {
-	tuo.mutation.AddTeamToPlanIDs(ids...)
+// SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
+func (tuo *TeamUpdateOne) SetTeamToPlanID(id int) *TeamUpdateOne {
+	tuo.mutation.SetTeamToPlanID(id)
 	return tuo
 }
 
-// AddTeamToPlan adds the "TeamToPlan" edges to the Plan entity.
-func (tuo *TeamUpdateOne) AddTeamToPlan(p ...*Plan) *TeamUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (tuo *TeamUpdateOne) SetNillableTeamToPlanID(id *int) *TeamUpdateOne {
+	if id != nil {
+		tuo = tuo.SetTeamToPlanID(*id)
 	}
-	return tuo.AddTeamToPlanIDs(ids...)
+	return tuo
+}
+
+// SetTeamToPlan sets the "TeamToPlan" edge to the Plan entity.
+func (tuo *TeamUpdateOne) SetTeamToPlan(p *Plan) *TeamUpdateOne {
+	return tuo.SetTeamToPlanID(p.ID)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -567,25 +541,10 @@ func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwor
 	return tuo.RemoveTeamToProvisionedNetworkIDs(ids...)
 }
 
-// ClearTeamToPlan clears all "TeamToPlan" edges to the Plan entity.
+// ClearTeamToPlan clears the "TeamToPlan" edge to the Plan entity.
 func (tuo *TeamUpdateOne) ClearTeamToPlan() *TeamUpdateOne {
 	tuo.mutation.ClearTeamToPlan()
 	return tuo
-}
-
-// RemoveTeamToPlanIDs removes the "TeamToPlan" edge to Plan entities by IDs.
-func (tuo *TeamUpdateOne) RemoveTeamToPlanIDs(ids ...int) *TeamUpdateOne {
-	tuo.mutation.RemoveTeamToPlanIDs(ids...)
-	return tuo
-}
-
-// RemoveTeamToPlan removes "TeamToPlan" edges to Plan entities.
-func (tuo *TeamUpdateOne) RemoveTeamToPlan(p ...*Plan) *TeamUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return tuo.RemoveTeamToPlanIDs(ids...)
 }
 
 // Save executes the query and returns the updated Team entity.
@@ -816,7 +775,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	}
 	if tuo.mutation.TeamToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
 			Columns: []string{team.TeamToPlanColumn},
@@ -827,31 +786,12 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedTeamToPlanIDs(); len(nodes) > 0 && !tuo.mutation.TeamToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.TeamToPlanTable,
-			Columns: []string{team.TeamToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := tuo.mutation.TeamToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
 			Columns: []string{team.TeamToPlanColumn},

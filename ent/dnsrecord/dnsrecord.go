@@ -24,25 +24,18 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeDNSRecordToTag holds the string denoting the dnsrecordtotag edge name in mutations.
-	EdgeDNSRecordToTag = "DNSRecordToTag"
 	// EdgeDNSRecordToEnvironment holds the string denoting the dnsrecordtoenvironment edge name in mutations.
 	EdgeDNSRecordToEnvironment = "DNSRecordToEnvironment"
 
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
-	// DNSRecordToTagTable is the table the holds the DNSRecordToTag relation/edge.
-	DNSRecordToTagTable = "tags"
-	// DNSRecordToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	DNSRecordToTagInverseTable = "tags"
-	// DNSRecordToTagColumn is the table column denoting the DNSRecordToTag relation/edge.
-	DNSRecordToTagColumn = "dns_record_dns_record_to_tag"
-	// DNSRecordToEnvironmentTable is the table the holds the DNSRecordToEnvironment relation/edge. The primary key declared below.
-	DNSRecordToEnvironmentTable = "environment_EnvironmentToDNSRecord"
+	// DNSRecordToEnvironmentTable is the table the holds the DNSRecordToEnvironment relation/edge.
+	DNSRecordToEnvironmentTable = "dns_records"
 	// DNSRecordToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	DNSRecordToEnvironmentInverseTable = "environments"
+	// DNSRecordToEnvironmentColumn is the table column denoting the DNSRecordToEnvironment relation/edge.
+	DNSRecordToEnvironmentColumn = "environment_environment_to_dns_record"
 )
 
 // Columns holds all SQL columns for dnsrecord fields.
@@ -58,16 +51,20 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// DNSRecordToEnvironmentPrimaryKey and DNSRecordToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the DNSRecordToEnvironment relation (M2M).
-	DNSRecordToEnvironmentPrimaryKey = []string{"environment_id", "dns_record_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.
+var ForeignKeys = []string{
+	"environment_environment_to_dns_record",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

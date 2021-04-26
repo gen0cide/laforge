@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileDeleteUpdate is the builder for updating FileDelete entities.
@@ -46,34 +45,23 @@ func (fdu *FileDeleteUpdate) SetTags(m map[string]string) *FileDeleteUpdate {
 	return fdu
 }
 
-// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
-func (fdu *FileDeleteUpdate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteUpdate {
-	fdu.mutation.AddFileDeleteToTagIDs(ids...)
+// SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
+func (fdu *FileDeleteUpdate) SetFileDeleteToEnvironmentID(id int) *FileDeleteUpdate {
+	fdu.mutation.SetFileDeleteToEnvironmentID(id)
 	return fdu
 }
 
-// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
-func (fdu *FileDeleteUpdate) AddFileDeleteToTag(t ...*Tag) *FileDeleteUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fdu *FileDeleteUpdate) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteUpdate {
+	if id != nil {
+		fdu = fdu.SetFileDeleteToEnvironmentID(*id)
 	}
-	return fdu.AddFileDeleteToTagIDs(ids...)
-}
-
-// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
-func (fdu *FileDeleteUpdate) AddFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteUpdate {
-	fdu.mutation.AddFileDeleteToEnvironmentIDs(ids...)
 	return fdu
 }
 
-// AddFileDeleteToEnvironment adds the "FileDeleteToEnvironment" edges to the Environment entity.
-func (fdu *FileDeleteUpdate) AddFileDeleteToEnvironment(e ...*Environment) *FileDeleteUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fdu.AddFileDeleteToEnvironmentIDs(ids...)
+// SetFileDeleteToEnvironment sets the "FileDeleteToEnvironment" edge to the Environment entity.
+func (fdu *FileDeleteUpdate) SetFileDeleteToEnvironment(e *Environment) *FileDeleteUpdate {
+	return fdu.SetFileDeleteToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -81,46 +69,10 @@ func (fdu *FileDeleteUpdate) Mutation() *FileDeleteMutation {
 	return fdu.mutation
 }
 
-// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to the Tag entity.
-func (fdu *FileDeleteUpdate) ClearFileDeleteToTag() *FileDeleteUpdate {
-	fdu.mutation.ClearFileDeleteToTag()
-	return fdu
-}
-
-// RemoveFileDeleteToTagIDs removes the "FileDeleteToTag" edge to Tag entities by IDs.
-func (fdu *FileDeleteUpdate) RemoveFileDeleteToTagIDs(ids ...int) *FileDeleteUpdate {
-	fdu.mutation.RemoveFileDeleteToTagIDs(ids...)
-	return fdu
-}
-
-// RemoveFileDeleteToTag removes "FileDeleteToTag" edges to Tag entities.
-func (fdu *FileDeleteUpdate) RemoveFileDeleteToTag(t ...*Tag) *FileDeleteUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return fdu.RemoveFileDeleteToTagIDs(ids...)
-}
-
-// ClearFileDeleteToEnvironment clears all "FileDeleteToEnvironment" edges to the Environment entity.
+// ClearFileDeleteToEnvironment clears the "FileDeleteToEnvironment" edge to the Environment entity.
 func (fdu *FileDeleteUpdate) ClearFileDeleteToEnvironment() *FileDeleteUpdate {
 	fdu.mutation.ClearFileDeleteToEnvironment()
 	return fdu
-}
-
-// RemoveFileDeleteToEnvironmentIDs removes the "FileDeleteToEnvironment" edge to Environment entities by IDs.
-func (fdu *FileDeleteUpdate) RemoveFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteUpdate {
-	fdu.mutation.RemoveFileDeleteToEnvironmentIDs(ids...)
-	return fdu
-}
-
-// RemoveFileDeleteToEnvironment removes "FileDeleteToEnvironment" edges to Environment entities.
-func (fdu *FileDeleteUpdate) RemoveFileDeleteToEnvironment(e ...*Environment) *FileDeleteUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fdu.RemoveFileDeleteToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -213,66 +165,12 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedelete.FieldTags,
 		})
 	}
-	if fdu.mutation.FileDeleteToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fdu.mutation.RemovedFileDeleteToTagIDs(); len(nodes) > 0 && !fdu.mutation.FileDeleteToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fdu.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if fdu.mutation.FileDeleteToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -280,34 +178,15 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fdu.mutation.RemovedFileDeleteToEnvironmentIDs(); len(nodes) > 0 && !fdu.mutation.FileDeleteToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := fdu.mutation.FileDeleteToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -357,34 +236,23 @@ func (fduo *FileDeleteUpdateOne) SetTags(m map[string]string) *FileDeleteUpdateO
 	return fduo
 }
 
-// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
-func (fduo *FileDeleteUpdateOne) AddFileDeleteToTagIDs(ids ...int) *FileDeleteUpdateOne {
-	fduo.mutation.AddFileDeleteToTagIDs(ids...)
+// SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
+func (fduo *FileDeleteUpdateOne) SetFileDeleteToEnvironmentID(id int) *FileDeleteUpdateOne {
+	fduo.mutation.SetFileDeleteToEnvironmentID(id)
 	return fduo
 }
 
-// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
-func (fduo *FileDeleteUpdateOne) AddFileDeleteToTag(t ...*Tag) *FileDeleteUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fduo *FileDeleteUpdateOne) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteUpdateOne {
+	if id != nil {
+		fduo = fduo.SetFileDeleteToEnvironmentID(*id)
 	}
-	return fduo.AddFileDeleteToTagIDs(ids...)
-}
-
-// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
-func (fduo *FileDeleteUpdateOne) AddFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteUpdateOne {
-	fduo.mutation.AddFileDeleteToEnvironmentIDs(ids...)
 	return fduo
 }
 
-// AddFileDeleteToEnvironment adds the "FileDeleteToEnvironment" edges to the Environment entity.
-func (fduo *FileDeleteUpdateOne) AddFileDeleteToEnvironment(e ...*Environment) *FileDeleteUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fduo.AddFileDeleteToEnvironmentIDs(ids...)
+// SetFileDeleteToEnvironment sets the "FileDeleteToEnvironment" edge to the Environment entity.
+func (fduo *FileDeleteUpdateOne) SetFileDeleteToEnvironment(e *Environment) *FileDeleteUpdateOne {
+	return fduo.SetFileDeleteToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -392,46 +260,10 @@ func (fduo *FileDeleteUpdateOne) Mutation() *FileDeleteMutation {
 	return fduo.mutation
 }
 
-// ClearFileDeleteToTag clears all "FileDeleteToTag" edges to the Tag entity.
-func (fduo *FileDeleteUpdateOne) ClearFileDeleteToTag() *FileDeleteUpdateOne {
-	fduo.mutation.ClearFileDeleteToTag()
-	return fduo
-}
-
-// RemoveFileDeleteToTagIDs removes the "FileDeleteToTag" edge to Tag entities by IDs.
-func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToTagIDs(ids ...int) *FileDeleteUpdateOne {
-	fduo.mutation.RemoveFileDeleteToTagIDs(ids...)
-	return fduo
-}
-
-// RemoveFileDeleteToTag removes "FileDeleteToTag" edges to Tag entities.
-func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToTag(t ...*Tag) *FileDeleteUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return fduo.RemoveFileDeleteToTagIDs(ids...)
-}
-
-// ClearFileDeleteToEnvironment clears all "FileDeleteToEnvironment" edges to the Environment entity.
+// ClearFileDeleteToEnvironment clears the "FileDeleteToEnvironment" edge to the Environment entity.
 func (fduo *FileDeleteUpdateOne) ClearFileDeleteToEnvironment() *FileDeleteUpdateOne {
 	fduo.mutation.ClearFileDeleteToEnvironment()
 	return fduo
-}
-
-// RemoveFileDeleteToEnvironmentIDs removes the "FileDeleteToEnvironment" edge to Environment entities by IDs.
-func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteUpdateOne {
-	fduo.mutation.RemoveFileDeleteToEnvironmentIDs(ids...)
-	return fduo
-}
-
-// RemoveFileDeleteToEnvironment removes "FileDeleteToEnvironment" edges to Environment entities.
-func (fduo *FileDeleteUpdateOne) RemoveFileDeleteToEnvironment(e ...*Environment) *FileDeleteUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fduo.RemoveFileDeleteToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated FileDelete entity.
@@ -529,66 +361,12 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 			Column: filedelete.FieldTags,
 		})
 	}
-	if fduo.mutation.FileDeleteToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fduo.mutation.RemovedFileDeleteToTagIDs(); len(nodes) > 0 && !fduo.mutation.FileDeleteToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fduo.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if fduo.mutation.FileDeleteToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -596,34 +374,15 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fduo.mutation.RemovedFileDeleteToEnvironmentIDs(); len(nodes) > 0 && !fduo.mutation.FileDeleteToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := fduo.mutation.FileDeleteToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

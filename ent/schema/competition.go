@@ -38,7 +38,6 @@ func (Competition) Fields() []ent.Field {
 // Edges of the Competition.
 func (Competition) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("CompetitionToTag", Tag.Type),
 		edge.To("CompetitionToDNS", DNS.Type).
 			StructTag(`hcl:"dns,block"`),
 		edge.From("CompetitionToEnvironment", Environment.Type).

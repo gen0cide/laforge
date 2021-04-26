@@ -389,22 +389,6 @@ func (c *AgentStatusClient) GetX(ctx context.Context, id int) *AgentStatus {
 	return obj
 }
 
-// QueryAgentStatusToTag queries the AgentStatusToTag edge of a AgentStatus.
-func (c *AgentStatusClient) QueryAgentStatusToTag(as *AgentStatus) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := as.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentstatus.AgentStatusToTagTable, agentstatus.AgentStatusToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAgentStatusToProvisionedHost queries the AgentStatusToProvisionedHost edge of a AgentStatus.
 func (c *AgentStatusClient) QueryAgentStatusToProvisionedHost(as *AgentStatus) *ProvisionedHostQuery {
 	query := &ProvisionedHostQuery{config: c.config}
@@ -709,22 +693,6 @@ func (c *CommandClient) QueryCommandToUser(co *Command) *UserQuery {
 	return query
 }
 
-// QueryCommandToTag queries the CommandToTag edge of a Command.
-func (c *CommandClient) QueryCommandToTag(co *Command) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(command.Table, command.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToTagTable, command.CommandToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryCommandToEnvironment queries the CommandToEnvironment edge of a Command.
 func (c *CommandClient) QueryCommandToEnvironment(co *Command) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -733,7 +701,7 @@ func (c *CommandClient) QueryCommandToEnvironment(co *Command) *EnvironmentQuery
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -827,22 +795,6 @@ func (c *CompetitionClient) GetX(ctx context.Context, id int) *Competition {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryCompetitionToTag queries the CompetitionToTag edge of a Competition.
-func (c *CompetitionClient) QueryCompetitionToTag(co *Competition) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(competition.Table, competition.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, competition.CompetitionToTagTable, competition.CompetitionToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryCompetitionToDNS queries the CompetitionToDNS edge of a Competition.
@@ -981,22 +933,6 @@ func (c *DNSClient) GetX(ctx context.Context, id int) *DNS {
 	return obj
 }
 
-// QueryDNSToTag queries the DNSToTag edge of a DNS.
-func (c *DNSClient) QueryDNSToTag(d *DNS) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := d.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dns.Table, dns.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dns.DNSToTagTable, dns.DNSToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryDNSToEnvironment queries the DNSToEnvironment edge of a DNS.
 func (c *DNSClient) QueryDNSToEnvironment(d *DNS) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -1117,22 +1053,6 @@ func (c *DNSRecordClient) GetX(ctx context.Context, id int) *DNSRecord {
 	return obj
 }
 
-// QueryDNSRecordToTag queries the DNSRecordToTag edge of a DNSRecord.
-func (c *DNSRecordClient) QueryDNSRecordToTag(dr *DNSRecord) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := dr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsrecord.DNSRecordToTagTable, dnsrecord.DNSRecordToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryDNSRecordToEnvironment queries the DNSRecordToEnvironment edge of a DNSRecord.
 func (c *DNSRecordClient) QueryDNSRecordToEnvironment(dr *DNSRecord) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -1141,7 +1061,7 @@ func (c *DNSRecordClient) QueryDNSRecordToEnvironment(dr *DNSRecord) *Environmen
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
 		return fromV, nil
@@ -1237,22 +1157,6 @@ func (c *DiskClient) GetX(ctx context.Context, id int) *Disk {
 	return obj
 }
 
-// QueryDiskToTag queries the DiskToTag edge of a Disk.
-func (c *DiskClient) QueryDiskToTag(d *Disk) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := d.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(disk.Table, disk.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, disk.DiskToTagTable, disk.DiskToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryDiskToHost queries the DiskToHost edge of a Disk.
 func (c *DiskClient) QueryDiskToHost(d *Disk) *HostQuery {
 	query := &HostQuery{config: c.config}
@@ -1261,7 +1165,7 @@ func (c *DiskClient) QueryDiskToHost(d *Disk) *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(disk.Table, disk.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, disk.DiskToHostTable, disk.DiskToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, disk.DiskToHostTable, disk.DiskToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -1357,22 +1261,6 @@ func (c *EnvironmentClient) GetX(ctx context.Context, id int) *Environment {
 	return obj
 }
 
-// QueryEnvironmentToTag queries the EnvironmentToTag edge of a Environment.
-func (c *EnvironmentClient) QueryEnvironmentToTag(e *Environment) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToTagTable, environment.EnvironmentToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryEnvironmentToUser queries the EnvironmentToUser edge of a Environment.
 func (c *EnvironmentClient) QueryEnvironmentToUser(e *Environment) *UserQuery {
 	query := &UserQuery{config: c.config}
@@ -1397,7 +1285,7 @@ func (c *EnvironmentClient) QueryEnvironmentToHost(e *Environment) *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToHostTable, environment.EnvironmentToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToHostTable, environment.EnvironmentToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1429,7 +1317,7 @@ func (c *EnvironmentClient) QueryEnvironmentToIdentity(e *Environment) *Identity
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(identity.Table, identity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1445,7 +1333,7 @@ func (c *EnvironmentClient) QueryEnvironmentToCommand(e *Environment) *CommandQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(command.Table, command.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1461,7 +1349,7 @@ func (c *EnvironmentClient) QueryEnvironmentToScript(e *Environment) *ScriptQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1477,7 +1365,7 @@ func (c *EnvironmentClient) QueryEnvironmentToFileDownload(e *Environment) *File
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(filedownload.Table, filedownload.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1493,7 +1381,7 @@ func (c *EnvironmentClient) QueryEnvironmentToFileDelete(e *Environment) *FileDe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(filedelete.Table, filedelete.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeletePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeleteColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1509,7 +1397,7 @@ func (c *EnvironmentClient) QueryEnvironmentToFileExtract(e *Environment) *FileE
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(fileextract.Table, fileextract.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1541,7 +1429,7 @@ func (c *EnvironmentClient) QueryEnvironmentToFinding(e *Environment) *FindingQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1557,7 +1445,7 @@ func (c *EnvironmentClient) QueryEnvironmentToDNSRecord(e *Environment) *DNSReco
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1589,7 +1477,7 @@ func (c *EnvironmentClient) QueryEnvironmentToNetwork(e *Environment) *NetworkQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1717,22 +1605,6 @@ func (c *FileDeleteClient) GetX(ctx context.Context, id int) *FileDelete {
 	return obj
 }
 
-// QueryFileDeleteToTag queries the FileDeleteToTag edge of a FileDelete.
-func (c *FileDeleteClient) QueryFileDeleteToTag(fd *FileDelete) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := fd.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(filedelete.Table, filedelete.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.FileDeleteToTagTable, filedelete.FileDeleteToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryFileDeleteToEnvironment queries the FileDeleteToEnvironment edge of a FileDelete.
 func (c *FileDeleteClient) QueryFileDeleteToEnvironment(fd *FileDelete) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -1741,7 +1613,7 @@ func (c *FileDeleteClient) QueryFileDeleteToEnvironment(fd *FileDelete) *Environ
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedelete.Table, filedelete.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, filedelete.FileDeleteToEnvironmentTable, filedelete.FileDeleteToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, filedelete.FileDeleteToEnvironmentTable, filedelete.FileDeleteToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
 		return fromV, nil
@@ -1837,22 +1709,6 @@ func (c *FileDownloadClient) GetX(ctx context.Context, id int) *FileDownload {
 	return obj
 }
 
-// QueryFileDownloadToTag queries the FileDownloadToTag edge of a FileDownload.
-func (c *FileDownloadClient) QueryFileDownloadToTag(fd *FileDownload) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := fd.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(filedownload.Table, filedownload.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.FileDownloadToTagTable, filedownload.FileDownloadToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryFileDownloadToEnvironment queries the FileDownloadToEnvironment edge of a FileDownload.
 func (c *FileDownloadClient) QueryFileDownloadToEnvironment(fd *FileDownload) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -1861,7 +1717,7 @@ func (c *FileDownloadClient) QueryFileDownloadToEnvironment(fd *FileDownload) *E
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedownload.Table, filedownload.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
 		return fromV, nil
@@ -1957,22 +1813,6 @@ func (c *FileExtractClient) GetX(ctx context.Context, id int) *FileExtract {
 	return obj
 }
 
-// QueryFileExtractToTag queries the FileExtractToTag edge of a FileExtract.
-func (c *FileExtractClient) QueryFileExtractToTag(fe *FileExtract) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := fe.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(fileextract.Table, fileextract.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.FileExtractToTagTable, fileextract.FileExtractToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(fe.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryFileExtractToEnvironment queries the FileExtractToEnvironment edge of a FileExtract.
 func (c *FileExtractClient) QueryFileExtractToEnvironment(fe *FileExtract) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -1981,7 +1821,7 @@ func (c *FileExtractClient) QueryFileExtractToEnvironment(fe *FileExtract) *Envi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fileextract.Table, fileextract.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fe.driver.Dialect(), step)
 		return fromV, nil
@@ -2093,22 +1933,6 @@ func (c *FindingClient) QueryFindingToUser(f *Finding) *UserQuery {
 	return query
 }
 
-// QueryFindingToTag queries the FindingToTag edge of a Finding.
-func (c *FindingClient) QueryFindingToTag(f *Finding) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(finding.Table, finding.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToTagTable, finding.FindingToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryFindingToHost queries the FindingToHost edge of a Finding.
 func (c *FindingClient) QueryFindingToHost(f *Finding) *HostQuery {
 	query := &HostQuery{config: c.config}
@@ -2117,7 +1941,7 @@ func (c *FindingClient) QueryFindingToHost(f *Finding) *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToHostTable, finding.FindingToHostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, finding.FindingToHostTable, finding.FindingToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -2133,7 +1957,7 @@ func (c *FindingClient) QueryFindingToScript(f *Finding) *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToScriptTable, finding.FindingToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, finding.FindingToScriptTable, finding.FindingToScriptColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -2149,7 +1973,7 @@ func (c *FindingClient) QueryFindingToEnvironment(f *Finding) *EnvironmentQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, finding.FindingToEnvironmentTable, finding.FindingToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, finding.FindingToEnvironmentTable, finding.FindingToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -2373,7 +2197,7 @@ func (c *HostClient) QueryHostToDisk(h *Host) *DiskQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(disk.Table, disk.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, host.HostToDiskTable, host.HostToDiskPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, false, host.HostToDiskTable, host.HostToDiskColumn),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -2397,22 +2221,6 @@ func (c *HostClient) QueryHostToUser(h *Host) *UserQuery {
 	return query
 }
 
-// QueryHostToTag queries the HostToTag edge of a Host.
-func (c *HostClient) QueryHostToTag(h *Host) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := h.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(host.Table, host.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToTagTable, host.HostToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryHostToEnvironment queries the HostToEnvironment edge of a Host.
 func (c *HostClient) QueryHostToEnvironment(h *Host) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -2421,7 +2229,7 @@ func (c *HostClient) QueryHostToEnvironment(h *Host) *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToEnvironmentTable, host.HostToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, host.HostToEnvironmentTable, host.HostToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -2725,7 +2533,7 @@ func (c *IdentityClient) QueryIdentityToEnvironment(i *Identity) *EnvironmentQue
 		step := sqlgraph.NewStep(
 			sqlgraph.From(identity.Table, identity.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, identity.IdentityToEnvironmentTable, identity.IdentityToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, identity.IdentityToEnvironmentTable, identity.IdentityToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -2973,22 +2781,6 @@ func (c *NetworkClient) GetX(ctx context.Context, id int) *Network {
 	return obj
 }
 
-// QueryNetworkToTag queries the NetworkToTag edge of a Network.
-func (c *NetworkClient) QueryNetworkToTag(n *Network) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(network.Table, network.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, network.NetworkToTagTable, network.NetworkToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryNetworkToEnvironment queries the NetworkToEnvironment edge of a Network.
 func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery {
 	query := &EnvironmentQuery{config: c.config}
@@ -2997,7 +2789,7 @@ func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -3181,7 +2973,7 @@ func (c *PlanClient) QueryPlanToTeam(pl *Plan) *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil
@@ -3213,7 +3005,7 @@ func (c *PlanClient) QueryPlanToProvisionedHost(pl *Plan) *ProvisionedHostQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plan.Table, plan.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil
@@ -3429,7 +3221,7 @@ func (c *ProvisionedHostClient) QueryProvisionedHostToPlan(ph *ProvisionedHost) 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToPlanTable, provisionedhost.ProvisionedHostToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionedhost.ProvisionedHostToPlanTable, provisionedhost.ProvisionedHostToPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -3973,22 +3765,6 @@ func (c *ScriptClient) GetX(ctx context.Context, id int) *Script {
 	return obj
 }
 
-// QueryScriptToTag queries the ScriptToTag edge of a Script.
-func (c *ScriptClient) QueryScriptToTag(s *Script) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(script.Table, script.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToTagTable, script.ScriptToTagColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryScriptToUser queries the ScriptToUser edge of a Script.
 func (c *ScriptClient) QueryScriptToUser(s *Script) *UserQuery {
 	query := &UserQuery{config: c.config}
@@ -4013,7 +3789,7 @@ func (c *ScriptClient) QueryScriptToFinding(s *Script) *FindingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, script.ScriptToFindingTable, script.ScriptToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToFindingTable, script.ScriptToFindingColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -4029,7 +3805,7 @@ func (c *ScriptClient) QueryScriptToEnvironment(s *Script) *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, script.ScriptToEnvironmentTable, script.ScriptToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, script.ScriptToEnvironmentTable, script.ScriptToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -4437,7 +4213,7 @@ func (c *TeamClient) QueryTeamToPlan(t *Team) *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamToPlanTable, team.TeamToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, team.TeamToPlanTable, team.TeamToPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

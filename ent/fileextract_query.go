@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileExtractQuery is the builder for querying FileExtract entities.
@@ -27,8 +25,8 @@ type FileExtractQuery struct {
 	fields     []string
 	predicates []predicate.FileExtract
 	// eager-loading edges.
-	withFileExtractToTag         *TagQuery
 	withFileExtractToEnvironment *EnvironmentQuery
+	withFKs                      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +56,6 @@ func (feq *FileExtractQuery) Order(o ...OrderFunc) *FileExtractQuery {
 	return feq
 }
 
-// QueryFileExtractToTag chains the current query on the "FileExtractToTag" edge.
-func (feq *FileExtractQuery) QueryFileExtractToTag() *TagQuery {
-	query := &TagQuery{config: feq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := feq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := feq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(fileextract.Table, fileextract.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.FileExtractToTagTable, fileextract.FileExtractToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(feq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryFileExtractToEnvironment chains the current query on the "FileExtractToEnvironment" edge.
 func (feq *FileExtractQuery) QueryFileExtractToEnvironment() *EnvironmentQuery {
 	query := &EnvironmentQuery{config: feq.config}
@@ -94,7 +70,7 @@ func (feq *FileExtractQuery) QueryFileExtractToEnvironment() *EnvironmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fileextract.Table, fileextract.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(feq.driver.Dialect(), step)
 		return fromU, nil
@@ -283,23 +259,11 @@ func (feq *FileExtractQuery) Clone() *FileExtractQuery {
 		offset:                       feq.offset,
 		order:                        append([]OrderFunc{}, feq.order...),
 		predicates:                   append([]predicate.FileExtract{}, feq.predicates...),
-		withFileExtractToTag:         feq.withFileExtractToTag.Clone(),
 		withFileExtractToEnvironment: feq.withFileExtractToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  feq.sql.Clone(),
 		path: feq.path,
 	}
-}
-
-// WithFileExtractToTag tells the query-builder to eager-load the nodes that are connected to
-// the "FileExtractToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (feq *FileExtractQuery) WithFileExtractToTag(opts ...func(*TagQuery)) *FileExtractQuery {
-	query := &TagQuery{config: feq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	feq.withFileExtractToTag = query
-	return feq
 }
 
 // WithFileExtractToEnvironment tells the query-builder to eager-load the nodes that are connected to
@@ -377,12 +341,18 @@ func (feq *FileExtractQuery) prepareQuery(ctx context.Context) error {
 func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error) {
 	var (
 		nodes       = []*FileExtract{}
+		withFKs     = feq.withFKs
 		_spec       = feq.querySpec()
-		loadedTypes = [2]bool{
-			feq.withFileExtractToTag != nil,
+		loadedTypes = [1]bool{
 			feq.withFileExtractToEnvironment != nil,
 		}
 	)
+	if feq.withFileExtractToEnvironment != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, fileextract.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &FileExtract{config: feq.config}
 		nodes = append(nodes, node)
@@ -403,95 +373,27 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 		return nodes, nil
 	}
 
-	if query := feq.withFileExtractToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*FileExtract)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.FileExtractToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(fileextract.FileExtractToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.file_extract_file_extract_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "file_extract_file_extract_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "file_extract_file_extract_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.FileExtractToTag = append(node.Edges.FileExtractToTag, n)
-		}
-	}
-
 	if query := feq.withFileExtractToEnvironment; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*FileExtract, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.FileExtractToEnvironment = []*Environment{}
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*FileExtract)
+		for i := range nodes {
+			if fk := nodes[i].environment_environment_to_file_extract; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*FileExtract)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   fileextract.FileExtractToEnvironmentTable,
-				Columns: fileextract.FileExtractToEnvironmentPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(fileextract.FileExtractToEnvironmentPrimaryKey[1], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, feq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "FileExtractToEnvironment": %v`, err)
-		}
-		query.Where(environment.IDIn(edgeids...))
+		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "FileExtractToEnvironment" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_file_extract" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.FileExtractToEnvironment = append(nodes[i].Edges.FileExtractToEnvironment, n)
+				nodes[i].Edges.FileExtractToEnvironment = n
 			}
 		}
 	}

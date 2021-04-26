@@ -31,11 +31,13 @@ const (
 
 	// Table holds the table name of the identity in the database.
 	Table = "identities"
-	// IdentityToEnvironmentTable is the table the holds the IdentityToEnvironment relation/edge. The primary key declared below.
-	IdentityToEnvironmentTable = "environment_EnvironmentToIdentity"
+	// IdentityToEnvironmentTable is the table the holds the IdentityToEnvironment relation/edge.
+	IdentityToEnvironmentTable = "identities"
 	// IdentityToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	IdentityToEnvironmentInverseTable = "environments"
+	// IdentityToEnvironmentColumn is the table column denoting the IdentityToEnvironment relation/edge.
+	IdentityToEnvironmentColumn = "environment_environment_to_identity"
 )
 
 // Columns holds all SQL columns for identity fields.
@@ -52,16 +54,20 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// IdentityToEnvironmentPrimaryKey and IdentityToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the IdentityToEnvironment relation (M2M).
-	IdentityToEnvironmentPrimaryKey = []string{"environment_id", "identity_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the Identity type.
+var ForeignKeys = []string{
+	"environment_environment_to_identity",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

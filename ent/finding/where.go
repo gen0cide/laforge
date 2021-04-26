@@ -451,41 +451,13 @@ func HasFindingToUserWith(preds ...predicate.User) predicate.Finding {
 	})
 }
 
-// HasFindingToTag applies the HasEdge predicate on the "FindingToTag" edge.
-func HasFindingToTag() predicate.Finding {
-	return predicate.Finding(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingToTagTable, FindingToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFindingToTagWith applies the HasEdge predicate on the "FindingToTag" edge with a given conditions (other predicates).
-func HasFindingToTagWith(preds ...predicate.Tag) predicate.Finding {
-	return predicate.Finding(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingToTagTable, FindingToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasFindingToHost applies the HasEdge predicate on the "FindingToHost" edge.
 func HasFindingToHost() predicate.Finding {
 	return predicate.Finding(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingToHostTable, FindingToHostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, FindingToHostTable, FindingToHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -497,7 +469,7 @@ func HasFindingToHostWith(preds ...predicate.Host) predicate.Finding {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FindingToHostTable, FindingToHostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, FindingToHostTable, FindingToHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -513,7 +485,7 @@ func HasFindingToScript() predicate.Finding {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToScriptTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingToScriptTable, FindingToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FindingToScriptTable, FindingToScriptColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -525,7 +497,7 @@ func HasFindingToScriptWith(preds ...predicate.Script) predicate.Finding {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToScriptInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingToScriptTable, FindingToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FindingToScriptTable, FindingToScriptColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -541,7 +513,7 @@ func HasFindingToEnvironment() predicate.Finding {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingToEnvironmentTable, FindingToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FindingToEnvironmentTable, FindingToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -553,7 +525,7 @@ func HasFindingToEnvironmentWith(preds ...predicate.Environment) predicate.Findi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FindingToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingToEnvironmentTable, FindingToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FindingToEnvironmentTable, FindingToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

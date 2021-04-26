@@ -445,34 +445,6 @@ func RootDomainContainsFold(v string) predicate.DNS {
 	})
 }
 
-// HasDNSToTag applies the HasEdge predicate on the "DNSToTag" edge.
-func HasDNSToTag() predicate.DNS {
-	return predicate.DNS(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSToTagTable, DNSToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasDNSToTagWith applies the HasEdge predicate on the "DNSToTag" edge with a given conditions (other predicates).
-func HasDNSToTagWith(preds ...predicate.Tag) predicate.DNS {
-	return predicate.DNS(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DNSToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DNSToTagTable, DNSToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasDNSToEnvironment applies the HasEdge predicate on the "DNSToEnvironment" edge.
 func HasDNSToEnvironment() predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {

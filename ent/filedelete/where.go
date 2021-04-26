@@ -327,41 +327,13 @@ func PathContainsFold(v string) predicate.FileDelete {
 	})
 }
 
-// HasFileDeleteToTag applies the HasEdge predicate on the "FileDeleteToTag" edge.
-func HasFileDeleteToTag() predicate.FileDelete {
-	return predicate.FileDelete(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDeleteToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFileDeleteToTagWith applies the HasEdge predicate on the "FileDeleteToTag" edge with a given conditions (other predicates).
-func HasFileDeleteToTagWith(preds ...predicate.Tag) predicate.FileDelete {
-	return predicate.FileDelete(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileDeleteToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileDeleteToTagTable, FileDeleteToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasFileDeleteToEnvironment applies the HasEdge predicate on the "FileDeleteToEnvironment" edge.
 func HasFileDeleteToEnvironment() predicate.FileDelete {
 	return predicate.FileDelete(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FileDeleteToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FileDeleteToEnvironmentTable, FileDeleteToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FileDeleteToEnvironmentTable, FileDeleteToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -373,7 +345,7 @@ func HasFileDeleteToEnvironmentWith(preds ...predicate.Environment) predicate.Fi
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FileDeleteToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FileDeleteToEnvironmentTable, FileDeleteToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FileDeleteToEnvironmentTable, FileDeleteToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileDownloadCreate is the builder for creating a FileDownload entity.
@@ -81,34 +80,23 @@ func (fdc *FileDownloadCreate) SetTags(m map[string]string) *FileDownloadCreate 
 	return fdc
 }
 
-// AddFileDownloadToTagIDs adds the "FileDownloadToTag" edge to the Tag entity by IDs.
-func (fdc *FileDownloadCreate) AddFileDownloadToTagIDs(ids ...int) *FileDownloadCreate {
-	fdc.mutation.AddFileDownloadToTagIDs(ids...)
+// SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
+func (fdc *FileDownloadCreate) SetFileDownloadToEnvironmentID(id int) *FileDownloadCreate {
+	fdc.mutation.SetFileDownloadToEnvironmentID(id)
 	return fdc
 }
 
-// AddFileDownloadToTag adds the "FileDownloadToTag" edges to the Tag entity.
-func (fdc *FileDownloadCreate) AddFileDownloadToTag(t ...*Tag) *FileDownloadCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fdc *FileDownloadCreate) SetNillableFileDownloadToEnvironmentID(id *int) *FileDownloadCreate {
+	if id != nil {
+		fdc = fdc.SetFileDownloadToEnvironmentID(*id)
 	}
-	return fdc.AddFileDownloadToTagIDs(ids...)
-}
-
-// AddFileDownloadToEnvironmentIDs adds the "FileDownloadToEnvironment" edge to the Environment entity by IDs.
-func (fdc *FileDownloadCreate) AddFileDownloadToEnvironmentIDs(ids ...int) *FileDownloadCreate {
-	fdc.mutation.AddFileDownloadToEnvironmentIDs(ids...)
 	return fdc
 }
 
-// AddFileDownloadToEnvironment adds the "FileDownloadToEnvironment" edges to the Environment entity.
-func (fdc *FileDownloadCreate) AddFileDownloadToEnvironment(e ...*Environment) *FileDownloadCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fdc.AddFileDownloadToEnvironmentIDs(ids...)
+// SetFileDownloadToEnvironment sets the "FileDownloadToEnvironment" edge to the Environment entity.
+func (fdc *FileDownloadCreate) SetFileDownloadToEnvironment(e *Environment) *FileDownloadCreate {
+	return fdc.SetFileDownloadToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -299,31 +287,12 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 		})
 		_node.Tags = value
 	}
-	if nodes := fdc.mutation.FileDownloadToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.FileDownloadToTagTable,
-			Columns: []string{filedownload.FileDownloadToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := fdc.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedownload.FileDownloadToEnvironmentTable,
-			Columns: filedownload.FileDownloadToEnvironmentPrimaryKey,
+			Columns: []string{filedownload.FileDownloadToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

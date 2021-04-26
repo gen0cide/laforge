@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/script"
 )
 
@@ -49,46 +50,33 @@ type Script struct {
 	Edges ScriptEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// ScriptToTag holds the value of the ScriptToTag edge.
-	HCLScriptToTag []*Tag `json:"ScriptToTag,omitempty"`
 	// ScriptToUser holds the value of the ScriptToUser edge.
 	HCLScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
 	HCLScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
 	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
-	HCLScriptToEnvironment []*Environment `json:"ScriptToEnvironment,omitempty"`
+	HCLScriptToEnvironment *Environment `json:"ScriptToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_script *int
 }
 
 // ScriptEdges holds the relations/edges for other nodes in the graph.
 type ScriptEdges struct {
-	// ScriptToTag holds the value of the ScriptToTag edge.
-	ScriptToTag []*Tag `json:"ScriptToTag,omitempty"`
 	// ScriptToUser holds the value of the ScriptToUser edge.
 	ScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
 	// ScriptToFinding holds the value of the ScriptToFinding edge.
 	ScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
 	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
-	ScriptToEnvironment []*Environment `json:"ScriptToEnvironment,omitempty"`
+	ScriptToEnvironment *Environment `json:"ScriptToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-}
-
-// ScriptToTagOrErr returns the ScriptToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScriptEdges) ScriptToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.ScriptToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "ScriptToTag"}
+	loadedTypes [3]bool
 }
 
 // ScriptToUserOrErr returns the ScriptToUser value or an error if the edge
 // was not loaded in eager-loading.
 func (e ScriptEdges) ScriptToUserOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.ScriptToUser, nil
 	}
 	return nil, &NotLoadedError{edge: "ScriptToUser"}
@@ -97,16 +85,21 @@ func (e ScriptEdges) ScriptToUserOrErr() ([]*User, error) {
 // ScriptToFindingOrErr returns the ScriptToFinding value or an error if the edge
 // was not loaded in eager-loading.
 func (e ScriptEdges) ScriptToFindingOrErr() ([]*Finding, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.ScriptToFinding, nil
 	}
 	return nil, &NotLoadedError{edge: "ScriptToFinding"}
 }
 
 // ScriptToEnvironmentOrErr returns the ScriptToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScriptEdges) ScriptToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[3] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ScriptEdges) ScriptToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[2] {
+		if e.ScriptToEnvironment == nil {
+			// The edge ScriptToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.ScriptToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "ScriptToEnvironment"}
@@ -125,6 +118,8 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
 			values[i] = &sql.NullString{}
+		case script.ForeignKeys[0]: // environment_environment_to_script
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
 		}
@@ -239,14 +234,16 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case script.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_script", value)
+			} else if value.Valid {
+				s.environment_environment_to_script = new(int)
+				*s.environment_environment_to_script = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryScriptToTag queries the "ScriptToTag" edge of the Script entity.
-func (s *Script) QueryScriptToTag() *TagQuery {
-	return (&ScriptClient{config: s.config}).QueryScriptToTag(s)
 }
 
 // QueryScriptToUser queries the "ScriptToUser" edge of the Script entity.

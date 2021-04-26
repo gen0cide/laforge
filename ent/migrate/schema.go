@@ -76,13 +76,22 @@ var (
 		{Name: "timeout", Type: field.TypeInt},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_command", Type: field.TypeInt, Nullable: true},
 	}
 	// CommandsTable holds the schema information for the "commands" table.
 	CommandsTable = &schema.Table{
-		Name:        "commands",
-		Columns:     CommandsColumns,
-		PrimaryKey:  []*schema.Column{CommandsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "commands",
+		Columns:    CommandsColumns,
+		PrimaryKey: []*schema.Column{CommandsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "commands_environments_EnvironmentToCommand",
+				Columns: []*schema.Column{CommandsColumns[12]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// CompetitionsColumns holds the columns for the "competitions" table.
 	CompetitionsColumns = []*schema.Column{
@@ -136,25 +145,43 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_dns_record", Type: field.TypeInt, Nullable: true},
 	}
 	// DNSRecordsTable holds the schema information for the "dns_records" table.
 	DNSRecordsTable = &schema.Table{
-		Name:        "dns_records",
-		Columns:     DNSRecordsColumns,
-		PrimaryKey:  []*schema.Column{DNSRecordsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "dns_records",
+		Columns:    DNSRecordsColumns,
+		PrimaryKey: []*schema.Column{DNSRecordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "dns_records_environments_EnvironmentToDNSRecord",
+				Columns: []*schema.Column{DNSRecordsColumns[9]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// DisksColumns holds the columns for the "disks" table.
 	DisksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "size", Type: field.TypeInt},
+		{Name: "host_host_to_disk", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// DisksTable holds the schema information for the "disks" table.
 	DisksTable = &schema.Table{
-		Name:        "disks",
-		Columns:     DisksColumns,
-		PrimaryKey:  []*schema.Column{DisksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "disks",
+		Columns:    DisksColumns,
+		PrimaryKey: []*schema.Column{DisksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "disks_hosts_HostToDisk",
+				Columns: []*schema.Column{DisksColumns[2]},
+
+				RefColumns: []*schema.Column{HostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
@@ -184,13 +211,22 @@ var (
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_file_delete", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDeletesTable holds the schema information for the "file_deletes" table.
 	FileDeletesTable = &schema.Table{
-		Name:        "file_deletes",
-		Columns:     FileDeletesColumns,
-		PrimaryKey:  []*schema.Column{FileDeletesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_deletes",
+		Columns:    FileDeletesColumns,
+		PrimaryKey: []*schema.Column{FileDeletesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_deletes_environments_EnvironmentToFileDelete",
+				Columns: []*schema.Column{FileDeletesColumns[4]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileDownloadsColumns holds the columns for the "file_downloads" table.
 	FileDownloadsColumns = []*schema.Column{
@@ -205,13 +241,22 @@ var (
 		{Name: "md5", Type: field.TypeString},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_file_download", Type: field.TypeInt, Nullable: true},
 	}
 	// FileDownloadsTable holds the schema information for the "file_downloads" table.
 	FileDownloadsTable = &schema.Table{
-		Name:        "file_downloads",
-		Columns:     FileDownloadsColumns,
-		PrimaryKey:  []*schema.Column{FileDownloadsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_downloads",
+		Columns:    FileDownloadsColumns,
+		PrimaryKey: []*schema.Column{FileDownloadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_downloads_environments_EnvironmentToFileDownload",
+				Columns: []*schema.Column{FileDownloadsColumns[11]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FileExtractsColumns holds the columns for the "file_extracts" table.
 	FileExtractsColumns = []*schema.Column{
@@ -221,13 +266,22 @@ var (
 		{Name: "destination", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_file_extract", Type: field.TypeInt, Nullable: true},
 	}
 	// FileExtractsTable holds the schema information for the "file_extracts" table.
 	FileExtractsTable = &schema.Table{
-		Name:        "file_extracts",
-		Columns:     FileExtractsColumns,
-		PrimaryKey:  []*schema.Column{FileExtractsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "file_extracts",
+		Columns:    FileExtractsColumns,
+		PrimaryKey: []*schema.Column{FileExtractsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "file_extracts_environments_EnvironmentToFileExtract",
+				Columns: []*schema.Column{FileExtractsColumns[6]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FindingsColumns holds the columns for the "findings" table.
 	FindingsColumns = []*schema.Column{
@@ -237,13 +291,38 @@ var (
 		{Name: "severity", Type: field.TypeEnum, Enums: []string{"ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity"}},
 		{Name: "difficulty", Type: field.TypeEnum, Enums: []string{"ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty"}},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_finding", Type: field.TypeInt, Nullable: true},
+		{Name: "finding_finding_to_host", Type: field.TypeInt, Nullable: true},
+		{Name: "script_script_to_finding", Type: field.TypeInt, Nullable: true},
 	}
 	// FindingsTable holds the schema information for the "findings" table.
 	FindingsTable = &schema.Table{
-		Name:        "findings",
-		Columns:     FindingsColumns,
-		PrimaryKey:  []*schema.Column{FindingsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "findings",
+		Columns:    FindingsColumns,
+		PrimaryKey: []*schema.Column{FindingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "findings_environments_EnvironmentToFinding",
+				Columns: []*schema.Column{FindingsColumns[6]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "findings_hosts_FindingToHost",
+				Columns: []*schema.Column{FindingsColumns[7]},
+
+				RefColumns: []*schema.Column{HostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "findings_scripts_ScriptToFinding",
+				Columns: []*schema.Column{FindingsColumns[8]},
+
+				RefColumns: []*schema.Column{ScriptsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// GinFileMiddlewaresColumns holds the columns for the "gin_file_middlewares" table.
 	GinFileMiddlewaresColumns = []*schema.Column{
@@ -276,7 +355,7 @@ var (
 		{Name: "user_groups", Type: field.TypeJSON},
 		{Name: "provision_steps", Type: field.TypeJSON, Nullable: true},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "finding_finding_to_host", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_host", Type: field.TypeInt, Nullable: true},
 	}
 	// HostsTable holds the schema information for the "hosts" table.
 	HostsTable = &schema.Table{
@@ -285,10 +364,10 @@ var (
 		PrimaryKey: []*schema.Column{HostsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "hosts_findings_FindingToHost",
+				Symbol:  "hosts_environments_EnvironmentToHost",
 				Columns: []*schema.Column{HostsColumns[15]},
 
-				RefColumns: []*schema.Column{FindingsColumns[0]},
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -351,13 +430,22 @@ var (
 		{Name: "avatar_file", Type: field.TypeString},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_identity", Type: field.TypeInt, Nullable: true},
 	}
 	// IdentitiesTable holds the schema information for the "identities" table.
 	IdentitiesTable = &schema.Table{
-		Name:        "identities",
-		Columns:     IdentitiesColumns,
-		PrimaryKey:  []*schema.Column{IdentitiesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "identities",
+		Columns:    IdentitiesColumns,
+		PrimaryKey: []*schema.Column{IdentitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "identities_environments_EnvironmentToIdentity",
+				Columns: []*schema.Column{IdentitiesColumns[10]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// IncludedNetworksColumns holds the columns for the "included_networks" table.
 	IncludedNetworksColumns = []*schema.Column{
@@ -381,13 +469,22 @@ var (
 		{Name: "vdi_visible", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_network", Type: field.TypeInt, Nullable: true},
 	}
 	// NetworksTable holds the schema information for the "networks" table.
 	NetworksTable = &schema.Table{
-		Name:        "networks",
-		Columns:     NetworksColumns,
-		PrimaryKey:  []*schema.Column{NetworksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "networks",
+		Columns:    NetworksColumns,
+		PrimaryKey: []*schema.Column{NetworksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "networks_environments_EnvironmentToNetwork",
+				Columns: []*schema.Column{NetworksColumns[7]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// PlansColumns holds the columns for the "plans" table.
 	PlansColumns = []*schema.Column{
@@ -396,8 +493,6 @@ var (
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"start_build", "start_team", "provision_network", "provision_host", "execute_step"}},
 		{Name: "build_id", Type: field.TypeInt},
 		{Name: "plan_plan_to_build", Type: field.TypeInt, Nullable: true},
-		{Name: "plan_plan_to_team", Type: field.TypeInt, Nullable: true},
-		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Nullable: true},
 	}
 	// PlansTable holds the schema information for the "plans" table.
 	PlansTable = &schema.Table{
@@ -412,20 +507,6 @@ var (
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
-			{
-				Symbol:  "plans_teams_PlanToTeam",
-				Columns: []*schema.Column{PlansColumns[5]},
-
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "plans_provisioned_hosts_PlanToProvisionedHost",
-				Columns: []*schema.Column{PlansColumns[6]},
-
-				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 	}
 	// ProvisionedHostsColumns holds the columns for the "provisioned_hosts" table.
@@ -433,6 +514,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "subnet_ip", Type: field.TypeString},
 		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeInt, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_end_step_plan", Type: field.TypeInt, Nullable: true},
@@ -451,22 +533,29 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_hosts_provisioned_networks_ProvisionedHostToProvisionedNetwork",
+				Symbol:  "provisioned_hosts_plans_PlanToProvisionedHost",
 				Columns: []*schema.Column{ProvisionedHostsColumns[3]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "provisioned_hosts_provisioned_networks_ProvisionedHostToProvisionedNetwork",
+				Columns: []*schema.Column{ProvisionedHostsColumns[4]},
 
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "provisioned_hosts_hosts_ProvisionedHostToHost",
-				Columns: []*schema.Column{ProvisionedHostsColumns[4]},
+				Columns: []*schema.Column{ProvisionedHostsColumns[5]},
 
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:  "provisioned_hosts_plans_ProvisionedHostToEndStepPlan",
-				Columns: []*schema.Column{ProvisionedHostsColumns[5]},
+				Columns: []*schema.Column{ProvisionedHostsColumns[6]},
 
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -622,13 +711,22 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "environment_environment_to_script", Type: field.TypeInt, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
 	ScriptsTable = &schema.Table{
-		Name:        "scripts",
-		Columns:     ScriptsColumns,
-		PrimaryKey:  []*schema.Column{ScriptsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "scripts",
+		Columns:    ScriptsColumns,
+		PrimaryKey: []*schema.Column{ScriptsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "scripts_environments_EnvironmentToScript",
+				Columns: []*schema.Column{ScriptsColumns[15]},
+
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
@@ -695,21 +793,7 @@ var (
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeJSON},
-		{Name: "agent_status_agent_status_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "command_command_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "competition_competition_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "dns_dns_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "dns_record_dns_record_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "disk_disk_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "environment_environment_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_delete_file_delete_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_download_file_download_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "file_extract_file_extract_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_finding_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "host_host_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "included_network_included_network_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "network_network_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "script_script_to_tag", Type: field.TypeInt, Nullable: true},
 		{Name: "user_user_to_tag", Type: field.TypeInt, Nullable: true},
 	}
 	// TagsTable holds the schema information for the "tags" table.
@@ -719,113 +803,15 @@ var (
 		PrimaryKey: []*schema.Column{TagsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "tags_agent_status_AgentStatusToTag",
-				Columns: []*schema.Column{TagsColumns[4]},
-
-				RefColumns: []*schema.Column{AgentStatusColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_commands_CommandToTag",
-				Columns: []*schema.Column{TagsColumns[5]},
-
-				RefColumns: []*schema.Column{CommandsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_competitions_CompetitionToTag",
-				Columns: []*schema.Column{TagsColumns[6]},
-
-				RefColumns: []*schema.Column{CompetitionsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_dn_ss_DNSToTag",
-				Columns: []*schema.Column{TagsColumns[7]},
-
-				RefColumns: []*schema.Column{DnSsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_dns_records_DNSRecordToTag",
-				Columns: []*schema.Column{TagsColumns[8]},
-
-				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_disks_DiskToTag",
-				Columns: []*schema.Column{TagsColumns[9]},
-
-				RefColumns: []*schema.Column{DisksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_environments_EnvironmentToTag",
-				Columns: []*schema.Column{TagsColumns[10]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_file_deletes_FileDeleteToTag",
-				Columns: []*schema.Column{TagsColumns[11]},
-
-				RefColumns: []*schema.Column{FileDeletesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_file_downloads_FileDownloadToTag",
-				Columns: []*schema.Column{TagsColumns[12]},
-
-				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_file_extracts_FileExtractToTag",
-				Columns: []*schema.Column{TagsColumns[13]},
-
-				RefColumns: []*schema.Column{FileExtractsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_findings_FindingToTag",
-				Columns: []*schema.Column{TagsColumns[14]},
-
-				RefColumns: []*schema.Column{FindingsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_hosts_HostToTag",
-				Columns: []*schema.Column{TagsColumns[15]},
-
-				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_included_networks_IncludedNetworkToTag",
-				Columns: []*schema.Column{TagsColumns[16]},
+				Columns: []*schema.Column{TagsColumns[4]},
 
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_networks_NetworkToTag",
-				Columns: []*schema.Column{TagsColumns[17]},
-
-				RefColumns: []*schema.Column{NetworksColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:  "tags_scripts_ScriptToTag",
-				Columns: []*schema.Column{TagsColumns[18]},
-
-				RefColumns: []*schema.Column{ScriptsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "tags_users_UserToTag",
-				Columns: []*schema.Column{TagsColumns[19]},
+				Columns: []*schema.Column{TagsColumns[5]},
 
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -836,6 +822,7 @@ var (
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "team_number", Type: field.TypeInt},
+		{Name: "plan_plan_to_team", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "team_team_to_build", Type: field.TypeInt, Nullable: true},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
@@ -845,8 +832,15 @@ var (
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "teams_builds_TeamToBuild",
+				Symbol:  "teams_plans_PlanToTeam",
 				Columns: []*schema.Column{TeamsColumns[2]},
+
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "teams_builds_TeamToBuild",
+				Columns: []*schema.Column{TeamsColumns[3]},
 
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -982,195 +976,6 @@ var (
 			},
 		},
 	}
-	// EnvironmentEnvironmentToHostColumns holds the columns for the "environment_EnvironmentToHost" table.
-	EnvironmentEnvironmentToHostColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "host_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToHostTable holds the schema information for the "environment_EnvironmentToHost" table.
-	EnvironmentEnvironmentToHostTable = &schema.Table{
-		Name:       "environment_EnvironmentToHost",
-		Columns:    EnvironmentEnvironmentToHostColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToHostColumns[0], EnvironmentEnvironmentToHostColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToHost_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToHostColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToHost_host_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToHostColumns[1]},
-
-				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToIdentityColumns holds the columns for the "environment_EnvironmentToIdentity" table.
-	EnvironmentEnvironmentToIdentityColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "identity_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToIdentityTable holds the schema information for the "environment_EnvironmentToIdentity" table.
-	EnvironmentEnvironmentToIdentityTable = &schema.Table{
-		Name:       "environment_EnvironmentToIdentity",
-		Columns:    EnvironmentEnvironmentToIdentityColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[0], EnvironmentEnvironmentToIdentityColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToIdentity_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToIdentity_identity_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToIdentityColumns[1]},
-
-				RefColumns: []*schema.Column{IdentitiesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToCommandColumns holds the columns for the "environment_EnvironmentToCommand" table.
-	EnvironmentEnvironmentToCommandColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "command_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToCommandTable holds the schema information for the "environment_EnvironmentToCommand" table.
-	EnvironmentEnvironmentToCommandTable = &schema.Table{
-		Name:       "environment_EnvironmentToCommand",
-		Columns:    EnvironmentEnvironmentToCommandColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToCommandColumns[0], EnvironmentEnvironmentToCommandColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToCommand_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToCommandColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToCommand_command_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToCommandColumns[1]},
-
-				RefColumns: []*schema.Column{CommandsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToScriptColumns holds the columns for the "environment_EnvironmentToScript" table.
-	EnvironmentEnvironmentToScriptColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "script_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToScriptTable holds the schema information for the "environment_EnvironmentToScript" table.
-	EnvironmentEnvironmentToScriptTable = &schema.Table{
-		Name:       "environment_EnvironmentToScript",
-		Columns:    EnvironmentEnvironmentToScriptColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToScriptColumns[0], EnvironmentEnvironmentToScriptColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToScript_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToScriptColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToScript_script_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToScriptColumns[1]},
-
-				RefColumns: []*schema.Column{ScriptsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToFileDownloadColumns holds the columns for the "environment_EnvironmentToFileDownload" table.
-	EnvironmentEnvironmentToFileDownloadColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "file_download_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToFileDownloadTable holds the schema information for the "environment_EnvironmentToFileDownload" table.
-	EnvironmentEnvironmentToFileDownloadTable = &schema.Table{
-		Name:       "environment_EnvironmentToFileDownload",
-		Columns:    EnvironmentEnvironmentToFileDownloadColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToFileDownloadColumns[0], EnvironmentEnvironmentToFileDownloadColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToFileDownload_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileDownloadColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToFileDownload_file_download_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileDownloadColumns[1]},
-
-				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToFileDeleteColumns holds the columns for the "environment_EnvironmentToFileDelete" table.
-	EnvironmentEnvironmentToFileDeleteColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "file_delete_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToFileDeleteTable holds the schema information for the "environment_EnvironmentToFileDelete" table.
-	EnvironmentEnvironmentToFileDeleteTable = &schema.Table{
-		Name:       "environment_EnvironmentToFileDelete",
-		Columns:    EnvironmentEnvironmentToFileDeleteColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToFileDeleteColumns[0], EnvironmentEnvironmentToFileDeleteColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToFileDelete_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileDeleteColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToFileDelete_file_delete_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileDeleteColumns[1]},
-
-				RefColumns: []*schema.Column{FileDeletesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToFileExtractColumns holds the columns for the "environment_EnvironmentToFileExtract" table.
-	EnvironmentEnvironmentToFileExtractColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "file_extract_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToFileExtractTable holds the schema information for the "environment_EnvironmentToFileExtract" table.
-	EnvironmentEnvironmentToFileExtractTable = &schema.Table{
-		Name:       "environment_EnvironmentToFileExtract",
-		Columns:    EnvironmentEnvironmentToFileExtractColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToFileExtractColumns[0], EnvironmentEnvironmentToFileExtractColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToFileExtract_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileExtractColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToFileExtract_file_extract_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFileExtractColumns[1]},
-
-				RefColumns: []*schema.Column{FileExtractsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// EnvironmentEnvironmentToIncludedNetworkColumns holds the columns for the "environment_EnvironmentToIncludedNetwork" table.
 	EnvironmentEnvironmentToIncludedNetworkColumns = []*schema.Column{
 		{Name: "environment_id", Type: field.TypeInt},
@@ -1198,60 +1003,6 @@ var (
 			},
 		},
 	}
-	// EnvironmentEnvironmentToFindingColumns holds the columns for the "environment_EnvironmentToFinding" table.
-	EnvironmentEnvironmentToFindingColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "finding_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToFindingTable holds the schema information for the "environment_EnvironmentToFinding" table.
-	EnvironmentEnvironmentToFindingTable = &schema.Table{
-		Name:       "environment_EnvironmentToFinding",
-		Columns:    EnvironmentEnvironmentToFindingColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToFindingColumns[0], EnvironmentEnvironmentToFindingColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToFinding_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFindingColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToFinding_finding_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToFindingColumns[1]},
-
-				RefColumns: []*schema.Column{FindingsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToDNSRecordColumns holds the columns for the "environment_EnvironmentToDNSRecord" table.
-	EnvironmentEnvironmentToDNSRecordColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "dns_record_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToDNSRecordTable holds the schema information for the "environment_EnvironmentToDNSRecord" table.
-	EnvironmentEnvironmentToDNSRecordTable = &schema.Table{
-		Name:       "environment_EnvironmentToDNSRecord",
-		Columns:    EnvironmentEnvironmentToDNSRecordColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToDNSRecordColumns[0], EnvironmentEnvironmentToDNSRecordColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToDNSRecord_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToDNSRecordColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToDNSRecord_dns_record_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToDNSRecordColumns[1]},
-
-				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// EnvironmentEnvironmentToDNSColumns holds the columns for the "environment_EnvironmentToDNS" table.
 	EnvironmentEnvironmentToDNSColumns = []*schema.Column{
 		{Name: "environment_id", Type: field.TypeInt},
@@ -1275,60 +1026,6 @@ var (
 				Columns: []*schema.Column{EnvironmentEnvironmentToDNSColumns[1]},
 
 				RefColumns: []*schema.Column{DnSsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EnvironmentEnvironmentToNetworkColumns holds the columns for the "environment_EnvironmentToNetwork" table.
-	EnvironmentEnvironmentToNetworkColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "network_id", Type: field.TypeInt},
-	}
-	// EnvironmentEnvironmentToNetworkTable holds the schema information for the "environment_EnvironmentToNetwork" table.
-	EnvironmentEnvironmentToNetworkTable = &schema.Table{
-		Name:       "environment_EnvironmentToNetwork",
-		Columns:    EnvironmentEnvironmentToNetworkColumns,
-		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToNetworkColumns[0], EnvironmentEnvironmentToNetworkColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "environment_EnvironmentToNetwork_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToNetworkColumns[0]},
-
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "environment_EnvironmentToNetwork_network_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToNetworkColumns[1]},
-
-				RefColumns: []*schema.Column{NetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// HostHostToDiskColumns holds the columns for the "host_HostToDisk" table.
-	HostHostToDiskColumns = []*schema.Column{
-		{Name: "host_id", Type: field.TypeInt},
-		{Name: "disk_id", Type: field.TypeInt},
-	}
-	// HostHostToDiskTable holds the schema information for the "host_HostToDisk" table.
-	HostHostToDiskTable = &schema.Table{
-		Name:       "host_HostToDisk",
-		Columns:    HostHostToDiskColumns,
-		PrimaryKey: []*schema.Column{HostHostToDiskColumns[0], HostHostToDiskColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "host_HostToDisk_host_id",
-				Columns: []*schema.Column{HostHostToDiskColumns[0]},
-
-				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "host_HostToDisk_disk_id",
-				Columns: []*schema.Column{HostHostToDiskColumns[1]},
-
-				RefColumns: []*schema.Column{DisksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1414,33 +1111,6 @@ var (
 			},
 		},
 	}
-	// ScriptScriptToFindingColumns holds the columns for the "script_ScriptToFinding" table.
-	ScriptScriptToFindingColumns = []*schema.Column{
-		{Name: "script_id", Type: field.TypeInt},
-		{Name: "finding_id", Type: field.TypeInt},
-	}
-	// ScriptScriptToFindingTable holds the schema information for the "script_ScriptToFinding" table.
-	ScriptScriptToFindingTable = &schema.Table{
-		Name:       "script_ScriptToFinding",
-		Columns:    ScriptScriptToFindingColumns,
-		PrimaryKey: []*schema.Column{ScriptScriptToFindingColumns[0], ScriptScriptToFindingColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:  "script_ScriptToFinding_script_id",
-				Columns: []*schema.Column{ScriptScriptToFindingColumns[0]},
-
-				RefColumns: []*schema.Column{ScriptsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:  "script_ScriptToFinding_finding_id",
-				Columns: []*schema.Column{ScriptScriptToFindingColumns[1]},
-
-				RefColumns: []*schema.Column{FindingsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentStatusTable,
@@ -1473,42 +1143,40 @@ var (
 		AgentStatusAgentStatusToProvisionedHostTable,
 		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
-		EnvironmentEnvironmentToHostTable,
-		EnvironmentEnvironmentToIdentityTable,
-		EnvironmentEnvironmentToCommandTable,
-		EnvironmentEnvironmentToScriptTable,
-		EnvironmentEnvironmentToFileDownloadTable,
-		EnvironmentEnvironmentToFileDeleteTable,
-		EnvironmentEnvironmentToFileExtractTable,
 		EnvironmentEnvironmentToIncludedNetworkTable,
-		EnvironmentEnvironmentToFindingTable,
-		EnvironmentEnvironmentToDNSRecordTable,
 		EnvironmentEnvironmentToDNSTable,
-		EnvironmentEnvironmentToNetworkTable,
-		HostHostToDiskTable,
 		IncludedNetworkIncludedNetworkToHostTable,
 		IncludedNetworkIncludedNetworkToNetworkTable,
 		PlanNextPlanTable,
-		ScriptScriptToFindingTable,
 	}
 )
 
 func init() {
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	BuildsTable.ForeignKeys[1].RefTable = CompetitionsTable
+	CommandsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	HostsTable.ForeignKeys[0].RefTable = FindingsTable
+	DNSRecordsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	DisksTable.ForeignKeys[0].RefTable = HostsTable
+	FileDeletesTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	FileDownloadsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	FileExtractsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	FindingsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	FindingsTable.ForeignKeys[1].RefTable = HostsTable
+	FindingsTable.ForeignKeys[2].RefTable = ScriptsTable
+	HostsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[1].RefTable = HostsTable
 	HostDependenciesTable.ForeignKeys[2].RefTable = HostsTable
 	HostDependenciesTable.ForeignKeys[3].RefTable = NetworksTable
+	IdentitiesTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	NetworksTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	PlansTable.ForeignKeys[0].RefTable = BuildsTable
-	PlansTable.ForeignKeys[1].RefTable = TeamsTable
-	PlansTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
-	ProvisionedHostsTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
-	ProvisionedHostsTable.ForeignKeys[2].RefTable = HostsTable
-	ProvisionedHostsTable.ForeignKeys[3].RefTable = PlansTable
+	ProvisionedHostsTable.ForeignKeys[1].RefTable = PlansTable
+	ProvisionedHostsTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
+	ProvisionedHostsTable.ForeignKeys[3].RefTable = HostsTable
+	ProvisionedHostsTable.ForeignKeys[4].RefTable = PlansTable
 	ProvisionedNetworksTable.ForeignKeys[0].RefTable = PlansTable
 	ProvisionedNetworksTable.ForeignKeys[1].RefTable = NetworksTable
 	ProvisionedNetworksTable.ForeignKeys[2].RefTable = BuildsTable
@@ -1522,28 +1190,16 @@ func init() {
 	ProvisioningStepsTable.ForeignKeys[6].RefTable = FileDeletesTable
 	ProvisioningStepsTable.ForeignKeys[7].RefTable = FileDownloadsTable
 	ProvisioningStepsTable.ForeignKeys[8].RefTable = FileExtractsTable
+	ScriptsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	StatusTable.ForeignKeys[0].RefTable = BuildsTable
 	StatusTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
 	StatusTable.ForeignKeys[3].RefTable = ProvisioningStepsTable
 	StatusTable.ForeignKeys[4].RefTable = TeamsTable
-	TagsTable.ForeignKeys[0].RefTable = AgentStatusTable
-	TagsTable.ForeignKeys[1].RefTable = CommandsTable
-	TagsTable.ForeignKeys[2].RefTable = CompetitionsTable
-	TagsTable.ForeignKeys[3].RefTable = DnSsTable
-	TagsTable.ForeignKeys[4].RefTable = DNSRecordsTable
-	TagsTable.ForeignKeys[5].RefTable = DisksTable
-	TagsTable.ForeignKeys[6].RefTable = EnvironmentsTable
-	TagsTable.ForeignKeys[7].RefTable = FileDeletesTable
-	TagsTable.ForeignKeys[8].RefTable = FileDownloadsTable
-	TagsTable.ForeignKeys[9].RefTable = FileExtractsTable
-	TagsTable.ForeignKeys[10].RefTable = FindingsTable
-	TagsTable.ForeignKeys[11].RefTable = HostsTable
-	TagsTable.ForeignKeys[12].RefTable = IncludedNetworksTable
-	TagsTable.ForeignKeys[13].RefTable = NetworksTable
-	TagsTable.ForeignKeys[14].RefTable = ScriptsTable
-	TagsTable.ForeignKeys[15].RefTable = UsersTable
-	TeamsTable.ForeignKeys[0].RefTable = BuildsTable
+	TagsTable.ForeignKeys[0].RefTable = IncludedNetworksTable
+	TagsTable.ForeignKeys[1].RefTable = UsersTable
+	TeamsTable.ForeignKeys[0].RefTable = PlansTable
+	TeamsTable.ForeignKeys[1].RefTable = BuildsTable
 	UsersTable.ForeignKeys[0].RefTable = CommandsTable
 	UsersTable.ForeignKeys[1].RefTable = FindingsTable
 	UsersTable.ForeignKeys[2].RefTable = HostsTable
@@ -1554,38 +1210,14 @@ func init() {
 	CompetitionCompetitionToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[1].RefTable = UsersTable
-	EnvironmentEnvironmentToHostTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToHostTable.ForeignKeys[1].RefTable = HostsTable
-	EnvironmentEnvironmentToIdentityTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToIdentityTable.ForeignKeys[1].RefTable = IdentitiesTable
-	EnvironmentEnvironmentToCommandTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToCommandTable.ForeignKeys[1].RefTable = CommandsTable
-	EnvironmentEnvironmentToScriptTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToScriptTable.ForeignKeys[1].RefTable = ScriptsTable
-	EnvironmentEnvironmentToFileDownloadTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToFileDownloadTable.ForeignKeys[1].RefTable = FileDownloadsTable
-	EnvironmentEnvironmentToFileDeleteTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToFileDeleteTable.ForeignKeys[1].RefTable = FileDeletesTable
-	EnvironmentEnvironmentToFileExtractTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToFileExtractTable.ForeignKeys[1].RefTable = FileExtractsTable
 	EnvironmentEnvironmentToIncludedNetworkTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToIncludedNetworkTable.ForeignKeys[1].RefTable = IncludedNetworksTable
-	EnvironmentEnvironmentToFindingTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToFindingTable.ForeignKeys[1].RefTable = FindingsTable
-	EnvironmentEnvironmentToDNSRecordTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToDNSRecordTable.ForeignKeys[1].RefTable = DNSRecordsTable
 	EnvironmentEnvironmentToDNSTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	EnvironmentEnvironmentToDNSTable.ForeignKeys[1].RefTable = DnSsTable
-	EnvironmentEnvironmentToNetworkTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	EnvironmentEnvironmentToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
-	HostHostToDiskTable.ForeignKeys[0].RefTable = HostsTable
-	HostHostToDiskTable.ForeignKeys[1].RefTable = DisksTable
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
 	PlanNextPlanTable.ForeignKeys[0].RefTable = PlansTable
 	PlanNextPlanTable.ForeignKeys[1].RefTable = PlansTable
-	ScriptScriptToFindingTable.ForeignKeys[0].RefTable = ScriptsTable
-	ScriptScriptToFindingTable.ForeignKeys[1].RefTable = FindingsTable
 }

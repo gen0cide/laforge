@@ -48,12 +48,12 @@ func (Script) Fields() []ent.Field {
 // Edges of the Script.
 func (Script) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ScriptToTag", Tag.Type),
 		edge.To("ScriptToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("ScriptToFinding", Finding.Type).
 			StructTag(`hcl:"finding,block"`),
 		edge.From("ScriptToEnvironment", Environment.Type).
-			Ref("EnvironmentToScript"),
+			Ref("EnvironmentToScript").
+			Unique(),
 	}
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // AgentStatusQuery is the builder for querying AgentStatus entities.
@@ -27,7 +26,6 @@ type AgentStatusQuery struct {
 	fields     []string
 	predicates []predicate.AgentStatus
 	// eager-loading edges.
-	withAgentStatusToTag             *TagQuery
 	withAgentStatusToProvisionedHost *ProvisionedHostQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -56,28 +54,6 @@ func (asq *AgentStatusQuery) Offset(offset int) *AgentStatusQuery {
 func (asq *AgentStatusQuery) Order(o ...OrderFunc) *AgentStatusQuery {
 	asq.order = append(asq.order, o...)
 	return asq
-}
-
-// QueryAgentStatusToTag chains the current query on the "AgentStatusToTag" edge.
-func (asq *AgentStatusQuery) QueryAgentStatusToTag() *TagQuery {
-	query := &TagQuery{config: asq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := asq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := asq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentstatus.AgentStatusToTagTable, agentstatus.AgentStatusToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryAgentStatusToProvisionedHost chains the current query on the "AgentStatusToProvisionedHost" edge.
@@ -283,23 +259,11 @@ func (asq *AgentStatusQuery) Clone() *AgentStatusQuery {
 		offset:                           asq.offset,
 		order:                            append([]OrderFunc{}, asq.order...),
 		predicates:                       append([]predicate.AgentStatus{}, asq.predicates...),
-		withAgentStatusToTag:             asq.withAgentStatusToTag.Clone(),
 		withAgentStatusToProvisionedHost: asq.withAgentStatusToProvisionedHost.Clone(),
 		// clone intermediate query.
 		sql:  asq.sql.Clone(),
 		path: asq.path,
 	}
-}
-
-// WithAgentStatusToTag tells the query-builder to eager-load the nodes that are connected to
-// the "AgentStatusToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (asq *AgentStatusQuery) WithAgentStatusToTag(opts ...func(*TagQuery)) *AgentStatusQuery {
-	query := &TagQuery{config: asq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	asq.withAgentStatusToTag = query
-	return asq
 }
 
 // WithAgentStatusToProvisionedHost tells the query-builder to eager-load the nodes that are connected to
@@ -378,8 +342,7 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 	var (
 		nodes       = []*AgentStatus{}
 		_spec       = asq.querySpec()
-		loadedTypes = [2]bool{
-			asq.withAgentStatusToTag != nil,
+		loadedTypes = [1]bool{
 			asq.withAgentStatusToProvisionedHost != nil,
 		}
 	)
@@ -401,35 +364,6 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-
-	if query := asq.withAgentStatusToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*AgentStatus)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.AgentStatusToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(agentstatus.AgentStatusToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.agent_status_agent_status_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "agent_status_agent_status_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.AgentStatusToTag = append(node.Edges.AgentStatusToTag, n)
-		}
 	}
 
 	if query := asq.withAgentStatusToProvisionedHost; query != nil {

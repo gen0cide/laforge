@@ -122,19 +122,23 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 	return phu.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
-func (phu *ProvisionedHostUpdate) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.AddProvisionedHostToPlanIDs(ids...)
+// SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlanID(id int) *ProvisionedHostUpdate {
+	phu.mutation.SetProvisionedHostToPlanID(id)
 	return phu
 }
 
-// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
-func (phu *ProvisionedHostUpdate) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToPlanID(id *int) *ProvisionedHostUpdate {
+	if id != nil {
+		phu = phu.SetProvisionedHostToPlanID(*id)
 	}
-	return phu.AddProvisionedHostToPlanIDs(ids...)
+	return phu
+}
+
+// SetProvisionedHostToPlan sets the "ProvisionedHostToPlan" edge to the Plan entity.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlan(p *Plan) *ProvisionedHostUpdate {
+	return phu.SetProvisionedHostToPlanID(p.ID)
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -227,25 +231,10 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*Agent
 	return phu.RemoveProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// ClearProvisionedHostToPlan clears all "ProvisionedHostToPlan" edges to the Plan entity.
+// ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToPlan() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToPlan()
 	return phu
-}
-
-// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to Plan entities by IDs.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdate {
-	phu.mutation.RemoveProvisionedHostToPlanIDs(ids...)
-	return phu
-}
-
-// RemoveProvisionedHostToPlan removes "ProvisionedHostToPlan" edges to Plan entities.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return phu.RemoveProvisionedHostToPlanIDs(ids...)
 }
 
 // ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -600,7 +589,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if phu.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
 			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
@@ -611,31 +600,12 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phu.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := phu.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
 			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
@@ -793,19 +763,23 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*Agen
 	return phuo.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// AddProvisionedHostToPlanIDs adds the "ProvisionedHostToPlan" edge to the Plan entity by IDs.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.AddProvisionedHostToPlanIDs(ids...)
+// SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlanID(id int) *ProvisionedHostUpdateOne {
+	phuo.mutation.SetProvisionedHostToPlanID(id)
 	return phuo
 }
 
-// AddProvisionedHostToPlan adds the "ProvisionedHostToPlan" edges to the Plan entity.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToPlanID(id *int) *ProvisionedHostUpdateOne {
+	if id != nil {
+		phuo = phuo.SetProvisionedHostToPlanID(*id)
 	}
-	return phuo.AddProvisionedHostToPlanIDs(ids...)
+	return phuo
+}
+
+// SetProvisionedHostToPlan sets the "ProvisionedHostToPlan" edge to the Plan entity.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlan(p *Plan) *ProvisionedHostUpdateOne {
+	return phuo.SetProvisionedHostToPlanID(p.ID)
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -898,25 +872,10 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*A
 	return phuo.RemoveProvisionedHostToAgentStatuIDs(ids...)
 }
 
-// ClearProvisionedHostToPlan clears all "ProvisionedHostToPlan" edges to the Plan entity.
+// ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToPlan() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToPlan()
 	return phuo
-}
-
-// RemoveProvisionedHostToPlanIDs removes the "ProvisionedHostToPlan" edge to Plan entities by IDs.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToPlanIDs(ids ...int) *ProvisionedHostUpdateOne {
-	phuo.mutation.RemoveProvisionedHostToPlanIDs(ids...)
-	return phuo
-}
-
-// RemoveProvisionedHostToPlan removes "ProvisionedHostToPlan" edges to Plan entities.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToPlan(p ...*Plan) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return phuo.RemoveProvisionedHostToPlanIDs(ids...)
 }
 
 // ClearProvisionedHostToGinFileMiddleware clears the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -1276,7 +1235,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if phuo.mutation.ProvisionedHostToPlanCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
 			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
@@ -1287,31 +1246,12 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 					Column: plan.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := phuo.mutation.RemovedProvisionedHostToPlanIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToPlanCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   provisionedhost.ProvisionedHostToPlanTable,
-			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: plan.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := phuo.mutation.ProvisionedHostToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToPlanTable,
 			Columns: []string{provisionedhost.ProvisionedHostToPlanColumn},

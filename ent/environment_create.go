@@ -25,7 +25,6 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -100,21 +99,6 @@ func (ec *EnvironmentCreate) SetConfig(m map[string]string) *EnvironmentCreate {
 func (ec *EnvironmentCreate) SetTags(m map[string]string) *EnvironmentCreate {
 	ec.mutation.SetTags(m)
 	return ec
-}
-
-// AddEnvironmentToTagIDs adds the "EnvironmentToTag" edge to the Tag entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToTagIDs(ids ...int) *EnvironmentCreate {
-	ec.mutation.AddEnvironmentToTagIDs(ids...)
-	return ec
-}
-
-// AddEnvironmentToTag adds the "EnvironmentToTag" edges to the Tag entity.
-func (ec *EnvironmentCreate) AddEnvironmentToTag(t ...*Tag) *EnvironmentCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return ec.AddEnvironmentToTagIDs(ids...)
 }
 
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
@@ -556,25 +540,6 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		})
 		_node.Tags = value
 	}
-	if nodes := ec.mutation.EnvironmentToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   environment.EnvironmentToTagTable,
-			Columns: []string{environment.EnvironmentToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ec.mutation.EnvironmentToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -596,10 +561,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToHostTable,
-			Columns: environment.EnvironmentToHostPrimaryKey,
+			Columns: []string{environment.EnvironmentToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -634,10 +599,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToIdentityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToIdentityTable,
-			Columns: environment.EnvironmentToIdentityPrimaryKey,
+			Columns: []string{environment.EnvironmentToIdentityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -653,10 +618,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToCommandIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToCommandTable,
-			Columns: environment.EnvironmentToCommandPrimaryKey,
+			Columns: []string{environment.EnvironmentToCommandColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -672,10 +637,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToScriptTable,
-			Columns: environment.EnvironmentToScriptPrimaryKey,
+			Columns: []string{environment.EnvironmentToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -691,10 +656,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToFileDownloadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDownloadTable,
-			Columns: environment.EnvironmentToFileDownloadPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDownloadColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -710,10 +675,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToFileDeleteIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileDeleteTable,
-			Columns: environment.EnvironmentToFileDeletePrimaryKey,
+			Columns: []string{environment.EnvironmentToFileDeleteColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -729,10 +694,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToFileExtractIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFileExtractTable,
-			Columns: environment.EnvironmentToFileExtractPrimaryKey,
+			Columns: []string{environment.EnvironmentToFileExtractColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -767,10 +732,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToFindingTable,
-			Columns: environment.EnvironmentToFindingPrimaryKey,
+			Columns: []string{environment.EnvironmentToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -786,10 +751,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToDNSRecordIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToDNSRecordTable,
-			Columns: environment.EnvironmentToDNSRecordPrimaryKey,
+			Columns: []string{environment.EnvironmentToDNSRecordColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -824,10 +789,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ec.mutation.EnvironmentToNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   environment.EnvironmentToNetworkTable,
-			Columns: environment.EnvironmentToNetworkPrimaryKey,
+			Columns: []string{environment.EnvironmentToNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

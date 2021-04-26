@@ -13,6 +13,11 @@ type ConfigMap struct {
 	Value string `json:"value"`
 }
 
+type TagMap struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type VarsMap struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -114,31 +119,80 @@ func (e FindingSeverity) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type PlanType string
+
+const (
+	PlanTypeStartBuild       PlanType = "start_build"
+	PlanTypeStartTeam        PlanType = "start_team"
+	PlanTypeProvisionNetwork PlanType = "provision_network"
+	PlanTypeProvisionHost    PlanType = "provision_host"
+	PlanTypeExecuteStep      PlanType = "execute_step"
+	PlanTypeUndefined        PlanType = "undefined"
+)
+
+var AllPlanType = []PlanType{
+	PlanTypeStartBuild,
+	PlanTypeStartTeam,
+	PlanTypeProvisionNetwork,
+	PlanTypeProvisionHost,
+	PlanTypeExecuteStep,
+	PlanTypeUndefined,
+}
+
+func (e PlanType) IsValid() bool {
+	switch e {
+	case PlanTypeStartBuild, PlanTypeStartTeam, PlanTypeProvisionNetwork, PlanTypeProvisionHost, PlanTypeExecuteStep, PlanTypeUndefined:
+		return true
+	}
+	return false
+}
+
+func (e PlanType) String() string {
+	return string(e)
+}
+
+func (e *PlanType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PlanType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PlanType", str)
+	}
+	return nil
+}
+
+func (e PlanType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type ProvisionStatus string
 
 const (
-	ProvisionStatusProvStatusUndefined  ProvisionStatus = "ProvStatusUndefined"
-	ProvisionStatusProvStatusPlanning   ProvisionStatus = "ProvStatusPlanning"
-	ProvisionStatusProvStatusAwaiting   ProvisionStatus = "ProvStatusAwaiting"
-	ProvisionStatusProvStatusInProgress ProvisionStatus = "ProvStatusInProgress"
-	ProvisionStatusProvStatusFailed     ProvisionStatus = "ProvStatusFailed"
-	ProvisionStatusProvStatusComplete   ProvisionStatus = "ProvStatusComplete"
-	ProvisionStatusProvStatusTainted    ProvisionStatus = "ProvStatusTainted"
+	ProvisionStatusPlanning   ProvisionStatus = "PLANNING"
+	ProvisionStatusAwaiting   ProvisionStatus = "AWAITING"
+	ProvisionStatusInprogress ProvisionStatus = "INPROGRESS"
+	ProvisionStatusFailed     ProvisionStatus = "FAILED"
+	ProvisionStatusComplete   ProvisionStatus = "COMPLETE"
+	ProvisionStatusTainted    ProvisionStatus = "TAINTED"
+	ProvisionStatusUndefined  ProvisionStatus = "UNDEFINED"
 )
 
 var AllProvisionStatus = []ProvisionStatus{
-	ProvisionStatusProvStatusUndefined,
-	ProvisionStatusProvStatusPlanning,
-	ProvisionStatusProvStatusAwaiting,
-	ProvisionStatusProvStatusInProgress,
-	ProvisionStatusProvStatusFailed,
-	ProvisionStatusProvStatusComplete,
-	ProvisionStatusProvStatusTainted,
+	ProvisionStatusPlanning,
+	ProvisionStatusAwaiting,
+	ProvisionStatusInprogress,
+	ProvisionStatusFailed,
+	ProvisionStatusComplete,
+	ProvisionStatusTainted,
+	ProvisionStatusUndefined,
 }
 
 func (e ProvisionStatus) IsValid() bool {
 	switch e {
-	case ProvisionStatusProvStatusUndefined, ProvisionStatusProvStatusPlanning, ProvisionStatusProvStatusAwaiting, ProvisionStatusProvStatusInProgress, ProvisionStatusProvStatusFailed, ProvisionStatusProvStatusComplete, ProvisionStatusProvStatusTainted:
+	case ProvisionStatusPlanning, ProvisionStatusAwaiting, ProvisionStatusInprogress, ProvisionStatusFailed, ProvisionStatusComplete, ProvisionStatusTainted, ProvisionStatusUndefined:
 		return true
 	}
 	return false
@@ -162,5 +216,105 @@ func (e *ProvisionStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ProvisionStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ProvisionStatusFor string
+
+const (
+	ProvisionStatusForBuild              ProvisionStatusFor = "Build"
+	ProvisionStatusForTeam               ProvisionStatusFor = "Team"
+	ProvisionStatusForProvisionedNetwork ProvisionStatusFor = "ProvisionedNetwork"
+	ProvisionStatusForProvisionedHost    ProvisionStatusFor = "ProvisionedHost"
+	ProvisionStatusForProvisioningStep   ProvisionStatusFor = "ProvisioningStep"
+	ProvisionStatusForUndefined          ProvisionStatusFor = "Undefined"
+)
+
+var AllProvisionStatusFor = []ProvisionStatusFor{
+	ProvisionStatusForBuild,
+	ProvisionStatusForTeam,
+	ProvisionStatusForProvisionedNetwork,
+	ProvisionStatusForProvisionedHost,
+	ProvisionStatusForProvisioningStep,
+	ProvisionStatusForUndefined,
+}
+
+func (e ProvisionStatusFor) IsValid() bool {
+	switch e {
+	case ProvisionStatusForBuild, ProvisionStatusForTeam, ProvisionStatusForProvisionedNetwork, ProvisionStatusForProvisionedHost, ProvisionStatusForProvisioningStep, ProvisionStatusForUndefined:
+		return true
+	}
+	return false
+}
+
+func (e ProvisionStatusFor) String() string {
+	return string(e)
+}
+
+func (e *ProvisionStatusFor) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProvisionStatusFor(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProvisionStatusFor", str)
+	}
+	return nil
+}
+
+func (e ProvisionStatusFor) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ProvisioningStepType string
+
+const (
+	ProvisioningStepTypeScript       ProvisioningStepType = "Script"
+	ProvisioningStepTypeCommand      ProvisioningStepType = "Command"
+	ProvisioningStepTypeDNSRecord    ProvisioningStepType = "DNSRecord"
+	ProvisioningStepTypeFileDelete   ProvisioningStepType = "FileDelete"
+	ProvisioningStepTypeFileDownload ProvisioningStepType = "FileDownload"
+	ProvisioningStepTypeFileExtract  ProvisioningStepType = "FileExtract"
+	ProvisioningStepTypeUndefined    ProvisioningStepType = "Undefined"
+)
+
+var AllProvisioningStepType = []ProvisioningStepType{
+	ProvisioningStepTypeScript,
+	ProvisioningStepTypeCommand,
+	ProvisioningStepTypeDNSRecord,
+	ProvisioningStepTypeFileDelete,
+	ProvisioningStepTypeFileDownload,
+	ProvisioningStepTypeFileExtract,
+	ProvisioningStepTypeUndefined,
+}
+
+func (e ProvisioningStepType) IsValid() bool {
+	switch e {
+	case ProvisioningStepTypeScript, ProvisioningStepTypeCommand, ProvisioningStepTypeDNSRecord, ProvisioningStepTypeFileDelete, ProvisioningStepTypeFileDownload, ProvisioningStepTypeFileExtract, ProvisioningStepTypeUndefined:
+		return true
+	}
+	return false
+}
+
+func (e ProvisioningStepType) String() string {
+	return string(e)
+}
+
+func (e *ProvisioningStepType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProvisioningStepType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProvisioningStepType", str)
+	}
+	return nil
+}
+
+func (e ProvisioningStepType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

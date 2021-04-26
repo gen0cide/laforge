@@ -563,41 +563,13 @@ func TypeContainsFold(v string) predicate.FileExtract {
 	})
 }
 
-// HasFileExtractToTag applies the HasEdge predicate on the "FileExtractToTag" edge.
-func HasFileExtractToTag() predicate.FileExtract {
-	return predicate.FileExtract(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileExtractToTagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractToTagTable, FileExtractToTagColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFileExtractToTagWith applies the HasEdge predicate on the "FileExtractToTag" edge with a given conditions (other predicates).
-func HasFileExtractToTagWith(preds ...predicate.Tag) predicate.FileExtract {
-	return predicate.FileExtract(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FileExtractToTagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FileExtractToTagTable, FileExtractToTagColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasFileExtractToEnvironment applies the HasEdge predicate on the "FileExtractToEnvironment" edge.
 func HasFileExtractToEnvironment() predicate.FileExtract {
 	return predicate.FileExtract(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FileExtractToEnvironmentTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -609,7 +581,7 @@ func HasFileExtractToEnvironmentWith(preds ...predicate.Environment) predicate.F
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(FileExtractToEnvironmentInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, FileExtractToEnvironmentTable, FileExtractToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

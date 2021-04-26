@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 )
 
@@ -27,38 +28,30 @@ type FileDelete struct {
 	Edges FileDeleteEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
-	HCLFileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
 	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
-	HCLFileDeleteToEnvironment []*Environment `json:"FileDeleteToEnvironment,omitempty"`
+	HCLFileDeleteToEnvironment *Environment `json:"FileDeleteToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_file_delete *int
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
 type FileDeleteEdges struct {
-	// FileDeleteToTag holds the value of the FileDeleteToTag edge.
-	FileDeleteToTag []*Tag `json:"FileDeleteToTag,omitempty"`
 	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
-	FileDeleteToEnvironment []*Environment `json:"FileDeleteToEnvironment,omitempty"`
+	FileDeleteToEnvironment *Environment `json:"FileDeleteToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// FileDeleteToTagOrErr returns the FileDeleteToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileDeleteEdges) FileDeleteToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.FileDeleteToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "FileDeleteToTag"}
+	loadedTypes [1]bool
 }
 
 // FileDeleteToEnvironmentOrErr returns the FileDeleteToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e FileDeleteEdges) FileDeleteToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FileDeleteEdges) FileDeleteToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[0] {
+		if e.FileDeleteToEnvironment == nil {
+			// The edge FileDeleteToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.FileDeleteToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "FileDeleteToEnvironment"}
@@ -75,6 +68,8 @@ func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case filedelete.FieldHclID, filedelete.FieldPath:
 			values[i] = &sql.NullString{}
+		case filedelete.ForeignKeys[0]: // environment_environment_to_file_delete
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDelete", columns[i])
 		}
@@ -117,14 +112,16 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case filedelete.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_delete", value)
+			} else if value.Valid {
+				fd.environment_environment_to_file_delete = new(int)
+				*fd.environment_environment_to_file_delete = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryFileDeleteToTag queries the "FileDeleteToTag" edge of the FileDelete entity.
-func (fd *FileDelete) QueryFileDeleteToTag() *TagQuery {
-	return (&FileDeleteClient{config: fd.config}).QueryFileDeleteToTag(fd)
 }
 
 // QueryFileDeleteToEnvironment queries the "FileDeleteToEnvironment" edge of the FileDelete entity.

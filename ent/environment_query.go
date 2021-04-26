@@ -29,7 +29,6 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -42,7 +41,6 @@ type EnvironmentQuery struct {
 	fields     []string
 	predicates []predicate.Environment
 	// eager-loading edges.
-	withEnvironmentToTag             *TagQuery
 	withEnvironmentToUser            *UserQuery
 	withEnvironmentToHost            *HostQuery
 	withEnvironmentToCompetition     *CompetitionQuery
@@ -88,28 +86,6 @@ func (eq *EnvironmentQuery) Order(o ...OrderFunc) *EnvironmentQuery {
 	return eq
 }
 
-// QueryEnvironmentToTag chains the current query on the "EnvironmentToTag" edge.
-func (eq *EnvironmentQuery) QueryEnvironmentToTag() *TagQuery {
-	query := &TagQuery{config: eq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := eq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToTagTable, environment.EnvironmentToTagColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryEnvironmentToUser chains the current query on the "EnvironmentToUser" edge.
 func (eq *EnvironmentQuery) QueryEnvironmentToUser() *UserQuery {
 	query := &UserQuery{config: eq.config}
@@ -146,7 +122,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToHost() *HostQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToHostTable, environment.EnvironmentToHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToHostTable, environment.EnvironmentToHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -190,7 +166,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToIdentity() *IdentityQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(identity.Table, identity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -212,7 +188,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToCommand() *CommandQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(command.Table, command.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -234,7 +210,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToScript() *ScriptQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -256,7 +232,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToFileDownload() *FileDownloadQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(filedownload.Table, filedownload.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -278,7 +254,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToFileDelete() *FileDeleteQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(filedelete.Table, filedelete.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeletePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeleteColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,7 +276,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToFileExtract() *FileExtractQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(fileextract.Table, fileextract.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -344,7 +320,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToFinding() *FindingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -366,7 +342,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToDNSRecord() *DNSRecordQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -410,7 +386,7 @@ func (eq *EnvironmentQuery) QueryEnvironmentToNetwork() *NetworkQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, selector),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -643,7 +619,6 @@ func (eq *EnvironmentQuery) Clone() *EnvironmentQuery {
 		offset:                           eq.offset,
 		order:                            append([]OrderFunc{}, eq.order...),
 		predicates:                       append([]predicate.Environment{}, eq.predicates...),
-		withEnvironmentToTag:             eq.withEnvironmentToTag.Clone(),
 		withEnvironmentToUser:            eq.withEnvironmentToUser.Clone(),
 		withEnvironmentToHost:            eq.withEnvironmentToHost.Clone(),
 		withEnvironmentToCompetition:     eq.withEnvironmentToCompetition.Clone(),
@@ -664,17 +639,6 @@ func (eq *EnvironmentQuery) Clone() *EnvironmentQuery {
 		sql:  eq.sql.Clone(),
 		path: eq.path,
 	}
-}
-
-// WithEnvironmentToTag tells the query-builder to eager-load the nodes that are connected to
-// the "EnvironmentToTag" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EnvironmentQuery) WithEnvironmentToTag(opts ...func(*TagQuery)) *EnvironmentQuery {
-	query := &TagQuery{config: eq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	eq.withEnvironmentToTag = query
-	return eq
 }
 
 // WithEnvironmentToUser tells the query-builder to eager-load the nodes that are connected to
@@ -918,8 +882,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 	var (
 		nodes       = []*Environment{}
 		_spec       = eq.querySpec()
-		loadedTypes = [17]bool{
-			eq.withEnvironmentToTag != nil,
+		loadedTypes = [16]bool{
 			eq.withEnvironmentToUser != nil,
 			eq.withEnvironmentToHost != nil,
 			eq.withEnvironmentToCompetition != nil,
@@ -956,35 +919,6 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-
-	if query := eq.withEnvironmentToTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.EnvironmentToTag = []*Tag{}
-		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(environment.EnvironmentToTagColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.environment_environment_to_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "environment_environment_to_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_tag" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.EnvironmentToTag = append(node.Edges.EnvironmentToTag, n)
-		}
 	}
 
 	if query := eq.withEnvironmentToUser; query != nil {
@@ -1053,65 +987,30 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToHost = []*Host{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToHost = []*Host{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToHostTable,
-				Columns: environment.EnvironmentToHostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToHostPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToHost": %v`, err)
-		}
-		query.Where(host.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Host(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToHostColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_host" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_host" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToHost = append(nodes[i].Edges.EnvironmentToHost, n)
-			}
+			node.Edges.EnvironmentToHost = append(node.Edges.EnvironmentToHost, n)
 		}
 	}
 
@@ -1146,385 +1045,175 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToIdentity; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToIdentity = []*Identity{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToIdentity = []*Identity{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToIdentityTable,
-				Columns: environment.EnvironmentToIdentityPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToIdentityPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToIdentity": %v`, err)
-		}
-		query.Where(identity.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Identity(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToIdentityColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_identity
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_identity" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToIdentity" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_identity" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToIdentity = append(nodes[i].Edges.EnvironmentToIdentity, n)
-			}
+			node.Edges.EnvironmentToIdentity = append(node.Edges.EnvironmentToIdentity, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToCommand; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToCommand = []*Command{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToCommand = []*Command{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToCommandTable,
-				Columns: environment.EnvironmentToCommandPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToCommandPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToCommand": %v`, err)
-		}
-		query.Where(command.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Command(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToCommandColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_command
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_command" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToCommand" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_command" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToCommand = append(nodes[i].Edges.EnvironmentToCommand, n)
-			}
+			node.Edges.EnvironmentToCommand = append(node.Edges.EnvironmentToCommand, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToScript; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToScript = []*Script{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToScript = []*Script{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToScriptTable,
-				Columns: environment.EnvironmentToScriptPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToScriptPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToScript": %v`, err)
-		}
-		query.Where(script.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Script(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToScriptColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_script
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_script" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToScript" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_script" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToScript = append(nodes[i].Edges.EnvironmentToScript, n)
-			}
+			node.Edges.EnvironmentToScript = append(node.Edges.EnvironmentToScript, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToFileDownload; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToFileDownload = []*FileDownload{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToFileDownload = []*FileDownload{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToFileDownloadTable,
-				Columns: environment.EnvironmentToFileDownloadPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToFileDownloadPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToFileDownload": %v`, err)
-		}
-		query.Where(filedownload.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.FileDownload(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToFileDownloadColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_file_download
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_file_download" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToFileDownload" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_file_download" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToFileDownload = append(nodes[i].Edges.EnvironmentToFileDownload, n)
-			}
+			node.Edges.EnvironmentToFileDownload = append(node.Edges.EnvironmentToFileDownload, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToFileDelete; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToFileDelete = []*FileDelete{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToFileDelete = []*FileDelete{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToFileDeleteTable,
-				Columns: environment.EnvironmentToFileDeletePrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToFileDeletePrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToFileDelete": %v`, err)
-		}
-		query.Where(filedelete.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.FileDelete(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToFileDeleteColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_file_delete
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_file_delete" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToFileDelete" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_file_delete" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToFileDelete = append(nodes[i].Edges.EnvironmentToFileDelete, n)
-			}
+			node.Edges.EnvironmentToFileDelete = append(node.Edges.EnvironmentToFileDelete, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToFileExtract; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToFileExtract = []*FileExtract{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToFileExtract = []*FileExtract{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToFileExtractTable,
-				Columns: environment.EnvironmentToFileExtractPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToFileExtractPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToFileExtract": %v`, err)
-		}
-		query.Where(fileextract.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.FileExtract(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToFileExtractColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_file_extract
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_file_extract" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToFileExtract" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_file_extract" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToFileExtract = append(nodes[i].Edges.EnvironmentToFileExtract, n)
-			}
+			node.Edges.EnvironmentToFileExtract = append(node.Edges.EnvironmentToFileExtract, n)
 		}
 	}
 
@@ -1594,129 +1283,59 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToFinding; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToFinding = []*Finding{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToFinding = []*Finding{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToFindingTable,
-				Columns: environment.EnvironmentToFindingPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToFindingPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToFinding": %v`, err)
-		}
-		query.Where(finding.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Finding(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToFindingColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_finding
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_finding" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToFinding" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_finding" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToFinding = append(nodes[i].Edges.EnvironmentToFinding, n)
-			}
+			node.Edges.EnvironmentToFinding = append(node.Edges.EnvironmentToFinding, n)
 		}
 	}
 
 	if query := eq.withEnvironmentToDNSRecord; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToDNSRecord = []*DNSRecord{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToDNSRecord = []*DNSRecord{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToDNSRecordTable,
-				Columns: environment.EnvironmentToDNSRecordPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToDNSRecordPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToDNSRecord": %v`, err)
-		}
-		query.Where(dnsrecord.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.DNSRecord(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToDNSRecordColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_dns_record
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_dns_record" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToDNSRecord" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_dns_record" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToDNSRecord = append(nodes[i].Edges.EnvironmentToDNSRecord, n)
-			}
+			node.Edges.EnvironmentToDNSRecord = append(node.Edges.EnvironmentToDNSRecord, n)
 		}
 	}
 
@@ -1786,65 +1405,30 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.EnvironmentToNetwork = []*Network{}
+		nodeids := make(map[int]*Environment)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.EnvironmentToNetwork = []*Network{}
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   environment.EnvironmentToNetworkTable,
-				Columns: environment.EnvironmentToNetworkPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(environment.EnvironmentToNetworkPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToNetwork": %v`, err)
-		}
-		query.Where(network.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.Network(func(s *sql.Selector) {
+			s.Where(sql.InValues(environment.EnvironmentToNetworkColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.environment_environment_to_network
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "environment_environment_to_network" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "EnvironmentToNetwork" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_network" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.EnvironmentToNetwork = append(nodes[i].Edges.EnvironmentToNetwork, n)
-			}
+			node.Edges.EnvironmentToNetwork = append(node.Edges.EnvironmentToNetwork, n)
 		}
 	}
 

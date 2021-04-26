@@ -40,8 +40,8 @@ func (FileDownload) Fields() []ent.Field {
 // Edges of the FileDownload.
 func (FileDownload) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("FileDownloadToTag", Tag.Type),
 		edge.From("FileDownloadToEnvironment", Environment.Type).
-			Ref("EnvironmentToFileDownload"),
+			Ref("EnvironmentToFileDownload").
+			Unique(),
 	}
 }

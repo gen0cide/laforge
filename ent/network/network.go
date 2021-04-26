@@ -20,8 +20,6 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeNetworkToTag holds the string denoting the networktotag edge name in mutations.
-	EdgeNetworkToTag = "NetworkToTag"
 	// EdgeNetworkToEnvironment holds the string denoting the networktoenvironment edge name in mutations.
 	EdgeNetworkToEnvironment = "NetworkToEnvironment"
 	// EdgeNetworkToHostDependency holds the string denoting the networktohostdependency edge name in mutations.
@@ -31,18 +29,13 @@ const (
 
 	// Table holds the table name of the network in the database.
 	Table = "networks"
-	// NetworkToTagTable is the table the holds the NetworkToTag relation/edge.
-	NetworkToTagTable = "tags"
-	// NetworkToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	NetworkToTagInverseTable = "tags"
-	// NetworkToTagColumn is the table column denoting the NetworkToTag relation/edge.
-	NetworkToTagColumn = "network_network_to_tag"
-	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge. The primary key declared below.
-	NetworkToEnvironmentTable = "environment_EnvironmentToNetwork"
+	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge.
+	NetworkToEnvironmentTable = "networks"
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	NetworkToEnvironmentInverseTable = "environments"
+	// NetworkToEnvironmentColumn is the table column denoting the NetworkToEnvironment relation/edge.
+	NetworkToEnvironmentColumn = "environment_environment_to_network"
 	// NetworkToHostDependencyTable is the table the holds the NetworkToHostDependency relation/edge.
 	NetworkToHostDependencyTable = "host_dependencies"
 	// NetworkToHostDependencyInverseTable is the table name for the HostDependency entity.
@@ -68,10 +61,12 @@ var Columns = []string{
 	FieldTags,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the Network type.
+var ForeignKeys = []string{
+	"environment_environment_to_network",
+}
+
 var (
-	// NetworkToEnvironmentPrimaryKey and NetworkToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the NetworkToEnvironment relation (M2M).
-	NetworkToEnvironmentPrimaryKey = []string{"environment_id", "network_id"}
 	// NetworkToIncludedNetworkPrimaryKey and NetworkToIncludedNetworkColumn2 are the table columns denoting the
 	// primary key for the NetworkToIncludedNetwork relation (M2M).
 	NetworkToIncludedNetworkPrimaryKey = []string{"included_network_id", "network_id"}
@@ -81,6 +76,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

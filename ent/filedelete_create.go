@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // FileDeleteCreate is the builder for creating a FileDelete entity.
@@ -39,34 +38,23 @@ func (fdc *FileDeleteCreate) SetTags(m map[string]string) *FileDeleteCreate {
 	return fdc
 }
 
-// AddFileDeleteToTagIDs adds the "FileDeleteToTag" edge to the Tag entity by IDs.
-func (fdc *FileDeleteCreate) AddFileDeleteToTagIDs(ids ...int) *FileDeleteCreate {
-	fdc.mutation.AddFileDeleteToTagIDs(ids...)
+// SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
+func (fdc *FileDeleteCreate) SetFileDeleteToEnvironmentID(id int) *FileDeleteCreate {
+	fdc.mutation.SetFileDeleteToEnvironmentID(id)
 	return fdc
 }
 
-// AddFileDeleteToTag adds the "FileDeleteToTag" edges to the Tag entity.
-func (fdc *FileDeleteCreate) AddFileDeleteToTag(t ...*Tag) *FileDeleteCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fdc *FileDeleteCreate) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteCreate {
+	if id != nil {
+		fdc = fdc.SetFileDeleteToEnvironmentID(*id)
 	}
-	return fdc.AddFileDeleteToTagIDs(ids...)
-}
-
-// AddFileDeleteToEnvironmentIDs adds the "FileDeleteToEnvironment" edge to the Environment entity by IDs.
-func (fdc *FileDeleteCreate) AddFileDeleteToEnvironmentIDs(ids ...int) *FileDeleteCreate {
-	fdc.mutation.AddFileDeleteToEnvironmentIDs(ids...)
 	return fdc
 }
 
-// AddFileDeleteToEnvironment adds the "FileDeleteToEnvironment" edges to the Environment entity.
-func (fdc *FileDeleteCreate) AddFileDeleteToEnvironment(e ...*Environment) *FileDeleteCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return fdc.AddFileDeleteToEnvironmentIDs(ids...)
+// SetFileDeleteToEnvironment sets the "FileDeleteToEnvironment" edge to the Environment entity.
+func (fdc *FileDeleteCreate) SetFileDeleteToEnvironment(e *Environment) *FileDeleteCreate {
+	return fdc.SetFileDeleteToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -180,31 +168,12 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		})
 		_node.Tags = value
 	}
-	if nodes := fdc.mutation.FileDeleteToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.FileDeleteToTagTable,
-			Columns: []string{filedelete.FileDeleteToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := fdc.mutation.FileDeleteToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   filedelete.FileDeleteToEnvironmentTable,
-			Columns: filedelete.FileDeleteToEnvironmentPrimaryKey,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/environment"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -103,34 +102,23 @@ func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
 	return cc.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
-func (cc *CommandCreate) AddCommandToTagIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddCommandToTagIDs(ids...)
+// SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
+func (cc *CommandCreate) SetCommandToEnvironmentID(id int) *CommandCreate {
+	cc.mutation.SetCommandToEnvironmentID(id)
 	return cc
 }
 
-// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
-func (cc *CommandCreate) AddCommandToTag(t ...*Tag) *CommandCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cc *CommandCreate) SetNillableCommandToEnvironmentID(id *int) *CommandCreate {
+	if id != nil {
+		cc = cc.SetCommandToEnvironmentID(*id)
 	}
-	return cc.AddCommandToTagIDs(ids...)
-}
-
-// AddCommandToEnvironmentIDs adds the "CommandToEnvironment" edge to the Environment entity by IDs.
-func (cc *CommandCreate) AddCommandToEnvironmentIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddCommandToEnvironmentIDs(ids...)
 	return cc
 }
 
-// AddCommandToEnvironment adds the "CommandToEnvironment" edges to the Environment entity.
-func (cc *CommandCreate) AddCommandToEnvironment(e ...*Environment) *CommandCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return cc.AddCommandToEnvironmentIDs(ids...)
+// SetCommandToEnvironment sets the "CommandToEnvironment" edge to the Environment entity.
+func (cc *CommandCreate) SetCommandToEnvironment(e *Environment) *CommandCreate {
+	return cc.SetCommandToEnvironmentID(e.ID)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -361,31 +349,12 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := cc.mutation.CommandToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := cc.mutation.CommandToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

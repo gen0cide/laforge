@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/identity"
 )
 
@@ -40,24 +41,29 @@ type Identity struct {
 
 	// Edges put into the main struct to be loaded via hcl
 	// IdentityToEnvironment holds the value of the IdentityToEnvironment edge.
-	HCLIdentityToEnvironment []*Environment `json:"IdentityToEnvironment,omitempty"`
+	HCLIdentityToEnvironment *Environment `json:"IdentityToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_identity *int
 }
 
 // IdentityEdges holds the relations/edges for other nodes in the graph.
 type IdentityEdges struct {
 	// IdentityToEnvironment holds the value of the IdentityToEnvironment edge.
-	IdentityToEnvironment []*Environment `json:"IdentityToEnvironment,omitempty"`
+	IdentityToEnvironment *Environment `json:"IdentityToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
 // IdentityToEnvironmentOrErr returns the IdentityToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e IdentityEdges) IdentityToEnvironmentOrErr() ([]*Environment, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IdentityEdges) IdentityToEnvironmentOrErr() (*Environment, error) {
 	if e.loadedTypes[0] {
+		if e.IdentityToEnvironment == nil {
+			// The edge IdentityToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.IdentityToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "IdentityToEnvironment"}
@@ -74,6 +80,8 @@ func (*Identity) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case identity.FieldHclID, identity.FieldFirstName, identity.FieldLastName, identity.FieldEmail, identity.FieldPassword, identity.FieldDescription, identity.FieldAvatarFile:
 			values[i] = &sql.NullString{}
+		case identity.ForeignKeys[0]: // environment_environment_to_identity
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Identity", columns[i])
 		}
@@ -154,6 +162,13 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &i.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
+			}
+		case identity.ForeignKeys[0]:
+			if value, ok := values[j].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_identity", value)
+			} else if value.Valid {
+				i.environment_environment_to_identity = new(int)
+				*i.environment_environment_to_identity = int(value.Int64)
 			}
 		}
 	}

@@ -43,7 +43,7 @@ const (
 	// TeamToProvisionedNetworkColumn is the table column denoting the TeamToProvisionedNetwork relation/edge.
 	TeamToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_team"
 	// TeamToPlanTable is the table the holds the TeamToPlan relation/edge.
-	TeamToPlanTable = "plans"
+	TeamToPlanTable = "teams"
 	// TeamToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	TeamToPlanInverseTable = "plans"
@@ -59,6 +59,7 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Team type.
 var ForeignKeys = []string{
+	"plan_plan_to_team",
 	"team_team_to_build",
 }
 

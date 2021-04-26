@@ -40,11 +40,12 @@ type ProvisionedHost struct {
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	HCLProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
-	HCLProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
+	HCLProvisionedHostToPlan *Plan `json:"ProvisionedHostToPlan,omitempty"`
 	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
 	HCLProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	//
 	gin_file_middleware_gin_file_middleware_to_provisioned_host *int
+	plan_plan_to_provisioned_host                               *int
 	provisioned_host_provisioned_host_to_provisioned_network    *int
 	provisioned_host_provisioned_host_to_host                   *int
 	provisioned_host_provisioned_host_to_end_step_plan          *int
@@ -65,7 +66,7 @@ type ProvisionedHostEdges struct {
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	ProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
-	ProvisionedHostToPlan []*Plan `json:"ProvisionedHostToPlan,omitempty"`
+	ProvisionedHostToPlan *Plan `json:"ProvisionedHostToPlan,omitempty"`
 	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
 	ProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -148,9 +149,14 @@ func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatu
 }
 
 // ProvisionedHostToPlanOrErr returns the ProvisionedHostToPlan value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() ([]*Plan, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() (*Plan, error) {
 	if e.loadedTypes[6] {
+		if e.ProvisionedHostToPlan == nil {
+			// The edge ProvisionedHostToPlan was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: plan.Label}
+		}
 		return e.ProvisionedHostToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "ProvisionedHostToPlan"}
@@ -181,11 +187,13 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullString{}
 		case provisionedhost.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioned_host
 			values[i] = &sql.NullInt64{}
-		case provisionedhost.ForeignKeys[1]: // provisioned_host_provisioned_host_to_provisioned_network
+		case provisionedhost.ForeignKeys[1]: // plan_plan_to_provisioned_host
 			values[i] = &sql.NullInt64{}
-		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_host
+		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_provisioned_network
 			values[i] = &sql.NullInt64{}
-		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_end_step_plan
+		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_host
+			values[i] = &sql.NullInt64{}
+		case provisionedhost.ForeignKeys[4]: // provisioned_host_provisioned_host_to_end_step_plan
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
@@ -223,19 +231,26 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 			}
 		case provisionedhost.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_host", value)
+			} else if value.Valid {
+				ph.plan_plan_to_provisioned_host = new(int)
+				*ph.plan_plan_to_provisioned_host = int(value.Int64)
+			}
+		case provisionedhost.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_provisioned_network", value)
 			} else if value.Valid {
 				ph.provisioned_host_provisioned_host_to_provisioned_network = new(int)
 				*ph.provisioned_host_provisioned_host_to_provisioned_network = int(value.Int64)
 			}
-		case provisionedhost.ForeignKeys[2]:
+		case provisionedhost.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_host", value)
 			} else if value.Valid {
 				ph.provisioned_host_provisioned_host_to_host = new(int)
 				*ph.provisioned_host_provisioned_host_to_host = int(value.Int64)
 			}
-		case provisionedhost.ForeignKeys[3]:
+		case provisionedhost.ForeignKeys[4]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_end_step_plan", value)
 			} else if value.Valid {

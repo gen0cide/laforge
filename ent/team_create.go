@@ -74,19 +74,23 @@ func (tc *TeamCreate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *Tea
 	return tc.AddTeamToProvisionedNetworkIDs(ids...)
 }
 
-// AddTeamToPlanIDs adds the "TeamToPlan" edge to the Plan entity by IDs.
-func (tc *TeamCreate) AddTeamToPlanIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToPlanIDs(ids...)
+// SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
+func (tc *TeamCreate) SetTeamToPlanID(id int) *TeamCreate {
+	tc.mutation.SetTeamToPlanID(id)
 	return tc
 }
 
-// AddTeamToPlan adds the "TeamToPlan" edges to the Plan entity.
-func (tc *TeamCreate) AddTeamToPlan(p ...*Plan) *TeamCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (tc *TeamCreate) SetNillableTeamToPlanID(id *int) *TeamCreate {
+	if id != nil {
+		tc = tc.SetTeamToPlanID(*id)
 	}
-	return tc.AddTeamToPlanIDs(ids...)
+	return tc
+}
+
+// SetTeamToPlan sets the "TeamToPlan" edge to the Plan entity.
+func (tc *TeamCreate) SetTeamToPlan(p *Plan) *TeamCreate {
+	return tc.SetTeamToPlanID(p.ID)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -240,7 +244,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.TeamToPlanIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   team.TeamToPlanTable,
 			Columns: []string{team.TeamToPlanColumn},

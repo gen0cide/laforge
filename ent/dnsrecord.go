@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
+	"github.com/gen0cide/laforge/ent/environment"
 )
 
 // DNSRecord is the model entity for the DNSRecord schema.
@@ -37,38 +38,30 @@ type DNSRecord struct {
 	Edges DNSRecordEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
-	HCLDNSRecordToTag []*Tag `json:"DNSRecordToTag,omitempty"`
 	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
-	HCLDNSRecordToEnvironment []*Environment `json:"DNSRecordToEnvironment,omitempty"`
+	HCLDNSRecordToEnvironment *Environment `json:"DNSRecordToEnvironment,omitempty"`
 	//
-
+	environment_environment_to_dns_record *int
 }
 
 // DNSRecordEdges holds the relations/edges for other nodes in the graph.
 type DNSRecordEdges struct {
-	// DNSRecordToTag holds the value of the DNSRecordToTag edge.
-	DNSRecordToTag []*Tag `json:"DNSRecordToTag,omitempty"`
 	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
-	DNSRecordToEnvironment []*Environment `json:"DNSRecordToEnvironment,omitempty"`
+	DNSRecordToEnvironment *Environment `json:"DNSRecordToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// DNSRecordToTagOrErr returns the DNSRecordToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e DNSRecordEdges) DNSRecordToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.DNSRecordToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "DNSRecordToTag"}
+	loadedTypes [1]bool
 }
 
 // DNSRecordToEnvironmentOrErr returns the DNSRecordToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e DNSRecordEdges) DNSRecordToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DNSRecordEdges) DNSRecordToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[0] {
+		if e.DNSRecordToEnvironment == nil {
+			// The edge DNSRecordToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.DNSRecordToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "DNSRecordToEnvironment"}
@@ -87,6 +80,8 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case dnsrecord.FieldHclID, dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
 			values[i] = &sql.NullString{}
+		case dnsrecord.ForeignKeys[0]: // environment_environment_to_dns_record
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNSRecord", columns[i])
 		}
@@ -165,14 +160,16 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case dnsrecord.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_dns_record", value)
+			} else if value.Valid {
+				dr.environment_environment_to_dns_record = new(int)
+				*dr.environment_environment_to_dns_record = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryDNSRecordToTag queries the "DNSRecordToTag" edge of the DNSRecord entity.
-func (dr *DNSRecord) QueryDNSRecordToTag() *TagQuery {
-	return (&DNSRecordClient{config: dr.config}).QueryDNSRecordToTag(dr)
 }
 
 // QueryDNSRecordToEnvironment queries the "DNSRecordToEnvironment" edge of the DNSRecord entity.

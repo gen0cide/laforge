@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -107,21 +106,6 @@ func (sc *ScriptCreate) SetTags(m map[string]string) *ScriptCreate {
 	return sc
 }
 
-// AddScriptToTagIDs adds the "ScriptToTag" edge to the Tag entity by IDs.
-func (sc *ScriptCreate) AddScriptToTagIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddScriptToTagIDs(ids...)
-	return sc
-}
-
-// AddScriptToTag adds the "ScriptToTag" edges to the Tag entity.
-func (sc *ScriptCreate) AddScriptToTag(t ...*Tag) *ScriptCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return sc.AddScriptToTagIDs(ids...)
-}
-
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
 func (sc *ScriptCreate) AddScriptToUserIDs(ids ...int) *ScriptCreate {
 	sc.mutation.AddScriptToUserIDs(ids...)
@@ -152,19 +136,23 @@ func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
 	return sc.AddScriptToFindingIDs(ids...)
 }
 
-// AddScriptToEnvironmentIDs adds the "ScriptToEnvironment" edge to the Environment entity by IDs.
-func (sc *ScriptCreate) AddScriptToEnvironmentIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddScriptToEnvironmentIDs(ids...)
+// SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
+func (sc *ScriptCreate) SetScriptToEnvironmentID(id int) *ScriptCreate {
+	sc.mutation.SetScriptToEnvironmentID(id)
 	return sc
 }
 
-// AddScriptToEnvironment adds the "ScriptToEnvironment" edges to the Environment entity.
-func (sc *ScriptCreate) AddScriptToEnvironment(e ...*Environment) *ScriptCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (sc *ScriptCreate) SetNillableScriptToEnvironmentID(id *int) *ScriptCreate {
+	if id != nil {
+		sc = sc.SetScriptToEnvironmentID(*id)
 	}
-	return sc.AddScriptToEnvironmentIDs(ids...)
+	return sc
+}
+
+// SetScriptToEnvironment sets the "ScriptToEnvironment" edge to the Environment entity.
+func (sc *ScriptCreate) SetScriptToEnvironment(e *Environment) *ScriptCreate {
+	return sc.SetScriptToEnvironmentID(e.ID)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -399,25 +387,6 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		})
 		_node.Tags = value
 	}
-	if nodes := sc.mutation.ScriptToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.ScriptToTagTable,
-			Columns: []string{script.ScriptToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := sc.mutation.ScriptToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -439,10 +408,10 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   script.ScriptToFindingTable,
-			Columns: script.ScriptToFindingPrimaryKey,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -458,10 +427,10 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   script.ScriptToEnvironmentTable,
-			Columns: script.ScriptToEnvironmentPrimaryKey,
+			Columns: []string{script.ScriptToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

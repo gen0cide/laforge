@@ -70,7 +70,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
 	ProvisionedHostToAgentStatusInverseTable = "agent_status"
 	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge.
-	ProvisionedHostToPlanTable = "plans"
+	ProvisionedHostToPlanTable = "provisioned_hosts"
 	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedHostToPlanInverseTable = "plans"
@@ -94,6 +94,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
 var ForeignKeys = []string{
 	"gin_file_middleware_gin_file_middleware_to_provisioned_host",
+	"plan_plan_to_provisioned_host",
 	"provisioned_host_provisioned_host_to_provisioned_network",
 	"provisioned_host_provisioned_host_to_host",
 	"provisioned_host_provisioned_host_to_end_step_plan",

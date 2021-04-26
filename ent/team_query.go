@@ -143,7 +143,7 @@ func (tq *TeamQuery) QueryTeamToPlan() *PlanQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamToPlanTable, team.TeamToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, team.TeamToPlanTable, team.TeamToPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -459,7 +459,7 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 			tq.withTeamToPlan != nil,
 		}
 	)
-	if tq.withTeamToBuild != nil {
+	if tq.withTeamToBuild != nil || tq.withTeamToPlan != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -568,31 +568,27 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 	}
 
 	if query := tq.withTeamToPlan; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Team)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.TeamToPlan = []*Plan{}
+			if fk := nodes[i].plan_plan_to_team; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
 		}
-		query.withFKs = true
-		query.Where(predicate.Plan(func(s *sql.Selector) {
-			s.Where(sql.InValues(team.TeamToPlanColumn, fks...))
-		}))
+		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.plan_plan_to_team
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "plan_plan_to_team" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_team" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_team" returned %v`, n.ID)
 			}
-			node.Edges.TeamToPlan = append(node.Edges.TeamToPlan, n)
+			for i := range nodes {
+				nodes[i].Edges.TeamToPlan = n
+			}
 		}
 	}
 

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSRecordCreate is the builder for creating a DNSRecord entity.
@@ -69,34 +68,23 @@ func (drc *DNSRecordCreate) SetTags(m map[string]string) *DNSRecordCreate {
 	return drc
 }
 
-// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by IDs.
-func (drc *DNSRecordCreate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordCreate {
-	drc.mutation.AddDNSRecordToTagIDs(ids...)
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
+func (drc *DNSRecordCreate) SetDNSRecordToEnvironmentID(id int) *DNSRecordCreate {
+	drc.mutation.SetDNSRecordToEnvironmentID(id)
 	return drc
 }
 
-// AddDNSRecordToTag adds the "DNSRecordToTag" edges to the Tag entity.
-func (drc *DNSRecordCreate) AddDNSRecordToTag(t ...*Tag) *DNSRecordCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (drc *DNSRecordCreate) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordCreate {
+	if id != nil {
+		drc = drc.SetDNSRecordToEnvironmentID(*id)
 	}
-	return drc.AddDNSRecordToTagIDs(ids...)
-}
-
-// AddDNSRecordToEnvironmentIDs adds the "DNSRecordToEnvironment" edge to the Environment entity by IDs.
-func (drc *DNSRecordCreate) AddDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordCreate {
-	drc.mutation.AddDNSRecordToEnvironmentIDs(ids...)
 	return drc
 }
 
-// AddDNSRecordToEnvironment adds the "DNSRecordToEnvironment" edges to the Environment entity.
-func (drc *DNSRecordCreate) AddDNSRecordToEnvironment(e ...*Environment) *DNSRecordCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return drc.AddDNSRecordToEnvironmentIDs(ids...)
+// SetDNSRecordToEnvironment sets the "DNSRecordToEnvironment" edge to the Environment entity.
+func (drc *DNSRecordCreate) SetDNSRecordToEnvironment(e *Environment) *DNSRecordCreate {
+	return drc.SetDNSRecordToEnvironmentID(e.ID)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -265,31 +253,12 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 		})
 		_node.Tags = value
 	}
-	if nodes := drc.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := drc.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

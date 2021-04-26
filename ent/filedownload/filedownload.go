@@ -28,25 +28,18 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeFileDownloadToTag holds the string denoting the filedownloadtotag edge name in mutations.
-	EdgeFileDownloadToTag = "FileDownloadToTag"
 	// EdgeFileDownloadToEnvironment holds the string denoting the filedownloadtoenvironment edge name in mutations.
 	EdgeFileDownloadToEnvironment = "FileDownloadToEnvironment"
 
 	// Table holds the table name of the filedownload in the database.
 	Table = "file_downloads"
-	// FileDownloadToTagTable is the table the holds the FileDownloadToTag relation/edge.
-	FileDownloadToTagTable = "tags"
-	// FileDownloadToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	FileDownloadToTagInverseTable = "tags"
-	// FileDownloadToTagColumn is the table column denoting the FileDownloadToTag relation/edge.
-	FileDownloadToTagColumn = "file_download_file_download_to_tag"
-	// FileDownloadToEnvironmentTable is the table the holds the FileDownloadToEnvironment relation/edge. The primary key declared below.
-	FileDownloadToEnvironmentTable = "environment_EnvironmentToFileDownload"
+	// FileDownloadToEnvironmentTable is the table the holds the FileDownloadToEnvironment relation/edge.
+	FileDownloadToEnvironmentTable = "file_downloads"
 	// FileDownloadToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	FileDownloadToEnvironmentInverseTable = "environments"
+	// FileDownloadToEnvironmentColumn is the table column denoting the FileDownloadToEnvironment relation/edge.
+	FileDownloadToEnvironmentColumn = "environment_environment_to_file_download"
 )
 
 // Columns holds all SQL columns for filedownload fields.
@@ -64,16 +57,20 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// FileDownloadToEnvironmentPrimaryKey and FileDownloadToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the FileDownloadToEnvironment relation (M2M).
-	FileDownloadToEnvironmentPrimaryKey = []string{"environment_id", "file_download_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the FileDownload type.
+var ForeignKeys = []string{
+	"environment_environment_to_file_download",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

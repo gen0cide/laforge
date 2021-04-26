@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // AgentStatusCreate is the builder for creating a AgentStatus entity.
@@ -103,21 +102,6 @@ func (asc *AgentStatusCreate) SetUsedMem(i int64) *AgentStatusCreate {
 func (asc *AgentStatusCreate) SetTimestamp(i int64) *AgentStatusCreate {
 	asc.mutation.SetTimestamp(i)
 	return asc
-}
-
-// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
-func (asc *AgentStatusCreate) AddAgentStatusToTagIDs(ids ...int) *AgentStatusCreate {
-	asc.mutation.AddAgentStatusToTagIDs(ids...)
-	return asc
-}
-
-// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
-func (asc *AgentStatusCreate) AddAgentStatusToTag(t ...*Tag) *AgentStatusCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return asc.AddAgentStatusToTagIDs(ids...)
 }
 
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
@@ -366,25 +350,6 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 			Column: agentstatus.FieldTimestamp,
 		})
 		_node.Timestamp = value
-	}
-	if nodes := asc.mutation.AgentStatusToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := asc.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

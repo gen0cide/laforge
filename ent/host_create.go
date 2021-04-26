@@ -14,7 +14,6 @@ import (
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -109,19 +108,23 @@ func (hc *HostCreate) SetTags(m map[string]string) *HostCreate {
 	return hc
 }
 
-// AddHostToDiskIDs adds the "HostToDisk" edge to the Disk entity by IDs.
-func (hc *HostCreate) AddHostToDiskIDs(ids ...int) *HostCreate {
-	hc.mutation.AddHostToDiskIDs(ids...)
+// SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID.
+func (hc *HostCreate) SetHostToDiskID(id int) *HostCreate {
+	hc.mutation.SetHostToDiskID(id)
 	return hc
 }
 
-// AddHostToDisk adds the "HostToDisk" edges to the Disk entity.
-func (hc *HostCreate) AddHostToDisk(d ...*Disk) *HostCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// SetNillableHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID if the given value is not nil.
+func (hc *HostCreate) SetNillableHostToDiskID(id *int) *HostCreate {
+	if id != nil {
+		hc = hc.SetHostToDiskID(*id)
 	}
-	return hc.AddHostToDiskIDs(ids...)
+	return hc
+}
+
+// SetHostToDisk sets the "HostToDisk" edge to the Disk entity.
+func (hc *HostCreate) SetHostToDisk(d *Disk) *HostCreate {
+	return hc.SetHostToDiskID(d.ID)
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
@@ -139,34 +142,23 @@ func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
 	return hc.AddHostToUserIDs(ids...)
 }
 
-// AddHostToTagIDs adds the "HostToTag" edge to the Tag entity by IDs.
-func (hc *HostCreate) AddHostToTagIDs(ids ...int) *HostCreate {
-	hc.mutation.AddHostToTagIDs(ids...)
+// SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID.
+func (hc *HostCreate) SetHostToEnvironmentID(id int) *HostCreate {
+	hc.mutation.SetHostToEnvironmentID(id)
 	return hc
 }
 
-// AddHostToTag adds the "HostToTag" edges to the Tag entity.
-func (hc *HostCreate) AddHostToTag(t ...*Tag) *HostCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (hc *HostCreate) SetNillableHostToEnvironmentID(id *int) *HostCreate {
+	if id != nil {
+		hc = hc.SetHostToEnvironmentID(*id)
 	}
-	return hc.AddHostToTagIDs(ids...)
-}
-
-// AddHostToEnvironmentIDs adds the "HostToEnvironment" edge to the Environment entity by IDs.
-func (hc *HostCreate) AddHostToEnvironmentIDs(ids ...int) *HostCreate {
-	hc.mutation.AddHostToEnvironmentIDs(ids...)
 	return hc
 }
 
-// AddHostToEnvironment adds the "HostToEnvironment" edges to the Environment entity.
-func (hc *HostCreate) AddHostToEnvironment(e ...*Environment) *HostCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return hc.AddHostToEnvironmentIDs(ids...)
+// SetHostToEnvironment sets the "HostToEnvironment" edge to the Environment entity.
+func (hc *HostCreate) SetHostToEnvironment(e *Environment) *HostCreate {
+	return hc.SetHostToEnvironmentID(e.ID)
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
@@ -445,10 +437,10 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 	}
 	if nodes := hc.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   host.HostToDiskTable,
-			Columns: host.HostToDiskPrimaryKey,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -481,31 +473,12 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hc.mutation.HostToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   host.HostToTagTable,
-			Columns: []string{host.HostToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := hc.mutation.HostToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   host.HostToEnvironmentTable,
-			Columns: host.HostToEnvironmentPrimaryKey,
+			Columns: []string{host.HostToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

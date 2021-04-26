@@ -18,25 +18,18 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeFileExtractToTag holds the string denoting the fileextracttotag edge name in mutations.
-	EdgeFileExtractToTag = "FileExtractToTag"
 	// EdgeFileExtractToEnvironment holds the string denoting the fileextracttoenvironment edge name in mutations.
 	EdgeFileExtractToEnvironment = "FileExtractToEnvironment"
 
 	// Table holds the table name of the fileextract in the database.
 	Table = "file_extracts"
-	// FileExtractToTagTable is the table the holds the FileExtractToTag relation/edge.
-	FileExtractToTagTable = "tags"
-	// FileExtractToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	FileExtractToTagInverseTable = "tags"
-	// FileExtractToTagColumn is the table column denoting the FileExtractToTag relation/edge.
-	FileExtractToTagColumn = "file_extract_file_extract_to_tag"
-	// FileExtractToEnvironmentTable is the table the holds the FileExtractToEnvironment relation/edge. The primary key declared below.
-	FileExtractToEnvironmentTable = "environment_EnvironmentToFileExtract"
+	// FileExtractToEnvironmentTable is the table the holds the FileExtractToEnvironment relation/edge.
+	FileExtractToEnvironmentTable = "file_extracts"
 	// FileExtractToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	FileExtractToEnvironmentInverseTable = "environments"
+	// FileExtractToEnvironmentColumn is the table column denoting the FileExtractToEnvironment relation/edge.
+	FileExtractToEnvironmentColumn = "environment_environment_to_file_extract"
 )
 
 // Columns holds all SQL columns for fileextract fields.
@@ -49,16 +42,20 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// FileExtractToEnvironmentPrimaryKey and FileExtractToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the FileExtractToEnvironment relation (M2M).
-	FileExtractToEnvironmentPrimaryKey = []string{"environment_id", "file_extract_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the FileExtract type.
+var ForeignKeys = []string{
+	"environment_environment_to_file_extract",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

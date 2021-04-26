@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
 )
 
@@ -33,46 +34,38 @@ type Network struct {
 	Edges NetworkEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// NetworkToTag holds the value of the NetworkToTag edge.
-	HCLNetworkToTag []*Tag `json:"NetworkToTag,omitempty"`
 	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
-	HCLNetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
+	HCLNetworkToEnvironment *Environment `json:"NetworkToEnvironment,omitempty"`
 	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
 	HCLNetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
 	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
 	HCLNetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	//
-
+	environment_environment_to_network *int
 }
 
 // NetworkEdges holds the relations/edges for other nodes in the graph.
 type NetworkEdges struct {
-	// NetworkToTag holds the value of the NetworkToTag edge.
-	NetworkToTag []*Tag `json:"NetworkToTag,omitempty"`
 	// NetworkToEnvironment holds the value of the NetworkToEnvironment edge.
-	NetworkToEnvironment []*Environment `json:"NetworkToEnvironment,omitempty"`
+	NetworkToEnvironment *Environment `json:"NetworkToEnvironment,omitempty"`
 	// NetworkToHostDependency holds the value of the NetworkToHostDependency edge.
 	NetworkToHostDependency []*HostDependency `json:"NetworkToHostDependency,omitempty"`
 	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
 	NetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-}
-
-// NetworkToTagOrErr returns the NetworkToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e NetworkEdges) NetworkToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.NetworkToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "NetworkToTag"}
+	loadedTypes [3]bool
 }
 
 // NetworkToEnvironmentOrErr returns the NetworkToEnvironment value or an error if the edge
-// was not loaded in eager-loading.
-func (e NetworkEdges) NetworkToEnvironmentOrErr() ([]*Environment, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e NetworkEdges) NetworkToEnvironmentOrErr() (*Environment, error) {
+	if e.loadedTypes[0] {
+		if e.NetworkToEnvironment == nil {
+			// The edge NetworkToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
 		return e.NetworkToEnvironment, nil
 	}
 	return nil, &NotLoadedError{edge: "NetworkToEnvironment"}
@@ -81,7 +74,7 @@ func (e NetworkEdges) NetworkToEnvironmentOrErr() ([]*Environment, error) {
 // NetworkToHostDependencyOrErr returns the NetworkToHostDependency value or an error if the edge
 // was not loaded in eager-loading.
 func (e NetworkEdges) NetworkToHostDependencyOrErr() ([]*HostDependency, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.NetworkToHostDependency, nil
 	}
 	return nil, &NotLoadedError{edge: "NetworkToHostDependency"}
@@ -90,7 +83,7 @@ func (e NetworkEdges) NetworkToHostDependencyOrErr() ([]*HostDependency, error) 
 // NetworkToIncludedNetworkOrErr returns the NetworkToIncludedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e NetworkEdges) NetworkToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.NetworkToIncludedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "NetworkToIncludedNetwork"}
@@ -109,6 +102,8 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case network.FieldHclID, network.FieldName, network.FieldCidr:
 			values[i] = &sql.NullString{}
+		case network.ForeignKeys[0]: // environment_environment_to_network
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
 		}
@@ -172,14 +167,16 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field tags: %v", err)
 				}
 			}
+		case network.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_network", value)
+			} else if value.Valid {
+				n.environment_environment_to_network = new(int)
+				*n.environment_environment_to_network = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryNetworkToTag queries the "NetworkToTag" edge of the Network entity.
-func (n *Network) QueryNetworkToTag() *TagQuery {
-	return (&NetworkClient{config: n.config}).QueryNetworkToTag(n)
 }
 
 // QueryNetworkToEnvironment queries the "NetworkToEnvironment" edge of the Network entity.

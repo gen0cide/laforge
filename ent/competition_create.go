@@ -13,7 +13,6 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // CompetitionCreate is the builder for creating a Competition entity.
@@ -45,21 +44,6 @@ func (cc *CompetitionCreate) SetConfig(m map[string]string) *CompetitionCreate {
 func (cc *CompetitionCreate) SetTags(m map[string]string) *CompetitionCreate {
 	cc.mutation.SetTags(m)
 	return cc
-}
-
-// AddCompetitionToTagIDs adds the "CompetitionToTag" edge to the Tag entity by IDs.
-func (cc *CompetitionCreate) AddCompetitionToTagIDs(ids ...int) *CompetitionCreate {
-	cc.mutation.AddCompetitionToTagIDs(ids...)
-	return cc
-}
-
-// AddCompetitionToTag adds the "CompetitionToTag" edges to the Tag entity.
-func (cc *CompetitionCreate) AddCompetitionToTag(t ...*Tag) *CompetitionCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cc.AddCompetitionToTagIDs(ids...)
 }
 
 // AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by IDs.
@@ -232,25 +216,6 @@ func (cc *CompetitionCreate) createSpec() (*Competition, *sqlgraph.CreateSpec) {
 			Column: competition.FieldTags,
 		})
 		_node.Tags = value
-	}
-	if nodes := cc.mutation.CompetitionToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   competition.CompetitionToTagTable,
-			Columns: []string{competition.CompetitionToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := cc.mutation.CompetitionToDNSIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

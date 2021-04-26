@@ -26,8 +26,8 @@ func (FileDelete) Fields() []ent.Field {
 // Edges of the FileDelete.
 func (FileDelete) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("FileDeleteToTag", Tag.Type),
 		edge.From("FileDeleteToEnvironment", Environment.Type).
-			Ref("EnvironmentToFileDelete"),
+			Ref("EnvironmentToFileDelete").
+			Unique(),
 	}
 }

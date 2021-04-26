@@ -36,8 +36,6 @@ const (
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
-	// EdgeScriptToTag holds the string denoting the scripttotag edge name in mutations.
-	EdgeScriptToTag = "ScriptToTag"
 	// EdgeScriptToUser holds the string denoting the scripttouser edge name in mutations.
 	EdgeScriptToUser = "ScriptToUser"
 	// EdgeScriptToFinding holds the string denoting the scripttofinding edge name in mutations.
@@ -47,13 +45,6 @@ const (
 
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
-	// ScriptToTagTable is the table the holds the ScriptToTag relation/edge.
-	ScriptToTagTable = "tags"
-	// ScriptToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	ScriptToTagInverseTable = "tags"
-	// ScriptToTagColumn is the table column denoting the ScriptToTag relation/edge.
-	ScriptToTagColumn = "script_script_to_tag"
 	// ScriptToUserTable is the table the holds the ScriptToUser relation/edge.
 	ScriptToUserTable = "users"
 	// ScriptToUserInverseTable is the table name for the User entity.
@@ -61,16 +52,20 @@ const (
 	ScriptToUserInverseTable = "users"
 	// ScriptToUserColumn is the table column denoting the ScriptToUser relation/edge.
 	ScriptToUserColumn = "script_script_to_user"
-	// ScriptToFindingTable is the table the holds the ScriptToFinding relation/edge. The primary key declared below.
-	ScriptToFindingTable = "script_ScriptToFinding"
+	// ScriptToFindingTable is the table the holds the ScriptToFinding relation/edge.
+	ScriptToFindingTable = "findings"
 	// ScriptToFindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
 	ScriptToFindingInverseTable = "findings"
-	// ScriptToEnvironmentTable is the table the holds the ScriptToEnvironment relation/edge. The primary key declared below.
-	ScriptToEnvironmentTable = "environment_EnvironmentToScript"
+	// ScriptToFindingColumn is the table column denoting the ScriptToFinding relation/edge.
+	ScriptToFindingColumn = "script_script_to_finding"
+	// ScriptToEnvironmentTable is the table the holds the ScriptToEnvironment relation/edge.
+	ScriptToEnvironmentTable = "scripts"
 	// ScriptToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	ScriptToEnvironmentInverseTable = "environments"
+	// ScriptToEnvironmentColumn is the table column denoting the ScriptToEnvironment relation/edge.
+	ScriptToEnvironmentColumn = "environment_environment_to_script"
 )
 
 // Columns holds all SQL columns for script fields.
@@ -92,19 +87,20 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// ScriptToFindingPrimaryKey and ScriptToFindingColumn2 are the table columns denoting the
-	// primary key for the ScriptToFinding relation (M2M).
-	ScriptToFindingPrimaryKey = []string{"script_id", "finding_id"}
-	// ScriptToEnvironmentPrimaryKey and ScriptToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the ScriptToEnvironment relation (M2M).
-	ScriptToEnvironmentPrimaryKey = []string{"environment_id", "script_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the Script type.
+var ForeignKeys = []string{
+	"environment_environment_to_script",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

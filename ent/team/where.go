@@ -264,7 +264,7 @@ func HasTeamToPlan() predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TeamToPlanTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, TeamToPlanTable, TeamToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, TeamToPlanTable, TeamToPlanColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -276,7 +276,7 @@ func HasTeamToPlanWith(preds ...predicate.Plan) predicate.Team {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TeamToPlanInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, TeamToPlanTable, TeamToPlanColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, TeamToPlanTable, TeamToPlanColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

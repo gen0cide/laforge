@@ -34,7 +34,6 @@ func (AgentStatus) Fields() []ent.Field {
 // Edges of the AgentStatus.
 func (AgentStatus) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("AgentStatusToTag", Tag.Type),
 		edge.To("AgentStatusToProvisionedHost", ProvisionedHost.Type),
 	}
 }

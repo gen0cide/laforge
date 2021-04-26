@@ -26,8 +26,6 @@ const (
 
 	// EdgeFindingToUser holds the string denoting the findingtouser edge name in mutations.
 	EdgeFindingToUser = "FindingToUser"
-	// EdgeFindingToTag holds the string denoting the findingtotag edge name in mutations.
-	EdgeFindingToTag = "FindingToTag"
 	// EdgeFindingToHost holds the string denoting the findingtohost edge name in mutations.
 	EdgeFindingToHost = "FindingToHost"
 	// EdgeFindingToScript holds the string denoting the findingtoscript edge name in mutations.
@@ -44,30 +42,27 @@ const (
 	FindingToUserInverseTable = "users"
 	// FindingToUserColumn is the table column denoting the FindingToUser relation/edge.
 	FindingToUserColumn = "finding_finding_to_user"
-	// FindingToTagTable is the table the holds the FindingToTag relation/edge.
-	FindingToTagTable = "tags"
-	// FindingToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	FindingToTagInverseTable = "tags"
-	// FindingToTagColumn is the table column denoting the FindingToTag relation/edge.
-	FindingToTagColumn = "finding_finding_to_tag"
 	// FindingToHostTable is the table the holds the FindingToHost relation/edge.
-	FindingToHostTable = "hosts"
+	FindingToHostTable = "findings"
 	// FindingToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	FindingToHostInverseTable = "hosts"
 	// FindingToHostColumn is the table column denoting the FindingToHost relation/edge.
 	FindingToHostColumn = "finding_finding_to_host"
-	// FindingToScriptTable is the table the holds the FindingToScript relation/edge. The primary key declared below.
-	FindingToScriptTable = "script_ScriptToFinding"
+	// FindingToScriptTable is the table the holds the FindingToScript relation/edge.
+	FindingToScriptTable = "findings"
 	// FindingToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
 	FindingToScriptInverseTable = "scripts"
-	// FindingToEnvironmentTable is the table the holds the FindingToEnvironment relation/edge. The primary key declared below.
-	FindingToEnvironmentTable = "environment_EnvironmentToFinding"
+	// FindingToScriptColumn is the table column denoting the FindingToScript relation/edge.
+	FindingToScriptColumn = "script_script_to_finding"
+	// FindingToEnvironmentTable is the table the holds the FindingToEnvironment relation/edge.
+	FindingToEnvironmentTable = "findings"
 	// FindingToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	FindingToEnvironmentInverseTable = "environments"
+	// FindingToEnvironmentColumn is the table column denoting the FindingToEnvironment relation/edge.
+	FindingToEnvironmentColumn = "environment_environment_to_finding"
 )
 
 // Columns holds all SQL columns for finding fields.
@@ -80,19 +75,22 @@ var Columns = []string{
 	FieldTags,
 }
 
-var (
-	// FindingToScriptPrimaryKey and FindingToScriptColumn2 are the table columns denoting the
-	// primary key for the FindingToScript relation (M2M).
-	FindingToScriptPrimaryKey = []string{"script_id", "finding_id"}
-	// FindingToEnvironmentPrimaryKey and FindingToEnvironmentColumn2 are the table columns denoting the
-	// primary key for the FindingToEnvironment relation (M2M).
-	FindingToEnvironmentPrimaryKey = []string{"environment_id", "finding_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the Finding type.
+var ForeignKeys = []string{
+	"environment_environment_to_finding",
+	"finding_finding_to_host",
+	"script_script_to_finding",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

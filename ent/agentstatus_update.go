@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // AgentStatusUpdate is the builder for updating AgentStatus entities.
@@ -182,21 +181,6 @@ func (asu *AgentStatusUpdate) AddTimestamp(i int64) *AgentStatusUpdate {
 	return asu
 }
 
-// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
-func (asu *AgentStatusUpdate) AddAgentStatusToTagIDs(ids ...int) *AgentStatusUpdate {
-	asu.mutation.AddAgentStatusToTagIDs(ids...)
-	return asu
-}
-
-// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
-func (asu *AgentStatusUpdate) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return asu.AddAgentStatusToTagIDs(ids...)
-}
-
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdate {
 	asu.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
@@ -215,27 +199,6 @@ func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHost(p ...*ProvisionedH
 // Mutation returns the AgentStatusMutation object of the builder.
 func (asu *AgentStatusUpdate) Mutation() *AgentStatusMutation {
 	return asu.mutation
-}
-
-// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to the Tag entity.
-func (asu *AgentStatusUpdate) ClearAgentStatusToTag() *AgentStatusUpdate {
-	asu.mutation.ClearAgentStatusToTag()
-	return asu
-}
-
-// RemoveAgentStatusToTagIDs removes the "AgentStatusToTag" edge to Tag entities by IDs.
-func (asu *AgentStatusUpdate) RemoveAgentStatusToTagIDs(ids ...int) *AgentStatusUpdate {
-	asu.mutation.RemoveAgentStatusToTagIDs(ids...)
-	return asu
-}
-
-// RemoveAgentStatusToTag removes "AgentStatusToTag" edges to Tag entities.
-func (asu *AgentStatusUpdate) RemoveAgentStatusToTag(t ...*Tag) *AgentStatusUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return asu.RemoveAgentStatusToTagIDs(ids...)
 }
 
 // ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
@@ -496,60 +459,6 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: agentstatus.FieldTimestamp,
 		})
 	}
-	if asu.mutation.AgentStatusToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asu.mutation.RemovedAgentStatusToTagIDs(); len(nodes) > 0 && !asu.mutation.AgentStatusToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asu.mutation.AgentStatusToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if asu.mutation.AgentStatusToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -776,21 +685,6 @@ func (asuo *AgentStatusUpdateOne) AddTimestamp(i int64) *AgentStatusUpdateOne {
 	return asuo
 }
 
-// AddAgentStatusToTagIDs adds the "AgentStatusToTag" edge to the Tag entity by IDs.
-func (asuo *AgentStatusUpdateOne) AddAgentStatusToTagIDs(ids ...int) *AgentStatusUpdateOne {
-	asuo.mutation.AddAgentStatusToTagIDs(ids...)
-	return asuo
-}
-
-// AddAgentStatusToTag adds the "AgentStatusToTag" edges to the Tag entity.
-func (asuo *AgentStatusUpdateOne) AddAgentStatusToTag(t ...*Tag) *AgentStatusUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return asuo.AddAgentStatusToTagIDs(ids...)
-}
-
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdateOne {
 	asuo.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
@@ -809,27 +703,6 @@ func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHost(p ...*Provisio
 // Mutation returns the AgentStatusMutation object of the builder.
 func (asuo *AgentStatusUpdateOne) Mutation() *AgentStatusMutation {
 	return asuo.mutation
-}
-
-// ClearAgentStatusToTag clears all "AgentStatusToTag" edges to the Tag entity.
-func (asuo *AgentStatusUpdateOne) ClearAgentStatusToTag() *AgentStatusUpdateOne {
-	asuo.mutation.ClearAgentStatusToTag()
-	return asuo
-}
-
-// RemoveAgentStatusToTagIDs removes the "AgentStatusToTag" edge to Tag entities by IDs.
-func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToTagIDs(ids ...int) *AgentStatusUpdateOne {
-	asuo.mutation.RemoveAgentStatusToTagIDs(ids...)
-	return asuo
-}
-
-// RemoveAgentStatusToTag removes "AgentStatusToTag" edges to Tag entities.
-func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToTag(t ...*Tag) *AgentStatusUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return asuo.RemoveAgentStatusToTagIDs(ids...)
 }
 
 // ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
@@ -1094,60 +967,6 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 			Value:  value,
 			Column: agentstatus.FieldTimestamp,
 		})
-	}
-	if asuo.mutation.AgentStatusToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asuo.mutation.RemovedAgentStatusToTagIDs(); len(nodes) > 0 && !asuo.mutation.AgentStatusToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asuo.mutation.AgentStatusToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToTagTable,
-			Columns: []string{agentstatus.AgentStatusToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if asuo.mutation.AgentStatusToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{

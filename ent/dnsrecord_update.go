@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // DNSRecordUpdate is the builder for updating DNSRecord entities.
@@ -76,34 +75,23 @@ func (dru *DNSRecordUpdate) SetTags(m map[string]string) *DNSRecordUpdate {
 	return dru
 }
 
-// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by IDs.
-func (dru *DNSRecordUpdate) AddDNSRecordToTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.AddDNSRecordToTagIDs(ids...)
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
+func (dru *DNSRecordUpdate) SetDNSRecordToEnvironmentID(id int) *DNSRecordUpdate {
+	dru.mutation.SetDNSRecordToEnvironmentID(id)
 	return dru
 }
 
-// AddDNSRecordToTag adds the "DNSRecordToTag" edges to the Tag entity.
-func (dru *DNSRecordUpdate) AddDNSRecordToTag(t ...*Tag) *DNSRecordUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (dru *DNSRecordUpdate) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordUpdate {
+	if id != nil {
+		dru = dru.SetDNSRecordToEnvironmentID(*id)
 	}
-	return dru.AddDNSRecordToTagIDs(ids...)
-}
-
-// AddDNSRecordToEnvironmentIDs adds the "DNSRecordToEnvironment" edge to the Environment entity by IDs.
-func (dru *DNSRecordUpdate) AddDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.AddDNSRecordToEnvironmentIDs(ids...)
 	return dru
 }
 
-// AddDNSRecordToEnvironment adds the "DNSRecordToEnvironment" edges to the Environment entity.
-func (dru *DNSRecordUpdate) AddDNSRecordToEnvironment(e ...*Environment) *DNSRecordUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return dru.AddDNSRecordToEnvironmentIDs(ids...)
+// SetDNSRecordToEnvironment sets the "DNSRecordToEnvironment" edge to the Environment entity.
+func (dru *DNSRecordUpdate) SetDNSRecordToEnvironment(e *Environment) *DNSRecordUpdate {
+	return dru.SetDNSRecordToEnvironmentID(e.ID)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -111,46 +99,10 @@ func (dru *DNSRecordUpdate) Mutation() *DNSRecordMutation {
 	return dru.mutation
 }
 
-// ClearDNSRecordToTag clears all "DNSRecordToTag" edges to the Tag entity.
-func (dru *DNSRecordUpdate) ClearDNSRecordToTag() *DNSRecordUpdate {
-	dru.mutation.ClearDNSRecordToTag()
-	return dru
-}
-
-// RemoveDNSRecordToTagIDs removes the "DNSRecordToTag" edge to Tag entities by IDs.
-func (dru *DNSRecordUpdate) RemoveDNSRecordToTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.RemoveDNSRecordToTagIDs(ids...)
-	return dru
-}
-
-// RemoveDNSRecordToTag removes "DNSRecordToTag" edges to Tag entities.
-func (dru *DNSRecordUpdate) RemoveDNSRecordToTag(t ...*Tag) *DNSRecordUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return dru.RemoveDNSRecordToTagIDs(ids...)
-}
-
-// ClearDNSRecordToEnvironment clears all "DNSRecordToEnvironment" edges to the Environment entity.
+// ClearDNSRecordToEnvironment clears the "DNSRecordToEnvironment" edge to the Environment entity.
 func (dru *DNSRecordUpdate) ClearDNSRecordToEnvironment() *DNSRecordUpdate {
 	dru.mutation.ClearDNSRecordToEnvironment()
 	return dru
-}
-
-// RemoveDNSRecordToEnvironmentIDs removes the "DNSRecordToEnvironment" edge to Environment entities by IDs.
-func (dru *DNSRecordUpdate) RemoveDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.RemoveDNSRecordToEnvironmentIDs(ids...)
-	return dru
-}
-
-// RemoveDNSRecordToEnvironment removes "DNSRecordToEnvironment" edges to Environment entities.
-func (dru *DNSRecordUpdate) RemoveDNSRecordToEnvironment(e ...*Environment) *DNSRecordUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return dru.RemoveDNSRecordToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -278,66 +230,12 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: dnsrecord.FieldTags,
 		})
 	}
-	if dru.mutation.DNSRecordToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.RemovedDNSRecordToTagIDs(); len(nodes) > 0 && !dru.mutation.DNSRecordToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if dru.mutation.DNSRecordToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -345,34 +243,15 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.RemovedDNSRecordToEnvironmentIDs(); len(nodes) > 0 && !dru.mutation.DNSRecordToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := dru.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -452,34 +331,23 @@ func (druo *DNSRecordUpdateOne) SetTags(m map[string]string) *DNSRecordUpdateOne
 	return druo
 }
 
-// AddDNSRecordToTagIDs adds the "DNSRecordToTag" edge to the Tag entity by IDs.
-func (druo *DNSRecordUpdateOne) AddDNSRecordToTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.AddDNSRecordToTagIDs(ids...)
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
+func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironmentID(id int) *DNSRecordUpdateOne {
+	druo.mutation.SetDNSRecordToEnvironmentID(id)
 	return druo
 }
 
-// AddDNSRecordToTag adds the "DNSRecordToTag" edges to the Tag entity.
-func (druo *DNSRecordUpdateOne) AddDNSRecordToTag(t ...*Tag) *DNSRecordUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (druo *DNSRecordUpdateOne) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordUpdateOne {
+	if id != nil {
+		druo = druo.SetDNSRecordToEnvironmentID(*id)
 	}
-	return druo.AddDNSRecordToTagIDs(ids...)
-}
-
-// AddDNSRecordToEnvironmentIDs adds the "DNSRecordToEnvironment" edge to the Environment entity by IDs.
-func (druo *DNSRecordUpdateOne) AddDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.AddDNSRecordToEnvironmentIDs(ids...)
 	return druo
 }
 
-// AddDNSRecordToEnvironment adds the "DNSRecordToEnvironment" edges to the Environment entity.
-func (druo *DNSRecordUpdateOne) AddDNSRecordToEnvironment(e ...*Environment) *DNSRecordUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return druo.AddDNSRecordToEnvironmentIDs(ids...)
+// SetDNSRecordToEnvironment sets the "DNSRecordToEnvironment" edge to the Environment entity.
+func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironment(e *Environment) *DNSRecordUpdateOne {
+	return druo.SetDNSRecordToEnvironmentID(e.ID)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -487,46 +355,10 @@ func (druo *DNSRecordUpdateOne) Mutation() *DNSRecordMutation {
 	return druo.mutation
 }
 
-// ClearDNSRecordToTag clears all "DNSRecordToTag" edges to the Tag entity.
-func (druo *DNSRecordUpdateOne) ClearDNSRecordToTag() *DNSRecordUpdateOne {
-	druo.mutation.ClearDNSRecordToTag()
-	return druo
-}
-
-// RemoveDNSRecordToTagIDs removes the "DNSRecordToTag" edge to Tag entities by IDs.
-func (druo *DNSRecordUpdateOne) RemoveDNSRecordToTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.RemoveDNSRecordToTagIDs(ids...)
-	return druo
-}
-
-// RemoveDNSRecordToTag removes "DNSRecordToTag" edges to Tag entities.
-func (druo *DNSRecordUpdateOne) RemoveDNSRecordToTag(t ...*Tag) *DNSRecordUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return druo.RemoveDNSRecordToTagIDs(ids...)
-}
-
-// ClearDNSRecordToEnvironment clears all "DNSRecordToEnvironment" edges to the Environment entity.
+// ClearDNSRecordToEnvironment clears the "DNSRecordToEnvironment" edge to the Environment entity.
 func (druo *DNSRecordUpdateOne) ClearDNSRecordToEnvironment() *DNSRecordUpdateOne {
 	druo.mutation.ClearDNSRecordToEnvironment()
 	return druo
-}
-
-// RemoveDNSRecordToEnvironmentIDs removes the "DNSRecordToEnvironment" edge to Environment entities by IDs.
-func (druo *DNSRecordUpdateOne) RemoveDNSRecordToEnvironmentIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.RemoveDNSRecordToEnvironmentIDs(ids...)
-	return druo
-}
-
-// RemoveDNSRecordToEnvironment removes "DNSRecordToEnvironment" edges to Environment entities.
-func (druo *DNSRecordUpdateOne) RemoveDNSRecordToEnvironment(e ...*Environment) *DNSRecordUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return druo.RemoveDNSRecordToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated DNSRecord entity.
@@ -659,66 +491,12 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Column: dnsrecord.FieldTags,
 		})
 	}
-	if druo.mutation.DNSRecordToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.RemovedDNSRecordToTagIDs(); len(nodes) > 0 && !druo.mutation.DNSRecordToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.DNSRecordToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.DNSRecordToTagTable,
-			Columns: []string{dnsrecord.DNSRecordToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if druo.mutation.DNSRecordToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -726,34 +504,15 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.RemovedDNSRecordToEnvironmentIDs(); len(nodes) > 0 && !druo.mutation.DNSRecordToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := druo.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dnsrecord.DNSRecordToEnvironmentTable,
-			Columns: dnsrecord.DNSRecordToEnvironmentPrimaryKey,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

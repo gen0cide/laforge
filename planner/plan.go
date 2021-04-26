@@ -1,4 +1,4 @@
-package main
+package planner
 
 import (
 	"context"
@@ -39,7 +39,6 @@ import (
 var RenderFiles = false
 
 func main() {
-	var wg sync.WaitGroup
 
 	client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 	ctx := context.Background()
@@ -55,12 +54,11 @@ func main() {
 		log.Fatalf("Failed to find Environment %v. Err: %v", 1, err)
 	}
 
-	entBuild, _ := CreateBuild(ctx, client, entEnvironment, &wg)
+	entBuild, _ := CreateBuild(ctx, client, entEnvironment)
 	if err != nil {
 		log.Fatalf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
 	}
 	fmt.Println(entBuild)
-	wg.Wait()
 }
 
 func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor status.StatusFor) (*ent.Status, error) {
@@ -72,7 +70,8 @@ func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor sta
 	return entStatus, nil
 }
 
-func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.Environment, wg *sync.WaitGroup) (*ent.Build, error) {
+func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.Environment) (*ent.Build, error) {
+	var wg sync.WaitGroup
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForBuild)
 	if err != nil {
 		return nil, err
@@ -104,8 +103,9 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 	}
 	for teamNumber := 0; teamNumber <= entEnvironment.TeamCount; teamNumber++ {
 		wg.Add(1)
-		go createTeam(ctx, client, entBuild, teamNumber, wg)
+		go createTeam(ctx, client, entBuild, teamNumber, &wg)
 	}
+	wg.Wait()
 	return entBuild, nil
 }
 

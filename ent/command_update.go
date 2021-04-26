@@ -12,7 +12,6 @@ import (
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -124,34 +123,23 @@ func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
 	return cu.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
-func (cu *CommandUpdate) AddCommandToTagIDs(ids ...int) *CommandUpdate {
-	cu.mutation.AddCommandToTagIDs(ids...)
+// SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
+func (cu *CommandUpdate) SetCommandToEnvironmentID(id int) *CommandUpdate {
+	cu.mutation.SetCommandToEnvironmentID(id)
 	return cu
 }
 
-// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
-func (cu *CommandUpdate) AddCommandToTag(t ...*Tag) *CommandUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cu *CommandUpdate) SetNillableCommandToEnvironmentID(id *int) *CommandUpdate {
+	if id != nil {
+		cu = cu.SetCommandToEnvironmentID(*id)
 	}
-	return cu.AddCommandToTagIDs(ids...)
-}
-
-// AddCommandToEnvironmentIDs adds the "CommandToEnvironment" edge to the Environment entity by IDs.
-func (cu *CommandUpdate) AddCommandToEnvironmentIDs(ids ...int) *CommandUpdate {
-	cu.mutation.AddCommandToEnvironmentIDs(ids...)
 	return cu
 }
 
-// AddCommandToEnvironment adds the "CommandToEnvironment" edges to the Environment entity.
-func (cu *CommandUpdate) AddCommandToEnvironment(e ...*Environment) *CommandUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return cu.AddCommandToEnvironmentIDs(ids...)
+// SetCommandToEnvironment sets the "CommandToEnvironment" edge to the Environment entity.
+func (cu *CommandUpdate) SetCommandToEnvironment(e *Environment) *CommandUpdate {
+	return cu.SetCommandToEnvironmentID(e.ID)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -180,46 +168,10 @@ func (cu *CommandUpdate) RemoveCommandToUser(u ...*User) *CommandUpdate {
 	return cu.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearCommandToTag clears all "CommandToTag" edges to the Tag entity.
-func (cu *CommandUpdate) ClearCommandToTag() *CommandUpdate {
-	cu.mutation.ClearCommandToTag()
-	return cu
-}
-
-// RemoveCommandToTagIDs removes the "CommandToTag" edge to Tag entities by IDs.
-func (cu *CommandUpdate) RemoveCommandToTagIDs(ids ...int) *CommandUpdate {
-	cu.mutation.RemoveCommandToTagIDs(ids...)
-	return cu
-}
-
-// RemoveCommandToTag removes "CommandToTag" edges to Tag entities.
-func (cu *CommandUpdate) RemoveCommandToTag(t ...*Tag) *CommandUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cu.RemoveCommandToTagIDs(ids...)
-}
-
-// ClearCommandToEnvironment clears all "CommandToEnvironment" edges to the Environment entity.
+// ClearCommandToEnvironment clears the "CommandToEnvironment" edge to the Environment entity.
 func (cu *CommandUpdate) ClearCommandToEnvironment() *CommandUpdate {
 	cu.mutation.ClearCommandToEnvironment()
 	return cu
-}
-
-// RemoveCommandToEnvironmentIDs removes the "CommandToEnvironment" edge to Environment entities by IDs.
-func (cu *CommandUpdate) RemoveCommandToEnvironmentIDs(ids ...int) *CommandUpdate {
-	cu.mutation.RemoveCommandToEnvironmentIDs(ids...)
-	return cu
-}
-
-// RemoveCommandToEnvironment removes "CommandToEnvironment" edges to Environment entities.
-func (cu *CommandUpdate) RemoveCommandToEnvironment(e ...*Environment) *CommandUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return cu.RemoveCommandToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -457,66 +409,12 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cu.mutation.CommandToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedCommandToTagIDs(); len(nodes) > 0 && !cu.mutation.CommandToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.CommandToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if cu.mutation.CommandToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -524,34 +422,15 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedCommandToEnvironmentIDs(); len(nodes) > 0 && !cu.mutation.CommandToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := cu.mutation.CommandToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -678,34 +557,23 @@ func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
 	return cuo.AddCommandToUserIDs(ids...)
 }
 
-// AddCommandToTagIDs adds the "CommandToTag" edge to the Tag entity by IDs.
-func (cuo *CommandUpdateOne) AddCommandToTagIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.AddCommandToTagIDs(ids...)
+// SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
+func (cuo *CommandUpdateOne) SetCommandToEnvironmentID(id int) *CommandUpdateOne {
+	cuo.mutation.SetCommandToEnvironmentID(id)
 	return cuo
 }
 
-// AddCommandToTag adds the "CommandToTag" edges to the Tag entity.
-func (cuo *CommandUpdateOne) AddCommandToTag(t ...*Tag) *CommandUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cuo *CommandUpdateOne) SetNillableCommandToEnvironmentID(id *int) *CommandUpdateOne {
+	if id != nil {
+		cuo = cuo.SetCommandToEnvironmentID(*id)
 	}
-	return cuo.AddCommandToTagIDs(ids...)
-}
-
-// AddCommandToEnvironmentIDs adds the "CommandToEnvironment" edge to the Environment entity by IDs.
-func (cuo *CommandUpdateOne) AddCommandToEnvironmentIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.AddCommandToEnvironmentIDs(ids...)
 	return cuo
 }
 
-// AddCommandToEnvironment adds the "CommandToEnvironment" edges to the Environment entity.
-func (cuo *CommandUpdateOne) AddCommandToEnvironment(e ...*Environment) *CommandUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return cuo.AddCommandToEnvironmentIDs(ids...)
+// SetCommandToEnvironment sets the "CommandToEnvironment" edge to the Environment entity.
+func (cuo *CommandUpdateOne) SetCommandToEnvironment(e *Environment) *CommandUpdateOne {
+	return cuo.SetCommandToEnvironmentID(e.ID)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -734,46 +602,10 @@ func (cuo *CommandUpdateOne) RemoveCommandToUser(u ...*User) *CommandUpdateOne {
 	return cuo.RemoveCommandToUserIDs(ids...)
 }
 
-// ClearCommandToTag clears all "CommandToTag" edges to the Tag entity.
-func (cuo *CommandUpdateOne) ClearCommandToTag() *CommandUpdateOne {
-	cuo.mutation.ClearCommandToTag()
-	return cuo
-}
-
-// RemoveCommandToTagIDs removes the "CommandToTag" edge to Tag entities by IDs.
-func (cuo *CommandUpdateOne) RemoveCommandToTagIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.RemoveCommandToTagIDs(ids...)
-	return cuo
-}
-
-// RemoveCommandToTag removes "CommandToTag" edges to Tag entities.
-func (cuo *CommandUpdateOne) RemoveCommandToTag(t ...*Tag) *CommandUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return cuo.RemoveCommandToTagIDs(ids...)
-}
-
-// ClearCommandToEnvironment clears all "CommandToEnvironment" edges to the Environment entity.
+// ClearCommandToEnvironment clears the "CommandToEnvironment" edge to the Environment entity.
 func (cuo *CommandUpdateOne) ClearCommandToEnvironment() *CommandUpdateOne {
 	cuo.mutation.ClearCommandToEnvironment()
 	return cuo
-}
-
-// RemoveCommandToEnvironmentIDs removes the "CommandToEnvironment" edge to Environment entities by IDs.
-func (cuo *CommandUpdateOne) RemoveCommandToEnvironmentIDs(ids ...int) *CommandUpdateOne {
-	cuo.mutation.RemoveCommandToEnvironmentIDs(ids...)
-	return cuo
-}
-
-// RemoveCommandToEnvironment removes "CommandToEnvironment" edges to Environment entities.
-func (cuo *CommandUpdateOne) RemoveCommandToEnvironment(e ...*Environment) *CommandUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return cuo.RemoveCommandToEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the updated Command entity.
@@ -1016,66 +848,12 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cuo.mutation.CommandToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedCommandToTagIDs(); len(nodes) > 0 && !cuo.mutation.CommandToTagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.CommandToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.CommandToTagTable,
-			Columns: []string{command.CommandToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if cuo.mutation.CommandToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1083,34 +861,15 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 					Column: environment.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedCommandToEnvironmentIDs(); len(nodes) > 0 && !cuo.mutation.CommandToEnvironmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := cuo.mutation.CommandToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   command.CommandToEnvironmentTable,
-			Columns: command.CommandToEnvironmentPrimaryKey,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

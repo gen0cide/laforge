@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/host"
 )
 
 // Disk is the model entity for the Disk schema.
@@ -22,38 +23,30 @@ type Disk struct {
 	Edges DiskEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// DiskToTag holds the value of the DiskToTag edge.
-	HCLDiskToTag []*Tag `json:"DiskToTag,omitempty"`
 	// DiskToHost holds the value of the DiskToHost edge.
-	HCLDiskToHost []*Host `json:"DiskToHost,omitempty"`
+	HCLDiskToHost *Host `json:"DiskToHost,omitempty"`
 	//
-
+	host_host_to_disk *int
 }
 
 // DiskEdges holds the relations/edges for other nodes in the graph.
 type DiskEdges struct {
-	// DiskToTag holds the value of the DiskToTag edge.
-	DiskToTag []*Tag `json:"DiskToTag,omitempty"`
 	// DiskToHost holds the value of the DiskToHost edge.
-	DiskToHost []*Host `json:"DiskToHost,omitempty"`
+	DiskToHost *Host `json:"DiskToHost,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// DiskToTagOrErr returns the DiskToTag value or an error if the edge
-// was not loaded in eager-loading.
-func (e DiskEdges) DiskToTagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[0] {
-		return e.DiskToTag, nil
-	}
-	return nil, &NotLoadedError{edge: "DiskToTag"}
+	loadedTypes [1]bool
 }
 
 // DiskToHostOrErr returns the DiskToHost value or an error if the edge
-// was not loaded in eager-loading.
-func (e DiskEdges) DiskToHostOrErr() ([]*Host, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiskEdges) DiskToHostOrErr() (*Host, error) {
+	if e.loadedTypes[0] {
+		if e.DiskToHost == nil {
+			// The edge DiskToHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: host.Label}
+		}
 		return e.DiskToHost, nil
 	}
 	return nil, &NotLoadedError{edge: "DiskToHost"}
@@ -65,6 +58,8 @@ func (*Disk) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case disk.FieldID, disk.FieldSize:
+			values[i] = &sql.NullInt64{}
+		case disk.ForeignKeys[0]: // host_host_to_disk
 			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Disk", columns[i])
@@ -93,14 +88,16 @@ func (d *Disk) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				d.Size = int(value.Int64)
 			}
+		case disk.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field host_host_to_disk", value)
+			} else if value.Valid {
+				d.host_host_to_disk = new(int)
+				*d.host_host_to_disk = int(value.Int64)
+			}
 		}
 	}
 	return nil
-}
-
-// QueryDiskToTag queries the "DiskToTag" edge of the Disk entity.
-func (d *Disk) QueryDiskToTag() *TagQuery {
-	return (&DiskClient{config: d.config}).QueryDiskToTag(d)
 }
 
 // QueryDiskToHost queries the "DiskToHost" edge of the Disk entity.

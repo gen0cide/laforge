@@ -1,4 +1,4 @@
-package main
+package loader
 
 import (
 	"context"
@@ -373,6 +373,18 @@ func main() {
 	fmt.Println(envs)
 }
 
+// LoadEnviroment Loads in enviroment at specified filepath
+func LoadEnviroment(ctx context.Context, client *ent.Client, filePath string) ([]*ent.Environment, error) {
+	tloader := NewLoader()
+	tloader.ParseConfigFile(filePath)
+	loadedConfig, err := tloader.Bind()
+	if err != nil {
+		log.Fatalf("Unable to Load ENV Config: %v Err: %v", filePath, err)
+		return nil, err
+	}
+	return createEnviroments(ctx, client, loadedConfig.Environments, loadedConfig)
+}
+
 // Need to combine everything here
 func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[string]*ent.Environment, loadedConfig *DefinedConfigs) ([]*ent.Environment, error) {
 	returnedEnvironment := []*ent.Environment{}
@@ -618,7 +630,7 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 		if !ok {
 			return nil, nil, fmt.Errorf("err: Host %v was not defined in the Enviroment %v", cHostID, envHclID)
 		}
-		returnedDisks, err := createDisk(ctx, client, cHost.HCLHostToDisk, cHost.HclID)
+		returnedDisk, err := createDisk(ctx, client, cHost.HCLHostToDisk, cHost.HclID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -648,7 +660,7 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 					SetTags(cHost.Tags).
 					SetUserGroups(cHost.UserGroups).
 					SetVars(cHost.Vars).
-					AddHostToDisk(returnedDisks...).
+					SetHostToDisk(returnedDisk).
 					Save(ctx)
 				if err != nil {
 					log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
@@ -679,7 +691,7 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 				log.Fatalf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
 				return nil, nil, err
 			}
-			_, err = entHost.Update().AddHostToDisk(returnedDisks...).Save(ctx)
+			_, err = entHost.Update().SetHostToDisk(returnedDisk).Save(ctx)
 			if err != nil {
 				log.Fatalf("Failed to Update Disk to Host %v. Err: %v", cHost.HclID, err)
 				return nil, nil, err
@@ -1308,44 +1320,34 @@ func createDNS(ctx context.Context, client *ent.Client, configDNS []*ent.DNS, en
 	return returnedDNS, nil
 }
 
-func createDisk(ctx context.Context, client *ent.Client, configDisk []*ent.Disk, hostHclID string) ([]*ent.Disk, error) {
-	bulk := []*ent.DiskCreate{}
-	returnedDisks := []*ent.Disk{}
-	for _, cDisk := range configDisk {
-		entDisk, err := client.Disk.
-			Query().
-			Where(
-				disk.And(
-					disk.HasDiskToHostWith(host.HclIDEQ(hostHclID)),
-				),
-			).
-			Only(ctx)
-		if err != nil {
-			if err == err.(*ent.NotFoundError) {
-				createdQuery := client.Disk.Create().
-					SetSize(cDisk.Size)
-				bulk = append(bulk, createdQuery)
-				continue
+func createDisk(ctx context.Context, client *ent.Client, configDisk *ent.Disk, hostHclID string) (*ent.Disk, error) {
+	entDisk, err := client.Disk.
+		Query().
+		Where(
+			disk.And(
+				disk.HasDiskToHostWith(host.HclIDEQ(hostHclID)),
+			),
+		).
+		Only(ctx)
+	if err != nil {
+		if err == err.(*ent.NotFoundError) {
+			entDisk, err = client.Disk.Create().
+				SetSize(configDisk.Size).
+				Save(ctx)
+			if err != nil {
+				log.Fatalf("Failed to create Disks. Err: %v", err)
+				return nil, err
 			}
 		}
-		entDisk, err = entDisk.Update().
-			SetSize(cDisk.Size).
-			Save(ctx)
-		if err != nil {
-			log.Fatalf("Failed to update Disk Size for %v. Err: %v", hostHclID, err)
-			return nil, err
-		}
-		returnedDisks = append(returnedDisks, entDisk)
 	}
-	if len(bulk) > 0 {
-		dbDisk, err := client.Disk.CreateBulk(bulk...).Save(ctx)
-		if err != nil {
-			log.Fatalf("Failed to create bulk Disks. Err: %v", err)
-			return nil, err
-		}
-		returnedDisks = append(returnedDisks, dbDisk...)
+	entDisk, err = entDisk.Update().
+		SetSize(configDisk.Size).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("Failed to update Disk Size for %v. Err: %v", hostHclID, err)
+		return nil, err
 	}
-	return returnedDisks, nil
+	return entDisk, nil
 }
 
 func createIncludedNetwork(ctx context.Context, client *ent.Client, configIncludedNetworks []*ent.IncludedNetwork, envHclID string) ([]*ent.IncludedNetwork, error) {

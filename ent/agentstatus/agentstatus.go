@@ -36,20 +36,11 @@ const (
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
 
-	// EdgeAgentStatusToTag holds the string denoting the agentstatustotag edge name in mutations.
-	EdgeAgentStatusToTag = "AgentStatusToTag"
 	// EdgeAgentStatusToProvisionedHost holds the string denoting the agentstatustoprovisionedhost edge name in mutations.
 	EdgeAgentStatusToProvisionedHost = "AgentStatusToProvisionedHost"
 
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// AgentStatusToTagTable is the table the holds the AgentStatusToTag relation/edge.
-	AgentStatusToTagTable = "tags"
-	// AgentStatusToTagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	AgentStatusToTagInverseTable = "tags"
-	// AgentStatusToTagColumn is the table column denoting the AgentStatusToTag relation/edge.
-	AgentStatusToTagColumn = "agent_status_agent_status_to_tag"
 	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge. The primary key declared below.
 	AgentStatusToProvisionedHostTable = "agent_status_AgentStatusToProvisionedHost"
 	// AgentStatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.

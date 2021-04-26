@@ -13,7 +13,6 @@ import (
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
-	"github.com/gen0cide/laforge/ent/tag"
 )
 
 // NetworkCreate is the builder for creating a Network entity.
@@ -59,34 +58,23 @@ func (nc *NetworkCreate) SetTags(m map[string]string) *NetworkCreate {
 	return nc
 }
 
-// AddNetworkToTagIDs adds the "NetworkToTag" edge to the Tag entity by IDs.
-func (nc *NetworkCreate) AddNetworkToTagIDs(ids ...int) *NetworkCreate {
-	nc.mutation.AddNetworkToTagIDs(ids...)
+// SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID.
+func (nc *NetworkCreate) SetNetworkToEnvironmentID(id int) *NetworkCreate {
+	nc.mutation.SetNetworkToEnvironmentID(id)
 	return nc
 }
 
-// AddNetworkToTag adds the "NetworkToTag" edges to the Tag entity.
-func (nc *NetworkCreate) AddNetworkToTag(t ...*Tag) *NetworkCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (nc *NetworkCreate) SetNillableNetworkToEnvironmentID(id *int) *NetworkCreate {
+	if id != nil {
+		nc = nc.SetNetworkToEnvironmentID(*id)
 	}
-	return nc.AddNetworkToTagIDs(ids...)
-}
-
-// AddNetworkToEnvironmentIDs adds the "NetworkToEnvironment" edge to the Environment entity by IDs.
-func (nc *NetworkCreate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkCreate {
-	nc.mutation.AddNetworkToEnvironmentIDs(ids...)
 	return nc
 }
 
-// AddNetworkToEnvironment adds the "NetworkToEnvironment" edges to the Environment entity.
-func (nc *NetworkCreate) AddNetworkToEnvironment(e ...*Environment) *NetworkCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return nc.AddNetworkToEnvironmentIDs(ids...)
+// SetNetworkToEnvironment sets the "NetworkToEnvironment" edge to the Environment entity.
+func (nc *NetworkCreate) SetNetworkToEnvironment(e *Environment) *NetworkCreate {
+	return nc.SetNetworkToEnvironmentID(e.ID)
 }
 
 // AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
@@ -263,31 +251,12 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 		})
 		_node.Tags = value
 	}
-	if nodes := nc.mutation.NetworkToTagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.NetworkToTagTable,
-			Columns: []string{network.NetworkToTagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := nc.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Columns: []string{network.NetworkToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
