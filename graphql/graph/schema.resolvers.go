@@ -249,6 +249,7 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string) (*en
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
+	planner.RenderFiles = true
 
 	return planner.CreateBuild(ctx, r.client, entEnvironment)
 }
