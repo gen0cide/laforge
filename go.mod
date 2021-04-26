@@ -40,6 +40,7 @@ require (
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
+	github.com/vmware/govmomi v0.25.0
 	github.com/vmware/vsphere-automation-sdk-go/runtime v0.3.1
 	github.com/vmware/vsphere-automation-sdk-go/services/nsxt v0.5.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
@@ -52,6 +53,7 @@ require (
 	google.golang.org/genproto v0.0.0-20201207150747-9ee31aac76e7 // indirect
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/guregu/null.v4 v4.0.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.8

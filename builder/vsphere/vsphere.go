@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -13,11 +14,12 @@ import (
 	"github.com/vmware/govmomi/vapi/library"
 	"github.com/vmware/govmomi/vapi/rest"
 	"github.com/vmware/govmomi/vim25"
+	"gopkg.in/guregu/null.v4"
 )
 
 type VSphere struct {
-	BaseUrl string
-	Client http.Client
+	BaseUrl  string
+	Client   http.Client
 	Username string
 	Password string
 }
@@ -25,8 +27,8 @@ type VSphere struct {
 type PowerState string
 
 const (
-	POWER_STATE_ON = "POWERED_ON"
-	POWER_STATE_OFF = "POWERED_OFF"
+	POWER_STATE_ON        = "POWERED_ON"
+	POWER_STATE_OFF       = "POWERED_OFF"
 	POWER_STATE_SUSPENDED = "SUSPENDED"
 )
 
@@ -38,10 +40,10 @@ type Identifier string
 
 type VirtualMachine struct {
 	Identifier Identifier `json:"vm"`
-	MemorySize int `json:"memory-size_MiB"`
-	Name string `json:"name"`
+	MemorySize int        `json:"memory-size_MiB"`
+	Name       string     `json:"name"`
 	PowerState PowerState `json:"power_state"`
-	CpuCount int `json:"cpu_count"`
+	CpuCount   int        `json:"cpu_count"`
 }
 
 type VirtualMachineList struct {
@@ -50,10 +52,10 @@ type VirtualMachineList struct {
 
 type Datastore struct {
 	Identifier Identifier `json:"datastore"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-	FreeSpace int `json:"free_space"`
-	Capacity int `json:"capacity"`
+	Name       string     `json:"name"`
+	Type       string     `json:"type"`
+	FreeSpace  int        `json:"free_space"`
+	Capacity   int        `json:"capacity"`
 }
 
 type DatastoreList struct {
@@ -62,8 +64,8 @@ type DatastoreList struct {
 
 type Folder struct {
 	Identifier Identifier `json:"folder"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name       string     `json:"name"`
+	Type       string     `json:"type"`
 }
 
 type FolderList struct {
@@ -72,7 +74,7 @@ type FolderList struct {
 
 type ResourcePool struct {
 	Identifier Identifier `json:"resource_pool"`
-	Name string `json:"name"`
+	Name       string     `json:"name"`
 }
 
 type ResourcePoolList struct {
@@ -84,62 +86,62 @@ type Memory struct {
 }
 
 type TemplateDiskStorage struct {
-	DatastoreIdentifier string `json:"datastore"`
-	StoragePolicyId string `json:"storage_policy"`
+	DatastoreIdentifier string      `json:"datastore"`
+	StoragePolicyId     null.String `json:"storage_policy"`
 }
 
 type TemplateDisk struct {
 	DiskStorage TemplateDiskStorage `json:"disk_storage"`
-	Capacity int `json:"capacity"`
+	Capacity    int                 `json:"capacity"`
 }
 
 type TemplateDiskEntry struct {
 	Value TemplateDisk `json:"value"`
-	Key string `json:"key"`
+	Key   string       `json:"key"`
 }
 
 type MacType string
 type BackingType string
 
 const (
-	NIC_MANUAL = "MANUAL"
-	NIC_GENERATED = "GENERATED"
-	NIC_ASSIGNED = "ASSIGNED"
-	NIC_STANDARD_PORTGROUP = "STANDARD_PORTGROUP"
-	NIC_HOST_DEVICE = "HOST_DEVICE"
+	NIC_MANUAL                = "MANUAL"
+	NIC_GENERATED             = "GENERATED"
+	NIC_ASSIGNED              = "ASSIGNED"
+	NIC_STANDARD_PORTGROUP    = "STANDARD_PORTGROUP"
+	NIC_HOST_DEVICE           = "HOST_DEVICE"
 	NIC_DISTRIBUTED_PORTGROUP = "DISTRIBUTED_PORTGROUP"
-	NIC_OPAQUE_NETWORK = "OPAQUE_NETWORK"
+	NIC_OPAQUE_NETWORK        = "OPAQUE_NETWORK"
 )
 
 type TemplateNic struct {
-	Identifier Identifier `json:"network"`
-	MacType MacType `json:"mac_type"`
+	Identifier  Identifier  `json:"network"`
+	MacType     MacType     `json:"mac_type"`
 	BackingType BackingType `json:"backing_type"`
 }
 
 type TemplateNicEntry struct {
 	Value TemplateNic `json:"value"`
-	Key string `json:"key"`
+	Key   string      `json:"key"`
 }
 
 type TemplateCpu struct {
-	Count int `json:"count"`
+	Count          int `json:"count"`
 	CoresPerSocket int `json:"cores_per_socket"`
 }
 
 type TemplateHomeStorage struct {
-	DatastoreIdentifier string `json:"datastore"`
-	StoragePolicyId string `json:"storage_policy"`
+	DatastoreIdentifier string      `json:"datastore"`
+	StoragePolicyId     null.String `json:"storage_policy"`
 }
 
 type Template struct {
-	Identifier Identifier `json:"vm_template"`
-	Memory Memory `json:"memory"`
-	Disks []TemplateDiskEntry `json:"disks"`
-	Nics []TemplateNicEntry `json:"nics"`
-	Cpu TemplateCpu `json:"cpu"`
+	Identifier    Identifier          `json:"vm_template"`
+	Memory        Memory              `json:"memory"`
+	Disks         []TemplateDiskEntry `json:"disks"`
+	Nics          []TemplateNicEntry  `json:"nics"`
+	Cpu           TemplateCpu         `json:"cpu"`
 	VmHomeStorage TemplateHomeStorage `json:"vm_home_storage"`
-	GuestOS string `json:"guest_OS"`
+	GuestOS       string              `json:"guest_OS"`
 }
 
 type TemplateResponse struct {
@@ -153,13 +155,13 @@ const (
 )
 
 type VirtualMachinePlacement struct {
-	Datastore Identifier `json:"datastore"`
-	Folder Identifier `json:"folder"`
+	Datastore    Identifier `json:"datastore"`
+	Folder       Identifier `json:"folder"`
 	ResourcePool Identifier `json:"resource_pool"`
 }
 
 type VirtualMachineCpu struct {
-	Count int `json:"count"`
+	Count          int `json:"count"`
 	CoresPerSocket int `json:"cores_per_socket"`
 }
 
@@ -168,7 +170,7 @@ type VirtualMachineVmdk struct {
 }
 
 type VirtualMachineScsi struct {
-	Bus int `json:"bus"`
+	Bus  int `json:"bus"`
 	Unit int `json:"unit"`
 }
 
@@ -179,9 +181,9 @@ const (
 )
 
 type VirtualMachineDisk struct {
-	NewVdmk VirtualMachineVmdk `json:"new_vmdk"`
-	Scsi VirtualMachineScsi `json:"scsi"`
-	Type VirtualMachineDiskType `json:"type"`
+	NewVdmk VirtualMachineVmdk     `json:"new_vmdk"`
+	Scsi    VirtualMachineScsi     `json:"scsi"`
+	Type    VirtualMachineDiskType `json:"type"`
 }
 
 type VirtualMachineNicType string
@@ -191,49 +193,49 @@ const (
 )
 
 type VirtualMachineNic struct {
-	AllowGuestControl bool `json:"allow_guest_control"`
-	StartConnected bool `json:"start_connected"`
-	Type VirtualMachineNicType `json:"type"`
-	UptCompatibilityEnabled bool `json:"upt_compatibility_enabled"`
-	WakeOnLanEnabled bool `json:"wake_on_lan_enabled"`
+	AllowGuestControl       bool                  `json:"allow_guest_control"`
+	StartConnected          bool                  `json:"start_connected"`
+	Type                    VirtualMachineNicType `json:"type"`
+	UptCompatibilityEnabled bool                  `json:"upt_compatibility_enabled"`
+	WakeOnLanEnabled        bool                  `json:"wake_on_lan_enabled"`
 }
 
-type VirtualMachineCdromType string;
+type VirtualMachineCdromType string
 
 const (
-	VM_CDROM_ISO_FILE = "ISO_FILE"
-	VM_CDROM_HOST_DEVICE = "HOST_DEVICE"
+	VM_CDROM_ISO_FILE      = "ISO_FILE"
+	VM_CDROM_HOST_DEVICE   = "HOST_DEVICE"
 	VM_CDROM_CLIENT_DEVICE = "CLIENT_DEVICE"
 )
 
 type VirtualMachineCdromBacking struct {
-	DeviceAccessType string `json:"device_access_type"`
-	Type VirtualMachineCdromType `json:"type"`
+	DeviceAccessType string                  `json:"device_access_type"`
+	Type             VirtualMachineCdromType `json:"type"`
 }
 
 type VirtualMachineCdromSata struct {
-	Bus int `json:"bus"`
+	Bus  int `json:"bus"`
 	Unit int `json:"unit"`
 }
 
 type VirtualMachineCdrom struct {
-	AllowGuestControl bool `json:"allow_guest_control"`
-	Backing VirtualMachineCdromBacking `json:"backing"`
-	Sata VirtualMachineCdromSata `json:"sata"`
-	StartConnected bool `json:"start_connected"`
-	Type string `json:"type"`
+	AllowGuestControl bool                       `json:"allow_guest_control"`
+	Backing           VirtualMachineCdromBacking `json:"backing"`
+	Sata              VirtualMachineCdromSata    `json:"sata"`
+	StartConnected    bool                       `json:"start_connected"`
+	Type              string                     `json:"type"`
 }
 
 type VirtualMachineSpec struct {
-	GuestOS OperatingSystem `json:"guest_OS"`
-	Name string `json:"name"`
+	GuestOS   OperatingSystem         `json:"guest_OS"`
+	Name      string                  `json:"name"`
 	Placement VirtualMachinePlacement `json:"placement"`
-	Cpu VirtualMachineCpu `json:"cpu"`
-	Memory Memory `json:"memory"`
-	Disks []VirtualMachineDisk `json:"disks"`
-	Nics []VirtualMachineNic `json:"nics"`
-	Cdroms []VirtualMachineCdrom `json:"cdroms"`
-}	
+	Cpu       VirtualMachineCpu       `json:"cpu"`
+	Memory    Memory                  `json:"memory"`
+	Disks     []VirtualMachineDisk    `json:"disks"`
+	Nics      []VirtualMachineNic     `json:"nics"`
+	Cdroms    []VirtualMachineCdrom   `json:"cdroms"`
+}
 
 type CreateVirtualMachineData struct {
 	Spec VirtualMachineSpec `json:"spec"`
@@ -241,16 +243,69 @@ type CreateVirtualMachineData struct {
 
 type Network struct {
 	Identifier Identifier `json:"network"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name       string     `json:"name"`
+	Type       string     `json:"type"`
 }
 
 type ListNetworkResponse struct {
 	Value []Network `json:"value"`
 }
 
+type CpuUpdate struct {
+	NumCoresPerSocket int `json:"num_cores_per_socket"`
+	NumCpus           int `json:"num_cpus"`
+}
+
+type MemoryUpdate struct {
+	Memory int `json:"memory"`
+}
+
+type HCNicValue struct {
+	Identifier string `json:"network"`
+}
+
+type HCNic struct {
+	Key   string     `json:"key"`
+	Value HCNicValue `json:"value"`
+}
+
+type HardwareCustomization struct {
+	CpuUpdate     CpuUpdate    `json:"cpu_update"`
+	DisksToRemove []string     `json:"disks_to_remove"`
+	DisksToUpdate []string     `json:"disks_to_update"`
+	MemoryUpdate  MemoryUpdate `json:"memory_update"`
+	Nics          []HCNic      `json:"nics"`
+}
+
+type DeployPlacement struct {
+	ClusterId      null.String `json:"cluster"`
+	FolderId       null.String `json:"folder"`
+	HostId         null.String `json:"host"`
+	ResourcePoolId null.String `json:"resource_pool"`
+}
+
+type DeployHomeStorage struct {
+	DatastoreId     Identifier  `json:"datastore"`
+	StoragePolicyId null.String `json:"storage_policy"`
+}
+
+type DeployTemplateSpec struct {
+	Description           string                `json:"description"`
+	DiskStorage           TemplateDiskStorage   `json:"disk_storage"`
+	DiskStorageOverrides  []string              `json:"disk_storage_overrides"`
+	HardwareCustomization HardwareCustomization `json:"hardware_customization"`
+	Name                  string                `json:"name"`
+	Placement             DeployPlacement       `json:"placement"`
+	PoweredOn             bool                  `json:"powered_on"`
+	VmHomeStorage         DeployHomeStorage     `json:"vm_home_storage"`
+}
+
+type DeployTemplatePayload struct {
+	Spec DeployTemplateSpec `json:"spec"`
+}
+
 func (vs *VSphere) authorize() (sessionToken string, err error) {
-	authRequest, err := http.NewRequest("POST", vs.BaseUrl + "/rest/com/vmware/cis/session", nil)
+	authRequest, err := http.NewRequest("POST", vs.BaseUrl+"/rest/com/vmware/cis/session", nil)
 	if err != nil {
 		return
 	}
@@ -263,7 +318,7 @@ func (vs *VSphere) authorize() (sessionToken string, err error) {
 		err = errors.New("recieved status " + authResponse.Status)
 		return
 	}
-	
+
 	defer authResponse.Body.Close()
 
 	var authBody AuthorizationResponse
@@ -298,6 +353,7 @@ func (vs *VSphere) generateAuthorizedRequestWithData(method string, url string, 
 		return
 	}
 	request.Header.Add("vmware-api-session-id", sessionToken)
+	request.Header.Add("Content-Type", "application/json")
 	return
 }
 
@@ -349,6 +405,38 @@ func (vs *VSphere) ListDatastores() (datastores []Datastore, err error) {
 	return
 }
 
+func (vs *VSphere) GetDatastoreByName(name string) (datastore Datastore, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/datastore?filter.names.1="+name)
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var datastoreList DatastoreList
+	err = json.NewDecoder(response.Body).Decode(&datastoreList)
+	if err != nil {
+		return
+	}
+	if len(datastoreList.Value) < 1 {
+		err = errors.New("no datastore found for the name\"" + name + "\"")
+		return
+	}
+	if len(datastoreList.Value) > 1 {
+		err = errors.New("more than one (" + fmt.Sprint(len(datastoreList.Value)) + ") datastore found for the name\"" + name + "\"")
+		return
+	}
+	datastore = datastoreList.Value[0]
+	return
+}
+
 func (vs *VSphere) ListFolders() (folders []Folder, err error) {
 	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/folder")
 	if err != nil {
@@ -370,6 +458,38 @@ func (vs *VSphere) ListFolders() (folders []Folder, err error) {
 		return
 	}
 	folders = folderList.Value
+	return
+}
+
+func (vs *VSphere) GetFolderByName(name string) (folder Folder, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/folder?filter.names.1="+name)
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var folderList FolderList
+	err = json.NewDecoder(response.Body).Decode(&folderList)
+	if err != nil {
+		return
+	}
+	if len(folderList.Value) < 1 {
+		err = errors.New("no folder found for the name\"" + name + "\"")
+		return
+	}
+	if len(folderList.Value) > 1 {
+		err = errors.New("more than one (" + fmt.Sprint(len(folderList.Value)) + ") folder found for the name\"" + name + "\"")
+		return
+	}
+	folder = folderList.Value[0]
 	return
 }
 
@@ -397,6 +517,38 @@ func (vs *VSphere) ListResourcePools() (resourcePools []ResourcePool, err error)
 	return
 }
 
+func (vs *VSphere) GetResourcePoolByName(name string) (resourcePool ResourcePool, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/resource-pool?filter.names.1="+name)
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var resourcePoolList ResourcePoolList
+	err = json.NewDecoder(response.Body).Decode(&resourcePoolList)
+	if err != nil {
+		return
+	}
+	if len(resourcePoolList.Value) < 1 {
+		err = errors.New("no resource pool found for the name\"" + name + "\"")
+		return
+	}
+	if len(resourcePoolList.Value) > 1 {
+		err = errors.New("more than one (" + fmt.Sprint(len(resourcePoolList.Value)) + ") resource pool found for the name\"" + name + "\"")
+		return
+	}
+	resourcePool = resourcePoolList.Value[0]
+	return
+}
+
 func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/network")
 	if err != nil {
@@ -421,13 +573,44 @@ func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 	return
 }
 
+func (vs *VSphere) GetNetworkByName(name string) (network Network, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/network?filter.names.1="+name)
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var networkList ListNetworkResponse
+	err = json.NewDecoder(response.Body).Decode(&networkList)
+	if err != nil {
+		return
+	}
+	if len(networkList.Value) < 1 {
+		err = errors.New("no network found for the name\"" + name + "\"")
+		return
+	}
+	if len(networkList.Value) > 1 {
+		err = errors.New("more than one (" + fmt.Sprint(len(networkList.Value)) + ") network found for the name\"" + name + "\"")
+		return
+	}
+	network = networkList.Value[0]
+	return
+}
 func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName string) (templateId string, err error) {
 	u, err := url.Parse(vs.BaseUrl + "/sdk")
 	if err != nil {
 		return
 	}
 	u.User = url.UserPassword(vs.Username, vs.Password)
-	
+
 	ctx := context.TODO()
 	client, err := govmomi.NewClient(ctx, u, false)
 	if err != nil {
@@ -484,7 +667,7 @@ func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName s
 }
 
 func (vs *VSphere) GetTemplate(templateId string) (template Template, err error) {
-	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/vm-template/library-items/" + templateId)
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/vm-template/library-items/"+templateId)
 	if err != nil {
 		return
 	}
@@ -529,5 +712,38 @@ func (vs *VSphere) CreateVM(vmSpec VirtualMachineSpec) (err error) {
 	}
 
 	// TODO: Actually parse the response
+	return
+}
+
+func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (err error) {
+	requestData := DeployTemplatePayload{
+		Spec: spec,
+	}
+	requestDataString, err := json.Marshal(requestData)
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", requestDataString)
+	request, err := vs.generateAuthorizedRequestWithData("POST", "/rest/vcenter/vm-template/library-items/"+templateId+"?action=deploy", bytes.NewBuffer(requestDataString))
+	if err != nil {
+		return
+	}
+	response, err := vs.Client.Do(request)
+	if err != nil {
+		return
+	}
+	if response.StatusCode != http.StatusOK {
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	// DEBUG: output the deployment id for debug purposes
+	defer response.Body.Close()
+	deploymentBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return
+	}
+	fmt.Printf("[DEBUG] | Deployed VM \"%s\" [%s]", spec.Name, string(deploymentBytes))
+
 	return
 }
