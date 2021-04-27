@@ -32,6 +32,20 @@ func (bc *BuildCreate) SetRevision(i int) *BuildCreate {
 	return bc
 }
 
+// SetCompletedPlan sets the "completed_plan" field.
+func (bc *BuildCreate) SetCompletedPlan(b bool) *BuildCreate {
+	bc.mutation.SetCompletedPlan(b)
+	return bc
+}
+
+// SetNillableCompletedPlan sets the "completed_plan" field if the given value is not nil.
+func (bc *BuildCreate) SetNillableCompletedPlan(b *bool) *BuildCreate {
+	if b != nil {
+		bc.SetCompletedPlan(*b)
+	}
+	return bc
+}
+
 // SetID sets the "id" field.
 func (bc *BuildCreate) SetID(u uuid.UUID) *BuildCreate {
 	bc.mutation.SetID(u)
@@ -176,6 +190,10 @@ func (bc *BuildCreate) SaveX(ctx context.Context) *Build {
 
 // defaults sets the default values of the builder before save.
 func (bc *BuildCreate) defaults() {
+	if _, ok := bc.mutation.CompletedPlan(); !ok {
+		v := build.DefaultCompletedPlan
+		bc.mutation.SetCompletedPlan(v)
+	}
 	if _, ok := bc.mutation.ID(); !ok {
 		v := build.DefaultID()
 		bc.mutation.SetID(v)
@@ -186,6 +204,9 @@ func (bc *BuildCreate) defaults() {
 func (bc *BuildCreate) check() error {
 	if _, ok := bc.mutation.Revision(); !ok {
 		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+	}
+	if _, ok := bc.mutation.CompletedPlan(); !ok {
+		return &ValidationError{Name: "completed_plan", err: errors.New("ent: missing required field \"completed_plan\"")}
 	}
 	if _, ok := bc.mutation.BuildToEnvironmentID(); !ok {
 		return &ValidationError{Name: "BuildToEnvironment", err: errors.New("ent: missing required edge \"BuildToEnvironment\"")}
@@ -229,6 +250,14 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Column: build.FieldRevision,
 		})
 		_node.Revision = value
+	}
+	if value, ok := bc.mutation.CompletedPlan(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: build.FieldCompletedPlan,
+		})
+		_node.CompletedPlan = value
 	}
 	if nodes := bc.mutation.BuildToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

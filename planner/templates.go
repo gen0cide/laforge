@@ -21,6 +21,7 @@ type TempleteContext struct {
 	Network            *ent.Network
 	Script             *ent.Script
 	Team               *ent.Team
+	Identities         []*ent.Identity
 	ProvisionedNetwork *ent.ProvisionedNetwork
 	ProvisionedHost    *ent.ProvisionedHost
 	ProvisioningStep   *ent.ProvisioningStep

@@ -47,6 +47,20 @@ func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 	return bu
 }
 
+// SetCompletedPlan sets the "completed_plan" field.
+func (bu *BuildUpdate) SetCompletedPlan(b bool) *BuildUpdate {
+	bu.mutation.SetCompletedPlan(b)
+	return bu
+}
+
+// SetNillableCompletedPlan sets the "completed_plan" field if the given value is not nil.
+func (bu *BuildUpdate) SetNillableCompletedPlan(b *bool) *BuildUpdate {
+	if b != nil {
+		bu.SetCompletedPlan(*b)
+	}
+	return bu
+}
+
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
 func (bu *BuildUpdate) SetBuildToStatusID(id uuid.UUID) *BuildUpdate {
 	bu.mutation.SetBuildToStatusID(id)
@@ -317,6 +331,13 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: build.FieldRevision,
+		})
+	}
+	if value, ok := bu.mutation.CompletedPlan(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: build.FieldCompletedPlan,
 		})
 	}
 	if bu.mutation.BuildToStatusCleared() {
@@ -618,6 +639,20 @@ func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 	return buo
 }
 
+// SetCompletedPlan sets the "completed_plan" field.
+func (buo *BuildUpdateOne) SetCompletedPlan(b bool) *BuildUpdateOne {
+	buo.mutation.SetCompletedPlan(b)
+	return buo
+}
+
+// SetNillableCompletedPlan sets the "completed_plan" field if the given value is not nil.
+func (buo *BuildUpdateOne) SetNillableCompletedPlan(b *bool) *BuildUpdateOne {
+	if b != nil {
+		buo.SetCompletedPlan(*b)
+	}
+	return buo
+}
+
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
 func (buo *BuildUpdateOne) SetBuildToStatusID(id uuid.UUID) *BuildUpdateOne {
 	buo.mutation.SetBuildToStatusID(id)
@@ -912,6 +947,13 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: build.FieldRevision,
+		})
+	}
+	if value, ok := buo.mutation.CompletedPlan(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: build.FieldCompletedPlan,
 		})
 	}
 	if buo.mutation.BuildToStatusCleared() {

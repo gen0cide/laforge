@@ -281,7 +281,7 @@ func (r *mutationResolver) LoadEnviroment(ctx context.Context, envFilePath strin
 	return loader.LoadEnviroment(ctx, r.client, envFilePath)
 }
 
-func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string) (*ent.Build, error) {
+func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, renderFiles bool) (*ent.Build, error) {
 	uuid, err := uuid.Parse(envUUID)
 
 	if err != nil {
@@ -293,7 +293,7 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string) (*en
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
-	planner.RenderFiles = true
+	planner.RenderFiles = renderFiles
 
 	return planner.CreateBuild(ctx, r.client, entEnvironment)
 }

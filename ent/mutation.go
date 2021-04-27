@@ -1507,6 +1507,7 @@ type BuildMutation struct {
 	id                                *uuid.UUID
 	revision                          *int
 	addrevision                       *int
+	completed_plan                    *bool
 	clearedFields                     map[string]struct{}
 	_BuildToStatus                    *uuid.UUID
 	cleared_BuildToStatus             bool
@@ -1667,6 +1668,42 @@ func (m *BuildMutation) AddedRevision() (r int, exists bool) {
 func (m *BuildMutation) ResetRevision() {
 	m.revision = nil
 	m.addrevision = nil
+}
+
+// SetCompletedPlan sets the "completed_plan" field.
+func (m *BuildMutation) SetCompletedPlan(b bool) {
+	m.completed_plan = &b
+}
+
+// CompletedPlan returns the value of the "completed_plan" field in the mutation.
+func (m *BuildMutation) CompletedPlan() (r bool, exists bool) {
+	v := m.completed_plan
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedPlan returns the old "completed_plan" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldCompletedPlan(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCompletedPlan is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCompletedPlan requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedPlan: %w", err)
+	}
+	return oldValue.CompletedPlan, nil
+}
+
+// ResetCompletedPlan resets all changes to the "completed_plan" field.
+func (m *BuildMutation) ResetCompletedPlan() {
+	m.completed_plan = nil
 }
 
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by id.
@@ -1959,9 +1996,12 @@ func (m *BuildMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BuildMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.revision != nil {
 		fields = append(fields, build.FieldRevision)
+	}
+	if m.completed_plan != nil {
+		fields = append(fields, build.FieldCompletedPlan)
 	}
 	return fields
 }
@@ -1973,6 +2013,8 @@ func (m *BuildMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case build.FieldRevision:
 		return m.Revision()
+	case build.FieldCompletedPlan:
+		return m.CompletedPlan()
 	}
 	return nil, false
 }
@@ -1984,6 +2026,8 @@ func (m *BuildMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case build.FieldRevision:
 		return m.OldRevision(ctx)
+	case build.FieldCompletedPlan:
+		return m.OldCompletedPlan(ctx)
 	}
 	return nil, fmt.Errorf("unknown Build field %s", name)
 }
@@ -1999,6 +2043,13 @@ func (m *BuildMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRevision(v)
+		return nil
+	case build.FieldCompletedPlan:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedPlan(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Build field %s", name)
@@ -2066,6 +2117,9 @@ func (m *BuildMutation) ResetField(name string) error {
 	switch name {
 	case build.FieldRevision:
 		m.ResetRevision()
+		return nil
+	case build.FieldCompletedPlan:
+		m.ResetCompletedPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Build field %s", name)

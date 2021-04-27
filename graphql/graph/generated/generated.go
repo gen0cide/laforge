@@ -89,6 +89,7 @@ type ComplexityRoot struct {
 		BuildToProvisionedNetwork func(childComplexity int) int
 		BuildToStatus             func(childComplexity int) int
 		BuildToTeam               func(childComplexity int) int
+		CompletedPlan             func(childComplexity int) int
 		ID                        func(childComplexity int) int
 		Revision                  func(childComplexity int) int
 	}
@@ -257,7 +258,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateBuild    func(childComplexity int, envUUID string) int
+		CreateBuild    func(childComplexity int, envUUID string, renderFiles bool) int
 		ExecutePlan    func(childComplexity int, buildUUID string) int
 		LoadEnviroment func(childComplexity int, envFilePath string) int
 	}
@@ -466,7 +467,7 @@ type IdentityResolver interface {
 }
 type MutationResolver interface {
 	LoadEnviroment(ctx context.Context, envFilePath string) ([]*ent.Environment, error)
-	CreateBuild(ctx context.Context, envUUID string) (*ent.Build, error)
+	CreateBuild(ctx context.Context, envUUID string, renderFiles bool) (*ent.Build, error)
 	ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error)
 }
 type NetworkResolver interface {
@@ -677,6 +678,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Build.BuildToTeam(childComplexity), true
+
+	case "Build.completed_plan":
+		if e.complexity.Build.CompletedPlan == nil {
+			break
+		}
+
+		return e.complexity.Build.CompletedPlan(childComplexity), true
 
 	case "Build.id":
 		if e.complexity.Build.ID == nil {
@@ -1591,7 +1599,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateBuild(childComplexity, args["envUUID"].(string)), true
+		return e.complexity.Mutation.CreateBuild(childComplexity, args["envUUID"].(string), args["renderFiles"].(bool)), true
 
 	case "Mutation.executePlan":
 		if e.complexity.Mutation.ExecutePlan == nil {
@@ -2477,6 +2485,7 @@ type AgentStatus {
 type Build {
   id: ID!
   revision: Int!
+  completed_plan: Boolean!
   buildToStatus: Status!
   buildToEnvironment: Environment!
   buildToCompetition: Competition!
@@ -2774,7 +2783,7 @@ type Query {
 
 type Mutation {
   loadEnviroment(envFilePath: String!): [Environment]
-  createBuild(envUUID: String!): Build
+  createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
   executePlan(buildUUID: String!): Build
 }
 `, BuiltIn: false},
@@ -2797,6 +2806,15 @@ func (ec *executionContext) field_Mutation_createBuild_args(ctx context.Context,
 		}
 	}
 	args["envUUID"] = arg0
+	var arg1 bool
+	if tmp, ok := rawArgs["renderFiles"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("renderFiles"))
+		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["renderFiles"] = arg1
 	return args, nil
 }
 
@@ -3522,6 +3540,41 @@ func (ec *executionContext) _Build_revision(ctx context.Context, field graphql.C
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Build_completed_plan(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Build",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompletedPlan, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Build_buildToStatus(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
@@ -8219,7 +8272,7 @@ func (ec *executionContext) _Mutation_createBuild(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateBuild(rctx, args["envUUID"].(string))
+		return ec.resolvers.Mutation().CreateBuild(rctx, args["envUUID"].(string), args["renderFiles"].(bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12890,6 +12943,11 @@ func (ec *executionContext) _Build(ctx context.Context, sel ast.SelectionSet, ob
 			})
 		case "revision":
 			out.Values[i] = ec._Build_revision(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "completed_plan":
+			out.Values[i] = ec._Build_completed_plan(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}

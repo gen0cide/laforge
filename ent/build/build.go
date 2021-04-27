@@ -13,6 +13,8 @@ const (
 	FieldID = "id"
 	// FieldRevision holds the string denoting the revision field in the database.
 	FieldRevision = "revision"
+	// FieldCompletedPlan holds the string denoting the completed_plan field in the database.
+	FieldCompletedPlan = "completed_plan"
 	// EdgeBuildToStatus holds the string denoting the buildtostatus edge name in mutations.
 	EdgeBuildToStatus = "BuildToStatus"
 	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
@@ -75,6 +77,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldRevision,
+	FieldCompletedPlan,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "builds"
@@ -100,6 +103,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCompletedPlan holds the default value on creation for the "completed_plan" field.
+	DefaultCompletedPlan bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

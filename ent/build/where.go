@@ -99,6 +99,13 @@ func Revision(v int) predicate.Build {
 	})
 }
 
+// CompletedPlan applies equality check predicate on the "completed_plan" field. It's identical to CompletedPlanEQ.
+func CompletedPlan(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompletedPlan), v))
+	})
+}
+
 // RevisionEQ applies the EQ predicate on the "revision" field.
 func RevisionEQ(v int) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
@@ -172,6 +179,20 @@ func RevisionLT(v int) predicate.Build {
 func RevisionLTE(v int) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldRevision), v))
+	})
+}
+
+// CompletedPlanEQ applies the EQ predicate on the "completed_plan" field.
+func CompletedPlanEQ(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompletedPlan), v))
+	})
+}
+
+// CompletedPlanNEQ applies the NEQ predicate on the "completed_plan" field.
+func CompletedPlanNEQ(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCompletedPlan), v))
 	})
 }
 

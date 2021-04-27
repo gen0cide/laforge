@@ -92,6 +92,7 @@ type AgentStatus {
 type Build {
   id: ID!
   revision: Int!
+  completed_plan: Boolean!
   buildToStatus: Status!
   buildToEnvironment: Environment!
   buildToCompetition: Competition!
@@ -389,6 +390,6 @@ type Query {
 
 type Mutation {
   loadEnviroment(envFilePath: String!): [Environment]
-  createBuild(envUUID: String!): Build
+  createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
   executePlan(buildUUID: String!): Build
 }

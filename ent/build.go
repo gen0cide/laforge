@@ -21,6 +21,8 @@ type Build struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Revision holds the value of the "revision" field.
 	Revision int `json:"revision,omitempty"`
+	// CompletedPlan holds the value of the "completed_plan" field.
+	CompletedPlan bool `json:"completed_plan,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BuildQuery when eager-loading is set.
 	Edges BuildEdges `json:"edges"`
@@ -136,6 +138,8 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case build.FieldCompletedPlan:
+			values[i] = new(sql.NullBool)
 		case build.FieldRevision:
 			values[i] = new(sql.NullInt64)
 		case build.FieldID:
@@ -170,6 +174,12 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field revision", values[i])
 			} else if value.Valid {
 				b.Revision = int(value.Int64)
+			}
+		case build.FieldCompletedPlan:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field completed_plan", values[i])
+			} else if value.Valid {
+				b.CompletedPlan = value.Bool
 			}
 		case build.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -243,6 +253,8 @@ func (b *Build) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", b.ID))
 	builder.WriteString(", revision=")
 	builder.WriteString(fmt.Sprintf("%v", b.Revision))
+	builder.WriteString(", completed_plan=")
+	builder.WriteString(fmt.Sprintf("%v", b.CompletedPlan))
 	builder.WriteByte(')')
 	return builder.String()
 }

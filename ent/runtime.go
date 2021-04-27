@@ -46,6 +46,10 @@ func init() {
 	agentstatus.DefaultID = agentstatusDescID.Default.(func() uuid.UUID)
 	buildFields := schema.Build{}.Fields()
 	_ = buildFields
+	// buildDescCompletedPlan is the schema descriptor for completed_plan field.
+	buildDescCompletedPlan := buildFields[2].Descriptor()
+	// build.DefaultCompletedPlan holds the default value on creation for the completed_plan field.
+	build.DefaultCompletedPlan = buildDescCompletedPlan.Default.(bool)
 	// buildDescID is the schema descriptor for id field.
 	buildDescID := buildFields[0].Descriptor()
 	// build.DefaultID holds the default value on creation for the id field.

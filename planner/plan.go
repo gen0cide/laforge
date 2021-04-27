@@ -109,14 +109,24 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 	}
 	for teamNumber := 0; teamNumber <= entEnvironment.TeamCount; teamNumber++ {
 		wg.Add(1)
-		go createTeam(ctx, client, entBuild, teamNumber, &wg)
+		go createTeam(client, entBuild, teamNumber, &wg)
 	}
-	wg.Wait()
+
+	go func(wg *sync.WaitGroup, entBuild *ent.Build) {
+		wg.Wait()
+		ctx := context.Background()
+		defer ctx.Done()
+		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
+	}(&wg, entBuild)
+
 	return entBuild, nil
 }
 
-func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, teamNumber int, wg *sync.WaitGroup) (*ent.Team, error) {
+func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *sync.WaitGroup) (*ent.Team, error) {
 	defer wg.Done()
+
+	ctx := context.Background()
+	defer ctx.Done()
 
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForTeam)
 	if err != nil {
@@ -634,6 +644,7 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 	currentCompetition := currentBuild.QueryBuildToCompetition().OnlyX(ctx)
 	currentNetwork := currentProvisionedNetwork.QueryProvisionedNetworkToNetwork().OnlyX(ctx)
 	currentHost := currentProvisionedHost.QueryProvisionedHostToHost().OnlyX(ctx)
+	currentIdentities := currentEnvironment.QueryEnvironmentToIdentity().AllX(ctx)
 	// Need to Make Unique and change how it's loaded in
 	currentDNS := currentCompetition.QueryCompetitionToDNS().FirstX(ctx)
 	templeteData := TempleteContext{
@@ -645,6 +656,7 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		Network:            currentNetwork,
 		Script:             currentScript,
 		Team:               currentTeam,
+		Identities:         currentIdentities,
 		ProvisionedNetwork: currentProvisionedNetwork,
 		ProvisionedHost:    currentProvisionedHost,
 		ProvisioningStep:   pStep,

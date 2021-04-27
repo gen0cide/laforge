@@ -19,6 +19,8 @@ func (Build) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Int("revision"),
+		field.Bool("completed_plan").
+			Default(false),
 	}
 }
 
