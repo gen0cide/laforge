@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // CompetitionQuery is the builder for querying Competition entities.
@@ -159,8 +160,8 @@ func (cq *CompetitionQuery) FirstX(ctx context.Context) *Competition {
 
 // FirstID returns the first Competition ID from the query.
 // Returns a *NotFoundError when no Competition ID was found.
-func (cq *CompetitionQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CompetitionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -172,7 +173,7 @@ func (cq *CompetitionQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CompetitionQuery) FirstIDX(ctx context.Context) int {
+func (cq *CompetitionQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -210,8 +211,8 @@ func (cq *CompetitionQuery) OnlyX(ctx context.Context) *Competition {
 // OnlyID is like Only, but returns the only Competition ID in the query.
 // Returns a *NotSingularError when exactly one Competition ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CompetitionQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CompetitionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -227,7 +228,7 @@ func (cq *CompetitionQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CompetitionQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CompetitionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -253,8 +254,8 @@ func (cq *CompetitionQuery) AllX(ctx context.Context) []*Competition {
 }
 
 // IDs executes the query and returns a list of Competition IDs.
-func (cq *CompetitionQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (cq *CompetitionQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := cq.Select(competition.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -262,7 +263,7 @@ func (cq *CompetitionQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CompetitionQuery) IDsX(ctx context.Context) []int {
+func (cq *CompetitionQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -458,15 +459,15 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 
 	if query := cq.withCompetitionToDNS; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Competition, len(nodes))
+		ids := make(map[uuid.UUID]*Competition, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.CompetitionToDNS = []*DNS{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*Competition)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*Competition)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -478,19 +479,19 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 				s.Where(sql.InValues(competition.CompetitionToDNSPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -522,8 +523,8 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 	}
 
 	if query := cq.withCompetitionToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Competition)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Competition)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_competition == nil {
 				continue
@@ -552,7 +553,7 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 
 	if query := cq.withCompetitionToBuild; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Competition)
+		nodeids := make(map[uuid.UUID]*Competition)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -601,7 +602,7 @@ func (cq *CompetitionQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   competition.Table,
 			Columns: competition.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: competition.FieldID,
 			},
 		},

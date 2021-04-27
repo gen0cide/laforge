@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/google/uuid"
 )
 
 // FileExtractCreate is the builder for creating a FileExtract entity.
@@ -50,14 +51,20 @@ func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
 	return fec
 }
 
+// SetID sets the "id" field.
+func (fec *FileExtractCreate) SetID(u uuid.UUID) *FileExtractCreate {
+	fec.mutation.SetID(u)
+	return fec
+}
+
 // SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
-func (fec *FileExtractCreate) SetFileExtractToEnvironmentID(id int) *FileExtractCreate {
+func (fec *FileExtractCreate) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractCreate {
 	fec.mutation.SetFileExtractToEnvironmentID(id)
 	return fec
 }
 
 // SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fec *FileExtractCreate) SetNillableFileExtractToEnvironmentID(id *int) *FileExtractCreate {
+func (fec *FileExtractCreate) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractCreate {
 	if id != nil {
 		fec = fec.SetFileExtractToEnvironmentID(*id)
 	}
@@ -80,6 +87,7 @@ func (fec *FileExtractCreate) Save(ctx context.Context) (*FileExtract, error) {
 		err  error
 		node *FileExtract
 	)
+	fec.defaults()
 	if len(fec.hooks) == 0 {
 		if err = fec.check(); err != nil {
 			return nil, err
@@ -118,6 +126,14 @@ func (fec *FileExtractCreate) SaveX(ctx context.Context) *FileExtract {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (fec *FileExtractCreate) defaults() {
+	if _, ok := fec.mutation.ID(); !ok {
+		v := fileextract.DefaultID()
+		fec.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (fec *FileExtractCreate) check() error {
 	if _, ok := fec.mutation.HclID(); !ok {
@@ -146,8 +162,6 @@ func (fec *FileExtractCreate) sqlSave(ctx context.Context) (*FileExtract, error)
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -157,11 +171,15 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		_spec = &sqlgraph.CreateSpec{
 			Table: fileextract.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		}
 	)
+	if id, ok := fec.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := fec.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -211,7 +229,7 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -239,6 +257,7 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 	for i := range fecb.builders {
 		func(i int, root context.Context) {
 			builder := fecb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FileExtractMutation)
 				if !ok {
@@ -264,8 +283,6 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DNSQuery is the builder for querying DNS entities.
@@ -134,8 +135,8 @@ func (dq *DNSQuery) FirstX(ctx context.Context) *DNS {
 
 // FirstID returns the first DNS ID from the query.
 // Returns a *NotFoundError when no DNS ID was found.
-func (dq *DNSQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (dq *DNSQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -147,7 +148,7 @@ func (dq *DNSQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (dq *DNSQuery) FirstIDX(ctx context.Context) int {
+func (dq *DNSQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := dq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -185,8 +186,8 @@ func (dq *DNSQuery) OnlyX(ctx context.Context) *DNS {
 // OnlyID is like Only, but returns the only DNS ID in the query.
 // Returns a *NotSingularError when exactly one DNS ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (dq *DNSQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (dq *DNSQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -202,7 +203,7 @@ func (dq *DNSQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (dq *DNSQuery) OnlyIDX(ctx context.Context) int {
+func (dq *DNSQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := dq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -228,8 +229,8 @@ func (dq *DNSQuery) AllX(ctx context.Context) []*DNS {
 }
 
 // IDs executes the query and returns a list of DNS IDs.
-func (dq *DNSQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (dq *DNSQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := dq.Select(dns.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -237,7 +238,7 @@ func (dq *DNSQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (dq *DNSQuery) IDsX(ctx context.Context) []int {
+func (dq *DNSQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := dq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -413,15 +414,15 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 
 	if query := dq.withDNSToEnvironment; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*DNS, len(nodes))
+		ids := make(map[uuid.UUID]*DNS, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.DNSToEnvironment = []*Environment{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*DNS)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*DNS)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -433,19 +434,19 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				s.Where(sql.InValues(dns.DNSToEnvironmentPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -478,15 +479,15 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 
 	if query := dq.withDNSToCompetition; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*DNS, len(nodes))
+		ids := make(map[uuid.UUID]*DNS, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.DNSToCompetition = []*Competition{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*DNS)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*DNS)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -498,19 +499,19 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				s.Where(sql.InValues(dns.DNSToCompetitionPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -563,7 +564,7 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   dns.Table,
 			Columns: dns.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dns.FieldID,
 			},
 		},

@@ -11,13 +11,14 @@ import (
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/google/uuid"
 )
 
 // HostDependency is the model entity for the HostDependency schema.
 type HostDependency struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HostID holds the value of the "host_id" field.
 	HostID string `json:"host_id,omitempty" hcl:"host,attr"`
 	// NetworkID holds the value of the "network_id" field.
@@ -36,10 +37,10 @@ type HostDependency struct {
 	// HostDependencyToEnvironment holds the value of the HostDependencyToEnvironment edge.
 	HCLHostDependencyToEnvironment *Environment `json:"HostDependencyToEnvironment,omitempty"`
 	//
-	environment_environment_to_host_dependency        *int
-	host_dependency_host_dependency_to_depend_on_host *int
-	host_dependency_host_dependency_to_depend_by_host *int
-	host_dependency_host_dependency_to_network        *int
+	environment_environment_to_host_dependency        *uuid.UUID
+	host_dependency_host_dependency_to_depend_on_host *uuid.UUID
+	host_dependency_host_dependency_to_depend_by_host *uuid.UUID
+	host_dependency_host_dependency_to_network        *uuid.UUID
 }
 
 // HostDependencyEdges holds the relations/edges for other nodes in the graph.
@@ -118,18 +119,18 @@ func (*HostDependency) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case hostdependency.FieldID:
-			values[i] = new(sql.NullInt64)
 		case hostdependency.FieldHostID, hostdependency.FieldNetworkID:
 			values[i] = new(sql.NullString)
+		case hostdependency.FieldID:
+			values[i] = new(uuid.UUID)
 		case hostdependency.ForeignKeys[0]: // environment_environment_to_host_dependency
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case hostdependency.ForeignKeys[1]: // host_dependency_host_dependency_to_depend_on_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case hostdependency.ForeignKeys[2]: // host_dependency_host_dependency_to_depend_by_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case hostdependency.ForeignKeys[3]: // host_dependency_host_dependency_to_network
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HostDependency", columns[i])
 		}
@@ -146,11 +147,11 @@ func (hd *HostDependency) assignValues(columns []string, values []interface{}) e
 	for i := range columns {
 		switch columns[i] {
 		case hostdependency.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				hd.ID = *value
 			}
-			hd.ID = int(value.Int64)
 		case hostdependency.FieldHostID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field host_id", values[i])
@@ -164,32 +165,28 @@ func (hd *HostDependency) assignValues(columns []string, values []interface{}) e
 				hd.NetworkID = value.String
 			}
 		case hostdependency.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_host_dependency", value)
-			} else if value.Valid {
-				hd.environment_environment_to_host_dependency = new(int)
-				*hd.environment_environment_to_host_dependency = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_host_dependency", values[i])
+			} else if value != nil {
+				hd.environment_environment_to_host_dependency = value
 			}
 		case hostdependency.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_depend_on_host", value)
-			} else if value.Valid {
-				hd.host_dependency_host_dependency_to_depend_on_host = new(int)
-				*hd.host_dependency_host_dependency_to_depend_on_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_depend_on_host", values[i])
+			} else if value != nil {
+				hd.host_dependency_host_dependency_to_depend_on_host = value
 			}
 		case hostdependency.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_depend_by_host", value)
-			} else if value.Valid {
-				hd.host_dependency_host_dependency_to_depend_by_host = new(int)
-				*hd.host_dependency_host_dependency_to_depend_by_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_depend_by_host", values[i])
+			} else if value != nil {
+				hd.host_dependency_host_dependency_to_depend_by_host = value
 			}
 		case hostdependency.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field host_dependency_host_dependency_to_network", value)
-			} else if value.Valid {
-				hd.host_dependency_host_dependency_to_network = new(int)
-				*hd.host_dependency_host_dependency_to_network = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_network", values[i])
+			} else if value != nil {
+				hd.host_dependency_host_dependency_to_network = value
 			}
 		}
 	}

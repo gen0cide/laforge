@@ -33,6 +33,7 @@ import (
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/grpc"
 	"github.com/gen0cide/laforge/server/utils"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -48,10 +49,15 @@ func main() {
 	if err := client.Schema.Create(ctx); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
-
-	entEnvironment, err := client.Environment.Query().Where(environment.IDEQ(1)).WithEnvironmentToBuild().Only(ctx)
+	uuidString := "36579b83-cc50-4f9f-a007-6da25467dc8a"
+	envID, err := uuid.Parse(uuidString)
 	if err != nil {
-		log.Fatalf("Failed to find Environment %v. Err: %v", 1, err)
+		log.Fatalf("Unable to parse UUID %v. Err: %v", uuidString, err)
+	}
+
+	entEnvironment, err := client.Environment.Query().Where(environment.ID(envID)).WithEnvironmentToBuild().Only(ctx)
+	if err != nil {
+		log.Fatalf("Failed to find Environment %v. Err: %v", uuidString, err)
 	}
 
 	entBuild, _ := CreateBuild(ctx, client, entEnvironment)
@@ -93,7 +99,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 	}
 	_, err = client.Plan.Create().
 		SetType(plan.TypeStartBuild).
-		SetBuildID(entBuild.ID).
+		SetBuildID(entBuild.ID.String()).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(0).
 		Save(ctx)
@@ -133,7 +139,7 @@ func createTeam(ctx context.Context, client *ent.Client, entBuild *ent.Build, te
 	_, err = client.Plan.Create().
 		AddPrevPlan(buildPlanNode).
 		SetType(plan.TypeStartTeam).
-		SetBuildID(entBuild.ID).
+		SetBuildID(entBuild.ID.String()).
 		SetPlanToTeam(entTeam).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(1).
@@ -201,7 +207,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 	_, err = client.Plan.Create().
 		AddPrevPlan(teamPlanNode).
 		SetType(plan.TypeProvisionNetwork).
-		SetBuildID(entBuild.ID).
+		SetBuildID(entBuild.ID.String()).
 		SetPlanToProvisionedNetwork(entProvisionedNetwork).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(teamPlanNode.StepNumber + 1).

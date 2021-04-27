@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // DNSRecord is the model entity for the DNSRecord schema.
 type DNSRecord struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
@@ -41,7 +42,7 @@ type DNSRecord struct {
 	// DNSRecordToEnvironment holds the value of the DNSRecordToEnvironment edge.
 	HCLDNSRecordToEnvironment *Environment `json:"DNSRecordToEnvironment,omitempty"`
 	//
-	environment_environment_to_dns_record *int
+	environment_environment_to_dns_record *uuid.UUID
 }
 
 // DNSRecordEdges holds the relations/edges for other nodes in the graph.
@@ -76,12 +77,12 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case dnsrecord.FieldDisabled:
 			values[i] = new(sql.NullBool)
-		case dnsrecord.FieldID:
-			values[i] = new(sql.NullInt64)
 		case dnsrecord.FieldHclID, dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
 			values[i] = new(sql.NullString)
+		case dnsrecord.FieldID:
+			values[i] = new(uuid.UUID)
 		case dnsrecord.ForeignKeys[0]: // environment_environment_to_dns_record
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNSRecord", columns[i])
 		}
@@ -98,11 +99,11 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 	for i := range columns {
 		switch columns[i] {
 		case dnsrecord.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				dr.ID = *value
 			}
-			dr.ID = int(value.Int64)
 		case dnsrecord.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -161,11 +162,10 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				}
 			}
 		case dnsrecord.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_dns_record", value)
-			} else if value.Valid {
-				dr.environment_environment_to_dns_record = new(int)
-				*dr.environment_environment_to_dns_record = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_dns_record", values[i])
+			} else if value != nil {
+				dr.environment_environment_to_dns_record = value
 			}
 		}
 	}

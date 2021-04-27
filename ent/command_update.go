@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // CommandUpdate is the builder for updating Command entities.
@@ -109,14 +110,14 @@ func (cu *CommandUpdate) SetTags(m map[string]string) *CommandUpdate {
 }
 
 // AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
-func (cu *CommandUpdate) AddCommandToUserIDs(ids ...int) *CommandUpdate {
+func (cu *CommandUpdate) AddCommandToUserIDs(ids ...uuid.UUID) *CommandUpdate {
 	cu.mutation.AddCommandToUserIDs(ids...)
 	return cu
 }
 
 // AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -124,13 +125,13 @@ func (cu *CommandUpdate) AddCommandToUser(u ...*User) *CommandUpdate {
 }
 
 // SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
-func (cu *CommandUpdate) SetCommandToEnvironmentID(id int) *CommandUpdate {
+func (cu *CommandUpdate) SetCommandToEnvironmentID(id uuid.UUID) *CommandUpdate {
 	cu.mutation.SetCommandToEnvironmentID(id)
 	return cu
 }
 
 // SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (cu *CommandUpdate) SetNillableCommandToEnvironmentID(id *int) *CommandUpdate {
+func (cu *CommandUpdate) SetNillableCommandToEnvironmentID(id *uuid.UUID) *CommandUpdate {
 	if id != nil {
 		cu = cu.SetCommandToEnvironmentID(*id)
 	}
@@ -154,14 +155,14 @@ func (cu *CommandUpdate) ClearCommandToUser() *CommandUpdate {
 }
 
 // RemoveCommandToUserIDs removes the "CommandToUser" edge to User entities by IDs.
-func (cu *CommandUpdate) RemoveCommandToUserIDs(ids ...int) *CommandUpdate {
+func (cu *CommandUpdate) RemoveCommandToUserIDs(ids ...uuid.UUID) *CommandUpdate {
 	cu.mutation.RemoveCommandToUserIDs(ids...)
 	return cu
 }
 
 // RemoveCommandToUser removes "CommandToUser" edges to User entities.
 func (cu *CommandUpdate) RemoveCommandToUser(u ...*User) *CommandUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -252,7 +253,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   command.Table,
 			Columns: command.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		},
@@ -364,7 +365,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -380,7 +381,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -399,7 +400,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -418,7 +419,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -434,7 +435,7 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -544,14 +545,14 @@ func (cuo *CommandUpdateOne) SetTags(m map[string]string) *CommandUpdateOne {
 }
 
 // AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
-func (cuo *CommandUpdateOne) AddCommandToUserIDs(ids ...int) *CommandUpdateOne {
+func (cuo *CommandUpdateOne) AddCommandToUserIDs(ids ...uuid.UUID) *CommandUpdateOne {
 	cuo.mutation.AddCommandToUserIDs(ids...)
 	return cuo
 }
 
 // AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -559,13 +560,13 @@ func (cuo *CommandUpdateOne) AddCommandToUser(u ...*User) *CommandUpdateOne {
 }
 
 // SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
-func (cuo *CommandUpdateOne) SetCommandToEnvironmentID(id int) *CommandUpdateOne {
+func (cuo *CommandUpdateOne) SetCommandToEnvironmentID(id uuid.UUID) *CommandUpdateOne {
 	cuo.mutation.SetCommandToEnvironmentID(id)
 	return cuo
 }
 
 // SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (cuo *CommandUpdateOne) SetNillableCommandToEnvironmentID(id *int) *CommandUpdateOne {
+func (cuo *CommandUpdateOne) SetNillableCommandToEnvironmentID(id *uuid.UUID) *CommandUpdateOne {
 	if id != nil {
 		cuo = cuo.SetCommandToEnvironmentID(*id)
 	}
@@ -589,14 +590,14 @@ func (cuo *CommandUpdateOne) ClearCommandToUser() *CommandUpdateOne {
 }
 
 // RemoveCommandToUserIDs removes the "CommandToUser" edge to User entities by IDs.
-func (cuo *CommandUpdateOne) RemoveCommandToUserIDs(ids ...int) *CommandUpdateOne {
+func (cuo *CommandUpdateOne) RemoveCommandToUserIDs(ids ...uuid.UUID) *CommandUpdateOne {
 	cuo.mutation.RemoveCommandToUserIDs(ids...)
 	return cuo
 }
 
 // RemoveCommandToUser removes "CommandToUser" edges to User entities.
 func (cuo *CommandUpdateOne) RemoveCommandToUser(u ...*User) *CommandUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -694,7 +695,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Table:   command.Table,
 			Columns: command.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		},
@@ -823,7 +824,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -839,7 +840,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -858,7 +859,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -877,7 +878,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -893,7 +894,7 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

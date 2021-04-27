@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DiskQuery is the builder for querying Disk entities.
@@ -110,8 +111,8 @@ func (dq *DiskQuery) FirstX(ctx context.Context) *Disk {
 
 // FirstID returns the first Disk ID from the query.
 // Returns a *NotFoundError when no Disk ID was found.
-func (dq *DiskQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (dq *DiskQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (dq *DiskQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (dq *DiskQuery) FirstIDX(ctx context.Context) int {
+func (dq *DiskQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := dq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (dq *DiskQuery) OnlyX(ctx context.Context) *Disk {
 // OnlyID is like Only, but returns the only Disk ID in the query.
 // Returns a *NotSingularError when exactly one Disk ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (dq *DiskQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (dq *DiskQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (dq *DiskQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (dq *DiskQuery) OnlyIDX(ctx context.Context) int {
+func (dq *DiskQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := dq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (dq *DiskQuery) AllX(ctx context.Context) []*Disk {
 }
 
 // IDs executes the query and returns a list of Disk IDs.
-func (dq *DiskQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (dq *DiskQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := dq.Select(disk.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (dq *DiskQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (dq *DiskQuery) IDsX(ctx context.Context) []int {
+func (dq *DiskQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := dq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 	}
 
 	if query := dq.withDiskToHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Disk)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Disk)
 		for i := range nodes {
 			if nodes[i].host_host_to_disk == nil {
 				continue
@@ -432,7 +433,7 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   disk.Table,
 			Columns: disk.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		},

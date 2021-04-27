@@ -20,6 +20,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // BuildQuery is the builder for querying Build entities.
@@ -231,8 +232,8 @@ func (bq *BuildQuery) FirstX(ctx context.Context) *Build {
 
 // FirstID returns the first Build ID from the query.
 // Returns a *NotFoundError when no Build ID was found.
-func (bq *BuildQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (bq *BuildQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = bq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -244,7 +245,7 @@ func (bq *BuildQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (bq *BuildQuery) FirstIDX(ctx context.Context) int {
+func (bq *BuildQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := bq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -282,8 +283,8 @@ func (bq *BuildQuery) OnlyX(ctx context.Context) *Build {
 // OnlyID is like Only, but returns the only Build ID in the query.
 // Returns a *NotSingularError when exactly one Build ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (bq *BuildQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (bq *BuildQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = bq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -299,7 +300,7 @@ func (bq *BuildQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (bq *BuildQuery) OnlyIDX(ctx context.Context) int {
+func (bq *BuildQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := bq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -325,8 +326,8 @@ func (bq *BuildQuery) AllX(ctx context.Context) []*Build {
 }
 
 // IDs executes the query and returns a list of Build IDs.
-func (bq *BuildQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (bq *BuildQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := bq.Select(build.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -334,7 +335,7 @@ func (bq *BuildQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (bq *BuildQuery) IDsX(ctx context.Context) []int {
+func (bq *BuildQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := bq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -569,7 +570,7 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 
 	if query := bq.withBuildToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
+		nodeids := make(map[uuid.UUID]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -596,8 +597,8 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 	}
 
 	if query := bq.withBuildToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Build)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Build)
 		for i := range nodes {
 			if nodes[i].build_build_to_environment == nil {
 				continue
@@ -625,8 +626,8 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 	}
 
 	if query := bq.withBuildToCompetition; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Build)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Build)
 		for i := range nodes {
 			if nodes[i].build_build_to_competition == nil {
 				continue
@@ -655,7 +656,7 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 
 	if query := bq.withBuildToProvisionedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
+		nodeids := make(map[uuid.UUID]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -684,7 +685,7 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 
 	if query := bq.withBuildToTeam; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
+		nodeids := make(map[uuid.UUID]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -713,7 +714,7 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 
 	if query := bq.withBuildToPlan; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Build)
+		nodeids := make(map[uuid.UUID]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -762,7 +763,7 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   build.Table,
 			Columns: build.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: build.FieldID,
 			},
 		},

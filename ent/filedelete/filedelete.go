@@ -2,6 +2,10 @@
 
 package filedelete
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the filedelete type in the database.
 	Label = "file_delete"
@@ -54,3 +58,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

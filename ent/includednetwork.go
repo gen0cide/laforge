@@ -9,13 +9,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/includednetwork"
+	"github.com/google/uuid"
 )
 
 // IncludedNetwork is the model entity for the IncludedNetwork schema.
 type IncludedNetwork struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,label"`
 	// Hosts holds the value of the "hosts" field.
@@ -95,10 +96,10 @@ func (*IncludedNetwork) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case includednetwork.FieldHosts:
 			values[i] = new([]byte)
-		case includednetwork.FieldID:
-			values[i] = new(sql.NullInt64)
 		case includednetwork.FieldName:
 			values[i] = new(sql.NullString)
+		case includednetwork.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type IncludedNetwork", columns[i])
 		}
@@ -115,11 +116,11 @@ func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) 
 	for i := range columns {
 		switch columns[i] {
 		case includednetwork.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				in.ID = *value
 			}
-			in.ID = int(value.Int64)
 		case includednetwork.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])

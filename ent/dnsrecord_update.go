@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DNSRecordUpdate is the builder for updating DNSRecord entities.
@@ -76,13 +77,13 @@ func (dru *DNSRecordUpdate) SetTags(m map[string]string) *DNSRecordUpdate {
 }
 
 // SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
-func (dru *DNSRecordUpdate) SetDNSRecordToEnvironmentID(id int) *DNSRecordUpdate {
+func (dru *DNSRecordUpdate) SetDNSRecordToEnvironmentID(id uuid.UUID) *DNSRecordUpdate {
 	dru.mutation.SetDNSRecordToEnvironmentID(id)
 	return dru
 }
 
 // SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (dru *DNSRecordUpdate) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordUpdate {
+func (dru *DNSRecordUpdate) SetNillableDNSRecordToEnvironmentID(id *uuid.UUID) *DNSRecordUpdate {
 	if id != nil {
 		dru = dru.SetDNSRecordToEnvironmentID(*id)
 	}
@@ -162,7 +163,7 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   dnsrecord.Table,
 			Columns: dnsrecord.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		},
@@ -239,7 +240,7 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -255,7 +256,7 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -333,13 +334,13 @@ func (druo *DNSRecordUpdateOne) SetTags(m map[string]string) *DNSRecordUpdateOne
 }
 
 // SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
-func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironmentID(id int) *DNSRecordUpdateOne {
+func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironmentID(id uuid.UUID) *DNSRecordUpdateOne {
 	druo.mutation.SetDNSRecordToEnvironmentID(id)
 	return druo
 }
 
 // SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (druo *DNSRecordUpdateOne) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordUpdateOne {
+func (druo *DNSRecordUpdateOne) SetNillableDNSRecordToEnvironmentID(id *uuid.UUID) *DNSRecordUpdateOne {
 	if id != nil {
 		druo = druo.SetDNSRecordToEnvironmentID(*id)
 	}
@@ -426,7 +427,7 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Table:   dnsrecord.Table,
 			Columns: dnsrecord.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		},
@@ -520,7 +521,7 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -536,7 +537,7 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

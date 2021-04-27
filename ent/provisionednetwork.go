@@ -13,13 +13,14 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // ProvisionedNetwork is the model entity for the ProvisionedNetwork schema.
 type ProvisionedNetwork struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Cidr holds the value of the "cidr" field.
@@ -42,10 +43,10 @@ type ProvisionedNetwork struct {
 	// ProvisionedNetworkToPlan holds the value of the ProvisionedNetworkToPlan edge.
 	HCLProvisionedNetworkToPlan *Plan `json:"ProvisionedNetworkToPlan,omitempty"`
 	//
-	plan_plan_to_provisioned_network                   *int
-	provisioned_network_provisioned_network_to_network *int
-	provisioned_network_provisioned_network_to_build   *int
-	provisioned_network_provisioned_network_to_team    *int
+	plan_plan_to_provisioned_network                   *uuid.UUID
+	provisioned_network_provisioned_network_to_network *uuid.UUID
+	provisioned_network_provisioned_network_to_build   *uuid.UUID
+	provisioned_network_provisioned_network_to_team    *uuid.UUID
 }
 
 // ProvisionedNetworkEdges holds the relations/edges for other nodes in the graph.
@@ -151,18 +152,18 @@ func (*ProvisionedNetwork) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case provisionednetwork.FieldID:
-			values[i] = new(sql.NullInt64)
 		case provisionednetwork.FieldName, provisionednetwork.FieldCidr:
 			values[i] = new(sql.NullString)
+		case provisionednetwork.FieldID:
+			values[i] = new(uuid.UUID)
 		case provisionednetwork.ForeignKeys[0]: // plan_plan_to_provisioned_network
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionednetwork.ForeignKeys[1]: // provisioned_network_provisioned_network_to_network
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionednetwork.ForeignKeys[2]: // provisioned_network_provisioned_network_to_build
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionednetwork.ForeignKeys[3]: // provisioned_network_provisioned_network_to_team
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedNetwork", columns[i])
 		}
@@ -179,11 +180,11 @@ func (pn *ProvisionedNetwork) assignValues(columns []string, values []interface{
 	for i := range columns {
 		switch columns[i] {
 		case provisionednetwork.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				pn.ID = *value
 			}
-			pn.ID = int(value.Int64)
 		case provisionednetwork.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -197,32 +198,28 @@ func (pn *ProvisionedNetwork) assignValues(columns []string, values []interface{
 				pn.Cidr = value.String
 			}
 		case provisionednetwork.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_network", value)
-			} else if value.Valid {
-				pn.plan_plan_to_provisioned_network = new(int)
-				*pn.plan_plan_to_provisioned_network = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field plan_plan_to_provisioned_network", values[i])
+			} else if value != nil {
+				pn.plan_plan_to_provisioned_network = value
 			}
 		case provisionednetwork.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_network", value)
-			} else if value.Valid {
-				pn.provisioned_network_provisioned_network_to_network = new(int)
-				*pn.provisioned_network_provisioned_network_to_network = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_network", values[i])
+			} else if value != nil {
+				pn.provisioned_network_provisioned_network_to_network = value
 			}
 		case provisionednetwork.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_build", value)
-			} else if value.Valid {
-				pn.provisioned_network_provisioned_network_to_build = new(int)
-				*pn.provisioned_network_provisioned_network_to_build = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_build", values[i])
+			} else if value != nil {
+				pn.provisioned_network_provisioned_network_to_build = value
 			}
 		case provisionednetwork.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_team", value)
-			} else if value.Valid {
-				pn.provisioned_network_provisioned_network_to_team = new(int)
-				*pn.provisioned_network_provisioned_network_to_team = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_team", values[i])
+			} else if value != nil {
+				pn.provisioned_network_provisioned_network_to_team = value
 			}
 		}
 	}

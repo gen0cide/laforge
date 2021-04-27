@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/google/uuid"
 )
 
 // HostDependencyCreate is the builder for creating a HostDependency entity.
@@ -34,14 +35,20 @@ func (hdc *HostDependencyCreate) SetNetworkID(s string) *HostDependencyCreate {
 	return hdc
 }
 
+// SetID sets the "id" field.
+func (hdc *HostDependencyCreate) SetID(u uuid.UUID) *HostDependencyCreate {
+	hdc.mutation.SetID(u)
+	return hdc
+}
+
 // SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID.
-func (hdc *HostDependencyCreate) SetHostDependencyToDependOnHostID(id int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetHostDependencyToDependOnHostID(id uuid.UUID) *HostDependencyCreate {
 	hdc.mutation.SetHostDependencyToDependOnHostID(id)
 	return hdc
 }
 
 // SetNillableHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by ID if the given value is not nil.
-func (hdc *HostDependencyCreate) SetNillableHostDependencyToDependOnHostID(id *int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetNillableHostDependencyToDependOnHostID(id *uuid.UUID) *HostDependencyCreate {
 	if id != nil {
 		hdc = hdc.SetHostDependencyToDependOnHostID(*id)
 	}
@@ -54,13 +61,13 @@ func (hdc *HostDependencyCreate) SetHostDependencyToDependOnHost(h *Host) *HostD
 }
 
 // SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID.
-func (hdc *HostDependencyCreate) SetHostDependencyToDependByHostID(id int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetHostDependencyToDependByHostID(id uuid.UUID) *HostDependencyCreate {
 	hdc.mutation.SetHostDependencyToDependByHostID(id)
 	return hdc
 }
 
 // SetNillableHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by ID if the given value is not nil.
-func (hdc *HostDependencyCreate) SetNillableHostDependencyToDependByHostID(id *int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetNillableHostDependencyToDependByHostID(id *uuid.UUID) *HostDependencyCreate {
 	if id != nil {
 		hdc = hdc.SetHostDependencyToDependByHostID(*id)
 	}
@@ -73,13 +80,13 @@ func (hdc *HostDependencyCreate) SetHostDependencyToDependByHost(h *Host) *HostD
 }
 
 // SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID.
-func (hdc *HostDependencyCreate) SetHostDependencyToNetworkID(id int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetHostDependencyToNetworkID(id uuid.UUID) *HostDependencyCreate {
 	hdc.mutation.SetHostDependencyToNetworkID(id)
 	return hdc
 }
 
 // SetNillableHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by ID if the given value is not nil.
-func (hdc *HostDependencyCreate) SetNillableHostDependencyToNetworkID(id *int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetNillableHostDependencyToNetworkID(id *uuid.UUID) *HostDependencyCreate {
 	if id != nil {
 		hdc = hdc.SetHostDependencyToNetworkID(*id)
 	}
@@ -92,13 +99,13 @@ func (hdc *HostDependencyCreate) SetHostDependencyToNetwork(n *Network) *HostDep
 }
 
 // SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID.
-func (hdc *HostDependencyCreate) SetHostDependencyToEnvironmentID(id int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetHostDependencyToEnvironmentID(id uuid.UUID) *HostDependencyCreate {
 	hdc.mutation.SetHostDependencyToEnvironmentID(id)
 	return hdc
 }
 
 // SetNillableHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (hdc *HostDependencyCreate) SetNillableHostDependencyToEnvironmentID(id *int) *HostDependencyCreate {
+func (hdc *HostDependencyCreate) SetNillableHostDependencyToEnvironmentID(id *uuid.UUID) *HostDependencyCreate {
 	if id != nil {
 		hdc = hdc.SetHostDependencyToEnvironmentID(*id)
 	}
@@ -121,6 +128,7 @@ func (hdc *HostDependencyCreate) Save(ctx context.Context) (*HostDependency, err
 		err  error
 		node *HostDependency
 	)
+	hdc.defaults()
 	if len(hdc.hooks) == 0 {
 		if err = hdc.check(); err != nil {
 			return nil, err
@@ -159,6 +167,14 @@ func (hdc *HostDependencyCreate) SaveX(ctx context.Context) *HostDependency {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (hdc *HostDependencyCreate) defaults() {
+	if _, ok := hdc.mutation.ID(); !ok {
+		v := hostdependency.DefaultID()
+		hdc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (hdc *HostDependencyCreate) check() error {
 	if _, ok := hdc.mutation.HostID(); !ok {
@@ -178,8 +194,6 @@ func (hdc *HostDependencyCreate) sqlSave(ctx context.Context) (*HostDependency, 
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -189,11 +203,15 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		_spec = &sqlgraph.CreateSpec{
 			Table: hostdependency.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: hostdependency.FieldID,
 			},
 		}
 	)
+	if id, ok := hdc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := hdc.mutation.HostID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -219,7 +237,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -239,7 +257,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -259,7 +277,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -279,7 +297,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -307,6 +325,7 @@ func (hdcb *HostDependencyCreateBulk) Save(ctx context.Context) ([]*HostDependen
 	for i := range hdcb.builders {
 		func(i int, root context.Context) {
 			builder := hdcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*HostDependencyMutation)
 				if !ok {
@@ -332,8 +351,6 @@ func (hdcb *HostDependencyCreateBulk) Save(ctx context.Context) ([]*HostDependen
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

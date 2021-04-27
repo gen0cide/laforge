@@ -12,13 +12,14 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/google/uuid"
 )
 
 // Finding is the model entity for the Finding schema.
 type Finding struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
@@ -43,9 +44,9 @@ type Finding struct {
 	// FindingToEnvironment holds the value of the FindingToEnvironment edge.
 	HCLFindingToEnvironment *Environment `json:"FindingToEnvironment,omitempty"`
 	//
-	environment_environment_to_finding *int
-	finding_finding_to_host            *int
-	script_script_to_finding           *int
+	environment_environment_to_finding *uuid.UUID
+	finding_finding_to_host            *uuid.UUID
+	script_script_to_finding           *uuid.UUID
 }
 
 // FindingEdges holds the relations/edges for other nodes in the graph.
@@ -121,16 +122,16 @@ func (*Finding) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case finding.FieldTags:
 			values[i] = new([]byte)
-		case finding.FieldID:
-			values[i] = new(sql.NullInt64)
 		case finding.FieldName, finding.FieldDescription, finding.FieldSeverity, finding.FieldDifficulty:
 			values[i] = new(sql.NullString)
+		case finding.FieldID:
+			values[i] = new(uuid.UUID)
 		case finding.ForeignKeys[0]: // environment_environment_to_finding
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case finding.ForeignKeys[1]: // finding_finding_to_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case finding.ForeignKeys[2]: // script_script_to_finding
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Finding", columns[i])
 		}
@@ -147,11 +148,11 @@ func (f *Finding) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case finding.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				f.ID = *value
 			}
-			f.ID = int(value.Int64)
 		case finding.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -186,25 +187,22 @@ func (f *Finding) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case finding.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_finding", value)
-			} else if value.Valid {
-				f.environment_environment_to_finding = new(int)
-				*f.environment_environment_to_finding = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_finding", values[i])
+			} else if value != nil {
+				f.environment_environment_to_finding = value
 			}
 		case finding.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_host", value)
-			} else if value.Valid {
-				f.finding_finding_to_host = new(int)
-				*f.finding_finding_to_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field finding_finding_to_host", values[i])
+			} else if value != nil {
+				f.finding_finding_to_host = value
 			}
 		case finding.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field script_script_to_finding", value)
-			} else if value.Valid {
-				f.script_script_to_finding = new(int)
-				*f.script_script_to_finding = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field script_script_to_finding", values[i])
+			} else if value != nil {
+				f.script_script_to_finding = value
 			}
 		}
 	}

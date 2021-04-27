@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/identity"
+	"github.com/google/uuid"
 )
 
 // Identity is the model entity for the Identity schema.
 type Identity struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// FirstName holds the value of the "first_name" field.
@@ -43,7 +44,7 @@ type Identity struct {
 	// IdentityToEnvironment holds the value of the IdentityToEnvironment edge.
 	HCLIdentityToEnvironment *Environment `json:"IdentityToEnvironment,omitempty"`
 	//
-	environment_environment_to_identity *int
+	environment_environment_to_identity *uuid.UUID
 }
 
 // IdentityEdges holds the relations/edges for other nodes in the graph.
@@ -76,12 +77,12 @@ func (*Identity) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case identity.FieldVars, identity.FieldTags:
 			values[i] = new([]byte)
-		case identity.FieldID:
-			values[i] = new(sql.NullInt64)
 		case identity.FieldHclID, identity.FieldFirstName, identity.FieldLastName, identity.FieldEmail, identity.FieldPassword, identity.FieldDescription, identity.FieldAvatarFile:
 			values[i] = new(sql.NullString)
+		case identity.FieldID:
+			values[i] = new(uuid.UUID)
 		case identity.ForeignKeys[0]: // environment_environment_to_identity
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Identity", columns[i])
 		}
@@ -98,11 +99,11 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 	for j := range columns {
 		switch columns[j] {
 		case identity.FieldID:
-			value, ok := values[j].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[j].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[j])
+			} else if value != nil {
+				i.ID = *value
 			}
-			i.ID = int(value.Int64)
 		case identity.FieldHclID:
 			if value, ok := values[j].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[j])
@@ -164,11 +165,10 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case identity.ForeignKeys[0]:
-			if value, ok := values[j].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_identity", value)
-			} else if value.Valid {
-				i.environment_environment_to_identity = new(int)
-				*i.environment_environment_to_identity = int(value.Int64)
+			if value, ok := values[j].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_identity", values[j])
+			} else if value != nil {
+				i.environment_environment_to_identity = value
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/google/uuid"
 )
 
 // GinFileMiddlewareCreate is the builder for creating a GinFileMiddleware entity.
@@ -47,14 +48,20 @@ func (gfmc *GinFileMiddlewareCreate) SetNillableAccessed(b *bool) *GinFileMiddle
 	return gfmc
 }
 
+// SetID sets the "id" field.
+func (gfmc *GinFileMiddlewareCreate) SetID(u uuid.UUID) *GinFileMiddlewareCreate {
+	gfmc.mutation.SetID(u)
+	return gfmc
+}
+
 // SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (gfmc *GinFileMiddlewareCreate) SetGinFileMiddlewareToProvisionedHostID(id int) *GinFileMiddlewareCreate {
+func (gfmc *GinFileMiddlewareCreate) SetGinFileMiddlewareToProvisionedHostID(id uuid.UUID) *GinFileMiddlewareCreate {
 	gfmc.mutation.SetGinFileMiddlewareToProvisionedHostID(id)
 	return gfmc
 }
 
 // SetNillableGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (gfmc *GinFileMiddlewareCreate) SetNillableGinFileMiddlewareToProvisionedHostID(id *int) *GinFileMiddlewareCreate {
+func (gfmc *GinFileMiddlewareCreate) SetNillableGinFileMiddlewareToProvisionedHostID(id *uuid.UUID) *GinFileMiddlewareCreate {
 	if id != nil {
 		gfmc = gfmc.SetGinFileMiddlewareToProvisionedHostID(*id)
 	}
@@ -67,13 +74,13 @@ func (gfmc *GinFileMiddlewareCreate) SetGinFileMiddlewareToProvisionedHost(p *Pr
 }
 
 // SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (gfmc *GinFileMiddlewareCreate) SetGinFileMiddlewareToProvisioningStepID(id int) *GinFileMiddlewareCreate {
+func (gfmc *GinFileMiddlewareCreate) SetGinFileMiddlewareToProvisioningStepID(id uuid.UUID) *GinFileMiddlewareCreate {
 	gfmc.mutation.SetGinFileMiddlewareToProvisioningStepID(id)
 	return gfmc
 }
 
 // SetNillableGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (gfmc *GinFileMiddlewareCreate) SetNillableGinFileMiddlewareToProvisioningStepID(id *int) *GinFileMiddlewareCreate {
+func (gfmc *GinFileMiddlewareCreate) SetNillableGinFileMiddlewareToProvisioningStepID(id *uuid.UUID) *GinFileMiddlewareCreate {
 	if id != nil {
 		gfmc = gfmc.SetGinFileMiddlewareToProvisioningStepID(*id)
 	}
@@ -141,6 +148,10 @@ func (gfmc *GinFileMiddlewareCreate) defaults() {
 		v := ginfilemiddleware.DefaultAccessed
 		gfmc.mutation.SetAccessed(v)
 	}
+	if _, ok := gfmc.mutation.ID(); !ok {
+		v := ginfilemiddleware.DefaultID()
+		gfmc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -165,8 +176,6 @@ func (gfmc *GinFileMiddlewareCreate) sqlSave(ctx context.Context) (*GinFileMiddl
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -176,11 +185,15 @@ func (gfmc *GinFileMiddlewareCreate) createSpec() (*GinFileMiddleware, *sqlgraph
 		_spec = &sqlgraph.CreateSpec{
 			Table: ginfilemiddleware.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: ginfilemiddleware.FieldID,
 			},
 		}
 	)
+	if id, ok := gfmc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := gfmc.mutation.URLID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -214,7 +227,7 @@ func (gfmc *GinFileMiddlewareCreate) createSpec() (*GinFileMiddleware, *sqlgraph
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -233,7 +246,7 @@ func (gfmc *GinFileMiddlewareCreate) createSpec() (*GinFileMiddleware, *sqlgraph
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -286,8 +299,6 @@ func (gfmcb *GinFileMiddlewareCreateBulk) Save(ctx context.Context) ([]*GinFileM
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // TeamQuery is the builder for querying Team entities.
@@ -183,8 +184,8 @@ func (tq *TeamQuery) FirstX(ctx context.Context) *Team {
 
 // FirstID returns the first Team ID from the query.
 // Returns a *NotFoundError when no Team ID was found.
-func (tq *TeamQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TeamQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -196,7 +197,7 @@ func (tq *TeamQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TeamQuery) FirstIDX(ctx context.Context) int {
+func (tq *TeamQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -234,8 +235,8 @@ func (tq *TeamQuery) OnlyX(ctx context.Context) *Team {
 // OnlyID is like Only, but returns the only Team ID in the query.
 // Returns a *NotSingularError when exactly one Team ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TeamQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TeamQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -251,7 +252,7 @@ func (tq *TeamQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TeamQuery) OnlyIDX(ctx context.Context) int {
+func (tq *TeamQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -277,8 +278,8 @@ func (tq *TeamQuery) AllX(ctx context.Context) []*Team {
 }
 
 // IDs executes the query and returns a list of Team IDs.
-func (tq *TeamQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (tq *TeamQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := tq.Select(team.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -286,7 +287,7 @@ func (tq *TeamQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TeamQuery) IDsX(ctx context.Context) []int {
+func (tq *TeamQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -494,8 +495,8 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 	}
 
 	if query := tq.withTeamToBuild; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Team)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Team)
 		for i := range nodes {
 			if nodes[i].team_team_to_build == nil {
 				continue
@@ -524,7 +525,7 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 
 	if query := tq.withTeamToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
+		nodeids := make(map[uuid.UUID]*Team)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -552,7 +553,7 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 
 	if query := tq.withTeamToProvisionedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Team)
+		nodeids := make(map[uuid.UUID]*Team)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -580,8 +581,8 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 	}
 
 	if query := tq.withTeamToPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Team)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Team)
 		for i := range nodes {
 			if nodes[i].plan_plan_to_team == nil {
 				continue
@@ -630,7 +631,7 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   team.Table,
 			Columns: team.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: team.FieldID,
 			},
 		},

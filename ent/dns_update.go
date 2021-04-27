@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DNSUpdate is the builder for updating DNS entities.
@@ -65,14 +66,14 @@ func (du *DNSUpdate) SetConfig(m map[string]string) *DNSUpdate {
 }
 
 // AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
-func (du *DNSUpdate) AddDNSToEnvironmentIDs(ids ...int) *DNSUpdate {
+func (du *DNSUpdate) AddDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSUpdate {
 	du.mutation.AddDNSToEnvironmentIDs(ids...)
 	return du
 }
 
 // AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
 func (du *DNSUpdate) AddDNSToEnvironment(e ...*Environment) *DNSUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -80,14 +81,14 @@ func (du *DNSUpdate) AddDNSToEnvironment(e ...*Environment) *DNSUpdate {
 }
 
 // AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
-func (du *DNSUpdate) AddDNSToCompetitionIDs(ids ...int) *DNSUpdate {
+func (du *DNSUpdate) AddDNSToCompetitionIDs(ids ...uuid.UUID) *DNSUpdate {
 	du.mutation.AddDNSToCompetitionIDs(ids...)
 	return du
 }
 
 // AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
 func (du *DNSUpdate) AddDNSToCompetition(c ...*Competition) *DNSUpdate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -106,14 +107,14 @@ func (du *DNSUpdate) ClearDNSToEnvironment() *DNSUpdate {
 }
 
 // RemoveDNSToEnvironmentIDs removes the "DNSToEnvironment" edge to Environment entities by IDs.
-func (du *DNSUpdate) RemoveDNSToEnvironmentIDs(ids ...int) *DNSUpdate {
+func (du *DNSUpdate) RemoveDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSUpdate {
 	du.mutation.RemoveDNSToEnvironmentIDs(ids...)
 	return du
 }
 
 // RemoveDNSToEnvironment removes "DNSToEnvironment" edges to Environment entities.
 func (du *DNSUpdate) RemoveDNSToEnvironment(e ...*Environment) *DNSUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -127,14 +128,14 @@ func (du *DNSUpdate) ClearDNSToCompetition() *DNSUpdate {
 }
 
 // RemoveDNSToCompetitionIDs removes the "DNSToCompetition" edge to Competition entities by IDs.
-func (du *DNSUpdate) RemoveDNSToCompetitionIDs(ids ...int) *DNSUpdate {
+func (du *DNSUpdate) RemoveDNSToCompetitionIDs(ids ...uuid.UUID) *DNSUpdate {
 	du.mutation.RemoveDNSToCompetitionIDs(ids...)
 	return du
 }
 
 // RemoveDNSToCompetition removes "DNSToCompetition" edges to Competition entities.
 func (du *DNSUpdate) RemoveDNSToCompetition(c ...*Competition) *DNSUpdate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -198,7 +199,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   dns.Table,
 			Columns: dns.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dns.FieldID,
 			},
 		},
@@ -261,7 +262,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -277,7 +278,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -296,7 +297,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -315,7 +316,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -331,7 +332,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -350,7 +351,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -416,14 +417,14 @@ func (duo *DNSUpdateOne) SetConfig(m map[string]string) *DNSUpdateOne {
 }
 
 // AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
-func (duo *DNSUpdateOne) AddDNSToEnvironmentIDs(ids ...int) *DNSUpdateOne {
+func (duo *DNSUpdateOne) AddDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSUpdateOne {
 	duo.mutation.AddDNSToEnvironmentIDs(ids...)
 	return duo
 }
 
 // AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
 func (duo *DNSUpdateOne) AddDNSToEnvironment(e ...*Environment) *DNSUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -431,14 +432,14 @@ func (duo *DNSUpdateOne) AddDNSToEnvironment(e ...*Environment) *DNSUpdateOne {
 }
 
 // AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
-func (duo *DNSUpdateOne) AddDNSToCompetitionIDs(ids ...int) *DNSUpdateOne {
+func (duo *DNSUpdateOne) AddDNSToCompetitionIDs(ids ...uuid.UUID) *DNSUpdateOne {
 	duo.mutation.AddDNSToCompetitionIDs(ids...)
 	return duo
 }
 
 // AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
 func (duo *DNSUpdateOne) AddDNSToCompetition(c ...*Competition) *DNSUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -457,14 +458,14 @@ func (duo *DNSUpdateOne) ClearDNSToEnvironment() *DNSUpdateOne {
 }
 
 // RemoveDNSToEnvironmentIDs removes the "DNSToEnvironment" edge to Environment entities by IDs.
-func (duo *DNSUpdateOne) RemoveDNSToEnvironmentIDs(ids ...int) *DNSUpdateOne {
+func (duo *DNSUpdateOne) RemoveDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSUpdateOne {
 	duo.mutation.RemoveDNSToEnvironmentIDs(ids...)
 	return duo
 }
 
 // RemoveDNSToEnvironment removes "DNSToEnvironment" edges to Environment entities.
 func (duo *DNSUpdateOne) RemoveDNSToEnvironment(e ...*Environment) *DNSUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -478,14 +479,14 @@ func (duo *DNSUpdateOne) ClearDNSToCompetition() *DNSUpdateOne {
 }
 
 // RemoveDNSToCompetitionIDs removes the "DNSToCompetition" edge to Competition entities by IDs.
-func (duo *DNSUpdateOne) RemoveDNSToCompetitionIDs(ids ...int) *DNSUpdateOne {
+func (duo *DNSUpdateOne) RemoveDNSToCompetitionIDs(ids ...uuid.UUID) *DNSUpdateOne {
 	duo.mutation.RemoveDNSToCompetitionIDs(ids...)
 	return duo
 }
 
 // RemoveDNSToCompetition removes "DNSToCompetition" edges to Competition entities.
 func (duo *DNSUpdateOne) RemoveDNSToCompetition(c ...*Competition) *DNSUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -556,7 +557,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Table:   dns.Table,
 			Columns: dns.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dns.FieldID,
 			},
 		},
@@ -636,7 +637,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -652,7 +653,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -671,7 +672,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -690,7 +691,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -706,7 +707,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -725,7 +726,7 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},

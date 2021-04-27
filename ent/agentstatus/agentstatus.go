@@ -2,6 +2,10 @@
 
 package agentstatus
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the agentstatus type in the database.
 	Label = "agent_status"
@@ -80,3 +84,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

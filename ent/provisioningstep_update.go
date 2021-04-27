@@ -21,6 +21,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisioningStepUpdate is the builder for updating ProvisioningStep entities.
@@ -56,13 +57,13 @@ func (psu *ProvisioningStepUpdate) AddStepNumber(i int) *ProvisioningStepUpdate 
 }
 
 // SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToStatusID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToStatusID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToStatusID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToStatusID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToStatusID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToStatusID(*id)
 	}
@@ -75,13 +76,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToStatus(s *Status) *Provi
 }
 
 // SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToProvisionedHostID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToProvisionedHostID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToProvisionedHostID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToProvisionedHostID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToProvisionedHostID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToProvisionedHostID(*id)
 	}
@@ -94,13 +95,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToProvisionedHost(p *Provi
 }
 
 // SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToScriptID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToScriptID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToScriptID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToScriptID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToScriptID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToScriptID(*id)
 	}
@@ -113,13 +114,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToScript(s *Script) *Provi
 }
 
 // SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToCommandID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToCommandID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToCommandID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToCommandID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToCommandID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToCommandID(*id)
 	}
@@ -132,13 +133,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToCommand(c *Command) *Pro
 }
 
 // SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToDNSRecordID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToDNSRecordID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToDNSRecordID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToDNSRecordID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToDNSRecordID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToDNSRecordID(*id)
 	}
@@ -151,13 +152,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToDNSRecord(d *DNSRecord) 
 }
 
 // SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDeleteID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDeleteID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToFileDeleteID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDeleteID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDeleteID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToFileDeleteID(*id)
 	}
@@ -170,13 +171,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDelete(f *FileDelete
 }
 
 // SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDownloadID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDownloadID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToFileDownloadID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDownloadID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileDownloadID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToFileDownloadID(*id)
 	}
@@ -189,13 +190,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileDownload(f *FileDown
 }
 
 // SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileExtractID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileExtractID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToFileExtractID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileExtractID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToFileExtractID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToFileExtractID(*id)
 	}
@@ -208,13 +209,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToFileExtract(f *FileExtra
 }
 
 // SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlanID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlanID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToPlanID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToPlanID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToPlanID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToPlanID(*id)
 	}
@@ -227,13 +228,13 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlan(p *Plan) *Provision
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
-func (psu *ProvisioningStepUpdate) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
 	return psu
 }
 
 // SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
-func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepUpdate {
+func (psu *ProvisioningStepUpdate) SetNillableProvisioningStepToGinFileMiddlewareID(id *uuid.UUID) *ProvisioningStepUpdate {
 	if id != nil {
 		psu = psu.SetProvisioningStepToGinFileMiddlewareID(*id)
 	}
@@ -383,7 +384,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Table:   provisioningstep.Table,
 			Columns: provisioningstep.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisioningstep.FieldID,
 			},
 		},
@@ -425,7 +426,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -441,7 +442,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -460,7 +461,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -476,7 +477,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -495,7 +496,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -511,7 +512,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -530,7 +531,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -546,7 +547,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -565,7 +566,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -581,7 +582,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -600,7 +601,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -616,7 +617,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -635,7 +636,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -651,7 +652,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -670,7 +671,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -686,7 +687,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -705,7 +706,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -721,7 +722,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -740,7 +741,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -756,7 +757,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -805,13 +806,13 @@ func (psuo *ProvisioningStepUpdateOne) AddStepNumber(i int) *ProvisioningStepUpd
 }
 
 // SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToStatusID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToStatusID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToStatusID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToStatusID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToStatusID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToStatusID(*id)
 	}
@@ -824,13 +825,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToStatus(s *Status) *P
 }
 
 // SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToProvisionedHostID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToProvisionedHostID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToProvisionedHostID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToProvisionedHostID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToProvisionedHostID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToProvisionedHostID(*id)
 	}
@@ -843,13 +844,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToProvisionedHost(p *P
 }
 
 // SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToScriptID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToScriptID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToScriptID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToScriptID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToScriptID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToScriptID(*id)
 	}
@@ -862,13 +863,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToScript(s *Script) *P
 }
 
 // SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToCommandID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToCommandID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToCommandID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToCommandID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToCommandID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToCommandID(*id)
 	}
@@ -881,13 +882,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToCommand(c *Command) 
 }
 
 // SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToDNSRecordID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToDNSRecordID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToDNSRecordID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToDNSRecordID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToDNSRecordID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToDNSRecordID(*id)
 	}
@@ -900,13 +901,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToDNSRecord(d *DNSReco
 }
 
 // SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDeleteID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDeleteID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToFileDeleteID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDeleteID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDeleteID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToFileDeleteID(*id)
 	}
@@ -919,13 +920,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDelete(f *FileDe
 }
 
 // SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDownloadID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDownloadID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToFileDownloadID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDownloadID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileDownloadID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToFileDownloadID(*id)
 	}
@@ -938,13 +939,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileDownload(f *File
 }
 
 // SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileExtractID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileExtractID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToFileExtractID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileExtractID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToFileExtractID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToFileExtractID(*id)
 	}
@@ -957,13 +958,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToFileExtract(f *FileE
 }
 
 // SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlanID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlanID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToPlanID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToPlanID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToPlanID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToPlanID(*id)
 	}
@@ -976,13 +977,13 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlan(p *Plan) *Provi
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
-func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
 	return psuo
 }
 
 // SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
-func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepUpdateOne {
+func (psuo *ProvisioningStepUpdateOne) SetNillableProvisioningStepToGinFileMiddlewareID(id *uuid.UUID) *ProvisioningStepUpdateOne {
 	if id != nil {
 		psuo = psuo.SetProvisioningStepToGinFileMiddlewareID(*id)
 	}
@@ -1139,7 +1140,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Table:   provisioningstep.Table,
 			Columns: provisioningstep.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisioningstep.FieldID,
 			},
 		},
@@ -1198,7 +1199,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -1214,7 +1215,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -1233,7 +1234,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1249,7 +1250,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1268,7 +1269,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -1284,7 +1285,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -1303,7 +1304,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -1319,7 +1320,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -1338,7 +1339,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -1354,7 +1355,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -1373,7 +1374,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -1389,7 +1390,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -1408,7 +1409,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -1424,7 +1425,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -1443,7 +1444,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -1459,7 +1460,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -1478,7 +1479,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1494,7 +1495,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1513,7 +1514,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -1529,7 +1530,7 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},

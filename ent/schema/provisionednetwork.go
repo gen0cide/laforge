@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ProvisionedNetwork holds the schema definition for the ProvisionedNetwork entity.
@@ -15,6 +16,8 @@ type ProvisionedNetwork struct {
 // Fields of the ProvisionedNetwork.
 func (ProvisionedNetwork) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("name"),
 		field.String("cidr"),
 	}

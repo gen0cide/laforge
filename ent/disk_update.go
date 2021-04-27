@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DiskUpdate is the builder for updating Disk entities.
@@ -41,13 +42,13 @@ func (du *DiskUpdate) AddSize(i int) *DiskUpdate {
 }
 
 // SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
-func (du *DiskUpdate) SetDiskToHostID(id int) *DiskUpdate {
+func (du *DiskUpdate) SetDiskToHostID(id uuid.UUID) *DiskUpdate {
 	du.mutation.SetDiskToHostID(id)
 	return du
 }
 
 // SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
-func (du *DiskUpdate) SetNillableDiskToHostID(id *int) *DiskUpdate {
+func (du *DiskUpdate) SetNillableDiskToHostID(id *uuid.UUID) *DiskUpdate {
 	if id != nil {
 		du = du.SetDiskToHostID(*id)
 	}
@@ -143,7 +144,7 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   disk.Table,
 			Columns: disk.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		},
@@ -178,7 +179,7 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -194,7 +195,7 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -237,13 +238,13 @@ func (duo *DiskUpdateOne) AddSize(i int) *DiskUpdateOne {
 }
 
 // SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
-func (duo *DiskUpdateOne) SetDiskToHostID(id int) *DiskUpdateOne {
+func (duo *DiskUpdateOne) SetDiskToHostID(id uuid.UUID) *DiskUpdateOne {
 	duo.mutation.SetDiskToHostID(id)
 	return duo
 }
 
 // SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
-func (duo *DiskUpdateOne) SetNillableDiskToHostID(id *int) *DiskUpdateOne {
+func (duo *DiskUpdateOne) SetNillableDiskToHostID(id *uuid.UUID) *DiskUpdateOne {
 	if id != nil {
 		duo = duo.SetDiskToHostID(*id)
 	}
@@ -346,7 +347,7 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Table:   disk.Table,
 			Columns: disk.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		},
@@ -398,7 +399,7 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -414,7 +415,7 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},

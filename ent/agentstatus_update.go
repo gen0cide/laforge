@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/google/uuid"
 )
 
 // AgentStatusUpdate is the builder for updating AgentStatus entities.
@@ -182,14 +183,14 @@ func (asu *AgentStatusUpdate) AddTimestamp(i int64) *AgentStatusUpdate {
 }
 
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdate {
 	asu.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
 	return asu
 }
 
 // AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -208,14 +209,14 @@ func (asu *AgentStatusUpdate) ClearAgentStatusToProvisionedHost() *AgentStatusUp
 }
 
 // RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdate {
+func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdate {
 	asu.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
 	return asu
 }
 
 // RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
 func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -279,7 +280,7 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   agentstatus.Table,
 			Columns: agentstatus.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		},
@@ -468,7 +469,7 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -484,7 +485,7 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -503,7 +504,7 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -687,14 +688,14 @@ func (asuo *AgentStatusUpdateOne) AddTimestamp(i int64) *AgentStatusUpdateOne {
 }
 
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdateOne {
 	asuo.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
 	return asuo
 }
 
 // AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -713,14 +714,14 @@ func (asuo *AgentStatusUpdateOne) ClearAgentStatusToProvisionedHost() *AgentStat
 }
 
 // RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusUpdateOne {
+func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdateOne {
 	asuo.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
 	return asuo
 }
 
 // RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
 func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -791,7 +792,7 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 			Table:   agentstatus.Table,
 			Columns: agentstatus.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		},
@@ -997,7 +998,7 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1013,7 +1014,7 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1032,7 +1033,7 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},

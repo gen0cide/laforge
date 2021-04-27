@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // CommandCreate is the builder for creating a Command entity.
@@ -87,15 +88,21 @@ func (cc *CommandCreate) SetTags(m map[string]string) *CommandCreate {
 	return cc
 }
 
+// SetID sets the "id" field.
+func (cc *CommandCreate) SetID(u uuid.UUID) *CommandCreate {
+	cc.mutation.SetID(u)
+	return cc
+}
+
 // AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
-func (cc *CommandCreate) AddCommandToUserIDs(ids ...int) *CommandCreate {
+func (cc *CommandCreate) AddCommandToUserIDs(ids ...uuid.UUID) *CommandCreate {
 	cc.mutation.AddCommandToUserIDs(ids...)
 	return cc
 }
 
 // AddCommandToUser adds the "CommandToUser" edges to the User entity.
 func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -103,13 +110,13 @@ func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
 }
 
 // SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
-func (cc *CommandCreate) SetCommandToEnvironmentID(id int) *CommandCreate {
+func (cc *CommandCreate) SetCommandToEnvironmentID(id uuid.UUID) *CommandCreate {
 	cc.mutation.SetCommandToEnvironmentID(id)
 	return cc
 }
 
 // SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (cc *CommandCreate) SetNillableCommandToEnvironmentID(id *int) *CommandCreate {
+func (cc *CommandCreate) SetNillableCommandToEnvironmentID(id *uuid.UUID) *CommandCreate {
 	if id != nil {
 		cc = cc.SetCommandToEnvironmentID(*id)
 	}
@@ -132,6 +139,7 @@ func (cc *CommandCreate) Save(ctx context.Context) (*Command, error) {
 		err  error
 		node *Command
 	)
+	cc.defaults()
 	if len(cc.hooks) == 0 {
 		if err = cc.check(); err != nil {
 			return nil, err
@@ -168,6 +176,14 @@ func (cc *CommandCreate) SaveX(ctx context.Context) *Command {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (cc *CommandCreate) defaults() {
+	if _, ok := cc.mutation.ID(); !ok {
+		v := command.DefaultID()
+		cc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -226,8 +242,6 @@ func (cc *CommandCreate) sqlSave(ctx context.Context) (*Command, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -237,11 +251,15 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: command.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		}
 	)
+	if id, ok := cc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := cc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -339,7 +357,7 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -358,7 +376,7 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -386,6 +404,7 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CommandMutation)
 				if !ok {
@@ -411,8 +430,6 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

@@ -9,13 +9,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // Environment is the model entity for the Environment schema.
 type Environment struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// CompetitionID holds the value of the "competition_id" field.
@@ -269,10 +270,12 @@ func (*Environment) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case environment.FieldAdminCidrs, environment.FieldExposedVdiPorts, environment.FieldConfig, environment.FieldTags:
 			values[i] = new([]byte)
-		case environment.FieldID, environment.FieldTeamCount, environment.FieldRevision:
+		case environment.FieldTeamCount, environment.FieldRevision:
 			values[i] = new(sql.NullInt64)
 		case environment.FieldHclID, environment.FieldCompetitionID, environment.FieldName, environment.FieldDescription, environment.FieldBuilder:
 			values[i] = new(sql.NullString)
+		case environment.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Environment", columns[i])
 		}
@@ -289,11 +292,11 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 	for i := range columns {
 		switch columns[i] {
 		case environment.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				e.ID = *value
 			}
-			e.ID = int(value.Int64)
 		case environment.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])

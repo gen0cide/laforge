@@ -2,6 +2,10 @@
 
 package environment
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the environment type in the database.
 	Label = "environment"
@@ -208,3 +212,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

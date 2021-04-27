@@ -6,31 +6,32 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Plan {
+func ID(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Plan {
+func IDEQ(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Plan {
+func IDNEQ(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Plan {
+func IDIn(ids ...uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -47,7 +48,7 @@ func IDIn(ids ...int) predicate.Plan {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Plan {
+func IDNotIn(ids ...uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -64,28 +65,28 @@ func IDNotIn(ids ...int) predicate.Plan {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Plan {
+func IDGT(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Plan {
+func IDGTE(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Plan {
+func IDLT(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Plan {
+func IDLTE(id uuid.UUID) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -99,7 +100,7 @@ func StepNumber(v int) predicate.Plan {
 }
 
 // BuildID applies equality check predicate on the "build_id" field. It's identical to BuildIDEQ.
-func BuildID(v int) predicate.Plan {
+func BuildID(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBuildID), v))
 	})
@@ -230,21 +231,21 @@ func TypeNotIn(vs ...Type) predicate.Plan {
 }
 
 // BuildIDEQ applies the EQ predicate on the "build_id" field.
-func BuildIDEQ(v int) predicate.Plan {
+func BuildIDEQ(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBuildID), v))
 	})
 }
 
 // BuildIDNEQ applies the NEQ predicate on the "build_id" field.
-func BuildIDNEQ(v int) predicate.Plan {
+func BuildIDNEQ(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBuildID), v))
 	})
 }
 
 // BuildIDIn applies the In predicate on the "build_id" field.
-func BuildIDIn(vs ...int) predicate.Plan {
+func BuildIDIn(vs ...string) predicate.Plan {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -261,7 +262,7 @@ func BuildIDIn(vs ...int) predicate.Plan {
 }
 
 // BuildIDNotIn applies the NotIn predicate on the "build_id" field.
-func BuildIDNotIn(vs ...int) predicate.Plan {
+func BuildIDNotIn(vs ...string) predicate.Plan {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -278,30 +279,65 @@ func BuildIDNotIn(vs ...int) predicate.Plan {
 }
 
 // BuildIDGT applies the GT predicate on the "build_id" field.
-func BuildIDGT(v int) predicate.Plan {
+func BuildIDGT(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBuildID), v))
 	})
 }
 
 // BuildIDGTE applies the GTE predicate on the "build_id" field.
-func BuildIDGTE(v int) predicate.Plan {
+func BuildIDGTE(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBuildID), v))
 	})
 }
 
 // BuildIDLT applies the LT predicate on the "build_id" field.
-func BuildIDLT(v int) predicate.Plan {
+func BuildIDLT(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBuildID), v))
 	})
 }
 
 // BuildIDLTE applies the LTE predicate on the "build_id" field.
-func BuildIDLTE(v int) predicate.Plan {
+func BuildIDLTE(v string) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBuildID), v))
+	})
+}
+
+// BuildIDContains applies the Contains predicate on the "build_id" field.
+func BuildIDContains(v string) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldBuildID), v))
+	})
+}
+
+// BuildIDHasPrefix applies the HasPrefix predicate on the "build_id" field.
+func BuildIDHasPrefix(v string) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldBuildID), v))
+	})
+}
+
+// BuildIDHasSuffix applies the HasSuffix predicate on the "build_id" field.
+func BuildIDHasSuffix(v string) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldBuildID), v))
+	})
+}
+
+// BuildIDEqualFold applies the EqualFold predicate on the "build_id" field.
+func BuildIDEqualFold(v string) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldBuildID), v))
+	})
+}
+
+// BuildIDContainsFold applies the ContainsFold predicate on the "build_id" field.
+func BuildIDContainsFold(v string) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldBuildID), v))
 	})
 }
 

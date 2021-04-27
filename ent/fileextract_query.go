@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileExtractQuery is the builder for querying FileExtract entities.
@@ -110,8 +111,8 @@ func (feq *FileExtractQuery) FirstX(ctx context.Context) *FileExtract {
 
 // FirstID returns the first FileExtract ID from the query.
 // Returns a *NotFoundError when no FileExtract ID was found.
-func (feq *FileExtractQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (feq *FileExtractQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = feq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (feq *FileExtractQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (feq *FileExtractQuery) FirstIDX(ctx context.Context) int {
+func (feq *FileExtractQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := feq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (feq *FileExtractQuery) OnlyX(ctx context.Context) *FileExtract {
 // OnlyID is like Only, but returns the only FileExtract ID in the query.
 // Returns a *NotSingularError when exactly one FileExtract ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (feq *FileExtractQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (feq *FileExtractQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = feq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (feq *FileExtractQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (feq *FileExtractQuery) OnlyIDX(ctx context.Context) int {
+func (feq *FileExtractQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := feq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (feq *FileExtractQuery) AllX(ctx context.Context) []*FileExtract {
 }
 
 // IDs executes the query and returns a list of FileExtract IDs.
-func (feq *FileExtractQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (feq *FileExtractQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := feq.Select(fileextract.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (feq *FileExtractQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (feq *FileExtractQuery) IDsX(ctx context.Context) []int {
+func (feq *FileExtractQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := feq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 	}
 
 	if query := feq.withFileExtractToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*FileExtract)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*FileExtract)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_file_extract == nil {
 				continue
@@ -432,7 +433,7 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   fileextract.Table,
 			Columns: fileextract.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		},

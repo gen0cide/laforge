@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Finding holds the schema definition for the Finding entity.
@@ -14,6 +15,8 @@ type Finding struct {
 // Fields of the Finding.
 func (Finding) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("name").
 			StructTag(`hcl:"name,attr"`),
 		field.String("description").

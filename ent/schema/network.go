@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Network holds the schema definition for the Network entity.
@@ -15,6 +16,8 @@ type Network struct {
 // Fields of the Network.
 func (Network) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("hcl_id").
 			StructTag(`hcl:"id,label"`),
 		field.String("name").

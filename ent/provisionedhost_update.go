@@ -19,6 +19,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisionedHostUpdate is the builder for updating ProvisionedHost entities.
@@ -41,7 +42,7 @@ func (phu *ProvisionedHostUpdate) SetSubnetIP(s string) *ProvisionedHostUpdate {
 }
 
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToStatusID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToStatusID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToStatusID(id)
 	return phu
 }
@@ -52,7 +53,7 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToStatus(s *Status) *Provisi
 }
 
 // SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToProvisionedNetworkID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToProvisionedNetworkID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToProvisionedNetworkID(id)
 	return phu
 }
@@ -63,7 +64,7 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToProvisionedNetwork(p *Prov
 }
 
 // SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToHostID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToHostID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToHostID(id)
 	return phu
 }
@@ -74,13 +75,13 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToHost(h *Host) *Provisioned
 }
 
 // SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlanID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlanID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToEndStepPlanID(id)
 	return phu
 }
 
 // SetNillableProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID if the given value is not nil.
-func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToEndStepPlanID(id *int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToEndStepPlanID(id *uuid.UUID) *ProvisionedHostUpdate {
 	if id != nil {
 		phu = phu.SetProvisionedHostToEndStepPlanID(*id)
 	}
@@ -93,14 +94,14 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlan(p *Plan) *Prov
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
 // AddProvisionedHostToProvisioningStep adds the "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -108,14 +109,14 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToProvisioningStep(p ...*Pro
 }
 
 // AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
-func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
 // AddProvisionedHostToAgentStatus adds the "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
-	ids := make([]int, len(a))
+	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -123,13 +124,13 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 }
 
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlanID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlanID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToPlanID(id)
 	return phu
 }
 
 // SetNillableProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToPlanID(id *int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToPlanID(id *uuid.UUID) *ProvisionedHostUpdate {
 	if id != nil {
 		phu = phu.SetProvisionedHostToPlanID(*id)
 	}
@@ -142,13 +143,13 @@ func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlan(p *Plan) *Provisioned
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
-func (phu *ProvisionedHostUpdate) SetProvisionedHostToGinFileMiddlewareID(id int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToGinFileMiddlewareID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToGinFileMiddlewareID(id)
 	return phu
 }
 
 // SetNillableProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
-func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToGinFileMiddlewareID(id *int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToGinFileMiddlewareID(id *uuid.UUID) *ProvisionedHostUpdate {
 	if id != nil {
 		phu = phu.SetProvisionedHostToGinFileMiddlewareID(*id)
 	}
@@ -196,14 +197,14 @@ func (phu *ProvisionedHostUpdate) ClearProvisionedHostToProvisioningStep() *Prov
 }
 
 // RemoveProvisionedHostToProvisioningStepIDs removes the "ProvisionedHostToProvisioningStep" edge to ProvisioningStep entities by IDs.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phu
 }
 
 // RemoveProvisionedHostToProvisioningStep removes "ProvisionedHostToProvisioningStep" edges to ProvisioningStep entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -217,14 +218,14 @@ func (phu *ProvisionedHostUpdate) ClearProvisionedHostToAgentStatus() *Provision
 }
 
 // RemoveProvisionedHostToAgentStatuIDs removes the "ProvisionedHostToAgentStatus" edge to AgentStatus entities by IDs.
-func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdate {
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phu
 }
 
 // RemoveProvisionedHostToAgentStatus removes "ProvisionedHostToAgentStatus" edges to AgentStatus entities.
 func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdate {
-	ids := make([]int, len(a))
+	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -320,7 +321,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Table:   provisionedhost.Table,
 			Columns: provisionedhost.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionedhost.FieldID,
 			},
 		},
@@ -348,7 +349,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -364,7 +365,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -383,7 +384,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -399,7 +400,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -418,7 +419,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -434,7 +435,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -453,7 +454,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -469,7 +470,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -488,7 +489,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -504,7 +505,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -523,7 +524,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -542,7 +543,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -558,7 +559,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -577,7 +578,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -596,7 +597,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -612,7 +613,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -631,7 +632,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -647,7 +648,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -683,7 +684,7 @@ func (phuo *ProvisionedHostUpdateOne) SetSubnetIP(s string) *ProvisionedHostUpda
 }
 
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToStatusID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToStatusID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToStatusID(id)
 	return phuo
 }
@@ -694,7 +695,7 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToStatus(s *Status) *Pro
 }
 
 // SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToProvisionedNetworkID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToProvisionedNetworkID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToProvisionedNetworkID(id)
 	return phuo
 }
@@ -705,7 +706,7 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToProvisionedNetwork(p *
 }
 
 // SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToHostID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToHostID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToHostID(id)
 	return phuo
 }
@@ -716,13 +717,13 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToHost(h *Host) *Provisi
 }
 
 // SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlanID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlanID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToEndStepPlanID(id)
 	return phuo
 }
 
 // SetNillableProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by ID if the given value is not nil.
-func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToEndStepPlanID(id *int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToEndStepPlanID(id *uuid.UUID) *ProvisionedHostUpdateOne {
 	if id != nil {
 		phuo = phuo.SetProvisionedHostToEndStepPlanID(*id)
 	}
@@ -735,14 +736,14 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlan(p *Plan) *
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
 // AddProvisionedHostToProvisioningStep adds the "ProvisionedHostToProvisioningStep" edges to the ProvisioningStep entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -750,14 +751,14 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStep(p ...
 }
 
 // AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
-func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
 // AddProvisionedHostToAgentStatus adds the "ProvisionedHostToAgentStatus" edges to the AgentStatus entity.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(a))
+	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -765,13 +766,13 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*Agen
 }
 
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlanID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlanID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToPlanID(id)
 	return phuo
 }
 
 // SetNillableProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToPlanID(id *int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToPlanID(id *uuid.UUID) *ProvisionedHostUpdateOne {
 	if id != nil {
 		phuo = phuo.SetProvisionedHostToPlanID(*id)
 	}
@@ -784,13 +785,13 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlan(p *Plan) *Provisi
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
-func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToGinFileMiddlewareID(id int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToGinFileMiddlewareID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToGinFileMiddlewareID(id)
 	return phuo
 }
 
 // SetNillableProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
-func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToGinFileMiddlewareID(id *int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) SetNillableProvisionedHostToGinFileMiddlewareID(id *uuid.UUID) *ProvisionedHostUpdateOne {
 	if id != nil {
 		phuo = phuo.SetProvisionedHostToGinFileMiddlewareID(*id)
 	}
@@ -838,14 +839,14 @@ func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToProvisioningStep() *
 }
 
 // RemoveProvisionedHostToProvisioningStepIDs removes the "ProvisionedHostToProvisioningStep" edge to ProvisioningStep entities by IDs.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToProvisioningStepIDs(ids...)
 	return phuo
 }
 
 // RemoveProvisionedHostToProvisioningStep removes "ProvisionedHostToProvisioningStep" edges to ProvisioningStep entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToProvisioningStep(p ...*ProvisioningStep) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -859,14 +860,14 @@ func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToAgentStatus() *Provi
 }
 
 // RemoveProvisionedHostToAgentStatuIDs removes the "ProvisionedHostToAgentStatus" edge to AgentStatus entities by IDs.
-func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatuIDs(ids ...int) *ProvisionedHostUpdateOne {
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.RemoveProvisionedHostToAgentStatuIDs(ids...)
 	return phuo
 }
 
 // RemoveProvisionedHostToAgentStatus removes "ProvisionedHostToAgentStatus" edges to AgentStatus entities.
 func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*AgentStatus) *ProvisionedHostUpdateOne {
-	ids := make([]int, len(a))
+	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -969,7 +970,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Table:   provisionedhost.Table,
 			Columns: provisionedhost.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionedhost.FieldID,
 			},
 		},
@@ -1014,7 +1015,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -1030,7 +1031,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -1049,7 +1050,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1065,7 +1066,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1084,7 +1085,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -1100,7 +1101,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -1119,7 +1120,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1135,7 +1136,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1154,7 +1155,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1170,7 +1171,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1189,7 +1190,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1208,7 +1209,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -1224,7 +1225,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -1243,7 +1244,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
 				},
 			},
@@ -1262,7 +1263,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1278,7 +1279,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1297,7 +1298,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -1313,7 +1314,7 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},

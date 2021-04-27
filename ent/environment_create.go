@@ -26,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // EnvironmentCreate is the builder for creating a Environment entity.
@@ -101,15 +102,21 @@ func (ec *EnvironmentCreate) SetTags(m map[string]string) *EnvironmentCreate {
 	return ec
 }
 
+// SetID sets the "id" field.
+func (ec *EnvironmentCreate) SetID(u uuid.UUID) *EnvironmentCreate {
+	ec.mutation.SetID(u)
+	return ec
+}
+
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToUserIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToUserIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToUserIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToUser adds the "EnvironmentToUser" edges to the User entity.
 func (ec *EnvironmentCreate) AddEnvironmentToUser(u ...*User) *EnvironmentCreate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -117,14 +124,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToUser(u ...*User) *EnvironmentCreate
 }
 
 // AddEnvironmentToHostIDs adds the "EnvironmentToHost" edge to the Host entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToHostIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToHostIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToHostIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToHost adds the "EnvironmentToHost" edges to the Host entity.
 func (ec *EnvironmentCreate) AddEnvironmentToHost(h ...*Host) *EnvironmentCreate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -132,14 +139,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToHost(h ...*Host) *EnvironmentCreate
 }
 
 // AddEnvironmentToCompetitionIDs adds the "EnvironmentToCompetition" edge to the Competition entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToCompetitionIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToCompetitionIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToCompetitionIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToCompetition adds the "EnvironmentToCompetition" edges to the Competition entity.
 func (ec *EnvironmentCreate) AddEnvironmentToCompetition(c ...*Competition) *EnvironmentCreate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -147,14 +154,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToCompetition(c ...*Competition) *Env
 }
 
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToIdentityIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToIdentityIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToIdentityIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToIdentity adds the "EnvironmentToIdentity" edges to the Identity entity.
 func (ec *EnvironmentCreate) AddEnvironmentToIdentity(i ...*Identity) *EnvironmentCreate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -162,14 +169,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToIdentity(i ...*Identity) *Environme
 }
 
 // AddEnvironmentToCommandIDs adds the "EnvironmentToCommand" edge to the Command entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToCommandIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToCommandIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToCommandIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToCommand adds the "EnvironmentToCommand" edges to the Command entity.
 func (ec *EnvironmentCreate) AddEnvironmentToCommand(c ...*Command) *EnvironmentCreate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -177,14 +184,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToCommand(c ...*Command) *Environment
 }
 
 // AddEnvironmentToScriptIDs adds the "EnvironmentToScript" edge to the Script entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToScriptIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToScriptIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToScriptIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToScript adds the "EnvironmentToScript" edges to the Script entity.
 func (ec *EnvironmentCreate) AddEnvironmentToScript(s ...*Script) *EnvironmentCreate {
-	ids := make([]int, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -192,14 +199,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToScript(s ...*Script) *EnvironmentCr
 }
 
 // AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToFileDownloadIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToFileDownloadIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToFileDownloadIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToFileDownload adds the "EnvironmentToFileDownload" edges to the FileDownload entity.
 func (ec *EnvironmentCreate) AddEnvironmentToFileDownload(f ...*FileDownload) *EnvironmentCreate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -207,14 +214,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToFileDownload(f ...*FileDownload) *E
 }
 
 // AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToFileDeleteIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToFileDeleteIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToFileDeleteIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToFileDelete adds the "EnvironmentToFileDelete" edges to the FileDelete entity.
 func (ec *EnvironmentCreate) AddEnvironmentToFileDelete(f ...*FileDelete) *EnvironmentCreate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -222,14 +229,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToFileDelete(f ...*FileDelete) *Envir
 }
 
 // AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToFileExtractIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToFileExtractIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToFileExtractIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToFileExtract adds the "EnvironmentToFileExtract" edges to the FileExtract entity.
 func (ec *EnvironmentCreate) AddEnvironmentToFileExtract(f ...*FileExtract) *EnvironmentCreate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -237,14 +244,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToFileExtract(f ...*FileExtract) *Env
 }
 
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetworkIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetworkIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToIncludedNetworkIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToIncludedNetwork adds the "EnvironmentToIncludedNetwork" edges to the IncludedNetwork entity.
 func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwork) *EnvironmentCreate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -252,14 +259,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToIncludedNetwork(i ...*IncludedNetwo
 }
 
 // AddEnvironmentToFindingIDs adds the "EnvironmentToFinding" edge to the Finding entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToFindingIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToFindingIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToFindingIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToFinding adds the "EnvironmentToFinding" edges to the Finding entity.
 func (ec *EnvironmentCreate) AddEnvironmentToFinding(f ...*Finding) *EnvironmentCreate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -267,14 +274,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToFinding(f ...*Finding) *Environment
 }
 
 // AddEnvironmentToDNSRecordIDs adds the "EnvironmentToDNSRecord" edge to the DNSRecord entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToDNSRecordIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToDNSRecordIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToDNSRecordIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToDNSRecord adds the "EnvironmentToDNSRecord" edges to the DNSRecord entity.
 func (ec *EnvironmentCreate) AddEnvironmentToDNSRecord(d ...*DNSRecord) *EnvironmentCreate {
-	ids := make([]int, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -282,14 +289,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToDNSRecord(d ...*DNSRecord) *Environ
 }
 
 // AddEnvironmentToDNSIDs adds the "EnvironmentToDNS" edge to the DNS entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToDNSIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToDNSIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToDNSIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToDNS adds the "EnvironmentToDNS" edges to the DNS entity.
 func (ec *EnvironmentCreate) AddEnvironmentToDNS(d ...*DNS) *EnvironmentCreate {
-	ids := make([]int, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -297,14 +304,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToDNS(d ...*DNS) *EnvironmentCreate {
 }
 
 // AddEnvironmentToNetworkIDs adds the "EnvironmentToNetwork" edge to the Network entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToNetworkIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToNetworkIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToNetworkIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToNetwork adds the "EnvironmentToNetwork" edges to the Network entity.
 func (ec *EnvironmentCreate) AddEnvironmentToNetwork(n ...*Network) *EnvironmentCreate {
-	ids := make([]int, len(n))
+	ids := make([]uuid.UUID, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
@@ -312,14 +319,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToNetwork(n ...*Network) *Environment
 }
 
 // AddEnvironmentToHostDependencyIDs adds the "EnvironmentToHostDependency" edge to the HostDependency entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToHostDependencyIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToHostDependencyIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToHostDependencyIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToHostDependency adds the "EnvironmentToHostDependency" edges to the HostDependency entity.
 func (ec *EnvironmentCreate) AddEnvironmentToHostDependency(h ...*HostDependency) *EnvironmentCreate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -327,14 +334,14 @@ func (ec *EnvironmentCreate) AddEnvironmentToHostDependency(h ...*HostDependency
 }
 
 // AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (ec *EnvironmentCreate) AddEnvironmentToBuildIDs(ids ...int) *EnvironmentCreate {
+func (ec *EnvironmentCreate) AddEnvironmentToBuildIDs(ids ...uuid.UUID) *EnvironmentCreate {
 	ec.mutation.AddEnvironmentToBuildIDs(ids...)
 	return ec
 }
 
 // AddEnvironmentToBuild adds the "EnvironmentToBuild" edges to the Build entity.
 func (ec *EnvironmentCreate) AddEnvironmentToBuild(b ...*Build) *EnvironmentCreate {
-	ids := make([]int, len(b))
+	ids := make([]uuid.UUID, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
@@ -352,6 +359,7 @@ func (ec *EnvironmentCreate) Save(ctx context.Context) (*Environment, error) {
 		err  error
 		node *Environment
 	)
+	ec.defaults()
 	if len(ec.hooks) == 0 {
 		if err = ec.check(); err != nil {
 			return nil, err
@@ -388,6 +396,14 @@ func (ec *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (ec *EnvironmentCreate) defaults() {
+	if _, ok := ec.mutation.ID(); !ok {
+		v := environment.DefaultID()
+		ec.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -436,8 +452,6 @@ func (ec *EnvironmentCreate) sqlSave(ctx context.Context) (*Environment, error) 
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -447,11 +461,15 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: environment.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: environment.FieldID,
 			},
 		}
 	)
+	if id, ok := ec.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := ec.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -549,7 +567,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -568,7 +586,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -587,7 +605,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -606,7 +624,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: identity.FieldID,
 				},
 			},
@@ -625,7 +643,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -644,7 +662,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -663,7 +681,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -682,7 +700,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -701,7 +719,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -720,7 +738,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -739,7 +757,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -758,7 +776,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -777,7 +795,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dns.FieldID,
 				},
 			},
@@ -796,7 +814,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -815,7 +833,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -834,7 +852,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -861,6 +879,7 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 	for i := range ecb.builders {
 		func(i int, root context.Context) {
 			builder := ecb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EnvironmentMutation)
 				if !ok {
@@ -886,8 +905,6 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

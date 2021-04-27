@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/google/uuid"
 )
 
 // FileDeleteCreate is the builder for creating a FileDelete entity.
@@ -38,14 +39,20 @@ func (fdc *FileDeleteCreate) SetTags(m map[string]string) *FileDeleteCreate {
 	return fdc
 }
 
+// SetID sets the "id" field.
+func (fdc *FileDeleteCreate) SetID(u uuid.UUID) *FileDeleteCreate {
+	fdc.mutation.SetID(u)
+	return fdc
+}
+
 // SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
-func (fdc *FileDeleteCreate) SetFileDeleteToEnvironmentID(id int) *FileDeleteCreate {
+func (fdc *FileDeleteCreate) SetFileDeleteToEnvironmentID(id uuid.UUID) *FileDeleteCreate {
 	fdc.mutation.SetFileDeleteToEnvironmentID(id)
 	return fdc
 }
 
 // SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fdc *FileDeleteCreate) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteCreate {
+func (fdc *FileDeleteCreate) SetNillableFileDeleteToEnvironmentID(id *uuid.UUID) *FileDeleteCreate {
 	if id != nil {
 		fdc = fdc.SetFileDeleteToEnvironmentID(*id)
 	}
@@ -68,6 +75,7 @@ func (fdc *FileDeleteCreate) Save(ctx context.Context) (*FileDelete, error) {
 		err  error
 		node *FileDelete
 	)
+	fdc.defaults()
 	if len(fdc.hooks) == 0 {
 		if err = fdc.check(); err != nil {
 			return nil, err
@@ -106,6 +114,14 @@ func (fdc *FileDeleteCreate) SaveX(ctx context.Context) *FileDelete {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (fdc *FileDeleteCreate) defaults() {
+	if _, ok := fdc.mutation.ID(); !ok {
+		v := filedelete.DefaultID()
+		fdc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDeleteCreate) check() error {
 	if _, ok := fdc.mutation.HclID(); !ok {
@@ -128,8 +144,6 @@ func (fdc *FileDeleteCreate) sqlSave(ctx context.Context) (*FileDelete, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -139,11 +153,15 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: filedelete.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		}
 	)
+	if id, ok := fdc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := fdc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -177,7 +195,7 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -205,6 +223,7 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 	for i := range fdcb.builders {
 		func(i int, root context.Context) {
 			builder := fdcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FileDeleteMutation)
 				if !ok {
@@ -230,8 +249,6 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

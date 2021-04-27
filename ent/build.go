@@ -11,13 +11,14 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // Build is the model entity for the Build schema.
 type Build struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Revision holds the value of the "revision" field.
 	Revision int `json:"revision,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -38,8 +39,8 @@ type Build struct {
 	// BuildToPlan holds the value of the BuildToPlan edge.
 	HCLBuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
 	//
-	build_build_to_environment *int
-	build_build_to_competition *int
+	build_build_to_environment *uuid.UUID
+	build_build_to_competition *uuid.UUID
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
@@ -135,12 +136,14 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case build.FieldID, build.FieldRevision:
+		case build.FieldRevision:
 			values[i] = new(sql.NullInt64)
+		case build.FieldID:
+			values[i] = new(uuid.UUID)
 		case build.ForeignKeys[0]: // build_build_to_environment
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case build.ForeignKeys[1]: // build_build_to_competition
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Build", columns[i])
 		}
@@ -157,11 +160,11 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case build.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				b.ID = *value
 			}
-			b.ID = int(value.Int64)
 		case build.FieldRevision:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field revision", values[i])
@@ -169,18 +172,16 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 				b.Revision = int(value.Int64)
 			}
 		case build.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field build_build_to_environment", value)
-			} else if value.Valid {
-				b.build_build_to_environment = new(int)
-				*b.build_build_to_environment = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field build_build_to_environment", values[i])
+			} else if value != nil {
+				b.build_build_to_environment = value
 			}
 		case build.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field build_build_to_competition", value)
-			} else if value.Valid {
-				b.build_build_to_competition = new(int)
-				*b.build_build_to_competition = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field build_build_to_competition", values[i])
+			} else if value != nil {
+				b.build_build_to_competition = value
 			}
 		}
 	}

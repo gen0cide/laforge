@@ -2,6 +2,10 @@
 
 package provisionednetwork
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the provisionednetwork type in the database.
 	Label = "provisioned_network"
@@ -99,3 +103,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

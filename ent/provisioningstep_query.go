@@ -24,6 +24,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisioningStepQuery is the builder for querying ProvisioningStep entities.
@@ -327,8 +328,8 @@ func (psq *ProvisioningStepQuery) FirstX(ctx context.Context) *ProvisioningStep 
 
 // FirstID returns the first ProvisioningStep ID from the query.
 // Returns a *NotFoundError when no ProvisioningStep ID was found.
-func (psq *ProvisioningStepQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (psq *ProvisioningStepQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = psq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -340,7 +341,7 @@ func (psq *ProvisioningStepQuery) FirstID(ctx context.Context) (id int, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (psq *ProvisioningStepQuery) FirstIDX(ctx context.Context) int {
+func (psq *ProvisioningStepQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := psq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -378,8 +379,8 @@ func (psq *ProvisioningStepQuery) OnlyX(ctx context.Context) *ProvisioningStep {
 // OnlyID is like Only, but returns the only ProvisioningStep ID in the query.
 // Returns a *NotSingularError when exactly one ProvisioningStep ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (psq *ProvisioningStepQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (psq *ProvisioningStepQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = psq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -395,7 +396,7 @@ func (psq *ProvisioningStepQuery) OnlyID(ctx context.Context) (id int, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (psq *ProvisioningStepQuery) OnlyIDX(ctx context.Context) int {
+func (psq *ProvisioningStepQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := psq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -421,8 +422,8 @@ func (psq *ProvisioningStepQuery) AllX(ctx context.Context) []*ProvisioningStep 
 }
 
 // IDs executes the query and returns a list of ProvisioningStep IDs.
-func (psq *ProvisioningStepQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (psq *ProvisioningStepQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := psq.Select(provisioningstep.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -430,7 +431,7 @@ func (psq *ProvisioningStepQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (psq *ProvisioningStepQuery) IDsX(ctx context.Context) []int {
+func (psq *ProvisioningStepQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := psq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -717,7 +718,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 
 	if query := psq.withProvisioningStepToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisioningStep)
+		nodeids := make(map[uuid.UUID]*ProvisioningStep)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -744,8 +745,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToProvisionedHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_provisioned_host == nil {
 				continue
@@ -773,8 +774,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToScript; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_script == nil {
 				continue
@@ -802,8 +803,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToCommand; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_command == nil {
 				continue
@@ -831,8 +832,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToDNSRecord; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_dns_record == nil {
 				continue
@@ -860,8 +861,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToFileDelete; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_file_delete == nil {
 				continue
@@ -889,8 +890,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToFileDownload; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_file_download == nil {
 				continue
@@ -918,8 +919,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToFileExtract; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_file_extract == nil {
 				continue
@@ -947,8 +948,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].plan_plan_to_provisioning_step == nil {
 				continue
@@ -976,8 +977,8 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 	}
 
 	if query := psq.withProvisioningStepToGinFileMiddleware; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisioningStep)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisioningStep)
 		for i := range nodes {
 			if nodes[i].gin_file_middleware_gin_file_middleware_to_provisioning_step == nil {
 				continue
@@ -1026,7 +1027,7 @@ func (psq *ProvisioningStepQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   provisioningstep.Table,
 			Columns: provisioningstep.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisioningstep.FieldID,
 			},
 		},

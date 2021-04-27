@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Plan holds the schema definition for the Plan entity.
@@ -15,6 +16,8 @@ type Plan struct {
 // Fields of the Plan.
 func (Plan) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.Int("step_number"),
 		field.Enum("type").
 			Values(
@@ -24,7 +27,7 @@ func (Plan) Fields() []ent.Field {
 				"provision_host",
 				"execute_step",
 			),
-		field.Int("build_id"),
+		field.String("build_id"),
 	}
 }
 

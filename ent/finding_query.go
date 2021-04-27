@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // FindingQuery is the builder for querying Finding entities.
@@ -183,8 +184,8 @@ func (fq *FindingQuery) FirstX(ctx context.Context) *Finding {
 
 // FirstID returns the first Finding ID from the query.
 // Returns a *NotFoundError when no Finding ID was found.
-func (fq *FindingQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fq *FindingQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -196,7 +197,7 @@ func (fq *FindingQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (fq *FindingQuery) FirstIDX(ctx context.Context) int {
+func (fq *FindingQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := fq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -234,8 +235,8 @@ func (fq *FindingQuery) OnlyX(ctx context.Context) *Finding {
 // OnlyID is like Only, but returns the only Finding ID in the query.
 // Returns a *NotSingularError when exactly one Finding ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (fq *FindingQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fq *FindingQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -251,7 +252,7 @@ func (fq *FindingQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (fq *FindingQuery) OnlyIDX(ctx context.Context) int {
+func (fq *FindingQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := fq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -277,8 +278,8 @@ func (fq *FindingQuery) AllX(ctx context.Context) []*Finding {
 }
 
 // IDs executes the query and returns a list of Finding IDs.
-func (fq *FindingQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (fq *FindingQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := fq.Select(finding.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -286,7 +287,7 @@ func (fq *FindingQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (fq *FindingQuery) IDsX(ctx context.Context) []int {
+func (fq *FindingQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := fq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -495,7 +496,7 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 
 	if query := fq.withFindingToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Finding)
+		nodeids := make(map[uuid.UUID]*Finding)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -523,8 +524,8 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 	}
 
 	if query := fq.withFindingToHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Finding)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Finding)
 		for i := range nodes {
 			if nodes[i].finding_finding_to_host == nil {
 				continue
@@ -552,8 +553,8 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 	}
 
 	if query := fq.withFindingToScript; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Finding)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Finding)
 		for i := range nodes {
 			if nodes[i].script_script_to_finding == nil {
 				continue
@@ -581,8 +582,8 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 	}
 
 	if query := fq.withFindingToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Finding)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Finding)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_finding == nil {
 				continue
@@ -631,7 +632,7 @@ func (fq *FindingQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   finding.Table,
 			Columns: finding.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		},

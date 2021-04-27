@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // HostCreate is the builder for creating a Host entity.
@@ -108,14 +109,20 @@ func (hc *HostCreate) SetTags(m map[string]string) *HostCreate {
 	return hc
 }
 
+// SetID sets the "id" field.
+func (hc *HostCreate) SetID(u uuid.UUID) *HostCreate {
+	hc.mutation.SetID(u)
+	return hc
+}
+
 // SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID.
-func (hc *HostCreate) SetHostToDiskID(id int) *HostCreate {
+func (hc *HostCreate) SetHostToDiskID(id uuid.UUID) *HostCreate {
 	hc.mutation.SetHostToDiskID(id)
 	return hc
 }
 
 // SetNillableHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID if the given value is not nil.
-func (hc *HostCreate) SetNillableHostToDiskID(id *int) *HostCreate {
+func (hc *HostCreate) SetNillableHostToDiskID(id *uuid.UUID) *HostCreate {
 	if id != nil {
 		hc = hc.SetHostToDiskID(*id)
 	}
@@ -128,14 +135,14 @@ func (hc *HostCreate) SetHostToDisk(d *Disk) *HostCreate {
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
-func (hc *HostCreate) AddHostToUserIDs(ids ...int) *HostCreate {
+func (hc *HostCreate) AddHostToUserIDs(ids ...uuid.UUID) *HostCreate {
 	hc.mutation.AddHostToUserIDs(ids...)
 	return hc
 }
 
 // AddHostToUser adds the "HostToUser" edges to the User entity.
 func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -143,13 +150,13 @@ func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
 }
 
 // SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID.
-func (hc *HostCreate) SetHostToEnvironmentID(id int) *HostCreate {
+func (hc *HostCreate) SetHostToEnvironmentID(id uuid.UUID) *HostCreate {
 	hc.mutation.SetHostToEnvironmentID(id)
 	return hc
 }
 
 // SetNillableHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (hc *HostCreate) SetNillableHostToEnvironmentID(id *int) *HostCreate {
+func (hc *HostCreate) SetNillableHostToEnvironmentID(id *uuid.UUID) *HostCreate {
 	if id != nil {
 		hc = hc.SetHostToEnvironmentID(*id)
 	}
@@ -162,14 +169,14 @@ func (hc *HostCreate) SetHostToEnvironment(e *Environment) *HostCreate {
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (hc *HostCreate) AddHostToIncludedNetworkIDs(ids ...int) *HostCreate {
+func (hc *HostCreate) AddHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostCreate {
 	hc.mutation.AddHostToIncludedNetworkIDs(ids...)
 	return hc
 }
 
 // AddHostToIncludedNetwork adds the "HostToIncludedNetwork" edges to the IncludedNetwork entity.
 func (hc *HostCreate) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostCreate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -177,14 +184,14 @@ func (hc *HostCreate) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostCreat
 }
 
 // AddDependOnHostToHostDependencyIDs adds the "DependOnHostToHostDependency" edge to the HostDependency entity by IDs.
-func (hc *HostCreate) AddDependOnHostToHostDependencyIDs(ids ...int) *HostCreate {
+func (hc *HostCreate) AddDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostCreate {
 	hc.mutation.AddDependOnHostToHostDependencyIDs(ids...)
 	return hc
 }
 
 // AddDependOnHostToHostDependency adds the "DependOnHostToHostDependency" edges to the HostDependency entity.
 func (hc *HostCreate) AddDependOnHostToHostDependency(h ...*HostDependency) *HostCreate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -192,14 +199,14 @@ func (hc *HostCreate) AddDependOnHostToHostDependency(h ...*HostDependency) *Hos
 }
 
 // AddDependByHostToHostDependencyIDs adds the "DependByHostToHostDependency" edge to the HostDependency entity by IDs.
-func (hc *HostCreate) AddDependByHostToHostDependencyIDs(ids ...int) *HostCreate {
+func (hc *HostCreate) AddDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostCreate {
 	hc.mutation.AddDependByHostToHostDependencyIDs(ids...)
 	return hc
 }
 
 // AddDependByHostToHostDependency adds the "DependByHostToHostDependency" edges to the HostDependency entity.
 func (hc *HostCreate) AddDependByHostToHostDependency(h ...*HostDependency) *HostCreate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -217,6 +224,7 @@ func (hc *HostCreate) Save(ctx context.Context) (*Host, error) {
 		err  error
 		node *Host
 	)
+	hc.defaults()
 	if len(hc.hooks) == 0 {
 		if err = hc.check(); err != nil {
 			return nil, err
@@ -253,6 +261,14 @@ func (hc *HostCreate) SaveX(ctx context.Context) *Host {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (hc *HostCreate) defaults() {
+	if _, ok := hc.mutation.ID(); !ok {
+		v := host.DefaultID()
+		hc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -307,8 +323,6 @@ func (hc *HostCreate) sqlSave(ctx context.Context) (*Host, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -318,11 +332,15 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: host.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		}
 	)
+	if id, ok := hc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := hc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -444,7 +462,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -463,7 +481,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -482,7 +500,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -502,7 +520,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -521,7 +539,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -540,7 +558,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -567,6 +585,7 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 	for i := range hcb.builders {
 		func(i int, root context.Context) {
 			builder := hcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*HostMutation)
 				if !ok {
@@ -592,8 +611,6 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

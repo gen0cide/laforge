@@ -14,13 +14,14 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // Status is the model entity for the Status schema.
 type Status struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// State holds the value of the "state" field.
 	State status.State `json:"state,omitempty"`
 	// StatusFor holds the value of the "status_for" field.
@@ -51,11 +52,11 @@ type Status struct {
 	// StatusToTeam holds the value of the StatusToTeam edge.
 	HCLStatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	//
-	build_build_to_status                             *int
-	provisioned_host_provisioned_host_to_status       *int
-	provisioned_network_provisioned_network_to_status *int
-	provisioning_step_provisioning_step_to_status     *int
-	team_team_to_status                               *int
+	build_build_to_status                             *uuid.UUID
+	provisioned_host_provisioned_host_to_status       *uuid.UUID
+	provisioned_network_provisioned_network_to_status *uuid.UUID
+	provisioning_step_provisioning_step_to_status     *uuid.UUID
+	team_team_to_status                               *uuid.UUID
 }
 
 // StatusEdges holds the relations/edges for other nodes in the graph.
@@ -152,22 +153,22 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case status.FieldFailed, status.FieldCompleted:
 			values[i] = new(sql.NullBool)
-		case status.FieldID:
-			values[i] = new(sql.NullInt64)
 		case status.FieldState, status.FieldStatusFor, status.FieldError:
 			values[i] = new(sql.NullString)
 		case status.FieldStartedAt, status.FieldEndedAt:
 			values[i] = new(sql.NullTime)
+		case status.FieldID:
+			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[0]: // build_build_to_status
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[1]: // provisioned_host_provisioned_host_to_status
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[2]: // provisioned_network_provisioned_network_to_status
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[3]: // provisioning_step_provisioning_step_to_status
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[4]: // team_team_to_status
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
 		}
@@ -184,11 +185,11 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case status.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				s.ID = *value
 			}
-			s.ID = int(value.Int64)
 		case status.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
@@ -232,39 +233,34 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 				s.Error = value.String
 			}
 		case status.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field build_build_to_status", value)
-			} else if value.Valid {
-				s.build_build_to_status = new(int)
-				*s.build_build_to_status = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field build_build_to_status", values[i])
+			} else if value != nil {
+				s.build_build_to_status = value
 			}
 		case status.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_status", value)
-			} else if value.Valid {
-				s.provisioned_host_provisioned_host_to_status = new(int)
-				*s.provisioned_host_provisioned_host_to_status = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_status", values[i])
+			} else if value != nil {
+				s.provisioned_host_provisioned_host_to_status = value
 			}
 		case status.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_network_provisioned_network_to_status", value)
-			} else if value.Valid {
-				s.provisioned_network_provisioned_network_to_status = new(int)
-				*s.provisioned_network_provisioned_network_to_status = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_status", values[i])
+			} else if value != nil {
+				s.provisioned_network_provisioned_network_to_status = value
 			}
 		case status.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioning_step_provisioning_step_to_status", value)
-			} else if value.Valid {
-				s.provisioning_step_provisioning_step_to_status = new(int)
-				*s.provisioning_step_provisioning_step_to_status = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_status", values[i])
+			} else if value != nil {
+				s.provisioning_step_provisioning_step_to_status = value
 			}
 		case status.ForeignKeys[4]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field team_team_to_status", value)
-			} else if value.Valid {
-				s.team_team_to_status = new(int)
-				*s.team_team_to_status = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field team_team_to_status", values[i])
+			} else if value != nil {
+				s.team_team_to_status = value
 			}
 		}
 	}

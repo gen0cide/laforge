@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // ScriptCreate is the builder for creating a Script entity.
@@ -106,15 +107,21 @@ func (sc *ScriptCreate) SetTags(m map[string]string) *ScriptCreate {
 	return sc
 }
 
+// SetID sets the "id" field.
+func (sc *ScriptCreate) SetID(u uuid.UUID) *ScriptCreate {
+	sc.mutation.SetID(u)
+	return sc
+}
+
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
-func (sc *ScriptCreate) AddScriptToUserIDs(ids ...int) *ScriptCreate {
+func (sc *ScriptCreate) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptCreate {
 	sc.mutation.AddScriptToUserIDs(ids...)
 	return sc
 }
 
 // AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -122,14 +129,14 @@ func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
 }
 
 // AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
-func (sc *ScriptCreate) AddScriptToFindingIDs(ids ...int) *ScriptCreate {
+func (sc *ScriptCreate) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptCreate {
 	sc.mutation.AddScriptToFindingIDs(ids...)
 	return sc
 }
 
 // AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -137,13 +144,13 @@ func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
 }
 
 // SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
-func (sc *ScriptCreate) SetScriptToEnvironmentID(id int) *ScriptCreate {
+func (sc *ScriptCreate) SetScriptToEnvironmentID(id uuid.UUID) *ScriptCreate {
 	sc.mutation.SetScriptToEnvironmentID(id)
 	return sc
 }
 
 // SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (sc *ScriptCreate) SetNillableScriptToEnvironmentID(id *int) *ScriptCreate {
+func (sc *ScriptCreate) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptCreate {
 	if id != nil {
 		sc = sc.SetScriptToEnvironmentID(*id)
 	}
@@ -166,6 +173,7 @@ func (sc *ScriptCreate) Save(ctx context.Context) (*Script, error) {
 		err  error
 		node *Script
 	)
+	sc.defaults()
 	if len(sc.hooks) == 0 {
 		if err = sc.check(); err != nil {
 			return nil, err
@@ -202,6 +210,14 @@ func (sc *ScriptCreate) SaveX(ctx context.Context) *Script {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (sc *ScriptCreate) defaults() {
+	if _, ok := sc.mutation.ID(); !ok {
+		v := script.DefaultID()
+		sc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -259,8 +275,6 @@ func (sc *ScriptCreate) sqlSave(ctx context.Context) (*Script, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -270,11 +284,15 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: script.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := sc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -396,7 +414,7 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -415,7 +433,7 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -434,7 +452,7 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -462,6 +480,7 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ScriptMutation)
 				if !ok {
@@ -487,8 +506,6 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

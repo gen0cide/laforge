@@ -19,6 +19,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // HostQuery is the builder for querying Host entities.
@@ -230,8 +231,8 @@ func (hq *HostQuery) FirstX(ctx context.Context) *Host {
 
 // FirstID returns the first Host ID from the query.
 // Returns a *NotFoundError when no Host ID was found.
-func (hq *HostQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (hq *HostQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = hq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -243,7 +244,7 @@ func (hq *HostQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (hq *HostQuery) FirstIDX(ctx context.Context) int {
+func (hq *HostQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := hq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -281,8 +282,8 @@ func (hq *HostQuery) OnlyX(ctx context.Context) *Host {
 // OnlyID is like Only, but returns the only Host ID in the query.
 // Returns a *NotSingularError when exactly one Host ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (hq *HostQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (hq *HostQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = hq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -298,7 +299,7 @@ func (hq *HostQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (hq *HostQuery) OnlyIDX(ctx context.Context) int {
+func (hq *HostQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := hq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -324,8 +325,8 @@ func (hq *HostQuery) AllX(ctx context.Context) []*Host {
 }
 
 // IDs executes the query and returns a list of Host IDs.
-func (hq *HostQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (hq *HostQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := hq.Select(host.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -333,7 +334,7 @@ func (hq *HostQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (hq *HostQuery) IDsX(ctx context.Context) []int {
+func (hq *HostQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := hq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -568,7 +569,7 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withHostToDisk; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Host)
+		nodeids := make(map[uuid.UUID]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -596,7 +597,7 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withHostToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Host)
+		nodeids := make(map[uuid.UUID]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -624,8 +625,8 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 	}
 
 	if query := hq.withHostToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Host)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Host)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_host == nil {
 				continue
@@ -654,15 +655,15 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withHostToIncludedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Host, len(nodes))
+		ids := make(map[uuid.UUID]*Host, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.HostToIncludedNetwork = []*IncludedNetwork{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*Host)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*Host)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -674,19 +675,19 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 				s.Where(sql.InValues(host.HostToIncludedNetworkPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -719,7 +720,7 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withDependOnHostToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Host)
+		nodeids := make(map[uuid.UUID]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -748,7 +749,7 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 
 	if query := hq.withDependByHostToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Host)
+		nodeids := make(map[uuid.UUID]*Host)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -797,7 +798,7 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   host.Table,
 			Columns: host.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		},

@@ -9,13 +9,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/google/uuid"
 )
 
 // Disk is the model entity for the Disk schema.
 type Disk struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Size holds the value of the "size" field.
 	Size int `json:"size,omitempty" hcl:"size,attr"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -26,7 +27,7 @@ type Disk struct {
 	// DiskToHost holds the value of the DiskToHost edge.
 	HCLDiskToHost *Host `json:"DiskToHost,omitempty"`
 	//
-	host_host_to_disk *int
+	host_host_to_disk *uuid.UUID
 }
 
 // DiskEdges holds the relations/edges for other nodes in the graph.
@@ -57,10 +58,12 @@ func (*Disk) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case disk.FieldID, disk.FieldSize:
+		case disk.FieldSize:
 			values[i] = new(sql.NullInt64)
+		case disk.FieldID:
+			values[i] = new(uuid.UUID)
 		case disk.ForeignKeys[0]: // host_host_to_disk
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Disk", columns[i])
 		}
@@ -77,11 +80,11 @@ func (d *Disk) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case disk.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				d.ID = *value
 			}
-			d.ID = int(value.Int64)
 		case disk.FieldSize:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field size", values[i])
@@ -89,11 +92,10 @@ func (d *Disk) assignValues(columns []string, values []interface{}) error {
 				d.Size = int(value.Int64)
 			}
 		case disk.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field host_host_to_disk", value)
-			} else if value.Valid {
-				d.host_host_to_disk = new(int)
-				*d.host_host_to_disk = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field host_host_to_disk", values[i])
+			} else if value != nil {
+				d.host_host_to_disk = value
 			}
 		}
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // PlanCreate is the builder for creating a Plan entity.
@@ -37,20 +38,26 @@ func (pc *PlanCreate) SetType(pl plan.Type) *PlanCreate {
 }
 
 // SetBuildID sets the "build_id" field.
-func (pc *PlanCreate) SetBuildID(i int) *PlanCreate {
-	pc.mutation.SetBuildID(i)
+func (pc *PlanCreate) SetBuildID(s string) *PlanCreate {
+	pc.mutation.SetBuildID(s)
+	return pc
+}
+
+// SetID sets the "id" field.
+func (pc *PlanCreate) SetID(u uuid.UUID) *PlanCreate {
+	pc.mutation.SetID(u)
 	return pc
 }
 
 // AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
-func (pc *PlanCreate) AddPrevPlanIDs(ids ...int) *PlanCreate {
+func (pc *PlanCreate) AddPrevPlanIDs(ids ...uuid.UUID) *PlanCreate {
 	pc.mutation.AddPrevPlanIDs(ids...)
 	return pc
 }
 
 // AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
 func (pc *PlanCreate) AddPrevPlan(p ...*Plan) *PlanCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -58,14 +65,14 @@ func (pc *PlanCreate) AddPrevPlan(p ...*Plan) *PlanCreate {
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
-func (pc *PlanCreate) AddNextPlanIDs(ids ...int) *PlanCreate {
+func (pc *PlanCreate) AddNextPlanIDs(ids ...uuid.UUID) *PlanCreate {
 	pc.mutation.AddNextPlanIDs(ids...)
 	return pc
 }
 
 // AddNextPlan adds the "NextPlan" edges to the Plan entity.
 func (pc *PlanCreate) AddNextPlan(p ...*Plan) *PlanCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -73,13 +80,13 @@ func (pc *PlanCreate) AddNextPlan(p ...*Plan) *PlanCreate {
 }
 
 // SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
-func (pc *PlanCreate) SetPlanToBuildID(id int) *PlanCreate {
+func (pc *PlanCreate) SetPlanToBuildID(id uuid.UUID) *PlanCreate {
 	pc.mutation.SetPlanToBuildID(id)
 	return pc
 }
 
 // SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePlanToBuildID(id *int) *PlanCreate {
+func (pc *PlanCreate) SetNillablePlanToBuildID(id *uuid.UUID) *PlanCreate {
 	if id != nil {
 		pc = pc.SetPlanToBuildID(*id)
 	}
@@ -92,13 +99,13 @@ func (pc *PlanCreate) SetPlanToBuild(b *Build) *PlanCreate {
 }
 
 // SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
-func (pc *PlanCreate) SetPlanToTeamID(id int) *PlanCreate {
+func (pc *PlanCreate) SetPlanToTeamID(id uuid.UUID) *PlanCreate {
 	pc.mutation.SetPlanToTeamID(id)
 	return pc
 }
 
 // SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePlanToTeamID(id *int) *PlanCreate {
+func (pc *PlanCreate) SetNillablePlanToTeamID(id *uuid.UUID) *PlanCreate {
 	if id != nil {
 		pc = pc.SetPlanToTeamID(*id)
 	}
@@ -111,13 +118,13 @@ func (pc *PlanCreate) SetPlanToTeam(t *Team) *PlanCreate {
 }
 
 // SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (pc *PlanCreate) SetPlanToProvisionedNetworkID(id int) *PlanCreate {
+func (pc *PlanCreate) SetPlanToProvisionedNetworkID(id uuid.UUID) *PlanCreate {
 	pc.mutation.SetPlanToProvisionedNetworkID(id)
 	return pc
 }
 
 // SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePlanToProvisionedNetworkID(id *int) *PlanCreate {
+func (pc *PlanCreate) SetNillablePlanToProvisionedNetworkID(id *uuid.UUID) *PlanCreate {
 	if id != nil {
 		pc = pc.SetPlanToProvisionedNetworkID(*id)
 	}
@@ -130,13 +137,13 @@ func (pc *PlanCreate) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *PlanCr
 }
 
 // SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (pc *PlanCreate) SetPlanToProvisionedHostID(id int) *PlanCreate {
+func (pc *PlanCreate) SetPlanToProvisionedHostID(id uuid.UUID) *PlanCreate {
 	pc.mutation.SetPlanToProvisionedHostID(id)
 	return pc
 }
 
 // SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePlanToProvisionedHostID(id *int) *PlanCreate {
+func (pc *PlanCreate) SetNillablePlanToProvisionedHostID(id *uuid.UUID) *PlanCreate {
 	if id != nil {
 		pc = pc.SetPlanToProvisionedHostID(*id)
 	}
@@ -149,13 +156,13 @@ func (pc *PlanCreate) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanCreate {
 }
 
 // SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (pc *PlanCreate) SetPlanToProvisioningStepID(id int) *PlanCreate {
+func (pc *PlanCreate) SetPlanToProvisioningStepID(id uuid.UUID) *PlanCreate {
 	pc.mutation.SetPlanToProvisioningStepID(id)
 	return pc
 }
 
 // SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (pc *PlanCreate) SetNillablePlanToProvisioningStepID(id *int) *PlanCreate {
+func (pc *PlanCreate) SetNillablePlanToProvisioningStepID(id *uuid.UUID) *PlanCreate {
 	if id != nil {
 		pc = pc.SetPlanToProvisioningStepID(*id)
 	}
@@ -178,6 +185,7 @@ func (pc *PlanCreate) Save(ctx context.Context) (*Plan, error) {
 		err  error
 		node *Plan
 	)
+	pc.defaults()
 	if len(pc.hooks) == 0 {
 		if err = pc.check(); err != nil {
 			return nil, err
@@ -216,6 +224,14 @@ func (pc *PlanCreate) SaveX(ctx context.Context) *Plan {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (pc *PlanCreate) defaults() {
+	if _, ok := pc.mutation.ID(); !ok {
+		v := plan.DefaultID()
+		pc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pc *PlanCreate) check() error {
 	if _, ok := pc.mutation.StepNumber(); !ok {
@@ -243,8 +259,6 @@ func (pc *PlanCreate) sqlSave(ctx context.Context) (*Plan, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -254,11 +268,15 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: plan.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: plan.FieldID,
 			},
 		}
 	)
+	if id, ok := pc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := pc.mutation.StepNumber(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -277,7 +295,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.BuildID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: plan.FieldBuildID,
 		})
@@ -292,7 +310,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -311,7 +329,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -330,7 +348,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -350,7 +368,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -369,7 +387,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -388,7 +406,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -407,7 +425,7 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -434,6 +452,7 @@ func (pcb *PlanCreateBulk) Save(ctx context.Context) ([]*Plan, error) {
 	for i := range pcb.builders {
 		func(i int, root context.Context) {
 			builder := pcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PlanMutation)
 				if !ok {
@@ -459,8 +478,6 @@ func (pcb *PlanCreateBulk) Save(ctx context.Context) ([]*Plan, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

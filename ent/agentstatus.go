@@ -8,13 +8,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/google/uuid"
 )
 
 // AgentStatus is the model entity for the AgentStatus schema.
 type AgentStatus struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ClientID holds the value of the "ClientID" field.
 	ClientID string `json:"ClientID,omitempty"`
 	// Hostname holds the value of the "Hostname" field.
@@ -79,10 +80,12 @@ func (*AgentStatus) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case agentstatus.FieldLoad1, agentstatus.FieldLoad5, agentstatus.FieldLoad15:
 			values[i] = new(sql.NullFloat64)
-		case agentstatus.FieldID, agentstatus.FieldUpTime, agentstatus.FieldBootTime, agentstatus.FieldNumProcs, agentstatus.FieldTotalMem, agentstatus.FieldFreeMem, agentstatus.FieldUsedMem, agentstatus.FieldTimestamp:
+		case agentstatus.FieldUpTime, agentstatus.FieldBootTime, agentstatus.FieldNumProcs, agentstatus.FieldTotalMem, agentstatus.FieldFreeMem, agentstatus.FieldUsedMem, agentstatus.FieldTimestamp:
 			values[i] = new(sql.NullInt64)
 		case agentstatus.FieldClientID, agentstatus.FieldHostname, agentstatus.FieldOs, agentstatus.FieldHostID:
 			values[i] = new(sql.NullString)
+		case agentstatus.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AgentStatus", columns[i])
 		}
@@ -99,11 +102,11 @@ func (as *AgentStatus) assignValues(columns []string, values []interface{}) erro
 	for i := range columns {
 		switch columns[i] {
 		case agentstatus.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				as.ID = *value
 			}
-			as.ID = int(value.Int64)
 		case agentstatus.FieldClientID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field ClientID", values[i])

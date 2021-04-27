@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // ScriptQuery is the builder for querying Script entities.
@@ -159,8 +160,8 @@ func (sq *ScriptQuery) FirstX(ctx context.Context) *Script {
 
 // FirstID returns the first Script ID from the query.
 // Returns a *NotFoundError when no Script ID was found.
-func (sq *ScriptQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *ScriptQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -172,7 +173,7 @@ func (sq *ScriptQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *ScriptQuery) FirstIDX(ctx context.Context) int {
+func (sq *ScriptQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -210,8 +211,8 @@ func (sq *ScriptQuery) OnlyX(ctx context.Context) *Script {
 // OnlyID is like Only, but returns the only Script ID in the query.
 // Returns a *NotSingularError when exactly one Script ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *ScriptQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *ScriptQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -227,7 +228,7 @@ func (sq *ScriptQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *ScriptQuery) OnlyIDX(ctx context.Context) int {
+func (sq *ScriptQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -253,8 +254,8 @@ func (sq *ScriptQuery) AllX(ctx context.Context) []*Script {
 }
 
 // IDs executes the query and returns a list of Script IDs.
-func (sq *ScriptQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (sq *ScriptQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := sq.Select(script.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -262,7 +263,7 @@ func (sq *ScriptQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *ScriptQuery) IDsX(ctx context.Context) []int {
+func (sq *ScriptQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -458,7 +459,7 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 
 	if query := sq.withScriptToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Script)
+		nodeids := make(map[uuid.UUID]*Script)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -487,7 +488,7 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 
 	if query := sq.withScriptToFinding; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Script)
+		nodeids := make(map[uuid.UUID]*Script)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -515,8 +516,8 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 	}
 
 	if query := sq.withScriptToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Script)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Script)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_script == nil {
 				continue
@@ -565,7 +566,7 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   script.Table,
 			Columns: script.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},

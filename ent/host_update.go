@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // HostUpdate is the builder for updating Host entities.
@@ -129,13 +130,13 @@ func (hu *HostUpdate) SetTags(m map[string]string) *HostUpdate {
 }
 
 // SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID.
-func (hu *HostUpdate) SetHostToDiskID(id int) *HostUpdate {
+func (hu *HostUpdate) SetHostToDiskID(id uuid.UUID) *HostUpdate {
 	hu.mutation.SetHostToDiskID(id)
 	return hu
 }
 
 // SetNillableHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID if the given value is not nil.
-func (hu *HostUpdate) SetNillableHostToDiskID(id *int) *HostUpdate {
+func (hu *HostUpdate) SetNillableHostToDiskID(id *uuid.UUID) *HostUpdate {
 	if id != nil {
 		hu = hu.SetHostToDiskID(*id)
 	}
@@ -148,14 +149,14 @@ func (hu *HostUpdate) SetHostToDisk(d *Disk) *HostUpdate {
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
-func (hu *HostUpdate) AddHostToUserIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) AddHostToUserIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.AddHostToUserIDs(ids...)
 	return hu
 }
 
 // AddHostToUser adds the "HostToUser" edges to the User entity.
 func (hu *HostUpdate) AddHostToUser(u ...*User) *HostUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -163,13 +164,13 @@ func (hu *HostUpdate) AddHostToUser(u ...*User) *HostUpdate {
 }
 
 // SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID.
-func (hu *HostUpdate) SetHostToEnvironmentID(id int) *HostUpdate {
+func (hu *HostUpdate) SetHostToEnvironmentID(id uuid.UUID) *HostUpdate {
 	hu.mutation.SetHostToEnvironmentID(id)
 	return hu
 }
 
 // SetNillableHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (hu *HostUpdate) SetNillableHostToEnvironmentID(id *int) *HostUpdate {
+func (hu *HostUpdate) SetNillableHostToEnvironmentID(id *uuid.UUID) *HostUpdate {
 	if id != nil {
 		hu = hu.SetHostToEnvironmentID(*id)
 	}
@@ -182,14 +183,14 @@ func (hu *HostUpdate) SetHostToEnvironment(e *Environment) *HostUpdate {
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (hu *HostUpdate) AddHostToIncludedNetworkIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) AddHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.AddHostToIncludedNetworkIDs(ids...)
 	return hu
 }
 
 // AddHostToIncludedNetwork adds the "HostToIncludedNetwork" edges to the IncludedNetwork entity.
 func (hu *HostUpdate) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostUpdate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -197,14 +198,14 @@ func (hu *HostUpdate) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostUpdat
 }
 
 // AddDependOnHostToHostDependencyIDs adds the "DependOnHostToHostDependency" edge to the HostDependency entity by IDs.
-func (hu *HostUpdate) AddDependOnHostToHostDependencyIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) AddDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.AddDependOnHostToHostDependencyIDs(ids...)
 	return hu
 }
 
 // AddDependOnHostToHostDependency adds the "DependOnHostToHostDependency" edges to the HostDependency entity.
 func (hu *HostUpdate) AddDependOnHostToHostDependency(h ...*HostDependency) *HostUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -212,14 +213,14 @@ func (hu *HostUpdate) AddDependOnHostToHostDependency(h ...*HostDependency) *Hos
 }
 
 // AddDependByHostToHostDependencyIDs adds the "DependByHostToHostDependency" edge to the HostDependency entity by IDs.
-func (hu *HostUpdate) AddDependByHostToHostDependencyIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) AddDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.AddDependByHostToHostDependencyIDs(ids...)
 	return hu
 }
 
 // AddDependByHostToHostDependency adds the "DependByHostToHostDependency" edges to the HostDependency entity.
 func (hu *HostUpdate) AddDependByHostToHostDependency(h ...*HostDependency) *HostUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -244,14 +245,14 @@ func (hu *HostUpdate) ClearHostToUser() *HostUpdate {
 }
 
 // RemoveHostToUserIDs removes the "HostToUser" edge to User entities by IDs.
-func (hu *HostUpdate) RemoveHostToUserIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) RemoveHostToUserIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.RemoveHostToUserIDs(ids...)
 	return hu
 }
 
 // RemoveHostToUser removes "HostToUser" edges to User entities.
 func (hu *HostUpdate) RemoveHostToUser(u ...*User) *HostUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -271,14 +272,14 @@ func (hu *HostUpdate) ClearHostToIncludedNetwork() *HostUpdate {
 }
 
 // RemoveHostToIncludedNetworkIDs removes the "HostToIncludedNetwork" edge to IncludedNetwork entities by IDs.
-func (hu *HostUpdate) RemoveHostToIncludedNetworkIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) RemoveHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.RemoveHostToIncludedNetworkIDs(ids...)
 	return hu
 }
 
 // RemoveHostToIncludedNetwork removes "HostToIncludedNetwork" edges to IncludedNetwork entities.
 func (hu *HostUpdate) RemoveHostToIncludedNetwork(i ...*IncludedNetwork) *HostUpdate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -292,14 +293,14 @@ func (hu *HostUpdate) ClearDependOnHostToHostDependency() *HostUpdate {
 }
 
 // RemoveDependOnHostToHostDependencyIDs removes the "DependOnHostToHostDependency" edge to HostDependency entities by IDs.
-func (hu *HostUpdate) RemoveDependOnHostToHostDependencyIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) RemoveDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.RemoveDependOnHostToHostDependencyIDs(ids...)
 	return hu
 }
 
 // RemoveDependOnHostToHostDependency removes "DependOnHostToHostDependency" edges to HostDependency entities.
 func (hu *HostUpdate) RemoveDependOnHostToHostDependency(h ...*HostDependency) *HostUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -313,14 +314,14 @@ func (hu *HostUpdate) ClearDependByHostToHostDependency() *HostUpdate {
 }
 
 // RemoveDependByHostToHostDependencyIDs removes the "DependByHostToHostDependency" edge to HostDependency entities by IDs.
-func (hu *HostUpdate) RemoveDependByHostToHostDependencyIDs(ids ...int) *HostUpdate {
+func (hu *HostUpdate) RemoveDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdate {
 	hu.mutation.RemoveDependByHostToHostDependencyIDs(ids...)
 	return hu
 }
 
 // RemoveDependByHostToHostDependency removes "DependByHostToHostDependency" edges to HostDependency entities.
 func (hu *HostUpdate) RemoveDependByHostToHostDependency(h ...*HostDependency) *HostUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -384,7 +385,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   host.Table,
 			Columns: host.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		},
@@ -516,7 +517,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -532,7 +533,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -551,7 +552,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -567,7 +568,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -586,7 +587,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -605,7 +606,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -621,7 +622,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -640,7 +641,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -656,7 +657,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -675,7 +676,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -694,7 +695,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -710,7 +711,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -729,7 +730,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -748,7 +749,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -764,7 +765,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -783,7 +784,7 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -910,13 +911,13 @@ func (huo *HostUpdateOne) SetTags(m map[string]string) *HostUpdateOne {
 }
 
 // SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID.
-func (huo *HostUpdateOne) SetHostToDiskID(id int) *HostUpdateOne {
+func (huo *HostUpdateOne) SetHostToDiskID(id uuid.UUID) *HostUpdateOne {
 	huo.mutation.SetHostToDiskID(id)
 	return huo
 }
 
 // SetNillableHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID if the given value is not nil.
-func (huo *HostUpdateOne) SetNillableHostToDiskID(id *int) *HostUpdateOne {
+func (huo *HostUpdateOne) SetNillableHostToDiskID(id *uuid.UUID) *HostUpdateOne {
 	if id != nil {
 		huo = huo.SetHostToDiskID(*id)
 	}
@@ -929,14 +930,14 @@ func (huo *HostUpdateOne) SetHostToDisk(d *Disk) *HostUpdateOne {
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
-func (huo *HostUpdateOne) AddHostToUserIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) AddHostToUserIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.AddHostToUserIDs(ids...)
 	return huo
 }
 
 // AddHostToUser adds the "HostToUser" edges to the User entity.
 func (huo *HostUpdateOne) AddHostToUser(u ...*User) *HostUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -944,13 +945,13 @@ func (huo *HostUpdateOne) AddHostToUser(u ...*User) *HostUpdateOne {
 }
 
 // SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID.
-func (huo *HostUpdateOne) SetHostToEnvironmentID(id int) *HostUpdateOne {
+func (huo *HostUpdateOne) SetHostToEnvironmentID(id uuid.UUID) *HostUpdateOne {
 	huo.mutation.SetHostToEnvironmentID(id)
 	return huo
 }
 
 // SetNillableHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (huo *HostUpdateOne) SetNillableHostToEnvironmentID(id *int) *HostUpdateOne {
+func (huo *HostUpdateOne) SetNillableHostToEnvironmentID(id *uuid.UUID) *HostUpdateOne {
 	if id != nil {
 		huo = huo.SetHostToEnvironmentID(*id)
 	}
@@ -963,14 +964,14 @@ func (huo *HostUpdateOne) SetHostToEnvironment(e *Environment) *HostUpdateOne {
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (huo *HostUpdateOne) AddHostToIncludedNetworkIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) AddHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.AddHostToIncludedNetworkIDs(ids...)
 	return huo
 }
 
 // AddHostToIncludedNetwork adds the "HostToIncludedNetwork" edges to the IncludedNetwork entity.
 func (huo *HostUpdateOne) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostUpdateOne {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -978,14 +979,14 @@ func (huo *HostUpdateOne) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostU
 }
 
 // AddDependOnHostToHostDependencyIDs adds the "DependOnHostToHostDependency" edge to the HostDependency entity by IDs.
-func (huo *HostUpdateOne) AddDependOnHostToHostDependencyIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) AddDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.AddDependOnHostToHostDependencyIDs(ids...)
 	return huo
 }
 
 // AddDependOnHostToHostDependency adds the "DependOnHostToHostDependency" edges to the HostDependency entity.
 func (huo *HostUpdateOne) AddDependOnHostToHostDependency(h ...*HostDependency) *HostUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -993,14 +994,14 @@ func (huo *HostUpdateOne) AddDependOnHostToHostDependency(h ...*HostDependency) 
 }
 
 // AddDependByHostToHostDependencyIDs adds the "DependByHostToHostDependency" edge to the HostDependency entity by IDs.
-func (huo *HostUpdateOne) AddDependByHostToHostDependencyIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) AddDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.AddDependByHostToHostDependencyIDs(ids...)
 	return huo
 }
 
 // AddDependByHostToHostDependency adds the "DependByHostToHostDependency" edges to the HostDependency entity.
 func (huo *HostUpdateOne) AddDependByHostToHostDependency(h ...*HostDependency) *HostUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -1025,14 +1026,14 @@ func (huo *HostUpdateOne) ClearHostToUser() *HostUpdateOne {
 }
 
 // RemoveHostToUserIDs removes the "HostToUser" edge to User entities by IDs.
-func (huo *HostUpdateOne) RemoveHostToUserIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) RemoveHostToUserIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.RemoveHostToUserIDs(ids...)
 	return huo
 }
 
 // RemoveHostToUser removes "HostToUser" edges to User entities.
 func (huo *HostUpdateOne) RemoveHostToUser(u ...*User) *HostUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -1052,14 +1053,14 @@ func (huo *HostUpdateOne) ClearHostToIncludedNetwork() *HostUpdateOne {
 }
 
 // RemoveHostToIncludedNetworkIDs removes the "HostToIncludedNetwork" edge to IncludedNetwork entities by IDs.
-func (huo *HostUpdateOne) RemoveHostToIncludedNetworkIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) RemoveHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.RemoveHostToIncludedNetworkIDs(ids...)
 	return huo
 }
 
 // RemoveHostToIncludedNetwork removes "HostToIncludedNetwork" edges to IncludedNetwork entities.
 func (huo *HostUpdateOne) RemoveHostToIncludedNetwork(i ...*IncludedNetwork) *HostUpdateOne {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -1073,14 +1074,14 @@ func (huo *HostUpdateOne) ClearDependOnHostToHostDependency() *HostUpdateOne {
 }
 
 // RemoveDependOnHostToHostDependencyIDs removes the "DependOnHostToHostDependency" edge to HostDependency entities by IDs.
-func (huo *HostUpdateOne) RemoveDependOnHostToHostDependencyIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) RemoveDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.RemoveDependOnHostToHostDependencyIDs(ids...)
 	return huo
 }
 
 // RemoveDependOnHostToHostDependency removes "DependOnHostToHostDependency" edges to HostDependency entities.
 func (huo *HostUpdateOne) RemoveDependOnHostToHostDependency(h ...*HostDependency) *HostUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -1094,14 +1095,14 @@ func (huo *HostUpdateOne) ClearDependByHostToHostDependency() *HostUpdateOne {
 }
 
 // RemoveDependByHostToHostDependencyIDs removes the "DependByHostToHostDependency" edge to HostDependency entities by IDs.
-func (huo *HostUpdateOne) RemoveDependByHostToHostDependencyIDs(ids ...int) *HostUpdateOne {
+func (huo *HostUpdateOne) RemoveDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostUpdateOne {
 	huo.mutation.RemoveDependByHostToHostDependencyIDs(ids...)
 	return huo
 }
 
 // RemoveDependByHostToHostDependency removes "DependByHostToHostDependency" edges to HostDependency entities.
 func (huo *HostUpdateOne) RemoveDependByHostToHostDependency(h ...*HostDependency) *HostUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -1172,7 +1173,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Table:   host.Table,
 			Columns: host.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		},
@@ -1321,7 +1322,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -1337,7 +1338,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -1356,7 +1357,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1372,7 +1373,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1391,7 +1392,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1410,7 +1411,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -1426,7 +1427,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -1445,7 +1446,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -1461,7 +1462,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -1480,7 +1481,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -1499,7 +1500,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -1515,7 +1516,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -1534,7 +1535,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -1553,7 +1554,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -1569,7 +1570,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -1588,7 +1589,7 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},

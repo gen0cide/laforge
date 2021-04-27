@@ -6,13 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
-	"sync/atomic"
 
 	"entgo.io/contrib/entgql"
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/build"
@@ -41,8 +36,8 @@ import (
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
-	"golang.org/x/sync/semaphore"
 )
 
 // Noder wraps the basic Node method.
@@ -52,10 +47,10 @@ type Noder interface {
 
 // Node in the graph.
 type Node struct {
-	ID     int      `json:"id,omitempty"`     // node id.
-	Type   string   `json:"type,omitempty"`   // node type.
-	Fields []*Field `json:"fields,omitempty"` // node fields.
-	Edges  []*Edge  `json:"edges,omitempty"`  // node edges.
+	ID     uuid.UUID `json:"id,omitempty"`     // node id.
+	Type   string    `json:"type,omitempty"`   // node type.
+	Fields []*Field  `json:"fields,omitempty"` // node fields.
+	Edges  []*Edge   `json:"edges,omitempty"`  // node edges.
 }
 
 // Field of a node.
@@ -67,9 +62,9 @@ type Field struct {
 
 // Edges between two nodes.
 type Edge struct {
-	Type string `json:"type,omitempty"` // edge type.
-	Name string `json:"name,omitempty"` // edge name.
-	IDs  []int  `json:"ids,omitempty"`  // node ids (where this edge point to).
+	Type string      `json:"type,omitempty"` // edge type.
+	Name string      `json:"name,omitempty"` // edge name.
+	IDs  []uuid.UUID `json:"ids,omitempty"`  // node ids (where this edge point to).
 }
 
 func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
@@ -196,9 +191,9 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedHost",
 		Name: "AgentStatusToProvisionedHost",
 	}
-	node.Edges[0].IDs, err = as.QueryAgentStatusToProvisionedHost().
+	err = as.QueryAgentStatusToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -225,9 +220,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Status",
 		Name: "BuildToStatus",
 	}
-	node.Edges[0].IDs, err = b.QueryBuildToStatus().
+	err = b.QueryBuildToStatus().
 		Select(status.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -235,9 +230,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "BuildToEnvironment",
 	}
-	node.Edges[1].IDs, err = b.QueryBuildToEnvironment().
+	err = b.QueryBuildToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -245,9 +240,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Competition",
 		Name: "BuildToCompetition",
 	}
-	node.Edges[2].IDs, err = b.QueryBuildToCompetition().
+	err = b.QueryBuildToCompetition().
 		Select(competition.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -255,9 +250,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedNetwork",
 		Name: "BuildToProvisionedNetwork",
 	}
-	node.Edges[3].IDs, err = b.QueryBuildToProvisionedNetwork().
+	err = b.QueryBuildToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -265,9 +260,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Team",
 		Name: "BuildToTeam",
 	}
-	node.Edges[4].IDs, err = b.QueryBuildToTeam().
+	err = b.QueryBuildToTeam().
 		Select(team.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -275,9 +270,9 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "BuildToPlan",
 	}
-	node.Edges[5].IDs, err = b.QueryBuildToPlan().
+	err = b.QueryBuildToPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -384,9 +379,9 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "CommandToUser",
 	}
-	node.Edges[0].IDs, err = c.QueryCommandToUser().
+	err = c.QueryCommandToUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -394,9 +389,9 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "CommandToEnvironment",
 	}
-	node.Edges[1].IDs, err = c.QueryCommandToEnvironment().
+	err = c.QueryCommandToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -447,9 +442,9 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DNS",
 		Name: "CompetitionToDNS",
 	}
-	node.Edges[0].IDs, err = c.QueryCompetitionToDNS().
+	err = c.QueryCompetitionToDNS().
 		Select(dns.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -457,9 +452,9 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "CompetitionToEnvironment",
 	}
-	node.Edges[1].IDs, err = c.QueryCompetitionToEnvironment().
+	err = c.QueryCompetitionToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -467,9 +462,9 @@ func (c *Competition) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Build",
 		Name: "CompetitionToBuild",
 	}
-	node.Edges[2].IDs, err = c.QueryCompetitionToBuild().
+	err = c.QueryCompetitionToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -536,9 +531,9 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "DNSToEnvironment",
 	}
-	node.Edges[0].IDs, err = d.QueryDNSToEnvironment().
+	err = d.QueryDNSToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -546,9 +541,9 @@ func (d *DNS) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Competition",
 		Name: "DNSToCompetition",
 	}
-	node.Edges[1].IDs, err = d.QueryDNSToCompetition().
+	err = d.QueryDNSToCompetition().
 		Select(competition.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -631,9 +626,9 @@ func (dr *DNSRecord) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "DNSRecordToEnvironment",
 	}
-	node.Edges[0].IDs, err = dr.QueryDNSRecordToEnvironment().
+	err = dr.QueryDNSRecordToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -660,9 +655,9 @@ func (d *Disk) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "DiskToHost",
 	}
-	node.Edges[0].IDs, err = d.QueryDiskToHost().
+	err = d.QueryDiskToHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -769,9 +764,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "EnvironmentToUser",
 	}
-	node.Edges[0].IDs, err = e.QueryEnvironmentToUser().
+	err = e.QueryEnvironmentToUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -779,9 +774,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "EnvironmentToHost",
 	}
-	node.Edges[1].IDs, err = e.QueryEnvironmentToHost().
+	err = e.QueryEnvironmentToHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -789,9 +784,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Competition",
 		Name: "EnvironmentToCompetition",
 	}
-	node.Edges[2].IDs, err = e.QueryEnvironmentToCompetition().
+	err = e.QueryEnvironmentToCompetition().
 		Select(competition.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -799,9 +794,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Identity",
 		Name: "EnvironmentToIdentity",
 	}
-	node.Edges[3].IDs, err = e.QueryEnvironmentToIdentity().
+	err = e.QueryEnvironmentToIdentity().
 		Select(identity.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -809,9 +804,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Command",
 		Name: "EnvironmentToCommand",
 	}
-	node.Edges[4].IDs, err = e.QueryEnvironmentToCommand().
+	err = e.QueryEnvironmentToCommand().
 		Select(command.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -819,9 +814,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Script",
 		Name: "EnvironmentToScript",
 	}
-	node.Edges[5].IDs, err = e.QueryEnvironmentToScript().
+	err = e.QueryEnvironmentToScript().
 		Select(script.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -829,9 +824,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileDownload",
 		Name: "EnvironmentToFileDownload",
 	}
-	node.Edges[6].IDs, err = e.QueryEnvironmentToFileDownload().
+	err = e.QueryEnvironmentToFileDownload().
 		Select(filedownload.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -839,9 +834,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileDelete",
 		Name: "EnvironmentToFileDelete",
 	}
-	node.Edges[7].IDs, err = e.QueryEnvironmentToFileDelete().
+	err = e.QueryEnvironmentToFileDelete().
 		Select(filedelete.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -849,9 +844,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileExtract",
 		Name: "EnvironmentToFileExtract",
 	}
-	node.Edges[8].IDs, err = e.QueryEnvironmentToFileExtract().
+	err = e.QueryEnvironmentToFileExtract().
 		Select(fileextract.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -859,9 +854,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "IncludedNetwork",
 		Name: "EnvironmentToIncludedNetwork",
 	}
-	node.Edges[9].IDs, err = e.QueryEnvironmentToIncludedNetwork().
+	err = e.QueryEnvironmentToIncludedNetwork().
 		Select(includednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[9].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -869,9 +864,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Finding",
 		Name: "EnvironmentToFinding",
 	}
-	node.Edges[10].IDs, err = e.QueryEnvironmentToFinding().
+	err = e.QueryEnvironmentToFinding().
 		Select(finding.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[10].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -879,9 +874,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DNSRecord",
 		Name: "EnvironmentToDNSRecord",
 	}
-	node.Edges[11].IDs, err = e.QueryEnvironmentToDNSRecord().
+	err = e.QueryEnvironmentToDNSRecord().
 		Select(dnsrecord.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[11].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -889,9 +884,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DNS",
 		Name: "EnvironmentToDNS",
 	}
-	node.Edges[12].IDs, err = e.QueryEnvironmentToDNS().
+	err = e.QueryEnvironmentToDNS().
 		Select(dns.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[12].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -899,9 +894,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Network",
 		Name: "EnvironmentToNetwork",
 	}
-	node.Edges[13].IDs, err = e.QueryEnvironmentToNetwork().
+	err = e.QueryEnvironmentToNetwork().
 		Select(network.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[13].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -909,9 +904,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "HostDependency",
 		Name: "EnvironmentToHostDependency",
 	}
-	node.Edges[14].IDs, err = e.QueryEnvironmentToHostDependency().
+	err = e.QueryEnvironmentToHostDependency().
 		Select(hostdependency.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[14].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -919,9 +914,9 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Build",
 		Name: "EnvironmentToBuild",
 	}
-	node.Edges[15].IDs, err = e.QueryEnvironmentToBuild().
+	err = e.QueryEnvironmentToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[15].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -964,9 +959,9 @@ func (fd *FileDelete) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "FileDeleteToEnvironment",
 	}
-	node.Edges[0].IDs, err = fd.QueryFileDeleteToEnvironment().
+	err = fd.QueryFileDeleteToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1065,9 +1060,9 @@ func (fd *FileDownload) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "FileDownloadToEnvironment",
 	}
-	node.Edges[0].IDs, err = fd.QueryFileDownloadToEnvironment().
+	err = fd.QueryFileDownloadToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1126,9 +1121,9 @@ func (fe *FileExtract) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "FileExtractToEnvironment",
 	}
-	node.Edges[0].IDs, err = fe.QueryFileExtractToEnvironment().
+	err = fe.QueryFileExtractToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1187,9 +1182,9 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "FindingToUser",
 	}
-	node.Edges[0].IDs, err = f.QueryFindingToUser().
+	err = f.QueryFindingToUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1197,9 +1192,9 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "FindingToHost",
 	}
-	node.Edges[1].IDs, err = f.QueryFindingToHost().
+	err = f.QueryFindingToHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1207,9 +1202,9 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Script",
 		Name: "FindingToScript",
 	}
-	node.Edges[2].IDs, err = f.QueryFindingToScript().
+	err = f.QueryFindingToScript().
 		Select(script.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1217,9 +1212,9 @@ func (f *Finding) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "FindingToEnvironment",
 	}
-	node.Edges[3].IDs, err = f.QueryFindingToEnvironment().
+	err = f.QueryFindingToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1262,9 +1257,9 @@ func (gfm *GinFileMiddleware) Node(ctx context.Context) (node *Node, err error) 
 		Type: "ProvisionedHost",
 		Name: "GinFileMiddlewareToProvisionedHost",
 	}
-	node.Edges[0].IDs, err = gfm.QueryGinFileMiddlewareToProvisionedHost().
+	err = gfm.QueryGinFileMiddlewareToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1272,9 +1267,9 @@ func (gfm *GinFileMiddleware) Node(ctx context.Context) (node *Node, err error) 
 		Type: "ProvisioningStep",
 		Name: "GinFileMiddlewareToProvisioningStep",
 	}
-	node.Edges[1].IDs, err = gfm.QueryGinFileMiddlewareToProvisioningStep().
+	err = gfm.QueryGinFileMiddlewareToProvisioningStep().
 		Select(provisioningstep.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1405,9 +1400,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Disk",
 		Name: "HostToDisk",
 	}
-	node.Edges[0].IDs, err = h.QueryHostToDisk().
+	err = h.QueryHostToDisk().
 		Select(disk.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1415,9 +1410,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "HostToUser",
 	}
-	node.Edges[1].IDs, err = h.QueryHostToUser().
+	err = h.QueryHostToUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1425,9 +1420,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "HostToEnvironment",
 	}
-	node.Edges[2].IDs, err = h.QueryHostToEnvironment().
+	err = h.QueryHostToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1435,9 +1430,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "IncludedNetwork",
 		Name: "HostToIncludedNetwork",
 	}
-	node.Edges[3].IDs, err = h.QueryHostToIncludedNetwork().
+	err = h.QueryHostToIncludedNetwork().
 		Select(includednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1445,9 +1440,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "HostDependency",
 		Name: "DependOnHostToHostDependency",
 	}
-	node.Edges[4].IDs, err = h.QueryDependOnHostToHostDependency().
+	err = h.QueryDependOnHostToHostDependency().
 		Select(hostdependency.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1455,9 +1450,9 @@ func (h *Host) Node(ctx context.Context) (node *Node, err error) {
 		Type: "HostDependency",
 		Name: "DependByHostToHostDependency",
 	}
-	node.Edges[5].IDs, err = h.QueryDependByHostToHostDependency().
+	err = h.QueryDependByHostToHostDependency().
 		Select(hostdependency.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1492,9 +1487,9 @@ func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "HostDependencyToDependOnHost",
 	}
-	node.Edges[0].IDs, err = hd.QueryHostDependencyToDependOnHost().
+	err = hd.QueryHostDependencyToDependOnHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1502,9 +1497,9 @@ func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "HostDependencyToDependByHost",
 	}
-	node.Edges[1].IDs, err = hd.QueryHostDependencyToDependByHost().
+	err = hd.QueryHostDependencyToDependByHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1512,9 +1507,9 @@ func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Network",
 		Name: "HostDependencyToNetwork",
 	}
-	node.Edges[2].IDs, err = hd.QueryHostDependencyToNetwork().
+	err = hd.QueryHostDependencyToNetwork().
 		Select(network.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1522,9 +1517,9 @@ func (hd *HostDependency) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "HostDependencyToEnvironment",
 	}
-	node.Edges[3].IDs, err = hd.QueryHostDependencyToEnvironment().
+	err = hd.QueryHostDependencyToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1615,9 +1610,9 @@ func (i *Identity) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "IdentityToEnvironment",
 	}
-	node.Edges[0].IDs, err = i.QueryIdentityToEnvironment().
+	err = i.QueryIdentityToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1652,9 +1647,9 @@ func (in *IncludedNetwork) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Tag",
 		Name: "IncludedNetworkToTag",
 	}
-	node.Edges[0].IDs, err = in.QueryIncludedNetworkToTag().
+	err = in.QueryIncludedNetworkToTag().
 		Select(tag.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1662,9 +1657,9 @@ func (in *IncludedNetwork) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "IncludedNetworkToHost",
 	}
-	node.Edges[1].IDs, err = in.QueryIncludedNetworkToHost().
+	err = in.QueryIncludedNetworkToHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1672,9 +1667,9 @@ func (in *IncludedNetwork) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Network",
 		Name: "IncludedNetworkToNetwork",
 	}
-	node.Edges[2].IDs, err = in.QueryIncludedNetworkToNetwork().
+	err = in.QueryIncludedNetworkToNetwork().
 		Select(network.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1682,9 +1677,9 @@ func (in *IncludedNetwork) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "IncludedNetworkToEnvironment",
 	}
-	node.Edges[3].IDs, err = in.QueryIncludedNetworkToEnvironment().
+	err = in.QueryIncludedNetworkToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1751,9 +1746,9 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "NetworkToEnvironment",
 	}
-	node.Edges[0].IDs, err = n.QueryNetworkToEnvironment().
+	err = n.QueryNetworkToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1761,9 +1756,9 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 		Type: "HostDependency",
 		Name: "NetworkToHostDependency",
 	}
-	node.Edges[1].IDs, err = n.QueryNetworkToHostDependency().
+	err = n.QueryNetworkToHostDependency().
 		Select(hostdependency.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1771,9 +1766,9 @@ func (n *Network) Node(ctx context.Context) (node *Node, err error) {
 		Type: "IncludedNetwork",
 		Name: "NetworkToIncludedNetwork",
 	}
-	node.Edges[2].IDs, err = n.QueryNetworkToIncludedNetwork().
+	err = n.QueryNetworkToIncludedNetwork().
 		Select(includednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1808,7 +1803,7 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
-		Type:  "int",
+		Type:  "string",
 		Name:  "build_id",
 		Value: string(buf),
 	}
@@ -1816,9 +1811,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "PrevPlan",
 	}
-	node.Edges[0].IDs, err = pl.QueryPrevPlan().
+	err = pl.QueryPrevPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1826,9 +1821,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "NextPlan",
 	}
-	node.Edges[1].IDs, err = pl.QueryNextPlan().
+	err = pl.QueryNextPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1836,9 +1831,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Build",
 		Name: "PlanToBuild",
 	}
-	node.Edges[2].IDs, err = pl.QueryPlanToBuild().
+	err = pl.QueryPlanToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1846,9 +1841,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Team",
 		Name: "PlanToTeam",
 	}
-	node.Edges[3].IDs, err = pl.QueryPlanToTeam().
+	err = pl.QueryPlanToTeam().
 		Select(team.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1856,9 +1851,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedNetwork",
 		Name: "PlanToProvisionedNetwork",
 	}
-	node.Edges[4].IDs, err = pl.QueryPlanToProvisionedNetwork().
+	err = pl.QueryPlanToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1866,9 +1861,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedHost",
 		Name: "PlanToProvisionedHost",
 	}
-	node.Edges[5].IDs, err = pl.QueryPlanToProvisionedHost().
+	err = pl.QueryPlanToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1876,9 +1871,9 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisioningStep",
 		Name: "PlanToProvisioningStep",
 	}
-	node.Edges[6].IDs, err = pl.QueryPlanToProvisioningStep().
+	err = pl.QueryPlanToProvisioningStep().
 		Select(provisioningstep.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1905,9 +1900,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Status",
 		Name: "ProvisionedHostToStatus",
 	}
-	node.Edges[0].IDs, err = ph.QueryProvisionedHostToStatus().
+	err = ph.QueryProvisionedHostToStatus().
 		Select(status.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1915,9 +1910,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedNetwork",
 		Name: "ProvisionedHostToProvisionedNetwork",
 	}
-	node.Edges[1].IDs, err = ph.QueryProvisionedHostToProvisionedNetwork().
+	err = ph.QueryProvisionedHostToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1925,9 +1920,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Host",
 		Name: "ProvisionedHostToHost",
 	}
-	node.Edges[2].IDs, err = ph.QueryProvisionedHostToHost().
+	err = ph.QueryProvisionedHostToHost().
 		Select(host.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1935,9 +1930,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "ProvisionedHostToEndStepPlan",
 	}
-	node.Edges[3].IDs, err = ph.QueryProvisionedHostToEndStepPlan().
+	err = ph.QueryProvisionedHostToEndStepPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1945,9 +1940,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisioningStep",
 		Name: "ProvisionedHostToProvisioningStep",
 	}
-	node.Edges[4].IDs, err = ph.QueryProvisionedHostToProvisioningStep().
+	err = ph.QueryProvisionedHostToProvisioningStep().
 		Select(provisioningstep.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1955,9 +1950,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "AgentStatus",
 		Name: "ProvisionedHostToAgentStatus",
 	}
-	node.Edges[5].IDs, err = ph.QueryProvisionedHostToAgentStatus().
+	err = ph.QueryProvisionedHostToAgentStatus().
 		Select(agentstatus.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1965,9 +1960,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "ProvisionedHostToPlan",
 	}
-	node.Edges[6].IDs, err = ph.QueryProvisionedHostToPlan().
+	err = ph.QueryProvisionedHostToPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1975,9 +1970,9 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GinFileMiddleware",
 		Name: "ProvisionedHostToGinFileMiddleware",
 	}
-	node.Edges[7].IDs, err = ph.QueryProvisionedHostToGinFileMiddleware().
+	err = ph.QueryProvisionedHostToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2012,9 +2007,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Status",
 		Name: "ProvisionedNetworkToStatus",
 	}
-	node.Edges[0].IDs, err = pn.QueryProvisionedNetworkToStatus().
+	err = pn.QueryProvisionedNetworkToStatus().
 		Select(status.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2022,9 +2017,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Network",
 		Name: "ProvisionedNetworkToNetwork",
 	}
-	node.Edges[1].IDs, err = pn.QueryProvisionedNetworkToNetwork().
+	err = pn.QueryProvisionedNetworkToNetwork().
 		Select(network.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2032,9 +2027,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Build",
 		Name: "ProvisionedNetworkToBuild",
 	}
-	node.Edges[2].IDs, err = pn.QueryProvisionedNetworkToBuild().
+	err = pn.QueryProvisionedNetworkToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2042,9 +2037,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Team",
 		Name: "ProvisionedNetworkToTeam",
 	}
-	node.Edges[3].IDs, err = pn.QueryProvisionedNetworkToTeam().
+	err = pn.QueryProvisionedNetworkToTeam().
 		Select(team.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2052,9 +2047,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "ProvisionedHost",
 		Name: "ProvisionedNetworkToProvisionedHost",
 	}
-	node.Edges[4].IDs, err = pn.QueryProvisionedNetworkToProvisionedHost().
+	err = pn.QueryProvisionedNetworkToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2062,9 +2057,9 @@ func (pn *ProvisionedNetwork) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Plan",
 		Name: "ProvisionedNetworkToPlan",
 	}
-	node.Edges[5].IDs, err = pn.QueryProvisionedNetworkToPlan().
+	err = pn.QueryProvisionedNetworkToPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2099,9 +2094,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Status",
 		Name: "ProvisioningStepToStatus",
 	}
-	node.Edges[0].IDs, err = ps.QueryProvisioningStepToStatus().
+	err = ps.QueryProvisioningStepToStatus().
 		Select(status.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2109,9 +2104,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedHost",
 		Name: "ProvisioningStepToProvisionedHost",
 	}
-	node.Edges[1].IDs, err = ps.QueryProvisioningStepToProvisionedHost().
+	err = ps.QueryProvisioningStepToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2119,9 +2114,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Script",
 		Name: "ProvisioningStepToScript",
 	}
-	node.Edges[2].IDs, err = ps.QueryProvisioningStepToScript().
+	err = ps.QueryProvisioningStepToScript().
 		Select(script.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2129,9 +2124,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Command",
 		Name: "ProvisioningStepToCommand",
 	}
-	node.Edges[3].IDs, err = ps.QueryProvisioningStepToCommand().
+	err = ps.QueryProvisioningStepToCommand().
 		Select(command.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2139,9 +2134,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DNSRecord",
 		Name: "ProvisioningStepToDNSRecord",
 	}
-	node.Edges[4].IDs, err = ps.QueryProvisioningStepToDNSRecord().
+	err = ps.QueryProvisioningStepToDNSRecord().
 		Select(dnsrecord.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2149,9 +2144,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileDelete",
 		Name: "ProvisioningStepToFileDelete",
 	}
-	node.Edges[5].IDs, err = ps.QueryProvisioningStepToFileDelete().
+	err = ps.QueryProvisioningStepToFileDelete().
 		Select(filedelete.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2159,9 +2154,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileDownload",
 		Name: "ProvisioningStepToFileDownload",
 	}
-	node.Edges[6].IDs, err = ps.QueryProvisioningStepToFileDownload().
+	err = ps.QueryProvisioningStepToFileDownload().
 		Select(filedownload.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2169,9 +2164,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "FileExtract",
 		Name: "ProvisioningStepToFileExtract",
 	}
-	node.Edges[7].IDs, err = ps.QueryProvisioningStepToFileExtract().
+	err = ps.QueryProvisioningStepToFileExtract().
 		Select(fileextract.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2179,9 +2174,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "ProvisioningStepToPlan",
 	}
-	node.Edges[8].IDs, err = ps.QueryProvisioningStepToPlan().
+	err = ps.QueryProvisioningStepToPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2189,9 +2184,9 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GinFileMiddleware",
 		Name: "ProvisioningStepToGinFileMiddleware",
 	}
-	node.Edges[9].IDs, err = ps.QueryProvisioningStepToGinFileMiddleware().
+	err = ps.QueryProvisioningStepToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[9].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2322,9 +2317,9 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "ScriptToUser",
 	}
-	node.Edges[0].IDs, err = s.QueryScriptToUser().
+	err = s.QueryScriptToUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2332,9 +2327,9 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Finding",
 		Name: "ScriptToFinding",
 	}
-	node.Edges[1].IDs, err = s.QueryScriptToFinding().
+	err = s.QueryScriptToFinding().
 		Select(finding.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2342,9 +2337,9 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "ScriptToEnvironment",
 	}
-	node.Edges[2].IDs, err = s.QueryScriptToEnvironment().
+	err = s.QueryScriptToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2419,9 +2414,9 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Build",
 		Name: "StatusToBuild",
 	}
-	node.Edges[0].IDs, err = s.QueryStatusToBuild().
+	err = s.QueryStatusToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2429,9 +2424,9 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedNetwork",
 		Name: "StatusToProvisionedNetwork",
 	}
-	node.Edges[1].IDs, err = s.QueryStatusToProvisionedNetwork().
+	err = s.QueryStatusToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2439,9 +2434,9 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedHost",
 		Name: "StatusToProvisionedHost",
 	}
-	node.Edges[2].IDs, err = s.QueryStatusToProvisionedHost().
+	err = s.QueryStatusToProvisionedHost().
 		Select(provisionedhost.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2449,9 +2444,9 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisioningStep",
 		Name: "StatusToProvisioningStep",
 	}
-	node.Edges[3].IDs, err = s.QueryStatusToProvisioningStep().
+	err = s.QueryStatusToProvisioningStep().
 		Select(provisioningstep.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2459,9 +2454,9 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Team",
 		Name: "StatusToTeam",
 	}
-	node.Edges[4].IDs, err = s.QueryStatusToTeam().
+	err = s.QueryStatusToTeam().
 		Select(team.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2523,9 +2518,9 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Build",
 		Name: "TeamToBuild",
 	}
-	node.Edges[0].IDs, err = t.QueryTeamToBuild().
+	err = t.QueryTeamToBuild().
 		Select(build.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2533,9 +2528,9 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Status",
 		Name: "TeamToStatus",
 	}
-	node.Edges[1].IDs, err = t.QueryTeamToStatus().
+	err = t.QueryTeamToStatus().
 		Select(status.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2543,9 +2538,9 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProvisionedNetwork",
 		Name: "TeamToProvisionedNetwork",
 	}
-	node.Edges[2].IDs, err = t.QueryTeamToProvisionedNetwork().
+	err = t.QueryTeamToProvisionedNetwork().
 		Select(provisionednetwork.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2553,9 +2548,9 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Plan",
 		Name: "TeamToPlan",
 	}
-	node.Edges[3].IDs, err = t.QueryTeamToPlan().
+	err = t.QueryTeamToPlan().
 		Select(plan.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2606,9 +2601,9 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Tag",
 		Name: "UserToTag",
 	}
-	node.Edges[0].IDs, err = u.QueryUserToTag().
+	err = u.QueryUserToTag().
 		Select(tag.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2616,16 +2611,16 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Environment",
 		Name: "UserToEnvironment",
 	}
-	node.Edges[1].IDs, err = u.QueryUserToEnvironment().
+	err = u.QueryUserToEnvironment().
 		Select(environment.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
 	return node, nil
 }
 
-func (c *Client) Node(ctx context.Context, id int) (*Node, error) {
+func (c *Client) Node(ctx context.Context, id uuid.UUID) (*Node, error) {
 	n, err := c.Noder(ctx, id)
 	if err != nil {
 		return nil, err
@@ -2641,7 +2636,7 @@ type NodeOption func(*nodeOptions)
 // WithNodeType sets the node Type resolver function (i.e. the table to query).
 // If was not provided, the table will be derived from the universal-id
 // configuration as described in: https://entgo.io/docs/migrate/#universal-ids.
-func WithNodeType(f func(context.Context, int) (string, error)) NodeOption {
+func WithNodeType(f func(context.Context, uuid.UUID) (string, error)) NodeOption {
 	return func(o *nodeOptions) {
 		o.nodeType = f
 	}
@@ -2649,13 +2644,13 @@ func WithNodeType(f func(context.Context, int) (string, error)) NodeOption {
 
 // WithFixedNodeType sets the Type of the node to a fixed value.
 func WithFixedNodeType(t string) NodeOption {
-	return WithNodeType(func(context.Context, int) (string, error) {
+	return WithNodeType(func(context.Context, uuid.UUID) (string, error) {
 		return t, nil
 	})
 }
 
 type nodeOptions struct {
-	nodeType func(context.Context, int) (string, error)
+	nodeType func(context.Context, uuid.UUID) (string, error)
 }
 
 func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
@@ -2664,8 +2659,8 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 		opt(nopts)
 	}
 	if nopts.nodeType == nil {
-		nopts.nodeType = func(ctx context.Context, id int) (string, error) {
-			return c.tables.nodeType(ctx, c.driver, id)
+		nopts.nodeType = func(ctx context.Context, id uuid.UUID) (string, error) {
+			return "", fmt.Errorf("cannot resolve noder (%v) without its type", id)
 		}
 	}
 	return nopts
@@ -2677,7 +2672,7 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 //		c.Noder(ctx, id)
 //		c.Noder(ctx, id, ent.WithNodeType(pet.Table))
 //
-func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder, err error) {
+func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_ Noder, err error) {
 	defer func() {
 		if IsNotFound(err) {
 			err = multierror.Append(err, entgql.ErrNodeNotFound(id))
@@ -2690,7 +2685,7 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 	return c.noder(ctx, table, id)
 }
 
-func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
+func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
 	switch table {
 	case agentstatus.Table:
 		n, err := c.AgentStatus.Query().
@@ -2940,7 +2935,7 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 	}
 }
 
-func (c *Client) Noders(ctx context.Context, ids []int, opts ...NodeOption) ([]Noder, error) {
+func (c *Client) Noders(ctx context.Context, ids []uuid.UUID, opts ...NodeOption) ([]Noder, error) {
 	switch len(ids) {
 	case 1:
 		noder, err := c.Noder(ctx, ids[0], opts...)
@@ -2954,8 +2949,8 @@ func (c *Client) Noders(ctx context.Context, ids []int, opts ...NodeOption) ([]N
 
 	noders := make([]Noder, len(ids))
 	errors := make([]error, len(ids))
-	tables := make(map[string][]int)
-	id2idx := make(map[int][]int, len(ids))
+	tables := make(map[string][]uuid.UUID)
+	id2idx := make(map[uuid.UUID][]int, len(ids))
 	nopts := c.newNodeOpts(opts)
 	for i, id := range ids {
 		table, err := nopts.nodeType(ctx, id)
@@ -3001,9 +2996,9 @@ func (c *Client) Noders(ctx context.Context, ids []int, opts ...NodeOption) ([]N
 	return noders, nil
 }
 
-func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, error) {
+func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]Noder, error) {
 	noders := make([]Noder, len(ids))
-	idmap := make(map[int][]*Noder, len(ids))
+	idmap := make(map[uuid.UUID][]*Noder, len(ids))
 	for i, id := range ids {
 		idmap[id] = append(idmap[id], &noders[i])
 	}
@@ -3363,56 +3358,4 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		return nil, fmt.Errorf("cannot resolve noders from table %q: %w", table, errNodeInvalidID)
 	}
 	return noders, nil
-}
-
-type tables struct {
-	once  sync.Once
-	sem   *semaphore.Weighted
-	value atomic.Value
-}
-
-func (t *tables) nodeType(ctx context.Context, drv dialect.Driver, id int) (string, error) {
-	tables, err := t.Load(ctx, drv)
-	if err != nil {
-		return "", err
-	}
-	idx := int(id / (1<<32 - 1))
-	if idx < 0 || idx >= len(tables) {
-		return "", fmt.Errorf("cannot resolve table from id %v: %w", id, errNodeInvalidID)
-	}
-	return tables[idx], nil
-}
-
-func (t *tables) Load(ctx context.Context, drv dialect.Driver) ([]string, error) {
-	if tables := t.value.Load(); tables != nil {
-		return tables.([]string), nil
-	}
-	t.once.Do(func() { t.sem = semaphore.NewWeighted(1) })
-	if err := t.sem.Acquire(ctx, 1); err != nil {
-		return nil, err
-	}
-	defer t.sem.Release(1)
-	if tables := t.value.Load(); tables != nil {
-		return tables.([]string), nil
-	}
-	tables, err := t.load(ctx, drv)
-	if err == nil {
-		t.value.Store(tables)
-	}
-	return tables, err
-}
-
-func (tables) load(ctx context.Context, drv dialect.Driver) ([]string, error) {
-	rows := &sql.Rows{}
-	query, args := sql.Dialect(drv.Dialect()).
-		Select("type").
-		From(sql.Table(schema.TypeTable)).
-		OrderBy(sql.Asc("id")).
-		Query()
-	if err := drv.Query(ctx, query, args, rows); err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var tables []string
-	return tables, sql.ScanSlice(rows, &tables)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // ProvisionedNetworkCreate is the builder for creating a ProvisionedNetwork entity.
@@ -37,14 +38,20 @@ func (pnc *ProvisionedNetworkCreate) SetCidr(s string) *ProvisionedNetworkCreate
 	return pnc
 }
 
+// SetID sets the "id" field.
+func (pnc *ProvisionedNetworkCreate) SetID(u uuid.UUID) *ProvisionedNetworkCreate {
+	pnc.mutation.SetID(u)
+	return pnc
+}
+
 // SetProvisionedNetworkToStatusID sets the "ProvisionedNetworkToStatus" edge to the Status entity by ID.
-func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToStatusID(id int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToStatusID(id uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.SetProvisionedNetworkToStatusID(id)
 	return pnc
 }
 
 // SetNillableProvisionedNetworkToStatusID sets the "ProvisionedNetworkToStatus" edge to the Status entity by ID if the given value is not nil.
-func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToStatusID(id *int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToStatusID(id *uuid.UUID) *ProvisionedNetworkCreate {
 	if id != nil {
 		pnc = pnc.SetProvisionedNetworkToStatusID(*id)
 	}
@@ -57,13 +64,13 @@ func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToStatus(s *Status) *P
 }
 
 // SetProvisionedNetworkToNetworkID sets the "ProvisionedNetworkToNetwork" edge to the Network entity by ID.
-func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToNetworkID(id int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToNetworkID(id uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.SetProvisionedNetworkToNetworkID(id)
 	return pnc
 }
 
 // SetNillableProvisionedNetworkToNetworkID sets the "ProvisionedNetworkToNetwork" edge to the Network entity by ID if the given value is not nil.
-func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToNetworkID(id *int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToNetworkID(id *uuid.UUID) *ProvisionedNetworkCreate {
 	if id != nil {
 		pnc = pnc.SetProvisionedNetworkToNetworkID(*id)
 	}
@@ -76,13 +83,13 @@ func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToNetwork(n *Network) 
 }
 
 // SetProvisionedNetworkToBuildID sets the "ProvisionedNetworkToBuild" edge to the Build entity by ID.
-func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToBuildID(id int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToBuildID(id uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.SetProvisionedNetworkToBuildID(id)
 	return pnc
 }
 
 // SetNillableProvisionedNetworkToBuildID sets the "ProvisionedNetworkToBuild" edge to the Build entity by ID if the given value is not nil.
-func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToBuildID(id *int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToBuildID(id *uuid.UUID) *ProvisionedNetworkCreate {
 	if id != nil {
 		pnc = pnc.SetProvisionedNetworkToBuildID(*id)
 	}
@@ -95,13 +102,13 @@ func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToBuild(b *Build) *Pro
 }
 
 // SetProvisionedNetworkToTeamID sets the "ProvisionedNetworkToTeam" edge to the Team entity by ID.
-func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToTeamID(id int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToTeamID(id uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.SetProvisionedNetworkToTeamID(id)
 	return pnc
 }
 
 // SetNillableProvisionedNetworkToTeamID sets the "ProvisionedNetworkToTeam" edge to the Team entity by ID if the given value is not nil.
-func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToTeamID(id *int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToTeamID(id *uuid.UUID) *ProvisionedNetworkCreate {
 	if id != nil {
 		pnc = pnc.SetProvisionedNetworkToTeamID(*id)
 	}
@@ -114,14 +121,14 @@ func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToTeam(t *Team) *Provi
 }
 
 // AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHostIDs(ids ...uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.AddProvisionedNetworkToProvisionedHostIDs(ids...)
 	return pnc
 }
 
 // AddProvisionedNetworkToProvisionedHost adds the "ProvisionedNetworkToProvisionedHost" edges to the ProvisionedHost entity.
 func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ...*ProvisionedHost) *ProvisionedNetworkCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -129,13 +136,13 @@ func (pnc *ProvisionedNetworkCreate) AddProvisionedNetworkToProvisionedHost(p ..
 }
 
 // SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID.
-func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToPlanID(id int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetProvisionedNetworkToPlanID(id uuid.UUID) *ProvisionedNetworkCreate {
 	pnc.mutation.SetProvisionedNetworkToPlanID(id)
 	return pnc
 }
 
 // SetNillableProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToPlanID(id *int) *ProvisionedNetworkCreate {
+func (pnc *ProvisionedNetworkCreate) SetNillableProvisionedNetworkToPlanID(id *uuid.UUID) *ProvisionedNetworkCreate {
 	if id != nil {
 		pnc = pnc.SetProvisionedNetworkToPlanID(*id)
 	}
@@ -158,6 +165,7 @@ func (pnc *ProvisionedNetworkCreate) Save(ctx context.Context) (*ProvisionedNetw
 		err  error
 		node *ProvisionedNetwork
 	)
+	pnc.defaults()
 	if len(pnc.hooks) == 0 {
 		if err = pnc.check(); err != nil {
 			return nil, err
@@ -196,6 +204,14 @@ func (pnc *ProvisionedNetworkCreate) SaveX(ctx context.Context) *ProvisionedNetw
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (pnc *ProvisionedNetworkCreate) defaults() {
+	if _, ok := pnc.mutation.ID(); !ok {
+		v := provisionednetwork.DefaultID()
+		pnc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pnc *ProvisionedNetworkCreate) check() error {
 	if _, ok := pnc.mutation.Name(); !ok {
@@ -215,8 +231,6 @@ func (pnc *ProvisionedNetworkCreate) sqlSave(ctx context.Context) (*ProvisionedN
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -226,11 +240,15 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 		_spec = &sqlgraph.CreateSpec{
 			Table: provisionednetwork.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionednetwork.FieldID,
 			},
 		}
 	)
+	if id, ok := pnc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := pnc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -256,7 +274,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -275,7 +293,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -295,7 +313,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -315,7 +333,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -335,7 +353,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -354,7 +372,7 @@ func (pnc *ProvisionedNetworkCreate) createSpec() (*ProvisionedNetwork, *sqlgrap
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -382,6 +400,7 @@ func (pncb *ProvisionedNetworkCreateBulk) Save(ctx context.Context) ([]*Provisio
 	for i := range pncb.builders {
 		func(i int, root context.Context) {
 			builder := pncb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProvisionedNetworkMutation)
 				if !ok {
@@ -407,8 +426,6 @@ func (pncb *ProvisionedNetworkCreateBulk) Save(ctx context.Context) ([]*Provisio
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

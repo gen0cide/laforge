@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // PlanUpdate is the builder for updating Plan entities.
@@ -51,27 +52,20 @@ func (pu *PlanUpdate) SetType(pl plan.Type) *PlanUpdate {
 }
 
 // SetBuildID sets the "build_id" field.
-func (pu *PlanUpdate) SetBuildID(i int) *PlanUpdate {
-	pu.mutation.ResetBuildID()
-	pu.mutation.SetBuildID(i)
-	return pu
-}
-
-// AddBuildID adds i to the "build_id" field.
-func (pu *PlanUpdate) AddBuildID(i int) *PlanUpdate {
-	pu.mutation.AddBuildID(i)
+func (pu *PlanUpdate) SetBuildID(s string) *PlanUpdate {
+	pu.mutation.SetBuildID(s)
 	return pu
 }
 
 // AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
-func (pu *PlanUpdate) AddPrevPlanIDs(ids ...int) *PlanUpdate {
+func (pu *PlanUpdate) AddPrevPlanIDs(ids ...uuid.UUID) *PlanUpdate {
 	pu.mutation.AddPrevPlanIDs(ids...)
 	return pu
 }
 
 // AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
 func (pu *PlanUpdate) AddPrevPlan(p ...*Plan) *PlanUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -79,14 +73,14 @@ func (pu *PlanUpdate) AddPrevPlan(p ...*Plan) *PlanUpdate {
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
-func (pu *PlanUpdate) AddNextPlanIDs(ids ...int) *PlanUpdate {
+func (pu *PlanUpdate) AddNextPlanIDs(ids ...uuid.UUID) *PlanUpdate {
 	pu.mutation.AddNextPlanIDs(ids...)
 	return pu
 }
 
 // AddNextPlan adds the "NextPlan" edges to the Plan entity.
 func (pu *PlanUpdate) AddNextPlan(p ...*Plan) *PlanUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -94,13 +88,13 @@ func (pu *PlanUpdate) AddNextPlan(p ...*Plan) *PlanUpdate {
 }
 
 // SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
-func (pu *PlanUpdate) SetPlanToBuildID(id int) *PlanUpdate {
+func (pu *PlanUpdate) SetPlanToBuildID(id uuid.UUID) *PlanUpdate {
 	pu.mutation.SetPlanToBuildID(id)
 	return pu
 }
 
 // SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePlanToBuildID(id *int) *PlanUpdate {
+func (pu *PlanUpdate) SetNillablePlanToBuildID(id *uuid.UUID) *PlanUpdate {
 	if id != nil {
 		pu = pu.SetPlanToBuildID(*id)
 	}
@@ -113,13 +107,13 @@ func (pu *PlanUpdate) SetPlanToBuild(b *Build) *PlanUpdate {
 }
 
 // SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
-func (pu *PlanUpdate) SetPlanToTeamID(id int) *PlanUpdate {
+func (pu *PlanUpdate) SetPlanToTeamID(id uuid.UUID) *PlanUpdate {
 	pu.mutation.SetPlanToTeamID(id)
 	return pu
 }
 
 // SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePlanToTeamID(id *int) *PlanUpdate {
+func (pu *PlanUpdate) SetNillablePlanToTeamID(id *uuid.UUID) *PlanUpdate {
 	if id != nil {
 		pu = pu.SetPlanToTeamID(*id)
 	}
@@ -132,13 +126,13 @@ func (pu *PlanUpdate) SetPlanToTeam(t *Team) *PlanUpdate {
 }
 
 // SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (pu *PlanUpdate) SetPlanToProvisionedNetworkID(id int) *PlanUpdate {
+func (pu *PlanUpdate) SetPlanToProvisionedNetworkID(id uuid.UUID) *PlanUpdate {
 	pu.mutation.SetPlanToProvisionedNetworkID(id)
 	return pu
 }
 
 // SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePlanToProvisionedNetworkID(id *int) *PlanUpdate {
+func (pu *PlanUpdate) SetNillablePlanToProvisionedNetworkID(id *uuid.UUID) *PlanUpdate {
 	if id != nil {
 		pu = pu.SetPlanToProvisionedNetworkID(*id)
 	}
@@ -151,13 +145,13 @@ func (pu *PlanUpdate) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *PlanUp
 }
 
 // SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (pu *PlanUpdate) SetPlanToProvisionedHostID(id int) *PlanUpdate {
+func (pu *PlanUpdate) SetPlanToProvisionedHostID(id uuid.UUID) *PlanUpdate {
 	pu.mutation.SetPlanToProvisionedHostID(id)
 	return pu
 }
 
 // SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePlanToProvisionedHostID(id *int) *PlanUpdate {
+func (pu *PlanUpdate) SetNillablePlanToProvisionedHostID(id *uuid.UUID) *PlanUpdate {
 	if id != nil {
 		pu = pu.SetPlanToProvisionedHostID(*id)
 	}
@@ -170,13 +164,13 @@ func (pu *PlanUpdate) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanUpdate {
 }
 
 // SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (pu *PlanUpdate) SetPlanToProvisioningStepID(id int) *PlanUpdate {
+func (pu *PlanUpdate) SetPlanToProvisioningStepID(id uuid.UUID) *PlanUpdate {
 	pu.mutation.SetPlanToProvisioningStepID(id)
 	return pu
 }
 
 // SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (pu *PlanUpdate) SetNillablePlanToProvisioningStepID(id *int) *PlanUpdate {
+func (pu *PlanUpdate) SetNillablePlanToProvisioningStepID(id *uuid.UUID) *PlanUpdate {
 	if id != nil {
 		pu = pu.SetPlanToProvisioningStepID(*id)
 	}
@@ -200,14 +194,14 @@ func (pu *PlanUpdate) ClearPrevPlan() *PlanUpdate {
 }
 
 // RemovePrevPlanIDs removes the "PrevPlan" edge to Plan entities by IDs.
-func (pu *PlanUpdate) RemovePrevPlanIDs(ids ...int) *PlanUpdate {
+func (pu *PlanUpdate) RemovePrevPlanIDs(ids ...uuid.UUID) *PlanUpdate {
 	pu.mutation.RemovePrevPlanIDs(ids...)
 	return pu
 }
 
 // RemovePrevPlan removes "PrevPlan" edges to Plan entities.
 func (pu *PlanUpdate) RemovePrevPlan(p ...*Plan) *PlanUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -221,14 +215,14 @@ func (pu *PlanUpdate) ClearNextPlan() *PlanUpdate {
 }
 
 // RemoveNextPlanIDs removes the "NextPlan" edge to Plan entities by IDs.
-func (pu *PlanUpdate) RemoveNextPlanIDs(ids ...int) *PlanUpdate {
+func (pu *PlanUpdate) RemoveNextPlanIDs(ids ...uuid.UUID) *PlanUpdate {
 	pu.mutation.RemoveNextPlanIDs(ids...)
 	return pu
 }
 
 // RemoveNextPlan removes "NextPlan" edges to Plan entities.
 func (pu *PlanUpdate) RemoveNextPlan(p ...*Plan) *PlanUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -338,7 +332,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   plan.Table,
 			Columns: plan.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: plan.FieldID,
 			},
 		},
@@ -373,14 +367,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.BuildID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: plan.FieldBuildID,
-		})
-	}
-	if value, ok := pu.mutation.AddedBuildID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: plan.FieldBuildID,
 		})
@@ -394,7 +381,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -410,7 +397,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -429,7 +416,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -448,7 +435,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -464,7 +451,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -483,7 +470,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -502,7 +489,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -518,7 +505,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -537,7 +524,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -553,7 +540,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -572,7 +559,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -588,7 +575,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -607,7 +594,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -623,7 +610,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -642,7 +629,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -658,7 +645,7 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -707,27 +694,20 @@ func (puo *PlanUpdateOne) SetType(pl plan.Type) *PlanUpdateOne {
 }
 
 // SetBuildID sets the "build_id" field.
-func (puo *PlanUpdateOne) SetBuildID(i int) *PlanUpdateOne {
-	puo.mutation.ResetBuildID()
-	puo.mutation.SetBuildID(i)
-	return puo
-}
-
-// AddBuildID adds i to the "build_id" field.
-func (puo *PlanUpdateOne) AddBuildID(i int) *PlanUpdateOne {
-	puo.mutation.AddBuildID(i)
+func (puo *PlanUpdateOne) SetBuildID(s string) *PlanUpdateOne {
+	puo.mutation.SetBuildID(s)
 	return puo
 }
 
 // AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by IDs.
-func (puo *PlanUpdateOne) AddPrevPlanIDs(ids ...int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) AddPrevPlanIDs(ids ...uuid.UUID) *PlanUpdateOne {
 	puo.mutation.AddPrevPlanIDs(ids...)
 	return puo
 }
 
 // AddPrevPlan adds the "PrevPlan" edges to the Plan entity.
 func (puo *PlanUpdateOne) AddPrevPlan(p ...*Plan) *PlanUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -735,14 +715,14 @@ func (puo *PlanUpdateOne) AddPrevPlan(p ...*Plan) *PlanUpdateOne {
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by IDs.
-func (puo *PlanUpdateOne) AddNextPlanIDs(ids ...int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) AddNextPlanIDs(ids ...uuid.UUID) *PlanUpdateOne {
 	puo.mutation.AddNextPlanIDs(ids...)
 	return puo
 }
 
 // AddNextPlan adds the "NextPlan" edges to the Plan entity.
 func (puo *PlanUpdateOne) AddNextPlan(p ...*Plan) *PlanUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -750,13 +730,13 @@ func (puo *PlanUpdateOne) AddNextPlan(p ...*Plan) *PlanUpdateOne {
 }
 
 // SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID.
-func (puo *PlanUpdateOne) SetPlanToBuildID(id int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetPlanToBuildID(id uuid.UUID) *PlanUpdateOne {
 	puo.mutation.SetPlanToBuildID(id)
 	return puo
 }
 
 // SetNillablePlanToBuildID sets the "PlanToBuild" edge to the Build entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePlanToBuildID(id *int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetNillablePlanToBuildID(id *uuid.UUID) *PlanUpdateOne {
 	if id != nil {
 		puo = puo.SetPlanToBuildID(*id)
 	}
@@ -769,13 +749,13 @@ func (puo *PlanUpdateOne) SetPlanToBuild(b *Build) *PlanUpdateOne {
 }
 
 // SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID.
-func (puo *PlanUpdateOne) SetPlanToTeamID(id int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetPlanToTeamID(id uuid.UUID) *PlanUpdateOne {
 	puo.mutation.SetPlanToTeamID(id)
 	return puo
 }
 
 // SetNillablePlanToTeamID sets the "PlanToTeam" edge to the Team entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePlanToTeamID(id *int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetNillablePlanToTeamID(id *uuid.UUID) *PlanUpdateOne {
 	if id != nil {
 		puo = puo.SetPlanToTeamID(*id)
 	}
@@ -788,13 +768,13 @@ func (puo *PlanUpdateOne) SetPlanToTeam(t *Team) *PlanUpdateOne {
 }
 
 // SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (puo *PlanUpdateOne) SetPlanToProvisionedNetworkID(id int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetPlanToProvisionedNetworkID(id uuid.UUID) *PlanUpdateOne {
 	puo.mutation.SetPlanToProvisionedNetworkID(id)
 	return puo
 }
 
 // SetNillablePlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePlanToProvisionedNetworkID(id *int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetNillablePlanToProvisionedNetworkID(id *uuid.UUID) *PlanUpdateOne {
 	if id != nil {
 		puo = puo.SetPlanToProvisionedNetworkID(*id)
 	}
@@ -807,13 +787,13 @@ func (puo *PlanUpdateOne) SetPlanToProvisionedNetwork(p *ProvisionedNetwork) *Pl
 }
 
 // SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (puo *PlanUpdateOne) SetPlanToProvisionedHostID(id int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetPlanToProvisionedHostID(id uuid.UUID) *PlanUpdateOne {
 	puo.mutation.SetPlanToProvisionedHostID(id)
 	return puo
 }
 
 // SetNillablePlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePlanToProvisionedHostID(id *int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetNillablePlanToProvisionedHostID(id *uuid.UUID) *PlanUpdateOne {
 	if id != nil {
 		puo = puo.SetPlanToProvisionedHostID(*id)
 	}
@@ -826,13 +806,13 @@ func (puo *PlanUpdateOne) SetPlanToProvisionedHost(p *ProvisionedHost) *PlanUpda
 }
 
 // SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (puo *PlanUpdateOne) SetPlanToProvisioningStepID(id int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetPlanToProvisioningStepID(id uuid.UUID) *PlanUpdateOne {
 	puo.mutation.SetPlanToProvisioningStepID(id)
 	return puo
 }
 
 // SetNillablePlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (puo *PlanUpdateOne) SetNillablePlanToProvisioningStepID(id *int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) SetNillablePlanToProvisioningStepID(id *uuid.UUID) *PlanUpdateOne {
 	if id != nil {
 		puo = puo.SetPlanToProvisioningStepID(*id)
 	}
@@ -856,14 +836,14 @@ func (puo *PlanUpdateOne) ClearPrevPlan() *PlanUpdateOne {
 }
 
 // RemovePrevPlanIDs removes the "PrevPlan" edge to Plan entities by IDs.
-func (puo *PlanUpdateOne) RemovePrevPlanIDs(ids ...int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) RemovePrevPlanIDs(ids ...uuid.UUID) *PlanUpdateOne {
 	puo.mutation.RemovePrevPlanIDs(ids...)
 	return puo
 }
 
 // RemovePrevPlan removes "PrevPlan" edges to Plan entities.
 func (puo *PlanUpdateOne) RemovePrevPlan(p ...*Plan) *PlanUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -877,14 +857,14 @@ func (puo *PlanUpdateOne) ClearNextPlan() *PlanUpdateOne {
 }
 
 // RemoveNextPlanIDs removes the "NextPlan" edge to Plan entities by IDs.
-func (puo *PlanUpdateOne) RemoveNextPlanIDs(ids ...int) *PlanUpdateOne {
+func (puo *PlanUpdateOne) RemoveNextPlanIDs(ids ...uuid.UUID) *PlanUpdateOne {
 	puo.mutation.RemoveNextPlanIDs(ids...)
 	return puo
 }
 
 // RemoveNextPlan removes "NextPlan" edges to Plan entities.
 func (puo *PlanUpdateOne) RemoveNextPlan(p ...*Plan) *PlanUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -1001,7 +981,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Table:   plan.Table,
 			Columns: plan.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: plan.FieldID,
 			},
 		},
@@ -1053,14 +1033,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if value, ok := puo.mutation.BuildID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: plan.FieldBuildID,
-		})
-	}
-	if value, ok := puo.mutation.AddedBuildID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: plan.FieldBuildID,
 		})
@@ -1074,7 +1047,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1090,7 +1063,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1109,7 +1082,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1128,7 +1101,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1144,7 +1117,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1163,7 +1136,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1182,7 +1155,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -1198,7 +1171,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -1217,7 +1190,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1233,7 +1206,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1252,7 +1225,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1268,7 +1241,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1287,7 +1260,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1303,7 +1276,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1322,7 +1295,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1338,7 +1311,7 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},

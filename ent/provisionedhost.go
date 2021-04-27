@@ -13,13 +13,14 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisionedHost is the model entity for the ProvisionedHost schema.
 type ProvisionedHost struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// SubnetIP holds the value of the "subnet_ip" field.
 	SubnetIP string `json:"subnet_ip,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -44,11 +45,11 @@ type ProvisionedHost struct {
 	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
 	HCLProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	//
-	gin_file_middleware_gin_file_middleware_to_provisioned_host *int
-	plan_plan_to_provisioned_host                               *int
-	provisioned_host_provisioned_host_to_provisioned_network    *int
-	provisioned_host_provisioned_host_to_host                   *int
-	provisioned_host_provisioned_host_to_end_step_plan          *int
+	gin_file_middleware_gin_file_middleware_to_provisioned_host *uuid.UUID
+	plan_plan_to_provisioned_host                               *uuid.UUID
+	provisioned_host_provisioned_host_to_provisioned_network    *uuid.UUID
+	provisioned_host_provisioned_host_to_host                   *uuid.UUID
+	provisioned_host_provisioned_host_to_end_step_plan          *uuid.UUID
 }
 
 // ProvisionedHostEdges holds the relations/edges for other nodes in the graph.
@@ -181,20 +182,20 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case provisionedhost.FieldID:
-			values[i] = new(sql.NullInt64)
 		case provisionedhost.FieldSubnetIP:
 			values[i] = new(sql.NullString)
+		case provisionedhost.FieldID:
+			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioned_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[1]: // plan_plan_to_provisioned_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_provisioned_network
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_host
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[4]: // provisioned_host_provisioned_host_to_end_step_plan
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
 		}
@@ -211,11 +212,11 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 	for i := range columns {
 		switch columns[i] {
 		case provisionedhost.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				ph.ID = *value
 			}
-			ph.ID = int(value.Int64)
 		case provisionedhost.FieldSubnetIP:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field subnet_ip", values[i])
@@ -223,39 +224,34 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 				ph.SubnetIP = value.String
 			}
 		case provisionedhost.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field gin_file_middleware_gin_file_middleware_to_provisioned_host", value)
-			} else if value.Valid {
-				ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = new(int)
-				*ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field gin_file_middleware_gin_file_middleware_to_provisioned_host", values[i])
+			} else if value != nil {
+				ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = value
 			}
 		case provisionedhost.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_provisioned_host", value)
-			} else if value.Valid {
-				ph.plan_plan_to_provisioned_host = new(int)
-				*ph.plan_plan_to_provisioned_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field plan_plan_to_provisioned_host", values[i])
+			} else if value != nil {
+				ph.plan_plan_to_provisioned_host = value
 			}
 		case provisionedhost.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_provisioned_network", value)
-			} else if value.Valid {
-				ph.provisioned_host_provisioned_host_to_provisioned_network = new(int)
-				*ph.provisioned_host_provisioned_host_to_provisioned_network = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_provisioned_network", values[i])
+			} else if value != nil {
+				ph.provisioned_host_provisioned_host_to_provisioned_network = value
 			}
 		case provisionedhost.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_host", value)
-			} else if value.Valid {
-				ph.provisioned_host_provisioned_host_to_host = new(int)
-				*ph.provisioned_host_provisioned_host_to_host = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_host", values[i])
+			} else if value != nil {
+				ph.provisioned_host_provisioned_host_to_host = value
 			}
 		case provisionedhost.ForeignKeys[4]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field provisioned_host_provisioned_host_to_end_step_plan", value)
-			} else if value.Valid {
-				ph.provisioned_host_provisioned_host_to_end_step_plan = new(int)
-				*ph.provisioned_host_provisioned_host_to_end_step_plan = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_end_step_plan", values[i])
+			} else if value != nil {
+				ph.provisioned_host_provisioned_host_to_end_step_plan = value
 			}
 		}
 	}

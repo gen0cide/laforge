@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
@@ -19,7 +18,16 @@ import (
 	"github.com/gen0cide/laforge/graphql/graph/model"
 	"github.com/gen0cide/laforge/loader"
 	"github.com/gen0cide/laforge/planner"
+	"github.com/google/uuid"
 )
+
+func (r *buildResolver) ID(ctx context.Context, obj *ent.Build) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *commandResolver) ID(ctx context.Context, obj *ent.Command) (string, error) {
+	return obj.ID.String(), nil
+}
 
 func (r *commandResolver) Vars(ctx context.Context, obj *ent.Command) ([]*model.VarsMap, error) {
 	results := make([]*model.VarsMap, 0)
@@ -43,6 +51,10 @@ func (r *commandResolver) Tags(ctx context.Context, obj *ent.Command) ([]*model.
 		results = append(results, tempTag)
 	}
 	return results, nil
+}
+
+func (r *competitionResolver) ID(ctx context.Context, obj *ent.Competition) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *competitionResolver) Config(ctx context.Context, obj *ent.Competition) ([]*model.ConfigMap, error) {
@@ -69,6 +81,10 @@ func (r *competitionResolver) Tags(ctx context.Context, obj *ent.Competition) ([
 	return results, nil
 }
 
+func (r *dNSResolver) ID(ctx context.Context, obj *ent.DNS) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *dNSResolver) Config(ctx context.Context, obj *ent.DNS) ([]*model.ConfigMap, error) {
 	results := make([]*model.ConfigMap, 0)
 	for configKey, configValue := range obj.Config {
@@ -79,6 +95,10 @@ func (r *dNSResolver) Config(ctx context.Context, obj *ent.DNS) ([]*model.Config
 		results = append(results, configTag)
 	}
 	return results, nil
+}
+
+func (r *dNSRecordResolver) ID(ctx context.Context, obj *ent.DNSRecord) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *dNSRecordResolver) Vars(ctx context.Context, obj *ent.DNSRecord) ([]*model.VarsMap, error) {
@@ -105,6 +125,10 @@ func (r *dNSRecordResolver) Tags(ctx context.Context, obj *ent.DNSRecord) ([]*mo
 	return results, nil
 }
 
+func (r *environmentResolver) ID(ctx context.Context, obj *ent.Environment) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *environmentResolver) Config(ctx context.Context, obj *ent.Environment) ([]*model.ConfigMap, error) {
 	results := make([]*model.ConfigMap, 0)
 	for configKey, configValue := range obj.Config {
@@ -129,6 +153,10 @@ func (r *environmentResolver) Tags(ctx context.Context, obj *ent.Environment) ([
 	return results, nil
 }
 
+func (r *fileDeleteResolver) ID(ctx context.Context, obj *ent.FileDelete) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *fileDeleteResolver) Tags(ctx context.Context, obj *ent.FileDelete) ([]*model.TagMap, error) {
 	results := make([]*model.TagMap, 0)
 	for tagKey, tagValue := range obj.Tags {
@@ -141,6 +169,10 @@ func (r *fileDeleteResolver) Tags(ctx context.Context, obj *ent.FileDelete) ([]*
 	return results, nil
 }
 
+func (r *fileDownloadResolver) ID(ctx context.Context, obj *ent.FileDownload) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *fileDownloadResolver) Tags(ctx context.Context, obj *ent.FileDownload) ([]*model.TagMap, error) {
 	results := make([]*model.TagMap, 0)
 	for tagKey, tagValue := range obj.Tags {
@@ -151,6 +183,10 @@ func (r *fileDownloadResolver) Tags(ctx context.Context, obj *ent.FileDownload) 
 		results = append(results, tempTag)
 	}
 	return results, nil
+}
+
+func (r *fileExtractResolver) ID(ctx context.Context, obj *ent.FileExtract) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *fileExtractResolver) Tags(ctx context.Context, obj *ent.FileExtract) ([]*model.TagMap, error) {
@@ -185,6 +221,10 @@ func (r *findingResolver) Tags(ctx context.Context, obj *ent.Finding) ([]*model.
 	return results, nil
 }
 
+func (r *hostResolver) ID(ctx context.Context, obj *ent.Host) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *hostResolver) Vars(ctx context.Context, obj *ent.Host) ([]*model.VarsMap, error) {
 	results := make([]*model.VarsMap, 0)
 	for varKey, varValue := range obj.Vars {
@@ -207,6 +247,10 @@ func (r *hostResolver) Tags(ctx context.Context, obj *ent.Host) ([]*model.TagMap
 		results = append(results, tempTag)
 	}
 	return results, nil
+}
+
+func (r *identityResolver) ID(ctx context.Context, obj *ent.Identity) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *identityResolver) Vars(ctx context.Context, obj *ent.Identity) ([]*model.VarsMap, error) {
@@ -238,10 +282,10 @@ func (r *mutationResolver) LoadEnviroment(ctx context.Context, envFilePath strin
 }
 
 func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string) (*ent.Build, error) {
-	uuid, err := strconv.Atoi(envUUID)
+	uuid, err := uuid.Parse(envUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	entEnvironment, err := r.client.Environment.Query().Where(environment.IDEQ(uuid)).Only(ctx)
@@ -255,10 +299,10 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string) (*en
 }
 
 func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error) {
-	uuid, err := strconv.Atoi(buildUUID)
+	uuid, err := uuid.Parse(buildUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	b, err := r.client.Build.Query().Where(build.IDEQ(uuid)).Only(ctx)
@@ -268,6 +312,10 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 	}
 
 	return b, nil
+}
+
+func (r *networkResolver) ID(ctx context.Context, obj *ent.Network) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *networkResolver) Vars(ctx context.Context, obj *ent.Network) ([]*model.VarsMap, error) {
@@ -294,8 +342,16 @@ func (r *networkResolver) Tags(ctx context.Context, obj *ent.Network) ([]*model.
 	return results, nil
 }
 
+func (r *planResolver) ID(ctx context.Context, obj *ent.Plan) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *planResolver) Type(ctx context.Context, obj *ent.Plan) (model.PlanType, error) {
 	return model.PlanType(obj.Type), nil
+}
+
+func (r *provisionedHostResolver) ID(ctx context.Context, obj *ent.ProvisionedHost) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
@@ -322,6 +378,14 @@ func (r *provisionedHostResolver) ProvisionedHostToAgentStatus(ctx context.Conte
 	return nil, nil
 }
 
+func (r *provisionedNetworkResolver) ID(ctx context.Context, obj *ent.ProvisionedNetwork) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *provisioningStepResolver) ID(ctx context.Context, obj *ent.ProvisioningStep) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *provisioningStepResolver) Type(ctx context.Context, obj *ent.ProvisioningStep) (model.ProvisioningStepType, error) {
 	return model.ProvisioningStepType(obj.Type), nil
 }
@@ -337,10 +401,10 @@ func (r *queryResolver) Environments(ctx context.Context) ([]*ent.Environment, e
 }
 
 func (r *queryResolver) Environment(ctx context.Context, envUUID string) (*ent.Environment, error) {
-	uuid, err := strconv.Atoi(envUUID)
+	uuid, err := uuid.Parse(envUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	e, err := r.client.Environment.Query().Where(environment.IDEQ(uuid)).Only(ctx)
@@ -353,10 +417,10 @@ func (r *queryResolver) Environment(ctx context.Context, envUUID string) (*ent.E
 }
 
 func (r *queryResolver) ProvisionedHost(ctx context.Context, proHostUUID string) (*ent.ProvisionedHost, error) {
-	uuid, err := strconv.Atoi(proHostUUID)
+	uuid, err := uuid.Parse(proHostUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	ph, err := r.client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
@@ -369,10 +433,10 @@ func (r *queryResolver) ProvisionedHost(ctx context.Context, proHostUUID string)
 }
 
 func (r *queryResolver) ProvisionedNetwork(ctx context.Context, proNetUUID string) (*ent.ProvisionedNetwork, error) {
-	uuid, err := strconv.Atoi(proNetUUID)
+	uuid, err := uuid.Parse(proNetUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	pn, err := r.client.ProvisionedNetwork.Query().Where(provisionednetwork.IDEQ(uuid)).Only(ctx)
@@ -385,10 +449,10 @@ func (r *queryResolver) ProvisionedNetwork(ctx context.Context, proNetUUID strin
 }
 
 func (r *queryResolver) ProvisionedStep(ctx context.Context, proStepUUID string) (*ent.ProvisioningStep, error) {
-	uuid, err := strconv.Atoi(proStepUUID)
+	uuid, err := uuid.Parse(proStepUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	ps, err := r.client.ProvisioningStep.Query().Where(provisioningstep.IDEQ(uuid)).Only(ctx)
@@ -401,10 +465,10 @@ func (r *queryResolver) ProvisionedStep(ctx context.Context, proStepUUID string)
 }
 
 func (r *queryResolver) Plan(ctx context.Context, planUUID string) (*ent.Plan, error) {
-	uuid, err := strconv.Atoi(planUUID)
+	uuid, err := uuid.Parse(planUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	plan, err := r.client.Plan.Query().Where(plan.IDEQ(uuid)).Only(ctx)
@@ -417,10 +481,10 @@ func (r *queryResolver) Plan(ctx context.Context, planUUID string) (*ent.Plan, e
 }
 
 func (r *queryResolver) Build(ctx context.Context, buildUUID string) (*ent.Build, error) {
-	uuid, err := strconv.Atoi(buildUUID)
+	uuid, err := uuid.Parse(buildUUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	build, err := r.client.Build.Query().Where(build.IDEQ(uuid)).Only(ctx)
@@ -430,6 +494,10 @@ func (r *queryResolver) Build(ctx context.Context, buildUUID string) (*ent.Build
 	}
 
 	return build, nil
+}
+
+func (r *scriptResolver) ID(ctx context.Context, obj *ent.Script) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *scriptResolver) Vars(ctx context.Context, obj *ent.Script) ([]*model.VarsMap, error) {
@@ -471,6 +539,17 @@ func (r *statusResolver) StartedAt(ctx context.Context, obj *ent.Status) (string
 func (r *statusResolver) EndedAt(ctx context.Context, obj *ent.Status) (string, error) {
 	return obj.EndedAt.String(), nil
 }
+
+func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *userResolver) ID(ctx context.Context, obj *ent.User) (string, error) {
+	return obj.ID.String(), nil
+}
+
+// Build returns generated.BuildResolver implementation.
+func (r *Resolver) Build() generated.BuildResolver { return &buildResolver{r} }
 
 // Command returns generated.CommandResolver implementation.
 func (r *Resolver) Command() generated.CommandResolver { return &commandResolver{r} }
@@ -519,6 +598,11 @@ func (r *Resolver) ProvisionedHost() generated.ProvisionedHostResolver {
 	return &provisionedHostResolver{r}
 }
 
+// ProvisionedNetwork returns generated.ProvisionedNetworkResolver implementation.
+func (r *Resolver) ProvisionedNetwork() generated.ProvisionedNetworkResolver {
+	return &provisionedNetworkResolver{r}
+}
+
 // ProvisioningStep returns generated.ProvisioningStepResolver implementation.
 func (r *Resolver) ProvisioningStep() generated.ProvisioningStepResolver {
 	return &provisioningStepResolver{r}
@@ -533,6 +617,13 @@ func (r *Resolver) Script() generated.ScriptResolver { return &scriptResolver{r}
 // Status returns generated.StatusResolver implementation.
 func (r *Resolver) Status() generated.StatusResolver { return &statusResolver{r} }
 
+// Team returns generated.TeamResolver implementation.
+func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
+
+// User returns generated.UserResolver implementation.
+func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
+
+type buildResolver struct{ *Resolver }
 type commandResolver struct{ *Resolver }
 type competitionResolver struct{ *Resolver }
 type dNSResolver struct{ *Resolver }
@@ -548,7 +639,10 @@ type mutationResolver struct{ *Resolver }
 type networkResolver struct{ *Resolver }
 type planResolver struct{ *Resolver }
 type provisionedHostResolver struct{ *Resolver }
+type provisionedNetworkResolver struct{ *Resolver }
 type provisioningStepResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type scriptResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
+type teamResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

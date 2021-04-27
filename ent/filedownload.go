@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/google/uuid"
 )
 
 // FileDownload is the model entity for the FileDownload schema.
 type FileDownload struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// SourceType holds the value of the "source_type" field.
@@ -45,7 +46,7 @@ type FileDownload struct {
 	// FileDownloadToEnvironment holds the value of the FileDownloadToEnvironment edge.
 	HCLFileDownloadToEnvironment *Environment `json:"FileDownloadToEnvironment,omitempty"`
 	//
-	environment_environment_to_file_download *int
+	environment_environment_to_file_download *uuid.UUID
 }
 
 // FileDownloadEdges holds the relations/edges for other nodes in the graph.
@@ -80,12 +81,12 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case filedownload.FieldTemplate, filedownload.FieldDisabled:
 			values[i] = new(sql.NullBool)
-		case filedownload.FieldID:
-			values[i] = new(sql.NullInt64)
 		case filedownload.FieldHclID, filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
 			values[i] = new(sql.NullString)
+		case filedownload.FieldID:
+			values[i] = new(uuid.UUID)
 		case filedownload.ForeignKeys[0]: // environment_environment_to_file_download
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDownload", columns[i])
 		}
@@ -102,11 +103,11 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 	for i := range columns {
 		switch columns[i] {
 		case filedownload.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				fd.ID = *value
 			}
-			fd.ID = int(value.Int64)
 		case filedownload.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -171,11 +172,10 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				}
 			}
 		case filedownload.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_download", value)
-			} else if value.Valid {
-				fd.environment_environment_to_file_download = new(int)
-				*fd.environment_environment_to_file_download = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_download", values[i])
+			} else if value != nil {
+				fd.environment_environment_to_file_download = value
 			}
 		}
 	}

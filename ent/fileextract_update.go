@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileExtractUpdate is the builder for updating FileExtract entities.
@@ -58,13 +59,13 @@ func (feu *FileExtractUpdate) SetTags(m map[string]string) *FileExtractUpdate {
 }
 
 // SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
-func (feu *FileExtractUpdate) SetFileExtractToEnvironmentID(id int) *FileExtractUpdate {
+func (feu *FileExtractUpdate) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractUpdate {
 	feu.mutation.SetFileExtractToEnvironmentID(id)
 	return feu
 }
 
 // SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (feu *FileExtractUpdate) SetNillableFileExtractToEnvironmentID(id *int) *FileExtractUpdate {
+func (feu *FileExtractUpdate) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractUpdate {
 	if id != nil {
 		feu = feu.SetFileExtractToEnvironmentID(*id)
 	}
@@ -144,7 +145,7 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   fileextract.Table,
 			Columns: fileextract.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		},
@@ -200,7 +201,7 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -216,7 +217,7 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -276,13 +277,13 @@ func (feuo *FileExtractUpdateOne) SetTags(m map[string]string) *FileExtractUpdat
 }
 
 // SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
-func (feuo *FileExtractUpdateOne) SetFileExtractToEnvironmentID(id int) *FileExtractUpdateOne {
+func (feuo *FileExtractUpdateOne) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractUpdateOne {
 	feuo.mutation.SetFileExtractToEnvironmentID(id)
 	return feuo
 }
 
 // SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (feuo *FileExtractUpdateOne) SetNillableFileExtractToEnvironmentID(id *int) *FileExtractUpdateOne {
+func (feuo *FileExtractUpdateOne) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractUpdateOne {
 	if id != nil {
 		feuo = feuo.SetFileExtractToEnvironmentID(*id)
 	}
@@ -369,7 +370,7 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Table:   fileextract.Table,
 			Columns: fileextract.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		},
@@ -442,7 +443,7 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -458,7 +459,7 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

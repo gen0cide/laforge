@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ProvisionedHost holds the schema definition for the ProvisionedHost entity.
@@ -15,6 +16,8 @@ type ProvisionedHost struct {
 // Fields of the ProvisionedHost.
 func (ProvisionedHost) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("subnet_ip"),
 	}
 }

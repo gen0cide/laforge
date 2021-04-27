@@ -17,6 +17,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // StatusUpdate is the builder for updating Status entities.
@@ -133,13 +134,13 @@ func (su *StatusUpdate) ClearError() *StatusUpdate {
 }
 
 // SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID.
-func (su *StatusUpdate) SetStatusToBuildID(id int) *StatusUpdate {
+func (su *StatusUpdate) SetStatusToBuildID(id uuid.UUID) *StatusUpdate {
 	su.mutation.SetStatusToBuildID(id)
 	return su
 }
 
 // SetNillableStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID if the given value is not nil.
-func (su *StatusUpdate) SetNillableStatusToBuildID(id *int) *StatusUpdate {
+func (su *StatusUpdate) SetNillableStatusToBuildID(id *uuid.UUID) *StatusUpdate {
 	if id != nil {
 		su = su.SetStatusToBuildID(*id)
 	}
@@ -152,13 +153,13 @@ func (su *StatusUpdate) SetStatusToBuild(b *Build) *StatusUpdate {
 }
 
 // SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (su *StatusUpdate) SetStatusToProvisionedNetworkID(id int) *StatusUpdate {
+func (su *StatusUpdate) SetStatusToProvisionedNetworkID(id uuid.UUID) *StatusUpdate {
 	su.mutation.SetStatusToProvisionedNetworkID(id)
 	return su
 }
 
 // SetNillableStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (su *StatusUpdate) SetNillableStatusToProvisionedNetworkID(id *int) *StatusUpdate {
+func (su *StatusUpdate) SetNillableStatusToProvisionedNetworkID(id *uuid.UUID) *StatusUpdate {
 	if id != nil {
 		su = su.SetStatusToProvisionedNetworkID(*id)
 	}
@@ -171,13 +172,13 @@ func (su *StatusUpdate) SetStatusToProvisionedNetwork(p *ProvisionedNetwork) *St
 }
 
 // SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (su *StatusUpdate) SetStatusToProvisionedHostID(id int) *StatusUpdate {
+func (su *StatusUpdate) SetStatusToProvisionedHostID(id uuid.UUID) *StatusUpdate {
 	su.mutation.SetStatusToProvisionedHostID(id)
 	return su
 }
 
 // SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (su *StatusUpdate) SetNillableStatusToProvisionedHostID(id *int) *StatusUpdate {
+func (su *StatusUpdate) SetNillableStatusToProvisionedHostID(id *uuid.UUID) *StatusUpdate {
 	if id != nil {
 		su = su.SetStatusToProvisionedHostID(*id)
 	}
@@ -190,13 +191,13 @@ func (su *StatusUpdate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusUp
 }
 
 // SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (su *StatusUpdate) SetStatusToProvisioningStepID(id int) *StatusUpdate {
+func (su *StatusUpdate) SetStatusToProvisioningStepID(id uuid.UUID) *StatusUpdate {
 	su.mutation.SetStatusToProvisioningStepID(id)
 	return su
 }
 
 // SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (su *StatusUpdate) SetNillableStatusToProvisioningStepID(id *int) *StatusUpdate {
+func (su *StatusUpdate) SetNillableStatusToProvisioningStepID(id *uuid.UUID) *StatusUpdate {
 	if id != nil {
 		su = su.SetStatusToProvisioningStepID(*id)
 	}
@@ -209,13 +210,13 @@ func (su *StatusUpdate) SetStatusToProvisioningStep(p *ProvisioningStep) *Status
 }
 
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
-func (su *StatusUpdate) SetStatusToTeamID(id int) *StatusUpdate {
+func (su *StatusUpdate) SetStatusToTeamID(id uuid.UUID) *StatusUpdate {
 	su.mutation.SetStatusToTeamID(id)
 	return su
 }
 
 // SetNillableStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID if the given value is not nil.
-func (su *StatusUpdate) SetNillableStatusToTeamID(id *int) *StatusUpdate {
+func (su *StatusUpdate) SetNillableStatusToTeamID(id *uuid.UUID) *StatusUpdate {
 	if id != nil {
 		su = su.SetStatusToTeamID(*id)
 	}
@@ -340,7 +341,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   status.Table,
 			Columns: status.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: status.FieldID,
 			},
 		},
@@ -428,7 +429,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -444,7 +445,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -463,7 +464,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -479,7 +480,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -498,7 +499,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -514,7 +515,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -533,7 +534,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -549,7 +550,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -568,7 +569,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -584,7 +585,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -714,13 +715,13 @@ func (suo *StatusUpdateOne) ClearError() *StatusUpdateOne {
 }
 
 // SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID.
-func (suo *StatusUpdateOne) SetStatusToBuildID(id int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetStatusToBuildID(id uuid.UUID) *StatusUpdateOne {
 	suo.mutation.SetStatusToBuildID(id)
 	return suo
 }
 
 // SetNillableStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID if the given value is not nil.
-func (suo *StatusUpdateOne) SetNillableStatusToBuildID(id *int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetNillableStatusToBuildID(id *uuid.UUID) *StatusUpdateOne {
 	if id != nil {
 		suo = suo.SetStatusToBuildID(*id)
 	}
@@ -733,13 +734,13 @@ func (suo *StatusUpdateOne) SetStatusToBuild(b *Build) *StatusUpdateOne {
 }
 
 // SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (suo *StatusUpdateOne) SetStatusToProvisionedNetworkID(id int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetStatusToProvisionedNetworkID(id uuid.UUID) *StatusUpdateOne {
 	suo.mutation.SetStatusToProvisionedNetworkID(id)
 	return suo
 }
 
 // SetNillableStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (suo *StatusUpdateOne) SetNillableStatusToProvisionedNetworkID(id *int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetNillableStatusToProvisionedNetworkID(id *uuid.UUID) *StatusUpdateOne {
 	if id != nil {
 		suo = suo.SetStatusToProvisionedNetworkID(*id)
 	}
@@ -752,13 +753,13 @@ func (suo *StatusUpdateOne) SetStatusToProvisionedNetwork(p *ProvisionedNetwork)
 }
 
 // SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (suo *StatusUpdateOne) SetStatusToProvisionedHostID(id int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetStatusToProvisionedHostID(id uuid.UUID) *StatusUpdateOne {
 	suo.mutation.SetStatusToProvisionedHostID(id)
 	return suo
 }
 
 // SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (suo *StatusUpdateOne) SetNillableStatusToProvisionedHostID(id *int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetNillableStatusToProvisionedHostID(id *uuid.UUID) *StatusUpdateOne {
 	if id != nil {
 		suo = suo.SetStatusToProvisionedHostID(*id)
 	}
@@ -771,13 +772,13 @@ func (suo *StatusUpdateOne) SetStatusToProvisionedHost(p *ProvisionedHost) *Stat
 }
 
 // SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (suo *StatusUpdateOne) SetStatusToProvisioningStepID(id int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetStatusToProvisioningStepID(id uuid.UUID) *StatusUpdateOne {
 	suo.mutation.SetStatusToProvisioningStepID(id)
 	return suo
 }
 
 // SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (suo *StatusUpdateOne) SetNillableStatusToProvisioningStepID(id *int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetNillableStatusToProvisioningStepID(id *uuid.UUID) *StatusUpdateOne {
 	if id != nil {
 		suo = suo.SetStatusToProvisioningStepID(*id)
 	}
@@ -790,13 +791,13 @@ func (suo *StatusUpdateOne) SetStatusToProvisioningStep(p *ProvisioningStep) *St
 }
 
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
-func (suo *StatusUpdateOne) SetStatusToTeamID(id int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetStatusToTeamID(id uuid.UUID) *StatusUpdateOne {
 	suo.mutation.SetStatusToTeamID(id)
 	return suo
 }
 
 // SetNillableStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID if the given value is not nil.
-func (suo *StatusUpdateOne) SetNillableStatusToTeamID(id *int) *StatusUpdateOne {
+func (suo *StatusUpdateOne) SetNillableStatusToTeamID(id *uuid.UUID) *StatusUpdateOne {
 	if id != nil {
 		suo = suo.SetStatusToTeamID(*id)
 	}
@@ -928,7 +929,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Table:   status.Table,
 			Columns: status.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: status.FieldID,
 			},
 		},
@@ -1033,7 +1034,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -1049,7 +1050,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -1068,7 +1069,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1084,7 +1085,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1103,7 +1104,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1119,7 +1120,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -1138,7 +1139,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1154,7 +1155,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -1173,7 +1174,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1189,7 +1190,7 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},

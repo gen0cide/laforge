@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileDeleteQuery is the builder for querying FileDelete entities.
@@ -110,8 +111,8 @@ func (fdq *FileDeleteQuery) FirstX(ctx context.Context) *FileDelete {
 
 // FirstID returns the first FileDelete ID from the query.
 // Returns a *NotFoundError when no FileDelete ID was found.
-func (fdq *FileDeleteQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fdq *FileDeleteQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fdq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (fdq *FileDeleteQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (fdq *FileDeleteQuery) FirstIDX(ctx context.Context) int {
+func (fdq *FileDeleteQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := fdq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (fdq *FileDeleteQuery) OnlyX(ctx context.Context) *FileDelete {
 // OnlyID is like Only, but returns the only FileDelete ID in the query.
 // Returns a *NotSingularError when exactly one FileDelete ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (fdq *FileDeleteQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fdq *FileDeleteQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fdq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (fdq *FileDeleteQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (fdq *FileDeleteQuery) OnlyIDX(ctx context.Context) int {
+func (fdq *FileDeleteQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := fdq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (fdq *FileDeleteQuery) AllX(ctx context.Context) []*FileDelete {
 }
 
 // IDs executes the query and returns a list of FileDelete IDs.
-func (fdq *FileDeleteQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (fdq *FileDeleteQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := fdq.Select(filedelete.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (fdq *FileDeleteQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (fdq *FileDeleteQuery) IDsX(ctx context.Context) []int {
+func (fdq *FileDeleteQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := fdq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (fdq *FileDeleteQuery) sqlAll(ctx context.Context) ([]*FileDelete, error) {
 	}
 
 	if query := fdq.withFileDeleteToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*FileDelete)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*FileDelete)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_file_delete == nil {
 				continue
@@ -432,7 +433,7 @@ func (fdq *FileDeleteQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   filedelete.Table,
 			Columns: filedelete.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		},

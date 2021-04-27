@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // ScriptUpdate is the builder for updating Script entities.
@@ -128,14 +129,14 @@ func (su *ScriptUpdate) SetTags(m map[string]string) *ScriptUpdate {
 }
 
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
-func (su *ScriptUpdate) AddScriptToUserIDs(ids ...int) *ScriptUpdate {
+func (su *ScriptUpdate) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdate {
 	su.mutation.AddScriptToUserIDs(ids...)
 	return su
 }
 
 // AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (su *ScriptUpdate) AddScriptToUser(u ...*User) *ScriptUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -143,14 +144,14 @@ func (su *ScriptUpdate) AddScriptToUser(u ...*User) *ScriptUpdate {
 }
 
 // AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
-func (su *ScriptUpdate) AddScriptToFindingIDs(ids ...int) *ScriptUpdate {
+func (su *ScriptUpdate) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdate {
 	su.mutation.AddScriptToFindingIDs(ids...)
 	return su
 }
 
 // AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (su *ScriptUpdate) AddScriptToFinding(f ...*Finding) *ScriptUpdate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -158,13 +159,13 @@ func (su *ScriptUpdate) AddScriptToFinding(f ...*Finding) *ScriptUpdate {
 }
 
 // SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
-func (su *ScriptUpdate) SetScriptToEnvironmentID(id int) *ScriptUpdate {
+func (su *ScriptUpdate) SetScriptToEnvironmentID(id uuid.UUID) *ScriptUpdate {
 	su.mutation.SetScriptToEnvironmentID(id)
 	return su
 }
 
 // SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (su *ScriptUpdate) SetNillableScriptToEnvironmentID(id *int) *ScriptUpdate {
+func (su *ScriptUpdate) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptUpdate {
 	if id != nil {
 		su = su.SetScriptToEnvironmentID(*id)
 	}
@@ -188,14 +189,14 @@ func (su *ScriptUpdate) ClearScriptToUser() *ScriptUpdate {
 }
 
 // RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
-func (su *ScriptUpdate) RemoveScriptToUserIDs(ids ...int) *ScriptUpdate {
+func (su *ScriptUpdate) RemoveScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdate {
 	su.mutation.RemoveScriptToUserIDs(ids...)
 	return su
 }
 
 // RemoveScriptToUser removes "ScriptToUser" edges to User entities.
 func (su *ScriptUpdate) RemoveScriptToUser(u ...*User) *ScriptUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -209,14 +210,14 @@ func (su *ScriptUpdate) ClearScriptToFinding() *ScriptUpdate {
 }
 
 // RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
-func (su *ScriptUpdate) RemoveScriptToFindingIDs(ids ...int) *ScriptUpdate {
+func (su *ScriptUpdate) RemoveScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdate {
 	su.mutation.RemoveScriptToFindingIDs(ids...)
 	return su
 }
 
 // RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
 func (su *ScriptUpdate) RemoveScriptToFinding(f ...*Finding) *ScriptUpdate {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -286,7 +287,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   script.Table,
 			Columns: script.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},
@@ -419,7 +420,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -435,7 +436,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -454,7 +455,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -473,7 +474,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -489,7 +490,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -508,7 +509,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -527,7 +528,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -543,7 +544,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -671,14 +672,14 @@ func (suo *ScriptUpdateOne) SetTags(m map[string]string) *ScriptUpdateOne {
 }
 
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
-func (suo *ScriptUpdateOne) AddScriptToUserIDs(ids ...int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdateOne {
 	suo.mutation.AddScriptToUserIDs(ids...)
 	return suo
 }
 
 // AddScriptToUser adds the "ScriptToUser" edges to the User entity.
 func (suo *ScriptUpdateOne) AddScriptToUser(u ...*User) *ScriptUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -686,14 +687,14 @@ func (suo *ScriptUpdateOne) AddScriptToUser(u ...*User) *ScriptUpdateOne {
 }
 
 // AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
-func (suo *ScriptUpdateOne) AddScriptToFindingIDs(ids ...int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdateOne {
 	suo.mutation.AddScriptToFindingIDs(ids...)
 	return suo
 }
 
 // AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
 func (suo *ScriptUpdateOne) AddScriptToFinding(f ...*Finding) *ScriptUpdateOne {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -701,13 +702,13 @@ func (suo *ScriptUpdateOne) AddScriptToFinding(f ...*Finding) *ScriptUpdateOne {
 }
 
 // SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
-func (suo *ScriptUpdateOne) SetScriptToEnvironmentID(id int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) SetScriptToEnvironmentID(id uuid.UUID) *ScriptUpdateOne {
 	suo.mutation.SetScriptToEnvironmentID(id)
 	return suo
 }
 
 // SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (suo *ScriptUpdateOne) SetNillableScriptToEnvironmentID(id *int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptUpdateOne {
 	if id != nil {
 		suo = suo.SetScriptToEnvironmentID(*id)
 	}
@@ -731,14 +732,14 @@ func (suo *ScriptUpdateOne) ClearScriptToUser() *ScriptUpdateOne {
 }
 
 // RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
-func (suo *ScriptUpdateOne) RemoveScriptToUserIDs(ids ...int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) RemoveScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdateOne {
 	suo.mutation.RemoveScriptToUserIDs(ids...)
 	return suo
 }
 
 // RemoveScriptToUser removes "ScriptToUser" edges to User entities.
 func (suo *ScriptUpdateOne) RemoveScriptToUser(u ...*User) *ScriptUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -752,14 +753,14 @@ func (suo *ScriptUpdateOne) ClearScriptToFinding() *ScriptUpdateOne {
 }
 
 // RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
-func (suo *ScriptUpdateOne) RemoveScriptToFindingIDs(ids ...int) *ScriptUpdateOne {
+func (suo *ScriptUpdateOne) RemoveScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdateOne {
 	suo.mutation.RemoveScriptToFindingIDs(ids...)
 	return suo
 }
 
 // RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
 func (suo *ScriptUpdateOne) RemoveScriptToFinding(f ...*Finding) *ScriptUpdateOne {
-	ids := make([]int, len(f))
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
@@ -836,7 +837,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Table:   script.Table,
 			Columns: script.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},
@@ -986,7 +987,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1002,7 +1003,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1021,7 +1022,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1040,7 +1041,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -1056,7 +1057,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -1075,7 +1076,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -1094,7 +1095,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -1110,7 +1111,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

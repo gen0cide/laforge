@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agentstatus"
@@ -15,6 +14,7 @@ import (
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server/static"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -56,10 +56,10 @@ func ByteCountIEC(b uint64) string {
 func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb.HeartbeatReply, error) {
 	message := fmt.Sprintf("Recived ID: %v | Hostname: %v | Uptime: %v | Boot Time: %v| Number of Running Processes: %v| OS Arch: %v| Host ID: %v| Load1: %v| Load5: %v| Load15: %v| Total Memory: %v| Avalible Memory: %v| Used Memory: %v", in.GetClientId(), in.GetHostname(), in.GetUptime(), in.GetBoottime(), in.GetNumprocs(), in.GetOs(), in.GetHostid(), in.GetLoad1(), in.GetLoad5(), in.GetLoad15(), ByteCountIEC(in.GetTotalmem()), ByteCountIEC(in.GetFreemem()), ByteCountIEC(in.GetUsedmem()))
 	avalibleTasks := false
-	uuid, err := strconv.Atoi(in.GetClientId())
+	uuid, err := uuid.Parse(in.GetClientId())
 
 	if err != nil {
-		return nil, fmt.Errorf("failed casting UUID to int: %v", err)
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
 	statusExist, err := s.Client.AgentStatus.Query().Where(agentstatus.ClientIDEQ(in.GetClientId())).Exist(ctx)

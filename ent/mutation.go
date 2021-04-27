@@ -84,7 +84,7 @@ type AgentStatusMutation struct {
 	config
 	op                                   Op
 	typ                                  string
-	id                                   *int
+	id                                   *uuid.UUID
 	_ClientID                            *string
 	_Hostname                            *string
 	_UpTime                              *int64
@@ -110,8 +110,8 @@ type AgentStatusMutation struct {
 	_Timestamp                           *int64
 	add_Timestamp                        *int64
 	clearedFields                        map[string]struct{}
-	_AgentStatusToProvisionedHost        map[int]struct{}
-	removed_AgentStatusToProvisionedHost map[int]struct{}
+	_AgentStatusToProvisionedHost        map[uuid.UUID]struct{}
+	removed_AgentStatusToProvisionedHost map[uuid.UUID]struct{}
 	cleared_AgentStatusToProvisionedHost bool
 	done                                 bool
 	oldValue                             func(context.Context) (*AgentStatus, error)
@@ -138,7 +138,7 @@ func newAgentStatusMutation(c config, op Op, opts ...agentstatusOption) *AgentSt
 }
 
 // withAgentStatusID sets the ID field of the mutation.
-func withAgentStatusID(id int) agentstatusOption {
+func withAgentStatusID(id uuid.UUID) agentstatusOption {
 	return func(m *AgentStatusMutation) {
 		var (
 			err   error
@@ -188,9 +188,15 @@ func (m AgentStatusMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AgentStatus entities.
+func (m *AgentStatusMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *AgentStatusMutation) ID() (id int, exists bool) {
+func (m *AgentStatusMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -902,9 +908,9 @@ func (m *AgentStatusMutation) ResetTimestamp() {
 }
 
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ids.
-func (m *AgentStatusMutation) AddAgentStatusToProvisionedHostIDs(ids ...int) {
+func (m *AgentStatusMutation) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) {
 	if m._AgentStatusToProvisionedHost == nil {
-		m._AgentStatusToProvisionedHost = make(map[int]struct{})
+		m._AgentStatusToProvisionedHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._AgentStatusToProvisionedHost[ids[i]] = struct{}{}
@@ -922,9 +928,9 @@ func (m *AgentStatusMutation) AgentStatusToProvisionedHostCleared() bool {
 }
 
 // RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (m *AgentStatusMutation) RemoveAgentStatusToProvisionedHostIDs(ids ...int) {
+func (m *AgentStatusMutation) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) {
 	if m.removed_AgentStatusToProvisionedHost == nil {
-		m.removed_AgentStatusToProvisionedHost = make(map[int]struct{})
+		m.removed_AgentStatusToProvisionedHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_AgentStatusToProvisionedHost[ids[i]] = struct{}{}
@@ -932,7 +938,7 @@ func (m *AgentStatusMutation) RemoveAgentStatusToProvisionedHostIDs(ids ...int) 
 }
 
 // RemovedAgentStatusToProvisionedHost returns the removed IDs of the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
-func (m *AgentStatusMutation) RemovedAgentStatusToProvisionedHostIDs() (ids []int) {
+func (m *AgentStatusMutation) RemovedAgentStatusToProvisionedHostIDs() (ids []uuid.UUID) {
 	for id := range m.removed_AgentStatusToProvisionedHost {
 		ids = append(ids, id)
 	}
@@ -940,7 +946,7 @@ func (m *AgentStatusMutation) RemovedAgentStatusToProvisionedHostIDs() (ids []in
 }
 
 // AgentStatusToProvisionedHostIDs returns the "AgentStatusToProvisionedHost" edge IDs in the mutation.
-func (m *AgentStatusMutation) AgentStatusToProvisionedHostIDs() (ids []int) {
+func (m *AgentStatusMutation) AgentStatusToProvisionedHostIDs() (ids []uuid.UUID) {
 	for id := range m._AgentStatusToProvisionedHost {
 		ids = append(ids, id)
 	}
@@ -1498,24 +1504,24 @@ type BuildMutation struct {
 	config
 	op                                Op
 	typ                               string
-	id                                *int
+	id                                *uuid.UUID
 	revision                          *int
 	addrevision                       *int
 	clearedFields                     map[string]struct{}
-	_BuildToStatus                    *int
+	_BuildToStatus                    *uuid.UUID
 	cleared_BuildToStatus             bool
-	_BuildToEnvironment               *int
+	_BuildToEnvironment               *uuid.UUID
 	cleared_BuildToEnvironment        bool
-	_BuildToCompetition               *int
+	_BuildToCompetition               *uuid.UUID
 	cleared_BuildToCompetition        bool
-	_BuildToProvisionedNetwork        map[int]struct{}
-	removed_BuildToProvisionedNetwork map[int]struct{}
+	_BuildToProvisionedNetwork        map[uuid.UUID]struct{}
+	removed_BuildToProvisionedNetwork map[uuid.UUID]struct{}
 	cleared_BuildToProvisionedNetwork bool
-	_BuildToTeam                      map[int]struct{}
-	removed_BuildToTeam               map[int]struct{}
+	_BuildToTeam                      map[uuid.UUID]struct{}
+	removed_BuildToTeam               map[uuid.UUID]struct{}
 	cleared_BuildToTeam               bool
-	_BuildToPlan                      map[int]struct{}
-	removed_BuildToPlan               map[int]struct{}
+	_BuildToPlan                      map[uuid.UUID]struct{}
+	removed_BuildToPlan               map[uuid.UUID]struct{}
 	cleared_BuildToPlan               bool
 	done                              bool
 	oldValue                          func(context.Context) (*Build, error)
@@ -1542,7 +1548,7 @@ func newBuildMutation(c config, op Op, opts ...buildOption) *BuildMutation {
 }
 
 // withBuildID sets the ID field of the mutation.
-func withBuildID(id int) buildOption {
+func withBuildID(id uuid.UUID) buildOption {
 	return func(m *BuildMutation) {
 		var (
 			err   error
@@ -1592,9 +1598,15 @@ func (m BuildMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Build entities.
+func (m *BuildMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *BuildMutation) ID() (id int, exists bool) {
+func (m *BuildMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1658,7 +1670,7 @@ func (m *BuildMutation) ResetRevision() {
 }
 
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by id.
-func (m *BuildMutation) SetBuildToStatusID(id int) {
+func (m *BuildMutation) SetBuildToStatusID(id uuid.UUID) {
 	m._BuildToStatus = &id
 }
 
@@ -1673,7 +1685,7 @@ func (m *BuildMutation) BuildToStatusCleared() bool {
 }
 
 // BuildToStatusID returns the "BuildToStatus" edge ID in the mutation.
-func (m *BuildMutation) BuildToStatusID() (id int, exists bool) {
+func (m *BuildMutation) BuildToStatusID() (id uuid.UUID, exists bool) {
 	if m._BuildToStatus != nil {
 		return *m._BuildToStatus, true
 	}
@@ -1683,7 +1695,7 @@ func (m *BuildMutation) BuildToStatusID() (id int, exists bool) {
 // BuildToStatusIDs returns the "BuildToStatus" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // BuildToStatusID instead. It exists only for internal usage by the builders.
-func (m *BuildMutation) BuildToStatusIDs() (ids []int) {
+func (m *BuildMutation) BuildToStatusIDs() (ids []uuid.UUID) {
 	if id := m._BuildToStatus; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1697,7 +1709,7 @@ func (m *BuildMutation) ResetBuildToStatus() {
 }
 
 // SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by id.
-func (m *BuildMutation) SetBuildToEnvironmentID(id int) {
+func (m *BuildMutation) SetBuildToEnvironmentID(id uuid.UUID) {
 	m._BuildToEnvironment = &id
 }
 
@@ -1712,7 +1724,7 @@ func (m *BuildMutation) BuildToEnvironmentCleared() bool {
 }
 
 // BuildToEnvironmentID returns the "BuildToEnvironment" edge ID in the mutation.
-func (m *BuildMutation) BuildToEnvironmentID() (id int, exists bool) {
+func (m *BuildMutation) BuildToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._BuildToEnvironment != nil {
 		return *m._BuildToEnvironment, true
 	}
@@ -1722,7 +1734,7 @@ func (m *BuildMutation) BuildToEnvironmentID() (id int, exists bool) {
 // BuildToEnvironmentIDs returns the "BuildToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // BuildToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *BuildMutation) BuildToEnvironmentIDs() (ids []int) {
+func (m *BuildMutation) BuildToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._BuildToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1736,7 +1748,7 @@ func (m *BuildMutation) ResetBuildToEnvironment() {
 }
 
 // SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by id.
-func (m *BuildMutation) SetBuildToCompetitionID(id int) {
+func (m *BuildMutation) SetBuildToCompetitionID(id uuid.UUID) {
 	m._BuildToCompetition = &id
 }
 
@@ -1751,7 +1763,7 @@ func (m *BuildMutation) BuildToCompetitionCleared() bool {
 }
 
 // BuildToCompetitionID returns the "BuildToCompetition" edge ID in the mutation.
-func (m *BuildMutation) BuildToCompetitionID() (id int, exists bool) {
+func (m *BuildMutation) BuildToCompetitionID() (id uuid.UUID, exists bool) {
 	if m._BuildToCompetition != nil {
 		return *m._BuildToCompetition, true
 	}
@@ -1761,7 +1773,7 @@ func (m *BuildMutation) BuildToCompetitionID() (id int, exists bool) {
 // BuildToCompetitionIDs returns the "BuildToCompetition" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // BuildToCompetitionID instead. It exists only for internal usage by the builders.
-func (m *BuildMutation) BuildToCompetitionIDs() (ids []int) {
+func (m *BuildMutation) BuildToCompetitionIDs() (ids []uuid.UUID) {
 	if id := m._BuildToCompetition; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1775,9 +1787,9 @@ func (m *BuildMutation) ResetBuildToCompetition() {
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
-func (m *BuildMutation) AddBuildToProvisionedNetworkIDs(ids ...int) {
+func (m *BuildMutation) AddBuildToProvisionedNetworkIDs(ids ...uuid.UUID) {
 	if m._BuildToProvisionedNetwork == nil {
-		m._BuildToProvisionedNetwork = make(map[int]struct{})
+		m._BuildToProvisionedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._BuildToProvisionedNetwork[ids[i]] = struct{}{}
@@ -1795,9 +1807,9 @@ func (m *BuildMutation) BuildToProvisionedNetworkCleared() bool {
 }
 
 // RemoveBuildToProvisionedNetworkIDs removes the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (m *BuildMutation) RemoveBuildToProvisionedNetworkIDs(ids ...int) {
+func (m *BuildMutation) RemoveBuildToProvisionedNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_BuildToProvisionedNetwork == nil {
-		m.removed_BuildToProvisionedNetwork = make(map[int]struct{})
+		m.removed_BuildToProvisionedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_BuildToProvisionedNetwork[ids[i]] = struct{}{}
@@ -1805,7 +1817,7 @@ func (m *BuildMutation) RemoveBuildToProvisionedNetworkIDs(ids ...int) {
 }
 
 // RemovedBuildToProvisionedNetwork returns the removed IDs of the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity.
-func (m *BuildMutation) RemovedBuildToProvisionedNetworkIDs() (ids []int) {
+func (m *BuildMutation) RemovedBuildToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_BuildToProvisionedNetwork {
 		ids = append(ids, id)
 	}
@@ -1813,7 +1825,7 @@ func (m *BuildMutation) RemovedBuildToProvisionedNetworkIDs() (ids []int) {
 }
 
 // BuildToProvisionedNetworkIDs returns the "BuildToProvisionedNetwork" edge IDs in the mutation.
-func (m *BuildMutation) BuildToProvisionedNetworkIDs() (ids []int) {
+func (m *BuildMutation) BuildToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._BuildToProvisionedNetwork {
 		ids = append(ids, id)
 	}
@@ -1828,9 +1840,9 @@ func (m *BuildMutation) ResetBuildToProvisionedNetwork() {
 }
 
 // AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by ids.
-func (m *BuildMutation) AddBuildToTeamIDs(ids ...int) {
+func (m *BuildMutation) AddBuildToTeamIDs(ids ...uuid.UUID) {
 	if m._BuildToTeam == nil {
-		m._BuildToTeam = make(map[int]struct{})
+		m._BuildToTeam = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._BuildToTeam[ids[i]] = struct{}{}
@@ -1848,9 +1860,9 @@ func (m *BuildMutation) BuildToTeamCleared() bool {
 }
 
 // RemoveBuildToTeamIDs removes the "BuildToTeam" edge to the Team entity by IDs.
-func (m *BuildMutation) RemoveBuildToTeamIDs(ids ...int) {
+func (m *BuildMutation) RemoveBuildToTeamIDs(ids ...uuid.UUID) {
 	if m.removed_BuildToTeam == nil {
-		m.removed_BuildToTeam = make(map[int]struct{})
+		m.removed_BuildToTeam = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_BuildToTeam[ids[i]] = struct{}{}
@@ -1858,7 +1870,7 @@ func (m *BuildMutation) RemoveBuildToTeamIDs(ids ...int) {
 }
 
 // RemovedBuildToTeam returns the removed IDs of the "BuildToTeam" edge to the Team entity.
-func (m *BuildMutation) RemovedBuildToTeamIDs() (ids []int) {
+func (m *BuildMutation) RemovedBuildToTeamIDs() (ids []uuid.UUID) {
 	for id := range m.removed_BuildToTeam {
 		ids = append(ids, id)
 	}
@@ -1866,7 +1878,7 @@ func (m *BuildMutation) RemovedBuildToTeamIDs() (ids []int) {
 }
 
 // BuildToTeamIDs returns the "BuildToTeam" edge IDs in the mutation.
-func (m *BuildMutation) BuildToTeamIDs() (ids []int) {
+func (m *BuildMutation) BuildToTeamIDs() (ids []uuid.UUID) {
 	for id := range m._BuildToTeam {
 		ids = append(ids, id)
 	}
@@ -1881,9 +1893,9 @@ func (m *BuildMutation) ResetBuildToTeam() {
 }
 
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by ids.
-func (m *BuildMutation) AddBuildToPlanIDs(ids ...int) {
+func (m *BuildMutation) AddBuildToPlanIDs(ids ...uuid.UUID) {
 	if m._BuildToPlan == nil {
-		m._BuildToPlan = make(map[int]struct{})
+		m._BuildToPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._BuildToPlan[ids[i]] = struct{}{}
@@ -1901,9 +1913,9 @@ func (m *BuildMutation) BuildToPlanCleared() bool {
 }
 
 // RemoveBuildToPlanIDs removes the "BuildToPlan" edge to the Plan entity by IDs.
-func (m *BuildMutation) RemoveBuildToPlanIDs(ids ...int) {
+func (m *BuildMutation) RemoveBuildToPlanIDs(ids ...uuid.UUID) {
 	if m.removed_BuildToPlan == nil {
-		m.removed_BuildToPlan = make(map[int]struct{})
+		m.removed_BuildToPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_BuildToPlan[ids[i]] = struct{}{}
@@ -1911,7 +1923,7 @@ func (m *BuildMutation) RemoveBuildToPlanIDs(ids ...int) {
 }
 
 // RemovedBuildToPlan returns the removed IDs of the "BuildToPlan" edge to the Plan entity.
-func (m *BuildMutation) RemovedBuildToPlanIDs() (ids []int) {
+func (m *BuildMutation) RemovedBuildToPlanIDs() (ids []uuid.UUID) {
 	for id := range m.removed_BuildToPlan {
 		ids = append(ids, id)
 	}
@@ -1919,7 +1931,7 @@ func (m *BuildMutation) RemovedBuildToPlanIDs() (ids []int) {
 }
 
 // BuildToPlanIDs returns the "BuildToPlan" edge IDs in the mutation.
-func (m *BuildMutation) BuildToPlanIDs() (ids []int) {
+func (m *BuildMutation) BuildToPlanIDs() (ids []uuid.UUID) {
 	for id := range m._BuildToPlan {
 		ids = append(ids, id)
 	}
@@ -2254,7 +2266,7 @@ type CommandMutation struct {
 	config
 	op                           Op
 	typ                          string
-	id                           *int
+	id                           *uuid.UUID
 	hcl_id                       *string
 	name                         *string
 	description                  *string
@@ -2269,10 +2281,10 @@ type CommandMutation struct {
 	vars                         *map[string]string
 	tags                         *map[string]string
 	clearedFields                map[string]struct{}
-	_CommandToUser               map[int]struct{}
-	removed_CommandToUser        map[int]struct{}
+	_CommandToUser               map[uuid.UUID]struct{}
+	removed_CommandToUser        map[uuid.UUID]struct{}
 	cleared_CommandToUser        bool
-	_CommandToEnvironment        *int
+	_CommandToEnvironment        *uuid.UUID
 	cleared_CommandToEnvironment bool
 	done                         bool
 	oldValue                     func(context.Context) (*Command, error)
@@ -2299,7 +2311,7 @@ func newCommandMutation(c config, op Op, opts ...commandOption) *CommandMutation
 }
 
 // withCommandID sets the ID field of the mutation.
-func withCommandID(id int) commandOption {
+func withCommandID(id uuid.UUID) commandOption {
 	return func(m *CommandMutation) {
 		var (
 			err   error
@@ -2349,9 +2361,15 @@ func (m CommandMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Command entities.
+func (m *CommandMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *CommandMutation) ID() (id int, exists bool) {
+func (m *CommandMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -2795,9 +2813,9 @@ func (m *CommandMutation) ResetTags() {
 }
 
 // AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by ids.
-func (m *CommandMutation) AddCommandToUserIDs(ids ...int) {
+func (m *CommandMutation) AddCommandToUserIDs(ids ...uuid.UUID) {
 	if m._CommandToUser == nil {
-		m._CommandToUser = make(map[int]struct{})
+		m._CommandToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._CommandToUser[ids[i]] = struct{}{}
@@ -2815,9 +2833,9 @@ func (m *CommandMutation) CommandToUserCleared() bool {
 }
 
 // RemoveCommandToUserIDs removes the "CommandToUser" edge to the User entity by IDs.
-func (m *CommandMutation) RemoveCommandToUserIDs(ids ...int) {
+func (m *CommandMutation) RemoveCommandToUserIDs(ids ...uuid.UUID) {
 	if m.removed_CommandToUser == nil {
-		m.removed_CommandToUser = make(map[int]struct{})
+		m.removed_CommandToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_CommandToUser[ids[i]] = struct{}{}
@@ -2825,7 +2843,7 @@ func (m *CommandMutation) RemoveCommandToUserIDs(ids ...int) {
 }
 
 // RemovedCommandToUser returns the removed IDs of the "CommandToUser" edge to the User entity.
-func (m *CommandMutation) RemovedCommandToUserIDs() (ids []int) {
+func (m *CommandMutation) RemovedCommandToUserIDs() (ids []uuid.UUID) {
 	for id := range m.removed_CommandToUser {
 		ids = append(ids, id)
 	}
@@ -2833,7 +2851,7 @@ func (m *CommandMutation) RemovedCommandToUserIDs() (ids []int) {
 }
 
 // CommandToUserIDs returns the "CommandToUser" edge IDs in the mutation.
-func (m *CommandMutation) CommandToUserIDs() (ids []int) {
+func (m *CommandMutation) CommandToUserIDs() (ids []uuid.UUID) {
 	for id := range m._CommandToUser {
 		ids = append(ids, id)
 	}
@@ -2848,7 +2866,7 @@ func (m *CommandMutation) ResetCommandToUser() {
 }
 
 // SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by id.
-func (m *CommandMutation) SetCommandToEnvironmentID(id int) {
+func (m *CommandMutation) SetCommandToEnvironmentID(id uuid.UUID) {
 	m._CommandToEnvironment = &id
 }
 
@@ -2863,7 +2881,7 @@ func (m *CommandMutation) CommandToEnvironmentCleared() bool {
 }
 
 // CommandToEnvironmentID returns the "CommandToEnvironment" edge ID in the mutation.
-func (m *CommandMutation) CommandToEnvironmentID() (id int, exists bool) {
+func (m *CommandMutation) CommandToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._CommandToEnvironment != nil {
 		return *m._CommandToEnvironment, true
 	}
@@ -2873,7 +2891,7 @@ func (m *CommandMutation) CommandToEnvironmentID() (id int, exists bool) {
 // CommandToEnvironmentIDs returns the "CommandToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // CommandToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *CommandMutation) CommandToEnvironmentIDs() (ids []int) {
+func (m *CommandMutation) CommandToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._CommandToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3301,19 +3319,19 @@ type CompetitionMutation struct {
 	config
 	op                               Op
 	typ                              string
-	id                               *int
+	id                               *uuid.UUID
 	hcl_id                           *string
 	root_password                    *string
 	_config                          *map[string]string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_CompetitionToDNS                map[int]struct{}
-	removed_CompetitionToDNS         map[int]struct{}
+	_CompetitionToDNS                map[uuid.UUID]struct{}
+	removed_CompetitionToDNS         map[uuid.UUID]struct{}
 	cleared_CompetitionToDNS         bool
-	_CompetitionToEnvironment        *int
+	_CompetitionToEnvironment        *uuid.UUID
 	cleared_CompetitionToEnvironment bool
-	_CompetitionToBuild              map[int]struct{}
-	removed_CompetitionToBuild       map[int]struct{}
+	_CompetitionToBuild              map[uuid.UUID]struct{}
+	removed_CompetitionToBuild       map[uuid.UUID]struct{}
 	cleared_CompetitionToBuild       bool
 	done                             bool
 	oldValue                         func(context.Context) (*Competition, error)
@@ -3340,7 +3358,7 @@ func newCompetitionMutation(c config, op Op, opts ...competitionOption) *Competi
 }
 
 // withCompetitionID sets the ID field of the mutation.
-func withCompetitionID(id int) competitionOption {
+func withCompetitionID(id uuid.UUID) competitionOption {
 	return func(m *CompetitionMutation) {
 		var (
 			err   error
@@ -3390,9 +3408,15 @@ func (m CompetitionMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Competition entities.
+func (m *CompetitionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *CompetitionMutation) ID() (id int, exists bool) {
+func (m *CompetitionMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -3544,9 +3568,9 @@ func (m *CompetitionMutation) ResetTags() {
 }
 
 // AddCompetitionToDNSIDs adds the "CompetitionToDNS" edge to the DNS entity by ids.
-func (m *CompetitionMutation) AddCompetitionToDNSIDs(ids ...int) {
+func (m *CompetitionMutation) AddCompetitionToDNSIDs(ids ...uuid.UUID) {
 	if m._CompetitionToDNS == nil {
-		m._CompetitionToDNS = make(map[int]struct{})
+		m._CompetitionToDNS = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._CompetitionToDNS[ids[i]] = struct{}{}
@@ -3564,9 +3588,9 @@ func (m *CompetitionMutation) CompetitionToDNSCleared() bool {
 }
 
 // RemoveCompetitionToDNSIDs removes the "CompetitionToDNS" edge to the DNS entity by IDs.
-func (m *CompetitionMutation) RemoveCompetitionToDNSIDs(ids ...int) {
+func (m *CompetitionMutation) RemoveCompetitionToDNSIDs(ids ...uuid.UUID) {
 	if m.removed_CompetitionToDNS == nil {
-		m.removed_CompetitionToDNS = make(map[int]struct{})
+		m.removed_CompetitionToDNS = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_CompetitionToDNS[ids[i]] = struct{}{}
@@ -3574,7 +3598,7 @@ func (m *CompetitionMutation) RemoveCompetitionToDNSIDs(ids ...int) {
 }
 
 // RemovedCompetitionToDNS returns the removed IDs of the "CompetitionToDNS" edge to the DNS entity.
-func (m *CompetitionMutation) RemovedCompetitionToDNSIDs() (ids []int) {
+func (m *CompetitionMutation) RemovedCompetitionToDNSIDs() (ids []uuid.UUID) {
 	for id := range m.removed_CompetitionToDNS {
 		ids = append(ids, id)
 	}
@@ -3582,7 +3606,7 @@ func (m *CompetitionMutation) RemovedCompetitionToDNSIDs() (ids []int) {
 }
 
 // CompetitionToDNSIDs returns the "CompetitionToDNS" edge IDs in the mutation.
-func (m *CompetitionMutation) CompetitionToDNSIDs() (ids []int) {
+func (m *CompetitionMutation) CompetitionToDNSIDs() (ids []uuid.UUID) {
 	for id := range m._CompetitionToDNS {
 		ids = append(ids, id)
 	}
@@ -3597,7 +3621,7 @@ func (m *CompetitionMutation) ResetCompetitionToDNS() {
 }
 
 // SetCompetitionToEnvironmentID sets the "CompetitionToEnvironment" edge to the Environment entity by id.
-func (m *CompetitionMutation) SetCompetitionToEnvironmentID(id int) {
+func (m *CompetitionMutation) SetCompetitionToEnvironmentID(id uuid.UUID) {
 	m._CompetitionToEnvironment = &id
 }
 
@@ -3612,7 +3636,7 @@ func (m *CompetitionMutation) CompetitionToEnvironmentCleared() bool {
 }
 
 // CompetitionToEnvironmentID returns the "CompetitionToEnvironment" edge ID in the mutation.
-func (m *CompetitionMutation) CompetitionToEnvironmentID() (id int, exists bool) {
+func (m *CompetitionMutation) CompetitionToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._CompetitionToEnvironment != nil {
 		return *m._CompetitionToEnvironment, true
 	}
@@ -3622,7 +3646,7 @@ func (m *CompetitionMutation) CompetitionToEnvironmentID() (id int, exists bool)
 // CompetitionToEnvironmentIDs returns the "CompetitionToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // CompetitionToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *CompetitionMutation) CompetitionToEnvironmentIDs() (ids []int) {
+func (m *CompetitionMutation) CompetitionToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._CompetitionToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3636,9 +3660,9 @@ func (m *CompetitionMutation) ResetCompetitionToEnvironment() {
 }
 
 // AddCompetitionToBuildIDs adds the "CompetitionToBuild" edge to the Build entity by ids.
-func (m *CompetitionMutation) AddCompetitionToBuildIDs(ids ...int) {
+func (m *CompetitionMutation) AddCompetitionToBuildIDs(ids ...uuid.UUID) {
 	if m._CompetitionToBuild == nil {
-		m._CompetitionToBuild = make(map[int]struct{})
+		m._CompetitionToBuild = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._CompetitionToBuild[ids[i]] = struct{}{}
@@ -3656,9 +3680,9 @@ func (m *CompetitionMutation) CompetitionToBuildCleared() bool {
 }
 
 // RemoveCompetitionToBuildIDs removes the "CompetitionToBuild" edge to the Build entity by IDs.
-func (m *CompetitionMutation) RemoveCompetitionToBuildIDs(ids ...int) {
+func (m *CompetitionMutation) RemoveCompetitionToBuildIDs(ids ...uuid.UUID) {
 	if m.removed_CompetitionToBuild == nil {
-		m.removed_CompetitionToBuild = make(map[int]struct{})
+		m.removed_CompetitionToBuild = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_CompetitionToBuild[ids[i]] = struct{}{}
@@ -3666,7 +3690,7 @@ func (m *CompetitionMutation) RemoveCompetitionToBuildIDs(ids ...int) {
 }
 
 // RemovedCompetitionToBuild returns the removed IDs of the "CompetitionToBuild" edge to the Build entity.
-func (m *CompetitionMutation) RemovedCompetitionToBuildIDs() (ids []int) {
+func (m *CompetitionMutation) RemovedCompetitionToBuildIDs() (ids []uuid.UUID) {
 	for id := range m.removed_CompetitionToBuild {
 		ids = append(ids, id)
 	}
@@ -3674,7 +3698,7 @@ func (m *CompetitionMutation) RemovedCompetitionToBuildIDs() (ids []int) {
 }
 
 // CompetitionToBuildIDs returns the "CompetitionToBuild" edge IDs in the mutation.
-func (m *CompetitionMutation) CompetitionToBuildIDs() (ids []int) {
+func (m *CompetitionMutation) CompetitionToBuildIDs() (ids []uuid.UUID) {
 	for id := range m._CompetitionToBuild {
 		ids = append(ids, id)
 	}
@@ -3983,7 +4007,7 @@ type DNSMutation struct {
 	config
 	op                       Op
 	typ                      string
-	id                       *int
+	id                       *uuid.UUID
 	hcl_id                   *string
 	_type                    *string
 	root_domain              *string
@@ -3991,11 +4015,11 @@ type DNSMutation struct {
 	ntp_servers              *[]string
 	_config                  *map[string]string
 	clearedFields            map[string]struct{}
-	_DNSToEnvironment        map[int]struct{}
-	removed_DNSToEnvironment map[int]struct{}
+	_DNSToEnvironment        map[uuid.UUID]struct{}
+	removed_DNSToEnvironment map[uuid.UUID]struct{}
 	cleared_DNSToEnvironment bool
-	_DNSToCompetition        map[int]struct{}
-	removed_DNSToCompetition map[int]struct{}
+	_DNSToCompetition        map[uuid.UUID]struct{}
+	removed_DNSToCompetition map[uuid.UUID]struct{}
 	cleared_DNSToCompetition bool
 	done                     bool
 	oldValue                 func(context.Context) (*DNS, error)
@@ -4022,7 +4046,7 @@ func newDNSMutation(c config, op Op, opts ...dnsOption) *DNSMutation {
 }
 
 // withDNSID sets the ID field of the mutation.
-func withDNSID(id int) dnsOption {
+func withDNSID(id uuid.UUID) dnsOption {
 	return func(m *DNSMutation) {
 		var (
 			err   error
@@ -4072,9 +4096,15 @@ func (m DNSMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DNS entities.
+func (m *DNSMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *DNSMutation) ID() (id int, exists bool) {
+func (m *DNSMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4298,9 +4328,9 @@ func (m *DNSMutation) ResetConfig() {
 }
 
 // AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by ids.
-func (m *DNSMutation) AddDNSToEnvironmentIDs(ids ...int) {
+func (m *DNSMutation) AddDNSToEnvironmentIDs(ids ...uuid.UUID) {
 	if m._DNSToEnvironment == nil {
-		m._DNSToEnvironment = make(map[int]struct{})
+		m._DNSToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._DNSToEnvironment[ids[i]] = struct{}{}
@@ -4318,9 +4348,9 @@ func (m *DNSMutation) DNSToEnvironmentCleared() bool {
 }
 
 // RemoveDNSToEnvironmentIDs removes the "DNSToEnvironment" edge to the Environment entity by IDs.
-func (m *DNSMutation) RemoveDNSToEnvironmentIDs(ids ...int) {
+func (m *DNSMutation) RemoveDNSToEnvironmentIDs(ids ...uuid.UUID) {
 	if m.removed_DNSToEnvironment == nil {
-		m.removed_DNSToEnvironment = make(map[int]struct{})
+		m.removed_DNSToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_DNSToEnvironment[ids[i]] = struct{}{}
@@ -4328,7 +4358,7 @@ func (m *DNSMutation) RemoveDNSToEnvironmentIDs(ids ...int) {
 }
 
 // RemovedDNSToEnvironment returns the removed IDs of the "DNSToEnvironment" edge to the Environment entity.
-func (m *DNSMutation) RemovedDNSToEnvironmentIDs() (ids []int) {
+func (m *DNSMutation) RemovedDNSToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m.removed_DNSToEnvironment {
 		ids = append(ids, id)
 	}
@@ -4336,7 +4366,7 @@ func (m *DNSMutation) RemovedDNSToEnvironmentIDs() (ids []int) {
 }
 
 // DNSToEnvironmentIDs returns the "DNSToEnvironment" edge IDs in the mutation.
-func (m *DNSMutation) DNSToEnvironmentIDs() (ids []int) {
+func (m *DNSMutation) DNSToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m._DNSToEnvironment {
 		ids = append(ids, id)
 	}
@@ -4351,9 +4381,9 @@ func (m *DNSMutation) ResetDNSToEnvironment() {
 }
 
 // AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by ids.
-func (m *DNSMutation) AddDNSToCompetitionIDs(ids ...int) {
+func (m *DNSMutation) AddDNSToCompetitionIDs(ids ...uuid.UUID) {
 	if m._DNSToCompetition == nil {
-		m._DNSToCompetition = make(map[int]struct{})
+		m._DNSToCompetition = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._DNSToCompetition[ids[i]] = struct{}{}
@@ -4371,9 +4401,9 @@ func (m *DNSMutation) DNSToCompetitionCleared() bool {
 }
 
 // RemoveDNSToCompetitionIDs removes the "DNSToCompetition" edge to the Competition entity by IDs.
-func (m *DNSMutation) RemoveDNSToCompetitionIDs(ids ...int) {
+func (m *DNSMutation) RemoveDNSToCompetitionIDs(ids ...uuid.UUID) {
 	if m.removed_DNSToCompetition == nil {
-		m.removed_DNSToCompetition = make(map[int]struct{})
+		m.removed_DNSToCompetition = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_DNSToCompetition[ids[i]] = struct{}{}
@@ -4381,7 +4411,7 @@ func (m *DNSMutation) RemoveDNSToCompetitionIDs(ids ...int) {
 }
 
 // RemovedDNSToCompetition returns the removed IDs of the "DNSToCompetition" edge to the Competition entity.
-func (m *DNSMutation) RemovedDNSToCompetitionIDs() (ids []int) {
+func (m *DNSMutation) RemovedDNSToCompetitionIDs() (ids []uuid.UUID) {
 	for id := range m.removed_DNSToCompetition {
 		ids = append(ids, id)
 	}
@@ -4389,7 +4419,7 @@ func (m *DNSMutation) RemovedDNSToCompetitionIDs() (ids []int) {
 }
 
 // DNSToCompetitionIDs returns the "DNSToCompetition" edge IDs in the mutation.
-func (m *DNSMutation) DNSToCompetitionIDs() (ids []int) {
+func (m *DNSMutation) DNSToCompetitionIDs() (ids []uuid.UUID) {
 	for id := range m._DNSToCompetition {
 		ids = append(ids, id)
 	}
@@ -4714,7 +4744,7 @@ type DNSRecordMutation struct {
 	config
 	op                             Op
 	typ                            string
-	id                             *int
+	id                             *uuid.UUID
 	hcl_id                         *string
 	name                           *string
 	values                         *[]string
@@ -4724,7 +4754,7 @@ type DNSRecordMutation struct {
 	disabled                       *bool
 	tags                           *map[string]string
 	clearedFields                  map[string]struct{}
-	_DNSRecordToEnvironment        *int
+	_DNSRecordToEnvironment        *uuid.UUID
 	cleared_DNSRecordToEnvironment bool
 	done                           bool
 	oldValue                       func(context.Context) (*DNSRecord, error)
@@ -4751,7 +4781,7 @@ func newDNSRecordMutation(c config, op Op, opts ...dnsrecordOption) *DNSRecordMu
 }
 
 // withDNSRecordID sets the ID field of the mutation.
-func withDNSRecordID(id int) dnsrecordOption {
+func withDNSRecordID(id uuid.UUID) dnsrecordOption {
 	return func(m *DNSRecordMutation) {
 		var (
 			err   error
@@ -4801,9 +4831,15 @@ func (m DNSRecordMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DNSRecord entities.
+func (m *DNSRecordMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *DNSRecordMutation) ID() (id int, exists bool) {
+func (m *DNSRecordMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -5099,7 +5135,7 @@ func (m *DNSRecordMutation) ResetTags() {
 }
 
 // SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by id.
-func (m *DNSRecordMutation) SetDNSRecordToEnvironmentID(id int) {
+func (m *DNSRecordMutation) SetDNSRecordToEnvironmentID(id uuid.UUID) {
 	m._DNSRecordToEnvironment = &id
 }
 
@@ -5114,7 +5150,7 @@ func (m *DNSRecordMutation) DNSRecordToEnvironmentCleared() bool {
 }
 
 // DNSRecordToEnvironmentID returns the "DNSRecordToEnvironment" edge ID in the mutation.
-func (m *DNSRecordMutation) DNSRecordToEnvironmentID() (id int, exists bool) {
+func (m *DNSRecordMutation) DNSRecordToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._DNSRecordToEnvironment != nil {
 		return *m._DNSRecordToEnvironment, true
 	}
@@ -5124,7 +5160,7 @@ func (m *DNSRecordMutation) DNSRecordToEnvironmentID() (id int, exists bool) {
 // DNSRecordToEnvironmentIDs returns the "DNSRecordToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // DNSRecordToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *DNSRecordMutation) DNSRecordToEnvironmentIDs() (ids []int) {
+func (m *DNSRecordMutation) DNSRecordToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._DNSRecordToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -5448,11 +5484,11 @@ type DiskMutation struct {
 	config
 	op                 Op
 	typ                string
-	id                 *int
+	id                 *uuid.UUID
 	size               *int
 	addsize            *int
 	clearedFields      map[string]struct{}
-	_DiskToHost        *int
+	_DiskToHost        *uuid.UUID
 	cleared_DiskToHost bool
 	done               bool
 	oldValue           func(context.Context) (*Disk, error)
@@ -5479,7 +5515,7 @@ func newDiskMutation(c config, op Op, opts ...diskOption) *DiskMutation {
 }
 
 // withDiskID sets the ID field of the mutation.
-func withDiskID(id int) diskOption {
+func withDiskID(id uuid.UUID) diskOption {
 	return func(m *DiskMutation) {
 		var (
 			err   error
@@ -5529,9 +5565,15 @@ func (m DiskMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Disk entities.
+func (m *DiskMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *DiskMutation) ID() (id int, exists bool) {
+func (m *DiskMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -5595,7 +5637,7 @@ func (m *DiskMutation) ResetSize() {
 }
 
 // SetDiskToHostID sets the "DiskToHost" edge to the Host entity by id.
-func (m *DiskMutation) SetDiskToHostID(id int) {
+func (m *DiskMutation) SetDiskToHostID(id uuid.UUID) {
 	m._DiskToHost = &id
 }
 
@@ -5610,7 +5652,7 @@ func (m *DiskMutation) DiskToHostCleared() bool {
 }
 
 // DiskToHostID returns the "DiskToHost" edge ID in the mutation.
-func (m *DiskMutation) DiskToHostID() (id int, exists bool) {
+func (m *DiskMutation) DiskToHostID() (id uuid.UUID, exists bool) {
 	if m._DiskToHost != nil {
 		return *m._DiskToHost, true
 	}
@@ -5620,7 +5662,7 @@ func (m *DiskMutation) DiskToHostID() (id int, exists bool) {
 // DiskToHostIDs returns the "DiskToHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // DiskToHostID instead. It exists only for internal usage by the builders.
-func (m *DiskMutation) DiskToHostIDs() (ids []int) {
+func (m *DiskMutation) DiskToHostIDs() (ids []uuid.UUID) {
 	if id := m._DiskToHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -5840,7 +5882,7 @@ type EnvironmentMutation struct {
 	config
 	op                                   Op
 	typ                                  string
-	id                                   *int
+	id                                   *uuid.UUID
 	hcl_id                               *string
 	competition_id                       *string
 	name                                 *string
@@ -5855,53 +5897,53 @@ type EnvironmentMutation struct {
 	_config                              *map[string]string
 	tags                                 *map[string]string
 	clearedFields                        map[string]struct{}
-	_EnvironmentToUser                   map[int]struct{}
-	removed_EnvironmentToUser            map[int]struct{}
+	_EnvironmentToUser                   map[uuid.UUID]struct{}
+	removed_EnvironmentToUser            map[uuid.UUID]struct{}
 	cleared_EnvironmentToUser            bool
-	_EnvironmentToHost                   map[int]struct{}
-	removed_EnvironmentToHost            map[int]struct{}
+	_EnvironmentToHost                   map[uuid.UUID]struct{}
+	removed_EnvironmentToHost            map[uuid.UUID]struct{}
 	cleared_EnvironmentToHost            bool
-	_EnvironmentToCompetition            map[int]struct{}
-	removed_EnvironmentToCompetition     map[int]struct{}
+	_EnvironmentToCompetition            map[uuid.UUID]struct{}
+	removed_EnvironmentToCompetition     map[uuid.UUID]struct{}
 	cleared_EnvironmentToCompetition     bool
-	_EnvironmentToIdentity               map[int]struct{}
-	removed_EnvironmentToIdentity        map[int]struct{}
+	_EnvironmentToIdentity               map[uuid.UUID]struct{}
+	removed_EnvironmentToIdentity        map[uuid.UUID]struct{}
 	cleared_EnvironmentToIdentity        bool
-	_EnvironmentToCommand                map[int]struct{}
-	removed_EnvironmentToCommand         map[int]struct{}
+	_EnvironmentToCommand                map[uuid.UUID]struct{}
+	removed_EnvironmentToCommand         map[uuid.UUID]struct{}
 	cleared_EnvironmentToCommand         bool
-	_EnvironmentToScript                 map[int]struct{}
-	removed_EnvironmentToScript          map[int]struct{}
+	_EnvironmentToScript                 map[uuid.UUID]struct{}
+	removed_EnvironmentToScript          map[uuid.UUID]struct{}
 	cleared_EnvironmentToScript          bool
-	_EnvironmentToFileDownload           map[int]struct{}
-	removed_EnvironmentToFileDownload    map[int]struct{}
+	_EnvironmentToFileDownload           map[uuid.UUID]struct{}
+	removed_EnvironmentToFileDownload    map[uuid.UUID]struct{}
 	cleared_EnvironmentToFileDownload    bool
-	_EnvironmentToFileDelete             map[int]struct{}
-	removed_EnvironmentToFileDelete      map[int]struct{}
+	_EnvironmentToFileDelete             map[uuid.UUID]struct{}
+	removed_EnvironmentToFileDelete      map[uuid.UUID]struct{}
 	cleared_EnvironmentToFileDelete      bool
-	_EnvironmentToFileExtract            map[int]struct{}
-	removed_EnvironmentToFileExtract     map[int]struct{}
+	_EnvironmentToFileExtract            map[uuid.UUID]struct{}
+	removed_EnvironmentToFileExtract     map[uuid.UUID]struct{}
 	cleared_EnvironmentToFileExtract     bool
-	_EnvironmentToIncludedNetwork        map[int]struct{}
-	removed_EnvironmentToIncludedNetwork map[int]struct{}
+	_EnvironmentToIncludedNetwork        map[uuid.UUID]struct{}
+	removed_EnvironmentToIncludedNetwork map[uuid.UUID]struct{}
 	cleared_EnvironmentToIncludedNetwork bool
-	_EnvironmentToFinding                map[int]struct{}
-	removed_EnvironmentToFinding         map[int]struct{}
+	_EnvironmentToFinding                map[uuid.UUID]struct{}
+	removed_EnvironmentToFinding         map[uuid.UUID]struct{}
 	cleared_EnvironmentToFinding         bool
-	_EnvironmentToDNSRecord              map[int]struct{}
-	removed_EnvironmentToDNSRecord       map[int]struct{}
+	_EnvironmentToDNSRecord              map[uuid.UUID]struct{}
+	removed_EnvironmentToDNSRecord       map[uuid.UUID]struct{}
 	cleared_EnvironmentToDNSRecord       bool
-	_EnvironmentToDNS                    map[int]struct{}
-	removed_EnvironmentToDNS             map[int]struct{}
+	_EnvironmentToDNS                    map[uuid.UUID]struct{}
+	removed_EnvironmentToDNS             map[uuid.UUID]struct{}
 	cleared_EnvironmentToDNS             bool
-	_EnvironmentToNetwork                map[int]struct{}
-	removed_EnvironmentToNetwork         map[int]struct{}
+	_EnvironmentToNetwork                map[uuid.UUID]struct{}
+	removed_EnvironmentToNetwork         map[uuid.UUID]struct{}
 	cleared_EnvironmentToNetwork         bool
-	_EnvironmentToHostDependency         map[int]struct{}
-	removed_EnvironmentToHostDependency  map[int]struct{}
+	_EnvironmentToHostDependency         map[uuid.UUID]struct{}
+	removed_EnvironmentToHostDependency  map[uuid.UUID]struct{}
 	cleared_EnvironmentToHostDependency  bool
-	_EnvironmentToBuild                  map[int]struct{}
-	removed_EnvironmentToBuild           map[int]struct{}
+	_EnvironmentToBuild                  map[uuid.UUID]struct{}
+	removed_EnvironmentToBuild           map[uuid.UUID]struct{}
 	cleared_EnvironmentToBuild           bool
 	done                                 bool
 	oldValue                             func(context.Context) (*Environment, error)
@@ -5928,7 +5970,7 @@ func newEnvironmentMutation(c config, op Op, opts ...environmentOption) *Environ
 }
 
 // withEnvironmentID sets the ID field of the mutation.
-func withEnvironmentID(id int) environmentOption {
+func withEnvironmentID(id uuid.UUID) environmentOption {
 	return func(m *EnvironmentMutation) {
 		var (
 			err   error
@@ -5978,9 +6020,15 @@ func (m EnvironmentMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Environment entities.
+func (m *EnvironmentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *EnvironmentMutation) ID() (id int, exists bool) {
+func (m *EnvironmentMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -6424,9 +6472,9 @@ func (m *EnvironmentMutation) ResetTags() {
 }
 
 // AddEnvironmentToUserIDs adds the "EnvironmentToUser" edge to the User entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToUserIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToUserIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToUser == nil {
-		m._EnvironmentToUser = make(map[int]struct{})
+		m._EnvironmentToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToUser[ids[i]] = struct{}{}
@@ -6444,9 +6492,9 @@ func (m *EnvironmentMutation) EnvironmentToUserCleared() bool {
 }
 
 // RemoveEnvironmentToUserIDs removes the "EnvironmentToUser" edge to the User entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToUserIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToUserIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToUser == nil {
-		m.removed_EnvironmentToUser = make(map[int]struct{})
+		m.removed_EnvironmentToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToUser[ids[i]] = struct{}{}
@@ -6454,7 +6502,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToUserIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToUser returns the removed IDs of the "EnvironmentToUser" edge to the User entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToUserIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToUserIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToUser {
 		ids = append(ids, id)
 	}
@@ -6462,7 +6510,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToUserIDs() (ids []int) {
 }
 
 // EnvironmentToUserIDs returns the "EnvironmentToUser" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToUserIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToUserIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToUser {
 		ids = append(ids, id)
 	}
@@ -6477,9 +6525,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToUser() {
 }
 
 // AddEnvironmentToHostIDs adds the "EnvironmentToHost" edge to the Host entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToHostIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToHostIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToHost == nil {
-		m._EnvironmentToHost = make(map[int]struct{})
+		m._EnvironmentToHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToHost[ids[i]] = struct{}{}
@@ -6497,9 +6545,9 @@ func (m *EnvironmentMutation) EnvironmentToHostCleared() bool {
 }
 
 // RemoveEnvironmentToHostIDs removes the "EnvironmentToHost" edge to the Host entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToHostIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToHostIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToHost == nil {
-		m.removed_EnvironmentToHost = make(map[int]struct{})
+		m.removed_EnvironmentToHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToHost[ids[i]] = struct{}{}
@@ -6507,7 +6555,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToHostIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToHost returns the removed IDs of the "EnvironmentToHost" edge to the Host entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToHostIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToHostIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToHost {
 		ids = append(ids, id)
 	}
@@ -6515,7 +6563,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToHostIDs() (ids []int) {
 }
 
 // EnvironmentToHostIDs returns the "EnvironmentToHost" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToHostIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToHostIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToHost {
 		ids = append(ids, id)
 	}
@@ -6530,9 +6578,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToHost() {
 }
 
 // AddEnvironmentToCompetitionIDs adds the "EnvironmentToCompetition" edge to the Competition entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToCompetitionIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToCompetitionIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToCompetition == nil {
-		m._EnvironmentToCompetition = make(map[int]struct{})
+		m._EnvironmentToCompetition = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToCompetition[ids[i]] = struct{}{}
@@ -6550,9 +6598,9 @@ func (m *EnvironmentMutation) EnvironmentToCompetitionCleared() bool {
 }
 
 // RemoveEnvironmentToCompetitionIDs removes the "EnvironmentToCompetition" edge to the Competition entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToCompetitionIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToCompetitionIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToCompetition == nil {
-		m.removed_EnvironmentToCompetition = make(map[int]struct{})
+		m.removed_EnvironmentToCompetition = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToCompetition[ids[i]] = struct{}{}
@@ -6560,7 +6608,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToCompetitionIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToCompetition returns the removed IDs of the "EnvironmentToCompetition" edge to the Competition entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToCompetitionIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToCompetitionIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToCompetition {
 		ids = append(ids, id)
 	}
@@ -6568,7 +6616,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToCompetitionIDs() (ids []int) {
 }
 
 // EnvironmentToCompetitionIDs returns the "EnvironmentToCompetition" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToCompetitionIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToCompetitionIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToCompetition {
 		ids = append(ids, id)
 	}
@@ -6583,9 +6631,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToCompetition() {
 }
 
 // AddEnvironmentToIdentityIDs adds the "EnvironmentToIdentity" edge to the Identity entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToIdentityIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToIdentityIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToIdentity == nil {
-		m._EnvironmentToIdentity = make(map[int]struct{})
+		m._EnvironmentToIdentity = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToIdentity[ids[i]] = struct{}{}
@@ -6603,9 +6651,9 @@ func (m *EnvironmentMutation) EnvironmentToIdentityCleared() bool {
 }
 
 // RemoveEnvironmentToIdentityIDs removes the "EnvironmentToIdentity" edge to the Identity entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToIdentityIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToIdentityIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToIdentity == nil {
-		m.removed_EnvironmentToIdentity = make(map[int]struct{})
+		m.removed_EnvironmentToIdentity = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToIdentity[ids[i]] = struct{}{}
@@ -6613,7 +6661,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToIdentityIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToIdentity returns the removed IDs of the "EnvironmentToIdentity" edge to the Identity entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToIdentityIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToIdentityIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToIdentity {
 		ids = append(ids, id)
 	}
@@ -6621,7 +6669,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToIdentityIDs() (ids []int) {
 }
 
 // EnvironmentToIdentityIDs returns the "EnvironmentToIdentity" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToIdentityIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToIdentityIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToIdentity {
 		ids = append(ids, id)
 	}
@@ -6636,9 +6684,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToIdentity() {
 }
 
 // AddEnvironmentToCommandIDs adds the "EnvironmentToCommand" edge to the Command entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToCommandIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToCommandIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToCommand == nil {
-		m._EnvironmentToCommand = make(map[int]struct{})
+		m._EnvironmentToCommand = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToCommand[ids[i]] = struct{}{}
@@ -6656,9 +6704,9 @@ func (m *EnvironmentMutation) EnvironmentToCommandCleared() bool {
 }
 
 // RemoveEnvironmentToCommandIDs removes the "EnvironmentToCommand" edge to the Command entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToCommandIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToCommandIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToCommand == nil {
-		m.removed_EnvironmentToCommand = make(map[int]struct{})
+		m.removed_EnvironmentToCommand = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToCommand[ids[i]] = struct{}{}
@@ -6666,7 +6714,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToCommandIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToCommand returns the removed IDs of the "EnvironmentToCommand" edge to the Command entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToCommandIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToCommandIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToCommand {
 		ids = append(ids, id)
 	}
@@ -6674,7 +6722,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToCommandIDs() (ids []int) {
 }
 
 // EnvironmentToCommandIDs returns the "EnvironmentToCommand" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToCommandIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToCommandIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToCommand {
 		ids = append(ids, id)
 	}
@@ -6689,9 +6737,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToCommand() {
 }
 
 // AddEnvironmentToScriptIDs adds the "EnvironmentToScript" edge to the Script entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToScriptIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToScriptIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToScript == nil {
-		m._EnvironmentToScript = make(map[int]struct{})
+		m._EnvironmentToScript = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToScript[ids[i]] = struct{}{}
@@ -6709,9 +6757,9 @@ func (m *EnvironmentMutation) EnvironmentToScriptCleared() bool {
 }
 
 // RemoveEnvironmentToScriptIDs removes the "EnvironmentToScript" edge to the Script entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToScriptIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToScriptIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToScript == nil {
-		m.removed_EnvironmentToScript = make(map[int]struct{})
+		m.removed_EnvironmentToScript = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToScript[ids[i]] = struct{}{}
@@ -6719,7 +6767,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToScriptIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToScript returns the removed IDs of the "EnvironmentToScript" edge to the Script entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToScriptIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToScriptIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToScript {
 		ids = append(ids, id)
 	}
@@ -6727,7 +6775,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToScriptIDs() (ids []int) {
 }
 
 // EnvironmentToScriptIDs returns the "EnvironmentToScript" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToScriptIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToScriptIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToScript {
 		ids = append(ids, id)
 	}
@@ -6742,9 +6790,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToScript() {
 }
 
 // AddEnvironmentToFileDownloadIDs adds the "EnvironmentToFileDownload" edge to the FileDownload entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToFileDownloadIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToFileDownloadIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToFileDownload == nil {
-		m._EnvironmentToFileDownload = make(map[int]struct{})
+		m._EnvironmentToFileDownload = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToFileDownload[ids[i]] = struct{}{}
@@ -6762,9 +6810,9 @@ func (m *EnvironmentMutation) EnvironmentToFileDownloadCleared() bool {
 }
 
 // RemoveEnvironmentToFileDownloadIDs removes the "EnvironmentToFileDownload" edge to the FileDownload entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToFileDownloadIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToFileDownloadIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToFileDownload == nil {
-		m.removed_EnvironmentToFileDownload = make(map[int]struct{})
+		m.removed_EnvironmentToFileDownload = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToFileDownload[ids[i]] = struct{}{}
@@ -6772,7 +6820,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToFileDownloadIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToFileDownload returns the removed IDs of the "EnvironmentToFileDownload" edge to the FileDownload entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToFileDownloadIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToFileDownloadIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToFileDownload {
 		ids = append(ids, id)
 	}
@@ -6780,7 +6828,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToFileDownloadIDs() (ids []int) 
 }
 
 // EnvironmentToFileDownloadIDs returns the "EnvironmentToFileDownload" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToFileDownloadIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToFileDownloadIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToFileDownload {
 		ids = append(ids, id)
 	}
@@ -6795,9 +6843,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToFileDownload() {
 }
 
 // AddEnvironmentToFileDeleteIDs adds the "EnvironmentToFileDelete" edge to the FileDelete entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToFileDeleteIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToFileDeleteIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToFileDelete == nil {
-		m._EnvironmentToFileDelete = make(map[int]struct{})
+		m._EnvironmentToFileDelete = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToFileDelete[ids[i]] = struct{}{}
@@ -6815,9 +6863,9 @@ func (m *EnvironmentMutation) EnvironmentToFileDeleteCleared() bool {
 }
 
 // RemoveEnvironmentToFileDeleteIDs removes the "EnvironmentToFileDelete" edge to the FileDelete entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToFileDeleteIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToFileDeleteIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToFileDelete == nil {
-		m.removed_EnvironmentToFileDelete = make(map[int]struct{})
+		m.removed_EnvironmentToFileDelete = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToFileDelete[ids[i]] = struct{}{}
@@ -6825,7 +6873,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToFileDeleteIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToFileDelete returns the removed IDs of the "EnvironmentToFileDelete" edge to the FileDelete entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToFileDeleteIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToFileDeleteIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToFileDelete {
 		ids = append(ids, id)
 	}
@@ -6833,7 +6881,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToFileDeleteIDs() (ids []int) {
 }
 
 // EnvironmentToFileDeleteIDs returns the "EnvironmentToFileDelete" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToFileDeleteIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToFileDeleteIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToFileDelete {
 		ids = append(ids, id)
 	}
@@ -6848,9 +6896,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToFileDelete() {
 }
 
 // AddEnvironmentToFileExtractIDs adds the "EnvironmentToFileExtract" edge to the FileExtract entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToFileExtractIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToFileExtractIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToFileExtract == nil {
-		m._EnvironmentToFileExtract = make(map[int]struct{})
+		m._EnvironmentToFileExtract = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToFileExtract[ids[i]] = struct{}{}
@@ -6868,9 +6916,9 @@ func (m *EnvironmentMutation) EnvironmentToFileExtractCleared() bool {
 }
 
 // RemoveEnvironmentToFileExtractIDs removes the "EnvironmentToFileExtract" edge to the FileExtract entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToFileExtractIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToFileExtractIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToFileExtract == nil {
-		m.removed_EnvironmentToFileExtract = make(map[int]struct{})
+		m.removed_EnvironmentToFileExtract = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToFileExtract[ids[i]] = struct{}{}
@@ -6878,7 +6926,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToFileExtractIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToFileExtract returns the removed IDs of the "EnvironmentToFileExtract" edge to the FileExtract entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToFileExtractIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToFileExtractIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToFileExtract {
 		ids = append(ids, id)
 	}
@@ -6886,7 +6934,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToFileExtractIDs() (ids []int) {
 }
 
 // EnvironmentToFileExtractIDs returns the "EnvironmentToFileExtract" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToFileExtractIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToFileExtractIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToFileExtract {
 		ids = append(ids, id)
 	}
@@ -6901,9 +6949,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToFileExtract() {
 }
 
 // AddEnvironmentToIncludedNetworkIDs adds the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToIncludedNetworkIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToIncludedNetwork == nil {
-		m._EnvironmentToIncludedNetwork = make(map[int]struct{})
+		m._EnvironmentToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToIncludedNetwork[ids[i]] = struct{}{}
@@ -6921,9 +6969,9 @@ func (m *EnvironmentMutation) EnvironmentToIncludedNetworkCleared() bool {
 }
 
 // RemoveEnvironmentToIncludedNetworkIDs removes the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToIncludedNetworkIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToIncludedNetwork == nil {
-		m.removed_EnvironmentToIncludedNetwork = make(map[int]struct{})
+		m.removed_EnvironmentToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToIncludedNetwork[ids[i]] = struct{}{}
@@ -6931,7 +6979,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToIncludedNetworkIDs(ids ...int) 
 }
 
 // RemovedEnvironmentToIncludedNetwork returns the removed IDs of the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToIncludedNetworkIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -6939,7 +6987,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToIncludedNetworkIDs() (ids []in
 }
 
 // EnvironmentToIncludedNetworkIDs returns the "EnvironmentToIncludedNetwork" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToIncludedNetworkIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -6954,9 +7002,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToIncludedNetwork() {
 }
 
 // AddEnvironmentToFindingIDs adds the "EnvironmentToFinding" edge to the Finding entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToFindingIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToFindingIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToFinding == nil {
-		m._EnvironmentToFinding = make(map[int]struct{})
+		m._EnvironmentToFinding = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToFinding[ids[i]] = struct{}{}
@@ -6974,9 +7022,9 @@ func (m *EnvironmentMutation) EnvironmentToFindingCleared() bool {
 }
 
 // RemoveEnvironmentToFindingIDs removes the "EnvironmentToFinding" edge to the Finding entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToFindingIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToFindingIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToFinding == nil {
-		m.removed_EnvironmentToFinding = make(map[int]struct{})
+		m.removed_EnvironmentToFinding = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToFinding[ids[i]] = struct{}{}
@@ -6984,7 +7032,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToFindingIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToFinding returns the removed IDs of the "EnvironmentToFinding" edge to the Finding entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToFindingIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToFindingIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToFinding {
 		ids = append(ids, id)
 	}
@@ -6992,7 +7040,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToFindingIDs() (ids []int) {
 }
 
 // EnvironmentToFindingIDs returns the "EnvironmentToFinding" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToFindingIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToFindingIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToFinding {
 		ids = append(ids, id)
 	}
@@ -7007,9 +7055,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToFinding() {
 }
 
 // AddEnvironmentToDNSRecordIDs adds the "EnvironmentToDNSRecord" edge to the DNSRecord entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToDNSRecordIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToDNSRecordIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToDNSRecord == nil {
-		m._EnvironmentToDNSRecord = make(map[int]struct{})
+		m._EnvironmentToDNSRecord = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToDNSRecord[ids[i]] = struct{}{}
@@ -7027,9 +7075,9 @@ func (m *EnvironmentMutation) EnvironmentToDNSRecordCleared() bool {
 }
 
 // RemoveEnvironmentToDNSRecordIDs removes the "EnvironmentToDNSRecord" edge to the DNSRecord entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToDNSRecordIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToDNSRecordIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToDNSRecord == nil {
-		m.removed_EnvironmentToDNSRecord = make(map[int]struct{})
+		m.removed_EnvironmentToDNSRecord = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToDNSRecord[ids[i]] = struct{}{}
@@ -7037,7 +7085,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToDNSRecordIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToDNSRecord returns the removed IDs of the "EnvironmentToDNSRecord" edge to the DNSRecord entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToDNSRecordIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToDNSRecordIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToDNSRecord {
 		ids = append(ids, id)
 	}
@@ -7045,7 +7093,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToDNSRecordIDs() (ids []int) {
 }
 
 // EnvironmentToDNSRecordIDs returns the "EnvironmentToDNSRecord" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToDNSRecordIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToDNSRecordIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToDNSRecord {
 		ids = append(ids, id)
 	}
@@ -7060,9 +7108,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToDNSRecord() {
 }
 
 // AddEnvironmentToDNSIDs adds the "EnvironmentToDNS" edge to the DNS entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToDNSIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToDNSIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToDNS == nil {
-		m._EnvironmentToDNS = make(map[int]struct{})
+		m._EnvironmentToDNS = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToDNS[ids[i]] = struct{}{}
@@ -7080,9 +7128,9 @@ func (m *EnvironmentMutation) EnvironmentToDNSCleared() bool {
 }
 
 // RemoveEnvironmentToDNSIDs removes the "EnvironmentToDNS" edge to the DNS entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToDNSIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToDNSIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToDNS == nil {
-		m.removed_EnvironmentToDNS = make(map[int]struct{})
+		m.removed_EnvironmentToDNS = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToDNS[ids[i]] = struct{}{}
@@ -7090,7 +7138,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToDNSIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToDNS returns the removed IDs of the "EnvironmentToDNS" edge to the DNS entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToDNSIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToDNSIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToDNS {
 		ids = append(ids, id)
 	}
@@ -7098,7 +7146,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToDNSIDs() (ids []int) {
 }
 
 // EnvironmentToDNSIDs returns the "EnvironmentToDNS" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToDNSIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToDNSIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToDNS {
 		ids = append(ids, id)
 	}
@@ -7113,9 +7161,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToDNS() {
 }
 
 // AddEnvironmentToNetworkIDs adds the "EnvironmentToNetwork" edge to the Network entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToNetworkIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToNetworkIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToNetwork == nil {
-		m._EnvironmentToNetwork = make(map[int]struct{})
+		m._EnvironmentToNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToNetwork[ids[i]] = struct{}{}
@@ -7133,9 +7181,9 @@ func (m *EnvironmentMutation) EnvironmentToNetworkCleared() bool {
 }
 
 // RemoveEnvironmentToNetworkIDs removes the "EnvironmentToNetwork" edge to the Network entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToNetworkIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToNetwork == nil {
-		m.removed_EnvironmentToNetwork = make(map[int]struct{})
+		m.removed_EnvironmentToNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToNetwork[ids[i]] = struct{}{}
@@ -7143,7 +7191,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToNetworkIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToNetwork returns the removed IDs of the "EnvironmentToNetwork" edge to the Network entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToNetworkIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToNetwork {
 		ids = append(ids, id)
 	}
@@ -7151,7 +7199,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToNetworkIDs() (ids []int) {
 }
 
 // EnvironmentToNetworkIDs returns the "EnvironmentToNetwork" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToNetworkIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToNetwork {
 		ids = append(ids, id)
 	}
@@ -7166,9 +7214,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToNetwork() {
 }
 
 // AddEnvironmentToHostDependencyIDs adds the "EnvironmentToHostDependency" edge to the HostDependency entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToHostDependencyIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToHostDependencyIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToHostDependency == nil {
-		m._EnvironmentToHostDependency = make(map[int]struct{})
+		m._EnvironmentToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToHostDependency[ids[i]] = struct{}{}
@@ -7186,9 +7234,9 @@ func (m *EnvironmentMutation) EnvironmentToHostDependencyCleared() bool {
 }
 
 // RemoveEnvironmentToHostDependencyIDs removes the "EnvironmentToHostDependency" edge to the HostDependency entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToHostDependencyIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToHostDependencyIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToHostDependency == nil {
-		m.removed_EnvironmentToHostDependency = make(map[int]struct{})
+		m.removed_EnvironmentToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToHostDependency[ids[i]] = struct{}{}
@@ -7196,7 +7244,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToHostDependencyIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToHostDependency returns the removed IDs of the "EnvironmentToHostDependency" edge to the HostDependency entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToHostDependencyIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToHostDependency {
 		ids = append(ids, id)
 	}
@@ -7204,7 +7252,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToHostDependencyIDs() (ids []int
 }
 
 // EnvironmentToHostDependencyIDs returns the "EnvironmentToHostDependency" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToHostDependencyIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToHostDependency {
 		ids = append(ids, id)
 	}
@@ -7219,9 +7267,9 @@ func (m *EnvironmentMutation) ResetEnvironmentToHostDependency() {
 }
 
 // AddEnvironmentToBuildIDs adds the "EnvironmentToBuild" edge to the Build entity by ids.
-func (m *EnvironmentMutation) AddEnvironmentToBuildIDs(ids ...int) {
+func (m *EnvironmentMutation) AddEnvironmentToBuildIDs(ids ...uuid.UUID) {
 	if m._EnvironmentToBuild == nil {
-		m._EnvironmentToBuild = make(map[int]struct{})
+		m._EnvironmentToBuild = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._EnvironmentToBuild[ids[i]] = struct{}{}
@@ -7239,9 +7287,9 @@ func (m *EnvironmentMutation) EnvironmentToBuildCleared() bool {
 }
 
 // RemoveEnvironmentToBuildIDs removes the "EnvironmentToBuild" edge to the Build entity by IDs.
-func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...int) {
+func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...uuid.UUID) {
 	if m.removed_EnvironmentToBuild == nil {
-		m.removed_EnvironmentToBuild = make(map[int]struct{})
+		m.removed_EnvironmentToBuild = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_EnvironmentToBuild[ids[i]] = struct{}{}
@@ -7249,7 +7297,7 @@ func (m *EnvironmentMutation) RemoveEnvironmentToBuildIDs(ids ...int) {
 }
 
 // RemovedEnvironmentToBuild returns the removed IDs of the "EnvironmentToBuild" edge to the Build entity.
-func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []int) {
+func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []uuid.UUID) {
 	for id := range m.removed_EnvironmentToBuild {
 		ids = append(ids, id)
 	}
@@ -7257,7 +7305,7 @@ func (m *EnvironmentMutation) RemovedEnvironmentToBuildIDs() (ids []int) {
 }
 
 // EnvironmentToBuildIDs returns the "EnvironmentToBuild" edge IDs in the mutation.
-func (m *EnvironmentMutation) EnvironmentToBuildIDs() (ids []int) {
+func (m *EnvironmentMutation) EnvironmentToBuildIDs() (ids []uuid.UUID) {
 	for id := range m._EnvironmentToBuild {
 		ids = append(ids, id)
 	}
@@ -8058,12 +8106,12 @@ type FileDeleteMutation struct {
 	config
 	op                              Op
 	typ                             string
-	id                              *int
+	id                              *uuid.UUID
 	hcl_id                          *string
 	_path                           *string
 	tags                            *map[string]string
 	clearedFields                   map[string]struct{}
-	_FileDeleteToEnvironment        *int
+	_FileDeleteToEnvironment        *uuid.UUID
 	cleared_FileDeleteToEnvironment bool
 	done                            bool
 	oldValue                        func(context.Context) (*FileDelete, error)
@@ -8090,7 +8138,7 @@ func newFileDeleteMutation(c config, op Op, opts ...filedeleteOption) *FileDelet
 }
 
 // withFileDeleteID sets the ID field of the mutation.
-func withFileDeleteID(id int) filedeleteOption {
+func withFileDeleteID(id uuid.UUID) filedeleteOption {
 	return func(m *FileDeleteMutation) {
 		var (
 			err   error
@@ -8140,9 +8188,15 @@ func (m FileDeleteMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of FileDelete entities.
+func (m *FileDeleteMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *FileDeleteMutation) ID() (id int, exists bool) {
+func (m *FileDeleteMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -8258,7 +8312,7 @@ func (m *FileDeleteMutation) ResetTags() {
 }
 
 // SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by id.
-func (m *FileDeleteMutation) SetFileDeleteToEnvironmentID(id int) {
+func (m *FileDeleteMutation) SetFileDeleteToEnvironmentID(id uuid.UUID) {
 	m._FileDeleteToEnvironment = &id
 }
 
@@ -8273,7 +8327,7 @@ func (m *FileDeleteMutation) FileDeleteToEnvironmentCleared() bool {
 }
 
 // FileDeleteToEnvironmentID returns the "FileDeleteToEnvironment" edge ID in the mutation.
-func (m *FileDeleteMutation) FileDeleteToEnvironmentID() (id int, exists bool) {
+func (m *FileDeleteMutation) FileDeleteToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._FileDeleteToEnvironment != nil {
 		return *m._FileDeleteToEnvironment, true
 	}
@@ -8283,7 +8337,7 @@ func (m *FileDeleteMutation) FileDeleteToEnvironmentID() (id int, exists bool) {
 // FileDeleteToEnvironmentIDs returns the "FileDeleteToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FileDeleteToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *FileDeleteMutation) FileDeleteToEnvironmentIDs() (ids []int) {
+func (m *FileDeleteMutation) FileDeleteToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._FileDeleteToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -8522,7 +8576,7 @@ type FileDownloadMutation struct {
 	config
 	op                                Op
 	typ                               string
-	id                                *int
+	id                                *uuid.UUID
 	hcl_id                            *string
 	source_type                       *string
 	source                            *string
@@ -8534,7 +8588,7 @@ type FileDownloadMutation struct {
 	abs_path                          *string
 	tags                              *map[string]string
 	clearedFields                     map[string]struct{}
-	_FileDownloadToEnvironment        *int
+	_FileDownloadToEnvironment        *uuid.UUID
 	cleared_FileDownloadToEnvironment bool
 	done                              bool
 	oldValue                          func(context.Context) (*FileDownload, error)
@@ -8561,7 +8615,7 @@ func newFileDownloadMutation(c config, op Op, opts ...filedownloadOption) *FileD
 }
 
 // withFileDownloadID sets the ID field of the mutation.
-func withFileDownloadID(id int) filedownloadOption {
+func withFileDownloadID(id uuid.UUID) filedownloadOption {
 	return func(m *FileDownloadMutation) {
 		var (
 			err   error
@@ -8611,9 +8665,15 @@ func (m FileDownloadMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of FileDownload entities.
+func (m *FileDownloadMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *FileDownloadMutation) ID() (id int, exists bool) {
+func (m *FileDownloadMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -8981,7 +9041,7 @@ func (m *FileDownloadMutation) ResetTags() {
 }
 
 // SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by id.
-func (m *FileDownloadMutation) SetFileDownloadToEnvironmentID(id int) {
+func (m *FileDownloadMutation) SetFileDownloadToEnvironmentID(id uuid.UUID) {
 	m._FileDownloadToEnvironment = &id
 }
 
@@ -8996,7 +9056,7 @@ func (m *FileDownloadMutation) FileDownloadToEnvironmentCleared() bool {
 }
 
 // FileDownloadToEnvironmentID returns the "FileDownloadToEnvironment" edge ID in the mutation.
-func (m *FileDownloadMutation) FileDownloadToEnvironmentID() (id int, exists bool) {
+func (m *FileDownloadMutation) FileDownloadToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._FileDownloadToEnvironment != nil {
 		return *m._FileDownloadToEnvironment, true
 	}
@@ -9006,7 +9066,7 @@ func (m *FileDownloadMutation) FileDownloadToEnvironmentID() (id int, exists boo
 // FileDownloadToEnvironmentIDs returns the "FileDownloadToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FileDownloadToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *FileDownloadMutation) FileDownloadToEnvironmentIDs() (ids []int) {
+func (m *FileDownloadMutation) FileDownloadToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._FileDownloadToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -9364,14 +9424,14 @@ type FileExtractMutation struct {
 	config
 	op                               Op
 	typ                              string
-	id                               *int
+	id                               *uuid.UUID
 	hcl_id                           *string
 	source                           *string
 	destination                      *string
 	_type                            *string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_FileExtractToEnvironment        *int
+	_FileExtractToEnvironment        *uuid.UUID
 	cleared_FileExtractToEnvironment bool
 	done                             bool
 	oldValue                         func(context.Context) (*FileExtract, error)
@@ -9398,7 +9458,7 @@ func newFileExtractMutation(c config, op Op, opts ...fileextractOption) *FileExt
 }
 
 // withFileExtractID sets the ID field of the mutation.
-func withFileExtractID(id int) fileextractOption {
+func withFileExtractID(id uuid.UUID) fileextractOption {
 	return func(m *FileExtractMutation) {
 		var (
 			err   error
@@ -9448,9 +9508,15 @@ func (m FileExtractMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of FileExtract entities.
+func (m *FileExtractMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *FileExtractMutation) ID() (id int, exists bool) {
+func (m *FileExtractMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -9638,7 +9704,7 @@ func (m *FileExtractMutation) ResetTags() {
 }
 
 // SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by id.
-func (m *FileExtractMutation) SetFileExtractToEnvironmentID(id int) {
+func (m *FileExtractMutation) SetFileExtractToEnvironmentID(id uuid.UUID) {
 	m._FileExtractToEnvironment = &id
 }
 
@@ -9653,7 +9719,7 @@ func (m *FileExtractMutation) FileExtractToEnvironmentCleared() bool {
 }
 
 // FileExtractToEnvironmentID returns the "FileExtractToEnvironment" edge ID in the mutation.
-func (m *FileExtractMutation) FileExtractToEnvironmentID() (id int, exists bool) {
+func (m *FileExtractMutation) FileExtractToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._FileExtractToEnvironment != nil {
 		return *m._FileExtractToEnvironment, true
 	}
@@ -9663,7 +9729,7 @@ func (m *FileExtractMutation) FileExtractToEnvironmentID() (id int, exists bool)
 // FileExtractToEnvironmentIDs returns the "FileExtractToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FileExtractToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *FileExtractMutation) FileExtractToEnvironmentIDs() (ids []int) {
+func (m *FileExtractMutation) FileExtractToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._FileExtractToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -9936,21 +10002,21 @@ type FindingMutation struct {
 	config
 	op                           Op
 	typ                          string
-	id                           *int
+	id                           *uuid.UUID
 	name                         *string
 	description                  *string
 	severity                     *finding.Severity
 	difficulty                   *finding.Difficulty
 	tags                         *map[string]string
 	clearedFields                map[string]struct{}
-	_FindingToUser               map[int]struct{}
-	removed_FindingToUser        map[int]struct{}
+	_FindingToUser               map[uuid.UUID]struct{}
+	removed_FindingToUser        map[uuid.UUID]struct{}
 	cleared_FindingToUser        bool
-	_FindingToHost               *int
+	_FindingToHost               *uuid.UUID
 	cleared_FindingToHost        bool
-	_FindingToScript             *int
+	_FindingToScript             *uuid.UUID
 	cleared_FindingToScript      bool
-	_FindingToEnvironment        *int
+	_FindingToEnvironment        *uuid.UUID
 	cleared_FindingToEnvironment bool
 	done                         bool
 	oldValue                     func(context.Context) (*Finding, error)
@@ -9977,7 +10043,7 @@ func newFindingMutation(c config, op Op, opts ...findingOption) *FindingMutation
 }
 
 // withFindingID sets the ID field of the mutation.
-func withFindingID(id int) findingOption {
+func withFindingID(id uuid.UUID) findingOption {
 	return func(m *FindingMutation) {
 		var (
 			err   error
@@ -10027,9 +10093,15 @@ func (m FindingMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Finding entities.
+func (m *FindingMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *FindingMutation) ID() (id int, exists bool) {
+func (m *FindingMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -10217,9 +10289,9 @@ func (m *FindingMutation) ResetTags() {
 }
 
 // AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by ids.
-func (m *FindingMutation) AddFindingToUserIDs(ids ...int) {
+func (m *FindingMutation) AddFindingToUserIDs(ids ...uuid.UUID) {
 	if m._FindingToUser == nil {
-		m._FindingToUser = make(map[int]struct{})
+		m._FindingToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._FindingToUser[ids[i]] = struct{}{}
@@ -10237,9 +10309,9 @@ func (m *FindingMutation) FindingToUserCleared() bool {
 }
 
 // RemoveFindingToUserIDs removes the "FindingToUser" edge to the User entity by IDs.
-func (m *FindingMutation) RemoveFindingToUserIDs(ids ...int) {
+func (m *FindingMutation) RemoveFindingToUserIDs(ids ...uuid.UUID) {
 	if m.removed_FindingToUser == nil {
-		m.removed_FindingToUser = make(map[int]struct{})
+		m.removed_FindingToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_FindingToUser[ids[i]] = struct{}{}
@@ -10247,7 +10319,7 @@ func (m *FindingMutation) RemoveFindingToUserIDs(ids ...int) {
 }
 
 // RemovedFindingToUser returns the removed IDs of the "FindingToUser" edge to the User entity.
-func (m *FindingMutation) RemovedFindingToUserIDs() (ids []int) {
+func (m *FindingMutation) RemovedFindingToUserIDs() (ids []uuid.UUID) {
 	for id := range m.removed_FindingToUser {
 		ids = append(ids, id)
 	}
@@ -10255,7 +10327,7 @@ func (m *FindingMutation) RemovedFindingToUserIDs() (ids []int) {
 }
 
 // FindingToUserIDs returns the "FindingToUser" edge IDs in the mutation.
-func (m *FindingMutation) FindingToUserIDs() (ids []int) {
+func (m *FindingMutation) FindingToUserIDs() (ids []uuid.UUID) {
 	for id := range m._FindingToUser {
 		ids = append(ids, id)
 	}
@@ -10270,7 +10342,7 @@ func (m *FindingMutation) ResetFindingToUser() {
 }
 
 // SetFindingToHostID sets the "FindingToHost" edge to the Host entity by id.
-func (m *FindingMutation) SetFindingToHostID(id int) {
+func (m *FindingMutation) SetFindingToHostID(id uuid.UUID) {
 	m._FindingToHost = &id
 }
 
@@ -10285,7 +10357,7 @@ func (m *FindingMutation) FindingToHostCleared() bool {
 }
 
 // FindingToHostID returns the "FindingToHost" edge ID in the mutation.
-func (m *FindingMutation) FindingToHostID() (id int, exists bool) {
+func (m *FindingMutation) FindingToHostID() (id uuid.UUID, exists bool) {
 	if m._FindingToHost != nil {
 		return *m._FindingToHost, true
 	}
@@ -10295,7 +10367,7 @@ func (m *FindingMutation) FindingToHostID() (id int, exists bool) {
 // FindingToHostIDs returns the "FindingToHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FindingToHostID instead. It exists only for internal usage by the builders.
-func (m *FindingMutation) FindingToHostIDs() (ids []int) {
+func (m *FindingMutation) FindingToHostIDs() (ids []uuid.UUID) {
 	if id := m._FindingToHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -10309,7 +10381,7 @@ func (m *FindingMutation) ResetFindingToHost() {
 }
 
 // SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by id.
-func (m *FindingMutation) SetFindingToScriptID(id int) {
+func (m *FindingMutation) SetFindingToScriptID(id uuid.UUID) {
 	m._FindingToScript = &id
 }
 
@@ -10324,7 +10396,7 @@ func (m *FindingMutation) FindingToScriptCleared() bool {
 }
 
 // FindingToScriptID returns the "FindingToScript" edge ID in the mutation.
-func (m *FindingMutation) FindingToScriptID() (id int, exists bool) {
+func (m *FindingMutation) FindingToScriptID() (id uuid.UUID, exists bool) {
 	if m._FindingToScript != nil {
 		return *m._FindingToScript, true
 	}
@@ -10334,7 +10406,7 @@ func (m *FindingMutation) FindingToScriptID() (id int, exists bool) {
 // FindingToScriptIDs returns the "FindingToScript" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FindingToScriptID instead. It exists only for internal usage by the builders.
-func (m *FindingMutation) FindingToScriptIDs() (ids []int) {
+func (m *FindingMutation) FindingToScriptIDs() (ids []uuid.UUID) {
 	if id := m._FindingToScript; id != nil {
 		ids = append(ids, *id)
 	}
@@ -10348,7 +10420,7 @@ func (m *FindingMutation) ResetFindingToScript() {
 }
 
 // SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by id.
-func (m *FindingMutation) SetFindingToEnvironmentID(id int) {
+func (m *FindingMutation) SetFindingToEnvironmentID(id uuid.UUID) {
 	m._FindingToEnvironment = &id
 }
 
@@ -10363,7 +10435,7 @@ func (m *FindingMutation) FindingToEnvironmentCleared() bool {
 }
 
 // FindingToEnvironmentID returns the "FindingToEnvironment" edge ID in the mutation.
-func (m *FindingMutation) FindingToEnvironmentID() (id int, exists bool) {
+func (m *FindingMutation) FindingToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._FindingToEnvironment != nil {
 		return *m._FindingToEnvironment, true
 	}
@@ -10373,7 +10445,7 @@ func (m *FindingMutation) FindingToEnvironmentID() (id int, exists bool) {
 // FindingToEnvironmentIDs returns the "FindingToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // FindingToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *FindingMutation) FindingToEnvironmentIDs() (ids []int) {
+func (m *FindingMutation) FindingToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._FindingToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -10708,14 +10780,14 @@ type GinFileMiddlewareMutation struct {
 	config
 	op                                          Op
 	typ                                         string
-	id                                          *int
+	id                                          *uuid.UUID
 	url_id                                      *string
 	file_path                                   *string
 	accessed                                    *bool
 	clearedFields                               map[string]struct{}
-	_GinFileMiddlewareToProvisionedHost         *int
+	_GinFileMiddlewareToProvisionedHost         *uuid.UUID
 	cleared_GinFileMiddlewareToProvisionedHost  bool
-	_GinFileMiddlewareToProvisioningStep        *int
+	_GinFileMiddlewareToProvisioningStep        *uuid.UUID
 	cleared_GinFileMiddlewareToProvisioningStep bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*GinFileMiddleware, error)
@@ -10742,7 +10814,7 @@ func newGinFileMiddlewareMutation(c config, op Op, opts ...ginfilemiddlewareOpti
 }
 
 // withGinFileMiddlewareID sets the ID field of the mutation.
-func withGinFileMiddlewareID(id int) ginfilemiddlewareOption {
+func withGinFileMiddlewareID(id uuid.UUID) ginfilemiddlewareOption {
 	return func(m *GinFileMiddlewareMutation) {
 		var (
 			err   error
@@ -10792,9 +10864,15 @@ func (m GinFileMiddlewareMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GinFileMiddleware entities.
+func (m *GinFileMiddlewareMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *GinFileMiddlewareMutation) ID() (id int, exists bool) {
+func (m *GinFileMiddlewareMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -10910,7 +10988,7 @@ func (m *GinFileMiddlewareMutation) ResetAccessed() {
 }
 
 // SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by id.
-func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisionedHostID(id int) {
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisionedHostID(id uuid.UUID) {
 	m._GinFileMiddlewareToProvisionedHost = &id
 }
 
@@ -10925,7 +11003,7 @@ func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostCleared() 
 }
 
 // GinFileMiddlewareToProvisionedHostID returns the "GinFileMiddlewareToProvisionedHost" edge ID in the mutation.
-func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostID() (id int, exists bool) {
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostID() (id uuid.UUID, exists bool) {
 	if m._GinFileMiddlewareToProvisionedHost != nil {
 		return *m._GinFileMiddlewareToProvisionedHost, true
 	}
@@ -10935,7 +11013,7 @@ func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostID() (id i
 // GinFileMiddlewareToProvisionedHostIDs returns the "GinFileMiddlewareToProvisionedHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // GinFileMiddlewareToProvisionedHostID instead. It exists only for internal usage by the builders.
-func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostIDs() (ids []int) {
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostIDs() (ids []uuid.UUID) {
 	if id := m._GinFileMiddlewareToProvisionedHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -10949,7 +11027,7 @@ func (m *GinFileMiddlewareMutation) ResetGinFileMiddlewareToProvisionedHost() {
 }
 
 // SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by id.
-func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisioningStepID(id int) {
+func (m *GinFileMiddlewareMutation) SetGinFileMiddlewareToProvisioningStepID(id uuid.UUID) {
 	m._GinFileMiddlewareToProvisioningStep = &id
 }
 
@@ -10964,7 +11042,7 @@ func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepCleared()
 }
 
 // GinFileMiddlewareToProvisioningStepID returns the "GinFileMiddlewareToProvisioningStep" edge ID in the mutation.
-func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepID() (id int, exists bool) {
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepID() (id uuid.UUID, exists bool) {
 	if m._GinFileMiddlewareToProvisioningStep != nil {
 		return *m._GinFileMiddlewareToProvisioningStep, true
 	}
@@ -10974,7 +11052,7 @@ func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepID() (id 
 // GinFileMiddlewareToProvisioningStepIDs returns the "GinFileMiddlewareToProvisioningStep" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // GinFileMiddlewareToProvisioningStepID instead. It exists only for internal usage by the builders.
-func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepIDs() (ids []int) {
+func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepIDs() (ids []uuid.UUID) {
 	if id := m._GinFileMiddlewareToProvisioningStep; id != nil {
 		ids = append(ids, *id)
 	}
@@ -11231,7 +11309,7 @@ type HostMutation struct {
 	config
 	op                                   Op
 	typ                                  string
-	id                                   *int
+	id                                   *uuid.UUID
 	hcl_id                               *string
 	hostname                             *string
 	description                          *string
@@ -11248,21 +11326,21 @@ type HostMutation struct {
 	provision_steps                      *[]string
 	tags                                 *map[string]string
 	clearedFields                        map[string]struct{}
-	_HostToDisk                          *int
+	_HostToDisk                          *uuid.UUID
 	cleared_HostToDisk                   bool
-	_HostToUser                          map[int]struct{}
-	removed_HostToUser                   map[int]struct{}
+	_HostToUser                          map[uuid.UUID]struct{}
+	removed_HostToUser                   map[uuid.UUID]struct{}
 	cleared_HostToUser                   bool
-	_HostToEnvironment                   *int
+	_HostToEnvironment                   *uuid.UUID
 	cleared_HostToEnvironment            bool
-	_HostToIncludedNetwork               map[int]struct{}
-	removed_HostToIncludedNetwork        map[int]struct{}
+	_HostToIncludedNetwork               map[uuid.UUID]struct{}
+	removed_HostToIncludedNetwork        map[uuid.UUID]struct{}
 	cleared_HostToIncludedNetwork        bool
-	_DependOnHostToHostDependency        map[int]struct{}
-	removed_DependOnHostToHostDependency map[int]struct{}
+	_DependOnHostToHostDependency        map[uuid.UUID]struct{}
+	removed_DependOnHostToHostDependency map[uuid.UUID]struct{}
 	cleared_DependOnHostToHostDependency bool
-	_DependByHostToHostDependency        map[int]struct{}
-	removed_DependByHostToHostDependency map[int]struct{}
+	_DependByHostToHostDependency        map[uuid.UUID]struct{}
+	removed_DependByHostToHostDependency map[uuid.UUID]struct{}
 	cleared_DependByHostToHostDependency bool
 	done                                 bool
 	oldValue                             func(context.Context) (*Host, error)
@@ -11289,7 +11367,7 @@ func newHostMutation(c config, op Op, opts ...hostOption) *HostMutation {
 }
 
 // withHostID sets the ID field of the mutation.
-func withHostID(id int) hostOption {
+func withHostID(id uuid.UUID) hostOption {
 	return func(m *HostMutation) {
 		var (
 			err   error
@@ -11339,9 +11417,15 @@ func (m HostMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Host entities.
+func (m *HostMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *HostMutation) ID() (id int, exists bool) {
+func (m *HostMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -11886,7 +11970,7 @@ func (m *HostMutation) ResetTags() {
 }
 
 // SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by id.
-func (m *HostMutation) SetHostToDiskID(id int) {
+func (m *HostMutation) SetHostToDiskID(id uuid.UUID) {
 	m._HostToDisk = &id
 }
 
@@ -11901,7 +11985,7 @@ func (m *HostMutation) HostToDiskCleared() bool {
 }
 
 // HostToDiskID returns the "HostToDisk" edge ID in the mutation.
-func (m *HostMutation) HostToDiskID() (id int, exists bool) {
+func (m *HostMutation) HostToDiskID() (id uuid.UUID, exists bool) {
 	if m._HostToDisk != nil {
 		return *m._HostToDisk, true
 	}
@@ -11911,7 +11995,7 @@ func (m *HostMutation) HostToDiskID() (id int, exists bool) {
 // HostToDiskIDs returns the "HostToDisk" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostToDiskID instead. It exists only for internal usage by the builders.
-func (m *HostMutation) HostToDiskIDs() (ids []int) {
+func (m *HostMutation) HostToDiskIDs() (ids []uuid.UUID) {
 	if id := m._HostToDisk; id != nil {
 		ids = append(ids, *id)
 	}
@@ -11925,9 +12009,9 @@ func (m *HostMutation) ResetHostToDisk() {
 }
 
 // AddHostToUserIDs adds the "HostToUser" edge to the User entity by ids.
-func (m *HostMutation) AddHostToUserIDs(ids ...int) {
+func (m *HostMutation) AddHostToUserIDs(ids ...uuid.UUID) {
 	if m._HostToUser == nil {
-		m._HostToUser = make(map[int]struct{})
+		m._HostToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._HostToUser[ids[i]] = struct{}{}
@@ -11945,9 +12029,9 @@ func (m *HostMutation) HostToUserCleared() bool {
 }
 
 // RemoveHostToUserIDs removes the "HostToUser" edge to the User entity by IDs.
-func (m *HostMutation) RemoveHostToUserIDs(ids ...int) {
+func (m *HostMutation) RemoveHostToUserIDs(ids ...uuid.UUID) {
 	if m.removed_HostToUser == nil {
-		m.removed_HostToUser = make(map[int]struct{})
+		m.removed_HostToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_HostToUser[ids[i]] = struct{}{}
@@ -11955,7 +12039,7 @@ func (m *HostMutation) RemoveHostToUserIDs(ids ...int) {
 }
 
 // RemovedHostToUser returns the removed IDs of the "HostToUser" edge to the User entity.
-func (m *HostMutation) RemovedHostToUserIDs() (ids []int) {
+func (m *HostMutation) RemovedHostToUserIDs() (ids []uuid.UUID) {
 	for id := range m.removed_HostToUser {
 		ids = append(ids, id)
 	}
@@ -11963,7 +12047,7 @@ func (m *HostMutation) RemovedHostToUserIDs() (ids []int) {
 }
 
 // HostToUserIDs returns the "HostToUser" edge IDs in the mutation.
-func (m *HostMutation) HostToUserIDs() (ids []int) {
+func (m *HostMutation) HostToUserIDs() (ids []uuid.UUID) {
 	for id := range m._HostToUser {
 		ids = append(ids, id)
 	}
@@ -11978,7 +12062,7 @@ func (m *HostMutation) ResetHostToUser() {
 }
 
 // SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by id.
-func (m *HostMutation) SetHostToEnvironmentID(id int) {
+func (m *HostMutation) SetHostToEnvironmentID(id uuid.UUID) {
 	m._HostToEnvironment = &id
 }
 
@@ -11993,7 +12077,7 @@ func (m *HostMutation) HostToEnvironmentCleared() bool {
 }
 
 // HostToEnvironmentID returns the "HostToEnvironment" edge ID in the mutation.
-func (m *HostMutation) HostToEnvironmentID() (id int, exists bool) {
+func (m *HostMutation) HostToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._HostToEnvironment != nil {
 		return *m._HostToEnvironment, true
 	}
@@ -12003,7 +12087,7 @@ func (m *HostMutation) HostToEnvironmentID() (id int, exists bool) {
 // HostToEnvironmentIDs returns the "HostToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *HostMutation) HostToEnvironmentIDs() (ids []int) {
+func (m *HostMutation) HostToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._HostToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -12017,9 +12101,9 @@ func (m *HostMutation) ResetHostToEnvironment() {
 }
 
 // AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by ids.
-func (m *HostMutation) AddHostToIncludedNetworkIDs(ids ...int) {
+func (m *HostMutation) AddHostToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m._HostToIncludedNetwork == nil {
-		m._HostToIncludedNetwork = make(map[int]struct{})
+		m._HostToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._HostToIncludedNetwork[ids[i]] = struct{}{}
@@ -12037,9 +12121,9 @@ func (m *HostMutation) HostToIncludedNetworkCleared() bool {
 }
 
 // RemoveHostToIncludedNetworkIDs removes the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (m *HostMutation) RemoveHostToIncludedNetworkIDs(ids ...int) {
+func (m *HostMutation) RemoveHostToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_HostToIncludedNetwork == nil {
-		m.removed_HostToIncludedNetwork = make(map[int]struct{})
+		m.removed_HostToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_HostToIncludedNetwork[ids[i]] = struct{}{}
@@ -12047,7 +12131,7 @@ func (m *HostMutation) RemoveHostToIncludedNetworkIDs(ids ...int) {
 }
 
 // RemovedHostToIncludedNetwork returns the removed IDs of the "HostToIncludedNetwork" edge to the IncludedNetwork entity.
-func (m *HostMutation) RemovedHostToIncludedNetworkIDs() (ids []int) {
+func (m *HostMutation) RemovedHostToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_HostToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -12055,7 +12139,7 @@ func (m *HostMutation) RemovedHostToIncludedNetworkIDs() (ids []int) {
 }
 
 // HostToIncludedNetworkIDs returns the "HostToIncludedNetwork" edge IDs in the mutation.
-func (m *HostMutation) HostToIncludedNetworkIDs() (ids []int) {
+func (m *HostMutation) HostToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._HostToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -12070,9 +12154,9 @@ func (m *HostMutation) ResetHostToIncludedNetwork() {
 }
 
 // AddDependOnHostToHostDependencyIDs adds the "DependOnHostToHostDependency" edge to the HostDependency entity by ids.
-func (m *HostMutation) AddDependOnHostToHostDependencyIDs(ids ...int) {
+func (m *HostMutation) AddDependOnHostToHostDependencyIDs(ids ...uuid.UUID) {
 	if m._DependOnHostToHostDependency == nil {
-		m._DependOnHostToHostDependency = make(map[int]struct{})
+		m._DependOnHostToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._DependOnHostToHostDependency[ids[i]] = struct{}{}
@@ -12090,9 +12174,9 @@ func (m *HostMutation) DependOnHostToHostDependencyCleared() bool {
 }
 
 // RemoveDependOnHostToHostDependencyIDs removes the "DependOnHostToHostDependency" edge to the HostDependency entity by IDs.
-func (m *HostMutation) RemoveDependOnHostToHostDependencyIDs(ids ...int) {
+func (m *HostMutation) RemoveDependOnHostToHostDependencyIDs(ids ...uuid.UUID) {
 	if m.removed_DependOnHostToHostDependency == nil {
-		m.removed_DependOnHostToHostDependency = make(map[int]struct{})
+		m.removed_DependOnHostToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_DependOnHostToHostDependency[ids[i]] = struct{}{}
@@ -12100,7 +12184,7 @@ func (m *HostMutation) RemoveDependOnHostToHostDependencyIDs(ids ...int) {
 }
 
 // RemovedDependOnHostToHostDependency returns the removed IDs of the "DependOnHostToHostDependency" edge to the HostDependency entity.
-func (m *HostMutation) RemovedDependOnHostToHostDependencyIDs() (ids []int) {
+func (m *HostMutation) RemovedDependOnHostToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m.removed_DependOnHostToHostDependency {
 		ids = append(ids, id)
 	}
@@ -12108,7 +12192,7 @@ func (m *HostMutation) RemovedDependOnHostToHostDependencyIDs() (ids []int) {
 }
 
 // DependOnHostToHostDependencyIDs returns the "DependOnHostToHostDependency" edge IDs in the mutation.
-func (m *HostMutation) DependOnHostToHostDependencyIDs() (ids []int) {
+func (m *HostMutation) DependOnHostToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m._DependOnHostToHostDependency {
 		ids = append(ids, id)
 	}
@@ -12123,9 +12207,9 @@ func (m *HostMutation) ResetDependOnHostToHostDependency() {
 }
 
 // AddDependByHostToHostDependencyIDs adds the "DependByHostToHostDependency" edge to the HostDependency entity by ids.
-func (m *HostMutation) AddDependByHostToHostDependencyIDs(ids ...int) {
+func (m *HostMutation) AddDependByHostToHostDependencyIDs(ids ...uuid.UUID) {
 	if m._DependByHostToHostDependency == nil {
-		m._DependByHostToHostDependency = make(map[int]struct{})
+		m._DependByHostToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._DependByHostToHostDependency[ids[i]] = struct{}{}
@@ -12143,9 +12227,9 @@ func (m *HostMutation) DependByHostToHostDependencyCleared() bool {
 }
 
 // RemoveDependByHostToHostDependencyIDs removes the "DependByHostToHostDependency" edge to the HostDependency entity by IDs.
-func (m *HostMutation) RemoveDependByHostToHostDependencyIDs(ids ...int) {
+func (m *HostMutation) RemoveDependByHostToHostDependencyIDs(ids ...uuid.UUID) {
 	if m.removed_DependByHostToHostDependency == nil {
-		m.removed_DependByHostToHostDependency = make(map[int]struct{})
+		m.removed_DependByHostToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_DependByHostToHostDependency[ids[i]] = struct{}{}
@@ -12153,7 +12237,7 @@ func (m *HostMutation) RemoveDependByHostToHostDependencyIDs(ids ...int) {
 }
 
 // RemovedDependByHostToHostDependency returns the removed IDs of the "DependByHostToHostDependency" edge to the HostDependency entity.
-func (m *HostMutation) RemovedDependByHostToHostDependencyIDs() (ids []int) {
+func (m *HostMutation) RemovedDependByHostToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m.removed_DependByHostToHostDependency {
 		ids = append(ids, id)
 	}
@@ -12161,7 +12245,7 @@ func (m *HostMutation) RemovedDependByHostToHostDependencyIDs() (ids []int) {
 }
 
 // DependByHostToHostDependencyIDs returns the "DependByHostToHostDependency" edge IDs in the mutation.
-func (m *HostMutation) DependByHostToHostDependencyIDs() (ids []int) {
+func (m *HostMutation) DependByHostToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m._DependByHostToHostDependency {
 		ids = append(ids, id)
 	}
@@ -12734,17 +12818,17 @@ type HostDependencyMutation struct {
 	config
 	op                                   Op
 	typ                                  string
-	id                                   *int
+	id                                   *uuid.UUID
 	host_id                              *string
 	network_id                           *string
 	clearedFields                        map[string]struct{}
-	_HostDependencyToDependOnHost        *int
+	_HostDependencyToDependOnHost        *uuid.UUID
 	cleared_HostDependencyToDependOnHost bool
-	_HostDependencyToDependByHost        *int
+	_HostDependencyToDependByHost        *uuid.UUID
 	cleared_HostDependencyToDependByHost bool
-	_HostDependencyToNetwork             *int
+	_HostDependencyToNetwork             *uuid.UUID
 	cleared_HostDependencyToNetwork      bool
-	_HostDependencyToEnvironment         *int
+	_HostDependencyToEnvironment         *uuid.UUID
 	cleared_HostDependencyToEnvironment  bool
 	done                                 bool
 	oldValue                             func(context.Context) (*HostDependency, error)
@@ -12771,7 +12855,7 @@ func newHostDependencyMutation(c config, op Op, opts ...hostdependencyOption) *H
 }
 
 // withHostDependencyID sets the ID field of the mutation.
-func withHostDependencyID(id int) hostdependencyOption {
+func withHostDependencyID(id uuid.UUID) hostdependencyOption {
 	return func(m *HostDependencyMutation) {
 		var (
 			err   error
@@ -12821,9 +12905,15 @@ func (m HostDependencyMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of HostDependency entities.
+func (m *HostDependencyMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *HostDependencyMutation) ID() (id int, exists bool) {
+func (m *HostDependencyMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -12903,7 +12993,7 @@ func (m *HostDependencyMutation) ResetNetworkID() {
 }
 
 // SetHostDependencyToDependOnHostID sets the "HostDependencyToDependOnHost" edge to the Host entity by id.
-func (m *HostDependencyMutation) SetHostDependencyToDependOnHostID(id int) {
+func (m *HostDependencyMutation) SetHostDependencyToDependOnHostID(id uuid.UUID) {
 	m._HostDependencyToDependOnHost = &id
 }
 
@@ -12918,7 +13008,7 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostCleared() bool {
 }
 
 // HostDependencyToDependOnHostID returns the "HostDependencyToDependOnHost" edge ID in the mutation.
-func (m *HostDependencyMutation) HostDependencyToDependOnHostID() (id int, exists bool) {
+func (m *HostDependencyMutation) HostDependencyToDependOnHostID() (id uuid.UUID, exists bool) {
 	if m._HostDependencyToDependOnHost != nil {
 		return *m._HostDependencyToDependOnHost, true
 	}
@@ -12928,7 +13018,7 @@ func (m *HostDependencyMutation) HostDependencyToDependOnHostID() (id int, exist
 // HostDependencyToDependOnHostIDs returns the "HostDependencyToDependOnHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostDependencyToDependOnHostID instead. It exists only for internal usage by the builders.
-func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []int) {
+func (m *HostDependencyMutation) HostDependencyToDependOnHostIDs() (ids []uuid.UUID) {
 	if id := m._HostDependencyToDependOnHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -12942,7 +13032,7 @@ func (m *HostDependencyMutation) ResetHostDependencyToDependOnHost() {
 }
 
 // SetHostDependencyToDependByHostID sets the "HostDependencyToDependByHost" edge to the Host entity by id.
-func (m *HostDependencyMutation) SetHostDependencyToDependByHostID(id int) {
+func (m *HostDependencyMutation) SetHostDependencyToDependByHostID(id uuid.UUID) {
 	m._HostDependencyToDependByHost = &id
 }
 
@@ -12957,7 +13047,7 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostCleared() bool {
 }
 
 // HostDependencyToDependByHostID returns the "HostDependencyToDependByHost" edge ID in the mutation.
-func (m *HostDependencyMutation) HostDependencyToDependByHostID() (id int, exists bool) {
+func (m *HostDependencyMutation) HostDependencyToDependByHostID() (id uuid.UUID, exists bool) {
 	if m._HostDependencyToDependByHost != nil {
 		return *m._HostDependencyToDependByHost, true
 	}
@@ -12967,7 +13057,7 @@ func (m *HostDependencyMutation) HostDependencyToDependByHostID() (id int, exist
 // HostDependencyToDependByHostIDs returns the "HostDependencyToDependByHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostDependencyToDependByHostID instead. It exists only for internal usage by the builders.
-func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []int) {
+func (m *HostDependencyMutation) HostDependencyToDependByHostIDs() (ids []uuid.UUID) {
 	if id := m._HostDependencyToDependByHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -12981,7 +13071,7 @@ func (m *HostDependencyMutation) ResetHostDependencyToDependByHost() {
 }
 
 // SetHostDependencyToNetworkID sets the "HostDependencyToNetwork" edge to the Network entity by id.
-func (m *HostDependencyMutation) SetHostDependencyToNetworkID(id int) {
+func (m *HostDependencyMutation) SetHostDependencyToNetworkID(id uuid.UUID) {
 	m._HostDependencyToNetwork = &id
 }
 
@@ -12996,7 +13086,7 @@ func (m *HostDependencyMutation) HostDependencyToNetworkCleared() bool {
 }
 
 // HostDependencyToNetworkID returns the "HostDependencyToNetwork" edge ID in the mutation.
-func (m *HostDependencyMutation) HostDependencyToNetworkID() (id int, exists bool) {
+func (m *HostDependencyMutation) HostDependencyToNetworkID() (id uuid.UUID, exists bool) {
 	if m._HostDependencyToNetwork != nil {
 		return *m._HostDependencyToNetwork, true
 	}
@@ -13006,7 +13096,7 @@ func (m *HostDependencyMutation) HostDependencyToNetworkID() (id int, exists boo
 // HostDependencyToNetworkIDs returns the "HostDependencyToNetwork" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostDependencyToNetworkID instead. It exists only for internal usage by the builders.
-func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []int) {
+func (m *HostDependencyMutation) HostDependencyToNetworkIDs() (ids []uuid.UUID) {
 	if id := m._HostDependencyToNetwork; id != nil {
 		ids = append(ids, *id)
 	}
@@ -13020,7 +13110,7 @@ func (m *HostDependencyMutation) ResetHostDependencyToNetwork() {
 }
 
 // SetHostDependencyToEnvironmentID sets the "HostDependencyToEnvironment" edge to the Environment entity by id.
-func (m *HostDependencyMutation) SetHostDependencyToEnvironmentID(id int) {
+func (m *HostDependencyMutation) SetHostDependencyToEnvironmentID(id uuid.UUID) {
 	m._HostDependencyToEnvironment = &id
 }
 
@@ -13035,7 +13125,7 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentCleared() bool {
 }
 
 // HostDependencyToEnvironmentID returns the "HostDependencyToEnvironment" edge ID in the mutation.
-func (m *HostDependencyMutation) HostDependencyToEnvironmentID() (id int, exists bool) {
+func (m *HostDependencyMutation) HostDependencyToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._HostDependencyToEnvironment != nil {
 		return *m._HostDependencyToEnvironment, true
 	}
@@ -13045,7 +13135,7 @@ func (m *HostDependencyMutation) HostDependencyToEnvironmentID() (id int, exists
 // HostDependencyToEnvironmentIDs returns the "HostDependencyToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HostDependencyToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []int) {
+func (m *HostDependencyMutation) HostDependencyToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._HostDependencyToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -13321,7 +13411,7 @@ type IdentityMutation struct {
 	config
 	op                            Op
 	typ                           string
-	id                            *int
+	id                            *uuid.UUID
 	hcl_id                        *string
 	first_name                    *string
 	last_name                     *string
@@ -13332,7 +13422,7 @@ type IdentityMutation struct {
 	vars                          *map[string]string
 	tags                          *map[string]string
 	clearedFields                 map[string]struct{}
-	_IdentityToEnvironment        *int
+	_IdentityToEnvironment        *uuid.UUID
 	cleared_IdentityToEnvironment bool
 	done                          bool
 	oldValue                      func(context.Context) (*Identity, error)
@@ -13359,7 +13449,7 @@ func newIdentityMutation(c config, op Op, opts ...identityOption) *IdentityMutat
 }
 
 // withIdentityID sets the ID field of the mutation.
-func withIdentityID(id int) identityOption {
+func withIdentityID(id uuid.UUID) identityOption {
 	return func(m *IdentityMutation) {
 		var (
 			err   error
@@ -13409,9 +13499,15 @@ func (m IdentityMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Identity entities.
+func (m *IdentityMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *IdentityMutation) ID() (id int, exists bool) {
+func (m *IdentityMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -13743,7 +13839,7 @@ func (m *IdentityMutation) ResetTags() {
 }
 
 // SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by id.
-func (m *IdentityMutation) SetIdentityToEnvironmentID(id int) {
+func (m *IdentityMutation) SetIdentityToEnvironmentID(id uuid.UUID) {
 	m._IdentityToEnvironment = &id
 }
 
@@ -13758,7 +13854,7 @@ func (m *IdentityMutation) IdentityToEnvironmentCleared() bool {
 }
 
 // IdentityToEnvironmentID returns the "IdentityToEnvironment" edge ID in the mutation.
-func (m *IdentityMutation) IdentityToEnvironmentID() (id int, exists bool) {
+func (m *IdentityMutation) IdentityToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._IdentityToEnvironment != nil {
 		return *m._IdentityToEnvironment, true
 	}
@@ -13768,7 +13864,7 @@ func (m *IdentityMutation) IdentityToEnvironmentID() (id int, exists bool) {
 // IdentityToEnvironmentIDs returns the "IdentityToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // IdentityToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *IdentityMutation) IdentityToEnvironmentIDs() (ids []int) {
+func (m *IdentityMutation) IdentityToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._IdentityToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -14109,21 +14205,21 @@ type IncludedNetworkMutation struct {
 	config
 	op                                   Op
 	typ                                  string
-	id                                   *int
+	id                                   *uuid.UUID
 	name                                 *string
 	hosts                                *[]string
 	clearedFields                        map[string]struct{}
-	_IncludedNetworkToTag                map[int]struct{}
-	removed_IncludedNetworkToTag         map[int]struct{}
+	_IncludedNetworkToTag                map[uuid.UUID]struct{}
+	removed_IncludedNetworkToTag         map[uuid.UUID]struct{}
 	cleared_IncludedNetworkToTag         bool
-	_IncludedNetworkToHost               map[int]struct{}
-	removed_IncludedNetworkToHost        map[int]struct{}
+	_IncludedNetworkToHost               map[uuid.UUID]struct{}
+	removed_IncludedNetworkToHost        map[uuid.UUID]struct{}
 	cleared_IncludedNetworkToHost        bool
-	_IncludedNetworkToNetwork            map[int]struct{}
-	removed_IncludedNetworkToNetwork     map[int]struct{}
+	_IncludedNetworkToNetwork            map[uuid.UUID]struct{}
+	removed_IncludedNetworkToNetwork     map[uuid.UUID]struct{}
 	cleared_IncludedNetworkToNetwork     bool
-	_IncludedNetworkToEnvironment        map[int]struct{}
-	removed_IncludedNetworkToEnvironment map[int]struct{}
+	_IncludedNetworkToEnvironment        map[uuid.UUID]struct{}
+	removed_IncludedNetworkToEnvironment map[uuid.UUID]struct{}
 	cleared_IncludedNetworkToEnvironment bool
 	done                                 bool
 	oldValue                             func(context.Context) (*IncludedNetwork, error)
@@ -14150,7 +14246,7 @@ func newIncludedNetworkMutation(c config, op Op, opts ...includednetworkOption) 
 }
 
 // withIncludedNetworkID sets the ID field of the mutation.
-func withIncludedNetworkID(id int) includednetworkOption {
+func withIncludedNetworkID(id uuid.UUID) includednetworkOption {
 	return func(m *IncludedNetworkMutation) {
 		var (
 			err   error
@@ -14200,9 +14296,15 @@ func (m IncludedNetworkMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IncludedNetwork entities.
+func (m *IncludedNetworkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *IncludedNetworkMutation) ID() (id int, exists bool) {
+func (m *IncludedNetworkMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -14282,9 +14384,9 @@ func (m *IncludedNetworkMutation) ResetHosts() {
 }
 
 // AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by ids.
-func (m *IncludedNetworkMutation) AddIncludedNetworkToTagIDs(ids ...int) {
+func (m *IncludedNetworkMutation) AddIncludedNetworkToTagIDs(ids ...uuid.UUID) {
 	if m._IncludedNetworkToTag == nil {
-		m._IncludedNetworkToTag = make(map[int]struct{})
+		m._IncludedNetworkToTag = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._IncludedNetworkToTag[ids[i]] = struct{}{}
@@ -14302,9 +14404,9 @@ func (m *IncludedNetworkMutation) IncludedNetworkToTagCleared() bool {
 }
 
 // RemoveIncludedNetworkToTagIDs removes the "IncludedNetworkToTag" edge to the Tag entity by IDs.
-func (m *IncludedNetworkMutation) RemoveIncludedNetworkToTagIDs(ids ...int) {
+func (m *IncludedNetworkMutation) RemoveIncludedNetworkToTagIDs(ids ...uuid.UUID) {
 	if m.removed_IncludedNetworkToTag == nil {
-		m.removed_IncludedNetworkToTag = make(map[int]struct{})
+		m.removed_IncludedNetworkToTag = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_IncludedNetworkToTag[ids[i]] = struct{}{}
@@ -14312,7 +14414,7 @@ func (m *IncludedNetworkMutation) RemoveIncludedNetworkToTagIDs(ids ...int) {
 }
 
 // RemovedIncludedNetworkToTag returns the removed IDs of the "IncludedNetworkToTag" edge to the Tag entity.
-func (m *IncludedNetworkMutation) RemovedIncludedNetworkToTagIDs() (ids []int) {
+func (m *IncludedNetworkMutation) RemovedIncludedNetworkToTagIDs() (ids []uuid.UUID) {
 	for id := range m.removed_IncludedNetworkToTag {
 		ids = append(ids, id)
 	}
@@ -14320,7 +14422,7 @@ func (m *IncludedNetworkMutation) RemovedIncludedNetworkToTagIDs() (ids []int) {
 }
 
 // IncludedNetworkToTagIDs returns the "IncludedNetworkToTag" edge IDs in the mutation.
-func (m *IncludedNetworkMutation) IncludedNetworkToTagIDs() (ids []int) {
+func (m *IncludedNetworkMutation) IncludedNetworkToTagIDs() (ids []uuid.UUID) {
 	for id := range m._IncludedNetworkToTag {
 		ids = append(ids, id)
 	}
@@ -14335,9 +14437,9 @@ func (m *IncludedNetworkMutation) ResetIncludedNetworkToTag() {
 }
 
 // AddIncludedNetworkToHostIDs adds the "IncludedNetworkToHost" edge to the Host entity by ids.
-func (m *IncludedNetworkMutation) AddIncludedNetworkToHostIDs(ids ...int) {
+func (m *IncludedNetworkMutation) AddIncludedNetworkToHostIDs(ids ...uuid.UUID) {
 	if m._IncludedNetworkToHost == nil {
-		m._IncludedNetworkToHost = make(map[int]struct{})
+		m._IncludedNetworkToHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._IncludedNetworkToHost[ids[i]] = struct{}{}
@@ -14355,9 +14457,9 @@ func (m *IncludedNetworkMutation) IncludedNetworkToHostCleared() bool {
 }
 
 // RemoveIncludedNetworkToHostIDs removes the "IncludedNetworkToHost" edge to the Host entity by IDs.
-func (m *IncludedNetworkMutation) RemoveIncludedNetworkToHostIDs(ids ...int) {
+func (m *IncludedNetworkMutation) RemoveIncludedNetworkToHostIDs(ids ...uuid.UUID) {
 	if m.removed_IncludedNetworkToHost == nil {
-		m.removed_IncludedNetworkToHost = make(map[int]struct{})
+		m.removed_IncludedNetworkToHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_IncludedNetworkToHost[ids[i]] = struct{}{}
@@ -14365,7 +14467,7 @@ func (m *IncludedNetworkMutation) RemoveIncludedNetworkToHostIDs(ids ...int) {
 }
 
 // RemovedIncludedNetworkToHost returns the removed IDs of the "IncludedNetworkToHost" edge to the Host entity.
-func (m *IncludedNetworkMutation) RemovedIncludedNetworkToHostIDs() (ids []int) {
+func (m *IncludedNetworkMutation) RemovedIncludedNetworkToHostIDs() (ids []uuid.UUID) {
 	for id := range m.removed_IncludedNetworkToHost {
 		ids = append(ids, id)
 	}
@@ -14373,7 +14475,7 @@ func (m *IncludedNetworkMutation) RemovedIncludedNetworkToHostIDs() (ids []int) 
 }
 
 // IncludedNetworkToHostIDs returns the "IncludedNetworkToHost" edge IDs in the mutation.
-func (m *IncludedNetworkMutation) IncludedNetworkToHostIDs() (ids []int) {
+func (m *IncludedNetworkMutation) IncludedNetworkToHostIDs() (ids []uuid.UUID) {
 	for id := range m._IncludedNetworkToHost {
 		ids = append(ids, id)
 	}
@@ -14388,9 +14490,9 @@ func (m *IncludedNetworkMutation) ResetIncludedNetworkToHost() {
 }
 
 // AddIncludedNetworkToNetworkIDs adds the "IncludedNetworkToNetwork" edge to the Network entity by ids.
-func (m *IncludedNetworkMutation) AddIncludedNetworkToNetworkIDs(ids ...int) {
+func (m *IncludedNetworkMutation) AddIncludedNetworkToNetworkIDs(ids ...uuid.UUID) {
 	if m._IncludedNetworkToNetwork == nil {
-		m._IncludedNetworkToNetwork = make(map[int]struct{})
+		m._IncludedNetworkToNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._IncludedNetworkToNetwork[ids[i]] = struct{}{}
@@ -14408,9 +14510,9 @@ func (m *IncludedNetworkMutation) IncludedNetworkToNetworkCleared() bool {
 }
 
 // RemoveIncludedNetworkToNetworkIDs removes the "IncludedNetworkToNetwork" edge to the Network entity by IDs.
-func (m *IncludedNetworkMutation) RemoveIncludedNetworkToNetworkIDs(ids ...int) {
+func (m *IncludedNetworkMutation) RemoveIncludedNetworkToNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_IncludedNetworkToNetwork == nil {
-		m.removed_IncludedNetworkToNetwork = make(map[int]struct{})
+		m.removed_IncludedNetworkToNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_IncludedNetworkToNetwork[ids[i]] = struct{}{}
@@ -14418,7 +14520,7 @@ func (m *IncludedNetworkMutation) RemoveIncludedNetworkToNetworkIDs(ids ...int) 
 }
 
 // RemovedIncludedNetworkToNetwork returns the removed IDs of the "IncludedNetworkToNetwork" edge to the Network entity.
-func (m *IncludedNetworkMutation) RemovedIncludedNetworkToNetworkIDs() (ids []int) {
+func (m *IncludedNetworkMutation) RemovedIncludedNetworkToNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_IncludedNetworkToNetwork {
 		ids = append(ids, id)
 	}
@@ -14426,7 +14528,7 @@ func (m *IncludedNetworkMutation) RemovedIncludedNetworkToNetworkIDs() (ids []in
 }
 
 // IncludedNetworkToNetworkIDs returns the "IncludedNetworkToNetwork" edge IDs in the mutation.
-func (m *IncludedNetworkMutation) IncludedNetworkToNetworkIDs() (ids []int) {
+func (m *IncludedNetworkMutation) IncludedNetworkToNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._IncludedNetworkToNetwork {
 		ids = append(ids, id)
 	}
@@ -14441,9 +14543,9 @@ func (m *IncludedNetworkMutation) ResetIncludedNetworkToNetwork() {
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by ids.
-func (m *IncludedNetworkMutation) AddIncludedNetworkToEnvironmentIDs(ids ...int) {
+func (m *IncludedNetworkMutation) AddIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) {
 	if m._IncludedNetworkToEnvironment == nil {
-		m._IncludedNetworkToEnvironment = make(map[int]struct{})
+		m._IncludedNetworkToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._IncludedNetworkToEnvironment[ids[i]] = struct{}{}
@@ -14461,9 +14563,9 @@ func (m *IncludedNetworkMutation) IncludedNetworkToEnvironmentCleared() bool {
 }
 
 // RemoveIncludedNetworkToEnvironmentIDs removes the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
-func (m *IncludedNetworkMutation) RemoveIncludedNetworkToEnvironmentIDs(ids ...int) {
+func (m *IncludedNetworkMutation) RemoveIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) {
 	if m.removed_IncludedNetworkToEnvironment == nil {
-		m.removed_IncludedNetworkToEnvironment = make(map[int]struct{})
+		m.removed_IncludedNetworkToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_IncludedNetworkToEnvironment[ids[i]] = struct{}{}
@@ -14471,7 +14573,7 @@ func (m *IncludedNetworkMutation) RemoveIncludedNetworkToEnvironmentIDs(ids ...i
 }
 
 // RemovedIncludedNetworkToEnvironment returns the removed IDs of the "IncludedNetworkToEnvironment" edge to the Environment entity.
-func (m *IncludedNetworkMutation) RemovedIncludedNetworkToEnvironmentIDs() (ids []int) {
+func (m *IncludedNetworkMutation) RemovedIncludedNetworkToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m.removed_IncludedNetworkToEnvironment {
 		ids = append(ids, id)
 	}
@@ -14479,7 +14581,7 @@ func (m *IncludedNetworkMutation) RemovedIncludedNetworkToEnvironmentIDs() (ids 
 }
 
 // IncludedNetworkToEnvironmentIDs returns the "IncludedNetworkToEnvironment" edge IDs in the mutation.
-func (m *IncludedNetworkMutation) IncludedNetworkToEnvironmentIDs() (ids []int) {
+func (m *IncludedNetworkMutation) IncludedNetworkToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m._IncludedNetworkToEnvironment {
 		ids = append(ids, id)
 	}
@@ -14788,7 +14890,7 @@ type NetworkMutation struct {
 	config
 	op                               Op
 	typ                              string
-	id                               *int
+	id                               *uuid.UUID
 	hcl_id                           *string
 	name                             *string
 	cidr                             *string
@@ -14796,13 +14898,13 @@ type NetworkMutation struct {
 	vars                             *map[string]string
 	tags                             *map[string]string
 	clearedFields                    map[string]struct{}
-	_NetworkToEnvironment            *int
+	_NetworkToEnvironment            *uuid.UUID
 	cleared_NetworkToEnvironment     bool
-	_NetworkToHostDependency         map[int]struct{}
-	removed_NetworkToHostDependency  map[int]struct{}
+	_NetworkToHostDependency         map[uuid.UUID]struct{}
+	removed_NetworkToHostDependency  map[uuid.UUID]struct{}
 	cleared_NetworkToHostDependency  bool
-	_NetworkToIncludedNetwork        map[int]struct{}
-	removed_NetworkToIncludedNetwork map[int]struct{}
+	_NetworkToIncludedNetwork        map[uuid.UUID]struct{}
+	removed_NetworkToIncludedNetwork map[uuid.UUID]struct{}
 	cleared_NetworkToIncludedNetwork bool
 	done                             bool
 	oldValue                         func(context.Context) (*Network, error)
@@ -14829,7 +14931,7 @@ func newNetworkMutation(c config, op Op, opts ...networkOption) *NetworkMutation
 }
 
 // withNetworkID sets the ID field of the mutation.
-func withNetworkID(id int) networkOption {
+func withNetworkID(id uuid.UUID) networkOption {
 	return func(m *NetworkMutation) {
 		var (
 			err   error
@@ -14879,9 +14981,15 @@ func (m NetworkMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Network entities.
+func (m *NetworkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *NetworkMutation) ID() (id int, exists bool) {
+func (m *NetworkMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -15105,7 +15213,7 @@ func (m *NetworkMutation) ResetTags() {
 }
 
 // SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by id.
-func (m *NetworkMutation) SetNetworkToEnvironmentID(id int) {
+func (m *NetworkMutation) SetNetworkToEnvironmentID(id uuid.UUID) {
 	m._NetworkToEnvironment = &id
 }
 
@@ -15120,7 +15228,7 @@ func (m *NetworkMutation) NetworkToEnvironmentCleared() bool {
 }
 
 // NetworkToEnvironmentID returns the "NetworkToEnvironment" edge ID in the mutation.
-func (m *NetworkMutation) NetworkToEnvironmentID() (id int, exists bool) {
+func (m *NetworkMutation) NetworkToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._NetworkToEnvironment != nil {
 		return *m._NetworkToEnvironment, true
 	}
@@ -15130,7 +15238,7 @@ func (m *NetworkMutation) NetworkToEnvironmentID() (id int, exists bool) {
 // NetworkToEnvironmentIDs returns the "NetworkToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // NetworkToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *NetworkMutation) NetworkToEnvironmentIDs() (ids []int) {
+func (m *NetworkMutation) NetworkToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._NetworkToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -15144,9 +15252,9 @@ func (m *NetworkMutation) ResetNetworkToEnvironment() {
 }
 
 // AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by ids.
-func (m *NetworkMutation) AddNetworkToHostDependencyIDs(ids ...int) {
+func (m *NetworkMutation) AddNetworkToHostDependencyIDs(ids ...uuid.UUID) {
 	if m._NetworkToHostDependency == nil {
-		m._NetworkToHostDependency = make(map[int]struct{})
+		m._NetworkToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._NetworkToHostDependency[ids[i]] = struct{}{}
@@ -15164,9 +15272,9 @@ func (m *NetworkMutation) NetworkToHostDependencyCleared() bool {
 }
 
 // RemoveNetworkToHostDependencyIDs removes the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
-func (m *NetworkMutation) RemoveNetworkToHostDependencyIDs(ids ...int) {
+func (m *NetworkMutation) RemoveNetworkToHostDependencyIDs(ids ...uuid.UUID) {
 	if m.removed_NetworkToHostDependency == nil {
-		m.removed_NetworkToHostDependency = make(map[int]struct{})
+		m.removed_NetworkToHostDependency = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_NetworkToHostDependency[ids[i]] = struct{}{}
@@ -15174,7 +15282,7 @@ func (m *NetworkMutation) RemoveNetworkToHostDependencyIDs(ids ...int) {
 }
 
 // RemovedNetworkToHostDependency returns the removed IDs of the "NetworkToHostDependency" edge to the HostDependency entity.
-func (m *NetworkMutation) RemovedNetworkToHostDependencyIDs() (ids []int) {
+func (m *NetworkMutation) RemovedNetworkToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m.removed_NetworkToHostDependency {
 		ids = append(ids, id)
 	}
@@ -15182,7 +15290,7 @@ func (m *NetworkMutation) RemovedNetworkToHostDependencyIDs() (ids []int) {
 }
 
 // NetworkToHostDependencyIDs returns the "NetworkToHostDependency" edge IDs in the mutation.
-func (m *NetworkMutation) NetworkToHostDependencyIDs() (ids []int) {
+func (m *NetworkMutation) NetworkToHostDependencyIDs() (ids []uuid.UUID) {
 	for id := range m._NetworkToHostDependency {
 		ids = append(ids, id)
 	}
@@ -15197,9 +15305,9 @@ func (m *NetworkMutation) ResetNetworkToHostDependency() {
 }
 
 // AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by ids.
-func (m *NetworkMutation) AddNetworkToIncludedNetworkIDs(ids ...int) {
+func (m *NetworkMutation) AddNetworkToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m._NetworkToIncludedNetwork == nil {
-		m._NetworkToIncludedNetwork = make(map[int]struct{})
+		m._NetworkToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._NetworkToIncludedNetwork[ids[i]] = struct{}{}
@@ -15217,9 +15325,9 @@ func (m *NetworkMutation) NetworkToIncludedNetworkCleared() bool {
 }
 
 // RemoveNetworkToIncludedNetworkIDs removes the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (m *NetworkMutation) RemoveNetworkToIncludedNetworkIDs(ids ...int) {
+func (m *NetworkMutation) RemoveNetworkToIncludedNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_NetworkToIncludedNetwork == nil {
-		m.removed_NetworkToIncludedNetwork = make(map[int]struct{})
+		m.removed_NetworkToIncludedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_NetworkToIncludedNetwork[ids[i]] = struct{}{}
@@ -15227,7 +15335,7 @@ func (m *NetworkMutation) RemoveNetworkToIncludedNetworkIDs(ids ...int) {
 }
 
 // RemovedNetworkToIncludedNetwork returns the removed IDs of the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity.
-func (m *NetworkMutation) RemovedNetworkToIncludedNetworkIDs() (ids []int) {
+func (m *NetworkMutation) RemovedNetworkToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_NetworkToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -15235,7 +15343,7 @@ func (m *NetworkMutation) RemovedNetworkToIncludedNetworkIDs() (ids []int) {
 }
 
 // NetworkToIncludedNetworkIDs returns the "NetworkToIncludedNetwork" edge IDs in the mutation.
-func (m *NetworkMutation) NetworkToIncludedNetworkIDs() (ids []int) {
+func (m *NetworkMutation) NetworkToIncludedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._NetworkToIncludedNetwork {
 		ids = append(ids, id)
 	}
@@ -15578,28 +15686,27 @@ type PlanMutation struct {
 	config
 	op                               Op
 	typ                              string
-	id                               *int
+	id                               *uuid.UUID
 	step_number                      *int
 	addstep_number                   *int
 	_type                            *plan.Type
-	build_id                         *int
-	addbuild_id                      *int
+	build_id                         *string
 	clearedFields                    map[string]struct{}
-	_PrevPlan                        map[int]struct{}
-	removed_PrevPlan                 map[int]struct{}
+	_PrevPlan                        map[uuid.UUID]struct{}
+	removed_PrevPlan                 map[uuid.UUID]struct{}
 	cleared_PrevPlan                 bool
-	_NextPlan                        map[int]struct{}
-	removed_NextPlan                 map[int]struct{}
+	_NextPlan                        map[uuid.UUID]struct{}
+	removed_NextPlan                 map[uuid.UUID]struct{}
 	cleared_NextPlan                 bool
-	_PlanToBuild                     *int
+	_PlanToBuild                     *uuid.UUID
 	cleared_PlanToBuild              bool
-	_PlanToTeam                      *int
+	_PlanToTeam                      *uuid.UUID
 	cleared_PlanToTeam               bool
-	_PlanToProvisionedNetwork        *int
+	_PlanToProvisionedNetwork        *uuid.UUID
 	cleared_PlanToProvisionedNetwork bool
-	_PlanToProvisionedHost           *int
+	_PlanToProvisionedHost           *uuid.UUID
 	cleared_PlanToProvisionedHost    bool
-	_PlanToProvisioningStep          *int
+	_PlanToProvisioningStep          *uuid.UUID
 	cleared_PlanToProvisioningStep   bool
 	done                             bool
 	oldValue                         func(context.Context) (*Plan, error)
@@ -15626,7 +15733,7 @@ func newPlanMutation(c config, op Op, opts ...planOption) *PlanMutation {
 }
 
 // withPlanID sets the ID field of the mutation.
-func withPlanID(id int) planOption {
+func withPlanID(id uuid.UUID) planOption {
 	return func(m *PlanMutation) {
 		var (
 			err   error
@@ -15676,9 +15783,15 @@ func (m PlanMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Plan entities.
+func (m *PlanMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *PlanMutation) ID() (id int, exists bool) {
+func (m *PlanMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -15778,13 +15891,12 @@ func (m *PlanMutation) ResetType() {
 }
 
 // SetBuildID sets the "build_id" field.
-func (m *PlanMutation) SetBuildID(i int) {
-	m.build_id = &i
-	m.addbuild_id = nil
+func (m *PlanMutation) SetBuildID(s string) {
+	m.build_id = &s
 }
 
 // BuildID returns the value of the "build_id" field in the mutation.
-func (m *PlanMutation) BuildID() (r int, exists bool) {
+func (m *PlanMutation) BuildID() (r string, exists bool) {
 	v := m.build_id
 	if v == nil {
 		return
@@ -15795,7 +15907,7 @@ func (m *PlanMutation) BuildID() (r int, exists bool) {
 // OldBuildID returns the old "build_id" field's value of the Plan entity.
 // If the Plan object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanMutation) OldBuildID(ctx context.Context) (v int, err error) {
+func (m *PlanMutation) OldBuildID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldBuildID is only allowed on UpdateOne operations")
 	}
@@ -15809,34 +15921,15 @@ func (m *PlanMutation) OldBuildID(ctx context.Context) (v int, err error) {
 	return oldValue.BuildID, nil
 }
 
-// AddBuildID adds i to the "build_id" field.
-func (m *PlanMutation) AddBuildID(i int) {
-	if m.addbuild_id != nil {
-		*m.addbuild_id += i
-	} else {
-		m.addbuild_id = &i
-	}
-}
-
-// AddedBuildID returns the value that was added to the "build_id" field in this mutation.
-func (m *PlanMutation) AddedBuildID() (r int, exists bool) {
-	v := m.addbuild_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetBuildID resets all changes to the "build_id" field.
 func (m *PlanMutation) ResetBuildID() {
 	m.build_id = nil
-	m.addbuild_id = nil
 }
 
 // AddPrevPlanIDs adds the "PrevPlan" edge to the Plan entity by ids.
-func (m *PlanMutation) AddPrevPlanIDs(ids ...int) {
+func (m *PlanMutation) AddPrevPlanIDs(ids ...uuid.UUID) {
 	if m._PrevPlan == nil {
-		m._PrevPlan = make(map[int]struct{})
+		m._PrevPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._PrevPlan[ids[i]] = struct{}{}
@@ -15854,9 +15947,9 @@ func (m *PlanMutation) PrevPlanCleared() bool {
 }
 
 // RemovePrevPlanIDs removes the "PrevPlan" edge to the Plan entity by IDs.
-func (m *PlanMutation) RemovePrevPlanIDs(ids ...int) {
+func (m *PlanMutation) RemovePrevPlanIDs(ids ...uuid.UUID) {
 	if m.removed_PrevPlan == nil {
-		m.removed_PrevPlan = make(map[int]struct{})
+		m.removed_PrevPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_PrevPlan[ids[i]] = struct{}{}
@@ -15864,7 +15957,7 @@ func (m *PlanMutation) RemovePrevPlanIDs(ids ...int) {
 }
 
 // RemovedPrevPlan returns the removed IDs of the "PrevPlan" edge to the Plan entity.
-func (m *PlanMutation) RemovedPrevPlanIDs() (ids []int) {
+func (m *PlanMutation) RemovedPrevPlanIDs() (ids []uuid.UUID) {
 	for id := range m.removed_PrevPlan {
 		ids = append(ids, id)
 	}
@@ -15872,7 +15965,7 @@ func (m *PlanMutation) RemovedPrevPlanIDs() (ids []int) {
 }
 
 // PrevPlanIDs returns the "PrevPlan" edge IDs in the mutation.
-func (m *PlanMutation) PrevPlanIDs() (ids []int) {
+func (m *PlanMutation) PrevPlanIDs() (ids []uuid.UUID) {
 	for id := range m._PrevPlan {
 		ids = append(ids, id)
 	}
@@ -15887,9 +15980,9 @@ func (m *PlanMutation) ResetPrevPlan() {
 }
 
 // AddNextPlanIDs adds the "NextPlan" edge to the Plan entity by ids.
-func (m *PlanMutation) AddNextPlanIDs(ids ...int) {
+func (m *PlanMutation) AddNextPlanIDs(ids ...uuid.UUID) {
 	if m._NextPlan == nil {
-		m._NextPlan = make(map[int]struct{})
+		m._NextPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._NextPlan[ids[i]] = struct{}{}
@@ -15907,9 +16000,9 @@ func (m *PlanMutation) NextPlanCleared() bool {
 }
 
 // RemoveNextPlanIDs removes the "NextPlan" edge to the Plan entity by IDs.
-func (m *PlanMutation) RemoveNextPlanIDs(ids ...int) {
+func (m *PlanMutation) RemoveNextPlanIDs(ids ...uuid.UUID) {
 	if m.removed_NextPlan == nil {
-		m.removed_NextPlan = make(map[int]struct{})
+		m.removed_NextPlan = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_NextPlan[ids[i]] = struct{}{}
@@ -15917,7 +16010,7 @@ func (m *PlanMutation) RemoveNextPlanIDs(ids ...int) {
 }
 
 // RemovedNextPlan returns the removed IDs of the "NextPlan" edge to the Plan entity.
-func (m *PlanMutation) RemovedNextPlanIDs() (ids []int) {
+func (m *PlanMutation) RemovedNextPlanIDs() (ids []uuid.UUID) {
 	for id := range m.removed_NextPlan {
 		ids = append(ids, id)
 	}
@@ -15925,7 +16018,7 @@ func (m *PlanMutation) RemovedNextPlanIDs() (ids []int) {
 }
 
 // NextPlanIDs returns the "NextPlan" edge IDs in the mutation.
-func (m *PlanMutation) NextPlanIDs() (ids []int) {
+func (m *PlanMutation) NextPlanIDs() (ids []uuid.UUID) {
 	for id := range m._NextPlan {
 		ids = append(ids, id)
 	}
@@ -15940,7 +16033,7 @@ func (m *PlanMutation) ResetNextPlan() {
 }
 
 // SetPlanToBuildID sets the "PlanToBuild" edge to the Build entity by id.
-func (m *PlanMutation) SetPlanToBuildID(id int) {
+func (m *PlanMutation) SetPlanToBuildID(id uuid.UUID) {
 	m._PlanToBuild = &id
 }
 
@@ -15955,7 +16048,7 @@ func (m *PlanMutation) PlanToBuildCleared() bool {
 }
 
 // PlanToBuildID returns the "PlanToBuild" edge ID in the mutation.
-func (m *PlanMutation) PlanToBuildID() (id int, exists bool) {
+func (m *PlanMutation) PlanToBuildID() (id uuid.UUID, exists bool) {
 	if m._PlanToBuild != nil {
 		return *m._PlanToBuild, true
 	}
@@ -15965,7 +16058,7 @@ func (m *PlanMutation) PlanToBuildID() (id int, exists bool) {
 // PlanToBuildIDs returns the "PlanToBuild" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PlanToBuildID instead. It exists only for internal usage by the builders.
-func (m *PlanMutation) PlanToBuildIDs() (ids []int) {
+func (m *PlanMutation) PlanToBuildIDs() (ids []uuid.UUID) {
 	if id := m._PlanToBuild; id != nil {
 		ids = append(ids, *id)
 	}
@@ -15979,7 +16072,7 @@ func (m *PlanMutation) ResetPlanToBuild() {
 }
 
 // SetPlanToTeamID sets the "PlanToTeam" edge to the Team entity by id.
-func (m *PlanMutation) SetPlanToTeamID(id int) {
+func (m *PlanMutation) SetPlanToTeamID(id uuid.UUID) {
 	m._PlanToTeam = &id
 }
 
@@ -15994,7 +16087,7 @@ func (m *PlanMutation) PlanToTeamCleared() bool {
 }
 
 // PlanToTeamID returns the "PlanToTeam" edge ID in the mutation.
-func (m *PlanMutation) PlanToTeamID() (id int, exists bool) {
+func (m *PlanMutation) PlanToTeamID() (id uuid.UUID, exists bool) {
 	if m._PlanToTeam != nil {
 		return *m._PlanToTeam, true
 	}
@@ -16004,7 +16097,7 @@ func (m *PlanMutation) PlanToTeamID() (id int, exists bool) {
 // PlanToTeamIDs returns the "PlanToTeam" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PlanToTeamID instead. It exists only for internal usage by the builders.
-func (m *PlanMutation) PlanToTeamIDs() (ids []int) {
+func (m *PlanMutation) PlanToTeamIDs() (ids []uuid.UUID) {
 	if id := m._PlanToTeam; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16018,7 +16111,7 @@ func (m *PlanMutation) ResetPlanToTeam() {
 }
 
 // SetPlanToProvisionedNetworkID sets the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
-func (m *PlanMutation) SetPlanToProvisionedNetworkID(id int) {
+func (m *PlanMutation) SetPlanToProvisionedNetworkID(id uuid.UUID) {
 	m._PlanToProvisionedNetwork = &id
 }
 
@@ -16033,7 +16126,7 @@ func (m *PlanMutation) PlanToProvisionedNetworkCleared() bool {
 }
 
 // PlanToProvisionedNetworkID returns the "PlanToProvisionedNetwork" edge ID in the mutation.
-func (m *PlanMutation) PlanToProvisionedNetworkID() (id int, exists bool) {
+func (m *PlanMutation) PlanToProvisionedNetworkID() (id uuid.UUID, exists bool) {
 	if m._PlanToProvisionedNetwork != nil {
 		return *m._PlanToProvisionedNetwork, true
 	}
@@ -16043,7 +16136,7 @@ func (m *PlanMutation) PlanToProvisionedNetworkID() (id int, exists bool) {
 // PlanToProvisionedNetworkIDs returns the "PlanToProvisionedNetwork" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PlanToProvisionedNetworkID instead. It exists only for internal usage by the builders.
-func (m *PlanMutation) PlanToProvisionedNetworkIDs() (ids []int) {
+func (m *PlanMutation) PlanToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	if id := m._PlanToProvisionedNetwork; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16057,7 +16150,7 @@ func (m *PlanMutation) ResetPlanToProvisionedNetwork() {
 }
 
 // SetPlanToProvisionedHostID sets the "PlanToProvisionedHost" edge to the ProvisionedHost entity by id.
-func (m *PlanMutation) SetPlanToProvisionedHostID(id int) {
+func (m *PlanMutation) SetPlanToProvisionedHostID(id uuid.UUID) {
 	m._PlanToProvisionedHost = &id
 }
 
@@ -16072,7 +16165,7 @@ func (m *PlanMutation) PlanToProvisionedHostCleared() bool {
 }
 
 // PlanToProvisionedHostID returns the "PlanToProvisionedHost" edge ID in the mutation.
-func (m *PlanMutation) PlanToProvisionedHostID() (id int, exists bool) {
+func (m *PlanMutation) PlanToProvisionedHostID() (id uuid.UUID, exists bool) {
 	if m._PlanToProvisionedHost != nil {
 		return *m._PlanToProvisionedHost, true
 	}
@@ -16082,7 +16175,7 @@ func (m *PlanMutation) PlanToProvisionedHostID() (id int, exists bool) {
 // PlanToProvisionedHostIDs returns the "PlanToProvisionedHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PlanToProvisionedHostID instead. It exists only for internal usage by the builders.
-func (m *PlanMutation) PlanToProvisionedHostIDs() (ids []int) {
+func (m *PlanMutation) PlanToProvisionedHostIDs() (ids []uuid.UUID) {
 	if id := m._PlanToProvisionedHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16096,7 +16189,7 @@ func (m *PlanMutation) ResetPlanToProvisionedHost() {
 }
 
 // SetPlanToProvisioningStepID sets the "PlanToProvisioningStep" edge to the ProvisioningStep entity by id.
-func (m *PlanMutation) SetPlanToProvisioningStepID(id int) {
+func (m *PlanMutation) SetPlanToProvisioningStepID(id uuid.UUID) {
 	m._PlanToProvisioningStep = &id
 }
 
@@ -16111,7 +16204,7 @@ func (m *PlanMutation) PlanToProvisioningStepCleared() bool {
 }
 
 // PlanToProvisioningStepID returns the "PlanToProvisioningStep" edge ID in the mutation.
-func (m *PlanMutation) PlanToProvisioningStepID() (id int, exists bool) {
+func (m *PlanMutation) PlanToProvisioningStepID() (id uuid.UUID, exists bool) {
 	if m._PlanToProvisioningStep != nil {
 		return *m._PlanToProvisioningStep, true
 	}
@@ -16121,7 +16214,7 @@ func (m *PlanMutation) PlanToProvisioningStepID() (id int, exists bool) {
 // PlanToProvisioningStepIDs returns the "PlanToProvisioningStep" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PlanToProvisioningStepID instead. It exists only for internal usage by the builders.
-func (m *PlanMutation) PlanToProvisioningStepIDs() (ids []int) {
+func (m *PlanMutation) PlanToProvisioningStepIDs() (ids []uuid.UUID) {
 	if id := m._PlanToProvisioningStep; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16211,7 +16304,7 @@ func (m *PlanMutation) SetField(name string, value ent.Value) error {
 		m.SetType(v)
 		return nil
 	case plan.FieldBuildID:
-		v, ok := value.(int)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -16228,9 +16321,6 @@ func (m *PlanMutation) AddedFields() []string {
 	if m.addstep_number != nil {
 		fields = append(fields, plan.FieldStepNumber)
 	}
-	if m.addbuild_id != nil {
-		fields = append(fields, plan.FieldBuildID)
-	}
 	return fields
 }
 
@@ -16241,8 +16331,6 @@ func (m *PlanMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case plan.FieldStepNumber:
 		return m.AddedStepNumber()
-	case plan.FieldBuildID:
-		return m.AddedBuildID()
 	}
 	return nil, false
 }
@@ -16258,13 +16346,6 @@ func (m *PlanMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddStepNumber(v)
-		return nil
-	case plan.FieldBuildID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddBuildID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Plan numeric field %s", name)
@@ -16511,26 +16592,26 @@ type ProvisionedHostMutation struct {
 	config
 	op                                          Op
 	typ                                         string
-	id                                          *int
+	id                                          *uuid.UUID
 	subnet_ip                                   *string
 	clearedFields                               map[string]struct{}
-	_ProvisionedHostToStatus                    *int
+	_ProvisionedHostToStatus                    *uuid.UUID
 	cleared_ProvisionedHostToStatus             bool
-	_ProvisionedHostToProvisionedNetwork        *int
+	_ProvisionedHostToProvisionedNetwork        *uuid.UUID
 	cleared_ProvisionedHostToProvisionedNetwork bool
-	_ProvisionedHostToHost                      *int
+	_ProvisionedHostToHost                      *uuid.UUID
 	cleared_ProvisionedHostToHost               bool
-	_ProvisionedHostToEndStepPlan               *int
+	_ProvisionedHostToEndStepPlan               *uuid.UUID
 	cleared_ProvisionedHostToEndStepPlan        bool
-	_ProvisionedHostToProvisioningStep          map[int]struct{}
-	removed_ProvisionedHostToProvisioningStep   map[int]struct{}
+	_ProvisionedHostToProvisioningStep          map[uuid.UUID]struct{}
+	removed_ProvisionedHostToProvisioningStep   map[uuid.UUID]struct{}
 	cleared_ProvisionedHostToProvisioningStep   bool
-	_ProvisionedHostToAgentStatus               map[int]struct{}
-	removed_ProvisionedHostToAgentStatus        map[int]struct{}
+	_ProvisionedHostToAgentStatus               map[uuid.UUID]struct{}
+	removed_ProvisionedHostToAgentStatus        map[uuid.UUID]struct{}
 	cleared_ProvisionedHostToAgentStatus        bool
-	_ProvisionedHostToPlan                      *int
+	_ProvisionedHostToPlan                      *uuid.UUID
 	cleared_ProvisionedHostToPlan               bool
-	_ProvisionedHostToGinFileMiddleware         *int
+	_ProvisionedHostToGinFileMiddleware         *uuid.UUID
 	cleared_ProvisionedHostToGinFileMiddleware  bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedHost, error)
@@ -16557,7 +16638,7 @@ func newProvisionedHostMutation(c config, op Op, opts ...provisionedhostOption) 
 }
 
 // withProvisionedHostID sets the ID field of the mutation.
-func withProvisionedHostID(id int) provisionedhostOption {
+func withProvisionedHostID(id uuid.UUID) provisionedhostOption {
 	return func(m *ProvisionedHostMutation) {
 		var (
 			err   error
@@ -16607,9 +16688,15 @@ func (m ProvisionedHostMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProvisionedHost entities.
+func (m *ProvisionedHostMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *ProvisionedHostMutation) ID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -16653,7 +16740,7 @@ func (m *ProvisionedHostMutation) ResetSubnetIP() {
 }
 
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToStatusID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToStatusID(id uuid.UUID) {
 	m._ProvisionedHostToStatus = &id
 }
 
@@ -16668,7 +16755,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusCleared() bool {
 }
 
 // ProvisionedHostToStatusID returns the "ProvisionedHostToStatus" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToStatusID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToStatus != nil {
 		return *m._ProvisionedHostToStatus, true
 	}
@@ -16678,7 +16765,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToStatusID() (id int, exists bo
 // ProvisionedHostToStatusIDs returns the "ProvisionedHostToStatus" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToStatusID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToStatusIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToStatus; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16692,7 +16779,7 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToStatus() {
 }
 
 // SetProvisionedHostToProvisionedNetworkID sets the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToProvisionedNetworkID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToProvisionedNetworkID(id uuid.UUID) {
 	m._ProvisionedHostToProvisionedNetwork = &id
 }
 
@@ -16707,7 +16794,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkCleared() b
 }
 
 // ProvisionedHostToProvisionedNetworkID returns the "ProvisionedHostToProvisionedNetwork" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToProvisionedNetwork != nil {
 		return *m._ProvisionedHostToProvisionedNetwork, true
 	}
@@ -16717,7 +16804,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkID() (id in
 // ProvisionedHostToProvisionedNetworkIDs returns the "ProvisionedHostToProvisionedNetwork" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToProvisionedNetworkID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToProvisionedNetwork; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16731,7 +16818,7 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisionedNetwork() {
 }
 
 // SetProvisionedHostToHostID sets the "ProvisionedHostToHost" edge to the Host entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToHostID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToHostID(id uuid.UUID) {
 	m._ProvisionedHostToHost = &id
 }
 
@@ -16746,7 +16833,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostCleared() bool {
 }
 
 // ProvisionedHostToHostID returns the "ProvisionedHostToHost" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToHostID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToHostID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToHost != nil {
 		return *m._ProvisionedHostToHost, true
 	}
@@ -16756,7 +16843,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToHostID() (id int, exists bool
 // ProvisionedHostToHostIDs returns the "ProvisionedHostToHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToHostID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToHostIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16770,7 +16857,7 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToHost() {
 }
 
 // SetProvisionedHostToEndStepPlanID sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToEndStepPlanID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToEndStepPlanID(id uuid.UUID) {
 	m._ProvisionedHostToEndStepPlan = &id
 }
 
@@ -16785,7 +16872,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanCleared() bool {
 }
 
 // ProvisionedHostToEndStepPlanID returns the "ProvisionedHostToEndStepPlan" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToEndStepPlan != nil {
 		return *m._ProvisionedHostToEndStepPlan, true
 	}
@@ -16795,7 +16882,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanID() (id int, exis
 // ProvisionedHostToEndStepPlanIDs returns the "ProvisionedHostToEndStepPlan" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToEndStepPlanID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToEndStepPlan; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16809,9 +16896,9 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToEndStepPlan() {
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToProvisioningStepIDs(ids ...int) {
+func (m *ProvisionedHostMutation) AddProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) {
 	if m._ProvisionedHostToProvisioningStep == nil {
-		m._ProvisionedHostToProvisioningStep = make(map[int]struct{})
+		m._ProvisionedHostToProvisioningStep = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._ProvisionedHostToProvisioningStep[ids[i]] = struct{}{}
@@ -16829,9 +16916,9 @@ func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepCleared() boo
 }
 
 // RemoveProvisionedHostToProvisioningStepIDs removes the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisioningStepIDs(ids ...int) {
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) {
 	if m.removed_ProvisionedHostToProvisioningStep == nil {
-		m.removed_ProvisionedHostToProvisioningStep = make(map[int]struct{})
+		m.removed_ProvisionedHostToProvisioningStep = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_ProvisionedHostToProvisioningStep[ids[i]] = struct{}{}
@@ -16839,7 +16926,7 @@ func (m *ProvisionedHostMutation) RemoveProvisionedHostToProvisioningStepIDs(ids
 }
 
 // RemovedProvisionedHostToProvisioningStep returns the removed IDs of the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisioningStepIDs() (ids []int) {
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisioningStepIDs() (ids []uuid.UUID) {
 	for id := range m.removed_ProvisionedHostToProvisioningStep {
 		ids = append(ids, id)
 	}
@@ -16847,7 +16934,7 @@ func (m *ProvisionedHostMutation) RemovedProvisionedHostToProvisioningStepIDs() 
 }
 
 // ProvisionedHostToProvisioningStepIDs returns the "ProvisionedHostToProvisioningStep" edge IDs in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepIDs() (ids []uuid.UUID) {
 	for id := range m._ProvisionedHostToProvisioningStep {
 		ids = append(ids, id)
 	}
@@ -16862,9 +16949,9 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToProvisioningStep() {
 }
 
 // AddProvisionedHostToAgentStatuIDs adds the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by ids.
-func (m *ProvisionedHostMutation) AddProvisionedHostToAgentStatuIDs(ids ...int) {
+func (m *ProvisionedHostMutation) AddProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) {
 	if m._ProvisionedHostToAgentStatus == nil {
-		m._ProvisionedHostToAgentStatus = make(map[int]struct{})
+		m._ProvisionedHostToAgentStatus = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._ProvisionedHostToAgentStatus[ids[i]] = struct{}{}
@@ -16882,9 +16969,9 @@ func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusCleared() bool {
 }
 
 // RemoveProvisionedHostToAgentStatuIDs removes the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity by IDs.
-func (m *ProvisionedHostMutation) RemoveProvisionedHostToAgentStatuIDs(ids ...int) {
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToAgentStatuIDs(ids ...uuid.UUID) {
 	if m.removed_ProvisionedHostToAgentStatus == nil {
-		m.removed_ProvisionedHostToAgentStatus = make(map[int]struct{})
+		m.removed_ProvisionedHostToAgentStatus = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_ProvisionedHostToAgentStatus[ids[i]] = struct{}{}
@@ -16892,7 +16979,7 @@ func (m *ProvisionedHostMutation) RemoveProvisionedHostToAgentStatuIDs(ids ...in
 }
 
 // RemovedProvisionedHostToAgentStatus returns the removed IDs of the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity.
-func (m *ProvisionedHostMutation) RemovedProvisionedHostToAgentStatusIDs() (ids []int) {
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToAgentStatusIDs() (ids []uuid.UUID) {
 	for id := range m.removed_ProvisionedHostToAgentStatus {
 		ids = append(ids, id)
 	}
@@ -16900,7 +16987,7 @@ func (m *ProvisionedHostMutation) RemovedProvisionedHostToAgentStatusIDs() (ids 
 }
 
 // ProvisionedHostToAgentStatusIDs returns the "ProvisionedHostToAgentStatus" edge IDs in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusIDs() (ids []uuid.UUID) {
 	for id := range m._ProvisionedHostToAgentStatus {
 		ids = append(ids, id)
 	}
@@ -16915,7 +17002,7 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
 }
 
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToPlanID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToPlanID(id uuid.UUID) {
 	m._ProvisionedHostToPlan = &id
 }
 
@@ -16930,7 +17017,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToPlanCleared() bool {
 }
 
 // ProvisionedHostToPlanID returns the "ProvisionedHostToPlan" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToPlanID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToPlan != nil {
 		return *m._ProvisionedHostToPlan, true
 	}
@@ -16940,7 +17027,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToPlanID() (id int, exists bool
 // ProvisionedHostToPlanIDs returns the "ProvisionedHostToPlan" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToPlanID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToPlanIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToPlan; id != nil {
 		ids = append(ids, *id)
 	}
@@ -16954,7 +17041,7 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToPlan() {
 }
 
 // SetProvisionedHostToGinFileMiddlewareID sets the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
-func (m *ProvisionedHostMutation) SetProvisionedHostToGinFileMiddlewareID(id int) {
+func (m *ProvisionedHostMutation) SetProvisionedHostToGinFileMiddlewareID(id uuid.UUID) {
 	m._ProvisionedHostToGinFileMiddleware = &id
 }
 
@@ -16969,7 +17056,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareCleared() bo
 }
 
 // ProvisionedHostToGinFileMiddlewareID returns the "ProvisionedHostToGinFileMiddleware" edge ID in the mutation.
-func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareID() (id int, exists bool) {
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedHostToGinFileMiddleware != nil {
 		return *m._ProvisionedHostToGinFileMiddleware, true
 	}
@@ -16979,7 +17066,7 @@ func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareID() (id int
 // ProvisionedHostToGinFileMiddlewareIDs returns the "ProvisionedHostToGinFileMiddleware" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedHostToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareIDs() (ids []int) {
+func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedHostToGinFileMiddleware; id != nil {
 		ids = append(ids, *id)
 	}
@@ -17326,22 +17413,22 @@ type ProvisionedNetworkMutation struct {
 	config
 	op                                          Op
 	typ                                         string
-	id                                          *int
+	id                                          *uuid.UUID
 	name                                        *string
 	cidr                                        *string
 	clearedFields                               map[string]struct{}
-	_ProvisionedNetworkToStatus                 *int
+	_ProvisionedNetworkToStatus                 *uuid.UUID
 	cleared_ProvisionedNetworkToStatus          bool
-	_ProvisionedNetworkToNetwork                *int
+	_ProvisionedNetworkToNetwork                *uuid.UUID
 	cleared_ProvisionedNetworkToNetwork         bool
-	_ProvisionedNetworkToBuild                  *int
+	_ProvisionedNetworkToBuild                  *uuid.UUID
 	cleared_ProvisionedNetworkToBuild           bool
-	_ProvisionedNetworkToTeam                   *int
+	_ProvisionedNetworkToTeam                   *uuid.UUID
 	cleared_ProvisionedNetworkToTeam            bool
-	_ProvisionedNetworkToProvisionedHost        map[int]struct{}
-	removed_ProvisionedNetworkToProvisionedHost map[int]struct{}
+	_ProvisionedNetworkToProvisionedHost        map[uuid.UUID]struct{}
+	removed_ProvisionedNetworkToProvisionedHost map[uuid.UUID]struct{}
 	cleared_ProvisionedNetworkToProvisionedHost bool
-	_ProvisionedNetworkToPlan                   *int
+	_ProvisionedNetworkToPlan                   *uuid.UUID
 	cleared_ProvisionedNetworkToPlan            bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisionedNetwork, error)
@@ -17368,7 +17455,7 @@ func newProvisionedNetworkMutation(c config, op Op, opts ...provisionednetworkOp
 }
 
 // withProvisionedNetworkID sets the ID field of the mutation.
-func withProvisionedNetworkID(id int) provisionednetworkOption {
+func withProvisionedNetworkID(id uuid.UUID) provisionednetworkOption {
 	return func(m *ProvisionedNetworkMutation) {
 		var (
 			err   error
@@ -17418,9 +17505,15 @@ func (m ProvisionedNetworkMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProvisionedNetwork entities.
+func (m *ProvisionedNetworkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *ProvisionedNetworkMutation) ID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -17500,7 +17593,7 @@ func (m *ProvisionedNetworkMutation) ResetCidr() {
 }
 
 // SetProvisionedNetworkToStatusID sets the "ProvisionedNetworkToStatus" edge to the Status entity by id.
-func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToStatusID(id int) {
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToStatusID(id uuid.UUID) {
 	m._ProvisionedNetworkToStatus = &id
 }
 
@@ -17515,7 +17608,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusCleared() bool {
 }
 
 // ProvisionedNetworkToStatusID returns the "ProvisionedNetworkToStatus" edge ID in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedNetworkToStatus != nil {
 		return *m._ProvisionedNetworkToStatus, true
 	}
@@ -17525,7 +17618,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusID() (id int, exi
 // ProvisionedNetworkToStatusIDs returns the "ProvisionedNetworkToStatus" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedNetworkToStatusID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedNetworkToStatus; id != nil {
 		ids = append(ids, *id)
 	}
@@ -17539,7 +17632,7 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToStatus() {
 }
 
 // SetProvisionedNetworkToNetworkID sets the "ProvisionedNetworkToNetwork" edge to the Network entity by id.
-func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToNetworkID(id int) {
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToNetworkID(id uuid.UUID) {
 	m._ProvisionedNetworkToNetwork = &id
 }
 
@@ -17554,7 +17647,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkCleared() bool {
 }
 
 // ProvisionedNetworkToNetworkID returns the "ProvisionedNetworkToNetwork" edge ID in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedNetworkToNetwork != nil {
 		return *m._ProvisionedNetworkToNetwork, true
 	}
@@ -17564,7 +17657,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkID() (id int, ex
 // ProvisionedNetworkToNetworkIDs returns the "ProvisionedNetworkToNetwork" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedNetworkToNetworkID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedNetworkToNetwork; id != nil {
 		ids = append(ids, *id)
 	}
@@ -17578,7 +17671,7 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToNetwork() {
 }
 
 // SetProvisionedNetworkToBuildID sets the "ProvisionedNetworkToBuild" edge to the Build entity by id.
-func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToBuildID(id int) {
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToBuildID(id uuid.UUID) {
 	m._ProvisionedNetworkToBuild = &id
 }
 
@@ -17593,7 +17686,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildCleared() bool {
 }
 
 // ProvisionedNetworkToBuildID returns the "ProvisionedNetworkToBuild" edge ID in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedNetworkToBuild != nil {
 		return *m._ProvisionedNetworkToBuild, true
 	}
@@ -17603,7 +17696,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildID() (id int, exis
 // ProvisionedNetworkToBuildIDs returns the "ProvisionedNetworkToBuild" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedNetworkToBuildID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedNetworkToBuild; id != nil {
 		ids = append(ids, *id)
 	}
@@ -17617,7 +17710,7 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToBuild() {
 }
 
 // SetProvisionedNetworkToTeamID sets the "ProvisionedNetworkToTeam" edge to the Team entity by id.
-func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToTeamID(id int) {
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToTeamID(id uuid.UUID) {
 	m._ProvisionedNetworkToTeam = &id
 }
 
@@ -17632,7 +17725,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamCleared() bool {
 }
 
 // ProvisionedNetworkToTeamID returns the "ProvisionedNetworkToTeam" edge ID in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedNetworkToTeam != nil {
 		return *m._ProvisionedNetworkToTeam, true
 	}
@@ -17642,7 +17735,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamID() (id int, exist
 // ProvisionedNetworkToTeamIDs returns the "ProvisionedNetworkToTeam" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedNetworkToTeamID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedNetworkToTeam; id != nil {
 		ids = append(ids, *id)
 	}
@@ -17656,9 +17749,9 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToTeam() {
 }
 
 // AddProvisionedNetworkToProvisionedHostIDs adds the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by ids.
-func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToProvisionedHostIDs(ids ...int) {
+func (m *ProvisionedNetworkMutation) AddProvisionedNetworkToProvisionedHostIDs(ids ...uuid.UUID) {
 	if m._ProvisionedNetworkToProvisionedHost == nil {
-		m._ProvisionedNetworkToProvisionedHost = make(map[int]struct{})
+		m._ProvisionedNetworkToProvisionedHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._ProvisionedNetworkToProvisionedHost[ids[i]] = struct{}{}
@@ -17676,9 +17769,9 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostCleared(
 }
 
 // RemoveProvisionedNetworkToProvisionedHostIDs removes the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...int) {
+func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToProvisionedHostIDs(ids ...uuid.UUID) {
 	if m.removed_ProvisionedNetworkToProvisionedHost == nil {
-		m.removed_ProvisionedNetworkToProvisionedHost = make(map[int]struct{})
+		m.removed_ProvisionedNetworkToProvisionedHost = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_ProvisionedNetworkToProvisionedHost[ids[i]] = struct{}{}
@@ -17686,7 +17779,7 @@ func (m *ProvisionedNetworkMutation) RemoveProvisionedNetworkToProvisionedHostID
 }
 
 // RemovedProvisionedNetworkToProvisionedHost returns the removed IDs of the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity.
-func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToProvisionedHostIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToProvisionedHostIDs() (ids []uuid.UUID) {
 	for id := range m.removed_ProvisionedNetworkToProvisionedHost {
 		ids = append(ids, id)
 	}
@@ -17694,7 +17787,7 @@ func (m *ProvisionedNetworkMutation) RemovedProvisionedNetworkToProvisionedHostI
 }
 
 // ProvisionedNetworkToProvisionedHostIDs returns the "ProvisionedNetworkToProvisionedHost" edge IDs in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostIDs() (ids []uuid.UUID) {
 	for id := range m._ProvisionedNetworkToProvisionedHost {
 		ids = append(ids, id)
 	}
@@ -17709,7 +17802,7 @@ func (m *ProvisionedNetworkMutation) ResetProvisionedNetworkToProvisionedHost() 
 }
 
 // SetProvisionedNetworkToPlanID sets the "ProvisionedNetworkToPlan" edge to the Plan entity by id.
-func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToPlanID(id int) {
+func (m *ProvisionedNetworkMutation) SetProvisionedNetworkToPlanID(id uuid.UUID) {
 	m._ProvisionedNetworkToPlan = &id
 }
 
@@ -17724,7 +17817,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanCleared() bool {
 }
 
 // ProvisionedNetworkToPlanID returns the "ProvisionedNetworkToPlan" edge ID in the mutation.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanID() (id int, exists bool) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanID() (id uuid.UUID, exists bool) {
 	if m._ProvisionedNetworkToPlan != nil {
 		return *m._ProvisionedNetworkToPlan, true
 	}
@@ -17734,7 +17827,7 @@ func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanID() (id int, exist
 // ProvisionedNetworkToPlanIDs returns the "ProvisionedNetworkToPlan" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisionedNetworkToPlanID instead. It exists only for internal usage by the builders.
-func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []int) {
+func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanIDs() (ids []uuid.UUID) {
 	if id := m._ProvisionedNetworkToPlan; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18054,30 +18147,30 @@ type ProvisioningStepMutation struct {
 	config
 	op                                          Op
 	typ                                         string
-	id                                          *int
+	id                                          *uuid.UUID
 	_type                                       *provisioningstep.Type
 	step_number                                 *int
 	addstep_number                              *int
 	clearedFields                               map[string]struct{}
-	_ProvisioningStepToStatus                   *int
+	_ProvisioningStepToStatus                   *uuid.UUID
 	cleared_ProvisioningStepToStatus            bool
-	_ProvisioningStepToProvisionedHost          *int
+	_ProvisioningStepToProvisionedHost          *uuid.UUID
 	cleared_ProvisioningStepToProvisionedHost   bool
-	_ProvisioningStepToScript                   *int
+	_ProvisioningStepToScript                   *uuid.UUID
 	cleared_ProvisioningStepToScript            bool
-	_ProvisioningStepToCommand                  *int
+	_ProvisioningStepToCommand                  *uuid.UUID
 	cleared_ProvisioningStepToCommand           bool
-	_ProvisioningStepToDNSRecord                *int
+	_ProvisioningStepToDNSRecord                *uuid.UUID
 	cleared_ProvisioningStepToDNSRecord         bool
-	_ProvisioningStepToFileDelete               *int
+	_ProvisioningStepToFileDelete               *uuid.UUID
 	cleared_ProvisioningStepToFileDelete        bool
-	_ProvisioningStepToFileDownload             *int
+	_ProvisioningStepToFileDownload             *uuid.UUID
 	cleared_ProvisioningStepToFileDownload      bool
-	_ProvisioningStepToFileExtract              *int
+	_ProvisioningStepToFileExtract              *uuid.UUID
 	cleared_ProvisioningStepToFileExtract       bool
-	_ProvisioningStepToPlan                     *int
+	_ProvisioningStepToPlan                     *uuid.UUID
 	cleared_ProvisioningStepToPlan              bool
-	_ProvisioningStepToGinFileMiddleware        *int
+	_ProvisioningStepToGinFileMiddleware        *uuid.UUID
 	cleared_ProvisioningStepToGinFileMiddleware bool
 	done                                        bool
 	oldValue                                    func(context.Context) (*ProvisioningStep, error)
@@ -18104,7 +18197,7 @@ func newProvisioningStepMutation(c config, op Op, opts ...provisioningstepOption
 }
 
 // withProvisioningStepID sets the ID field of the mutation.
-func withProvisioningStepID(id int) provisioningstepOption {
+func withProvisioningStepID(id uuid.UUID) provisioningstepOption {
 	return func(m *ProvisioningStepMutation) {
 		var (
 			err   error
@@ -18154,9 +18247,15 @@ func (m ProvisioningStepMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProvisioningStep entities.
+func (m *ProvisioningStepMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *ProvisioningStepMutation) ID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -18256,7 +18355,7 @@ func (m *ProvisioningStepMutation) ResetStepNumber() {
 }
 
 // SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToStatusID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToStatusID(id uuid.UUID) {
 	m._ProvisioningStepToStatus = &id
 }
 
@@ -18271,7 +18370,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusCleared() bool {
 }
 
 // ProvisioningStepToStatusID returns the "ProvisioningStepToStatus" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToStatusID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToStatus != nil {
 		return *m._ProvisioningStepToStatus, true
 	}
@@ -18281,7 +18380,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToStatusID() (id int, exists 
 // ProvisioningStepToStatusIDs returns the "ProvisioningStepToStatus" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToStatusID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToStatusIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToStatus; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18295,7 +18394,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToStatus() {
 }
 
 // SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToProvisionedHostID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToProvisionedHostID(id uuid.UUID) {
 	m._ProvisioningStepToProvisionedHost = &id
 }
 
@@ -18310,7 +18409,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostCleared() bo
 }
 
 // ProvisioningStepToProvisionedHostID returns the "ProvisioningStepToProvisionedHost" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToProvisionedHost != nil {
 		return *m._ProvisioningStepToProvisionedHost, true
 	}
@@ -18320,7 +18419,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostID() (id int
 // ProvisioningStepToProvisionedHostIDs returns the "ProvisioningStepToProvisionedHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToProvisionedHostID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToProvisionedHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18334,7 +18433,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToProvisionedHost() {
 }
 
 // SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToScriptID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToScriptID(id uuid.UUID) {
 	m._ProvisioningStepToScript = &id
 }
 
@@ -18349,7 +18448,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptCleared() bool {
 }
 
 // ProvisioningStepToScriptID returns the "ProvisioningStepToScript" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToScriptID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToScript != nil {
 		return *m._ProvisioningStepToScript, true
 	}
@@ -18359,7 +18458,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToScriptID() (id int, exists 
 // ProvisioningStepToScriptIDs returns the "ProvisioningStepToScript" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToScriptID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToScriptIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToScript; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18373,7 +18472,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToScript() {
 }
 
 // SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToCommandID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToCommandID(id uuid.UUID) {
 	m._ProvisioningStepToCommand = &id
 }
 
@@ -18388,7 +18487,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandCleared() bool {
 }
 
 // ProvisioningStepToCommandID returns the "ProvisioningStepToCommand" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToCommandID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToCommand != nil {
 		return *m._ProvisioningStepToCommand, true
 	}
@@ -18398,7 +18497,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToCommandID() (id int, exists
 // ProvisioningStepToCommandIDs returns the "ProvisioningStepToCommand" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToCommandID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToCommandIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToCommand; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18412,7 +18511,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToCommand() {
 }
 
 // SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToDNSRecordID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToDNSRecordID(id uuid.UUID) {
 	m._ProvisioningStepToDNSRecord = &id
 }
 
@@ -18427,7 +18526,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordCleared() bool {
 }
 
 // ProvisioningStepToDNSRecordID returns the "ProvisioningStepToDNSRecord" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToDNSRecord != nil {
 		return *m._ProvisioningStepToDNSRecord, true
 	}
@@ -18437,7 +18536,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordID() (id int, exis
 // ProvisioningStepToDNSRecordIDs returns the "ProvisioningStepToDNSRecord" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToDNSRecordID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToDNSRecord; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18451,7 +18550,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToDNSRecord() {
 }
 
 // SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToFileDeleteID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDeleteID(id uuid.UUID) {
 	m._ProvisioningStepToFileDelete = &id
 }
 
@@ -18466,7 +18565,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteCleared() bool {
 }
 
 // ProvisioningStepToFileDeleteID returns the "ProvisioningStepToFileDelete" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToFileDelete != nil {
 		return *m._ProvisioningStepToFileDelete, true
 	}
@@ -18476,7 +18575,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteID() (id int, exi
 // ProvisioningStepToFileDeleteIDs returns the "ProvisioningStepToFileDelete" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToFileDeleteID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToFileDelete; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18490,7 +18589,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDelete() {
 }
 
 // SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToFileDownloadID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileDownloadID(id uuid.UUID) {
 	m._ProvisioningStepToFileDownload = &id
 }
 
@@ -18505,7 +18604,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadCleared() bool 
 }
 
 // ProvisioningStepToFileDownloadID returns the "ProvisioningStepToFileDownload" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToFileDownload != nil {
 		return *m._ProvisioningStepToFileDownload, true
 	}
@@ -18515,7 +18614,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadID() (id int, e
 // ProvisioningStepToFileDownloadIDs returns the "ProvisioningStepToFileDownload" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToFileDownloadID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToFileDownload; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18529,7 +18628,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToFileDownload() {
 }
 
 // SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToFileExtractID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToFileExtractID(id uuid.UUID) {
 	m._ProvisioningStepToFileExtract = &id
 }
 
@@ -18544,7 +18643,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractCleared() bool {
 }
 
 // ProvisioningStepToFileExtractID returns the "ProvisioningStepToFileExtract" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToFileExtract != nil {
 		return *m._ProvisioningStepToFileExtract, true
 	}
@@ -18554,7 +18653,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractID() (id int, ex
 // ProvisioningStepToFileExtractIDs returns the "ProvisioningStepToFileExtract" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToFileExtractID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToFileExtract; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18568,7 +18667,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToFileExtract() {
 }
 
 // SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToPlanID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToPlanID(id uuid.UUID) {
 	m._ProvisioningStepToPlan = &id
 }
 
@@ -18583,7 +18682,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToPlanCleared() bool {
 }
 
 // ProvisioningStepToPlanID returns the "ProvisioningStepToPlan" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToPlanID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToPlan != nil {
 		return *m._ProvisioningStepToPlan, true
 	}
@@ -18593,7 +18692,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToPlanID() (id int, exists bo
 // ProvisioningStepToPlanIDs returns the "ProvisioningStepToPlan" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToPlanID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToPlanIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToPlan; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18607,7 +18706,7 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
-func (m *ProvisioningStepMutation) SetProvisioningStepToGinFileMiddlewareID(id int) {
+func (m *ProvisioningStepMutation) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) {
 	m._ProvisioningStepToGinFileMiddleware = &id
 }
 
@@ -18622,7 +18721,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareCleared() 
 }
 
 // ProvisioningStepToGinFileMiddlewareID returns the "ProvisioningStepToGinFileMiddleware" edge ID in the mutation.
-func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareID() (id int, exists bool) {
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareID() (id uuid.UUID, exists bool) {
 	if m._ProvisioningStepToGinFileMiddleware != nil {
 		return *m._ProvisioningStepToGinFileMiddleware, true
 	}
@@ -18632,7 +18731,7 @@ func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareID() (id i
 // ProvisioningStepToGinFileMiddlewareIDs returns the "ProvisioningStepToGinFileMiddleware" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProvisioningStepToGinFileMiddlewareID instead. It exists only for internal usage by the builders.
-func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareIDs() (ids []int) {
+func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareIDs() (ids []uuid.UUID) {
 	if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
 		ids = append(ids, *id)
 	}
@@ -19031,7 +19130,7 @@ type ScriptMutation struct {
 	config
 	op                          Op
 	typ                         string
-	id                          *int
+	id                          *uuid.UUID
 	hcl_id                      *string
 	name                        *string
 	language                    *string
@@ -19049,13 +19148,13 @@ type ScriptMutation struct {
 	abs_path                    *string
 	tags                        *map[string]string
 	clearedFields               map[string]struct{}
-	_ScriptToUser               map[int]struct{}
-	removed_ScriptToUser        map[int]struct{}
+	_ScriptToUser               map[uuid.UUID]struct{}
+	removed_ScriptToUser        map[uuid.UUID]struct{}
 	cleared_ScriptToUser        bool
-	_ScriptToFinding            map[int]struct{}
-	removed_ScriptToFinding     map[int]struct{}
+	_ScriptToFinding            map[uuid.UUID]struct{}
+	removed_ScriptToFinding     map[uuid.UUID]struct{}
 	cleared_ScriptToFinding     bool
-	_ScriptToEnvironment        *int
+	_ScriptToEnvironment        *uuid.UUID
 	cleared_ScriptToEnvironment bool
 	done                        bool
 	oldValue                    func(context.Context) (*Script, error)
@@ -19082,7 +19181,7 @@ func newScriptMutation(c config, op Op, opts ...scriptOption) *ScriptMutation {
 }
 
 // withScriptID sets the ID field of the mutation.
-func withScriptID(id int) scriptOption {
+func withScriptID(id uuid.UUID) scriptOption {
 	return func(m *ScriptMutation) {
 		var (
 			err   error
@@ -19132,9 +19231,15 @@ func (m ScriptMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Script entities.
+func (m *ScriptMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *ScriptMutation) ID() (id int, exists bool) {
+func (m *ScriptMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -19686,9 +19791,9 @@ func (m *ScriptMutation) ResetTags() {
 }
 
 // AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by ids.
-func (m *ScriptMutation) AddScriptToUserIDs(ids ...int) {
+func (m *ScriptMutation) AddScriptToUserIDs(ids ...uuid.UUID) {
 	if m._ScriptToUser == nil {
-		m._ScriptToUser = make(map[int]struct{})
+		m._ScriptToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._ScriptToUser[ids[i]] = struct{}{}
@@ -19706,9 +19811,9 @@ func (m *ScriptMutation) ScriptToUserCleared() bool {
 }
 
 // RemoveScriptToUserIDs removes the "ScriptToUser" edge to the User entity by IDs.
-func (m *ScriptMutation) RemoveScriptToUserIDs(ids ...int) {
+func (m *ScriptMutation) RemoveScriptToUserIDs(ids ...uuid.UUID) {
 	if m.removed_ScriptToUser == nil {
-		m.removed_ScriptToUser = make(map[int]struct{})
+		m.removed_ScriptToUser = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_ScriptToUser[ids[i]] = struct{}{}
@@ -19716,7 +19821,7 @@ func (m *ScriptMutation) RemoveScriptToUserIDs(ids ...int) {
 }
 
 // RemovedScriptToUser returns the removed IDs of the "ScriptToUser" edge to the User entity.
-func (m *ScriptMutation) RemovedScriptToUserIDs() (ids []int) {
+func (m *ScriptMutation) RemovedScriptToUserIDs() (ids []uuid.UUID) {
 	for id := range m.removed_ScriptToUser {
 		ids = append(ids, id)
 	}
@@ -19724,7 +19829,7 @@ func (m *ScriptMutation) RemovedScriptToUserIDs() (ids []int) {
 }
 
 // ScriptToUserIDs returns the "ScriptToUser" edge IDs in the mutation.
-func (m *ScriptMutation) ScriptToUserIDs() (ids []int) {
+func (m *ScriptMutation) ScriptToUserIDs() (ids []uuid.UUID) {
 	for id := range m._ScriptToUser {
 		ids = append(ids, id)
 	}
@@ -19739,9 +19844,9 @@ func (m *ScriptMutation) ResetScriptToUser() {
 }
 
 // AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by ids.
-func (m *ScriptMutation) AddScriptToFindingIDs(ids ...int) {
+func (m *ScriptMutation) AddScriptToFindingIDs(ids ...uuid.UUID) {
 	if m._ScriptToFinding == nil {
-		m._ScriptToFinding = make(map[int]struct{})
+		m._ScriptToFinding = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._ScriptToFinding[ids[i]] = struct{}{}
@@ -19759,9 +19864,9 @@ func (m *ScriptMutation) ScriptToFindingCleared() bool {
 }
 
 // RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to the Finding entity by IDs.
-func (m *ScriptMutation) RemoveScriptToFindingIDs(ids ...int) {
+func (m *ScriptMutation) RemoveScriptToFindingIDs(ids ...uuid.UUID) {
 	if m.removed_ScriptToFinding == nil {
-		m.removed_ScriptToFinding = make(map[int]struct{})
+		m.removed_ScriptToFinding = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_ScriptToFinding[ids[i]] = struct{}{}
@@ -19769,7 +19874,7 @@ func (m *ScriptMutation) RemoveScriptToFindingIDs(ids ...int) {
 }
 
 // RemovedScriptToFinding returns the removed IDs of the "ScriptToFinding" edge to the Finding entity.
-func (m *ScriptMutation) RemovedScriptToFindingIDs() (ids []int) {
+func (m *ScriptMutation) RemovedScriptToFindingIDs() (ids []uuid.UUID) {
 	for id := range m.removed_ScriptToFinding {
 		ids = append(ids, id)
 	}
@@ -19777,7 +19882,7 @@ func (m *ScriptMutation) RemovedScriptToFindingIDs() (ids []int) {
 }
 
 // ScriptToFindingIDs returns the "ScriptToFinding" edge IDs in the mutation.
-func (m *ScriptMutation) ScriptToFindingIDs() (ids []int) {
+func (m *ScriptMutation) ScriptToFindingIDs() (ids []uuid.UUID) {
 	for id := range m._ScriptToFinding {
 		ids = append(ids, id)
 	}
@@ -19792,7 +19897,7 @@ func (m *ScriptMutation) ResetScriptToFinding() {
 }
 
 // SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by id.
-func (m *ScriptMutation) SetScriptToEnvironmentID(id int) {
+func (m *ScriptMutation) SetScriptToEnvironmentID(id uuid.UUID) {
 	m._ScriptToEnvironment = &id
 }
 
@@ -19807,7 +19912,7 @@ func (m *ScriptMutation) ScriptToEnvironmentCleared() bool {
 }
 
 // ScriptToEnvironmentID returns the "ScriptToEnvironment" edge ID in the mutation.
-func (m *ScriptMutation) ScriptToEnvironmentID() (id int, exists bool) {
+func (m *ScriptMutation) ScriptToEnvironmentID() (id uuid.UUID, exists bool) {
 	if m._ScriptToEnvironment != nil {
 		return *m._ScriptToEnvironment, true
 	}
@@ -19817,7 +19922,7 @@ func (m *ScriptMutation) ScriptToEnvironmentID() (id int, exists bool) {
 // ScriptToEnvironmentIDs returns the "ScriptToEnvironment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ScriptToEnvironmentID instead. It exists only for internal usage by the builders.
-func (m *ScriptMutation) ScriptToEnvironmentIDs() (ids []int) {
+func (m *ScriptMutation) ScriptToEnvironmentIDs() (ids []uuid.UUID) {
 	if id := m._ScriptToEnvironment; id != nil {
 		ids = append(ids, *id)
 	}
@@ -20322,7 +20427,7 @@ type StatusMutation struct {
 	config
 	op                                 Op
 	typ                                string
-	id                                 *int
+	id                                 *uuid.UUID
 	state                              *status.State
 	status_for                         *status.StatusFor
 	started_at                         *time.Time
@@ -20331,15 +20436,15 @@ type StatusMutation struct {
 	completed                          *bool
 	error                              *string
 	clearedFields                      map[string]struct{}
-	_StatusToBuild                     *int
+	_StatusToBuild                     *uuid.UUID
 	cleared_StatusToBuild              bool
-	_StatusToProvisionedNetwork        *int
+	_StatusToProvisionedNetwork        *uuid.UUID
 	cleared_StatusToProvisionedNetwork bool
-	_StatusToProvisionedHost           *int
+	_StatusToProvisionedHost           *uuid.UUID
 	cleared_StatusToProvisionedHost    bool
-	_StatusToProvisioningStep          *int
+	_StatusToProvisioningStep          *uuid.UUID
 	cleared_StatusToProvisioningStep   bool
-	_StatusToTeam                      *int
+	_StatusToTeam                      *uuid.UUID
 	cleared_StatusToTeam               bool
 	done                               bool
 	oldValue                           func(context.Context) (*Status, error)
@@ -20366,7 +20471,7 @@ func newStatusMutation(c config, op Op, opts ...statusOption) *StatusMutation {
 }
 
 // withStatusID sets the ID field of the mutation.
-func withStatusID(id int) statusOption {
+func withStatusID(id uuid.UUID) statusOption {
 	return func(m *StatusMutation) {
 		var (
 			err   error
@@ -20416,9 +20521,15 @@ func (m StatusMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Status entities.
+func (m *StatusMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *StatusMutation) ID() (id int, exists bool) {
+func (m *StatusMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -20717,7 +20828,7 @@ func (m *StatusMutation) ResetError() {
 }
 
 // SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by id.
-func (m *StatusMutation) SetStatusToBuildID(id int) {
+func (m *StatusMutation) SetStatusToBuildID(id uuid.UUID) {
 	m._StatusToBuild = &id
 }
 
@@ -20732,7 +20843,7 @@ func (m *StatusMutation) StatusToBuildCleared() bool {
 }
 
 // StatusToBuildID returns the "StatusToBuild" edge ID in the mutation.
-func (m *StatusMutation) StatusToBuildID() (id int, exists bool) {
+func (m *StatusMutation) StatusToBuildID() (id uuid.UUID, exists bool) {
 	if m._StatusToBuild != nil {
 		return *m._StatusToBuild, true
 	}
@@ -20742,7 +20853,7 @@ func (m *StatusMutation) StatusToBuildID() (id int, exists bool) {
 // StatusToBuildIDs returns the "StatusToBuild" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // StatusToBuildID instead. It exists only for internal usage by the builders.
-func (m *StatusMutation) StatusToBuildIDs() (ids []int) {
+func (m *StatusMutation) StatusToBuildIDs() (ids []uuid.UUID) {
 	if id := m._StatusToBuild; id != nil {
 		ids = append(ids, *id)
 	}
@@ -20756,7 +20867,7 @@ func (m *StatusMutation) ResetStatusToBuild() {
 }
 
 // SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by id.
-func (m *StatusMutation) SetStatusToProvisionedNetworkID(id int) {
+func (m *StatusMutation) SetStatusToProvisionedNetworkID(id uuid.UUID) {
 	m._StatusToProvisionedNetwork = &id
 }
 
@@ -20771,7 +20882,7 @@ func (m *StatusMutation) StatusToProvisionedNetworkCleared() bool {
 }
 
 // StatusToProvisionedNetworkID returns the "StatusToProvisionedNetwork" edge ID in the mutation.
-func (m *StatusMutation) StatusToProvisionedNetworkID() (id int, exists bool) {
+func (m *StatusMutation) StatusToProvisionedNetworkID() (id uuid.UUID, exists bool) {
 	if m._StatusToProvisionedNetwork != nil {
 		return *m._StatusToProvisionedNetwork, true
 	}
@@ -20781,7 +20892,7 @@ func (m *StatusMutation) StatusToProvisionedNetworkID() (id int, exists bool) {
 // StatusToProvisionedNetworkIDs returns the "StatusToProvisionedNetwork" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // StatusToProvisionedNetworkID instead. It exists only for internal usage by the builders.
-func (m *StatusMutation) StatusToProvisionedNetworkIDs() (ids []int) {
+func (m *StatusMutation) StatusToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	if id := m._StatusToProvisionedNetwork; id != nil {
 		ids = append(ids, *id)
 	}
@@ -20795,7 +20906,7 @@ func (m *StatusMutation) ResetStatusToProvisionedNetwork() {
 }
 
 // SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by id.
-func (m *StatusMutation) SetStatusToProvisionedHostID(id int) {
+func (m *StatusMutation) SetStatusToProvisionedHostID(id uuid.UUID) {
 	m._StatusToProvisionedHost = &id
 }
 
@@ -20810,7 +20921,7 @@ func (m *StatusMutation) StatusToProvisionedHostCleared() bool {
 }
 
 // StatusToProvisionedHostID returns the "StatusToProvisionedHost" edge ID in the mutation.
-func (m *StatusMutation) StatusToProvisionedHostID() (id int, exists bool) {
+func (m *StatusMutation) StatusToProvisionedHostID() (id uuid.UUID, exists bool) {
 	if m._StatusToProvisionedHost != nil {
 		return *m._StatusToProvisionedHost, true
 	}
@@ -20820,7 +20931,7 @@ func (m *StatusMutation) StatusToProvisionedHostID() (id int, exists bool) {
 // StatusToProvisionedHostIDs returns the "StatusToProvisionedHost" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // StatusToProvisionedHostID instead. It exists only for internal usage by the builders.
-func (m *StatusMutation) StatusToProvisionedHostIDs() (ids []int) {
+func (m *StatusMutation) StatusToProvisionedHostIDs() (ids []uuid.UUID) {
 	if id := m._StatusToProvisionedHost; id != nil {
 		ids = append(ids, *id)
 	}
@@ -20834,7 +20945,7 @@ func (m *StatusMutation) ResetStatusToProvisionedHost() {
 }
 
 // SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by id.
-func (m *StatusMutation) SetStatusToProvisioningStepID(id int) {
+func (m *StatusMutation) SetStatusToProvisioningStepID(id uuid.UUID) {
 	m._StatusToProvisioningStep = &id
 }
 
@@ -20849,7 +20960,7 @@ func (m *StatusMutation) StatusToProvisioningStepCleared() bool {
 }
 
 // StatusToProvisioningStepID returns the "StatusToProvisioningStep" edge ID in the mutation.
-func (m *StatusMutation) StatusToProvisioningStepID() (id int, exists bool) {
+func (m *StatusMutation) StatusToProvisioningStepID() (id uuid.UUID, exists bool) {
 	if m._StatusToProvisioningStep != nil {
 		return *m._StatusToProvisioningStep, true
 	}
@@ -20859,7 +20970,7 @@ func (m *StatusMutation) StatusToProvisioningStepID() (id int, exists bool) {
 // StatusToProvisioningStepIDs returns the "StatusToProvisioningStep" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // StatusToProvisioningStepID instead. It exists only for internal usage by the builders.
-func (m *StatusMutation) StatusToProvisioningStepIDs() (ids []int) {
+func (m *StatusMutation) StatusToProvisioningStepIDs() (ids []uuid.UUID) {
 	if id := m._StatusToProvisioningStep; id != nil {
 		ids = append(ids, *id)
 	}
@@ -20873,7 +20984,7 @@ func (m *StatusMutation) ResetStatusToProvisioningStep() {
 }
 
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by id.
-func (m *StatusMutation) SetStatusToTeamID(id int) {
+func (m *StatusMutation) SetStatusToTeamID(id uuid.UUID) {
 	m._StatusToTeam = &id
 }
 
@@ -20888,7 +20999,7 @@ func (m *StatusMutation) StatusToTeamCleared() bool {
 }
 
 // StatusToTeamID returns the "StatusToTeam" edge ID in the mutation.
-func (m *StatusMutation) StatusToTeamID() (id int, exists bool) {
+func (m *StatusMutation) StatusToTeamID() (id uuid.UUID, exists bool) {
 	if m._StatusToTeam != nil {
 		return *m._StatusToTeam, true
 	}
@@ -20898,7 +21009,7 @@ func (m *StatusMutation) StatusToTeamID() (id int, exists bool) {
 // StatusToTeamIDs returns the "StatusToTeam" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // StatusToTeamID instead. It exists only for internal usage by the builders.
-func (m *StatusMutation) StatusToTeamIDs() (ids []int) {
+func (m *StatusMutation) StatusToTeamIDs() (ids []uuid.UUID) {
 	if id := m._StatusToTeam; id != nil {
 		ids = append(ids, *id)
 	}
@@ -21298,7 +21409,7 @@ type TagMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *uuid.UUID
 	uuid          *uuid.UUID
 	name          *string
 	description   *map[string]string
@@ -21328,7 +21439,7 @@ func newTagMutation(c config, op Op, opts ...tagOption) *TagMutation {
 }
 
 // withTagID sets the ID field of the mutation.
-func withTagID(id int) tagOption {
+func withTagID(id uuid.UUID) tagOption {
 	return func(m *TagMutation) {
 		var (
 			err   error
@@ -21378,9 +21489,15 @@ func (m TagMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Tag entities.
+func (m *TagMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *TagMutation) ID() (id int, exists bool) {
+func (m *TagMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -21693,18 +21810,18 @@ type TeamMutation struct {
 	config
 	op                               Op
 	typ                              string
-	id                               *int
+	id                               *uuid.UUID
 	team_number                      *int
 	addteam_number                   *int
 	clearedFields                    map[string]struct{}
-	_TeamToBuild                     *int
+	_TeamToBuild                     *uuid.UUID
 	cleared_TeamToBuild              bool
-	_TeamToStatus                    *int
+	_TeamToStatus                    *uuid.UUID
 	cleared_TeamToStatus             bool
-	_TeamToProvisionedNetwork        map[int]struct{}
-	removed_TeamToProvisionedNetwork map[int]struct{}
+	_TeamToProvisionedNetwork        map[uuid.UUID]struct{}
+	removed_TeamToProvisionedNetwork map[uuid.UUID]struct{}
 	cleared_TeamToProvisionedNetwork bool
-	_TeamToPlan                      *int
+	_TeamToPlan                      *uuid.UUID
 	cleared_TeamToPlan               bool
 	done                             bool
 	oldValue                         func(context.Context) (*Team, error)
@@ -21731,7 +21848,7 @@ func newTeamMutation(c config, op Op, opts ...teamOption) *TeamMutation {
 }
 
 // withTeamID sets the ID field of the mutation.
-func withTeamID(id int) teamOption {
+func withTeamID(id uuid.UUID) teamOption {
 	return func(m *TeamMutation) {
 		var (
 			err   error
@@ -21781,9 +21898,15 @@ func (m TeamMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Team entities.
+func (m *TeamMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *TeamMutation) ID() (id int, exists bool) {
+func (m *TeamMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -21847,7 +21970,7 @@ func (m *TeamMutation) ResetTeamNumber() {
 }
 
 // SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by id.
-func (m *TeamMutation) SetTeamToBuildID(id int) {
+func (m *TeamMutation) SetTeamToBuildID(id uuid.UUID) {
 	m._TeamToBuild = &id
 }
 
@@ -21862,7 +21985,7 @@ func (m *TeamMutation) TeamToBuildCleared() bool {
 }
 
 // TeamToBuildID returns the "TeamToBuild" edge ID in the mutation.
-func (m *TeamMutation) TeamToBuildID() (id int, exists bool) {
+func (m *TeamMutation) TeamToBuildID() (id uuid.UUID, exists bool) {
 	if m._TeamToBuild != nil {
 		return *m._TeamToBuild, true
 	}
@@ -21872,7 +21995,7 @@ func (m *TeamMutation) TeamToBuildID() (id int, exists bool) {
 // TeamToBuildIDs returns the "TeamToBuild" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TeamToBuildID instead. It exists only for internal usage by the builders.
-func (m *TeamMutation) TeamToBuildIDs() (ids []int) {
+func (m *TeamMutation) TeamToBuildIDs() (ids []uuid.UUID) {
 	if id := m._TeamToBuild; id != nil {
 		ids = append(ids, *id)
 	}
@@ -21886,7 +22009,7 @@ func (m *TeamMutation) ResetTeamToBuild() {
 }
 
 // SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by id.
-func (m *TeamMutation) SetTeamToStatusID(id int) {
+func (m *TeamMutation) SetTeamToStatusID(id uuid.UUID) {
 	m._TeamToStatus = &id
 }
 
@@ -21901,7 +22024,7 @@ func (m *TeamMutation) TeamToStatusCleared() bool {
 }
 
 // TeamToStatusID returns the "TeamToStatus" edge ID in the mutation.
-func (m *TeamMutation) TeamToStatusID() (id int, exists bool) {
+func (m *TeamMutation) TeamToStatusID() (id uuid.UUID, exists bool) {
 	if m._TeamToStatus != nil {
 		return *m._TeamToStatus, true
 	}
@@ -21911,7 +22034,7 @@ func (m *TeamMutation) TeamToStatusID() (id int, exists bool) {
 // TeamToStatusIDs returns the "TeamToStatus" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TeamToStatusID instead. It exists only for internal usage by the builders.
-func (m *TeamMutation) TeamToStatusIDs() (ids []int) {
+func (m *TeamMutation) TeamToStatusIDs() (ids []uuid.UUID) {
 	if id := m._TeamToStatus; id != nil {
 		ids = append(ids, *id)
 	}
@@ -21925,9 +22048,9 @@ func (m *TeamMutation) ResetTeamToStatus() {
 }
 
 // AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
-func (m *TeamMutation) AddTeamToProvisionedNetworkIDs(ids ...int) {
+func (m *TeamMutation) AddTeamToProvisionedNetworkIDs(ids ...uuid.UUID) {
 	if m._TeamToProvisionedNetwork == nil {
-		m._TeamToProvisionedNetwork = make(map[int]struct{})
+		m._TeamToProvisionedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._TeamToProvisionedNetwork[ids[i]] = struct{}{}
@@ -21945,9 +22068,9 @@ func (m *TeamMutation) TeamToProvisionedNetworkCleared() bool {
 }
 
 // RemoveTeamToProvisionedNetworkIDs removes the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (m *TeamMutation) RemoveTeamToProvisionedNetworkIDs(ids ...int) {
+func (m *TeamMutation) RemoveTeamToProvisionedNetworkIDs(ids ...uuid.UUID) {
 	if m.removed_TeamToProvisionedNetwork == nil {
-		m.removed_TeamToProvisionedNetwork = make(map[int]struct{})
+		m.removed_TeamToProvisionedNetwork = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_TeamToProvisionedNetwork[ids[i]] = struct{}{}
@@ -21955,7 +22078,7 @@ func (m *TeamMutation) RemoveTeamToProvisionedNetworkIDs(ids ...int) {
 }
 
 // RemovedTeamToProvisionedNetwork returns the removed IDs of the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity.
-func (m *TeamMutation) RemovedTeamToProvisionedNetworkIDs() (ids []int) {
+func (m *TeamMutation) RemovedTeamToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m.removed_TeamToProvisionedNetwork {
 		ids = append(ids, id)
 	}
@@ -21963,7 +22086,7 @@ func (m *TeamMutation) RemovedTeamToProvisionedNetworkIDs() (ids []int) {
 }
 
 // TeamToProvisionedNetworkIDs returns the "TeamToProvisionedNetwork" edge IDs in the mutation.
-func (m *TeamMutation) TeamToProvisionedNetworkIDs() (ids []int) {
+func (m *TeamMutation) TeamToProvisionedNetworkIDs() (ids []uuid.UUID) {
 	for id := range m._TeamToProvisionedNetwork {
 		ids = append(ids, id)
 	}
@@ -21978,7 +22101,7 @@ func (m *TeamMutation) ResetTeamToProvisionedNetwork() {
 }
 
 // SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by id.
-func (m *TeamMutation) SetTeamToPlanID(id int) {
+func (m *TeamMutation) SetTeamToPlanID(id uuid.UUID) {
 	m._TeamToPlan = &id
 }
 
@@ -21993,7 +22116,7 @@ func (m *TeamMutation) TeamToPlanCleared() bool {
 }
 
 // TeamToPlanID returns the "TeamToPlan" edge ID in the mutation.
-func (m *TeamMutation) TeamToPlanID() (id int, exists bool) {
+func (m *TeamMutation) TeamToPlanID() (id uuid.UUID, exists bool) {
 	if m._TeamToPlan != nil {
 		return *m._TeamToPlan, true
 	}
@@ -22003,7 +22126,7 @@ func (m *TeamMutation) TeamToPlanID() (id int, exists bool) {
 // TeamToPlanIDs returns the "TeamToPlan" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TeamToPlanID instead. It exists only for internal usage by the builders.
-func (m *TeamMutation) TeamToPlanIDs() (ids []int) {
+func (m *TeamMutation) TeamToPlanIDs() (ids []uuid.UUID) {
 	if id := m._TeamToPlan; id != nil {
 		ids = append(ids, *id)
 	}
@@ -22285,17 +22408,17 @@ type UserMutation struct {
 	config
 	op                        Op
 	typ                       string
-	id                        *int
+	id                        *uuid.UUID
 	name                      *string
 	uuid                      *string
 	email                     *string
 	hcl_id                    *string
 	clearedFields             map[string]struct{}
-	_UserToTag                map[int]struct{}
-	removed_UserToTag         map[int]struct{}
+	_UserToTag                map[uuid.UUID]struct{}
+	removed_UserToTag         map[uuid.UUID]struct{}
 	cleared_UserToTag         bool
-	_UserToEnvironment        map[int]struct{}
-	removed_UserToEnvironment map[int]struct{}
+	_UserToEnvironment        map[uuid.UUID]struct{}
+	removed_UserToEnvironment map[uuid.UUID]struct{}
 	cleared_UserToEnvironment bool
 	done                      bool
 	oldValue                  func(context.Context) (*User, error)
@@ -22322,7 +22445,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id int) userOption {
+func withUserID(id uuid.UUID) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -22372,9 +22495,15 @@ func (m UserMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of User entities.
+func (m *UserMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *UserMutation) ID() (id int, exists bool) {
+func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -22526,9 +22655,9 @@ func (m *UserMutation) ResetHclID() {
 }
 
 // AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by ids.
-func (m *UserMutation) AddUserToTagIDs(ids ...int) {
+func (m *UserMutation) AddUserToTagIDs(ids ...uuid.UUID) {
 	if m._UserToTag == nil {
-		m._UserToTag = make(map[int]struct{})
+		m._UserToTag = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._UserToTag[ids[i]] = struct{}{}
@@ -22546,9 +22675,9 @@ func (m *UserMutation) UserToTagCleared() bool {
 }
 
 // RemoveUserToTagIDs removes the "UserToTag" edge to the Tag entity by IDs.
-func (m *UserMutation) RemoveUserToTagIDs(ids ...int) {
+func (m *UserMutation) RemoveUserToTagIDs(ids ...uuid.UUID) {
 	if m.removed_UserToTag == nil {
-		m.removed_UserToTag = make(map[int]struct{})
+		m.removed_UserToTag = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_UserToTag[ids[i]] = struct{}{}
@@ -22556,7 +22685,7 @@ func (m *UserMutation) RemoveUserToTagIDs(ids ...int) {
 }
 
 // RemovedUserToTag returns the removed IDs of the "UserToTag" edge to the Tag entity.
-func (m *UserMutation) RemovedUserToTagIDs() (ids []int) {
+func (m *UserMutation) RemovedUserToTagIDs() (ids []uuid.UUID) {
 	for id := range m.removed_UserToTag {
 		ids = append(ids, id)
 	}
@@ -22564,7 +22693,7 @@ func (m *UserMutation) RemovedUserToTagIDs() (ids []int) {
 }
 
 // UserToTagIDs returns the "UserToTag" edge IDs in the mutation.
-func (m *UserMutation) UserToTagIDs() (ids []int) {
+func (m *UserMutation) UserToTagIDs() (ids []uuid.UUID) {
 	for id := range m._UserToTag {
 		ids = append(ids, id)
 	}
@@ -22579,9 +22708,9 @@ func (m *UserMutation) ResetUserToTag() {
 }
 
 // AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by ids.
-func (m *UserMutation) AddUserToEnvironmentIDs(ids ...int) {
+func (m *UserMutation) AddUserToEnvironmentIDs(ids ...uuid.UUID) {
 	if m._UserToEnvironment == nil {
-		m._UserToEnvironment = make(map[int]struct{})
+		m._UserToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m._UserToEnvironment[ids[i]] = struct{}{}
@@ -22599,9 +22728,9 @@ func (m *UserMutation) UserToEnvironmentCleared() bool {
 }
 
 // RemoveUserToEnvironmentIDs removes the "UserToEnvironment" edge to the Environment entity by IDs.
-func (m *UserMutation) RemoveUserToEnvironmentIDs(ids ...int) {
+func (m *UserMutation) RemoveUserToEnvironmentIDs(ids ...uuid.UUID) {
 	if m.removed_UserToEnvironment == nil {
-		m.removed_UserToEnvironment = make(map[int]struct{})
+		m.removed_UserToEnvironment = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removed_UserToEnvironment[ids[i]] = struct{}{}
@@ -22609,7 +22738,7 @@ func (m *UserMutation) RemoveUserToEnvironmentIDs(ids ...int) {
 }
 
 // RemovedUserToEnvironment returns the removed IDs of the "UserToEnvironment" edge to the Environment entity.
-func (m *UserMutation) RemovedUserToEnvironmentIDs() (ids []int) {
+func (m *UserMutation) RemovedUserToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m.removed_UserToEnvironment {
 		ids = append(ids, id)
 	}
@@ -22617,7 +22746,7 @@ func (m *UserMutation) RemovedUserToEnvironmentIDs() (ids []int) {
 }
 
 // UserToEnvironmentIDs returns the "UserToEnvironment" edge IDs in the mutation.
-func (m *UserMutation) UserToEnvironmentIDs() (ids []int) {
+func (m *UserMutation) UserToEnvironmentIDs() (ids []uuid.UUID) {
 	for id := range m._UserToEnvironment {
 		ids = append(ids, id)
 	}

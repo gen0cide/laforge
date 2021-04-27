@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
+	"github.com/google/uuid"
 )
 
 // FileDownloadCreate is the builder for creating a FileDownload entity.
@@ -80,14 +81,20 @@ func (fdc *FileDownloadCreate) SetTags(m map[string]string) *FileDownloadCreate 
 	return fdc
 }
 
+// SetID sets the "id" field.
+func (fdc *FileDownloadCreate) SetID(u uuid.UUID) *FileDownloadCreate {
+	fdc.mutation.SetID(u)
+	return fdc
+}
+
 // SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
-func (fdc *FileDownloadCreate) SetFileDownloadToEnvironmentID(id int) *FileDownloadCreate {
+func (fdc *FileDownloadCreate) SetFileDownloadToEnvironmentID(id uuid.UUID) *FileDownloadCreate {
 	fdc.mutation.SetFileDownloadToEnvironmentID(id)
 	return fdc
 }
 
 // SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fdc *FileDownloadCreate) SetNillableFileDownloadToEnvironmentID(id *int) *FileDownloadCreate {
+func (fdc *FileDownloadCreate) SetNillableFileDownloadToEnvironmentID(id *uuid.UUID) *FileDownloadCreate {
 	if id != nil {
 		fdc = fdc.SetFileDownloadToEnvironmentID(*id)
 	}
@@ -110,6 +117,7 @@ func (fdc *FileDownloadCreate) Save(ctx context.Context) (*FileDownload, error) 
 		err  error
 		node *FileDownload
 	)
+	fdc.defaults()
 	if len(fdc.hooks) == 0 {
 		if err = fdc.check(); err != nil {
 			return nil, err
@@ -146,6 +154,14 @@ func (fdc *FileDownloadCreate) SaveX(ctx context.Context) *FileDownload {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (fdc *FileDownloadCreate) defaults() {
+	if _, ok := fdc.mutation.ID(); !ok {
+		v := filedownload.DefaultID()
+		fdc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -191,8 +207,6 @@ func (fdc *FileDownloadCreate) sqlSave(ctx context.Context) (*FileDownload, erro
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -202,11 +216,15 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 		_spec = &sqlgraph.CreateSpec{
 			Table: filedownload.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		}
 	)
+	if id, ok := fdc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := fdc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -296,7 +314,7 @@ func (fdc *FileDownloadCreate) createSpec() (*FileDownload, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -324,6 +342,7 @@ func (fdcb *FileDownloadCreateBulk) Save(ctx context.Context) ([]*FileDownload, 
 	for i := range fdcb.builders {
 		func(i int, root context.Context) {
 			builder := fdcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FileDownloadMutation)
 				if !ok {
@@ -349,8 +368,6 @@ func (fdcb *FileDownloadCreateBulk) Save(ctx context.Context) ([]*FileDownload, 
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

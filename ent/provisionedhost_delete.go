@@ -69,7 +69,7 @@ func (phd *ProvisionedHostDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: provisionedhost.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionedhost.FieldID,
 			},
 		},

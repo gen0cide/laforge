@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileDownloadUpdate is the builder for updating FileDownload entities.
@@ -88,13 +89,13 @@ func (fdu *FileDownloadUpdate) SetTags(m map[string]string) *FileDownloadUpdate 
 }
 
 // SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
-func (fdu *FileDownloadUpdate) SetFileDownloadToEnvironmentID(id int) *FileDownloadUpdate {
+func (fdu *FileDownloadUpdate) SetFileDownloadToEnvironmentID(id uuid.UUID) *FileDownloadUpdate {
 	fdu.mutation.SetFileDownloadToEnvironmentID(id)
 	return fdu
 }
 
 // SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fdu *FileDownloadUpdate) SetNillableFileDownloadToEnvironmentID(id *int) *FileDownloadUpdate {
+func (fdu *FileDownloadUpdate) SetNillableFileDownloadToEnvironmentID(id *uuid.UUID) *FileDownloadUpdate {
 	if id != nil {
 		fdu = fdu.SetFileDownloadToEnvironmentID(*id)
 	}
@@ -174,7 +175,7 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   filedownload.Table,
 			Columns: filedownload.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		},
@@ -265,7 +266,7 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -281,7 +282,7 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -371,13 +372,13 @@ func (fduo *FileDownloadUpdateOne) SetTags(m map[string]string) *FileDownloadUpd
 }
 
 // SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
-func (fduo *FileDownloadUpdateOne) SetFileDownloadToEnvironmentID(id int) *FileDownloadUpdateOne {
+func (fduo *FileDownloadUpdateOne) SetFileDownloadToEnvironmentID(id uuid.UUID) *FileDownloadUpdateOne {
 	fduo.mutation.SetFileDownloadToEnvironmentID(id)
 	return fduo
 }
 
 // SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fduo *FileDownloadUpdateOne) SetNillableFileDownloadToEnvironmentID(id *int) *FileDownloadUpdateOne {
+func (fduo *FileDownloadUpdateOne) SetNillableFileDownloadToEnvironmentID(id *uuid.UUID) *FileDownloadUpdateOne {
 	if id != nil {
 		fduo = fduo.SetFileDownloadToEnvironmentID(*id)
 	}
@@ -464,7 +465,7 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Table:   filedownload.Table,
 			Columns: filedownload.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		},
@@ -572,7 +573,7 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -588,7 +589,7 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

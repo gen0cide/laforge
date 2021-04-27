@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/google/uuid"
 )
 
 // DiskCreate is the builder for creating a Disk entity.
@@ -26,14 +27,20 @@ func (dc *DiskCreate) SetSize(i int) *DiskCreate {
 	return dc
 }
 
+// SetID sets the "id" field.
+func (dc *DiskCreate) SetID(u uuid.UUID) *DiskCreate {
+	dc.mutation.SetID(u)
+	return dc
+}
+
 // SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
-func (dc *DiskCreate) SetDiskToHostID(id int) *DiskCreate {
+func (dc *DiskCreate) SetDiskToHostID(id uuid.UUID) *DiskCreate {
 	dc.mutation.SetDiskToHostID(id)
 	return dc
 }
 
 // SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
-func (dc *DiskCreate) SetNillableDiskToHostID(id *int) *DiskCreate {
+func (dc *DiskCreate) SetNillableDiskToHostID(id *uuid.UUID) *DiskCreate {
 	if id != nil {
 		dc = dc.SetDiskToHostID(*id)
 	}
@@ -56,6 +63,7 @@ func (dc *DiskCreate) Save(ctx context.Context) (*Disk, error) {
 		err  error
 		node *Disk
 	)
+	dc.defaults()
 	if len(dc.hooks) == 0 {
 		if err = dc.check(); err != nil {
 			return nil, err
@@ -94,6 +102,14 @@ func (dc *DiskCreate) SaveX(ctx context.Context) *Disk {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (dc *DiskCreate) defaults() {
+	if _, ok := dc.mutation.ID(); !ok {
+		v := disk.DefaultID()
+		dc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dc *DiskCreate) check() error {
 	if _, ok := dc.mutation.Size(); !ok {
@@ -115,8 +131,6 @@ func (dc *DiskCreate) sqlSave(ctx context.Context) (*Disk, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -126,11 +140,15 @@ func (dc *DiskCreate) createSpec() (*Disk, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: disk.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		}
 	)
+	if id, ok := dc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := dc.mutation.Size(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -148,7 +166,7 @@ func (dc *DiskCreate) createSpec() (*Disk, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -176,6 +194,7 @@ func (dcb *DiskCreateBulk) Save(ctx context.Context) ([]*Disk, error) {
 	for i := range dcb.builders {
 		func(i int, root context.Context) {
 			builder := dcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DiskMutation)
 				if !ok {
@@ -201,8 +220,6 @@ func (dcb *DiskCreateBulk) Save(ctx context.Context) ([]*Disk, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

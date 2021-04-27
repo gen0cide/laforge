@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // FindingCreate is the builder for creating a Finding entity.
@@ -53,15 +54,21 @@ func (fc *FindingCreate) SetTags(m map[string]string) *FindingCreate {
 	return fc
 }
 
+// SetID sets the "id" field.
+func (fc *FindingCreate) SetID(u uuid.UUID) *FindingCreate {
+	fc.mutation.SetID(u)
+	return fc
+}
+
 // AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
-func (fc *FindingCreate) AddFindingToUserIDs(ids ...int) *FindingCreate {
+func (fc *FindingCreate) AddFindingToUserIDs(ids ...uuid.UUID) *FindingCreate {
 	fc.mutation.AddFindingToUserIDs(ids...)
 	return fc
 }
 
 // AddFindingToUser adds the "FindingToUser" edges to the User entity.
 func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -69,13 +76,13 @@ func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
 }
 
 // SetFindingToHostID sets the "FindingToHost" edge to the Host entity by ID.
-func (fc *FindingCreate) SetFindingToHostID(id int) *FindingCreate {
+func (fc *FindingCreate) SetFindingToHostID(id uuid.UUID) *FindingCreate {
 	fc.mutation.SetFindingToHostID(id)
 	return fc
 }
 
 // SetNillableFindingToHostID sets the "FindingToHost" edge to the Host entity by ID if the given value is not nil.
-func (fc *FindingCreate) SetNillableFindingToHostID(id *int) *FindingCreate {
+func (fc *FindingCreate) SetNillableFindingToHostID(id *uuid.UUID) *FindingCreate {
 	if id != nil {
 		fc = fc.SetFindingToHostID(*id)
 	}
@@ -88,13 +95,13 @@ func (fc *FindingCreate) SetFindingToHost(h *Host) *FindingCreate {
 }
 
 // SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID.
-func (fc *FindingCreate) SetFindingToScriptID(id int) *FindingCreate {
+func (fc *FindingCreate) SetFindingToScriptID(id uuid.UUID) *FindingCreate {
 	fc.mutation.SetFindingToScriptID(id)
 	return fc
 }
 
 // SetNillableFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID if the given value is not nil.
-func (fc *FindingCreate) SetNillableFindingToScriptID(id *int) *FindingCreate {
+func (fc *FindingCreate) SetNillableFindingToScriptID(id *uuid.UUID) *FindingCreate {
 	if id != nil {
 		fc = fc.SetFindingToScriptID(*id)
 	}
@@ -107,13 +114,13 @@ func (fc *FindingCreate) SetFindingToScript(s *Script) *FindingCreate {
 }
 
 // SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID.
-func (fc *FindingCreate) SetFindingToEnvironmentID(id int) *FindingCreate {
+func (fc *FindingCreate) SetFindingToEnvironmentID(id uuid.UUID) *FindingCreate {
 	fc.mutation.SetFindingToEnvironmentID(id)
 	return fc
 }
 
 // SetNillableFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fc *FindingCreate) SetNillableFindingToEnvironmentID(id *int) *FindingCreate {
+func (fc *FindingCreate) SetNillableFindingToEnvironmentID(id *uuid.UUID) *FindingCreate {
 	if id != nil {
 		fc = fc.SetFindingToEnvironmentID(*id)
 	}
@@ -136,6 +143,7 @@ func (fc *FindingCreate) Save(ctx context.Context) (*Finding, error) {
 		err  error
 		node *Finding
 	)
+	fc.defaults()
 	if len(fc.hooks) == 0 {
 		if err = fc.check(); err != nil {
 			return nil, err
@@ -172,6 +180,14 @@ func (fc *FindingCreate) SaveX(ctx context.Context) *Finding {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (fc *FindingCreate) defaults() {
+	if _, ok := fc.mutation.ID(); !ok {
+		v := finding.DefaultID()
+		fc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -212,8 +228,6 @@ func (fc *FindingCreate) sqlSave(ctx context.Context) (*Finding, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -223,11 +237,15 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: finding.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		}
 	)
+	if id, ok := fc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := fc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -277,7 +295,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -296,7 +314,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -316,7 +334,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -336,7 +354,7 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -364,6 +382,7 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 	for i := range fcb.builders {
 		func(i int, root context.Context) {
 			builder := fcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FindingMutation)
 				if !ok {
@@ -389,8 +408,6 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

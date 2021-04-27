@@ -10,7 +10,7 @@ import (
 var (
 	// AgentStatusColumns holds the columns for the "agent_status" table.
 	AgentStatusColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "client_id", Type: field.TypeString},
 		{Name: "hostname", Type: field.TypeString},
 		{Name: "up_time", Type: field.TypeInt64},
@@ -35,10 +35,10 @@ var (
 	}
 	// BuildsColumns holds the columns for the "builds" table.
 	BuildsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "revision", Type: field.TypeInt},
-		{Name: "build_build_to_environment", Type: field.TypeInt, Nullable: true},
-		{Name: "build_build_to_competition", Type: field.TypeInt, Nullable: true},
+		{Name: "build_build_to_environment", Type: field.TypeUUID, Nullable: true},
+		{Name: "build_build_to_competition", Type: field.TypeUUID, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
@@ -62,7 +62,7 @@ var (
 	}
 	// CommandsColumns holds the columns for the "commands" table.
 	CommandsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
@@ -74,7 +74,7 @@ var (
 		{Name: "timeout", Type: field.TypeInt},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_command", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_command", Type: field.TypeUUID, Nullable: true},
 	}
 	// CommandsTable holds the schema information for the "commands" table.
 	CommandsTable = &schema.Table{
@@ -92,12 +92,12 @@ var (
 	}
 	// CompetitionsColumns holds the columns for the "competitions" table.
 	CompetitionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "root_password", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_competition", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_competition", Type: field.TypeUUID, Nullable: true},
 	}
 	// CompetitionsTable holds the schema information for the "competitions" table.
 	CompetitionsTable = &schema.Table{
@@ -115,7 +115,7 @@ var (
 	}
 	// DnSsColumns holds the columns for the "dn_ss" table.
 	DnSsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "root_domain", Type: field.TypeString},
@@ -132,7 +132,7 @@ var (
 	}
 	// DNSRecordsColumns holds the columns for the "dns_records" table.
 	DNSRecordsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "values", Type: field.TypeJSON},
@@ -141,7 +141,7 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "disabled", Type: field.TypeBool},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_dns_record", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_dns_record", Type: field.TypeUUID, Nullable: true},
 	}
 	// DNSRecordsTable holds the schema information for the "dns_records" table.
 	DNSRecordsTable = &schema.Table{
@@ -159,9 +159,9 @@ var (
 	}
 	// DisksColumns holds the columns for the "disks" table.
 	DisksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "size", Type: field.TypeInt},
-		{Name: "host_host_to_disk", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "host_host_to_disk", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// DisksTable holds the schema information for the "disks" table.
 	DisksTable = &schema.Table{
@@ -179,7 +179,7 @@ var (
 	}
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "competition_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
@@ -201,11 +201,11 @@ var (
 	}
 	// FileDeletesColumns holds the columns for the "file_deletes" table.
 	FileDeletesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_file_delete", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_file_delete", Type: field.TypeUUID, Nullable: true},
 	}
 	// FileDeletesTable holds the schema information for the "file_deletes" table.
 	FileDeletesTable = &schema.Table{
@@ -223,7 +223,7 @@ var (
 	}
 	// FileDownloadsColumns holds the columns for the "file_downloads" table.
 	FileDownloadsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "source_type", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
@@ -234,7 +234,7 @@ var (
 		{Name: "md5", Type: field.TypeString},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_file_download", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_file_download", Type: field.TypeUUID, Nullable: true},
 	}
 	// FileDownloadsTable holds the schema information for the "file_downloads" table.
 	FileDownloadsTable = &schema.Table{
@@ -252,13 +252,13 @@ var (
 	}
 	// FileExtractsColumns holds the columns for the "file_extracts" table.
 	FileExtractsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
 		{Name: "destination", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_file_extract", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_file_extract", Type: field.TypeUUID, Nullable: true},
 	}
 	// FileExtractsTable holds the schema information for the "file_extracts" table.
 	FileExtractsTable = &schema.Table{
@@ -276,15 +276,15 @@ var (
 	}
 	// FindingsColumns holds the columns for the "findings" table.
 	FindingsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "severity", Type: field.TypeEnum, Enums: []string{"ZeroSeverity", "LowSeverity", "MediumSeverity", "HighSeverity", "CriticalSeverity", "NullSeverity"}},
 		{Name: "difficulty", Type: field.TypeEnum, Enums: []string{"ZeroDifficulty", "NoviceDifficulty", "AdvancedDifficulty", "ExpertDifficulty", "NullDifficulty"}},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_finding", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_finding_to_host", Type: field.TypeInt, Nullable: true},
-		{Name: "script_script_to_finding", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_finding", Type: field.TypeUUID, Nullable: true},
+		{Name: "finding_finding_to_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "script_script_to_finding", Type: field.TypeUUID, Nullable: true},
 	}
 	// FindingsTable holds the schema information for the "findings" table.
 	FindingsTable = &schema.Table{
@@ -314,7 +314,7 @@ var (
 	}
 	// GinFileMiddlewaresColumns holds the columns for the "gin_file_middlewares" table.
 	GinFileMiddlewaresColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "url_id", Type: field.TypeString},
 		{Name: "file_path", Type: field.TypeString},
 		{Name: "accessed", Type: field.TypeBool, Default: false},
@@ -328,7 +328,7 @@ var (
 	}
 	// HostsColumns holds the columns for the "hosts" table.
 	HostsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "hostname", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
@@ -343,7 +343,7 @@ var (
 		{Name: "user_groups", Type: field.TypeJSON},
 		{Name: "provision_steps", Type: field.TypeJSON, Nullable: true},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_host", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_host", Type: field.TypeUUID, Nullable: true},
 	}
 	// HostsTable holds the schema information for the "hosts" table.
 	HostsTable = &schema.Table{
@@ -361,13 +361,13 @@ var (
 	}
 	// HostDependenciesColumns holds the columns for the "host_dependencies" table.
 	HostDependenciesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "host_id", Type: field.TypeString},
 		{Name: "network_id", Type: field.TypeString},
-		{Name: "environment_environment_to_host_dependency", Type: field.TypeInt, Nullable: true},
-		{Name: "host_dependency_host_dependency_to_depend_on_host", Type: field.TypeInt, Nullable: true},
-		{Name: "host_dependency_host_dependency_to_depend_by_host", Type: field.TypeInt, Nullable: true},
-		{Name: "host_dependency_host_dependency_to_network", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_host_dependency", Type: field.TypeUUID, Nullable: true},
+		{Name: "host_dependency_host_dependency_to_depend_on_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "host_dependency_host_dependency_to_depend_by_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "host_dependency_host_dependency_to_network", Type: field.TypeUUID, Nullable: true},
 	}
 	// HostDependenciesTable holds the schema information for the "host_dependencies" table.
 	HostDependenciesTable = &schema.Table{
@@ -403,7 +403,7 @@ var (
 	}
 	// IdentitiesColumns holds the columns for the "identities" table.
 	IdentitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "last_name", Type: field.TypeString},
@@ -413,7 +413,7 @@ var (
 		{Name: "avatar_file", Type: field.TypeString},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_identity", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_identity", Type: field.TypeUUID, Nullable: true},
 	}
 	// IdentitiesTable holds the schema information for the "identities" table.
 	IdentitiesTable = &schema.Table{
@@ -431,7 +431,7 @@ var (
 	}
 	// IncludedNetworksColumns holds the columns for the "included_networks" table.
 	IncludedNetworksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "hosts", Type: field.TypeJSON},
 	}
@@ -444,14 +444,14 @@ var (
 	}
 	// NetworksColumns holds the columns for the "networks" table.
 	NetworksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "cidr", Type: field.TypeString},
 		{Name: "vdi_visible", Type: field.TypeBool},
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_network", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_network", Type: field.TypeUUID, Nullable: true},
 	}
 	// NetworksTable holds the schema information for the "networks" table.
 	NetworksTable = &schema.Table{
@@ -469,11 +469,11 @@ var (
 	}
 	// PlansColumns holds the columns for the "plans" table.
 	PlansColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "step_number", Type: field.TypeInt},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"start_build", "start_team", "provision_network", "provision_host", "execute_step"}},
-		{Name: "build_id", Type: field.TypeInt},
-		{Name: "plan_plan_to_build", Type: field.TypeInt, Nullable: true},
+		{Name: "build_id", Type: field.TypeString},
+		{Name: "plan_plan_to_build", Type: field.TypeUUID, Nullable: true},
 	}
 	// PlansTable holds the schema information for the "plans" table.
 	PlansTable = &schema.Table{
@@ -491,13 +491,13 @@ var (
 	}
 	// ProvisionedHostsColumns holds the columns for the "provisioned_hosts" table.
 	ProvisionedHostsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "subnet_ip", Type: field.TypeString},
-		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "plan_plan_to_provisioned_host", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_host_provisioned_host_to_end_step_plan", Type: field.TypeInt, Nullable: true},
+		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "plan_plan_to_provisioned_host", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_end_step_plan", Type: field.TypeUUID, Nullable: true},
 	}
 	// ProvisionedHostsTable holds the schema information for the "provisioned_hosts" table.
 	ProvisionedHostsTable = &schema.Table{
@@ -539,13 +539,13 @@ var (
 	}
 	// ProvisionedNetworksColumns holds the columns for the "provisioned_networks" table.
 	ProvisionedNetworksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "cidr", Type: field.TypeString},
-		{Name: "plan_plan_to_provisioned_network", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_build", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_team", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_provisioned_network", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_network", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_build", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_team", Type: field.TypeUUID, Nullable: true},
 	}
 	// ProvisionedNetworksTable holds the schema information for the "provisioned_networks" table.
 	ProvisionedNetworksTable = &schema.Table{
@@ -581,18 +581,18 @@ var (
 	}
 	// ProvisioningStepsColumns holds the columns for the "provisioning_steps" table.
 	ProvisioningStepsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"Script", "Command", "DNSRecord", "FileDelete", "FileDownload", "FileExtract"}},
 		{Name: "step_number", Type: field.TypeInt},
-		{Name: "gin_file_middleware_gin_file_middleware_to_provisioning_step", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "plan_plan_to_provisioning_step", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_provisioned_host", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_command", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeInt, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeInt, Nullable: true},
+		{Name: "gin_file_middleware_gin_file_middleware_to_provisioning_step", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "plan_plan_to_provisioning_step", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_script", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_command", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_dns_record", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_delete", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_download", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_file_extract", Type: field.TypeUUID, Nullable: true},
 	}
 	// ProvisioningStepsTable holds the schema information for the "provisioning_steps" table.
 	ProvisioningStepsTable = &schema.Table{
@@ -658,7 +658,7 @@ var (
 	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "hcl_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "language", Type: field.TypeString},
@@ -673,7 +673,7 @@ var (
 		{Name: "vars", Type: field.TypeJSON},
 		{Name: "abs_path", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
-		{Name: "environment_environment_to_script", Type: field.TypeInt, Nullable: true},
+		{Name: "environment_environment_to_script", Type: field.TypeUUID, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
 	ScriptsTable = &schema.Table{
@@ -691,7 +691,7 @@ var (
 	}
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
 		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
@@ -699,11 +699,11 @@ var (
 		{Name: "failed", Type: field.TypeBool, Default: false},
 		{Name: "completed", Type: field.TypeBool, Default: false},
 		{Name: "error", Type: field.TypeString, Nullable: true},
-		{Name: "build_build_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "team_team_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "build_build_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "team_team_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
 	StatusTable = &schema.Table{
@@ -745,12 +745,12 @@ var (
 	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeJSON},
-		{Name: "included_network_included_network_to_tag", Type: field.TypeInt, Nullable: true},
-		{Name: "user_user_to_tag", Type: field.TypeInt, Nullable: true},
+		{Name: "included_network_included_network_to_tag", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_user_to_tag", Type: field.TypeUUID, Nullable: true},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{
@@ -774,10 +774,10 @@ var (
 	}
 	// TeamsColumns holds the columns for the "teams" table.
 	TeamsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "team_number", Type: field.TypeInt},
-		{Name: "plan_plan_to_team", Type: field.TypeInt, Unique: true, Nullable: true},
-		{Name: "team_team_to_build", Type: field.TypeInt, Nullable: true},
+		{Name: "plan_plan_to_team", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "team_team_to_build", Type: field.TypeUUID, Nullable: true},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
 	TeamsTable = &schema.Table{
@@ -801,15 +801,15 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "uuid", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
 		{Name: "hcl_id", Type: field.TypeString},
-		{Name: "command_command_to_user", Type: field.TypeInt, Nullable: true},
-		{Name: "finding_finding_to_user", Type: field.TypeInt, Nullable: true},
-		{Name: "host_host_to_user", Type: field.TypeInt, Nullable: true},
-		{Name: "script_script_to_user", Type: field.TypeInt, Nullable: true},
+		{Name: "command_command_to_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "finding_finding_to_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "host_host_to_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "script_script_to_user", Type: field.TypeUUID, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -845,8 +845,8 @@ var (
 	}
 	// AgentStatusAgentStatusToProvisionedHostColumns holds the columns for the "agent_status_AgentStatusToProvisionedHost" table.
 	AgentStatusAgentStatusToProvisionedHostColumns = []*schema.Column{
-		{Name: "agent_status_id", Type: field.TypeInt},
-		{Name: "provisioned_host_id", Type: field.TypeInt},
+		{Name: "agent_status_id", Type: field.TypeUUID},
+		{Name: "provisioned_host_id", Type: field.TypeUUID},
 	}
 	// AgentStatusAgentStatusToProvisionedHostTable holds the schema information for the "agent_status_AgentStatusToProvisionedHost" table.
 	AgentStatusAgentStatusToProvisionedHostTable = &schema.Table{
@@ -870,8 +870,8 @@ var (
 	}
 	// CompetitionCompetitionToDNSColumns holds the columns for the "competition_CompetitionToDNS" table.
 	CompetitionCompetitionToDNSColumns = []*schema.Column{
-		{Name: "competition_id", Type: field.TypeInt},
-		{Name: "dns_id", Type: field.TypeInt},
+		{Name: "competition_id", Type: field.TypeUUID},
+		{Name: "dns_id", Type: field.TypeUUID},
 	}
 	// CompetitionCompetitionToDNSTable holds the schema information for the "competition_CompetitionToDNS" table.
 	CompetitionCompetitionToDNSTable = &schema.Table{
@@ -895,8 +895,8 @@ var (
 	}
 	// EnvironmentEnvironmentToUserColumns holds the columns for the "environment_EnvironmentToUser" table.
 	EnvironmentEnvironmentToUserColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "user_id", Type: field.TypeInt},
+		{Name: "environment_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// EnvironmentEnvironmentToUserTable holds the schema information for the "environment_EnvironmentToUser" table.
 	EnvironmentEnvironmentToUserTable = &schema.Table{
@@ -920,8 +920,8 @@ var (
 	}
 	// EnvironmentEnvironmentToIncludedNetworkColumns holds the columns for the "environment_EnvironmentToIncludedNetwork" table.
 	EnvironmentEnvironmentToIncludedNetworkColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "included_network_id", Type: field.TypeInt},
+		{Name: "environment_id", Type: field.TypeUUID},
+		{Name: "included_network_id", Type: field.TypeUUID},
 	}
 	// EnvironmentEnvironmentToIncludedNetworkTable holds the schema information for the "environment_EnvironmentToIncludedNetwork" table.
 	EnvironmentEnvironmentToIncludedNetworkTable = &schema.Table{
@@ -945,8 +945,8 @@ var (
 	}
 	// EnvironmentEnvironmentToDNSColumns holds the columns for the "environment_EnvironmentToDNS" table.
 	EnvironmentEnvironmentToDNSColumns = []*schema.Column{
-		{Name: "environment_id", Type: field.TypeInt},
-		{Name: "dns_id", Type: field.TypeInt},
+		{Name: "environment_id", Type: field.TypeUUID},
+		{Name: "dns_id", Type: field.TypeUUID},
 	}
 	// EnvironmentEnvironmentToDNSTable holds the schema information for the "environment_EnvironmentToDNS" table.
 	EnvironmentEnvironmentToDNSTable = &schema.Table{
@@ -970,8 +970,8 @@ var (
 	}
 	// IncludedNetworkIncludedNetworkToHostColumns holds the columns for the "included_network_IncludedNetworkToHost" table.
 	IncludedNetworkIncludedNetworkToHostColumns = []*schema.Column{
-		{Name: "included_network_id", Type: field.TypeInt},
-		{Name: "host_id", Type: field.TypeInt},
+		{Name: "included_network_id", Type: field.TypeUUID},
+		{Name: "host_id", Type: field.TypeUUID},
 	}
 	// IncludedNetworkIncludedNetworkToHostTable holds the schema information for the "included_network_IncludedNetworkToHost" table.
 	IncludedNetworkIncludedNetworkToHostTable = &schema.Table{
@@ -995,8 +995,8 @@ var (
 	}
 	// IncludedNetworkIncludedNetworkToNetworkColumns holds the columns for the "included_network_IncludedNetworkToNetwork" table.
 	IncludedNetworkIncludedNetworkToNetworkColumns = []*schema.Column{
-		{Name: "included_network_id", Type: field.TypeInt},
-		{Name: "network_id", Type: field.TypeInt},
+		{Name: "included_network_id", Type: field.TypeUUID},
+		{Name: "network_id", Type: field.TypeUUID},
 	}
 	// IncludedNetworkIncludedNetworkToNetworkTable holds the schema information for the "included_network_IncludedNetworkToNetwork" table.
 	IncludedNetworkIncludedNetworkToNetworkTable = &schema.Table{
@@ -1020,8 +1020,8 @@ var (
 	}
 	// PlanNextPlanColumns holds the columns for the "plan_NextPlan" table.
 	PlanNextPlanColumns = []*schema.Column{
-		{Name: "plan_id", Type: field.TypeInt},
-		{Name: "PrevPlan_id", Type: field.TypeInt},
+		{Name: "plan_id", Type: field.TypeUUID},
+		{Name: "PrevPlan_id", Type: field.TypeUUID},
 	}
 	// PlanNextPlanTable holds the schema information for the "plan_NextPlan" table.
 	PlanNextPlanTable = &schema.Table{

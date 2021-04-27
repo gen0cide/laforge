@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/google/uuid"
 )
 
 // Script is the model entity for the Script schema.
 type Script struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
@@ -57,7 +58,7 @@ type Script struct {
 	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
 	HCLScriptToEnvironment *Environment `json:"ScriptToEnvironment,omitempty"`
 	//
-	environment_environment_to_script *int
+	environment_environment_to_script *uuid.UUID
 }
 
 // ScriptEdges holds the relations/edges for other nodes in the graph.
@@ -114,12 +115,14 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case script.FieldIgnoreErrors, script.FieldDisabled:
 			values[i] = new(sql.NullBool)
-		case script.FieldID, script.FieldCooldown, script.FieldTimeout:
+		case script.FieldCooldown, script.FieldTimeout:
 			values[i] = new(sql.NullInt64)
 		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
 			values[i] = new(sql.NullString)
+		case script.FieldID:
+			values[i] = new(uuid.UUID)
 		case script.ForeignKeys[0]: // environment_environment_to_script
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
 		}
@@ -136,11 +139,11 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case script.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				s.ID = *value
 			}
-			s.ID = int(value.Int64)
 		case script.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -235,11 +238,10 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case script.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_script", value)
-			} else if value.Valid {
-				s.environment_environment_to_script = new(int)
-				*s.environment_environment_to_script = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_script", values[i])
+			} else if value != nil {
+				s.environment_environment_to_script = value
 			}
 		}
 	}

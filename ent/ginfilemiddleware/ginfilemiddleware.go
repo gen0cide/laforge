@@ -2,6 +2,10 @@
 
 package ginfilemiddleware
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the ginfilemiddleware type in the database.
 	Label = "gin_file_middleware"
@@ -56,4 +60,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultAccessed holds the default value on creation for the "accessed" field.
 	DefaultAccessed bool
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

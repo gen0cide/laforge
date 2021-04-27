@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // CommandQuery is the builder for querying Command entities.
@@ -135,8 +136,8 @@ func (cq *CommandQuery) FirstX(ctx context.Context) *Command {
 
 // FirstID returns the first Command ID from the query.
 // Returns a *NotFoundError when no Command ID was found.
-func (cq *CommandQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CommandQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -148,7 +149,7 @@ func (cq *CommandQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CommandQuery) FirstIDX(ctx context.Context) int {
+func (cq *CommandQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -186,8 +187,8 @@ func (cq *CommandQuery) OnlyX(ctx context.Context) *Command {
 // OnlyID is like Only, but returns the only Command ID in the query.
 // Returns a *NotSingularError when exactly one Command ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CommandQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CommandQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -203,7 +204,7 @@ func (cq *CommandQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CommandQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CommandQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -229,8 +230,8 @@ func (cq *CommandQuery) AllX(ctx context.Context) []*Command {
 }
 
 // IDs executes the query and returns a list of Command IDs.
-func (cq *CommandQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (cq *CommandQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := cq.Select(command.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -238,7 +239,7 @@ func (cq *CommandQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CommandQuery) IDsX(ctx context.Context) []int {
+func (cq *CommandQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -421,7 +422,7 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 
 	if query := cq.withCommandToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Command)
+		nodeids := make(map[uuid.UUID]*Command)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -449,8 +450,8 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 	}
 
 	if query := cq.withCommandToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Command)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Command)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_command == nil {
 				continue
@@ -499,7 +500,7 @@ func (cq *CommandQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   command.Table,
 			Columns: command.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		},

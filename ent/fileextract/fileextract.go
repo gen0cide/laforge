@@ -2,6 +2,10 @@
 
 package fileextract
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the fileextract type in the database.
 	Label = "file_extract"
@@ -60,3 +64,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

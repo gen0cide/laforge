@@ -20,6 +20,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // ProvisionedNetworkQuery is the builder for querying ProvisionedNetwork entities.
@@ -231,8 +232,8 @@ func (pnq *ProvisionedNetworkQuery) FirstX(ctx context.Context) *ProvisionedNetw
 
 // FirstID returns the first ProvisionedNetwork ID from the query.
 // Returns a *NotFoundError when no ProvisionedNetwork ID was found.
-func (pnq *ProvisionedNetworkQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (pnq *ProvisionedNetworkQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = pnq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -244,7 +245,7 @@ func (pnq *ProvisionedNetworkQuery) FirstID(ctx context.Context) (id int, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pnq *ProvisionedNetworkQuery) FirstIDX(ctx context.Context) int {
+func (pnq *ProvisionedNetworkQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := pnq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -282,8 +283,8 @@ func (pnq *ProvisionedNetworkQuery) OnlyX(ctx context.Context) *ProvisionedNetwo
 // OnlyID is like Only, but returns the only ProvisionedNetwork ID in the query.
 // Returns a *NotSingularError when exactly one ProvisionedNetwork ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (pnq *ProvisionedNetworkQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (pnq *ProvisionedNetworkQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = pnq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -299,7 +300,7 @@ func (pnq *ProvisionedNetworkQuery) OnlyID(ctx context.Context) (id int, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pnq *ProvisionedNetworkQuery) OnlyIDX(ctx context.Context) int {
+func (pnq *ProvisionedNetworkQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := pnq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -325,8 +326,8 @@ func (pnq *ProvisionedNetworkQuery) AllX(ctx context.Context) []*ProvisionedNetw
 }
 
 // IDs executes the query and returns a list of ProvisionedNetwork IDs.
-func (pnq *ProvisionedNetworkQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (pnq *ProvisionedNetworkQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := pnq.Select(provisionednetwork.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -334,7 +335,7 @@ func (pnq *ProvisionedNetworkQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pnq *ProvisionedNetworkQuery) IDsX(ctx context.Context) []int {
+func (pnq *ProvisionedNetworkQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := pnq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -569,7 +570,7 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 
 	if query := pnq.withProvisionedNetworkToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedNetwork)
+		nodeids := make(map[uuid.UUID]*ProvisionedNetwork)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -596,8 +597,8 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	}
 
 	if query := pnq.withProvisionedNetworkToNetwork; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedNetwork)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedNetwork)
 		for i := range nodes {
 			if nodes[i].provisioned_network_provisioned_network_to_network == nil {
 				continue
@@ -625,8 +626,8 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	}
 
 	if query := pnq.withProvisionedNetworkToBuild; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedNetwork)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedNetwork)
 		for i := range nodes {
 			if nodes[i].provisioned_network_provisioned_network_to_build == nil {
 				continue
@@ -654,8 +655,8 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	}
 
 	if query := pnq.withProvisionedNetworkToTeam; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedNetwork)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedNetwork)
 		for i := range nodes {
 			if nodes[i].provisioned_network_provisioned_network_to_team == nil {
 				continue
@@ -684,7 +685,7 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 
 	if query := pnq.withProvisionedNetworkToProvisionedHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedNetwork)
+		nodeids := make(map[uuid.UUID]*ProvisionedNetwork)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -712,8 +713,8 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 	}
 
 	if query := pnq.withProvisionedNetworkToPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedNetwork)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedNetwork)
 		for i := range nodes {
 			if nodes[i].plan_plan_to_provisioned_network == nil {
 				continue
@@ -762,7 +763,7 @@ func (pnq *ProvisionedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   provisionednetwork.Table,
 			Columns: provisionednetwork.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionednetwork.FieldID,
 			},
 		},

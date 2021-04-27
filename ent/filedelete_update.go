@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileDeleteUpdate is the builder for updating FileDelete entities.
@@ -46,13 +47,13 @@ func (fdu *FileDeleteUpdate) SetTags(m map[string]string) *FileDeleteUpdate {
 }
 
 // SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
-func (fdu *FileDeleteUpdate) SetFileDeleteToEnvironmentID(id int) *FileDeleteUpdate {
+func (fdu *FileDeleteUpdate) SetFileDeleteToEnvironmentID(id uuid.UUID) *FileDeleteUpdate {
 	fdu.mutation.SetFileDeleteToEnvironmentID(id)
 	return fdu
 }
 
 // SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fdu *FileDeleteUpdate) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteUpdate {
+func (fdu *FileDeleteUpdate) SetNillableFileDeleteToEnvironmentID(id *uuid.UUID) *FileDeleteUpdate {
 	if id != nil {
 		fdu = fdu.SetFileDeleteToEnvironmentID(*id)
 	}
@@ -132,7 +133,7 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   filedelete.Table,
 			Columns: filedelete.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		},
@@ -174,7 +175,7 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -190,7 +191,7 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -238,13 +239,13 @@ func (fduo *FileDeleteUpdateOne) SetTags(m map[string]string) *FileDeleteUpdateO
 }
 
 // SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
-func (fduo *FileDeleteUpdateOne) SetFileDeleteToEnvironmentID(id int) *FileDeleteUpdateOne {
+func (fduo *FileDeleteUpdateOne) SetFileDeleteToEnvironmentID(id uuid.UUID) *FileDeleteUpdateOne {
 	fduo.mutation.SetFileDeleteToEnvironmentID(id)
 	return fduo
 }
 
 // SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fduo *FileDeleteUpdateOne) SetNillableFileDeleteToEnvironmentID(id *int) *FileDeleteUpdateOne {
+func (fduo *FileDeleteUpdateOne) SetNillableFileDeleteToEnvironmentID(id *uuid.UUID) *FileDeleteUpdateOne {
 	if id != nil {
 		fduo = fduo.SetFileDeleteToEnvironmentID(*id)
 	}
@@ -331,7 +332,7 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 			Table:   filedelete.Table,
 			Columns: filedelete.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		},
@@ -390,7 +391,7 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -406,7 +407,7 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

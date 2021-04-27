@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // HostDependencyQuery is the builder for querying HostDependency entities.
@@ -181,8 +182,8 @@ func (hdq *HostDependencyQuery) FirstX(ctx context.Context) *HostDependency {
 
 // FirstID returns the first HostDependency ID from the query.
 // Returns a *NotFoundError when no HostDependency ID was found.
-func (hdq *HostDependencyQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (hdq *HostDependencyQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = hdq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -194,7 +195,7 @@ func (hdq *HostDependencyQuery) FirstID(ctx context.Context) (id int, err error)
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (hdq *HostDependencyQuery) FirstIDX(ctx context.Context) int {
+func (hdq *HostDependencyQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := hdq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -232,8 +233,8 @@ func (hdq *HostDependencyQuery) OnlyX(ctx context.Context) *HostDependency {
 // OnlyID is like Only, but returns the only HostDependency ID in the query.
 // Returns a *NotSingularError when exactly one HostDependency ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (hdq *HostDependencyQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (hdq *HostDependencyQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = hdq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -249,7 +250,7 @@ func (hdq *HostDependencyQuery) OnlyID(ctx context.Context) (id int, err error) 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (hdq *HostDependencyQuery) OnlyIDX(ctx context.Context) int {
+func (hdq *HostDependencyQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := hdq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -275,8 +276,8 @@ func (hdq *HostDependencyQuery) AllX(ctx context.Context) []*HostDependency {
 }
 
 // IDs executes the query and returns a list of HostDependency IDs.
-func (hdq *HostDependencyQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (hdq *HostDependencyQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := hdq.Select(hostdependency.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -284,7 +285,7 @@ func (hdq *HostDependencyQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (hdq *HostDependencyQuery) IDsX(ctx context.Context) []int {
+func (hdq *HostDependencyQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := hdq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -492,8 +493,8 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 	}
 
 	if query := hdq.withHostDependencyToDependOnHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*HostDependency)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*HostDependency)
 		for i := range nodes {
 			if nodes[i].host_dependency_host_dependency_to_depend_on_host == nil {
 				continue
@@ -521,8 +522,8 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 	}
 
 	if query := hdq.withHostDependencyToDependByHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*HostDependency)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*HostDependency)
 		for i := range nodes {
 			if nodes[i].host_dependency_host_dependency_to_depend_by_host == nil {
 				continue
@@ -550,8 +551,8 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 	}
 
 	if query := hdq.withHostDependencyToNetwork; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*HostDependency)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*HostDependency)
 		for i := range nodes {
 			if nodes[i].host_dependency_host_dependency_to_network == nil {
 				continue
@@ -579,8 +580,8 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 	}
 
 	if query := hdq.withHostDependencyToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*HostDependency)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*HostDependency)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_host_dependency == nil {
 				continue
@@ -629,7 +630,7 @@ func (hdq *HostDependencyQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   hostdependency.Table,
 			Columns: hostdependency.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: hostdependency.FieldID,
 			},
 		},

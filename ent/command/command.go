@@ -2,6 +2,10 @@
 
 package command
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the command type in the database.
 	Label = "command"
@@ -93,4 +97,6 @@ var (
 	CooldownValidator func(int) error
 	// TimeoutValidator is a validator for the "timeout" field. It is called by the builders before save.
 	TimeoutValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

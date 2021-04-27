@@ -8,13 +8,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
 type User struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// UUID holds the value of the "uuid" field.
@@ -33,10 +34,10 @@ type User struct {
 	// UserToEnvironment holds the value of the UserToEnvironment edge.
 	HCLUserToEnvironment []*Environment `json:"UserToEnvironment,omitempty"`
 	//
-	command_command_to_user *int
-	finding_finding_to_user *int
-	host_host_to_user       *int
-	script_script_to_user   *int
+	command_command_to_user *uuid.UUID
+	finding_finding_to_user *uuid.UUID
+	host_host_to_user       *uuid.UUID
+	script_script_to_user   *uuid.UUID
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
@@ -73,18 +74,18 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID:
-			values[i] = new(sql.NullInt64)
 		case user.FieldName, user.FieldUUID, user.FieldEmail, user.FieldHclID:
 			values[i] = new(sql.NullString)
+		case user.FieldID:
+			values[i] = new(uuid.UUID)
 		case user.ForeignKeys[0]: // command_command_to_user
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case user.ForeignKeys[1]: // finding_finding_to_user
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case user.ForeignKeys[2]: // host_host_to_user
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case user.ForeignKeys[3]: // script_script_to_user
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -101,11 +102,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case user.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				u.ID = *value
 			}
-			u.ID = int(value.Int64)
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -131,32 +132,28 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				u.HclID = value.String
 			}
 		case user.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field command_command_to_user", value)
-			} else if value.Valid {
-				u.command_command_to_user = new(int)
-				*u.command_command_to_user = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field command_command_to_user", values[i])
+			} else if value != nil {
+				u.command_command_to_user = value
 			}
 		case user.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field finding_finding_to_user", value)
-			} else if value.Valid {
-				u.finding_finding_to_user = new(int)
-				*u.finding_finding_to_user = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field finding_finding_to_user", values[i])
+			} else if value != nil {
+				u.finding_finding_to_user = value
 			}
 		case user.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field host_host_to_user", value)
-			} else if value.Valid {
-				u.host_host_to_user = new(int)
-				*u.host_host_to_user = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field host_host_to_user", values[i])
+			} else if value != nil {
+				u.host_host_to_user = value
 			}
 		case user.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field script_script_to_user", value)
-			} else if value.Valid {
-				u.script_script_to_user = new(int)
-				*u.script_script_to_user = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field script_script_to_user", values[i])
+			} else if value != nil {
+				u.script_script_to_user = value
 			}
 		}
 	}

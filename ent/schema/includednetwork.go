@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // IncludedNetwork holds the schema definition for the IncludedNetwork entity.
@@ -14,6 +15,8 @@ type IncludedNetwork struct {
 // Fields of the IncludedNetwork.
 func (IncludedNetwork) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("name").
 			StructTag(`hcl:"name,label"`),
 		field.JSON("hosts", []string{}).

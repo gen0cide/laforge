@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/google/uuid"
 )
 
 // GinFileMiddlewareQuery is the builder for querying GinFileMiddleware entities.
@@ -134,8 +135,8 @@ func (gfmq *GinFileMiddlewareQuery) FirstX(ctx context.Context) *GinFileMiddlewa
 
 // FirstID returns the first GinFileMiddleware ID from the query.
 // Returns a *NotFoundError when no GinFileMiddleware ID was found.
-func (gfmq *GinFileMiddlewareQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (gfmq *GinFileMiddlewareQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = gfmq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -147,7 +148,7 @@ func (gfmq *GinFileMiddlewareQuery) FirstID(ctx context.Context) (id int, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (gfmq *GinFileMiddlewareQuery) FirstIDX(ctx context.Context) int {
+func (gfmq *GinFileMiddlewareQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := gfmq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -185,8 +186,8 @@ func (gfmq *GinFileMiddlewareQuery) OnlyX(ctx context.Context) *GinFileMiddlewar
 // OnlyID is like Only, but returns the only GinFileMiddleware ID in the query.
 // Returns a *NotSingularError when exactly one GinFileMiddleware ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (gfmq *GinFileMiddlewareQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (gfmq *GinFileMiddlewareQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = gfmq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -202,7 +203,7 @@ func (gfmq *GinFileMiddlewareQuery) OnlyID(ctx context.Context) (id int, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (gfmq *GinFileMiddlewareQuery) OnlyIDX(ctx context.Context) int {
+func (gfmq *GinFileMiddlewareQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := gfmq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -228,8 +229,8 @@ func (gfmq *GinFileMiddlewareQuery) AllX(ctx context.Context) []*GinFileMiddlewa
 }
 
 // IDs executes the query and returns a list of GinFileMiddleware IDs.
-func (gfmq *GinFileMiddlewareQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (gfmq *GinFileMiddlewareQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := gfmq.Select(ginfilemiddleware.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -237,7 +238,7 @@ func (gfmq *GinFileMiddlewareQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (gfmq *GinFileMiddlewareQuery) IDsX(ctx context.Context) []int {
+func (gfmq *GinFileMiddlewareQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := gfmq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -413,7 +414,7 @@ func (gfmq *GinFileMiddlewareQuery) sqlAll(ctx context.Context) ([]*GinFileMiddl
 
 	if query := gfmq.withGinFileMiddlewareToProvisionedHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*GinFileMiddleware)
+		nodeids := make(map[uuid.UUID]*GinFileMiddleware)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -441,7 +442,7 @@ func (gfmq *GinFileMiddlewareQuery) sqlAll(ctx context.Context) ([]*GinFileMiddl
 
 	if query := gfmq.withGinFileMiddlewareToProvisioningStep; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*GinFileMiddleware)
+		nodeids := make(map[uuid.UUID]*GinFileMiddleware)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -489,7 +490,7 @@ func (gfmq *GinFileMiddlewareQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   ginfilemiddleware.Table,
 			Columns: ginfilemiddleware.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: ginfilemiddleware.FieldID,
 			},
 		},

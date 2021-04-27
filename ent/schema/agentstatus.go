@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // AgentStatus holds the schema definition for the AgentStatus entity.
@@ -14,6 +15,8 @@ type AgentStatus struct {
 // Fields of the AgentStatus.
 func (AgentStatus) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("ClientID"),
 		field.String("Hostname"),
 		field.Int64("UpTime"),

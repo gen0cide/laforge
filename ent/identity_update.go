@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // IdentityUpdate is the builder for updating Identity entities.
@@ -82,13 +83,13 @@ func (iu *IdentityUpdate) SetTags(m map[string]string) *IdentityUpdate {
 }
 
 // SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID.
-func (iu *IdentityUpdate) SetIdentityToEnvironmentID(id int) *IdentityUpdate {
+func (iu *IdentityUpdate) SetIdentityToEnvironmentID(id uuid.UUID) *IdentityUpdate {
 	iu.mutation.SetIdentityToEnvironmentID(id)
 	return iu
 }
 
 // SetNillableIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (iu *IdentityUpdate) SetNillableIdentityToEnvironmentID(id *int) *IdentityUpdate {
+func (iu *IdentityUpdate) SetNillableIdentityToEnvironmentID(id *uuid.UUID) *IdentityUpdate {
 	if id != nil {
 		iu = iu.SetIdentityToEnvironmentID(*id)
 	}
@@ -168,7 +169,7 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   identity.Table,
 			Columns: identity.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: identity.FieldID,
 			},
 		},
@@ -252,7 +253,7 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -268,7 +269,7 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -352,13 +353,13 @@ func (iuo *IdentityUpdateOne) SetTags(m map[string]string) *IdentityUpdateOne {
 }
 
 // SetIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID.
-func (iuo *IdentityUpdateOne) SetIdentityToEnvironmentID(id int) *IdentityUpdateOne {
+func (iuo *IdentityUpdateOne) SetIdentityToEnvironmentID(id uuid.UUID) *IdentityUpdateOne {
 	iuo.mutation.SetIdentityToEnvironmentID(id)
 	return iuo
 }
 
 // SetNillableIdentityToEnvironmentID sets the "IdentityToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (iuo *IdentityUpdateOne) SetNillableIdentityToEnvironmentID(id *int) *IdentityUpdateOne {
+func (iuo *IdentityUpdateOne) SetNillableIdentityToEnvironmentID(id *uuid.UUID) *IdentityUpdateOne {
 	if id != nil {
 		iuo = iuo.SetIdentityToEnvironmentID(*id)
 	}
@@ -445,7 +446,7 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 			Table:   identity.Table,
 			Columns: identity.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: identity.FieldID,
 			},
 		},
@@ -546,7 +547,7 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -562,7 +563,7 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

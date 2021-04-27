@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // DNSRecordQuery is the builder for querying DNSRecord entities.
@@ -110,8 +111,8 @@ func (drq *DNSRecordQuery) FirstX(ctx context.Context) *DNSRecord {
 
 // FirstID returns the first DNSRecord ID from the query.
 // Returns a *NotFoundError when no DNSRecord ID was found.
-func (drq *DNSRecordQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (drq *DNSRecordQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = drq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (drq *DNSRecordQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (drq *DNSRecordQuery) FirstIDX(ctx context.Context) int {
+func (drq *DNSRecordQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := drq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (drq *DNSRecordQuery) OnlyX(ctx context.Context) *DNSRecord {
 // OnlyID is like Only, but returns the only DNSRecord ID in the query.
 // Returns a *NotSingularError when exactly one DNSRecord ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (drq *DNSRecordQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (drq *DNSRecordQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = drq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (drq *DNSRecordQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (drq *DNSRecordQuery) OnlyIDX(ctx context.Context) int {
+func (drq *DNSRecordQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := drq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (drq *DNSRecordQuery) AllX(ctx context.Context) []*DNSRecord {
 }
 
 // IDs executes the query and returns a list of DNSRecord IDs.
-func (drq *DNSRecordQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (drq *DNSRecordQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := drq.Select(dnsrecord.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (drq *DNSRecordQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (drq *DNSRecordQuery) IDsX(ctx context.Context) []int {
+func (drq *DNSRecordQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := drq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 	}
 
 	if query := drq.withDNSRecordToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*DNSRecord)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*DNSRecord)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_dns_record == nil {
 				continue
@@ -432,7 +433,7 @@ func (drq *DNSRecordQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   dnsrecord.Table,
 			Columns: dnsrecord.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		},

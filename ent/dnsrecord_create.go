@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // DNSRecordCreate is the builder for creating a DNSRecord entity.
@@ -68,14 +69,20 @@ func (drc *DNSRecordCreate) SetTags(m map[string]string) *DNSRecordCreate {
 	return drc
 }
 
+// SetID sets the "id" field.
+func (drc *DNSRecordCreate) SetID(u uuid.UUID) *DNSRecordCreate {
+	drc.mutation.SetID(u)
+	return drc
+}
+
 // SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
-func (drc *DNSRecordCreate) SetDNSRecordToEnvironmentID(id int) *DNSRecordCreate {
+func (drc *DNSRecordCreate) SetDNSRecordToEnvironmentID(id uuid.UUID) *DNSRecordCreate {
 	drc.mutation.SetDNSRecordToEnvironmentID(id)
 	return drc
 }
 
 // SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (drc *DNSRecordCreate) SetNillableDNSRecordToEnvironmentID(id *int) *DNSRecordCreate {
+func (drc *DNSRecordCreate) SetNillableDNSRecordToEnvironmentID(id *uuid.UUID) *DNSRecordCreate {
 	if id != nil {
 		drc = drc.SetDNSRecordToEnvironmentID(*id)
 	}
@@ -98,6 +105,7 @@ func (drc *DNSRecordCreate) Save(ctx context.Context) (*DNSRecord, error) {
 		err  error
 		node *DNSRecord
 	)
+	drc.defaults()
 	if len(drc.hooks) == 0 {
 		if err = drc.check(); err != nil {
 			return nil, err
@@ -134,6 +142,14 @@ func (drc *DNSRecordCreate) SaveX(ctx context.Context) *DNSRecord {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (drc *DNSRecordCreate) defaults() {
+	if _, ok := drc.mutation.ID(); !ok {
+		v := dnsrecord.DefaultID()
+		drc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -173,8 +189,6 @@ func (drc *DNSRecordCreate) sqlSave(ctx context.Context) (*DNSRecord, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -184,11 +198,15 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: dnsrecord.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		}
 	)
+	if id, ok := drc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := drc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -262,7 +280,7 @@ func (drc *DNSRecordCreate) createSpec() (*DNSRecord, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -290,6 +308,7 @@ func (drcb *DNSRecordCreateBulk) Save(ctx context.Context) ([]*DNSRecord, error)
 	for i := range drcb.builders {
 		func(i int, root context.Context) {
 			builder := drcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DNSRecordMutation)
 				if !ok {
@@ -315,8 +334,6 @@ func (drcb *DNSRecordCreateBulk) Save(ctx context.Context) ([]*DNSRecord, error)
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

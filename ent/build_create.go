@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // BuildCreate is the builder for creating a Build entity.
@@ -31,14 +32,20 @@ func (bc *BuildCreate) SetRevision(i int) *BuildCreate {
 	return bc
 }
 
+// SetID sets the "id" field.
+func (bc *BuildCreate) SetID(u uuid.UUID) *BuildCreate {
+	bc.mutation.SetID(u)
+	return bc
+}
+
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
-func (bc *BuildCreate) SetBuildToStatusID(id int) *BuildCreate {
+func (bc *BuildCreate) SetBuildToStatusID(id uuid.UUID) *BuildCreate {
 	bc.mutation.SetBuildToStatusID(id)
 	return bc
 }
 
 // SetNillableBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID if the given value is not nil.
-func (bc *BuildCreate) SetNillableBuildToStatusID(id *int) *BuildCreate {
+func (bc *BuildCreate) SetNillableBuildToStatusID(id *uuid.UUID) *BuildCreate {
 	if id != nil {
 		bc = bc.SetBuildToStatusID(*id)
 	}
@@ -51,7 +58,7 @@ func (bc *BuildCreate) SetBuildToStatus(s *Status) *BuildCreate {
 }
 
 // SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by ID.
-func (bc *BuildCreate) SetBuildToEnvironmentID(id int) *BuildCreate {
+func (bc *BuildCreate) SetBuildToEnvironmentID(id uuid.UUID) *BuildCreate {
 	bc.mutation.SetBuildToEnvironmentID(id)
 	return bc
 }
@@ -62,7 +69,7 @@ func (bc *BuildCreate) SetBuildToEnvironment(e *Environment) *BuildCreate {
 }
 
 // SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
-func (bc *BuildCreate) SetBuildToCompetitionID(id int) *BuildCreate {
+func (bc *BuildCreate) SetBuildToCompetitionID(id uuid.UUID) *BuildCreate {
 	bc.mutation.SetBuildToCompetitionID(id)
 	return bc
 }
@@ -73,14 +80,14 @@ func (bc *BuildCreate) SetBuildToCompetition(c *Competition) *BuildCreate {
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (bc *BuildCreate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildCreate {
+func (bc *BuildCreate) AddBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildCreate {
 	bc.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bc
 }
 
 // AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (bc *BuildCreate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -88,14 +95,14 @@ func (bc *BuildCreate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *B
 }
 
 // AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
-func (bc *BuildCreate) AddBuildToTeamIDs(ids ...int) *BuildCreate {
+func (bc *BuildCreate) AddBuildToTeamIDs(ids ...uuid.UUID) *BuildCreate {
 	bc.mutation.AddBuildToTeamIDs(ids...)
 	return bc
 }
 
 // AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (bc *BuildCreate) AddBuildToTeam(t ...*Team) *BuildCreate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -103,14 +110,14 @@ func (bc *BuildCreate) AddBuildToTeam(t ...*Team) *BuildCreate {
 }
 
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
-func (bc *BuildCreate) AddBuildToPlanIDs(ids ...int) *BuildCreate {
+func (bc *BuildCreate) AddBuildToPlanIDs(ids ...uuid.UUID) *BuildCreate {
 	bc.mutation.AddBuildToPlanIDs(ids...)
 	return bc
 }
 
 // AddBuildToPlan adds the "BuildToPlan" edges to the Plan entity.
 func (bc *BuildCreate) AddBuildToPlan(p ...*Plan) *BuildCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -128,6 +135,7 @@ func (bc *BuildCreate) Save(ctx context.Context) (*Build, error) {
 		err  error
 		node *Build
 	)
+	bc.defaults()
 	if len(bc.hooks) == 0 {
 		if err = bc.check(); err != nil {
 			return nil, err
@@ -166,6 +174,14 @@ func (bc *BuildCreate) SaveX(ctx context.Context) *Build {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (bc *BuildCreate) defaults() {
+	if _, ok := bc.mutation.ID(); !ok {
+		v := build.DefaultID()
+		bc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bc *BuildCreate) check() error {
 	if _, ok := bc.mutation.Revision(); !ok {
@@ -188,8 +204,6 @@ func (bc *BuildCreate) sqlSave(ctx context.Context) (*Build, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -199,11 +213,15 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: build.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: build.FieldID,
 			},
 		}
 	)
+	if id, ok := bc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := bc.mutation.Revision(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -221,7 +239,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -240,7 +258,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -260,7 +278,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -280,7 +298,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -299,7 +317,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -318,7 +336,7 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -345,6 +363,7 @@ func (bcb *BuildCreateBulk) Save(ctx context.Context) ([]*Build, error) {
 	for i := range bcb.builders {
 		func(i int, root context.Context) {
 			builder := bcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BuildMutation)
 				if !ok {
@@ -370,8 +389,6 @@ func (bcb *BuildCreateBulk) Save(ctx context.Context) ([]*Build, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

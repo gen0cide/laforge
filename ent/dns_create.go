@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // DNSCreate is the builder for creating a DNS entity.
@@ -57,15 +58,21 @@ func (dc *DNSCreate) SetConfig(m map[string]string) *DNSCreate {
 	return dc
 }
 
+// SetID sets the "id" field.
+func (dc *DNSCreate) SetID(u uuid.UUID) *DNSCreate {
+	dc.mutation.SetID(u)
+	return dc
+}
+
 // AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
-func (dc *DNSCreate) AddDNSToEnvironmentIDs(ids ...int) *DNSCreate {
+func (dc *DNSCreate) AddDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSCreate {
 	dc.mutation.AddDNSToEnvironmentIDs(ids...)
 	return dc
 }
 
 // AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
 func (dc *DNSCreate) AddDNSToEnvironment(e ...*Environment) *DNSCreate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -73,14 +80,14 @@ func (dc *DNSCreate) AddDNSToEnvironment(e ...*Environment) *DNSCreate {
 }
 
 // AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
-func (dc *DNSCreate) AddDNSToCompetitionIDs(ids ...int) *DNSCreate {
+func (dc *DNSCreate) AddDNSToCompetitionIDs(ids ...uuid.UUID) *DNSCreate {
 	dc.mutation.AddDNSToCompetitionIDs(ids...)
 	return dc
 }
 
 // AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
 func (dc *DNSCreate) AddDNSToCompetition(c ...*Competition) *DNSCreate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -98,6 +105,7 @@ func (dc *DNSCreate) Save(ctx context.Context) (*DNS, error) {
 		err  error
 		node *DNS
 	)
+	dc.defaults()
 	if len(dc.hooks) == 0 {
 		if err = dc.check(); err != nil {
 			return nil, err
@@ -136,6 +144,14 @@ func (dc *DNSCreate) SaveX(ctx context.Context) *DNS {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (dc *DNSCreate) defaults() {
+	if _, ok := dc.mutation.ID(); !ok {
+		v := dns.DefaultID()
+		dc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dc *DNSCreate) check() error {
 	if _, ok := dc.mutation.HclID(); !ok {
@@ -167,8 +183,6 @@ func (dc *DNSCreate) sqlSave(ctx context.Context) (*DNS, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -178,11 +192,15 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: dns.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dns.FieldID,
 			},
 		}
 	)
+	if id, ok := dc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := dc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -240,7 +258,7 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -259,7 +277,7 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -286,6 +304,7 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 	for i := range dcb.builders {
 		func(i int, root context.Context) {
 			builder := dcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DNSMutation)
 				if !ok {
@@ -311,8 +330,6 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

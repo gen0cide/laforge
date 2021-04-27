@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // FindingUpdate is the builder for updating Finding entities.
@@ -61,14 +62,14 @@ func (fu *FindingUpdate) SetTags(m map[string]string) *FindingUpdate {
 }
 
 // AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
-func (fu *FindingUpdate) AddFindingToUserIDs(ids ...int) *FindingUpdate {
+func (fu *FindingUpdate) AddFindingToUserIDs(ids ...uuid.UUID) *FindingUpdate {
 	fu.mutation.AddFindingToUserIDs(ids...)
 	return fu
 }
 
 // AddFindingToUser adds the "FindingToUser" edges to the User entity.
 func (fu *FindingUpdate) AddFindingToUser(u ...*User) *FindingUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -76,13 +77,13 @@ func (fu *FindingUpdate) AddFindingToUser(u ...*User) *FindingUpdate {
 }
 
 // SetFindingToHostID sets the "FindingToHost" edge to the Host entity by ID.
-func (fu *FindingUpdate) SetFindingToHostID(id int) *FindingUpdate {
+func (fu *FindingUpdate) SetFindingToHostID(id uuid.UUID) *FindingUpdate {
 	fu.mutation.SetFindingToHostID(id)
 	return fu
 }
 
 // SetNillableFindingToHostID sets the "FindingToHost" edge to the Host entity by ID if the given value is not nil.
-func (fu *FindingUpdate) SetNillableFindingToHostID(id *int) *FindingUpdate {
+func (fu *FindingUpdate) SetNillableFindingToHostID(id *uuid.UUID) *FindingUpdate {
 	if id != nil {
 		fu = fu.SetFindingToHostID(*id)
 	}
@@ -95,13 +96,13 @@ func (fu *FindingUpdate) SetFindingToHost(h *Host) *FindingUpdate {
 }
 
 // SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID.
-func (fu *FindingUpdate) SetFindingToScriptID(id int) *FindingUpdate {
+func (fu *FindingUpdate) SetFindingToScriptID(id uuid.UUID) *FindingUpdate {
 	fu.mutation.SetFindingToScriptID(id)
 	return fu
 }
 
 // SetNillableFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID if the given value is not nil.
-func (fu *FindingUpdate) SetNillableFindingToScriptID(id *int) *FindingUpdate {
+func (fu *FindingUpdate) SetNillableFindingToScriptID(id *uuid.UUID) *FindingUpdate {
 	if id != nil {
 		fu = fu.SetFindingToScriptID(*id)
 	}
@@ -114,13 +115,13 @@ func (fu *FindingUpdate) SetFindingToScript(s *Script) *FindingUpdate {
 }
 
 // SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID.
-func (fu *FindingUpdate) SetFindingToEnvironmentID(id int) *FindingUpdate {
+func (fu *FindingUpdate) SetFindingToEnvironmentID(id uuid.UUID) *FindingUpdate {
 	fu.mutation.SetFindingToEnvironmentID(id)
 	return fu
 }
 
 // SetNillableFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fu *FindingUpdate) SetNillableFindingToEnvironmentID(id *int) *FindingUpdate {
+func (fu *FindingUpdate) SetNillableFindingToEnvironmentID(id *uuid.UUID) *FindingUpdate {
 	if id != nil {
 		fu = fu.SetFindingToEnvironmentID(*id)
 	}
@@ -144,14 +145,14 @@ func (fu *FindingUpdate) ClearFindingToUser() *FindingUpdate {
 }
 
 // RemoveFindingToUserIDs removes the "FindingToUser" edge to User entities by IDs.
-func (fu *FindingUpdate) RemoveFindingToUserIDs(ids ...int) *FindingUpdate {
+func (fu *FindingUpdate) RemoveFindingToUserIDs(ids ...uuid.UUID) *FindingUpdate {
 	fu.mutation.RemoveFindingToUserIDs(ids...)
 	return fu
 }
 
 // RemoveFindingToUser removes "FindingToUser" edges to User entities.
 func (fu *FindingUpdate) RemoveFindingToUser(u ...*User) *FindingUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -254,7 +255,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   finding.Table,
 			Columns: finding.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		},
@@ -310,7 +311,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -326,7 +327,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -345,7 +346,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -364,7 +365,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -380,7 +381,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -399,7 +400,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -415,7 +416,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -434,7 +435,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -450,7 +451,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -510,14 +511,14 @@ func (fuo *FindingUpdateOne) SetTags(m map[string]string) *FindingUpdateOne {
 }
 
 // AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
-func (fuo *FindingUpdateOne) AddFindingToUserIDs(ids ...int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) AddFindingToUserIDs(ids ...uuid.UUID) *FindingUpdateOne {
 	fuo.mutation.AddFindingToUserIDs(ids...)
 	return fuo
 }
 
 // AddFindingToUser adds the "FindingToUser" edges to the User entity.
 func (fuo *FindingUpdateOne) AddFindingToUser(u ...*User) *FindingUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -525,13 +526,13 @@ func (fuo *FindingUpdateOne) AddFindingToUser(u ...*User) *FindingUpdateOne {
 }
 
 // SetFindingToHostID sets the "FindingToHost" edge to the Host entity by ID.
-func (fuo *FindingUpdateOne) SetFindingToHostID(id int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetFindingToHostID(id uuid.UUID) *FindingUpdateOne {
 	fuo.mutation.SetFindingToHostID(id)
 	return fuo
 }
 
 // SetNillableFindingToHostID sets the "FindingToHost" edge to the Host entity by ID if the given value is not nil.
-func (fuo *FindingUpdateOne) SetNillableFindingToHostID(id *int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetNillableFindingToHostID(id *uuid.UUID) *FindingUpdateOne {
 	if id != nil {
 		fuo = fuo.SetFindingToHostID(*id)
 	}
@@ -544,13 +545,13 @@ func (fuo *FindingUpdateOne) SetFindingToHost(h *Host) *FindingUpdateOne {
 }
 
 // SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID.
-func (fuo *FindingUpdateOne) SetFindingToScriptID(id int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetFindingToScriptID(id uuid.UUID) *FindingUpdateOne {
 	fuo.mutation.SetFindingToScriptID(id)
 	return fuo
 }
 
 // SetNillableFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID if the given value is not nil.
-func (fuo *FindingUpdateOne) SetNillableFindingToScriptID(id *int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetNillableFindingToScriptID(id *uuid.UUID) *FindingUpdateOne {
 	if id != nil {
 		fuo = fuo.SetFindingToScriptID(*id)
 	}
@@ -563,13 +564,13 @@ func (fuo *FindingUpdateOne) SetFindingToScript(s *Script) *FindingUpdateOne {
 }
 
 // SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID.
-func (fuo *FindingUpdateOne) SetFindingToEnvironmentID(id int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetFindingToEnvironmentID(id uuid.UUID) *FindingUpdateOne {
 	fuo.mutation.SetFindingToEnvironmentID(id)
 	return fuo
 }
 
 // SetNillableFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (fuo *FindingUpdateOne) SetNillableFindingToEnvironmentID(id *int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) SetNillableFindingToEnvironmentID(id *uuid.UUID) *FindingUpdateOne {
 	if id != nil {
 		fuo = fuo.SetFindingToEnvironmentID(*id)
 	}
@@ -593,14 +594,14 @@ func (fuo *FindingUpdateOne) ClearFindingToUser() *FindingUpdateOne {
 }
 
 // RemoveFindingToUserIDs removes the "FindingToUser" edge to User entities by IDs.
-func (fuo *FindingUpdateOne) RemoveFindingToUserIDs(ids ...int) *FindingUpdateOne {
+func (fuo *FindingUpdateOne) RemoveFindingToUserIDs(ids ...uuid.UUID) *FindingUpdateOne {
 	fuo.mutation.RemoveFindingToUserIDs(ids...)
 	return fuo
 }
 
 // RemoveFindingToUser removes "FindingToUser" edges to User entities.
 func (fuo *FindingUpdateOne) RemoveFindingToUser(u ...*User) *FindingUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -710,7 +711,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Table:   finding.Table,
 			Columns: finding.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		},
@@ -783,7 +784,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -799,7 +800,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -818,7 +819,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -837,7 +838,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -853,7 +854,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -872,7 +873,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -888,7 +889,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -907,7 +908,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -923,7 +924,7 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

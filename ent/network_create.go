@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/hostdependency"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/google/uuid"
 )
 
 // NetworkCreate is the builder for creating a Network entity.
@@ -58,14 +59,20 @@ func (nc *NetworkCreate) SetTags(m map[string]string) *NetworkCreate {
 	return nc
 }
 
+// SetID sets the "id" field.
+func (nc *NetworkCreate) SetID(u uuid.UUID) *NetworkCreate {
+	nc.mutation.SetID(u)
+	return nc
+}
+
 // SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID.
-func (nc *NetworkCreate) SetNetworkToEnvironmentID(id int) *NetworkCreate {
+func (nc *NetworkCreate) SetNetworkToEnvironmentID(id uuid.UUID) *NetworkCreate {
 	nc.mutation.SetNetworkToEnvironmentID(id)
 	return nc
 }
 
 // SetNillableNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID if the given value is not nil.
-func (nc *NetworkCreate) SetNillableNetworkToEnvironmentID(id *int) *NetworkCreate {
+func (nc *NetworkCreate) SetNillableNetworkToEnvironmentID(id *uuid.UUID) *NetworkCreate {
 	if id != nil {
 		nc = nc.SetNetworkToEnvironmentID(*id)
 	}
@@ -78,14 +85,14 @@ func (nc *NetworkCreate) SetNetworkToEnvironment(e *Environment) *NetworkCreate 
 }
 
 // AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
-func (nc *NetworkCreate) AddNetworkToHostDependencyIDs(ids ...int) *NetworkCreate {
+func (nc *NetworkCreate) AddNetworkToHostDependencyIDs(ids ...uuid.UUID) *NetworkCreate {
 	nc.mutation.AddNetworkToHostDependencyIDs(ids...)
 	return nc
 }
 
 // AddNetworkToHostDependency adds the "NetworkToHostDependency" edges to the HostDependency entity.
 func (nc *NetworkCreate) AddNetworkToHostDependency(h ...*HostDependency) *NetworkCreate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -93,14 +100,14 @@ func (nc *NetworkCreate) AddNetworkToHostDependency(h ...*HostDependency) *Netwo
 }
 
 // AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
-func (nc *NetworkCreate) AddNetworkToIncludedNetworkIDs(ids ...int) *NetworkCreate {
+func (nc *NetworkCreate) AddNetworkToIncludedNetworkIDs(ids ...uuid.UUID) *NetworkCreate {
 	nc.mutation.AddNetworkToIncludedNetworkIDs(ids...)
 	return nc
 }
 
 // AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
 func (nc *NetworkCreate) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkCreate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -118,6 +125,7 @@ func (nc *NetworkCreate) Save(ctx context.Context) (*Network, error) {
 		err  error
 		node *Network
 	)
+	nc.defaults()
 	if len(nc.hooks) == 0 {
 		if err = nc.check(); err != nil {
 			return nil, err
@@ -156,6 +164,14 @@ func (nc *NetworkCreate) SaveX(ctx context.Context) *Network {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (nc *NetworkCreate) defaults() {
+	if _, ok := nc.mutation.ID(); !ok {
+		v := network.DefaultID()
+		nc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (nc *NetworkCreate) check() error {
 	if _, ok := nc.mutation.HclID(); !ok {
@@ -187,8 +203,6 @@ func (nc *NetworkCreate) sqlSave(ctx context.Context) (*Network, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -198,11 +212,15 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: network.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: network.FieldID,
 			},
 		}
 	)
+	if id, ok := nc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := nc.mutation.HclID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -260,7 +278,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -280,7 +298,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: hostdependency.FieldID,
 				},
 			},
@@ -299,7 +317,7 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: includednetwork.FieldID,
 				},
 			},
@@ -326,6 +344,7 @@ func (ncb *NetworkCreateBulk) Save(ctx context.Context) ([]*Network, error) {
 	for i := range ncb.builders {
 		func(i int, root context.Context) {
 			builder := ncb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*NetworkMutation)
 				if !ok {
@@ -351,8 +370,6 @@ func (ncb *NetworkCreateBulk) Save(ctx context.Context) ([]*Network, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

@@ -2,6 +2,10 @@
 
 package disk
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the disk type in the database.
 	Label = "disk"
@@ -52,4 +56,6 @@ func ValidColumn(column string) bool {
 var (
 	// SizeValidator is a validator for the "size" field. It is called by the builders before save.
 	SizeValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

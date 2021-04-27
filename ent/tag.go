@@ -16,15 +16,15 @@ import (
 type Tag struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description                              map[string]string `json:"description,omitempty"`
-	included_network_included_network_to_tag *int
-	user_user_to_tag                         *int
+	included_network_included_network_to_tag *uuid.UUID
+	user_user_to_tag                         *uuid.UUID
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,16 +34,14 @@ func (*Tag) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case tag.FieldDescription:
 			values[i] = new([]byte)
-		case tag.FieldID:
-			values[i] = new(sql.NullInt64)
 		case tag.FieldName:
 			values[i] = new(sql.NullString)
-		case tag.FieldUUID:
+		case tag.FieldID, tag.FieldUUID:
 			values[i] = new(uuid.UUID)
 		case tag.ForeignKeys[0]: // included_network_included_network_to_tag
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case tag.ForeignKeys[1]: // user_user_to_tag
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
 		}
@@ -60,11 +58,11 @@ func (t *Tag) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case tag.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				t.ID = *value
 			}
-			t.ID = int(value.Int64)
 		case tag.FieldUUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uuid", values[i])
@@ -87,18 +85,16 @@ func (t *Tag) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case tag.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field included_network_included_network_to_tag", value)
-			} else if value.Valid {
-				t.included_network_included_network_to_tag = new(int)
-				*t.included_network_included_network_to_tag = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field included_network_included_network_to_tag", values[i])
+			} else if value != nil {
+				t.included_network_included_network_to_tag = value
 			}
 		case tag.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_user_to_tag", value)
-			} else if value.Valid {
-				t.user_user_to_tag = new(int)
-				*t.user_user_to_tag = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_user_to_tag", values[i])
+			} else if value != nil {
+				t.user_user_to_tag = value
 			}
 		}
 	}

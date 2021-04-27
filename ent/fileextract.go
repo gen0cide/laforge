@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
+	"github.com/google/uuid"
 )
 
 // FileExtract is the model entity for the FileExtract schema.
 type FileExtract struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Source holds the value of the "source" field.
@@ -35,7 +36,7 @@ type FileExtract struct {
 	// FileExtractToEnvironment holds the value of the FileExtractToEnvironment edge.
 	HCLFileExtractToEnvironment *Environment `json:"FileExtractToEnvironment,omitempty"`
 	//
-	environment_environment_to_file_extract *int
+	environment_environment_to_file_extract *uuid.UUID
 }
 
 // FileExtractEdges holds the relations/edges for other nodes in the graph.
@@ -68,12 +69,12 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case fileextract.FieldTags:
 			values[i] = new([]byte)
-		case fileextract.FieldID:
-			values[i] = new(sql.NullInt64)
 		case fileextract.FieldHclID, fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
 			values[i] = new(sql.NullString)
+		case fileextract.FieldID:
+			values[i] = new(uuid.UUID)
 		case fileextract.ForeignKeys[0]: // environment_environment_to_file_extract
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileExtract", columns[i])
 		}
@@ -90,11 +91,11 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 	for i := range columns {
 		switch columns[i] {
 		case fileextract.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				fe.ID = *value
 			}
-			fe.ID = int(value.Int64)
 		case fileextract.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -129,11 +130,10 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				}
 			}
 		case fileextract.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_extract", value)
-			} else if value.Valid {
-				fe.environment_environment_to_file_extract = new(int)
-				*fe.environment_environment_to_file_extract = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_extract", values[i])
+			} else if value != nil {
+				fe.environment_environment_to_file_extract = value
 			}
 		}
 	}

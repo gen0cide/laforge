@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/google/uuid"
 )
 
 // AgentStatusCreate is the builder for creating a AgentStatus entity.
@@ -104,15 +105,21 @@ func (asc *AgentStatusCreate) SetTimestamp(i int64) *AgentStatusCreate {
 	return asc
 }
 
+// SetID sets the "id" field.
+func (asc *AgentStatusCreate) SetID(u uuid.UUID) *AgentStatusCreate {
+	asc.mutation.SetID(u)
+	return asc
+}
+
 // AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHostIDs(ids ...int) *AgentStatusCreate {
+func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusCreate {
 	asc.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
 	return asc
 }
 
 // AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
 func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusCreate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -130,6 +137,7 @@ func (asc *AgentStatusCreate) Save(ctx context.Context) (*AgentStatus, error) {
 		err  error
 		node *AgentStatus
 	)
+	asc.defaults()
 	if len(asc.hooks) == 0 {
 		if err = asc.check(); err != nil {
 			return nil, err
@@ -166,6 +174,14 @@ func (asc *AgentStatusCreate) SaveX(ctx context.Context) *AgentStatus {
 		panic(err)
 	}
 	return v
+}
+
+// defaults sets the default values of the builder before save.
+func (asc *AgentStatusCreate) defaults() {
+	if _, ok := asc.mutation.ID(); !ok {
+		v := agentstatus.DefaultID()
+		asc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -223,8 +239,6 @@ func (asc *AgentStatusCreate) sqlSave(ctx context.Context) (*AgentStatus, error)
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -234,11 +248,15 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 		_spec = &sqlgraph.CreateSpec{
 			Table: agentstatus.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		}
 	)
+	if id, ok := asc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := asc.mutation.ClientID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -360,7 +378,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -387,6 +405,7 @@ func (ascb *AgentStatusCreateBulk) Save(ctx context.Context) ([]*AgentStatus, er
 	for i := range ascb.builders {
 		func(i int, root context.Context) {
 			builder := ascb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AgentStatusMutation)
 				if !ok {
@@ -412,8 +431,6 @@ func (ascb *AgentStatusCreateBulk) Save(ctx context.Context) ([]*AgentStatus, er
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

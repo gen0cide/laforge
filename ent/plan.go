@@ -13,19 +13,20 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // Plan is the model entity for the Plan schema.
 type Plan struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// StepNumber holds the value of the "step_number" field.
 	StepNumber int `json:"step_number,omitempty"`
 	// Type holds the value of the "type" field.
 	Type plan.Type `json:"type,omitempty"`
 	// BuildID holds the value of the "build_id" field.
-	BuildID int `json:"build_id,omitempty"`
+	BuildID string `json:"build_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PlanQuery when eager-loading is set.
 	Edges PlanEdges `json:"edges"`
@@ -46,7 +47,7 @@ type Plan struct {
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
 	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	//
-	plan_plan_to_build *int
+	plan_plan_to_build *uuid.UUID
 }
 
 // PlanEdges holds the relations/edges for other nodes in the graph.
@@ -163,12 +164,14 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case plan.FieldID, plan.FieldStepNumber, plan.FieldBuildID:
+		case plan.FieldStepNumber:
 			values[i] = new(sql.NullInt64)
-		case plan.FieldType:
+		case plan.FieldType, plan.FieldBuildID:
 			values[i] = new(sql.NullString)
+		case plan.FieldID:
+			values[i] = new(uuid.UUID)
 		case plan.ForeignKeys[0]: // plan_plan_to_build
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
 		}
@@ -185,11 +188,11 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case plan.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				pl.ID = *value
 			}
-			pl.ID = int(value.Int64)
 		case plan.FieldStepNumber:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field step_number", values[i])
@@ -203,17 +206,16 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 				pl.Type = plan.Type(value.String)
 			}
 		case plan.FieldBuildID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field build_id", values[i])
 			} else if value.Valid {
-				pl.BuildID = int(value.Int64)
+				pl.BuildID = value.String
 			}
 		case plan.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_build", value)
-			} else if value.Valid {
-				pl.plan_plan_to_build = new(int)
-				*pl.plan_plan_to_build = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field plan_plan_to_build", values[i])
+			} else if value != nil {
+				pl.plan_plan_to_build = value
 			}
 		}
 	}
@@ -283,7 +285,7 @@ func (pl *Plan) String() string {
 	builder.WriteString(", type=")
 	builder.WriteString(fmt.Sprintf("%v", pl.Type))
 	builder.WriteString(", build_id=")
-	builder.WriteString(fmt.Sprintf("%v", pl.BuildID))
+	builder.WriteString(pl.BuildID)
 	builder.WriteByte(')')
 	return builder.String()
 }

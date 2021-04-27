@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // FileExtract holds the schema definition for the FileExtract entity.
@@ -14,6 +15,8 @@ type FileExtract struct {
 // Fields of the FileExtract.
 func (FileExtract) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("hcl_id").
 			StructTag(`hcl:"id,label"`),
 		field.String("source").

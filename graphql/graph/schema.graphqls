@@ -278,7 +278,7 @@ type Plan {
   id: ID!
   step_number: Int!
   type: PlanType!
-  build_id: Int!
+  build_id: String!
   NextPlan: [Plan]!
   PrevPlan: [Plan]!
   PlanToBuild: Build!

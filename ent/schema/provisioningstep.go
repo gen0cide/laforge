@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ProvisioningStep holds the schema definition for the ProvisioningStep entity.
@@ -15,6 +16,8 @@ type ProvisioningStep struct {
 // Fields of the ProvisioningStep.
 func (ProvisioningStep) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.Enum("type").
 			Values(
 				"Script",

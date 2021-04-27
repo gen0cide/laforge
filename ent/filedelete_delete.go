@@ -69,7 +69,7 @@ func (fdd *FileDeleteDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: filedelete.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		},

@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
+	"github.com/google/uuid"
 )
 
 // FileDelete is the model entity for the FileDelete schema.
 type FileDelete struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Path holds the value of the "path" field.
@@ -31,7 +32,7 @@ type FileDelete struct {
 	// FileDeleteToEnvironment holds the value of the FileDeleteToEnvironment edge.
 	HCLFileDeleteToEnvironment *Environment `json:"FileDeleteToEnvironment,omitempty"`
 	//
-	environment_environment_to_file_delete *int
+	environment_environment_to_file_delete *uuid.UUID
 }
 
 // FileDeleteEdges holds the relations/edges for other nodes in the graph.
@@ -64,12 +65,12 @@ func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case filedelete.FieldTags:
 			values[i] = new([]byte)
-		case filedelete.FieldID:
-			values[i] = new(sql.NullInt64)
 		case filedelete.FieldHclID, filedelete.FieldPath:
 			values[i] = new(sql.NullString)
+		case filedelete.FieldID:
+			values[i] = new(uuid.UUID)
 		case filedelete.ForeignKeys[0]: // environment_environment_to_file_delete
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDelete", columns[i])
 		}
@@ -86,11 +87,11 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 	for i := range columns {
 		switch columns[i] {
 		case filedelete.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				fd.ID = *value
 			}
-			fd.ID = int(value.Int64)
 		case filedelete.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -113,11 +114,10 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case filedelete.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_file_delete", value)
-			} else if value.Valid {
-				fd.environment_environment_to_file_delete = new(int)
-				*fd.environment_environment_to_file_delete = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_delete", values[i])
+			} else if value != nil {
+				fd.environment_environment_to_file_delete = value
 			}
 		}
 	}

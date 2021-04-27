@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/google/uuid"
 )
 
 // AgentStatusQuery is the builder for querying AgentStatus entities.
@@ -110,8 +111,8 @@ func (asq *AgentStatusQuery) FirstX(ctx context.Context) *AgentStatus {
 
 // FirstID returns the first AgentStatus ID from the query.
 // Returns a *NotFoundError when no AgentStatus ID was found.
-func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = asq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (asq *AgentStatusQuery) FirstIDX(ctx context.Context) int {
+func (asq *AgentStatusQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := asq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (asq *AgentStatusQuery) OnlyX(ctx context.Context) *AgentStatus {
 // OnlyID is like Only, but returns the only AgentStatus ID in the query.
 // Returns a *NotSingularError when exactly one AgentStatus ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = asq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (asq *AgentStatusQuery) OnlyIDX(ctx context.Context) int {
+func (asq *AgentStatusQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := asq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (asq *AgentStatusQuery) AllX(ctx context.Context) []*AgentStatus {
 }
 
 // IDs executes the query and returns a list of AgentStatus IDs.
-func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := asq.Select(agentstatus.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (asq *AgentStatusQuery) IDsX(ctx context.Context) []int {
+func (asq *AgentStatusQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := asq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -376,15 +377,15 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 
 	if query := asq.withAgentStatusToProvisionedHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*AgentStatus, len(nodes))
+		ids := make(map[uuid.UUID]*AgentStatus, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.AgentStatusToProvisionedHost = []*ProvisionedHost{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*AgentStatus)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*AgentStatus)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -396,19 +397,19 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 				s.Where(sql.InValues(agentstatus.AgentStatusToProvisionedHostPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -461,7 +462,7 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   agentstatus.Table,
 			Columns: agentstatus.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		},

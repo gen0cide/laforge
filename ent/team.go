@@ -11,13 +11,14 @@ import (
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // Team is the model entity for the Team schema.
 type Team struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// TeamNumber holds the value of the "team_number" field.
 	TeamNumber int `json:"team_number,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -34,8 +35,8 @@ type Team struct {
 	// TeamToPlan holds the value of the TeamToPlan edge.
 	HCLTeamToPlan *Plan `json:"TeamToPlan,omitempty"`
 	//
-	plan_plan_to_team  *int
-	team_team_to_build *int
+	plan_plan_to_team  *uuid.UUID
+	team_team_to_build *uuid.UUID
 }
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
@@ -109,12 +110,14 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case team.FieldID, team.FieldTeamNumber:
+		case team.FieldTeamNumber:
 			values[i] = new(sql.NullInt64)
+		case team.FieldID:
+			values[i] = new(uuid.UUID)
 		case team.ForeignKeys[0]: // plan_plan_to_team
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		case team.ForeignKeys[1]: // team_team_to_build
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
 		}
@@ -131,11 +134,11 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case team.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				t.ID = *value
 			}
-			t.ID = int(value.Int64)
 		case team.FieldTeamNumber:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field team_number", values[i])
@@ -143,18 +146,16 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 				t.TeamNumber = int(value.Int64)
 			}
 		case team.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plan_plan_to_team", value)
-			} else if value.Valid {
-				t.plan_plan_to_team = new(int)
-				*t.plan_plan_to_team = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field plan_plan_to_team", values[i])
+			} else if value != nil {
+				t.plan_plan_to_team = value
 			}
 		case team.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field team_team_to_build", value)
-			} else if value.Valid {
-				t.team_team_to_build = new(int)
-				*t.team_team_to_build = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field team_team_to_build", values[i])
+			} else if value != nil {
+				t.team_team_to_build = value
 			}
 		}
 	}

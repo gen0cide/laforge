@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Status holds the schema definition for the Status entity.
@@ -14,6 +15,8 @@ type Status struct {
 // Fields of the Status.
 func (Status) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.Enum("state").Values("PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"),
 		field.Enum("status_for").Values("Build", "Team", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"),
 		field.Time("started_at").Optional(),

@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // FileDownloadQuery is the builder for querying FileDownload entities.
@@ -110,8 +111,8 @@ func (fdq *FileDownloadQuery) FirstX(ctx context.Context) *FileDownload {
 
 // FirstID returns the first FileDownload ID from the query.
 // Returns a *NotFoundError when no FileDownload ID was found.
-func (fdq *FileDownloadQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fdq *FileDownloadQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fdq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (fdq *FileDownloadQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (fdq *FileDownloadQuery) FirstIDX(ctx context.Context) int {
+func (fdq *FileDownloadQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := fdq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (fdq *FileDownloadQuery) OnlyX(ctx context.Context) *FileDownload {
 // OnlyID is like Only, but returns the only FileDownload ID in the query.
 // Returns a *NotSingularError when exactly one FileDownload ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (fdq *FileDownloadQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (fdq *FileDownloadQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = fdq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (fdq *FileDownloadQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (fdq *FileDownloadQuery) OnlyIDX(ctx context.Context) int {
+func (fdq *FileDownloadQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := fdq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (fdq *FileDownloadQuery) AllX(ctx context.Context) []*FileDownload {
 }
 
 // IDs executes the query and returns a list of FileDownload IDs.
-func (fdq *FileDownloadQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (fdq *FileDownloadQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := fdq.Select(filedownload.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (fdq *FileDownloadQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (fdq *FileDownloadQuery) IDsX(ctx context.Context) []int {
+func (fdq *FileDownloadQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := fdq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 	}
 
 	if query := fdq.withFileDownloadToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*FileDownload)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*FileDownload)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_file_download == nil {
 				continue
@@ -432,7 +433,7 @@ func (fdq *FileDownloadQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   filedownload.Table,
 			Columns: filedownload.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		},

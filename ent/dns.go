@@ -9,13 +9,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/google/uuid"
 )
 
 // DNS is the model entity for the DNS schema.
 type DNS struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Type holds the value of the "type" field.
@@ -77,10 +78,10 @@ func (*DNS) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case dns.FieldDNSServers, dns.FieldNtpServers, dns.FieldConfig:
 			values[i] = new([]byte)
-		case dns.FieldID:
-			values[i] = new(sql.NullInt64)
 		case dns.FieldHclID, dns.FieldType, dns.FieldRootDomain:
 			values[i] = new(sql.NullString)
+		case dns.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNS", columns[i])
 		}
@@ -97,11 +98,11 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case dns.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				d.ID = *value
 			}
-			d.ID = int(value.Int64)
 		case dns.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])

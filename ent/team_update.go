@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // TeamUpdate is the builder for updating Team entities.
@@ -45,7 +46,7 @@ func (tu *TeamUpdate) AddTeamNumber(i int) *TeamUpdate {
 }
 
 // SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by ID.
-func (tu *TeamUpdate) SetTeamToBuildID(id int) *TeamUpdate {
+func (tu *TeamUpdate) SetTeamToBuildID(id uuid.UUID) *TeamUpdate {
 	tu.mutation.SetTeamToBuildID(id)
 	return tu
 }
@@ -56,13 +57,13 @@ func (tu *TeamUpdate) SetTeamToBuild(b *Build) *TeamUpdate {
 }
 
 // SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID.
-func (tu *TeamUpdate) SetTeamToStatusID(id int) *TeamUpdate {
+func (tu *TeamUpdate) SetTeamToStatusID(id uuid.UUID) *TeamUpdate {
 	tu.mutation.SetTeamToStatusID(id)
 	return tu
 }
 
 // SetNillableTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID if the given value is not nil.
-func (tu *TeamUpdate) SetNillableTeamToStatusID(id *int) *TeamUpdate {
+func (tu *TeamUpdate) SetNillableTeamToStatusID(id *uuid.UUID) *TeamUpdate {
 	if id != nil {
 		tu = tu.SetTeamToStatusID(*id)
 	}
@@ -75,14 +76,14 @@ func (tu *TeamUpdate) SetTeamToStatus(s *Status) *TeamUpdate {
 }
 
 // AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (tu *TeamUpdate) AddTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdate {
+func (tu *TeamUpdate) AddTeamToProvisionedNetworkIDs(ids ...uuid.UUID) *TeamUpdate {
 	tu.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tu
 }
 
 // AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tu *TeamUpdate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -90,13 +91,13 @@ func (tu *TeamUpdate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *Tea
 }
 
 // SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
-func (tu *TeamUpdate) SetTeamToPlanID(id int) *TeamUpdate {
+func (tu *TeamUpdate) SetTeamToPlanID(id uuid.UUID) *TeamUpdate {
 	tu.mutation.SetTeamToPlanID(id)
 	return tu
 }
 
 // SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (tu *TeamUpdate) SetNillableTeamToPlanID(id *int) *TeamUpdate {
+func (tu *TeamUpdate) SetNillableTeamToPlanID(id *uuid.UUID) *TeamUpdate {
 	if id != nil {
 		tu = tu.SetTeamToPlanID(*id)
 	}
@@ -132,14 +133,14 @@ func (tu *TeamUpdate) ClearTeamToProvisionedNetwork() *TeamUpdate {
 }
 
 // RemoveTeamToProvisionedNetworkIDs removes the "TeamToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (tu *TeamUpdate) RemoveTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdate {
+func (tu *TeamUpdate) RemoveTeamToProvisionedNetworkIDs(ids ...uuid.UUID) *TeamUpdate {
 	tu.mutation.RemoveTeamToProvisionedNetworkIDs(ids...)
 	return tu
 }
 
 // RemoveTeamToProvisionedNetwork removes "TeamToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (tu *TeamUpdate) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -223,7 +224,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   team.Table,
 			Columns: team.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: team.FieldID,
 			},
 		},
@@ -258,7 +259,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -274,7 +275,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -293,7 +294,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -309,7 +310,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -328,7 +329,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -344,7 +345,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -363,7 +364,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -382,7 +383,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -398,7 +399,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -441,7 +442,7 @@ func (tuo *TeamUpdateOne) AddTeamNumber(i int) *TeamUpdateOne {
 }
 
 // SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by ID.
-func (tuo *TeamUpdateOne) SetTeamToBuildID(id int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetTeamToBuildID(id uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.SetTeamToBuildID(id)
 	return tuo
 }
@@ -452,13 +453,13 @@ func (tuo *TeamUpdateOne) SetTeamToBuild(b *Build) *TeamUpdateOne {
 }
 
 // SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID.
-func (tuo *TeamUpdateOne) SetTeamToStatusID(id int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetTeamToStatusID(id uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.SetTeamToStatusID(id)
 	return tuo
 }
 
 // SetNillableTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableTeamToStatusID(id *int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetNillableTeamToStatusID(id *uuid.UUID) *TeamUpdateOne {
 	if id != nil {
 		tuo = tuo.SetTeamToStatusID(*id)
 	}
@@ -471,14 +472,14 @@ func (tuo *TeamUpdateOne) SetTeamToStatus(s *Status) *TeamUpdateOne {
 }
 
 // AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (tuo *TeamUpdateOne) AddTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) AddTeamToProvisionedNetworkIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tuo
 }
 
 // AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (tuo *TeamUpdateOne) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -486,13 +487,13 @@ func (tuo *TeamUpdateOne) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) 
 }
 
 // SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
-func (tuo *TeamUpdateOne) SetTeamToPlanID(id int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetTeamToPlanID(id uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.SetTeamToPlanID(id)
 	return tuo
 }
 
 // SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableTeamToPlanID(id *int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) SetNillableTeamToPlanID(id *uuid.UUID) *TeamUpdateOne {
 	if id != nil {
 		tuo = tuo.SetTeamToPlanID(*id)
 	}
@@ -528,14 +529,14 @@ func (tuo *TeamUpdateOne) ClearTeamToProvisionedNetwork() *TeamUpdateOne {
 }
 
 // RemoveTeamToProvisionedNetworkIDs removes the "TeamToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetworkIDs(ids ...int) *TeamUpdateOne {
+func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetworkIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.RemoveTeamToProvisionedNetworkIDs(ids...)
 	return tuo
 }
 
 // RemoveTeamToProvisionedNetwork removes "TeamToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (tuo *TeamUpdateOne) RemoveTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -626,7 +627,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Table:   team.Table,
 			Columns: team.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: team.FieldID,
 			},
 		},
@@ -678,7 +679,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -694,7 +695,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -713,7 +714,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -729,7 +730,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -748,7 +749,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -764,7 +765,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -783,7 +784,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -802,7 +803,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -818,7 +819,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},

@@ -21,6 +21,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisionedHostQuery is the builder for querying ProvisionedHost entities.
@@ -278,8 +279,8 @@ func (phq *ProvisionedHostQuery) FirstX(ctx context.Context) *ProvisionedHost {
 
 // FirstID returns the first ProvisionedHost ID from the query.
 // Returns a *NotFoundError when no ProvisionedHost ID was found.
-func (phq *ProvisionedHostQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (phq *ProvisionedHostQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = phq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -291,7 +292,7 @@ func (phq *ProvisionedHostQuery) FirstID(ctx context.Context) (id int, err error
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (phq *ProvisionedHostQuery) FirstIDX(ctx context.Context) int {
+func (phq *ProvisionedHostQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := phq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -329,8 +330,8 @@ func (phq *ProvisionedHostQuery) OnlyX(ctx context.Context) *ProvisionedHost {
 // OnlyID is like Only, but returns the only ProvisionedHost ID in the query.
 // Returns a *NotSingularError when exactly one ProvisionedHost ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (phq *ProvisionedHostQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (phq *ProvisionedHostQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = phq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -346,7 +347,7 @@ func (phq *ProvisionedHostQuery) OnlyID(ctx context.Context) (id int, err error)
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (phq *ProvisionedHostQuery) OnlyIDX(ctx context.Context) int {
+func (phq *ProvisionedHostQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := phq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -372,8 +373,8 @@ func (phq *ProvisionedHostQuery) AllX(ctx context.Context) []*ProvisionedHost {
 }
 
 // IDs executes the query and returns a list of ProvisionedHost IDs.
-func (phq *ProvisionedHostQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (phq *ProvisionedHostQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := phq.Select(provisionedhost.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -381,7 +382,7 @@ func (phq *ProvisionedHostQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (phq *ProvisionedHostQuery) IDsX(ctx context.Context) []int {
+func (phq *ProvisionedHostQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := phq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -642,7 +643,7 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 
 	if query := phq.withProvisionedHostToStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedHost)
+		nodeids := make(map[uuid.UUID]*ProvisionedHost)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -669,8 +670,8 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 	}
 
 	if query := phq.withProvisionedHostToProvisionedNetwork; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedHost)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
 		for i := range nodes {
 			if nodes[i].provisioned_host_provisioned_host_to_provisioned_network == nil {
 				continue
@@ -698,8 +699,8 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 	}
 
 	if query := phq.withProvisionedHostToHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedHost)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
 		for i := range nodes {
 			if nodes[i].provisioned_host_provisioned_host_to_host == nil {
 				continue
@@ -727,8 +728,8 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 	}
 
 	if query := phq.withProvisionedHostToEndStepPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedHost)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
 		for i := range nodes {
 			if nodes[i].provisioned_host_provisioned_host_to_end_step_plan == nil {
 				continue
@@ -757,7 +758,7 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 
 	if query := phq.withProvisionedHostToProvisioningStep; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*ProvisionedHost)
+		nodeids := make(map[uuid.UUID]*ProvisionedHost)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -786,15 +787,15 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 
 	if query := phq.withProvisionedHostToAgentStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*ProvisionedHost, len(nodes))
+		ids := make(map[uuid.UUID]*ProvisionedHost, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.ProvisionedHostToAgentStatus = []*AgentStatus{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*ProvisionedHost)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*ProvisionedHost)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -806,19 +807,19 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 				s.Where(sql.InValues(provisionedhost.ProvisionedHostToAgentStatusPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -850,8 +851,8 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 	}
 
 	if query := phq.withProvisionedHostToPlan; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedHost)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
 		for i := range nodes {
 			if nodes[i].plan_plan_to_provisioned_host == nil {
 				continue
@@ -879,8 +880,8 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 	}
 
 	if query := phq.withProvisionedHostToGinFileMiddleware; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*ProvisionedHost)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
 		for i := range nodes {
 			if nodes[i].gin_file_middleware_gin_file_middleware_to_provisioned_host == nil {
 				continue
@@ -929,7 +930,7 @@ func (phq *ProvisionedHostQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   provisionedhost.Table,
 			Columns: provisionedhost.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisionedhost.FieldID,
 			},
 		},

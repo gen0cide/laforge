@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Script holds the schema definition for the Script entity.
@@ -15,6 +16,8 @@ type Script struct {
 // Fields of the Script.
 func (Script) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("hcl_id").
 			StructTag(`hcl:"id,label"`),
 		field.String("name").

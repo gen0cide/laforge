@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // StatusQuery is the builder for querying Status entities.
@@ -206,8 +207,8 @@ func (sq *StatusQuery) FirstX(ctx context.Context) *Status {
 
 // FirstID returns the first Status ID from the query.
 // Returns a *NotFoundError when no Status ID was found.
-func (sq *StatusQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *StatusQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -219,7 +220,7 @@ func (sq *StatusQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *StatusQuery) FirstIDX(ctx context.Context) int {
+func (sq *StatusQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -257,8 +258,8 @@ func (sq *StatusQuery) OnlyX(ctx context.Context) *Status {
 // OnlyID is like Only, but returns the only Status ID in the query.
 // Returns a *NotSingularError when exactly one Status ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *StatusQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (sq *StatusQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -274,7 +275,7 @@ func (sq *StatusQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *StatusQuery) OnlyIDX(ctx context.Context) int {
+func (sq *StatusQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -300,8 +301,8 @@ func (sq *StatusQuery) AllX(ctx context.Context) []*Status {
 }
 
 // IDs executes the query and returns a list of Status IDs.
-func (sq *StatusQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (sq *StatusQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := sq.Select(status.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -309,7 +310,7 @@ func (sq *StatusQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *StatusQuery) IDsX(ctx context.Context) []int {
+func (sq *StatusQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -530,8 +531,8 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 	}
 
 	if query := sq.withStatusToBuild; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Status)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
 		for i := range nodes {
 			if nodes[i].build_build_to_status == nil {
 				continue
@@ -559,8 +560,8 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 	}
 
 	if query := sq.withStatusToProvisionedNetwork; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Status)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
 		for i := range nodes {
 			if nodes[i].provisioned_network_provisioned_network_to_status == nil {
 				continue
@@ -588,8 +589,8 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 	}
 
 	if query := sq.withStatusToProvisionedHost; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Status)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
 		for i := range nodes {
 			if nodes[i].provisioned_host_provisioned_host_to_status == nil {
 				continue
@@ -617,8 +618,8 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 	}
 
 	if query := sq.withStatusToProvisioningStep; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Status)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
 		for i := range nodes {
 			if nodes[i].provisioning_step_provisioning_step_to_status == nil {
 				continue
@@ -646,8 +647,8 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 	}
 
 	if query := sq.withStatusToTeam; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Status)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
 		for i := range nodes {
 			if nodes[i].team_team_to_status == nil {
 				continue
@@ -696,7 +697,7 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   status.Table,
 			Columns: status.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: status.FieldID,
 			},
 		},

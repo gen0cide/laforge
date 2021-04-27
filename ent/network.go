@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/google/uuid"
 )
 
 // Network is the model entity for the Network schema.
 type Network struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
@@ -41,7 +42,7 @@ type Network struct {
 	// NetworkToIncludedNetwork holds the value of the NetworkToIncludedNetwork edge.
 	HCLNetworkToIncludedNetwork []*IncludedNetwork `json:"NetworkToIncludedNetwork,omitempty"`
 	//
-	environment_environment_to_network *int
+	environment_environment_to_network *uuid.UUID
 }
 
 // NetworkEdges holds the relations/edges for other nodes in the graph.
@@ -98,12 +99,12 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case network.FieldVdiVisible:
 			values[i] = new(sql.NullBool)
-		case network.FieldID:
-			values[i] = new(sql.NullInt64)
 		case network.FieldHclID, network.FieldName, network.FieldCidr:
 			values[i] = new(sql.NullString)
+		case network.FieldID:
+			values[i] = new(uuid.UUID)
 		case network.ForeignKeys[0]: // environment_environment_to_network
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
 		}
@@ -120,11 +121,11 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case network.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				n.ID = *value
 			}
-			n.ID = int(value.Int64)
 		case network.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -168,11 +169,10 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case network.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_network", value)
-			} else if value.Valid {
-				n.environment_environment_to_network = new(int)
-				*n.environment_environment_to_network = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_network", values[i])
+			} else if value != nil {
+				n.environment_environment_to_network = value
 			}
 		}
 	}

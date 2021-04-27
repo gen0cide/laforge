@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // IncludedNetworkQuery is the builder for querying IncludedNetwork entities.
@@ -182,8 +183,8 @@ func (inq *IncludedNetworkQuery) FirstX(ctx context.Context) *IncludedNetwork {
 
 // FirstID returns the first IncludedNetwork ID from the query.
 // Returns a *NotFoundError when no IncludedNetwork ID was found.
-func (inq *IncludedNetworkQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (inq *IncludedNetworkQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = inq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -195,7 +196,7 @@ func (inq *IncludedNetworkQuery) FirstID(ctx context.Context) (id int, err error
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (inq *IncludedNetworkQuery) FirstIDX(ctx context.Context) int {
+func (inq *IncludedNetworkQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := inq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -233,8 +234,8 @@ func (inq *IncludedNetworkQuery) OnlyX(ctx context.Context) *IncludedNetwork {
 // OnlyID is like Only, but returns the only IncludedNetwork ID in the query.
 // Returns a *NotSingularError when exactly one IncludedNetwork ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (inq *IncludedNetworkQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (inq *IncludedNetworkQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = inq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -250,7 +251,7 @@ func (inq *IncludedNetworkQuery) OnlyID(ctx context.Context) (id int, err error)
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (inq *IncludedNetworkQuery) OnlyIDX(ctx context.Context) int {
+func (inq *IncludedNetworkQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := inq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -276,8 +277,8 @@ func (inq *IncludedNetworkQuery) AllX(ctx context.Context) []*IncludedNetwork {
 }
 
 // IDs executes the query and returns a list of IncludedNetwork IDs.
-func (inq *IncludedNetworkQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (inq *IncludedNetworkQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := inq.Select(includednetwork.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -285,7 +286,7 @@ func (inq *IncludedNetworkQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (inq *IncludedNetworkQuery) IDsX(ctx context.Context) []int {
+func (inq *IncludedNetworkQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := inq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -487,7 +488,7 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 
 	if query := inq.withIncludedNetworkToTag; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*IncludedNetwork)
+		nodeids := make(map[uuid.UUID]*IncludedNetwork)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -516,15 +517,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 
 	if query := inq.withIncludedNetworkToHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*IncludedNetwork, len(nodes))
+		ids := make(map[uuid.UUID]*IncludedNetwork, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.IncludedNetworkToHost = []*Host{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*IncludedNetwork)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*IncludedNetwork)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -536,19 +537,19 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToHostPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -581,15 +582,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 
 	if query := inq.withIncludedNetworkToNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*IncludedNetwork, len(nodes))
+		ids := make(map[uuid.UUID]*IncludedNetwork, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.IncludedNetworkToNetwork = []*Network{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*IncludedNetwork)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*IncludedNetwork)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -601,19 +602,19 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToNetworkPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -646,15 +647,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 
 	if query := inq.withIncludedNetworkToEnvironment; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*IncludedNetwork, len(nodes))
+		ids := make(map[uuid.UUID]*IncludedNetwork, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.IncludedNetworkToEnvironment = []*Environment{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*IncludedNetwork)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*IncludedNetwork)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -666,19 +667,19 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToEnvironmentPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -731,7 +732,7 @@ func (inq *IncludedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   includednetwork.Table,
 			Columns: includednetwork.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: includednetwork.FieldID,
 			},
 		},

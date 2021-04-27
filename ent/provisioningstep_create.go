@@ -20,6 +20,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/google/uuid"
 )
 
 // ProvisioningStepCreate is the builder for creating a ProvisioningStep entity.
@@ -41,14 +42,20 @@ func (psc *ProvisioningStepCreate) SetStepNumber(i int) *ProvisioningStepCreate 
 	return psc
 }
 
+// SetID sets the "id" field.
+func (psc *ProvisioningStepCreate) SetID(u uuid.UUID) *ProvisioningStepCreate {
+	psc.mutation.SetID(u)
+	return psc
+}
+
 // SetProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToStatusID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToStatusID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToStatusID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToStatusID sets the "ProvisioningStepToStatus" edge to the Status entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToStatusID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToStatusID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToStatusID(*id)
 	}
@@ -61,13 +68,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToStatus(s *Status) *Provi
 }
 
 // SetProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToProvisionedHostID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToProvisionedHostID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToProvisionedHostID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToProvisionedHostID sets the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToProvisionedHostID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToProvisionedHostID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToProvisionedHostID(*id)
 	}
@@ -80,13 +87,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToProvisionedHost(p *Provi
 }
 
 // SetProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToScriptID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToScriptID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToScriptID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToScriptID sets the "ProvisioningStepToScript" edge to the Script entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToScriptID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToScriptID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToScriptID(*id)
 	}
@@ -99,13 +106,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToScript(s *Script) *Provi
 }
 
 // SetProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToCommandID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToCommandID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToCommandID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToCommandID sets the "ProvisioningStepToCommand" edge to the Command entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToCommandID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToCommandID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToCommandID(*id)
 	}
@@ -118,13 +125,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToCommand(c *Command) *Pro
 }
 
 // SetProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToDNSRecordID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToDNSRecordID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToDNSRecordID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToDNSRecordID sets the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToDNSRecordID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToDNSRecordID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToDNSRecordID(*id)
 	}
@@ -137,13 +144,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToDNSRecord(d *DNSRecord) 
 }
 
 // SetProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDeleteID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDeleteID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToFileDeleteID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToFileDeleteID sets the "ProvisioningStepToFileDelete" edge to the FileDelete entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileDeleteID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileDeleteID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToFileDeleteID(*id)
 	}
@@ -156,13 +163,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDelete(f *FileDelete
 }
 
 // SetProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDownloadID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDownloadID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToFileDownloadID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToFileDownloadID sets the "ProvisioningStepToFileDownload" edge to the FileDownload entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileDownloadID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileDownloadID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToFileDownloadID(*id)
 	}
@@ -175,13 +182,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToFileDownload(f *FileDown
 }
 
 // SetProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToFileExtractID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToFileExtractID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToFileExtractID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToFileExtractID sets the "ProvisioningStepToFileExtract" edge to the FileExtract entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileExtractID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToFileExtractID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToFileExtractID(*id)
 	}
@@ -194,13 +201,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToFileExtract(f *FileExtra
 }
 
 // SetProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToPlanID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToPlanID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToPlanID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToPlanID sets the "ProvisioningStepToPlan" edge to the Plan entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToPlanID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToPlanID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToPlanID(*id)
 	}
@@ -213,13 +220,13 @@ func (psc *ProvisioningStepCreate) SetProvisioningStepToPlan(p *Plan) *Provision
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
-func (psc *ProvisioningStepCreate) SetProvisioningStepToGinFileMiddlewareID(id int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) *ProvisioningStepCreate {
 	psc.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
 	return psc
 }
 
 // SetNillableProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID if the given value is not nil.
-func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToGinFileMiddlewareID(id *int) *ProvisioningStepCreate {
+func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToGinFileMiddlewareID(id *uuid.UUID) *ProvisioningStepCreate {
 	if id != nil {
 		psc = psc.SetProvisioningStepToGinFileMiddlewareID(*id)
 	}
@@ -242,6 +249,7 @@ func (psc *ProvisioningStepCreate) Save(ctx context.Context) (*ProvisioningStep,
 		err  error
 		node *ProvisioningStep
 	)
+	psc.defaults()
 	if len(psc.hooks) == 0 {
 		if err = psc.check(); err != nil {
 			return nil, err
@@ -280,6 +288,14 @@ func (psc *ProvisioningStepCreate) SaveX(ctx context.Context) *ProvisioningStep 
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (psc *ProvisioningStepCreate) defaults() {
+	if _, ok := psc.mutation.ID(); !ok {
+		v := provisioningstep.DefaultID()
+		psc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (psc *ProvisioningStepCreate) check() error {
 	if _, ok := psc.mutation.GetType(); !ok {
@@ -304,8 +320,6 @@ func (psc *ProvisioningStepCreate) sqlSave(ctx context.Context) (*ProvisioningSt
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -315,11 +329,15 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		_spec = &sqlgraph.CreateSpec{
 			Table: provisioningstep.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: provisioningstep.FieldID,
 			},
 		}
 	)
+	if id, ok := psc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := psc.mutation.GetType(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -345,7 +363,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -364,7 +382,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -384,7 +402,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -404,7 +422,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: command.FieldID,
 				},
 			},
@@ -424,7 +442,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: dnsrecord.FieldID,
 				},
 			},
@@ -444,7 +462,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedelete.FieldID,
 				},
 			},
@@ -464,7 +482,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: filedownload.FieldID,
 				},
 			},
@@ -484,7 +502,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: fileextract.FieldID,
 				},
 			},
@@ -504,7 +522,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -524,7 +542,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: ginfilemiddleware.FieldID,
 				},
 			},
@@ -552,6 +570,7 @@ func (pscb *ProvisioningStepCreateBulk) Save(ctx context.Context) ([]*Provisioni
 	for i := range pscb.builders {
 		func(i int, root context.Context) {
 			builder := pscb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProvisioningStepMutation)
 				if !ok {
@@ -577,8 +596,6 @@ func (pscb *ProvisioningStepCreateBulk) Save(ctx context.Context) ([]*Provisioni
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

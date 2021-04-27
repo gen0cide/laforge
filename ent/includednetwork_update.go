@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // IncludedNetworkUpdate is the builder for updating IncludedNetwork entities.
@@ -43,14 +44,14 @@ func (inu *IncludedNetworkUpdate) SetHosts(s []string) *IncludedNetworkUpdate {
 }
 
 // AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by IDs.
-func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTagIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
 // AddIncludedNetworkToTag adds the "IncludedNetworkToTag" edges to the Tag entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -58,14 +59,14 @@ func (inu *IncludedNetworkUpdate) AddIncludedNetworkToTag(t ...*Tag) *IncludedNe
 }
 
 // AddIncludedNetworkToHostIDs adds the "IncludedNetworkToHost" edge to the Host entity by IDs.
-func (inu *IncludedNetworkUpdate) AddIncludedNetworkToHostIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToHostIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToHostIDs(ids...)
 	return inu
 }
 
 // AddIncludedNetworkToHost adds the "IncludedNetworkToHost" edges to the Host entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToHost(h ...*Host) *IncludedNetworkUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -73,14 +74,14 @@ func (inu *IncludedNetworkUpdate) AddIncludedNetworkToHost(h ...*Host) *Included
 }
 
 // AddIncludedNetworkToNetworkIDs adds the "IncludedNetworkToNetwork" edge to the Network entity by IDs.
-func (inu *IncludedNetworkUpdate) AddIncludedNetworkToNetworkIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToNetworkIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToNetworkIDs(ids...)
 	return inu
 }
 
 // AddIncludedNetworkToNetwork adds the "IncludedNetworkToNetwork" edges to the Network entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToNetwork(n ...*Network) *IncludedNetworkUpdate {
-	ids := make([]int, len(n))
+	ids := make([]uuid.UUID, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
@@ -88,14 +89,14 @@ func (inu *IncludedNetworkUpdate) AddIncludedNetworkToNetwork(n ...*Network) *In
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
-func (inu *IncludedNetworkUpdate) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) AddIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
 	return inu
 }
 
 // AddIncludedNetworkToEnvironment adds the "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inu *IncludedNetworkUpdate) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -114,14 +115,14 @@ func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToTag() *IncludedNetworkUp
 }
 
 // RemoveIncludedNetworkToTagIDs removes the "IncludedNetworkToTag" edge to Tag entities by IDs.
-func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTagIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inu
 }
 
 // RemoveIncludedNetworkToTag removes "IncludedNetworkToTag" edges to Tag entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -135,14 +136,14 @@ func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToHost() *IncludedNetworkU
 }
 
 // RemoveIncludedNetworkToHostIDs removes the "IncludedNetworkToHost" edge to Host entities by IDs.
-func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToHostIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToHostIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToHostIDs(ids...)
 	return inu
 }
 
 // RemoveIncludedNetworkToHost removes "IncludedNetworkToHost" edges to Host entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToHost(h ...*Host) *IncludedNetworkUpdate {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -156,14 +157,14 @@ func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToNetwork() *IncludedNetwo
 }
 
 // RemoveIncludedNetworkToNetworkIDs removes the "IncludedNetworkToNetwork" edge to Network entities by IDs.
-func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToNetworkIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToNetworkIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToNetworkIDs(ids...)
 	return inu
 }
 
 // RemoveIncludedNetworkToNetwork removes "IncludedNetworkToNetwork" edges to Network entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToNetwork(n ...*Network) *IncludedNetworkUpdate {
-	ids := make([]int, len(n))
+	ids := make([]uuid.UUID, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
@@ -177,14 +178,14 @@ func (inu *IncludedNetworkUpdate) ClearIncludedNetworkToEnvironment() *IncludedN
 }
 
 // RemoveIncludedNetworkToEnvironmentIDs removes the "IncludedNetworkToEnvironment" edge to Environment entities by IDs.
-func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdate {
+func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) *IncludedNetworkUpdate {
 	inu.mutation.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 	return inu
 }
 
 // RemoveIncludedNetworkToEnvironment removes "IncludedNetworkToEnvironment" edges to Environment entities.
 func (inu *IncludedNetworkUpdate) RemoveIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -248,7 +249,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Table:   includednetwork.Table,
 			Columns: includednetwork.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: includednetwork.FieldID,
 			},
 		},
@@ -283,7 +284,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -299,7 +300,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -318,7 +319,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -337,7 +338,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -353,7 +354,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -372,7 +373,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -391,7 +392,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -407,7 +408,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -426,7 +427,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -445,7 +446,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -461,7 +462,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -480,7 +481,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -522,14 +523,14 @@ func (inuo *IncludedNetworkUpdateOne) SetHosts(s []string) *IncludedNetworkUpdat
 }
 
 // AddIncludedNetworkToTagIDs adds the "IncludedNetworkToTag" edge to the Tag entity by IDs.
-func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTagIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
 // AddIncludedNetworkToTag adds the "IncludedNetworkToTag" edges to the Tag entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -537,14 +538,14 @@ func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToTag(t ...*Tag) *Includ
 }
 
 // AddIncludedNetworkToHostIDs adds the "IncludedNetworkToHost" edge to the Host entity by IDs.
-func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToHostIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToHostIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToHostIDs(ids...)
 	return inuo
 }
 
 // AddIncludedNetworkToHost adds the "IncludedNetworkToHost" edges to the Host entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToHost(h ...*Host) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -552,14 +553,14 @@ func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToHost(h ...*Host) *Incl
 }
 
 // AddIncludedNetworkToNetworkIDs adds the "IncludedNetworkToNetwork" edge to the Network entity by IDs.
-func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToNetworkIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToNetworkIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToNetworkIDs(ids...)
 	return inuo
 }
 
 // AddIncludedNetworkToNetwork adds the "IncludedNetworkToNetwork" edges to the Network entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToNetwork(n ...*Network) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(n))
+	ids := make([]uuid.UUID, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
@@ -567,14 +568,14 @@ func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToNetwork(n ...*Network)
 }
 
 // AddIncludedNetworkToEnvironmentIDs adds the "IncludedNetworkToEnvironment" edge to the Environment entity by IDs.
-func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.AddIncludedNetworkToEnvironmentIDs(ids...)
 	return inuo
 }
 
 // AddIncludedNetworkToEnvironment adds the "IncludedNetworkToEnvironment" edges to the Environment entity.
 func (inuo *IncludedNetworkUpdateOne) AddIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -593,14 +594,14 @@ func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToTag() *IncludedNetwo
 }
 
 // RemoveIncludedNetworkToTagIDs removes the "IncludedNetworkToTag" edge to Tag entities by IDs.
-func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTagIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTagIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToTagIDs(ids...)
 	return inuo
 }
 
 // RemoveIncludedNetworkToTag removes "IncludedNetworkToTag" edges to Tag entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToTag(t ...*Tag) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -614,14 +615,14 @@ func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToHost() *IncludedNetw
 }
 
 // RemoveIncludedNetworkToHostIDs removes the "IncludedNetworkToHost" edge to Host entities by IDs.
-func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToHostIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToHostIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToHostIDs(ids...)
 	return inuo
 }
 
 // RemoveIncludedNetworkToHost removes "IncludedNetworkToHost" edges to Host entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToHost(h ...*Host) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(h))
+	ids := make([]uuid.UUID, len(h))
 	for i := range h {
 		ids[i] = h[i].ID
 	}
@@ -635,14 +636,14 @@ func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToNetwork() *IncludedN
 }
 
 // RemoveIncludedNetworkToNetworkIDs removes the "IncludedNetworkToNetwork" edge to Network entities by IDs.
-func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToNetworkIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToNetworkIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToNetworkIDs(ids...)
 	return inuo
 }
 
 // RemoveIncludedNetworkToNetwork removes "IncludedNetworkToNetwork" edges to Network entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToNetwork(n ...*Network) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(n))
+	ids := make([]uuid.UUID, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
@@ -656,14 +657,14 @@ func (inuo *IncludedNetworkUpdateOne) ClearIncludedNetworkToEnvironment() *Inclu
 }
 
 // RemoveIncludedNetworkToEnvironmentIDs removes the "IncludedNetworkToEnvironment" edge to Environment entities by IDs.
-func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironmentIDs(ids ...int) *IncludedNetworkUpdateOne {
+func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironmentIDs(ids ...uuid.UUID) *IncludedNetworkUpdateOne {
 	inuo.mutation.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 	return inuo
 }
 
 // RemoveIncludedNetworkToEnvironment removes "IncludedNetworkToEnvironment" edges to Environment entities.
 func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironment(e ...*Environment) *IncludedNetworkUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -734,7 +735,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Table:   includednetwork.Table,
 			Columns: includednetwork.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: includednetwork.FieldID,
 			},
 		},
@@ -786,7 +787,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -802,7 +803,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -821,7 +822,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -840,7 +841,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -856,7 +857,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -875,7 +876,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -894,7 +895,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -910,7 +911,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -929,7 +930,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: network.FieldID,
 				},
 			},
@@ -948,7 +949,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -964,7 +965,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -983,7 +984,7 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

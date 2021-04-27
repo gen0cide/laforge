@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // StatusCreate is the builder for creating a Status entity.
@@ -107,14 +108,20 @@ func (sc *StatusCreate) SetNillableError(s *string) *StatusCreate {
 	return sc
 }
 
+// SetID sets the "id" field.
+func (sc *StatusCreate) SetID(u uuid.UUID) *StatusCreate {
+	sc.mutation.SetID(u)
+	return sc
+}
+
 // SetStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID.
-func (sc *StatusCreate) SetStatusToBuildID(id int) *StatusCreate {
+func (sc *StatusCreate) SetStatusToBuildID(id uuid.UUID) *StatusCreate {
 	sc.mutation.SetStatusToBuildID(id)
 	return sc
 }
 
 // SetNillableStatusToBuildID sets the "StatusToBuild" edge to the Build entity by ID if the given value is not nil.
-func (sc *StatusCreate) SetNillableStatusToBuildID(id *int) *StatusCreate {
+func (sc *StatusCreate) SetNillableStatusToBuildID(id *uuid.UUID) *StatusCreate {
 	if id != nil {
 		sc = sc.SetStatusToBuildID(*id)
 	}
@@ -127,13 +134,13 @@ func (sc *StatusCreate) SetStatusToBuild(b *Build) *StatusCreate {
 }
 
 // SetStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
-func (sc *StatusCreate) SetStatusToProvisionedNetworkID(id int) *StatusCreate {
+func (sc *StatusCreate) SetStatusToProvisionedNetworkID(id uuid.UUID) *StatusCreate {
 	sc.mutation.SetStatusToProvisionedNetworkID(id)
 	return sc
 }
 
 // SetNillableStatusToProvisionedNetworkID sets the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
-func (sc *StatusCreate) SetNillableStatusToProvisionedNetworkID(id *int) *StatusCreate {
+func (sc *StatusCreate) SetNillableStatusToProvisionedNetworkID(id *uuid.UUID) *StatusCreate {
 	if id != nil {
 		sc = sc.SetStatusToProvisionedNetworkID(*id)
 	}
@@ -146,13 +153,13 @@ func (sc *StatusCreate) SetStatusToProvisionedNetwork(p *ProvisionedNetwork) *St
 }
 
 // SetStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (sc *StatusCreate) SetStatusToProvisionedHostID(id int) *StatusCreate {
+func (sc *StatusCreate) SetStatusToProvisionedHostID(id uuid.UUID) *StatusCreate {
 	sc.mutation.SetStatusToProvisionedHostID(id)
 	return sc
 }
 
 // SetNillableStatusToProvisionedHostID sets the "StatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (sc *StatusCreate) SetNillableStatusToProvisionedHostID(id *int) *StatusCreate {
+func (sc *StatusCreate) SetNillableStatusToProvisionedHostID(id *uuid.UUID) *StatusCreate {
 	if id != nil {
 		sc = sc.SetStatusToProvisionedHostID(*id)
 	}
@@ -165,13 +172,13 @@ func (sc *StatusCreate) SetStatusToProvisionedHost(p *ProvisionedHost) *StatusCr
 }
 
 // SetStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (sc *StatusCreate) SetStatusToProvisioningStepID(id int) *StatusCreate {
+func (sc *StatusCreate) SetStatusToProvisioningStepID(id uuid.UUID) *StatusCreate {
 	sc.mutation.SetStatusToProvisioningStepID(id)
 	return sc
 }
 
 // SetNillableStatusToProvisioningStepID sets the "StatusToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (sc *StatusCreate) SetNillableStatusToProvisioningStepID(id *int) *StatusCreate {
+func (sc *StatusCreate) SetNillableStatusToProvisioningStepID(id *uuid.UUID) *StatusCreate {
 	if id != nil {
 		sc = sc.SetStatusToProvisioningStepID(*id)
 	}
@@ -184,13 +191,13 @@ func (sc *StatusCreate) SetStatusToProvisioningStep(p *ProvisioningStep) *Status
 }
 
 // SetStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID.
-func (sc *StatusCreate) SetStatusToTeamID(id int) *StatusCreate {
+func (sc *StatusCreate) SetStatusToTeamID(id uuid.UUID) *StatusCreate {
 	sc.mutation.SetStatusToTeamID(id)
 	return sc
 }
 
 // SetNillableStatusToTeamID sets the "StatusToTeam" edge to the Team entity by ID if the given value is not nil.
-func (sc *StatusCreate) SetNillableStatusToTeamID(id *int) *StatusCreate {
+func (sc *StatusCreate) SetNillableStatusToTeamID(id *uuid.UUID) *StatusCreate {
 	if id != nil {
 		sc = sc.SetStatusToTeamID(*id)
 	}
@@ -262,6 +269,10 @@ func (sc *StatusCreate) defaults() {
 		v := status.DefaultCompleted
 		sc.mutation.SetCompleted(v)
 	}
+	if _, ok := sc.mutation.ID(); !ok {
+		v := status.DefaultID()
+		sc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -299,8 +310,6 @@ func (sc *StatusCreate) sqlSave(ctx context.Context) (*Status, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -310,11 +319,15 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: status.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: status.FieldID,
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := sc.mutation.State(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -380,7 +393,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -400,7 +413,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -420,7 +433,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -440,7 +453,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -460,7 +473,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -514,8 +527,6 @@ func (scb *StatusCreateBulk) Save(ctx context.Context) ([]*Status, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

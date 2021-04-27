@@ -30,6 +30,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // EnvironmentQuery is the builder for querying Environment entities.
@@ -470,8 +471,8 @@ func (eq *EnvironmentQuery) FirstX(ctx context.Context) *Environment {
 
 // FirstID returns the first Environment ID from the query.
 // Returns a *NotFoundError when no Environment ID was found.
-func (eq *EnvironmentQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (eq *EnvironmentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = eq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -483,7 +484,7 @@ func (eq *EnvironmentQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (eq *EnvironmentQuery) FirstIDX(ctx context.Context) int {
+func (eq *EnvironmentQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := eq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -521,8 +522,8 @@ func (eq *EnvironmentQuery) OnlyX(ctx context.Context) *Environment {
 // OnlyID is like Only, but returns the only Environment ID in the query.
 // Returns a *NotSingularError when exactly one Environment ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (eq *EnvironmentQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (eq *EnvironmentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = eq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -538,7 +539,7 @@ func (eq *EnvironmentQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (eq *EnvironmentQuery) OnlyIDX(ctx context.Context) int {
+func (eq *EnvironmentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := eq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -564,8 +565,8 @@ func (eq *EnvironmentQuery) AllX(ctx context.Context) []*Environment {
 }
 
 // IDs executes the query and returns a list of Environment IDs.
-func (eq *EnvironmentQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (eq *EnvironmentQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := eq.Select(environment.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -573,7 +574,7 @@ func (eq *EnvironmentQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (eq *EnvironmentQuery) IDsX(ctx context.Context) []int {
+func (eq *EnvironmentQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := eq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -931,15 +932,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
+		ids := make(map[uuid.UUID]*Environment, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.EnvironmentToUser = []*User{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*Environment)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -951,19 +952,19 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToUserPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -996,7 +997,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToHost; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1025,7 +1026,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToCompetition; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1054,7 +1055,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToIdentity; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1083,7 +1084,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToCommand; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1112,7 +1113,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToScript; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1141,7 +1142,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToFileDownload; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1170,7 +1171,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToFileDelete; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1199,7 +1200,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToFileExtract; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1228,15 +1229,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToIncludedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
+		ids := make(map[uuid.UUID]*Environment, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.EnvironmentToIncludedNetwork = []*IncludedNetwork{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*Environment)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -1248,19 +1249,19 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToIncludedNetworkPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -1293,7 +1294,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToFinding; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1322,7 +1323,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToDNSRecord; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1351,15 +1352,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToDNS; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*Environment, len(nodes))
+		ids := make(map[uuid.UUID]*Environment, len(nodes))
 		for _, node := range nodes {
 			ids[node.ID] = node
 			fks = append(fks, node.ID)
 			node.Edges.EnvironmentToDNS = []*DNS{}
 		}
 		var (
-			edgeids []int
-			edges   = make(map[int][]*Environment)
+			edgeids []uuid.UUID
+			edges   = make(map[uuid.UUID][]*Environment)
 		)
 		_spec := &sqlgraph.EdgeQuerySpec{
 			Edge: &sqlgraph.EdgeSpec{
@@ -1371,19 +1372,19 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToDNSPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
+				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
 			},
 			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
+				eout, ok := out.(*uuid.UUID)
 				if !ok || eout == nil {
 					return fmt.Errorf("unexpected id value for edge-out")
 				}
-				ein, ok := in.(*sql.NullInt64)
+				ein, ok := in.(*uuid.UUID)
 				if !ok || ein == nil {
 					return fmt.Errorf("unexpected id value for edge-in")
 				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
+				outValue := *eout
+				inValue := *ein
 				node, ok := ids[outValue]
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
@@ -1416,7 +1417,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1445,7 +1446,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToHostDependency; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1474,7 +1475,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 
 	if query := eq.withEnvironmentToBuild; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Environment)
+		nodeids := make(map[uuid.UUID]*Environment)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -1523,7 +1524,7 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   environment.Table,
 			Columns: environment.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: environment.FieldID,
 			},
 		},

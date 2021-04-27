@@ -10,13 +10,14 @@ import (
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/google/uuid"
 )
 
 // GinFileMiddleware is the model entity for the GinFileMiddleware schema.
 type GinFileMiddleware struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// URLID holds the value of the "url_id" field.
 	URLID string `json:"url_id,omitempty"`
 	// FilePath holds the value of the "file_path" field.
@@ -82,10 +83,10 @@ func (*GinFileMiddleware) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case ginfilemiddleware.FieldAccessed:
 			values[i] = new(sql.NullBool)
-		case ginfilemiddleware.FieldID:
-			values[i] = new(sql.NullInt64)
 		case ginfilemiddleware.FieldURLID, ginfilemiddleware.FieldFilePath:
 			values[i] = new(sql.NullString)
+		case ginfilemiddleware.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type GinFileMiddleware", columns[i])
 		}
@@ -102,11 +103,11 @@ func (gfm *GinFileMiddleware) assignValues(columns []string, values []interface{
 	for i := range columns {
 		switch columns[i] {
 		case ginfilemiddleware.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				gfm.ID = *value
 			}
-			gfm.ID = int(value.Int64)
 		case ginfilemiddleware.FieldURLID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field url_id", values[i])

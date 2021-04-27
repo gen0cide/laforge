@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -53,14 +54,14 @@ func (uu *UserUpdate) SetHclID(s string) *UserUpdate {
 }
 
 // AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by IDs.
-func (uu *UserUpdate) AddUserToTagIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) AddUserToTagIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddUserToTagIDs(ids...)
 	return uu
 }
 
 // AddUserToTag adds the "UserToTag" edges to the Tag entity.
 func (uu *UserUpdate) AddUserToTag(t ...*Tag) *UserUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -68,14 +69,14 @@ func (uu *UserUpdate) AddUserToTag(t ...*Tag) *UserUpdate {
 }
 
 // AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by IDs.
-func (uu *UserUpdate) AddUserToEnvironmentIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) AddUserToEnvironmentIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddUserToEnvironmentIDs(ids...)
 	return uu
 }
 
 // AddUserToEnvironment adds the "UserToEnvironment" edges to the Environment entity.
 func (uu *UserUpdate) AddUserToEnvironment(e ...*Environment) *UserUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -94,14 +95,14 @@ func (uu *UserUpdate) ClearUserToTag() *UserUpdate {
 }
 
 // RemoveUserToTagIDs removes the "UserToTag" edge to Tag entities by IDs.
-func (uu *UserUpdate) RemoveUserToTagIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) RemoveUserToTagIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveUserToTagIDs(ids...)
 	return uu
 }
 
 // RemoveUserToTag removes "UserToTag" edges to Tag entities.
 func (uu *UserUpdate) RemoveUserToTag(t ...*Tag) *UserUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -115,14 +116,14 @@ func (uu *UserUpdate) ClearUserToEnvironment() *UserUpdate {
 }
 
 // RemoveUserToEnvironmentIDs removes the "UserToEnvironment" edge to Environment entities by IDs.
-func (uu *UserUpdate) RemoveUserToEnvironmentIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) RemoveUserToEnvironmentIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveUserToEnvironmentIDs(ids...)
 	return uu
 }
 
 // RemoveUserToEnvironment removes "UserToEnvironment" edges to Environment entities.
 func (uu *UserUpdate) RemoveUserToEnvironment(e ...*Environment) *UserUpdate {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -186,7 +187,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: user.FieldID,
 			},
 		},
@@ -235,7 +236,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -251,7 +252,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -270,7 +271,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -289,7 +290,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -305,7 +306,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -324,7 +325,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -378,14 +379,14 @@ func (uuo *UserUpdateOne) SetHclID(s string) *UserUpdateOne {
 }
 
 // AddUserToTagIDs adds the "UserToTag" edge to the Tag entity by IDs.
-func (uuo *UserUpdateOne) AddUserToTagIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddUserToTagIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddUserToTagIDs(ids...)
 	return uuo
 }
 
 // AddUserToTag adds the "UserToTag" edges to the Tag entity.
 func (uuo *UserUpdateOne) AddUserToTag(t ...*Tag) *UserUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -393,14 +394,14 @@ func (uuo *UserUpdateOne) AddUserToTag(t ...*Tag) *UserUpdateOne {
 }
 
 // AddUserToEnvironmentIDs adds the "UserToEnvironment" edge to the Environment entity by IDs.
-func (uuo *UserUpdateOne) AddUserToEnvironmentIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddUserToEnvironmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddUserToEnvironmentIDs(ids...)
 	return uuo
 }
 
 // AddUserToEnvironment adds the "UserToEnvironment" edges to the Environment entity.
 func (uuo *UserUpdateOne) AddUserToEnvironment(e ...*Environment) *UserUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -419,14 +420,14 @@ func (uuo *UserUpdateOne) ClearUserToTag() *UserUpdateOne {
 }
 
 // RemoveUserToTagIDs removes the "UserToTag" edge to Tag entities by IDs.
-func (uuo *UserUpdateOne) RemoveUserToTagIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveUserToTagIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveUserToTagIDs(ids...)
 	return uuo
 }
 
 // RemoveUserToTag removes "UserToTag" edges to Tag entities.
 func (uuo *UserUpdateOne) RemoveUserToTag(t ...*Tag) *UserUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -440,14 +441,14 @@ func (uuo *UserUpdateOne) ClearUserToEnvironment() *UserUpdateOne {
 }
 
 // RemoveUserToEnvironmentIDs removes the "UserToEnvironment" edge to Environment entities by IDs.
-func (uuo *UserUpdateOne) RemoveUserToEnvironmentIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveUserToEnvironmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveUserToEnvironmentIDs(ids...)
 	return uuo
 }
 
 // RemoveUserToEnvironment removes "UserToEnvironment" edges to Environment entities.
 func (uuo *UserUpdateOne) RemoveUserToEnvironment(e ...*Environment) *UserUpdateOne {
-	ids := make([]int, len(e))
+	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -518,7 +519,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: user.FieldID,
 			},
 		},
@@ -584,7 +585,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -600,7 +601,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -619,7 +620,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: tag.FieldID,
 				},
 			},
@@ -638,7 +639,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -654,7 +655,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -673,7 +674,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},

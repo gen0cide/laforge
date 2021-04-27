@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/google/uuid"
 )
 
 // BuildUpdate is the builder for updating Build entities.
@@ -47,13 +48,13 @@ func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 }
 
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
-func (bu *BuildUpdate) SetBuildToStatusID(id int) *BuildUpdate {
+func (bu *BuildUpdate) SetBuildToStatusID(id uuid.UUID) *BuildUpdate {
 	bu.mutation.SetBuildToStatusID(id)
 	return bu
 }
 
 // SetNillableBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID if the given value is not nil.
-func (bu *BuildUpdate) SetNillableBuildToStatusID(id *int) *BuildUpdate {
+func (bu *BuildUpdate) SetNillableBuildToStatusID(id *uuid.UUID) *BuildUpdate {
 	if id != nil {
 		bu = bu.SetBuildToStatusID(*id)
 	}
@@ -66,7 +67,7 @@ func (bu *BuildUpdate) SetBuildToStatus(s *Status) *BuildUpdate {
 }
 
 // SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by ID.
-func (bu *BuildUpdate) SetBuildToEnvironmentID(id int) *BuildUpdate {
+func (bu *BuildUpdate) SetBuildToEnvironmentID(id uuid.UUID) *BuildUpdate {
 	bu.mutation.SetBuildToEnvironmentID(id)
 	return bu
 }
@@ -77,7 +78,7 @@ func (bu *BuildUpdate) SetBuildToEnvironment(e *Environment) *BuildUpdate {
 }
 
 // SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
-func (bu *BuildUpdate) SetBuildToCompetitionID(id int) *BuildUpdate {
+func (bu *BuildUpdate) SetBuildToCompetitionID(id uuid.UUID) *BuildUpdate {
 	bu.mutation.SetBuildToCompetitionID(id)
 	return bu
 }
@@ -88,14 +89,14 @@ func (bu *BuildUpdate) SetBuildToCompetition(c *Competition) *BuildUpdate {
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (bu *BuildUpdate) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) AddBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
 // AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (bu *BuildUpdate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -103,14 +104,14 @@ func (bu *BuildUpdate) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *B
 }
 
 // AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
-func (bu *BuildUpdate) AddBuildToTeamIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) AddBuildToTeamIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.AddBuildToTeamIDs(ids...)
 	return bu
 }
 
 // AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -118,14 +119,14 @@ func (bu *BuildUpdate) AddBuildToTeam(t ...*Team) *BuildUpdate {
 }
 
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
-func (bu *BuildUpdate) AddBuildToPlanIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) AddBuildToPlanIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.AddBuildToPlanIDs(ids...)
 	return bu
 }
 
 // AddBuildToPlan adds the "BuildToPlan" edges to the Plan entity.
 func (bu *BuildUpdate) AddBuildToPlan(p ...*Plan) *BuildUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -162,14 +163,14 @@ func (bu *BuildUpdate) ClearBuildToProvisionedNetwork() *BuildUpdate {
 }
 
 // RemoveBuildToProvisionedNetworkIDs removes the "BuildToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) RemoveBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return bu
 }
 
 // RemoveBuildToProvisionedNetwork removes "BuildToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (bu *BuildUpdate) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -183,14 +184,14 @@ func (bu *BuildUpdate) ClearBuildToTeam() *BuildUpdate {
 }
 
 // RemoveBuildToTeamIDs removes the "BuildToTeam" edge to Team entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToTeamIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) RemoveBuildToTeamIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.RemoveBuildToTeamIDs(ids...)
 	return bu
 }
 
 // RemoveBuildToTeam removes "BuildToTeam" edges to Team entities.
 func (bu *BuildUpdate) RemoveBuildToTeam(t ...*Team) *BuildUpdate {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -204,14 +205,14 @@ func (bu *BuildUpdate) ClearBuildToPlan() *BuildUpdate {
 }
 
 // RemoveBuildToPlanIDs removes the "BuildToPlan" edge to Plan entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToPlanIDs(ids ...int) *BuildUpdate {
+func (bu *BuildUpdate) RemoveBuildToPlanIDs(ids ...uuid.UUID) *BuildUpdate {
 	bu.mutation.RemoveBuildToPlanIDs(ids...)
 	return bu
 }
 
 // RemoveBuildToPlan removes "BuildToPlan" edges to Plan entities.
 func (bu *BuildUpdate) RemoveBuildToPlan(p ...*Plan) *BuildUpdate {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -292,7 +293,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   build.Table,
 			Columns: build.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: build.FieldID,
 			},
 		},
@@ -327,7 +328,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -343,7 +344,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -362,7 +363,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -378,7 +379,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -397,7 +398,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -413,7 +414,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -432,7 +433,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -448,7 +449,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -467,7 +468,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -486,7 +487,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -502,7 +503,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -521,7 +522,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -540,7 +541,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -556,7 +557,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -575,7 +576,7 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -618,13 +619,13 @@ func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 }
 
 // SetBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID.
-func (buo *BuildUpdateOne) SetBuildToStatusID(id int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) SetBuildToStatusID(id uuid.UUID) *BuildUpdateOne {
 	buo.mutation.SetBuildToStatusID(id)
 	return buo
 }
 
 // SetNillableBuildToStatusID sets the "BuildToStatus" edge to the Status entity by ID if the given value is not nil.
-func (buo *BuildUpdateOne) SetNillableBuildToStatusID(id *int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) SetNillableBuildToStatusID(id *uuid.UUID) *BuildUpdateOne {
 	if id != nil {
 		buo = buo.SetBuildToStatusID(*id)
 	}
@@ -637,7 +638,7 @@ func (buo *BuildUpdateOne) SetBuildToStatus(s *Status) *BuildUpdateOne {
 }
 
 // SetBuildToEnvironmentID sets the "BuildToEnvironment" edge to the Environment entity by ID.
-func (buo *BuildUpdateOne) SetBuildToEnvironmentID(id int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) SetBuildToEnvironmentID(id uuid.UUID) *BuildUpdateOne {
 	buo.mutation.SetBuildToEnvironmentID(id)
 	return buo
 }
@@ -648,7 +649,7 @@ func (buo *BuildUpdateOne) SetBuildToEnvironment(e *Environment) *BuildUpdateOne
 }
 
 // SetBuildToCompetitionID sets the "BuildToCompetition" edge to the Competition entity by ID.
-func (buo *BuildUpdateOne) SetBuildToCompetitionID(id int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) SetBuildToCompetitionID(id uuid.UUID) *BuildUpdateOne {
 	buo.mutation.SetBuildToCompetitionID(id)
 	return buo
 }
@@ -659,14 +660,14 @@ func (buo *BuildUpdateOne) SetBuildToCompetition(c *Competition) *BuildUpdateOne
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) AddBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.AddBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
 // AddBuildToProvisionedNetwork adds the "BuildToProvisionedNetwork" edges to the ProvisionedNetwork entity.
 func (buo *BuildUpdateOne) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -674,14 +675,14 @@ func (buo *BuildUpdateOne) AddBuildToProvisionedNetwork(p ...*ProvisionedNetwork
 }
 
 // AddBuildToTeamIDs adds the "BuildToTeam" edge to the Team entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToTeamIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) AddBuildToTeamIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.AddBuildToTeamIDs(ids...)
 	return buo
 }
 
 // AddBuildToTeam adds the "BuildToTeam" edges to the Team entity.
 func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -689,14 +690,14 @@ func (buo *BuildUpdateOne) AddBuildToTeam(t ...*Team) *BuildUpdateOne {
 }
 
 // AddBuildToPlanIDs adds the "BuildToPlan" edge to the Plan entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToPlanIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) AddBuildToPlanIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.AddBuildToPlanIDs(ids...)
 	return buo
 }
 
 // AddBuildToPlan adds the "BuildToPlan" edges to the Plan entity.
 func (buo *BuildUpdateOne) AddBuildToPlan(p ...*Plan) *BuildUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -733,14 +734,14 @@ func (buo *BuildUpdateOne) ClearBuildToProvisionedNetwork() *BuildUpdateOne {
 }
 
 // RemoveBuildToProvisionedNetworkIDs removes the "BuildToProvisionedNetwork" edge to ProvisionedNetwork entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetworkIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToProvisionedNetworkIDs(ids...)
 	return buo
 }
 
 // RemoveBuildToProvisionedNetwork removes "BuildToProvisionedNetwork" edges to ProvisionedNetwork entities.
 func (buo *BuildUpdateOne) RemoveBuildToProvisionedNetwork(p ...*ProvisionedNetwork) *BuildUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -754,14 +755,14 @@ func (buo *BuildUpdateOne) ClearBuildToTeam() *BuildUpdateOne {
 }
 
 // RemoveBuildToTeamIDs removes the "BuildToTeam" edge to Team entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToTeamIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) RemoveBuildToTeamIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToTeamIDs(ids...)
 	return buo
 }
 
 // RemoveBuildToTeam removes "BuildToTeam" edges to Team entities.
 func (buo *BuildUpdateOne) RemoveBuildToTeam(t ...*Team) *BuildUpdateOne {
-	ids := make([]int, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -775,14 +776,14 @@ func (buo *BuildUpdateOne) ClearBuildToPlan() *BuildUpdateOne {
 }
 
 // RemoveBuildToPlanIDs removes the "BuildToPlan" edge to Plan entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToPlanIDs(ids ...int) *BuildUpdateOne {
+func (buo *BuildUpdateOne) RemoveBuildToPlanIDs(ids ...uuid.UUID) *BuildUpdateOne {
 	buo.mutation.RemoveBuildToPlanIDs(ids...)
 	return buo
 }
 
 // RemoveBuildToPlan removes "BuildToPlan" edges to Plan entities.
 func (buo *BuildUpdateOne) RemoveBuildToPlan(p ...*Plan) *BuildUpdateOne {
-	ids := make([]int, len(p))
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -870,7 +871,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Table:   build.Table,
 			Columns: build.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: build.FieldID,
 			},
 		},
@@ -922,7 +923,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -938,7 +939,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: status.FieldID,
 				},
 			},
@@ -957,7 +958,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -973,7 +974,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: environment.FieldID,
 				},
 			},
@@ -992,7 +993,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -1008,7 +1009,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: competition.FieldID,
 				},
 			},
@@ -1027,7 +1028,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1043,7 +1044,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1062,7 +1063,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -1081,7 +1082,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1097,7 +1098,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1116,7 +1117,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: team.FieldID,
 				},
 			},
@@ -1135,7 +1136,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1151,7 +1152,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},
@@ -1170,7 +1171,7 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: plan.FieldID,
 				},
 			},

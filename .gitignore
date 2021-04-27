@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+*.sqlite
 
 # Test binary, build with `go test -c`
 *.test

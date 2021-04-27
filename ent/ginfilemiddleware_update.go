@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/google/uuid"
 )
 
 // GinFileMiddlewareUpdate is the builder for updating GinFileMiddleware entities.
@@ -55,13 +56,13 @@ func (gfmu *GinFileMiddlewareUpdate) SetNillableAccessed(b *bool) *GinFileMiddle
 }
 
 // SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (gfmu *GinFileMiddlewareUpdate) SetGinFileMiddlewareToProvisionedHostID(id int) *GinFileMiddlewareUpdate {
+func (gfmu *GinFileMiddlewareUpdate) SetGinFileMiddlewareToProvisionedHostID(id uuid.UUID) *GinFileMiddlewareUpdate {
 	gfmu.mutation.SetGinFileMiddlewareToProvisionedHostID(id)
 	return gfmu
 }
 
 // SetNillableGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (gfmu *GinFileMiddlewareUpdate) SetNillableGinFileMiddlewareToProvisionedHostID(id *int) *GinFileMiddlewareUpdate {
+func (gfmu *GinFileMiddlewareUpdate) SetNillableGinFileMiddlewareToProvisionedHostID(id *uuid.UUID) *GinFileMiddlewareUpdate {
 	if id != nil {
 		gfmu = gfmu.SetGinFileMiddlewareToProvisionedHostID(*id)
 	}
@@ -74,13 +75,13 @@ func (gfmu *GinFileMiddlewareUpdate) SetGinFileMiddlewareToProvisionedHost(p *Pr
 }
 
 // SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (gfmu *GinFileMiddlewareUpdate) SetGinFileMiddlewareToProvisioningStepID(id int) *GinFileMiddlewareUpdate {
+func (gfmu *GinFileMiddlewareUpdate) SetGinFileMiddlewareToProvisioningStepID(id uuid.UUID) *GinFileMiddlewareUpdate {
 	gfmu.mutation.SetGinFileMiddlewareToProvisioningStepID(id)
 	return gfmu
 }
 
 // SetNillableGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (gfmu *GinFileMiddlewareUpdate) SetNillableGinFileMiddlewareToProvisioningStepID(id *int) *GinFileMiddlewareUpdate {
+func (gfmu *GinFileMiddlewareUpdate) SetNillableGinFileMiddlewareToProvisioningStepID(id *uuid.UUID) *GinFileMiddlewareUpdate {
 	if id != nil {
 		gfmu = gfmu.SetGinFileMiddlewareToProvisioningStepID(*id)
 	}
@@ -166,7 +167,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			Table:   ginfilemiddleware.Table,
 			Columns: ginfilemiddleware.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: ginfilemiddleware.FieldID,
 			},
 		},
@@ -208,7 +209,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -224,7 +225,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -243,7 +244,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -259,7 +260,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -315,13 +316,13 @@ func (gfmuo *GinFileMiddlewareUpdateOne) SetNillableAccessed(b *bool) *GinFileMi
 }
 
 // SetGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID.
-func (gfmuo *GinFileMiddlewareUpdateOne) SetGinFileMiddlewareToProvisionedHostID(id int) *GinFileMiddlewareUpdateOne {
+func (gfmuo *GinFileMiddlewareUpdateOne) SetGinFileMiddlewareToProvisionedHostID(id uuid.UUID) *GinFileMiddlewareUpdateOne {
 	gfmuo.mutation.SetGinFileMiddlewareToProvisionedHostID(id)
 	return gfmuo
 }
 
 // SetNillableGinFileMiddlewareToProvisionedHostID sets the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
-func (gfmuo *GinFileMiddlewareUpdateOne) SetNillableGinFileMiddlewareToProvisionedHostID(id *int) *GinFileMiddlewareUpdateOne {
+func (gfmuo *GinFileMiddlewareUpdateOne) SetNillableGinFileMiddlewareToProvisionedHostID(id *uuid.UUID) *GinFileMiddlewareUpdateOne {
 	if id != nil {
 		gfmuo = gfmuo.SetGinFileMiddlewareToProvisionedHostID(*id)
 	}
@@ -334,13 +335,13 @@ func (gfmuo *GinFileMiddlewareUpdateOne) SetGinFileMiddlewareToProvisionedHost(p
 }
 
 // SetGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID.
-func (gfmuo *GinFileMiddlewareUpdateOne) SetGinFileMiddlewareToProvisioningStepID(id int) *GinFileMiddlewareUpdateOne {
+func (gfmuo *GinFileMiddlewareUpdateOne) SetGinFileMiddlewareToProvisioningStepID(id uuid.UUID) *GinFileMiddlewareUpdateOne {
 	gfmuo.mutation.SetGinFileMiddlewareToProvisioningStepID(id)
 	return gfmuo
 }
 
 // SetNillableGinFileMiddlewareToProvisioningStepID sets the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity by ID if the given value is not nil.
-func (gfmuo *GinFileMiddlewareUpdateOne) SetNillableGinFileMiddlewareToProvisioningStepID(id *int) *GinFileMiddlewareUpdateOne {
+func (gfmuo *GinFileMiddlewareUpdateOne) SetNillableGinFileMiddlewareToProvisioningStepID(id *uuid.UUID) *GinFileMiddlewareUpdateOne {
 	if id != nil {
 		gfmuo = gfmuo.SetGinFileMiddlewareToProvisioningStepID(*id)
 	}
@@ -433,7 +434,7 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			Table:   ginfilemiddleware.Table,
 			Columns: ginfilemiddleware.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: ginfilemiddleware.FieldID,
 			},
 		},
@@ -492,7 +493,7 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -508,7 +509,7 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
 				},
 			},
@@ -527,7 +528,7 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},
@@ -543,7 +544,7 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
 				},
 			},

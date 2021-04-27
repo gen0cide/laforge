@@ -10,13 +10,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // Competition is the model entity for the Competition schema.
 type Competition struct {
 	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// HclID holds the value of the "hcl_id" field.
 	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// RootPassword holds the value of the "root_password" field.
@@ -37,7 +38,7 @@ type Competition struct {
 	// CompetitionToBuild holds the value of the CompetitionToBuild edge.
 	HCLCompetitionToBuild []*Build `json:"CompetitionToBuild,omitempty"`
 	//
-	environment_environment_to_competition *int
+	environment_environment_to_competition *uuid.UUID
 }
 
 // CompetitionEdges holds the relations/edges for other nodes in the graph.
@@ -92,12 +93,12 @@ func (*Competition) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case competition.FieldConfig, competition.FieldTags:
 			values[i] = new([]byte)
-		case competition.FieldID:
-			values[i] = new(sql.NullInt64)
 		case competition.FieldHclID, competition.FieldRootPassword:
 			values[i] = new(sql.NullString)
+		case competition.FieldID:
+			values[i] = new(uuid.UUID)
 		case competition.ForeignKeys[0]: // environment_environment_to_competition
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Competition", columns[i])
 		}
@@ -114,11 +115,11 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 	for i := range columns {
 		switch columns[i] {
 		case competition.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				c.ID = *value
 			}
-			c.ID = int(value.Int64)
 		case competition.FieldHclID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
@@ -150,11 +151,10 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case competition.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field environment_environment_to_competition", value)
-			} else if value.Valid {
-				c.environment_environment_to_competition = new(int)
-				*c.environment_environment_to_competition = int(value.Int64)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_competition", values[i])
+			} else if value != nil {
+				c.environment_environment_to_competition = value
 			}
 		}
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // IdentityQuery is the builder for querying Identity entities.
@@ -110,8 +111,8 @@ func (iq *IdentityQuery) FirstX(ctx context.Context) *Identity {
 
 // FirstID returns the first Identity ID from the query.
 // Returns a *NotFoundError when no Identity ID was found.
-func (iq *IdentityQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (iq *IdentityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +124,7 @@ func (iq *IdentityQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (iq *IdentityQuery) FirstIDX(ctx context.Context) int {
+func (iq *IdentityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +162,8 @@ func (iq *IdentityQuery) OnlyX(ctx context.Context) *Identity {
 // OnlyID is like Only, but returns the only Identity ID in the query.
 // Returns a *NotSingularError when exactly one Identity ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (iq *IdentityQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (iq *IdentityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +179,7 @@ func (iq *IdentityQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (iq *IdentityQuery) OnlyIDX(ctx context.Context) int {
+func (iq *IdentityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +205,8 @@ func (iq *IdentityQuery) AllX(ctx context.Context) []*Identity {
 }
 
 // IDs executes the query and returns a list of Identity IDs.
-func (iq *IdentityQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (iq *IdentityQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := iq.Select(identity.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (iq *IdentityQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (iq *IdentityQuery) IDsX(ctx context.Context) []int {
+func (iq *IdentityQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := iq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -382,8 +383,8 @@ func (iq *IdentityQuery) sqlAll(ctx context.Context) ([]*Identity, error) {
 	}
 
 	if query := iq.withIdentityToEnvironment; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*Identity)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Identity)
 		for i := range nodes {
 			if nodes[i].environment_environment_to_identity == nil {
 				continue
@@ -432,7 +433,7 @@ func (iq *IdentityQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   identity.Table,
 			Columns: identity.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: identity.FieldID,
 			},
 		},
