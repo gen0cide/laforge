@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -51,7 +52,10 @@ func (Script) Edges() []ent.Edge {
 		edge.To("ScriptToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
 		edge.To("ScriptToFinding", Finding.Type).
-			StructTag(`hcl:"finding,block"`),
+			StructTag(`hcl:"finding,block"`).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ScriptToEnvironment", Environment.Type).
 			Ref("EnvironmentToScript").
 			Unique(),

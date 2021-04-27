@@ -22,6 +22,7 @@ type AgentStatusQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.AgentStatus
@@ -47,6 +48,13 @@ func (asq *AgentStatusQuery) Limit(limit int) *AgentStatusQuery {
 // Offset adds an offset step to the query.
 func (asq *AgentStatusQuery) Offset(offset int) *AgentStatusQuery {
 	asq.offset = &offset
+	return asq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (asq *AgentStatusQuery) Unique(unique bool) *AgentStatusQuery {
+	asq.unique = &unique
 	return asq
 }
 
@@ -387,7 +395,6 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(agentstatus.AgentStatusToProvisionedHostPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -406,13 +413,15 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, asq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "AgentStatusToProvisionedHost": %v`, err)
+			return nil, fmt.Errorf(`query edges "AgentStatusToProvisionedHost": %w`, err)
 		}
 		query.Where(provisionedhost.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -441,7 +450,7 @@ func (asq *AgentStatusQuery) sqlCount(ctx context.Context) (int, error) {
 func (asq *AgentStatusQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := asq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -458,6 +467,9 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   asq.sql,
 		Unique: true,
+	}
+	if unique := asq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := asq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -484,7 +496,7 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := asq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, agentstatus.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -503,7 +515,7 @@ func (asq *AgentStatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range asq.order {
-		p(selector, agentstatus.ValidColumn)
+		p(selector)
 	}
 	if offset := asq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -769,7 +781,7 @@ func (asgb *AgentStatusGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(asgb.fields)+len(asgb.fns))
 	columns = append(columns, asgb.fields...)
 	for _, fn := range asgb.fns {
-		columns = append(columns, fn(selector, agentstatus.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(asgb.fields...)
 }

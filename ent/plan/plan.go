@@ -19,7 +19,6 @@ const (
 	FieldType = "type"
 	// FieldBuildID holds the string denoting the build_id field in the database.
 	FieldBuildID = "build_id"
-
 	// EdgePrevPlan holds the string denoting the prevplan edge name in mutations.
 	EdgePrevPlan = "PrevPlan"
 	// EdgeNextPlan holds the string denoting the nextplan edge name in mutations.
@@ -34,7 +33,6 @@ const (
 	EdgePlanToProvisionedHost = "PlanToProvisionedHost"
 	// EdgePlanToProvisioningStep holds the string denoting the plantoprovisioningstep edge name in mutations.
 	EdgePlanToProvisioningStep = "PlanToProvisioningStep"
-
 	// Table holds the table name of the plan in the database.
 	Table = "plans"
 	// PrevPlanTable is the table the holds the PrevPlan relation/edge. The primary key declared below.
@@ -86,7 +84,8 @@ var Columns = []string{
 	FieldBuildID,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Plan type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "plans"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"plan_plan_to_build",
 }

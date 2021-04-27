@@ -76,11 +76,11 @@ func (*DNS) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case dns.FieldDNSServers, dns.FieldNtpServers, dns.FieldConfig:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case dns.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case dns.FieldHclID, dns.FieldType, dns.FieldRootDomain:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNS", columns[i])
 		}
@@ -126,7 +126,7 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field dns_servers", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &d.DNSServers); err != nil {
-					return fmt.Errorf("unmarshal field dns_servers: %v", err)
+					return fmt.Errorf("unmarshal field dns_servers: %w", err)
 				}
 			}
 		case dns.FieldNtpServers:
@@ -135,7 +135,7 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field ntp_servers", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &d.NtpServers); err != nil {
-					return fmt.Errorf("unmarshal field ntp_servers: %v", err)
+					return fmt.Errorf("unmarshal field ntp_servers: %w", err)
 				}
 			}
 		case dns.FieldConfig:
@@ -144,7 +144,7 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &d.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %v", err)
+					return fmt.Errorf("unmarshal field config: %w", err)
 				}
 			}
 		}

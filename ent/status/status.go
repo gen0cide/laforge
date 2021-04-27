@@ -27,7 +27,6 @@ const (
 	FieldCompleted = "completed"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
-
 	// EdgeStatusToBuild holds the string denoting the statustobuild edge name in mutations.
 	EdgeStatusToBuild = "StatusToBuild"
 	// EdgeStatusToProvisionedNetwork holds the string denoting the statustoprovisionednetwork edge name in mutations.
@@ -38,7 +37,6 @@ const (
 	EdgeStatusToProvisioningStep = "StatusToProvisioningStep"
 	// EdgeStatusToTeam holds the string denoting the statustoteam edge name in mutations.
 	EdgeStatusToTeam = "StatusToTeam"
-
 	// Table holds the table name of the status in the database.
 	Table = "status"
 	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
@@ -90,7 +88,8 @@ var Columns = []string{
 	FieldError,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Status type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "status"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"build_build_to_status",
 	"provisioned_host_provisioned_host_to_status",

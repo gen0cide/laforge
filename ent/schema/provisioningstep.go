@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -31,7 +32,10 @@ func (ProvisioningStep) Fields() []ent.Field {
 func (ProvisioningStep) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("ProvisioningStepToStatus", Status.Type).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("ProvisioningStepToProvisionedHost", ProvisionedHost.Type).
 			Unique(),
 		edge.To("ProvisioningStepToScript", Script.Type).
@@ -48,7 +52,10 @@ func (ProvisioningStep) Edges() []ent.Edge {
 			Unique(),
 		edge.From("ProvisioningStepToPlan", Plan.Type).
 			Ref("PlanToProvisioningStep").
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ProvisioningStepToGinFileMiddleware", GinFileMiddleware.Type).
 			Ref("GinFileMiddlewareToProvisioningStep").
 			Unique(),

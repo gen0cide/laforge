@@ -31,6 +31,7 @@ type ProvisioningStepQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.ProvisioningStep
@@ -66,6 +67,13 @@ func (psq *ProvisioningStepQuery) Limit(limit int) *ProvisioningStepQuery {
 // Offset adds an offset step to the query.
 func (psq *ProvisioningStepQuery) Offset(offset int) *ProvisioningStepQuery {
 	psq.offset = &offset
+	return psq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (psq *ProvisioningStepQuery) Unique(unique bool) *ProvisioningStepQuery {
+	psq.unique = &unique
 	return psq
 }
 
@@ -739,10 +747,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_provisioned_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_provisioned_host == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_provisioned_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -764,10 +776,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_script; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_script == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_script
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(script.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -789,10 +805,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_command; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_command == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_command
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(command.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -814,10 +834,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_dns_record; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_dns_record == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_dns_record
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(dnsrecord.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -839,10 +863,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_file_delete; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_file_delete == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_file_delete
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(filedelete.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -864,10 +892,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_file_download; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_file_download == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_file_download
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(filedownload.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -889,10 +921,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_file_extract; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_file_extract == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_file_extract
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(fileextract.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -914,10 +950,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_provisioning_step; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].plan_plan_to_provisioning_step == nil {
+				continue
 			}
+			fk := *nodes[i].plan_plan_to_provisioning_step
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -939,10 +979,14 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisioningStep)
 		for i := range nodes {
-			if fk := nodes[i].gin_file_middleware_gin_file_middleware_to_provisioning_step; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].gin_file_middleware_gin_file_middleware_to_provisioning_step == nil {
+				continue
 			}
+			fk := *nodes[i].gin_file_middleware_gin_file_middleware_to_provisioning_step
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(ginfilemiddleware.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -971,7 +1015,7 @@ func (psq *ProvisioningStepQuery) sqlCount(ctx context.Context) (int, error) {
 func (psq *ProvisioningStepQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := psq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -988,6 +1032,9 @@ func (psq *ProvisioningStepQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   psq.sql,
 		Unique: true,
+	}
+	if unique := psq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := psq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -1014,7 +1061,7 @@ func (psq *ProvisioningStepQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := psq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, provisioningstep.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -1033,7 +1080,7 @@ func (psq *ProvisioningStepQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range psq.order {
-		p(selector, provisioningstep.ValidColumn)
+		p(selector)
 	}
 	if offset := psq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1299,7 +1346,7 @@ func (psgb *ProvisioningStepGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(psgb.fields)+len(psgb.fns))
 	columns = append(columns, psgb.fields...)
 	for _, fn := range psgb.fns {
-		columns = append(columns, fn(selector, provisioningstep.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(psgb.fields...)
 }

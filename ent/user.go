@@ -74,17 +74,17 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case user.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case user.FieldName, user.FieldUUID, user.FieldEmail, user.FieldHclID:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case user.ForeignKeys[0]: // command_command_to_user
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case user.ForeignKeys[1]: // finding_finding_to_user
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case user.ForeignKeys[2]: // host_host_to_user
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case user.ForeignKeys[3]: // script_script_to_user
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}

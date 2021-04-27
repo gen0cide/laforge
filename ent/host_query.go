@@ -26,6 +26,7 @@ type HostQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Host
@@ -57,6 +58,13 @@ func (hq *HostQuery) Limit(limit int) *HostQuery {
 // Offset adds an offset step to the query.
 func (hq *HostQuery) Offset(offset int) *HostQuery {
 	hq.offset = &offset
+	return hq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (hq *HostQuery) Unique(unique bool) *HostQuery {
+	hq.unique = &unique
 	return hq
 }
 
@@ -619,10 +627,14 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Host)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_host == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -661,7 +673,6 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(host.HostToIncludedNetworkPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -680,13 +691,15 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, hq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "HostToIncludedNetwork": %v`, err)
+			return nil, fmt.Errorf(`query edges "HostToIncludedNetwork": %w`, err)
 		}
 		query.Where(includednetwork.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -773,7 +786,7 @@ func (hq *HostQuery) sqlCount(ctx context.Context) (int, error) {
 func (hq *HostQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := hq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -790,6 +803,9 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   hq.sql,
 		Unique: true,
+	}
+	if unique := hq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := hq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -816,7 +832,7 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := hq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, host.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -835,7 +851,7 @@ func (hq *HostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range hq.order {
-		p(selector, host.ValidColumn)
+		p(selector)
 	}
 	if offset := hq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1101,7 +1117,7 @@ func (hgb *HostGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(hgb.fields)+len(hgb.fns))
 	columns = append(columns, hgb.fields...)
 	for _, fn := range hgb.fns {
-		columns = append(columns, fn(selector, host.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(hgb.fields...)
 }

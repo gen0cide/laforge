@@ -9,7 +9,6 @@ const (
 	FieldID = "id"
 	// FieldRevision holds the string denoting the revision field in the database.
 	FieldRevision = "revision"
-
 	// EdgeBuildToStatus holds the string denoting the buildtostatus edge name in mutations.
 	EdgeBuildToStatus = "BuildToStatus"
 	// EdgeBuildToEnvironment holds the string denoting the buildtoenvironment edge name in mutations.
@@ -22,7 +21,6 @@ const (
 	EdgeBuildToTeam = "BuildToTeam"
 	// EdgeBuildToPlan holds the string denoting the buildtoplan edge name in mutations.
 	EdgeBuildToPlan = "BuildToPlan"
-
 	// Table holds the table name of the build in the database.
 	Table = "builds"
 	// BuildToStatusTable is the table the holds the BuildToStatus relation/edge.
@@ -75,7 +73,8 @@ var Columns = []string{
 	FieldRevision,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Build type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "builds"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"build_build_to_environment",
 	"build_build_to_competition",

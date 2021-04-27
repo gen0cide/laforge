@@ -47,16 +47,14 @@ var (
 		PrimaryKey: []*schema.Column{BuildsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "builds_environments_BuildToEnvironment",
-				Columns: []*schema.Column{BuildsColumns[2]},
-
+				Symbol:     "builds_environments_BuildToEnvironment",
+				Columns:    []*schema.Column{BuildsColumns[2]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "builds_competitions_BuildToCompetition",
-				Columns: []*schema.Column{BuildsColumns[3]},
-
+				Symbol:     "builds_competitions_BuildToCompetition",
+				Columns:    []*schema.Column{BuildsColumns[3]},
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -85,11 +83,10 @@ var (
 		PrimaryKey: []*schema.Column{CommandsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "commands_environments_EnvironmentToCommand",
-				Columns: []*schema.Column{CommandsColumns[12]},
-
+				Symbol:     "commands_environments_EnvironmentToCommand",
+				Columns:    []*schema.Column{CommandsColumns[12]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -109,11 +106,10 @@ var (
 		PrimaryKey: []*schema.Column{CompetitionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "competitions_environments_EnvironmentToCompetition",
-				Columns: []*schema.Column{CompetitionsColumns[5]},
-
+				Symbol:     "competitions_environments_EnvironmentToCompetition",
+				Columns:    []*schema.Column{CompetitionsColumns[5]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -154,11 +150,10 @@ var (
 		PrimaryKey: []*schema.Column{DNSRecordsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "dns_records_environments_EnvironmentToDNSRecord",
-				Columns: []*schema.Column{DNSRecordsColumns[9]},
-
+				Symbol:     "dns_records_environments_EnvironmentToDNSRecord",
+				Columns:    []*schema.Column{DNSRecordsColumns[9]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -175,11 +170,10 @@ var (
 		PrimaryKey: []*schema.Column{DisksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "disks_hosts_HostToDisk",
-				Columns: []*schema.Column{DisksColumns[2]},
-
+				Symbol:     "disks_hosts_HostToDisk",
+				Columns:    []*schema.Column{DisksColumns[2]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -220,11 +214,10 @@ var (
 		PrimaryKey: []*schema.Column{FileDeletesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "file_deletes_environments_EnvironmentToFileDelete",
-				Columns: []*schema.Column{FileDeletesColumns[4]},
-
+				Symbol:     "file_deletes_environments_EnvironmentToFileDelete",
+				Columns:    []*schema.Column{FileDeletesColumns[4]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -250,11 +243,10 @@ var (
 		PrimaryKey: []*schema.Column{FileDownloadsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "file_downloads_environments_EnvironmentToFileDownload",
-				Columns: []*schema.Column{FileDownloadsColumns[11]},
-
+				Symbol:     "file_downloads_environments_EnvironmentToFileDownload",
+				Columns:    []*schema.Column{FileDownloadsColumns[11]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -275,11 +267,10 @@ var (
 		PrimaryKey: []*schema.Column{FileExtractsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "file_extracts_environments_EnvironmentToFileExtract",
-				Columns: []*schema.Column{FileExtractsColumns[6]},
-
+				Symbol:     "file_extracts_environments_EnvironmentToFileExtract",
+				Columns:    []*schema.Column{FileExtractsColumns[6]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -302,25 +293,22 @@ var (
 		PrimaryKey: []*schema.Column{FindingsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "findings_environments_EnvironmentToFinding",
-				Columns: []*schema.Column{FindingsColumns[6]},
-
+				Symbol:     "findings_environments_EnvironmentToFinding",
+				Columns:    []*schema.Column{FindingsColumns[6]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "findings_hosts_FindingToHost",
-				Columns: []*schema.Column{FindingsColumns[7]},
-
+				Symbol:     "findings_hosts_FindingToHost",
+				Columns:    []*schema.Column{FindingsColumns[7]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "findings_scripts_ScriptToFinding",
-				Columns: []*schema.Column{FindingsColumns[8]},
-
+				Symbol:     "findings_scripts_ScriptToFinding",
+				Columns:    []*schema.Column{FindingsColumns[8]},
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -329,7 +317,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "url_id", Type: field.TypeString},
 		{Name: "file_path", Type: field.TypeString},
-		{Name: "accessed", Type: field.TypeBool},
+		{Name: "accessed", Type: field.TypeBool, Default: false},
 	}
 	// GinFileMiddlewaresTable holds the schema information for the "gin_file_middlewares" table.
 	GinFileMiddlewaresTable = &schema.Table{
@@ -364,11 +352,10 @@ var (
 		PrimaryKey: []*schema.Column{HostsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "hosts_environments_EnvironmentToHost",
-				Columns: []*schema.Column{HostsColumns[15]},
-
+				Symbol:     "hosts_environments_EnvironmentToHost",
+				Columns:    []*schema.Column{HostsColumns[15]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -389,30 +376,26 @@ var (
 		PrimaryKey: []*schema.Column{HostDependenciesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "host_dependencies_environments_EnvironmentToHostDependency",
-				Columns: []*schema.Column{HostDependenciesColumns[3]},
-
+				Symbol:     "host_dependencies_environments_EnvironmentToHostDependency",
+				Columns:    []*schema.Column{HostDependenciesColumns[3]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "host_dependencies_hosts_HostDependencyToDependOnHost",
-				Columns: []*schema.Column{HostDependenciesColumns[4]},
-
+				Symbol:     "host_dependencies_hosts_HostDependencyToDependOnHost",
+				Columns:    []*schema.Column{HostDependenciesColumns[4]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "host_dependencies_hosts_HostDependencyToDependByHost",
-				Columns: []*schema.Column{HostDependenciesColumns[5]},
-
+				Symbol:     "host_dependencies_hosts_HostDependencyToDependByHost",
+				Columns:    []*schema.Column{HostDependenciesColumns[5]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "host_dependencies_networks_HostDependencyToNetwork",
-				Columns: []*schema.Column{HostDependenciesColumns[6]},
-
+				Symbol:     "host_dependencies_networks_HostDependencyToNetwork",
+				Columns:    []*schema.Column{HostDependenciesColumns[6]},
 				RefColumns: []*schema.Column{NetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -439,11 +422,10 @@ var (
 		PrimaryKey: []*schema.Column{IdentitiesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "identities_environments_EnvironmentToIdentity",
-				Columns: []*schema.Column{IdentitiesColumns[10]},
-
+				Symbol:     "identities_environments_EnvironmentToIdentity",
+				Columns:    []*schema.Column{IdentitiesColumns[10]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -478,11 +460,10 @@ var (
 		PrimaryKey: []*schema.Column{NetworksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "networks_environments_EnvironmentToNetwork",
-				Columns: []*schema.Column{NetworksColumns[7]},
-
+				Symbol:     "networks_environments_EnvironmentToNetwork",
+				Columns:    []*schema.Column{NetworksColumns[7]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -501,9 +482,8 @@ var (
 		PrimaryKey: []*schema.Column{PlansColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "plans_builds_PlanToBuild",
-				Columns: []*schema.Column{PlansColumns[4]},
-
+				Symbol:     "plans_builds_PlanToBuild",
+				Columns:    []*schema.Column{PlansColumns[4]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -526,39 +506,34 @@ var (
 		PrimaryKey: []*schema.Column{ProvisionedHostsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "provisioned_hosts_gin_file_middlewares_GinFileMiddlewareToProvisionedHost",
-				Columns: []*schema.Column{ProvisionedHostsColumns[2]},
-
+				Symbol:     "provisioned_hosts_gin_file_middlewares_GinFileMiddlewareToProvisionedHost",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[2]},
 				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_hosts_plans_PlanToProvisionedHost",
-				Columns: []*schema.Column{ProvisionedHostsColumns[3]},
-
+				Symbol:     "provisioned_hosts_plans_PlanToProvisionedHost",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[3]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_hosts_provisioned_networks_ProvisionedHostToProvisionedNetwork",
-				Columns: []*schema.Column{ProvisionedHostsColumns[4]},
-
+				Symbol:     "provisioned_hosts_provisioned_networks_ProvisionedHostToProvisionedNetwork",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[4]},
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_hosts_hosts_ProvisionedHostToHost",
-				Columns: []*schema.Column{ProvisionedHostsColumns[5]},
-
+				Symbol:     "provisioned_hosts_hosts_ProvisionedHostToHost",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[5]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_hosts_plans_ProvisionedHostToEndStepPlan",
-				Columns: []*schema.Column{ProvisionedHostsColumns[6]},
-
+				Symbol:     "provisioned_hosts_plans_ProvisionedHostToEndStepPlan",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[6]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -579,30 +554,26 @@ var (
 		PrimaryKey: []*schema.Column{ProvisionedNetworksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "provisioned_networks_plans_PlanToProvisionedNetwork",
-				Columns: []*schema.Column{ProvisionedNetworksColumns[3]},
-
+				Symbol:     "provisioned_networks_plans_PlanToProvisionedNetwork",
+				Columns:    []*schema.Column{ProvisionedNetworksColumns[3]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_networks_networks_ProvisionedNetworkToNetwork",
-				Columns: []*schema.Column{ProvisionedNetworksColumns[4]},
-
+				Symbol:     "provisioned_networks_networks_ProvisionedNetworkToNetwork",
+				Columns:    []*schema.Column{ProvisionedNetworksColumns[4]},
 				RefColumns: []*schema.Column{NetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_networks_builds_ProvisionedNetworkToBuild",
-				Columns: []*schema.Column{ProvisionedNetworksColumns[5]},
-
+				Symbol:     "provisioned_networks_builds_ProvisionedNetworkToBuild",
+				Columns:    []*schema.Column{ProvisionedNetworksColumns[5]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioned_networks_teams_ProvisionedNetworkToTeam",
-				Columns: []*schema.Column{ProvisionedNetworksColumns[6]},
-
+				Symbol:     "provisioned_networks_teams_ProvisionedNetworkToTeam",
+				Columns:    []*schema.Column{ProvisionedNetworksColumns[6]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -630,65 +601,56 @@ var (
 		PrimaryKey: []*schema.Column{ProvisioningStepsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "provisioning_steps_gin_file_middlewares_GinFileMiddlewareToProvisioningStep",
-				Columns: []*schema.Column{ProvisioningStepsColumns[3]},
-
+				Symbol:     "provisioning_steps_gin_file_middlewares_GinFileMiddlewareToProvisioningStep",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[3]},
 				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_plans_PlanToProvisioningStep",
-				Columns: []*schema.Column{ProvisioningStepsColumns[4]},
-
+				Symbol:     "provisioning_steps_plans_PlanToProvisioningStep",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[4]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_provisioned_hosts_ProvisioningStepToProvisionedHost",
-				Columns: []*schema.Column{ProvisioningStepsColumns[5]},
-
+				Symbol:     "provisioning_steps_provisioned_hosts_ProvisioningStepToProvisionedHost",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[5]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_scripts_ProvisioningStepToScript",
-				Columns: []*schema.Column{ProvisioningStepsColumns[6]},
-
+				Symbol:     "provisioning_steps_scripts_ProvisioningStepToScript",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[6]},
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_commands_ProvisioningStepToCommand",
-				Columns: []*schema.Column{ProvisioningStepsColumns[7]},
-
+				Symbol:     "provisioning_steps_commands_ProvisioningStepToCommand",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[7]},
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_dns_records_ProvisioningStepToDNSRecord",
-				Columns: []*schema.Column{ProvisioningStepsColumns[8]},
-
+				Symbol:     "provisioning_steps_dns_records_ProvisioningStepToDNSRecord",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[8]},
 				RefColumns: []*schema.Column{DNSRecordsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_file_deletes_ProvisioningStepToFileDelete",
-				Columns: []*schema.Column{ProvisioningStepsColumns[9]},
-
+				Symbol:     "provisioning_steps_file_deletes_ProvisioningStepToFileDelete",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[9]},
 				RefColumns: []*schema.Column{FileDeletesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_file_downloads_ProvisioningStepToFileDownload",
-				Columns: []*schema.Column{ProvisioningStepsColumns[10]},
-
+				Symbol:     "provisioning_steps_file_downloads_ProvisioningStepToFileDownload",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[10]},
 				RefColumns: []*schema.Column{FileDownloadsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "provisioning_steps_file_extracts_ProvisioningStepToFileExtract",
-				Columns: []*schema.Column{ProvisioningStepsColumns[11]},
-
+				Symbol:     "provisioning_steps_file_extracts_ProvisioningStepToFileExtract",
+				Columns:    []*schema.Column{ProvisioningStepsColumns[11]},
 				RefColumns: []*schema.Column{FileExtractsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -720,11 +682,10 @@ var (
 		PrimaryKey: []*schema.Column{ScriptsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "scripts_environments_EnvironmentToScript",
-				Columns: []*schema.Column{ScriptsColumns[15]},
-
+				Symbol:     "scripts_environments_EnvironmentToScript",
+				Columns:    []*schema.Column{ScriptsColumns[15]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -735,8 +696,8 @@ var (
 		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
-		{Name: "failed", Type: field.TypeBool},
-		{Name: "completed", Type: field.TypeBool},
+		{Name: "failed", Type: field.TypeBool, Default: false},
+		{Name: "completed", Type: field.TypeBool, Default: false},
 		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "build_build_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeInt, Unique: true, Nullable: true},
@@ -751,37 +712,32 @@ var (
 		PrimaryKey: []*schema.Column{StatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "status_builds_BuildToStatus",
-				Columns: []*schema.Column{StatusColumns[8]},
-
+				Symbol:     "status_builds_BuildToStatus",
+				Columns:    []*schema.Column{StatusColumns[8]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "status_provisioned_hosts_ProvisionedHostToStatus",
-				Columns: []*schema.Column{StatusColumns[9]},
-
+				Symbol:     "status_provisioned_hosts_ProvisionedHostToStatus",
+				Columns:    []*schema.Column{StatusColumns[9]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "status_provisioned_networks_ProvisionedNetworkToStatus",
-				Columns: []*schema.Column{StatusColumns[10]},
-
+				Symbol:     "status_provisioned_networks_ProvisionedNetworkToStatus",
+				Columns:    []*schema.Column{StatusColumns[10]},
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "status_provisioning_steps_ProvisioningStepToStatus",
-				Columns: []*schema.Column{StatusColumns[11]},
-
+				Symbol:     "status_provisioning_steps_ProvisioningStepToStatus",
+				Columns:    []*schema.Column{StatusColumns[11]},
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "status_teams_TeamToStatus",
-				Columns: []*schema.Column{StatusColumns[12]},
-
+				Symbol:     "status_teams_TeamToStatus",
+				Columns:    []*schema.Column{StatusColumns[12]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -803,16 +759,14 @@ var (
 		PrimaryKey: []*schema.Column{TagsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "tags_included_networks_IncludedNetworkToTag",
-				Columns: []*schema.Column{TagsColumns[4]},
-
+				Symbol:     "tags_included_networks_IncludedNetworkToTag",
+				Columns:    []*schema.Column{TagsColumns[4]},
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "tags_users_UserToTag",
-				Columns: []*schema.Column{TagsColumns[5]},
-
+				Symbol:     "tags_users_UserToTag",
+				Columns:    []*schema.Column{TagsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -832,16 +786,14 @@ var (
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "teams_plans_PlanToTeam",
-				Columns: []*schema.Column{TeamsColumns[2]},
-
+				Symbol:     "teams_plans_PlanToTeam",
+				Columns:    []*schema.Column{TeamsColumns[2]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "teams_builds_TeamToBuild",
-				Columns: []*schema.Column{TeamsColumns[3]},
-
+				Symbol:     "teams_builds_TeamToBuild",
+				Columns:    []*schema.Column{TeamsColumns[3]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -866,30 +818,26 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_commands_CommandToUser",
-				Columns: []*schema.Column{UsersColumns[5]},
-
+				Symbol:     "users_commands_CommandToUser",
+				Columns:    []*schema.Column{UsersColumns[5]},
 				RefColumns: []*schema.Column{CommandsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_findings_FindingToUser",
-				Columns: []*schema.Column{UsersColumns[6]},
-
+				Symbol:     "users_findings_FindingToUser",
+				Columns:    []*schema.Column{UsersColumns[6]},
 				RefColumns: []*schema.Column{FindingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_hosts_HostToUser",
-				Columns: []*schema.Column{UsersColumns[7]},
-
+				Symbol:     "users_hosts_HostToUser",
+				Columns:    []*schema.Column{UsersColumns[7]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "users_scripts_ScriptToUser",
-				Columns: []*schema.Column{UsersColumns[8]},
-
+				Symbol:     "users_scripts_ScriptToUser",
+				Columns:    []*schema.Column{UsersColumns[8]},
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -907,16 +855,14 @@ var (
 		PrimaryKey: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0], AgentStatusAgentStatusToProvisionedHostColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "agent_status_AgentStatusToProvisionedHost_agent_status_id",
-				Columns: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0]},
-
+				Symbol:     "agent_status_AgentStatusToProvisionedHost_agent_status_id",
+				Columns:    []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0]},
 				RefColumns: []*schema.Column{AgentStatusColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "agent_status_AgentStatusToProvisionedHost_provisioned_host_id",
-				Columns: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[1]},
-
+				Symbol:     "agent_status_AgentStatusToProvisionedHost_provisioned_host_id",
+				Columns:    []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[1]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -934,16 +880,14 @@ var (
 		PrimaryKey: []*schema.Column{CompetitionCompetitionToDNSColumns[0], CompetitionCompetitionToDNSColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "competition_CompetitionToDNS_competition_id",
-				Columns: []*schema.Column{CompetitionCompetitionToDNSColumns[0]},
-
+				Symbol:     "competition_CompetitionToDNS_competition_id",
+				Columns:    []*schema.Column{CompetitionCompetitionToDNSColumns[0]},
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "competition_CompetitionToDNS_dns_id",
-				Columns: []*schema.Column{CompetitionCompetitionToDNSColumns[1]},
-
+				Symbol:     "competition_CompetitionToDNS_dns_id",
+				Columns:    []*schema.Column{CompetitionCompetitionToDNSColumns[1]},
 				RefColumns: []*schema.Column{DnSsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -961,16 +905,14 @@ var (
 		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToUserColumns[0], EnvironmentEnvironmentToUserColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "environment_EnvironmentToUser_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToUserColumns[0]},
-
+				Symbol:     "environment_EnvironmentToUser_environment_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToUserColumns[0]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "environment_EnvironmentToUser_user_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToUserColumns[1]},
-
+				Symbol:     "environment_EnvironmentToUser_user_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToUserColumns[1]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -988,16 +930,14 @@ var (
 		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToIncludedNetworkColumns[0], EnvironmentEnvironmentToIncludedNetworkColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "environment_EnvironmentToIncludedNetwork_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToIncludedNetworkColumns[0]},
-
+				Symbol:     "environment_EnvironmentToIncludedNetwork_environment_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToIncludedNetworkColumns[0]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "environment_EnvironmentToIncludedNetwork_included_network_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToIncludedNetworkColumns[1]},
-
+				Symbol:     "environment_EnvironmentToIncludedNetwork_included_network_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToIncludedNetworkColumns[1]},
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1015,16 +955,14 @@ var (
 		PrimaryKey: []*schema.Column{EnvironmentEnvironmentToDNSColumns[0], EnvironmentEnvironmentToDNSColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "environment_EnvironmentToDNS_environment_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToDNSColumns[0]},
-
+				Symbol:     "environment_EnvironmentToDNS_environment_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToDNSColumns[0]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "environment_EnvironmentToDNS_dns_id",
-				Columns: []*schema.Column{EnvironmentEnvironmentToDNSColumns[1]},
-
+				Symbol:     "environment_EnvironmentToDNS_dns_id",
+				Columns:    []*schema.Column{EnvironmentEnvironmentToDNSColumns[1]},
 				RefColumns: []*schema.Column{DnSsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1042,16 +980,14 @@ var (
 		PrimaryKey: []*schema.Column{IncludedNetworkIncludedNetworkToHostColumns[0], IncludedNetworkIncludedNetworkToHostColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "included_network_IncludedNetworkToHost_included_network_id",
-				Columns: []*schema.Column{IncludedNetworkIncludedNetworkToHostColumns[0]},
-
+				Symbol:     "included_network_IncludedNetworkToHost_included_network_id",
+				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToHostColumns[0]},
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "included_network_IncludedNetworkToHost_host_id",
-				Columns: []*schema.Column{IncludedNetworkIncludedNetworkToHostColumns[1]},
-
+				Symbol:     "included_network_IncludedNetworkToHost_host_id",
+				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToHostColumns[1]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1069,16 +1005,14 @@ var (
 		PrimaryKey: []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[0], IncludedNetworkIncludedNetworkToNetworkColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "included_network_IncludedNetworkToNetwork_included_network_id",
-				Columns: []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[0]},
-
+				Symbol:     "included_network_IncludedNetworkToNetwork_included_network_id",
+				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[0]},
 				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "included_network_IncludedNetworkToNetwork_network_id",
-				Columns: []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[1]},
-
+				Symbol:     "included_network_IncludedNetworkToNetwork_network_id",
+				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[1]},
 				RefColumns: []*schema.Column{NetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1096,16 +1030,14 @@ var (
 		PrimaryKey: []*schema.Column{PlanNextPlanColumns[0], PlanNextPlanColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "plan_NextPlan_plan_id",
-				Columns: []*schema.Column{PlanNextPlanColumns[0]},
-
+				Symbol:     "plan_NextPlan_plan_id",
+				Columns:    []*schema.Column{PlanNextPlanColumns[0]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:  "plan_NextPlan_PrevPlan_id",
-				Columns: []*schema.Column{PlanNextPlanColumns[1]},
-
+				Symbol:     "plan_NextPlan_PrevPlan_id",
+				Columns:    []*schema.Column{PlanNextPlanColumns[1]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

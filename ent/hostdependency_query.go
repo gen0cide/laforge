@@ -23,6 +23,7 @@ type HostDependencyQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.HostDependency
@@ -52,6 +53,13 @@ func (hdq *HostDependencyQuery) Limit(limit int) *HostDependencyQuery {
 // Offset adds an offset step to the query.
 func (hdq *HostDependencyQuery) Offset(offset int) *HostDependencyQuery {
 	hdq.offset = &offset
+	return hdq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (hdq *HostDependencyQuery) Unique(unique bool) *HostDependencyQuery {
+	hdq.unique = &unique
 	return hdq
 }
 
@@ -487,10 +495,14 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*HostDependency)
 		for i := range nodes {
-			if fk := nodes[i].host_dependency_host_dependency_to_depend_on_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].host_dependency_host_dependency_to_depend_on_host == nil {
+				continue
 			}
+			fk := *nodes[i].host_dependency_host_dependency_to_depend_on_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -512,10 +524,14 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*HostDependency)
 		for i := range nodes {
-			if fk := nodes[i].host_dependency_host_dependency_to_depend_by_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].host_dependency_host_dependency_to_depend_by_host == nil {
+				continue
 			}
+			fk := *nodes[i].host_dependency_host_dependency_to_depend_by_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -537,10 +553,14 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*HostDependency)
 		for i := range nodes {
-			if fk := nodes[i].host_dependency_host_dependency_to_network; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].host_dependency_host_dependency_to_network == nil {
+				continue
 			}
+			fk := *nodes[i].host_dependency_host_dependency_to_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(network.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -562,10 +582,14 @@ func (hdq *HostDependencyQuery) sqlAll(ctx context.Context) ([]*HostDependency, 
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*HostDependency)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_host_dependency; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_host_dependency == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_host_dependency
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -594,7 +618,7 @@ func (hdq *HostDependencyQuery) sqlCount(ctx context.Context) (int, error) {
 func (hdq *HostDependencyQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := hdq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -611,6 +635,9 @@ func (hdq *HostDependencyQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   hdq.sql,
 		Unique: true,
+	}
+	if unique := hdq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := hdq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -637,7 +664,7 @@ func (hdq *HostDependencyQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := hdq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, hostdependency.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -656,7 +683,7 @@ func (hdq *HostDependencyQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range hdq.order {
-		p(selector, hostdependency.ValidColumn)
+		p(selector)
 	}
 	if offset := hdq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -922,7 +949,7 @@ func (hdgb *HostDependencyGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(hdgb.fields)+len(hdgb.fns))
 	columns = append(columns, hdgb.fields...)
 	for _, fn := range hdgb.fns {
-		columns = append(columns, fn(selector, hostdependency.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(hdgb.fields...)
 }

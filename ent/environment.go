@@ -268,11 +268,11 @@ func (*Environment) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case environment.FieldAdminCidrs, environment.FieldExposedVdiPorts, environment.FieldConfig, environment.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case environment.FieldID, environment.FieldTeamCount, environment.FieldRevision:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case environment.FieldHclID, environment.FieldCompetitionID, environment.FieldName, environment.FieldDescription, environment.FieldBuilder:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Environment", columns[i])
 		}
@@ -342,7 +342,7 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field admin_cidrs", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
-					return fmt.Errorf("unmarshal field admin_cidrs: %v", err)
+					return fmt.Errorf("unmarshal field admin_cidrs: %w", err)
 				}
 			}
 		case environment.FieldExposedVdiPorts:
@@ -351,7 +351,7 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
-					return fmt.Errorf("unmarshal field exposed_vdi_ports: %v", err)
+					return fmt.Errorf("unmarshal field exposed_vdi_ports: %w", err)
 				}
 			}
 		case environment.FieldConfig:
@@ -360,7 +360,7 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &e.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %v", err)
+					return fmt.Errorf("unmarshal field config: %w", err)
 				}
 			}
 		case environment.FieldTags:
@@ -369,7 +369,7 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &e.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -50,18 +51,30 @@ func (Host) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("HostToDisk", Disk.Type).
 			StructTag(`hcl:"disk,block"`).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("HostToUser", User.Type).
 			StructTag(`hcl:"maintainer,block"`),
 		edge.From("HostToEnvironment", Environment.Type).
 			Ref("EnvironmentToHost").
 			Unique(),
 		edge.From("HostToIncludedNetwork", IncludedNetwork.Type).
-			Ref("IncludedNetworkToHost"),
+			Ref("IncludedNetworkToHost").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("DependOnHostToHostDependency", HostDependency.Type).
 			Ref("HostDependencyToDependOnHost").
-			StructTag(`hcl:"depends_on,block"`),
+			StructTag(`hcl:"depends_on,block"`).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("DependByHostToHostDependency", HostDependency.Type).
-			Ref("HostDependencyToDependByHost"),
+			Ref("HostDependencyToDependByHost").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }

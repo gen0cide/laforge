@@ -19,12 +19,10 @@ const (
 	FieldNtpServers = "ntp_servers"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
-
 	// EdgeDNSToEnvironment holds the string denoting the dnstoenvironment edge name in mutations.
 	EdgeDNSToEnvironment = "DNSToEnvironment"
 	// EdgeDNSToCompetition holds the string denoting the dnstocompetition edge name in mutations.
 	EdgeDNSToCompetition = "DNSToCompetition"
-
 	// Table holds the table name of the dns in the database.
 	Table = "dn_ss"
 	// DNSToEnvironmentTable is the table the holds the DNSToEnvironment relation/edge. The primary key declared below.

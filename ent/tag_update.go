@@ -154,6 +154,7 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // TagUpdateOne is the builder for updating a single Tag entity.
 type TagUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *TagMutation
 }
@@ -179,6 +180,13 @@ func (tuo *TagUpdateOne) SetDescription(m map[string]string) *TagUpdateOne {
 // Mutation returns the TagMutation object of the builder.
 func (tuo *TagUpdateOne) Mutation() *TagMutation {
 	return tuo.mutation
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (tuo *TagUpdateOne) Select(field string, fields ...string) *TagUpdateOne {
+	tuo.fields = append([]string{field}, fields...)
+	return tuo
 }
 
 // Save executes the query and returns the updated Tag entity.
@@ -248,6 +256,18 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Tag.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := tuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, tag.FieldID)
+		for _, f := range fields {
+			if !tag.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != tag.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := tuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

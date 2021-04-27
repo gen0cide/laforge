@@ -95,15 +95,15 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case network.FieldVars, network.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case network.FieldVdiVisible:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case network.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case network.FieldHclID, network.FieldName, network.FieldCidr:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case network.ForeignKeys[0]: // environment_environment_to_network
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
 		}
@@ -155,7 +155,7 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &n.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case network.FieldTags:
@@ -164,7 +164,7 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &n.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case network.ForeignKeys[0]:

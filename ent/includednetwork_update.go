@@ -504,6 +504,7 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 // IncludedNetworkUpdateOne is the builder for updating a single IncludedNetwork entity.
 type IncludedNetworkUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *IncludedNetworkMutation
 }
@@ -669,6 +670,13 @@ func (inuo *IncludedNetworkUpdateOne) RemoveIncludedNetworkToEnvironment(e ...*E
 	return inuo.RemoveIncludedNetworkToEnvironmentIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (inuo *IncludedNetworkUpdateOne) Select(field string, fields ...string) *IncludedNetworkUpdateOne {
+	inuo.fields = append([]string{field}, fields...)
+	return inuo
+}
+
 // Save executes the query and returns the updated IncludedNetwork entity.
 func (inuo *IncludedNetworkUpdateOne) Save(ctx context.Context) (*IncludedNetwork, error) {
 	var (
@@ -736,6 +744,18 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing IncludedNetwork.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := inuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, includednetwork.FieldID)
+		for _, f := range fields {
+			if !includednetwork.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != includednetwork.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := inuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

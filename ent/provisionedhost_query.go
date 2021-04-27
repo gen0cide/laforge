@@ -28,6 +28,7 @@ type ProvisionedHostQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.ProvisionedHost
@@ -61,6 +62,13 @@ func (phq *ProvisionedHostQuery) Limit(limit int) *ProvisionedHostQuery {
 // Offset adds an offset step to the query.
 func (phq *ProvisionedHostQuery) Offset(offset int) *ProvisionedHostQuery {
 	phq.offset = &offset
+	return phq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (phq *ProvisionedHostQuery) Unique(unique bool) *ProvisionedHostQuery {
+	phq.unique = &unique
 	return phq
 }
 
@@ -664,10 +672,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedHost)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_host_provisioned_host_to_provisioned_network; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_host_provisioned_host_to_provisioned_network == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_host_provisioned_host_to_provisioned_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(provisionednetwork.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -689,10 +701,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedHost)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_host_provisioned_host_to_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_host_provisioned_host_to_host == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_host_provisioned_host_to_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -714,10 +730,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedHost)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_host_provisioned_host_to_end_step_plan; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_host_provisioned_host_to_end_step_plan == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_host_provisioned_host_to_end_step_plan
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -785,7 +805,6 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(provisionedhost.ProvisionedHostToAgentStatusPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -804,13 +823,15 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, phq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "ProvisionedHostToAgentStatus": %v`, err)
+			return nil, fmt.Errorf(`query edges "ProvisionedHostToAgentStatus": %w`, err)
 		}
 		query.Where(agentstatus.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -832,10 +853,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedHost)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_provisioned_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].plan_plan_to_provisioned_host == nil {
+				continue
 			}
+			fk := *nodes[i].plan_plan_to_provisioned_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -857,10 +882,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedHost)
 		for i := range nodes {
-			if fk := nodes[i].gin_file_middleware_gin_file_middleware_to_provisioned_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].gin_file_middleware_gin_file_middleware_to_provisioned_host == nil {
+				continue
 			}
+			fk := *nodes[i].gin_file_middleware_gin_file_middleware_to_provisioned_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(ginfilemiddleware.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -889,7 +918,7 @@ func (phq *ProvisionedHostQuery) sqlCount(ctx context.Context) (int, error) {
 func (phq *ProvisionedHostQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := phq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -906,6 +935,9 @@ func (phq *ProvisionedHostQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   phq.sql,
 		Unique: true,
+	}
+	if unique := phq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := phq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -932,7 +964,7 @@ func (phq *ProvisionedHostQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := phq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, provisionedhost.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -951,7 +983,7 @@ func (phq *ProvisionedHostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range phq.order {
-		p(selector, provisionedhost.ValidColumn)
+		p(selector)
 	}
 	if offset := phq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1217,7 +1249,7 @@ func (phgb *ProvisionedHostGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(phgb.fields)+len(phgb.fns))
 	columns = append(columns, phgb.fields...)
 	for _, fn := range phgb.fns {
-		columns = append(columns, fn(selector, provisionedhost.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(phgb.fields...)
 }

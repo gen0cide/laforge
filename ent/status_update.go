@@ -608,6 +608,7 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // StatusUpdateOne is the builder for updating a single Status entity.
 type StatusUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *StatusMutation
 }
@@ -842,6 +843,13 @@ func (suo *StatusUpdateOne) ClearStatusToTeam() *StatusUpdateOne {
 	return suo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (suo *StatusUpdateOne) Select(field string, fields ...string) *StatusUpdateOne {
+	suo.fields = append([]string{field}, fields...)
+	return suo
+}
+
 // Save executes the query and returns the updated Status entity.
 func (suo *StatusUpdateOne) Save(ctx context.Context) (*Status, error) {
 	var (
@@ -930,6 +938,18 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Status.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := suo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, status.FieldID)
+		for _, f := range fields {
+			if !status.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != status.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := suo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

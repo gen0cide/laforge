@@ -383,6 +383,7 @@ func (hdu *HostDependencyUpdate) sqlSave(ctx context.Context) (n int, err error)
 // HostDependencyUpdateOne is the builder for updating a single HostDependency entity.
 type HostDependencyUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *HostDependencyMutation
 }
@@ -504,6 +505,13 @@ func (hduo *HostDependencyUpdateOne) ClearHostDependencyToEnvironment() *HostDep
 	return hduo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (hduo *HostDependencyUpdateOne) Select(field string, fields ...string) *HostDependencyUpdateOne {
+	hduo.fields = append([]string{field}, fields...)
+	return hduo
+}
+
 // Save executes the query and returns the updated HostDependency entity.
 func (hduo *HostDependencyUpdateOne) Save(ctx context.Context) (*HostDependency, error) {
 	var (
@@ -571,6 +579,18 @@ func (hduo *HostDependencyUpdateOne) sqlSave(ctx context.Context) (_node *HostDe
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing HostDependency.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := hduo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, hostdependency.FieldID)
+		for _, f := range fields {
+			if !hostdependency.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != hostdependency.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := hduo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

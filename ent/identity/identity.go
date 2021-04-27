@@ -25,10 +25,8 @@ const (
 	FieldVars = "vars"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeIdentityToEnvironment holds the string denoting the identitytoenvironment edge name in mutations.
 	EdgeIdentityToEnvironment = "IdentityToEnvironment"
-
 	// Table holds the table name of the identity in the database.
 	Table = "identities"
 	// IdentityToEnvironmentTable is the table the holds the IdentityToEnvironment relation/edge.
@@ -54,7 +52,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Identity type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "identities"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_identity",
 }

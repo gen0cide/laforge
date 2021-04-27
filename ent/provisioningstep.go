@@ -239,27 +239,27 @@ func (*ProvisioningStep) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case provisioningstep.FieldID, provisioningstep.FieldStepNumber:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.FieldType:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case provisioningstep.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioning_step
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[1]: // plan_plan_to_provisioning_step
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[2]: // provisioning_step_provisioning_step_to_provisioned_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[3]: // provisioning_step_provisioning_step_to_script
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[4]: // provisioning_step_provisioning_step_to_command
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[5]: // provisioning_step_provisioning_step_to_dns_record
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[6]: // provisioning_step_provisioning_step_to_file_delete
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[7]: // provisioning_step_provisioning_step_to_file_download
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisioningstep.ForeignKeys[8]: // provisioning_step_provisioning_step_to_file_extract
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisioningStep", columns[i])
 		}

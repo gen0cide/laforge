@@ -17,10 +17,8 @@ const (
 	FieldType = "type"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeFileExtractToEnvironment holds the string denoting the fileextracttoenvironment edge name in mutations.
 	EdgeFileExtractToEnvironment = "FileExtractToEnvironment"
-
 	// Table holds the table name of the fileextract in the database.
 	Table = "file_extracts"
 	// FileExtractToEnvironmentTable is the table the holds the FileExtractToEnvironment relation/edge.
@@ -42,7 +40,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the FileExtract type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "file_extracts"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_file_extract",
 }

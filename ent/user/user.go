@@ -15,12 +15,10 @@ const (
 	FieldEmail = "email"
 	// FieldHclID holds the string denoting the hcl_id field in the database.
 	FieldHclID = "hcl_id"
-
 	// EdgeUserToTag holds the string denoting the usertotag edge name in mutations.
 	EdgeUserToTag = "UserToTag"
 	// EdgeUserToEnvironment holds the string denoting the usertoenvironment edge name in mutations.
 	EdgeUserToEnvironment = "UserToEnvironment"
-
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// UserToTagTable is the table the holds the UserToTag relation/edge.
@@ -46,7 +44,8 @@ var Columns = []string{
 	FieldHclID,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the User type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"command_command_to_user",
 	"finding_finding_to_user",

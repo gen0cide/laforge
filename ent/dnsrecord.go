@@ -73,15 +73,15 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case dnsrecord.FieldValues, dnsrecord.FieldVars, dnsrecord.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case dnsrecord.FieldDisabled:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case dnsrecord.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case dnsrecord.FieldHclID, dnsrecord.FieldName, dnsrecord.FieldType, dnsrecord.FieldZone:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case dnsrecord.ForeignKeys[0]: // environment_environment_to_dns_record
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNSRecord", columns[i])
 		}
@@ -121,7 +121,7 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field values", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &dr.Values); err != nil {
-					return fmt.Errorf("unmarshal field values: %v", err)
+					return fmt.Errorf("unmarshal field values: %w", err)
 				}
 			}
 		case dnsrecord.FieldType:
@@ -142,7 +142,7 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &dr.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case dnsrecord.FieldDisabled:
@@ -157,7 +157,7 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &dr.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case dnsrecord.ForeignKeys[0]:

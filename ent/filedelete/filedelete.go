@@ -13,10 +13,8 @@ const (
 	FieldPath = "path"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeFileDeleteToEnvironment holds the string denoting the filedeletetoenvironment edge name in mutations.
 	EdgeFileDeleteToEnvironment = "FileDeleteToEnvironment"
-
 	// Table holds the table name of the filedelete in the database.
 	Table = "file_deletes"
 	// FileDeleteToEnvironmentTable is the table the holds the FileDeleteToEnvironment relation/edge.
@@ -36,7 +34,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the FileDelete type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "file_deletes"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_file_delete",
 }

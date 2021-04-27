@@ -13,12 +13,10 @@ const (
 	FieldFilePath = "file_path"
 	// FieldAccessed holds the string denoting the accessed field in the database.
 	FieldAccessed = "accessed"
-
 	// EdgeGinFileMiddlewareToProvisionedHost holds the string denoting the ginfilemiddlewaretoprovisionedhost edge name in mutations.
 	EdgeGinFileMiddlewareToProvisionedHost = "GinFileMiddlewareToProvisionedHost"
 	// EdgeGinFileMiddlewareToProvisioningStep holds the string denoting the ginfilemiddlewaretoprovisioningstep edge name in mutations.
 	EdgeGinFileMiddlewareToProvisioningStep = "GinFileMiddlewareToProvisioningStep"
-
 	// Table holds the table name of the ginfilemiddleware in the database.
 	Table = "gin_file_middlewares"
 	// GinFileMiddlewareToProvisionedHostTable is the table the holds the GinFileMiddlewareToProvisionedHost relation/edge.

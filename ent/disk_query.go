@@ -21,6 +21,7 @@ type DiskQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Disk
@@ -47,6 +48,13 @@ func (dq *DiskQuery) Limit(limit int) *DiskQuery {
 // Offset adds an offset step to the query.
 func (dq *DiskQuery) Offset(offset int) *DiskQuery {
 	dq.offset = &offset
+	return dq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (dq *DiskQuery) Unique(unique bool) *DiskQuery {
+	dq.unique = &unique
 	return dq
 }
 
@@ -377,10 +385,14 @@ func (dq *DiskQuery) sqlAll(ctx context.Context) ([]*Disk, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Disk)
 		for i := range nodes {
-			if fk := nodes[i].host_host_to_disk; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].host_host_to_disk == nil {
+				continue
 			}
+			fk := *nodes[i].host_host_to_disk
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -409,7 +421,7 @@ func (dq *DiskQuery) sqlCount(ctx context.Context) (int, error) {
 func (dq *DiskQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := dq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -426,6 +438,9 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   dq.sql,
 		Unique: true,
+	}
+	if unique := dq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := dq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -452,7 +467,7 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := dq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, disk.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -471,7 +486,7 @@ func (dq *DiskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range dq.order {
-		p(selector, disk.ValidColumn)
+		p(selector)
 	}
 	if offset := dq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -737,7 +752,7 @@ func (dgb *DiskGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
 	columns = append(columns, dgb.fields...)
 	for _, fn := range dgb.fns {
-		columns = append(columns, fn(selector, disk.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(dgb.fields...)
 }

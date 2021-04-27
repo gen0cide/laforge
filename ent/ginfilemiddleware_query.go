@@ -23,6 +23,7 @@ type GinFileMiddlewareQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.GinFileMiddleware
@@ -49,6 +50,13 @@ func (gfmq *GinFileMiddlewareQuery) Limit(limit int) *GinFileMiddlewareQuery {
 // Offset adds an offset step to the query.
 func (gfmq *GinFileMiddlewareQuery) Offset(offset int) *GinFileMiddlewareQuery {
 	gfmq.offset = &offset
+	return gfmq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (gfmq *GinFileMiddlewareQuery) Unique(unique bool) *GinFileMiddlewareQuery {
+	gfmq.unique = &unique
 	return gfmq
 }
 
@@ -470,7 +478,7 @@ func (gfmq *GinFileMiddlewareQuery) sqlCount(ctx context.Context) (int, error) {
 func (gfmq *GinFileMiddlewareQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := gfmq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -487,6 +495,9 @@ func (gfmq *GinFileMiddlewareQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   gfmq.sql,
 		Unique: true,
+	}
+	if unique := gfmq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := gfmq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -513,7 +524,7 @@ func (gfmq *GinFileMiddlewareQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := gfmq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, ginfilemiddleware.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -532,7 +543,7 @@ func (gfmq *GinFileMiddlewareQuery) sqlQuery(ctx context.Context) *sql.Selector 
 		p(selector)
 	}
 	for _, p := range gfmq.order {
-		p(selector, ginfilemiddleware.ValidColumn)
+		p(selector)
 	}
 	if offset := gfmq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -798,7 +809,7 @@ func (gfmgb *GinFileMiddlewareGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(gfmgb.fields)+len(gfmgb.fns))
 	columns = append(columns, gfmgb.fields...)
 	for _, fn := range gfmgb.fns {
-		columns = append(columns, fn(selector, ginfilemiddleware.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(gfmgb.fields...)
 }

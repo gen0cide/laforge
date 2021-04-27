@@ -77,15 +77,15 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case filedownload.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case filedownload.FieldTemplate, filedownload.FieldDisabled:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case filedownload.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case filedownload.FieldHclID, filedownload.FieldSourceType, filedownload.FieldSource, filedownload.FieldDestination, filedownload.FieldPerms, filedownload.FieldMd5, filedownload.FieldAbsPath:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case filedownload.ForeignKeys[0]: // environment_environment_to_file_download
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDownload", columns[i])
 		}
@@ -167,7 +167,7 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &fd.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case filedownload.ForeignKeys[0]:

@@ -11,7 +11,6 @@ const (
 	FieldName = "name"
 	// FieldHosts holds the string denoting the hosts field in the database.
 	FieldHosts = "hosts"
-
 	// EdgeIncludedNetworkToTag holds the string denoting the includednetworktotag edge name in mutations.
 	EdgeIncludedNetworkToTag = "IncludedNetworkToTag"
 	// EdgeIncludedNetworkToHost holds the string denoting the includednetworktohost edge name in mutations.
@@ -20,7 +19,6 @@ const (
 	EdgeIncludedNetworkToNetwork = "IncludedNetworkToNetwork"
 	// EdgeIncludedNetworkToEnvironment holds the string denoting the includednetworktoenvironment edge name in mutations.
 	EdgeIncludedNetworkToEnvironment = "IncludedNetworkToEnvironment"
-
 	// Table holds the table name of the includednetwork in the database.
 	Table = "included_networks"
 	// IncludedNetworkToTagTable is the table the holds the IncludedNetworkToTag relation/edge.

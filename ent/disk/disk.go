@@ -9,10 +9,8 @@ const (
 	FieldID = "id"
 	// FieldSize holds the string denoting the size field in the database.
 	FieldSize = "size"
-
 	// EdgeDiskToHost holds the string denoting the disktohost edge name in mutations.
 	EdgeDiskToHost = "DiskToHost"
-
 	// Table holds the table name of the disk in the database.
 	Table = "disks"
 	// DiskToHostTable is the table the holds the DiskToHost relation/edge.
@@ -30,7 +28,8 @@ var Columns = []string{
 	FieldSize,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Disk type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "disks"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"host_host_to_disk",
 }

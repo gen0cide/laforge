@@ -67,13 +67,13 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case fileextract.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case fileextract.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case fileextract.FieldHclID, fileextract.FieldSource, fileextract.FieldDestination, fileextract.FieldType:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case fileextract.ForeignKeys[0]: // environment_environment_to_file_extract
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileExtract", columns[i])
 		}
@@ -125,7 +125,7 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &fe.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case fileextract.ForeignKeys[0]:

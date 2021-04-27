@@ -78,11 +78,11 @@ func (*AgentStatus) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case agentstatus.FieldLoad1, agentstatus.FieldLoad5, agentstatus.FieldLoad15:
-			values[i] = &sql.NullFloat64{}
+			values[i] = new(sql.NullFloat64)
 		case agentstatus.FieldID, agentstatus.FieldUpTime, agentstatus.FieldBootTime, agentstatus.FieldNumProcs, agentstatus.FieldTotalMem, agentstatus.FieldFreeMem, agentstatus.FieldUsedMem, agentstatus.FieldTimestamp:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case agentstatus.FieldClientID, agentstatus.FieldHostname, agentstatus.FieldOs, agentstatus.FieldHostID:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AgentStatus", columns[i])
 		}

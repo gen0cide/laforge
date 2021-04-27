@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -23,7 +24,10 @@ func (ProvisionedHost) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("ProvisionedHostToStatus", Status.Type).
 			Required().
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("ProvisionedHostToProvisionedNetwork", ProvisionedNetwork.Type).
 			Required().
 			Unique(),
@@ -31,14 +35,23 @@ func (ProvisionedHost) Edges() []ent.Edge {
 			Required().
 			Unique(),
 		edge.To("ProvisionedHostToEndStepPlan", Plan.Type).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).
 			Ref("ProvisioningStepToProvisionedHost"),
 		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).
-			Ref("AgentStatusToProvisionedHost"),
+			Ref("AgentStatusToProvisionedHost").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ProvisionedHostToPlan", Plan.Type).
 			Ref("PlanToProvisionedHost").
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ProvisionedHostToGinFileMiddleware", GinFileMiddleware.Type).
 			Ref("GinFileMiddlewareToProvisionedHost").
 			Unique(),

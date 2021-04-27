@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -22,13 +23,22 @@ func (ProvisionedNetwork) Fields() []ent.Field {
 // Edges of the ProvisionedNetwork.
 func (ProvisionedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ProvisionedNetworkToStatus", Status.Type).Unique(),
+		edge.To("ProvisionedNetworkToStatus", Status.Type).Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("ProvisionedNetworkToNetwork", Network.Type).Unique(),
 		edge.To("ProvisionedNetworkToBuild", Build.Type).Unique(),
 		edge.To("ProvisionedNetworkToTeam", Team.Type).Unique(),
 		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).
-			Ref("ProvisionedHostToProvisionedNetwork"),
+			Ref("ProvisionedHostToProvisionedNetwork").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("ProvisionedNetworkToPlan", Plan.Type).
-			Ref("PlanToProvisionedNetwork").Unique(),
+			Ref("PlanToProvisionedNetwork").Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }

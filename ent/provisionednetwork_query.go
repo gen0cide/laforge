@@ -27,6 +27,7 @@ type ProvisionedNetworkQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.ProvisionedNetwork
@@ -58,6 +59,13 @@ func (pnq *ProvisionedNetworkQuery) Limit(limit int) *ProvisionedNetworkQuery {
 // Offset adds an offset step to the query.
 func (pnq *ProvisionedNetworkQuery) Offset(offset int) *ProvisionedNetworkQuery {
 	pnq.offset = &offset
+	return pnq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (pnq *ProvisionedNetworkQuery) Unique(unique bool) *ProvisionedNetworkQuery {
+	pnq.unique = &unique
 	return pnq
 }
 
@@ -591,10 +599,14 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedNetwork)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_network_provisioned_network_to_network; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_network_provisioned_network_to_network == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_network_provisioned_network_to_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(network.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -616,10 +628,14 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedNetwork)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_network_provisioned_network_to_build; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_network_provisioned_network_to_build == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_network_provisioned_network_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -641,10 +657,14 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedNetwork)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_network_provisioned_network_to_team; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_network_provisioned_network_to_team == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_network_provisioned_network_to_team
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(team.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -695,10 +715,14 @@ func (pnq *ProvisionedNetworkQuery) sqlAll(ctx context.Context) ([]*ProvisionedN
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*ProvisionedNetwork)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_provisioned_network; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].plan_plan_to_provisioned_network == nil {
+				continue
 			}
+			fk := *nodes[i].plan_plan_to_provisioned_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -727,7 +751,7 @@ func (pnq *ProvisionedNetworkQuery) sqlCount(ctx context.Context) (int, error) {
 func (pnq *ProvisionedNetworkQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := pnq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -744,6 +768,9 @@ func (pnq *ProvisionedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   pnq.sql,
 		Unique: true,
+	}
+	if unique := pnq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := pnq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -770,7 +797,7 @@ func (pnq *ProvisionedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := pnq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, provisionednetwork.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -789,7 +816,7 @@ func (pnq *ProvisionedNetworkQuery) sqlQuery(ctx context.Context) *sql.Selector 
 		p(selector)
 	}
 	for _, p := range pnq.order {
-		p(selector, provisionednetwork.ValidColumn)
+		p(selector)
 	}
 	if offset := pnq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1055,7 +1082,7 @@ func (pngb *ProvisionedNetworkGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(pngb.fields)+len(pngb.fns))
 	columns = append(columns, pngb.fields...)
 	for _, fn := range pngb.fns {
-		columns = append(columns, fn(selector, provisionednetwork.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(pngb.fields...)
 }

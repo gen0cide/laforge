@@ -23,7 +23,6 @@ const (
 	FieldDifficulty = "difficulty"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeFindingToUser holds the string denoting the findingtouser edge name in mutations.
 	EdgeFindingToUser = "FindingToUser"
 	// EdgeFindingToHost holds the string denoting the findingtohost edge name in mutations.
@@ -32,7 +31,6 @@ const (
 	EdgeFindingToScript = "FindingToScript"
 	// EdgeFindingToEnvironment holds the string denoting the findingtoenvironment edge name in mutations.
 	EdgeFindingToEnvironment = "FindingToEnvironment"
-
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
 	// FindingToUserTable is the table the holds the FindingToUser relation/edge.
@@ -75,7 +73,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Finding type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "findings"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_finding",
 	"finding_finding_to_host",

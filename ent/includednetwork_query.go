@@ -25,6 +25,7 @@ type IncludedNetworkQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.IncludedNetwork
@@ -53,6 +54,13 @@ func (inq *IncludedNetworkQuery) Limit(limit int) *IncludedNetworkQuery {
 // Offset adds an offset step to the query.
 func (inq *IncludedNetworkQuery) Offset(offset int) *IncludedNetworkQuery {
 	inq.offset = &offset
+	return inq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (inq *IncludedNetworkQuery) Unique(unique bool) *IncludedNetworkQuery {
+	inq.unique = &unique
 	return inq
 }
 
@@ -527,7 +535,6 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToHostPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -546,13 +553,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, inq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "IncludedNetworkToHost": %v`, err)
+			return nil, fmt.Errorf(`query edges "IncludedNetworkToHost": %w`, err)
 		}
 		query.Where(host.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -591,7 +600,6 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToNetworkPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -610,13 +618,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, inq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "IncludedNetworkToNetwork": %v`, err)
+			return nil, fmt.Errorf(`query edges "IncludedNetworkToNetwork": %w`, err)
 		}
 		query.Where(network.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -655,7 +665,6 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToEnvironmentPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -674,13 +683,15 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, inq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "IncludedNetworkToEnvironment": %v`, err)
+			return nil, fmt.Errorf(`query edges "IncludedNetworkToEnvironment": %w`, err)
 		}
 		query.Where(environment.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -709,7 +720,7 @@ func (inq *IncludedNetworkQuery) sqlCount(ctx context.Context) (int, error) {
 func (inq *IncludedNetworkQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := inq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -726,6 +737,9 @@ func (inq *IncludedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   inq.sql,
 		Unique: true,
+	}
+	if unique := inq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := inq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -752,7 +766,7 @@ func (inq *IncludedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := inq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, includednetwork.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -771,7 +785,7 @@ func (inq *IncludedNetworkQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range inq.order {
-		p(selector, includednetwork.ValidColumn)
+		p(selector)
 	}
 	if offset := inq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1037,7 +1051,7 @@ func (ingb *IncludedNetworkGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(ingb.fields)+len(ingb.fns))
 	columns = append(columns, ingb.fields...)
 	for _, fn := range ingb.fns {
-		columns = append(columns, fn(selector, includednetwork.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(ingb.fields...)
 }

@@ -11,7 +11,6 @@ const (
 	FieldHostID = "host_id"
 	// FieldNetworkID holds the string denoting the network_id field in the database.
 	FieldNetworkID = "network_id"
-
 	// EdgeHostDependencyToDependOnHost holds the string denoting the hostdependencytodependonhost edge name in mutations.
 	EdgeHostDependencyToDependOnHost = "HostDependencyToDependOnHost"
 	// EdgeHostDependencyToDependByHost holds the string denoting the hostdependencytodependbyhost edge name in mutations.
@@ -20,7 +19,6 @@ const (
 	EdgeHostDependencyToNetwork = "HostDependencyToNetwork"
 	// EdgeHostDependencyToEnvironment holds the string denoting the hostdependencytoenvironment edge name in mutations.
 	EdgeHostDependencyToEnvironment = "HostDependencyToEnvironment"
-
 	// Table holds the table name of the hostdependency in the database.
 	Table = "host_dependencies"
 	// HostDependencyToDependOnHostTable is the table the holds the HostDependencyToDependOnHost relation/edge.
@@ -60,7 +58,8 @@ var Columns = []string{
 	FieldNetworkID,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the HostDependency type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "host_dependencies"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_host_dependency",
 	"host_dependency_host_dependency_to_depend_on_host",

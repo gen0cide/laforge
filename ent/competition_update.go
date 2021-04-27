@@ -409,6 +409,7 @@ func (cu *CompetitionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // CompetitionUpdateOne is the builder for updating a single Competition entity.
 type CompetitionUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *CompetitionMutation
 }
@@ -539,6 +540,13 @@ func (cuo *CompetitionUpdateOne) RemoveCompetitionToBuild(b ...*Build) *Competit
 	return cuo.RemoveCompetitionToBuildIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (cuo *CompetitionUpdateOne) Select(field string, fields ...string) *CompetitionUpdateOne {
+	cuo.fields = append([]string{field}, fields...)
+	return cuo
+}
+
 // Save executes the query and returns the updated Competition entity.
 func (cuo *CompetitionUpdateOne) Save(ctx context.Context) (*Competition, error) {
 	var (
@@ -606,6 +614,18 @@ func (cuo *CompetitionUpdateOne) sqlSave(ctx context.Context) (_node *Competitio
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Competition.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := cuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, competition.FieldID)
+		for _, f := range fields {
+			if !competition.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != competition.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := cuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

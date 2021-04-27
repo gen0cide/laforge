@@ -292,6 +292,7 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // IdentityUpdateOne is the builder for updating a single Identity entity.
 type IdentityUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *IdentityMutation
 }
@@ -380,6 +381,13 @@ func (iuo *IdentityUpdateOne) ClearIdentityToEnvironment() *IdentityUpdateOne {
 	return iuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (iuo *IdentityUpdateOne) Select(field string, fields ...string) *IdentityUpdateOne {
+	iuo.fields = append([]string{field}, fields...)
+	return iuo
+}
+
 // Save executes the query and returns the updated Identity entity.
 func (iuo *IdentityUpdateOne) Save(ctx context.Context) (*Identity, error) {
 	var (
@@ -447,6 +455,18 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Identity.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := iuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, identity.FieldID)
+		for _, f := range fields {
+			if !identity.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != identity.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := iuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

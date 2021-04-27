@@ -527,6 +527,7 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // AgentStatusUpdateOne is the builder for updating a single AgentStatus entity.
 type AgentStatusUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *AgentStatusMutation
 }
@@ -726,6 +727,13 @@ func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHost(p ...*Provi
 	return asuo.RemoveAgentStatusToProvisionedHostIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (asuo *AgentStatusUpdateOne) Select(field string, fields ...string) *AgentStatusUpdateOne {
+	asuo.fields = append([]string{field}, fields...)
+	return asuo
+}
+
 // Save executes the query and returns the updated AgentStatus entity.
 func (asuo *AgentStatusUpdateOne) Save(ctx context.Context) (*AgentStatus, error) {
 	var (
@@ -793,6 +801,18 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing AgentStatus.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := asuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, agentstatus.FieldID)
+		for _, f := range fields {
+			if !agentstatus.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != agentstatus.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := asuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

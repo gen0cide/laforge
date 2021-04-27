@@ -37,6 +37,7 @@ type EnvironmentQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Environment
@@ -77,6 +78,13 @@ func (eq *EnvironmentQuery) Limit(limit int) *EnvironmentQuery {
 // Offset adds an offset step to the query.
 func (eq *EnvironmentQuery) Offset(offset int) *EnvironmentQuery {
 	eq.offset = &offset
+	return eq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (eq *EnvironmentQuery) Unique(unique bool) *EnvironmentQuery {
+	eq.unique = &unique
 	return eq
 }
 
@@ -942,7 +950,6 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(environment.EnvironmentToUserPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -961,13 +968,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToUser": %v`, err)
+			return nil, fmt.Errorf(`query edges "EnvironmentToUser": %w`, err)
 		}
 		query.Where(user.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -1238,7 +1247,6 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(environment.EnvironmentToIncludedNetworkPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -1257,13 +1265,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToIncludedNetwork": %v`, err)
+			return nil, fmt.Errorf(`query edges "EnvironmentToIncludedNetwork": %w`, err)
 		}
 		query.Where(includednetwork.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -1360,7 +1370,6 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(environment.EnvironmentToDNSPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -1379,13 +1388,15 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, eq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "EnvironmentToDNS": %v`, err)
+			return nil, fmt.Errorf(`query edges "EnvironmentToDNS": %w`, err)
 		}
 		query.Where(dns.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -1501,7 +1512,7 @@ func (eq *EnvironmentQuery) sqlCount(ctx context.Context) (int, error) {
 func (eq *EnvironmentQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := eq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -1518,6 +1529,9 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   eq.sql,
 		Unique: true,
+	}
+	if unique := eq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := eq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -1544,7 +1558,7 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := eq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, environment.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -1563,7 +1577,7 @@ func (eq *EnvironmentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range eq.order {
-		p(selector, environment.ValidColumn)
+		p(selector)
 	}
 	if offset := eq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1829,7 +1843,7 @@ func (egb *EnvironmentGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(egb.fields)+len(egb.fns))
 	columns = append(columns, egb.fields...)
 	for _, fn := range egb.fns {
-		columns = append(columns, fn(selector, environment.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(egb.fields...)
 }

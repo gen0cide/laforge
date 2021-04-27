@@ -435,6 +435,7 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // NetworkUpdateOne is the builder for updating a single Network entity.
 type NetworkUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *NetworkMutation
 }
@@ -577,6 +578,13 @@ func (nuo *NetworkUpdateOne) RemoveNetworkToIncludedNetwork(i ...*IncludedNetwor
 	return nuo.RemoveNetworkToIncludedNetworkIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (nuo *NetworkUpdateOne) Select(field string, fields ...string) *NetworkUpdateOne {
+	nuo.fields = append([]string{field}, fields...)
+	return nuo
+}
+
 // Save executes the query and returns the updated Network entity.
 func (nuo *NetworkUpdateOne) Save(ctx context.Context) (*Network, error) {
 	var (
@@ -644,6 +652,18 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Network.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := nuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, network.FieldID)
+		for _, f := range fields {
+			if !network.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != network.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := nuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

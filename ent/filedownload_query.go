@@ -21,6 +21,7 @@ type FileDownloadQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.FileDownload
@@ -47,6 +48,13 @@ func (fdq *FileDownloadQuery) Limit(limit int) *FileDownloadQuery {
 // Offset adds an offset step to the query.
 func (fdq *FileDownloadQuery) Offset(offset int) *FileDownloadQuery {
 	fdq.offset = &offset
+	return fdq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (fdq *FileDownloadQuery) Unique(unique bool) *FileDownloadQuery {
+	fdq.unique = &unique
 	return fdq
 }
 
@@ -377,10 +385,14 @@ func (fdq *FileDownloadQuery) sqlAll(ctx context.Context) ([]*FileDownload, erro
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*FileDownload)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_file_download; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_file_download == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_file_download
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -409,7 +421,7 @@ func (fdq *FileDownloadQuery) sqlCount(ctx context.Context) (int, error) {
 func (fdq *FileDownloadQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := fdq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -426,6 +438,9 @@ func (fdq *FileDownloadQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   fdq.sql,
 		Unique: true,
+	}
+	if unique := fdq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := fdq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -452,7 +467,7 @@ func (fdq *FileDownloadQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := fdq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, filedownload.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -471,7 +486,7 @@ func (fdq *FileDownloadQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range fdq.order {
-		p(selector, filedownload.ValidColumn)
+		p(selector)
 	}
 	if offset := fdq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -737,7 +752,7 @@ func (fdgb *FileDownloadGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(fdgb.fields)+len(fdgb.fns))
 	columns = append(columns, fdgb.fields...)
 	for _, fn := range fdgb.fns {
-		columns = append(columns, fn(selector, filedownload.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(fdgb.fields...)
 }

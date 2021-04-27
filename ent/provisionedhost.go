@@ -182,19 +182,19 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case provisionedhost.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionedhost.FieldSubnetIP:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case provisionedhost.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioned_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionedhost.ForeignKeys[1]: // plan_plan_to_provisioned_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_provisioned_network
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionedhost.ForeignKeys[4]: // provisioned_host_provisioned_host_to_end_step_plan
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
 		}

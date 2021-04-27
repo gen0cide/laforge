@@ -40,7 +40,7 @@ type {{ $.Name }} struct {
 				// {{ $line }}
 			{{- end }}
 		{{- end }}
-		{{ $f.StructField }} {{ if $f.Nillable }}*{{ end }}{{ $f.Type }} {{ if not $f.Sensitive }}`{{ $tag }}`{{ else }}{{ template "model/omittags" $ }}{{ end }}
+		{{ $f.StructField }} {{ if $f.NillableValue }}*{{ end }}{{ $f.Type }} {{ if not $f.Sensitive }}`{{ $tag }}`{{ else }}{{ template "model/omittags" $ }}{{ end }}
 	{{- end }}
 	{{- with $.Edges }}
 		// Edges holds the relations/edges for other nodes in the graph.

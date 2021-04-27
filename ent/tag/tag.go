@@ -13,7 +13,6 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
 )
@@ -26,7 +25,8 @@ var Columns = []string{
 	FieldDescription,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Tag type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "tags"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"included_network_included_network_to_tag",
 	"user_user_to_tag",

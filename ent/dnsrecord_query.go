@@ -21,6 +21,7 @@ type DNSRecordQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.DNSRecord
@@ -47,6 +48,13 @@ func (drq *DNSRecordQuery) Limit(limit int) *DNSRecordQuery {
 // Offset adds an offset step to the query.
 func (drq *DNSRecordQuery) Offset(offset int) *DNSRecordQuery {
 	drq.offset = &offset
+	return drq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (drq *DNSRecordQuery) Unique(unique bool) *DNSRecordQuery {
+	drq.unique = &unique
 	return drq
 }
 
@@ -377,10 +385,14 @@ func (drq *DNSRecordQuery) sqlAll(ctx context.Context) ([]*DNSRecord, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*DNSRecord)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_dns_record; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_dns_record == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_dns_record
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -409,7 +421,7 @@ func (drq *DNSRecordQuery) sqlCount(ctx context.Context) (int, error) {
 func (drq *DNSRecordQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := drq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -426,6 +438,9 @@ func (drq *DNSRecordQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   drq.sql,
 		Unique: true,
+	}
+	if unique := drq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := drq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -452,7 +467,7 @@ func (drq *DNSRecordQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := drq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, dnsrecord.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -471,7 +486,7 @@ func (drq *DNSRecordQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range drq.order {
-		p(selector, dnsrecord.ValidColumn)
+		p(selector)
 	}
 	if offset := drq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -737,7 +752,7 @@ func (drgb *DNSRecordGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(drgb.fields)+len(drgb.fns))
 	columns = append(columns, drgb.fields...)
 	for _, fn := range drgb.fns {
-		columns = append(columns, fn(selector, dnsrecord.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(drgb.fields...)
 }

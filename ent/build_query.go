@@ -27,6 +27,7 @@ type BuildQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Build
@@ -58,6 +59,13 @@ func (bq *BuildQuery) Limit(limit int) *BuildQuery {
 // Offset adds an offset step to the query.
 func (bq *BuildQuery) Offset(offset int) *BuildQuery {
 	bq.offset = &offset
+	return bq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (bq *BuildQuery) Unique(unique bool) *BuildQuery {
+	bq.unique = &unique
 	return bq
 }
 
@@ -591,10 +599,14 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Build)
 		for i := range nodes {
-			if fk := nodes[i].build_build_to_environment; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].build_build_to_environment == nil {
+				continue
 			}
+			fk := *nodes[i].build_build_to_environment
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -616,10 +628,14 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Build)
 		for i := range nodes {
-			if fk := nodes[i].build_build_to_competition; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].build_build_to_competition == nil {
+				continue
 			}
+			fk := *nodes[i].build_build_to_competition
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(competition.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -735,7 +751,7 @@ func (bq *BuildQuery) sqlCount(ctx context.Context) (int, error) {
 func (bq *BuildQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := bq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -752,6 +768,9 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   bq.sql,
 		Unique: true,
+	}
+	if unique := bq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := bq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -778,7 +797,7 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := bq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, build.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -797,7 +816,7 @@ func (bq *BuildQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range bq.order {
-		p(selector, build.ValidColumn)
+		p(selector)
 	}
 	if offset := bq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1063,7 +1082,7 @@ func (bgb *BuildGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(bgb.fields)+len(bgb.fns))
 	columns = append(columns, bgb.fields...)
 	for _, fn := range bgb.fns {
-		columns = append(columns, fn(selector, build.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(bgb.fields...)
 }

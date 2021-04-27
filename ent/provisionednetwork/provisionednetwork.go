@@ -11,7 +11,6 @@ const (
 	FieldName = "name"
 	// FieldCidr holds the string denoting the cidr field in the database.
 	FieldCidr = "cidr"
-
 	// EdgeProvisionedNetworkToStatus holds the string denoting the provisionednetworktostatus edge name in mutations.
 	EdgeProvisionedNetworkToStatus = "ProvisionedNetworkToStatus"
 	// EdgeProvisionedNetworkToNetwork holds the string denoting the provisionednetworktonetwork edge name in mutations.
@@ -24,7 +23,6 @@ const (
 	EdgeProvisionedNetworkToProvisionedHost = "ProvisionedNetworkToProvisionedHost"
 	// EdgeProvisionedNetworkToPlan holds the string denoting the provisionednetworktoplan edge name in mutations.
 	EdgeProvisionedNetworkToPlan = "ProvisionedNetworkToPlan"
-
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
 	// ProvisionedNetworkToStatusTable is the table the holds the ProvisionedNetworkToStatus relation/edge.
@@ -78,7 +76,8 @@ var Columns = []string{
 	FieldCidr,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedNetwork type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "provisioned_networks"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"plan_plan_to_provisioned_network",
 	"provisioned_network_provisioned_network_to_network",

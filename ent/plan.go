@@ -164,11 +164,11 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case plan.FieldID, plan.FieldStepNumber, plan.FieldBuildID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case plan.FieldType:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case plan.ForeignKeys[0]: // plan_plan_to_build
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
 		}

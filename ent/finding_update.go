@@ -474,6 +474,7 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // FindingUpdateOne is the builder for updating a single Finding entity.
 type FindingUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *FindingMutation
 }
@@ -624,6 +625,13 @@ func (fuo *FindingUpdateOne) ClearFindingToEnvironment() *FindingUpdateOne {
 	return fuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (fuo *FindingUpdateOne) Select(field string, fields ...string) *FindingUpdateOne {
+	fuo.fields = append([]string{field}, fields...)
+	return fuo
+}
+
 // Save executes the query and returns the updated Finding entity.
 func (fuo *FindingUpdateOne) Save(ctx context.Context) (*Finding, error) {
 	var (
@@ -712,6 +720,18 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Finding.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := fuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, finding.FieldID)
+		for _, f := range fields {
+			if !finding.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != finding.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := fuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

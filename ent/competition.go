@@ -91,13 +91,13 @@ func (*Competition) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case competition.FieldConfig, competition.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case competition.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case competition.FieldHclID, competition.FieldRootPassword:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case competition.ForeignKeys[0]: // environment_environment_to_competition
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Competition", columns[i])
 		}
@@ -137,7 +137,7 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &c.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %v", err)
+					return fmt.Errorf("unmarshal field config: %w", err)
 				}
 			}
 		case competition.FieldTags:
@@ -146,7 +146,7 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &c.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case competition.ForeignKeys[0]:

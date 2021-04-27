@@ -23,10 +23,8 @@ const (
 	FieldDisabled = "disabled"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeDNSRecordToEnvironment holds the string denoting the dnsrecordtoenvironment edge name in mutations.
 	EdgeDNSRecordToEnvironment = "DNSRecordToEnvironment"
-
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
 	// DNSRecordToEnvironmentTable is the table the holds the DNSRecordToEnvironment relation/edge.
@@ -51,7 +49,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "dns_records"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_dns_record",
 }

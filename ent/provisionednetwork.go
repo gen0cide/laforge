@@ -152,17 +152,17 @@ func (*ProvisionedNetwork) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case provisionednetwork.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionednetwork.FieldName, provisionednetwork.FieldCidr:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case provisionednetwork.ForeignKeys[0]: // plan_plan_to_provisioned_network
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionednetwork.ForeignKeys[1]: // provisioned_network_provisioned_network_to_network
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionednetwork.ForeignKeys[2]: // provisioned_network_provisioned_network_to_build
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case provisionednetwork.ForeignKeys[3]: // provisioned_network_provisioned_network_to_team
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedNetwork", columns[i])
 		}

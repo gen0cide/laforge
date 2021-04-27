@@ -92,15 +92,15 @@ func (*Command) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case command.FieldArgs, command.FieldVars, command.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case command.FieldIgnoreErrors, command.FieldDisabled:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case command.FieldID, command.FieldCooldown, command.FieldTimeout:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case command.FieldHclID, command.FieldName, command.FieldDescription, command.FieldProgram:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case command.ForeignKeys[0]: // environment_environment_to_command
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Command", columns[i])
 		}
@@ -152,7 +152,7 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field args", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &c.Args); err != nil {
-					return fmt.Errorf("unmarshal field args: %v", err)
+					return fmt.Errorf("unmarshal field args: %w", err)
 				}
 			}
 		case command.FieldIgnoreErrors:
@@ -185,7 +185,7 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &c.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case command.FieldTags:
@@ -194,7 +194,7 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &c.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case command.ForeignKeys[0]:

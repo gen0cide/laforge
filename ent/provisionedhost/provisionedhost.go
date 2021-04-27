@@ -9,7 +9,6 @@ const (
 	FieldID = "id"
 	// FieldSubnetIP holds the string denoting the subnet_ip field in the database.
 	FieldSubnetIP = "subnet_ip"
-
 	// EdgeProvisionedHostToStatus holds the string denoting the provisionedhosttostatus edge name in mutations.
 	EdgeProvisionedHostToStatus = "ProvisionedHostToStatus"
 	// EdgeProvisionedHostToProvisionedNetwork holds the string denoting the provisionedhosttoprovisionednetwork edge name in mutations.
@@ -26,7 +25,6 @@ const (
 	EdgeProvisionedHostToPlan = "ProvisionedHostToPlan"
 	// EdgeProvisionedHostToGinFileMiddleware holds the string denoting the provisionedhosttoginfilemiddleware edge name in mutations.
 	EdgeProvisionedHostToGinFileMiddleware = "ProvisionedHostToGinFileMiddleware"
-
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
 	// ProvisionedHostToStatusTable is the table the holds the ProvisionedHostToStatus relation/edge.
@@ -91,7 +89,8 @@ var Columns = []string{
 	FieldSubnetIP,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisionedHost type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "provisioned_hosts"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"gin_file_middleware_gin_file_middleware_to_provisioned_host",
 	"plan_plan_to_provisioned_host",

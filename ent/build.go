@@ -136,11 +136,11 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case build.FieldID, build.FieldRevision:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case build.ForeignKeys[0]: // build_build_to_environment
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case build.ForeignKeys[1]: // build_build_to_competition
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Build", columns[i])
 		}

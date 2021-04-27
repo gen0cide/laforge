@@ -9,7 +9,6 @@ const (
 	FieldID = "id"
 	// FieldTeamNumber holds the string denoting the team_number field in the database.
 	FieldTeamNumber = "team_number"
-
 	// EdgeTeamToBuild holds the string denoting the teamtobuild edge name in mutations.
 	EdgeTeamToBuild = "TeamToBuild"
 	// EdgeTeamToStatus holds the string denoting the teamtostatus edge name in mutations.
@@ -18,7 +17,6 @@ const (
 	EdgeTeamToProvisionedNetwork = "TeamToProvisionedNetwork"
 	// EdgeTeamToPlan holds the string denoting the teamtoplan edge name in mutations.
 	EdgeTeamToPlan = "TeamToPlan"
-
 	// Table holds the table name of the team in the database.
 	Table = "teams"
 	// TeamToBuildTable is the table the holds the TeamToBuild relation/edge.
@@ -57,7 +55,8 @@ var Columns = []string{
 	FieldTeamNumber,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Team type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "teams"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"plan_plan_to_team",
 	"team_team_to_build",

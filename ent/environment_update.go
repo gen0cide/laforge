@@ -1741,6 +1741,7 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // EnvironmentUpdateOne is the builder for updating a single Environment entity.
 type EnvironmentUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *EnvironmentMutation
 }
@@ -2406,6 +2407,13 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *Environm
 	return euo.RemoveEnvironmentToBuildIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (euo *EnvironmentUpdateOne) Select(field string, fields ...string) *EnvironmentUpdateOne {
+	euo.fields = append([]string{field}, fields...)
+	return euo
+}
+
 // Save executes the query and returns the updated Environment entity.
 func (euo *EnvironmentUpdateOne) Save(ctx context.Context) (*Environment, error) {
 	var (
@@ -2473,6 +2481,18 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Environment.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := euo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, environment.FieldID)
+		for _, f := range fields {
+			if !environment.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != environment.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := euo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

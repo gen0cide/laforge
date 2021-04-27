@@ -119,17 +119,17 @@ func (*HostDependency) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case hostdependency.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case hostdependency.FieldHostID, hostdependency.FieldNetworkID:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case hostdependency.ForeignKeys[0]: // environment_environment_to_host_dependency
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case hostdependency.ForeignKeys[1]: // host_dependency_host_dependency_to_depend_on_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case hostdependency.ForeignKeys[2]: // host_dependency_host_dependency_to_depend_by_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case hostdependency.ForeignKeys[3]: // host_dependency_host_dependency_to_network
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HostDependency", columns[i])
 		}

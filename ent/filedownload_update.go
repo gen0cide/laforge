@@ -305,6 +305,7 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // FileDownloadUpdateOne is the builder for updating a single FileDownload entity.
 type FileDownloadUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *FileDownloadMutation
 }
@@ -399,6 +400,13 @@ func (fduo *FileDownloadUpdateOne) ClearFileDownloadToEnvironment() *FileDownloa
 	return fduo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (fduo *FileDownloadUpdateOne) Select(field string, fields ...string) *FileDownloadUpdateOne {
+	fduo.fields = append([]string{field}, fields...)
+	return fduo
+}
+
 // Save executes the query and returns the updated FileDownload entity.
 func (fduo *FileDownloadUpdateOne) Save(ctx context.Context) (*FileDownload, error) {
 	var (
@@ -466,6 +474,18 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing FileDownload.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := fduo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.FieldID)
+		for _, f := range fields {
+			if !filedownload.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != filedownload.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := fduo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

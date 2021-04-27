@@ -27,10 +27,8 @@ const (
 	FieldAbsPath = "abs_path"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeFileDownloadToEnvironment holds the string denoting the filedownloadtoenvironment edge name in mutations.
 	EdgeFileDownloadToEnvironment = "FileDownloadToEnvironment"
-
 	// Table holds the table name of the filedownload in the database.
 	Table = "file_downloads"
 	// FileDownloadToEnvironmentTable is the table the holds the FileDownloadToEnvironment relation/edge.
@@ -57,7 +55,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the FileDownload type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "file_downloads"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_file_download",
 }

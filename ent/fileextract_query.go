@@ -21,6 +21,7 @@ type FileExtractQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.FileExtract
@@ -47,6 +48,13 @@ func (feq *FileExtractQuery) Limit(limit int) *FileExtractQuery {
 // Offset adds an offset step to the query.
 func (feq *FileExtractQuery) Offset(offset int) *FileExtractQuery {
 	feq.offset = &offset
+	return feq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (feq *FileExtractQuery) Unique(unique bool) *FileExtractQuery {
+	feq.unique = &unique
 	return feq
 }
 
@@ -377,10 +385,14 @@ func (feq *FileExtractQuery) sqlAll(ctx context.Context) ([]*FileExtract, error)
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*FileExtract)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_file_extract; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_file_extract == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_file_extract
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -409,7 +421,7 @@ func (feq *FileExtractQuery) sqlCount(ctx context.Context) (int, error) {
 func (feq *FileExtractQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := feq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -426,6 +438,9 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   feq.sql,
 		Unique: true,
+	}
+	if unique := feq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := feq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -452,7 +467,7 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := feq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, fileextract.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -471,7 +486,7 @@ func (feq *FileExtractQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range feq.order {
-		p(selector, fileextract.ValidColumn)
+		p(selector)
 	}
 	if offset := feq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -737,7 +752,7 @@ func (fegb *FileExtractGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(fegb.fields)+len(fegb.fns))
 	columns = append(columns, fegb.fields...)
 	for _, fn := range fegb.fns {
-		columns = append(columns, fn(selector, fileextract.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(fegb.fields...)
 }

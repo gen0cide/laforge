@@ -35,10 +35,8 @@ const (
 	FieldUsedMem = "used_mem"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
-
 	// EdgeAgentStatusToProvisionedHost holds the string denoting the agentstatustoprovisionedhost edge name in mutations.
 	EdgeAgentStatusToProvisionedHost = "AgentStatusToProvisionedHost"
-
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
 	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge. The primary key declared below.

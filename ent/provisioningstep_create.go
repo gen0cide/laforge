@@ -372,6 +372,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_provisioned_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToScriptIDs(); len(nodes) > 0 {
@@ -391,6 +392,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_script = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToCommandIDs(); len(nodes) > 0 {
@@ -410,6 +412,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_command = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToDNSRecordIDs(); len(nodes) > 0 {
@@ -429,6 +432,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_dns_record = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToFileDeleteIDs(); len(nodes) > 0 {
@@ -448,6 +452,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_file_delete = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToFileDownloadIDs(); len(nodes) > 0 {
@@ -467,6 +472,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_file_download = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToFileExtractIDs(); len(nodes) > 0 {
@@ -486,6 +492,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioning_step_provisioning_step_to_file_extract = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToPlanIDs(); len(nodes) > 0 {
@@ -505,6 +512,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.plan_plan_to_provisioning_step = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToGinFileMiddlewareIDs(); len(nodes) > 0 {
@@ -524,6 +532,7 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.gin_file_middleware_gin_file_middleware_to_provisioning_step = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -671,6 +671,7 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 // ProvisionedHostUpdateOne is the builder for updating a single ProvisionedHost entity.
 type ProvisionedHostUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *ProvisionedHostMutation
 }
@@ -884,6 +885,13 @@ func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToGinFileMiddleware() 
 	return phuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (phuo *ProvisionedHostUpdateOne) Select(field string, fields ...string) *ProvisionedHostUpdateOne {
+	phuo.fields = append([]string{field}, fields...)
+	return phuo
+}
+
 // Save executes the query and returns the updated ProvisionedHost entity.
 func (phuo *ProvisionedHostUpdateOne) Save(ctx context.Context) (*ProvisionedHost, error) {
 	var (
@@ -971,6 +979,18 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing ProvisionedHost.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := phuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, provisionedhost.FieldID)
+		for _, f := range fields {
+			if !provisionedhost.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != provisionedhost.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := phuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

@@ -24,6 +24,7 @@ type ScriptQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Script
@@ -52,6 +53,13 @@ func (sq *ScriptQuery) Limit(limit int) *ScriptQuery {
 // Offset adds an offset step to the query.
 func (sq *ScriptQuery) Offset(offset int) *ScriptQuery {
 	sq.offset = &offset
+	return sq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (sq *ScriptQuery) Unique(unique bool) *ScriptQuery {
+	sq.unique = &unique
 	return sq
 }
 
@@ -510,10 +518,14 @@ func (sq *ScriptQuery) sqlAll(ctx context.Context) ([]*Script, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Script)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_script; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_script == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_script
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -542,7 +554,7 @@ func (sq *ScriptQuery) sqlCount(ctx context.Context) (int, error) {
 func (sq *ScriptQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := sq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -559,6 +571,9 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   sq.sql,
 		Unique: true,
+	}
+	if unique := sq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := sq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -585,7 +600,7 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := sq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, script.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -604,7 +619,7 @@ func (sq *ScriptQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range sq.order {
-		p(selector, script.ValidColumn)
+		p(selector)
 	}
 	if offset := sq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -870,7 +885,7 @@ func (sgb *ScriptGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(sgb.fields)+len(sgb.fns))
 	columns = append(columns, sgb.fields...)
 	for _, fn := range sgb.fns {
-		columns = append(columns, fn(selector, script.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(sgb.fields...)
 }

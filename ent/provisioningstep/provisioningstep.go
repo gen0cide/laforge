@@ -17,7 +17,6 @@ const (
 	FieldType = "type"
 	// FieldStepNumber holds the string denoting the step_number field in the database.
 	FieldStepNumber = "step_number"
-
 	// EdgeProvisioningStepToStatus holds the string denoting the provisioningsteptostatus edge name in mutations.
 	EdgeProvisioningStepToStatus = "ProvisioningStepToStatus"
 	// EdgeProvisioningStepToProvisionedHost holds the string denoting the provisioningsteptoprovisionedhost edge name in mutations.
@@ -38,7 +37,6 @@ const (
 	EdgeProvisioningStepToPlan = "ProvisioningStepToPlan"
 	// EdgeProvisioningStepToGinFileMiddleware holds the string denoting the provisioningsteptoginfilemiddleware edge name in mutations.
 	EdgeProvisioningStepToGinFileMiddleware = "ProvisioningStepToGinFileMiddleware"
-
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
 	// ProvisioningStepToStatusTable is the table the holds the ProvisioningStepToStatus relation/edge.
@@ -120,7 +118,8 @@ var Columns = []string{
 	FieldStepNumber,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the ProvisioningStep type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "provisioning_steps"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"gin_file_middleware_gin_file_middleware_to_provisioning_step",
 	"plan_plan_to_provisioning_step",

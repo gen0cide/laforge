@@ -35,7 +35,6 @@ const (
 	FieldProvisionSteps = "provision_steps"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeHostToDisk holds the string denoting the hosttodisk edge name in mutations.
 	EdgeHostToDisk = "HostToDisk"
 	// EdgeHostToUser holds the string denoting the hosttouser edge name in mutations.
@@ -48,7 +47,6 @@ const (
 	EdgeDependOnHostToHostDependency = "DependOnHostToHostDependency"
 	// EdgeDependByHostToHostDependency holds the string denoting the dependbyhosttohostdependency edge name in mutations.
 	EdgeDependByHostToHostDependency = "DependByHostToHostDependency"
-
 	// Table holds the table name of the host in the database.
 	Table = "hosts"
 	// HostToDiskTable is the table the holds the HostToDisk relation/edge.
@@ -112,7 +110,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Host type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "hosts"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_host",
 }

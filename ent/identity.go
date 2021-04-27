@@ -75,13 +75,13 @@ func (*Identity) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case identity.FieldVars, identity.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case identity.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case identity.FieldHclID, identity.FieldFirstName, identity.FieldLastName, identity.FieldEmail, identity.FieldPassword, identity.FieldDescription, identity.FieldAvatarFile:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case identity.ForeignKeys[0]: // environment_environment_to_identity
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Identity", columns[i])
 		}
@@ -151,7 +151,7 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field vars", values[j])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &i.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case identity.FieldTags:
@@ -160,7 +160,7 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tags", values[j])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &i.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case identity.ForeignKeys[0]:

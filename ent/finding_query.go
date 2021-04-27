@@ -25,6 +25,7 @@ type FindingQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Finding
@@ -54,6 +55,13 @@ func (fq *FindingQuery) Limit(limit int) *FindingQuery {
 // Offset adds an offset step to the query.
 func (fq *FindingQuery) Offset(offset int) *FindingQuery {
 	fq.offset = &offset
+	return fq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (fq *FindingQuery) Unique(unique bool) *FindingQuery {
+	fq.unique = &unique
 	return fq
 }
 
@@ -518,10 +526,14 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Finding)
 		for i := range nodes {
-			if fk := nodes[i].finding_finding_to_host; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].finding_finding_to_host == nil {
+				continue
 			}
+			fk := *nodes[i].finding_finding_to_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(host.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -543,10 +555,14 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Finding)
 		for i := range nodes {
-			if fk := nodes[i].script_script_to_finding; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].script_script_to_finding == nil {
+				continue
 			}
+			fk := *nodes[i].script_script_to_finding
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(script.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -568,10 +584,14 @@ func (fq *FindingQuery) sqlAll(ctx context.Context) ([]*Finding, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Finding)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_finding; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_finding == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_finding
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -600,7 +620,7 @@ func (fq *FindingQuery) sqlCount(ctx context.Context) (int, error) {
 func (fq *FindingQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := fq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -617,6 +637,9 @@ func (fq *FindingQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   fq.sql,
 		Unique: true,
+	}
+	if unique := fq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := fq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -643,7 +666,7 @@ func (fq *FindingQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := fq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, finding.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -662,7 +685,7 @@ func (fq *FindingQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range fq.order {
-		p(selector, finding.ValidColumn)
+		p(selector)
 	}
 	if offset := fq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -928,7 +951,7 @@ func (fgb *FindingGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(fgb.fields)+len(fgb.fns))
 	columns = append(columns, fgb.fields...)
 	for _, fn := range fgb.fns {
-		columns = append(columns, fn(selector, finding.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(fgb.fields...)
 }

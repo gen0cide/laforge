@@ -218,6 +218,7 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // DiskUpdateOne is the builder for updating a single Disk entity.
 type DiskUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *DiskMutation
 }
@@ -262,6 +263,13 @@ func (duo *DiskUpdateOne) Mutation() *DiskMutation {
 // ClearDiskToHost clears the "DiskToHost" edge to the Host entity.
 func (duo *DiskUpdateOne) ClearDiskToHost() *DiskUpdateOne {
 	duo.mutation.ClearDiskToHost()
+	return duo
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (duo *DiskUpdateOne) Select(field string, fields ...string) *DiskUpdateOne {
+	duo.fields = append([]string{field}, fields...)
 	return duo
 }
 
@@ -348,6 +356,18 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Disk.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := duo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, disk.FieldID)
+		for _, f := range fields {
+			if !disk.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != disk.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := duo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

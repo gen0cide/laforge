@@ -25,6 +25,7 @@ type TeamQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Team
@@ -54,6 +55,13 @@ func (tq *TeamQuery) Limit(limit int) *TeamQuery {
 // Offset adds an offset step to the query.
 func (tq *TeamQuery) Offset(offset int) *TeamQuery {
 	tq.offset = &offset
+	return tq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (tq *TeamQuery) Unique(unique bool) *TeamQuery {
+	tq.unique = &unique
 	return tq
 }
 
@@ -489,10 +497,14 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Team)
 		for i := range nodes {
-			if fk := nodes[i].team_team_to_build; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].team_team_to_build == nil {
+				continue
 			}
+			fk := *nodes[i].team_team_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -571,10 +583,14 @@ func (tq *TeamQuery) sqlAll(ctx context.Context) ([]*Team, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Team)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_team; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].plan_plan_to_team == nil {
+				continue
 			}
+			fk := *nodes[i].plan_plan_to_team
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(plan.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -603,7 +619,7 @@ func (tq *TeamQuery) sqlCount(ctx context.Context) (int, error) {
 func (tq *TeamQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := tq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -620,6 +636,9 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   tq.sql,
 		Unique: true,
+	}
+	if unique := tq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := tq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -646,7 +665,7 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := tq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, team.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -665,7 +684,7 @@ func (tq *TeamQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range tq.order {
-		p(selector, team.ValidColumn)
+		p(selector)
 	}
 	if offset := tq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -931,7 +950,7 @@ func (tgb *TeamGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(tgb.fields)+len(tgb.fns))
 	columns = append(columns, tgb.fields...)
 	for _, fn := range tgb.fns {
-		columns = append(columns, fn(selector, team.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(tgb.fields...)
 }

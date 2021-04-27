@@ -19,14 +19,12 @@ const (
 	FieldVars = "vars"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeNetworkToEnvironment holds the string denoting the networktoenvironment edge name in mutations.
 	EdgeNetworkToEnvironment = "NetworkToEnvironment"
 	// EdgeNetworkToHostDependency holds the string denoting the networktohostdependency edge name in mutations.
 	EdgeNetworkToHostDependency = "NetworkToHostDependency"
 	// EdgeNetworkToIncludedNetwork holds the string denoting the networktoincludednetwork edge name in mutations.
 	EdgeNetworkToIncludedNetwork = "NetworkToIncludedNetwork"
-
 	// Table holds the table name of the network in the database.
 	Table = "networks"
 	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge.
@@ -61,7 +59,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Network type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "networks"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_network",
 }

@@ -58,9 +58,9 @@ func (*Disk) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case disk.FieldID, disk.FieldSize:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case disk.ForeignKeys[0]: // host_host_to_disk
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Disk", columns[i])
 		}

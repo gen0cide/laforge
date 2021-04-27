@@ -374,6 +374,7 @@ func (du *DNSUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // DNSUpdateOne is the builder for updating a single DNS entity.
 type DNSUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *DNSMutation
 }
@@ -491,6 +492,13 @@ func (duo *DNSUpdateOne) RemoveDNSToCompetition(c ...*Competition) *DNSUpdateOne
 	return duo.RemoveDNSToCompetitionIDs(ids...)
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (duo *DNSUpdateOne) Select(field string, fields ...string) *DNSUpdateOne {
+	duo.fields = append([]string{field}, fields...)
+	return duo
+}
+
 // Save executes the query and returns the updated DNS entity.
 func (duo *DNSUpdateOne) Save(ctx context.Context) (*DNS, error) {
 	var (
@@ -558,6 +566,18 @@ func (duo *DNSUpdateOne) sqlSave(ctx context.Context) (_node *DNS, err error) {
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNS.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := duo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, dns.FieldID)
+		for _, f := range fields {
+			if !dns.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != dns.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := duo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

@@ -35,14 +35,12 @@ const (
 	FieldAbsPath = "abs_path"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeScriptToUser holds the string denoting the scripttouser edge name in mutations.
 	EdgeScriptToUser = "ScriptToUser"
 	// EdgeScriptToFinding holds the string denoting the scripttofinding edge name in mutations.
 	EdgeScriptToFinding = "ScriptToFinding"
 	// EdgeScriptToEnvironment holds the string denoting the scripttoenvironment edge name in mutations.
 	EdgeScriptToEnvironment = "ScriptToEnvironment"
-
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
 	// ScriptToUserTable is the table the holds the ScriptToUser relation/edge.
@@ -87,7 +85,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Script type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "scripts"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_script",
 }

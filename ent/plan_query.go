@@ -26,6 +26,7 @@ type PlanQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Plan
@@ -58,6 +59,13 @@ func (pq *PlanQuery) Limit(limit int) *PlanQuery {
 // Offset adds an offset step to the query.
 func (pq *PlanQuery) Offset(offset int) *PlanQuery {
 	pq.offset = &offset
+	return pq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (pq *PlanQuery) Unique(unique bool) *PlanQuery {
+	pq.unique = &unique
 	return pq
 }
 
@@ -615,7 +623,6 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(plan.PrevPlanPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -634,13 +641,15 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "PrevPlan": %v`, err)
+			return nil, fmt.Errorf(`query edges "PrevPlan": %w`, err)
 		}
 		query.Where(plan.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -679,7 +688,6 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(plan.NextPlanPrimaryKey[0], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -698,13 +706,15 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, pq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "NextPlan": %v`, err)
+			return nil, fmt.Errorf(`query edges "NextPlan": %w`, err)
 		}
 		query.Where(plan.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -726,10 +736,14 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Plan)
 		for i := range nodes {
-			if fk := nodes[i].plan_plan_to_build; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].plan_plan_to_build == nil {
+				continue
 			}
+			fk := *nodes[i].plan_plan_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -870,7 +884,7 @@ func (pq *PlanQuery) sqlCount(ctx context.Context) (int, error) {
 func (pq *PlanQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := pq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -887,6 +901,9 @@ func (pq *PlanQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   pq.sql,
 		Unique: true,
+	}
+	if unique := pq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := pq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -913,7 +930,7 @@ func (pq *PlanQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := pq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, plan.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -932,7 +949,7 @@ func (pq *PlanQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range pq.order {
-		p(selector, plan.ValidColumn)
+		p(selector)
 	}
 	if offset := pq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -1198,7 +1215,7 @@ func (pgb *PlanGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(pgb.fields)+len(pgb.fns))
 	columns = append(columns, pgb.fields...)
 	for _, fn := range pgb.fns {
-		columns = append(columns, fn(selector, plan.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(pgb.fields...)
 }

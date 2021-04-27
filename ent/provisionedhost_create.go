@@ -286,6 +286,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioned_host_provisioned_host_to_provisioned_network = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := phc.mutation.ProvisionedHostToHostIDs(); len(nodes) > 0 {
@@ -305,6 +306,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioned_host_provisioned_host_to_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := phc.mutation.ProvisionedHostToEndStepPlanIDs(); len(nodes) > 0 {
@@ -324,6 +326,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provisioned_host_provisioned_host_to_end_step_plan = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := phc.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {
@@ -381,6 +384,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.plan_plan_to_provisioned_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := phc.mutation.ProvisionedHostToGinFileMiddlewareIDs(); len(nodes) > 0 {
@@ -400,6 +404,7 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.gin_file_middleware_gin_file_middleware_to_provisioned_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

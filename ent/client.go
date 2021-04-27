@@ -169,7 +169,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
 	cfg := c.config
 	cfg.driver = tx
@@ -215,7 +215,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		BeginTx(context.Context, *sql.TxOptions) (dialect.Tx, error)
 	}).BeginTx(ctx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
@@ -372,7 +372,9 @@ func (c *AgentStatusClient) DeleteOneID(id int) *AgentStatusDeleteOne {
 
 // Query returns a query builder for AgentStatus.
 func (c *AgentStatusClient) Query() *AgentStatusQuery {
-	return &AgentStatusQuery{config: c.config}
+	return &AgentStatusQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a AgentStatus entity by its id.
@@ -476,7 +478,9 @@ func (c *BuildClient) DeleteOneID(id int) *BuildDeleteOne {
 
 // Query returns a query builder for Build.
 func (c *BuildClient) Query() *BuildQuery {
-	return &BuildQuery{config: c.config}
+	return &BuildQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Build entity by its id.
@@ -660,7 +664,9 @@ func (c *CommandClient) DeleteOneID(id int) *CommandDeleteOne {
 
 // Query returns a query builder for Command.
 func (c *CommandClient) Query() *CommandQuery {
-	return &CommandQuery{config: c.config}
+	return &CommandQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Command entity by its id.
@@ -780,7 +786,9 @@ func (c *CompetitionClient) DeleteOneID(id int) *CompetitionDeleteOne {
 
 // Query returns a query builder for Competition.
 func (c *CompetitionClient) Query() *CompetitionQuery {
-	return &CompetitionQuery{config: c.config}
+	return &CompetitionQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Competition entity by its id.
@@ -916,7 +924,9 @@ func (c *DNSClient) DeleteOneID(id int) *DNSDeleteOne {
 
 // Query returns a query builder for DNS.
 func (c *DNSClient) Query() *DNSQuery {
-	return &DNSQuery{config: c.config}
+	return &DNSQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a DNS entity by its id.
@@ -1036,7 +1046,9 @@ func (c *DNSRecordClient) DeleteOneID(id int) *DNSRecordDeleteOne {
 
 // Query returns a query builder for DNSRecord.
 func (c *DNSRecordClient) Query() *DNSRecordQuery {
-	return &DNSRecordQuery{config: c.config}
+	return &DNSRecordQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a DNSRecord entity by its id.
@@ -1140,7 +1152,9 @@ func (c *DiskClient) DeleteOneID(id int) *DiskDeleteOne {
 
 // Query returns a query builder for Disk.
 func (c *DiskClient) Query() *DiskQuery {
-	return &DiskQuery{config: c.config}
+	return &DiskQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Disk entity by its id.
@@ -1244,7 +1258,9 @@ func (c *EnvironmentClient) DeleteOneID(id int) *EnvironmentDeleteOne {
 
 // Query returns a query builder for Environment.
 func (c *EnvironmentClient) Query() *EnvironmentQuery {
-	return &EnvironmentQuery{config: c.config}
+	return &EnvironmentQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Environment entity by its id.
@@ -1588,7 +1604,9 @@ func (c *FileDeleteClient) DeleteOneID(id int) *FileDeleteDeleteOne {
 
 // Query returns a query builder for FileDelete.
 func (c *FileDeleteClient) Query() *FileDeleteQuery {
-	return &FileDeleteQuery{config: c.config}
+	return &FileDeleteQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileDelete entity by its id.
@@ -1692,7 +1710,9 @@ func (c *FileDownloadClient) DeleteOneID(id int) *FileDownloadDeleteOne {
 
 // Query returns a query builder for FileDownload.
 func (c *FileDownloadClient) Query() *FileDownloadQuery {
-	return &FileDownloadQuery{config: c.config}
+	return &FileDownloadQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileDownload entity by its id.
@@ -1796,7 +1816,9 @@ func (c *FileExtractClient) DeleteOneID(id int) *FileExtractDeleteOne {
 
 // Query returns a query builder for FileExtract.
 func (c *FileExtractClient) Query() *FileExtractQuery {
-	return &FileExtractQuery{config: c.config}
+	return &FileExtractQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileExtract entity by its id.
@@ -1900,7 +1922,9 @@ func (c *FindingClient) DeleteOneID(id int) *FindingDeleteOne {
 
 // Query returns a query builder for Finding.
 func (c *FindingClient) Query() *FindingQuery {
-	return &FindingQuery{config: c.config}
+	return &FindingQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Finding entity by its id.
@@ -2052,7 +2076,9 @@ func (c *GinFileMiddlewareClient) DeleteOneID(id int) *GinFileMiddlewareDeleteOn
 
 // Query returns a query builder for GinFileMiddleware.
 func (c *GinFileMiddlewareClient) Query() *GinFileMiddlewareQuery {
-	return &GinFileMiddlewareQuery{config: c.config}
+	return &GinFileMiddlewareQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a GinFileMiddleware entity by its id.
@@ -2172,7 +2198,9 @@ func (c *HostClient) DeleteOneID(id int) *HostDeleteOne {
 
 // Query returns a query builder for Host.
 func (c *HostClient) Query() *HostQuery {
-	return &HostQuery{config: c.config}
+	return &HostQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Host entity by its id.
@@ -2356,7 +2384,9 @@ func (c *HostDependencyClient) DeleteOneID(id int) *HostDependencyDeleteOne {
 
 // Query returns a query builder for HostDependency.
 func (c *HostDependencyClient) Query() *HostDependencyQuery {
-	return &HostDependencyQuery{config: c.config}
+	return &HostDependencyQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a HostDependency entity by its id.
@@ -2508,7 +2538,9 @@ func (c *IdentityClient) DeleteOneID(id int) *IdentityDeleteOne {
 
 // Query returns a query builder for Identity.
 func (c *IdentityClient) Query() *IdentityQuery {
-	return &IdentityQuery{config: c.config}
+	return &IdentityQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Identity entity by its id.
@@ -2612,7 +2644,9 @@ func (c *IncludedNetworkClient) DeleteOneID(id int) *IncludedNetworkDeleteOne {
 
 // Query returns a query builder for IncludedNetwork.
 func (c *IncludedNetworkClient) Query() *IncludedNetworkQuery {
-	return &IncludedNetworkQuery{config: c.config}
+	return &IncludedNetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a IncludedNetwork entity by its id.
@@ -2764,7 +2798,9 @@ func (c *NetworkClient) DeleteOneID(id int) *NetworkDeleteOne {
 
 // Query returns a query builder for Network.
 func (c *NetworkClient) Query() *NetworkQuery {
-	return &NetworkQuery{config: c.config}
+	return &NetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Network entity by its id.
@@ -2900,7 +2936,9 @@ func (c *PlanClient) DeleteOneID(id int) *PlanDeleteOne {
 
 // Query returns a query builder for Plan.
 func (c *PlanClient) Query() *PlanQuery {
-	return &PlanQuery{config: c.config}
+	return &PlanQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Plan entity by its id.
@@ -3100,7 +3138,9 @@ func (c *ProvisionedHostClient) DeleteOneID(id int) *ProvisionedHostDeleteOne {
 
 // Query returns a query builder for ProvisionedHost.
 func (c *ProvisionedHostClient) Query() *ProvisionedHostQuery {
-	return &ProvisionedHostQuery{config: c.config}
+	return &ProvisionedHostQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisionedHost entity by its id.
@@ -3316,7 +3356,9 @@ func (c *ProvisionedNetworkClient) DeleteOneID(id int) *ProvisionedNetworkDelete
 
 // Query returns a query builder for ProvisionedNetwork.
 func (c *ProvisionedNetworkClient) Query() *ProvisionedNetworkQuery {
-	return &ProvisionedNetworkQuery{config: c.config}
+	return &ProvisionedNetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisionedNetwork entity by its id.
@@ -3500,7 +3542,9 @@ func (c *ProvisioningStepClient) DeleteOneID(id int) *ProvisioningStepDeleteOne 
 
 // Query returns a query builder for ProvisioningStep.
 func (c *ProvisioningStepClient) Query() *ProvisioningStepQuery {
-	return &ProvisioningStepQuery{config: c.config}
+	return &ProvisioningStepQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisioningStep entity by its id.
@@ -3748,7 +3792,9 @@ func (c *ScriptClient) DeleteOneID(id int) *ScriptDeleteOne {
 
 // Query returns a query builder for Script.
 func (c *ScriptClient) Query() *ScriptQuery {
-	return &ScriptQuery{config: c.config}
+	return &ScriptQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Script entity by its id.
@@ -3884,7 +3930,9 @@ func (c *StatusClient) DeleteOneID(id int) *StatusDeleteOne {
 
 // Query returns a query builder for Status.
 func (c *StatusClient) Query() *StatusQuery {
-	return &StatusQuery{config: c.config}
+	return &StatusQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Status entity by its id.
@@ -4052,7 +4100,9 @@ func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
 
 // Query returns a query builder for Tag.
 func (c *TagClient) Query() *TagQuery {
-	return &TagQuery{config: c.config}
+	return &TagQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Tag entity by its id.
@@ -4140,7 +4190,9 @@ func (c *TeamClient) DeleteOneID(id int) *TeamDeleteOne {
 
 // Query returns a query builder for Team.
 func (c *TeamClient) Query() *TeamQuery {
-	return &TeamQuery{config: c.config}
+	return &TeamQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Team entity by its id.
@@ -4292,7 +4344,9 @@ func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
 
 // Query returns a query builder for User.
 func (c *UserClient) Query() *UserQuery {
-	return &UserQuery{config: c.config}
+	return &UserQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a User entity by its id.

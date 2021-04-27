@@ -279,6 +279,7 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // DNSRecordUpdateOne is the builder for updating a single DNSRecord entity.
 type DNSRecordUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *DNSRecordMutation
 }
@@ -361,6 +362,13 @@ func (druo *DNSRecordUpdateOne) ClearDNSRecordToEnvironment() *DNSRecordUpdateOn
 	return druo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (druo *DNSRecordUpdateOne) Select(field string, fields ...string) *DNSRecordUpdateOne {
+	druo.fields = append([]string{field}, fields...)
+	return druo
+}
+
 // Save executes the query and returns the updated DNSRecord entity.
 func (druo *DNSRecordUpdateOne) Save(ctx context.Context) (*DNSRecord, error) {
 	var (
@@ -428,6 +436,18 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNSRecord.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := druo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, dnsrecord.FieldID)
+		for _, f := range fields {
+			if !dnsrecord.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != dnsrecord.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := druo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

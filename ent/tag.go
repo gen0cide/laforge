@@ -33,17 +33,17 @@ func (*Tag) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case tag.FieldDescription:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case tag.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case tag.FieldName:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case tag.FieldUUID:
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		case tag.ForeignKeys[0]: // included_network_included_network_to_tag
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case tag.ForeignKeys[1]: // user_user_to_tag
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
 		}
@@ -83,7 +83,7 @@ func (t *Tag) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &t.Description); err != nil {
-					return fmt.Errorf("unmarshal field description: %v", err)
+					return fmt.Errorf("unmarshal field description: %w", err)
 				}
 			}
 		case tag.ForeignKeys[0]:

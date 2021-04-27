@@ -567,6 +567,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // ScriptUpdateOne is the builder for updating a single Script entity.
 type ScriptUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *ScriptMutation
 }
@@ -771,6 +772,13 @@ func (suo *ScriptUpdateOne) ClearScriptToEnvironment() *ScriptUpdateOne {
 	return suo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (suo *ScriptUpdateOne) Select(field string, fields ...string) *ScriptUpdateOne {
+	suo.fields = append([]string{field}, fields...)
+	return suo
+}
+
 // Save executes the query and returns the updated Script entity.
 func (suo *ScriptUpdateOne) Save(ctx context.Context) (*Script, error) {
 	var (
@@ -838,6 +846,18 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Script.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := suo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, script.FieldID)
+		for _, f := range fields {
+			if !script.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != script.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := suo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

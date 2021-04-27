@@ -151,23 +151,23 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case status.FieldFailed, status.FieldCompleted:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case status.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case status.FieldState, status.FieldStatusFor, status.FieldError:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case status.FieldStartedAt, status.FieldEndedAt:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		case status.ForeignKeys[0]: // build_build_to_status
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case status.ForeignKeys[1]: // provisioned_host_provisioned_host_to_status
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case status.ForeignKeys[2]: // provisioned_network_provisioned_network_to_status
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case status.ForeignKeys[3]: // provisioning_step_provisioning_step_to_status
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case status.ForeignKeys[4]: // team_team_to_status
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
 		}

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -53,23 +54,71 @@ func (Environment) Fields() []ent.Field {
 func (Environment) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("EnvironmentToUser", User.Type).
-			StructTag(`hcl:"maintainer,block"`),
-		edge.To("EnvironmentToHost", Host.Type),
-		edge.To("EnvironmentToCompetition", Competition.Type),
-		edge.To("EnvironmentToIdentity", Identity.Type),
-		edge.To("EnvironmentToCommand", Command.Type),
-		edge.To("EnvironmentToScript", Script.Type),
-		edge.To("EnvironmentToFileDownload", FileDownload.Type),
-		edge.To("EnvironmentToFileDelete", FileDelete.Type),
-		edge.To("EnvironmentToFileExtract", FileExtract.Type),
+			StructTag(`hcl:"maintainer,block"`).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToHost", Host.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToCompetition", Competition.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToIdentity", Identity.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToCommand", Command.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToScript", Script.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToFileDownload", FileDownload.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToFileDelete", FileDelete.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToFileExtract", FileExtract.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("EnvironmentToIncludedNetwork", IncludedNetwork.Type).
-			StructTag(`hcl:"included_network,block"`),
-		edge.To("EnvironmentToFinding", Finding.Type),
-		edge.To("EnvironmentToDNSRecord", DNSRecord.Type),
-		edge.To("EnvironmentToDNS", DNS.Type),
-		edge.To("EnvironmentToNetwork", Network.Type),
-		edge.To("EnvironmentToHostDependency", HostDependency.Type),
+			StructTag(`hcl:"included_network,block"`).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToFinding", Finding.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToDNSRecord", DNSRecord.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToDNS", DNS.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToNetwork", Network.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("EnvironmentToHostDependency", HostDependency.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("EnvironmentToBuild", Build.Type).
-			Ref("BuildToEnvironment"),
+			Ref("BuildToEnvironment").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }

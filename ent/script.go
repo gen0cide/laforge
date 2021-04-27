@@ -111,15 +111,15 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case script.FieldArgs, script.FieldVars, script.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case script.FieldIgnoreErrors, script.FieldDisabled:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case script.FieldID, script.FieldCooldown, script.FieldTimeout:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case script.ForeignKeys[0]: // environment_environment_to_script
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
 		}
@@ -201,7 +201,7 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field args", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &s.Args); err != nil {
-					return fmt.Errorf("unmarshal field args: %v", err)
+					return fmt.Errorf("unmarshal field args: %w", err)
 				}
 			}
 		case script.FieldDisabled:
@@ -216,7 +216,7 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &s.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case script.FieldAbsPath:
@@ -231,7 +231,7 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &s.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case script.ForeignKeys[0]:

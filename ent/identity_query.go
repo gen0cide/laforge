@@ -21,6 +21,7 @@ type IdentityQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Identity
@@ -47,6 +48,13 @@ func (iq *IdentityQuery) Limit(limit int) *IdentityQuery {
 // Offset adds an offset step to the query.
 func (iq *IdentityQuery) Offset(offset int) *IdentityQuery {
 	iq.offset = &offset
+	return iq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (iq *IdentityQuery) Unique(unique bool) *IdentityQuery {
+	iq.unique = &unique
 	return iq
 }
 
@@ -377,10 +385,14 @@ func (iq *IdentityQuery) sqlAll(ctx context.Context) ([]*Identity, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Identity)
 		for i := range nodes {
-			if fk := nodes[i].environment_environment_to_identity; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].environment_environment_to_identity == nil {
+				continue
 			}
+			fk := *nodes[i].environment_environment_to_identity
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -409,7 +421,7 @@ func (iq *IdentityQuery) sqlCount(ctx context.Context) (int, error) {
 func (iq *IdentityQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := iq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -426,6 +438,9 @@ func (iq *IdentityQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   iq.sql,
 		Unique: true,
+	}
+	if unique := iq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := iq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -452,7 +467,7 @@ func (iq *IdentityQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := iq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, identity.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -471,7 +486,7 @@ func (iq *IdentityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range iq.order {
-		p(selector, identity.ValidColumn)
+		p(selector)
 	}
 	if offset := iq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -737,7 +752,7 @@ func (igb *IdentityGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(igb.fields)+len(igb.fns))
 	columns = append(columns, igb.fields...)
 	for _, fn := range igb.fns {
-		columns = append(columns, fn(selector, identity.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(igb.fields...)
 }

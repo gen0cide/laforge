@@ -156,15 +156,15 @@ func (*Host) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case host.FieldExposedTCPPorts, host.FieldExposedUDPPorts, host.FieldVars, host.FieldUserGroups, host.FieldProvisionSteps, host.FieldTags:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case host.FieldAllowMACChanges:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case host.FieldID, host.FieldLastOctet:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case host.FieldHclID, host.FieldHostname, host.FieldDescription, host.FieldOS, host.FieldInstanceSize, host.FieldOverridePassword:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case host.ForeignKeys[0]: // environment_environment_to_host
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Host", columns[i])
 		}
@@ -234,7 +234,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field exposed_tcp_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.ExposedTCPPorts); err != nil {
-					return fmt.Errorf("unmarshal field exposed_tcp_ports: %v", err)
+					return fmt.Errorf("unmarshal field exposed_tcp_ports: %w", err)
 				}
 			}
 		case host.FieldExposedUDPPorts:
@@ -243,7 +243,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field exposed_udp_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.ExposedUDPPorts); err != nil {
-					return fmt.Errorf("unmarshal field exposed_udp_ports: %v", err)
+					return fmt.Errorf("unmarshal field exposed_udp_ports: %w", err)
 				}
 			}
 		case host.FieldOverridePassword:
@@ -258,7 +258,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.Vars); err != nil {
-					return fmt.Errorf("unmarshal field vars: %v", err)
+					return fmt.Errorf("unmarshal field vars: %w", err)
 				}
 			}
 		case host.FieldUserGroups:
@@ -267,7 +267,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field user_groups", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.UserGroups); err != nil {
-					return fmt.Errorf("unmarshal field user_groups: %v", err)
+					return fmt.Errorf("unmarshal field user_groups: %w", err)
 				}
 			}
 		case host.FieldProvisionSteps:
@@ -276,7 +276,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field provision_steps", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.ProvisionSteps); err != nil {
-					return fmt.Errorf("unmarshal field provision_steps: %v", err)
+					return fmt.Errorf("unmarshal field provision_steps: %w", err)
 				}
 			}
 		case host.FieldTags:
@@ -285,7 +285,7 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &h.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %v", err)
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case host.ForeignKeys[0]:

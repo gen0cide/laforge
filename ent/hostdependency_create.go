@@ -227,6 +227,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.host_dependency_host_dependency_to_depend_on_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := hdc.mutation.HostDependencyToDependByHostIDs(); len(nodes) > 0 {
@@ -246,6 +247,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.host_dependency_host_dependency_to_depend_by_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := hdc.mutation.HostDependencyToNetworkIDs(); len(nodes) > 0 {
@@ -265,6 +267,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.host_dependency_host_dependency_to_network = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := hdc.mutation.HostDependencyToEnvironmentIDs(); len(nodes) > 0 {
@@ -284,6 +287,7 @@ func (hdc *HostDependencyCreate) createSpec() (*HostDependency, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.environment_environment_to_host_dependency = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -110,11 +110,11 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case team.FieldID, team.FieldTeamNumber:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case team.ForeignKeys[0]: // plan_plan_to_team
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case team.ForeignKeys[1]: // team_team_to_build
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
 		}

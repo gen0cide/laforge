@@ -916,7 +916,7 @@ func (m *AgentStatusMutation) ClearAgentStatusToProvisionedHost() {
 	m.cleared_AgentStatusToProvisionedHost = true
 }
 
-// AgentStatusToProvisionedHostCleared returns if the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// AgentStatusToProvisionedHostCleared reports if the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *AgentStatusMutation) AgentStatusToProvisionedHostCleared() bool {
 	return m.cleared_AgentStatusToProvisionedHost
 }
@@ -1667,7 +1667,7 @@ func (m *BuildMutation) ClearBuildToStatus() {
 	m.cleared_BuildToStatus = true
 }
 
-// BuildToStatusCleared returns if the "BuildToStatus" edge to the Status entity was cleared.
+// BuildToStatusCleared reports if the "BuildToStatus" edge to the Status entity was cleared.
 func (m *BuildMutation) BuildToStatusCleared() bool {
 	return m.cleared_BuildToStatus
 }
@@ -1706,7 +1706,7 @@ func (m *BuildMutation) ClearBuildToEnvironment() {
 	m.cleared_BuildToEnvironment = true
 }
 
-// BuildToEnvironmentCleared returns if the "BuildToEnvironment" edge to the Environment entity was cleared.
+// BuildToEnvironmentCleared reports if the "BuildToEnvironment" edge to the Environment entity was cleared.
 func (m *BuildMutation) BuildToEnvironmentCleared() bool {
 	return m.cleared_BuildToEnvironment
 }
@@ -1745,7 +1745,7 @@ func (m *BuildMutation) ClearBuildToCompetition() {
 	m.cleared_BuildToCompetition = true
 }
 
-// BuildToCompetitionCleared returns if the "BuildToCompetition" edge to the Competition entity was cleared.
+// BuildToCompetitionCleared reports if the "BuildToCompetition" edge to the Competition entity was cleared.
 func (m *BuildMutation) BuildToCompetitionCleared() bool {
 	return m.cleared_BuildToCompetition
 }
@@ -1789,7 +1789,7 @@ func (m *BuildMutation) ClearBuildToProvisionedNetwork() {
 	m.cleared_BuildToProvisionedNetwork = true
 }
 
-// BuildToProvisionedNetworkCleared returns if the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+// BuildToProvisionedNetworkCleared reports if the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
 func (m *BuildMutation) BuildToProvisionedNetworkCleared() bool {
 	return m.cleared_BuildToProvisionedNetwork
 }
@@ -1842,7 +1842,7 @@ func (m *BuildMutation) ClearBuildToTeam() {
 	m.cleared_BuildToTeam = true
 }
 
-// BuildToTeamCleared returns if the "BuildToTeam" edge to the Team entity was cleared.
+// BuildToTeamCleared reports if the "BuildToTeam" edge to the Team entity was cleared.
 func (m *BuildMutation) BuildToTeamCleared() bool {
 	return m.cleared_BuildToTeam
 }
@@ -1895,7 +1895,7 @@ func (m *BuildMutation) ClearBuildToPlan() {
 	m.cleared_BuildToPlan = true
 }
 
-// BuildToPlanCleared returns if the "BuildToPlan" edge to the Plan entity was cleared.
+// BuildToPlanCleared reports if the "BuildToPlan" edge to the Plan entity was cleared.
 func (m *BuildMutation) BuildToPlanCleared() bool {
 	return m.cleared_BuildToPlan
 }
@@ -2809,7 +2809,7 @@ func (m *CommandMutation) ClearCommandToUser() {
 	m.cleared_CommandToUser = true
 }
 
-// CommandToUserCleared returns if the "CommandToUser" edge to the User entity was cleared.
+// CommandToUserCleared reports if the "CommandToUser" edge to the User entity was cleared.
 func (m *CommandMutation) CommandToUserCleared() bool {
 	return m.cleared_CommandToUser
 }
@@ -2857,7 +2857,7 @@ func (m *CommandMutation) ClearCommandToEnvironment() {
 	m.cleared_CommandToEnvironment = true
 }
 
-// CommandToEnvironmentCleared returns if the "CommandToEnvironment" edge to the Environment entity was cleared.
+// CommandToEnvironmentCleared reports if the "CommandToEnvironment" edge to the Environment entity was cleared.
 func (m *CommandMutation) CommandToEnvironmentCleared() bool {
 	return m.cleared_CommandToEnvironment
 }
@@ -3558,7 +3558,7 @@ func (m *CompetitionMutation) ClearCompetitionToDNS() {
 	m.cleared_CompetitionToDNS = true
 }
 
-// CompetitionToDNSCleared returns if the "CompetitionToDNS" edge to the DNS entity was cleared.
+// CompetitionToDNSCleared reports if the "CompetitionToDNS" edge to the DNS entity was cleared.
 func (m *CompetitionMutation) CompetitionToDNSCleared() bool {
 	return m.cleared_CompetitionToDNS
 }
@@ -3606,7 +3606,7 @@ func (m *CompetitionMutation) ClearCompetitionToEnvironment() {
 	m.cleared_CompetitionToEnvironment = true
 }
 
-// CompetitionToEnvironmentCleared returns if the "CompetitionToEnvironment" edge to the Environment entity was cleared.
+// CompetitionToEnvironmentCleared reports if the "CompetitionToEnvironment" edge to the Environment entity was cleared.
 func (m *CompetitionMutation) CompetitionToEnvironmentCleared() bool {
 	return m.cleared_CompetitionToEnvironment
 }
@@ -3650,7 +3650,7 @@ func (m *CompetitionMutation) ClearCompetitionToBuild() {
 	m.cleared_CompetitionToBuild = true
 }
 
-// CompetitionToBuildCleared returns if the "CompetitionToBuild" edge to the Build entity was cleared.
+// CompetitionToBuildCleared reports if the "CompetitionToBuild" edge to the Build entity was cleared.
 func (m *CompetitionMutation) CompetitionToBuildCleared() bool {
 	return m.cleared_CompetitionToBuild
 }
@@ -4312,7 +4312,7 @@ func (m *DNSMutation) ClearDNSToEnvironment() {
 	m.cleared_DNSToEnvironment = true
 }
 
-// DNSToEnvironmentCleared returns if the "DNSToEnvironment" edge to the Environment entity was cleared.
+// DNSToEnvironmentCleared reports if the "DNSToEnvironment" edge to the Environment entity was cleared.
 func (m *DNSMutation) DNSToEnvironmentCleared() bool {
 	return m.cleared_DNSToEnvironment
 }
@@ -4365,7 +4365,7 @@ func (m *DNSMutation) ClearDNSToCompetition() {
 	m.cleared_DNSToCompetition = true
 }
 
-// DNSToCompetitionCleared returns if the "DNSToCompetition" edge to the Competition entity was cleared.
+// DNSToCompetitionCleared reports if the "DNSToCompetition" edge to the Competition entity was cleared.
 func (m *DNSMutation) DNSToCompetitionCleared() bool {
 	return m.cleared_DNSToCompetition
 }
@@ -5108,7 +5108,7 @@ func (m *DNSRecordMutation) ClearDNSRecordToEnvironment() {
 	m.cleared_DNSRecordToEnvironment = true
 }
 
-// DNSRecordToEnvironmentCleared returns if the "DNSRecordToEnvironment" edge to the Environment entity was cleared.
+// DNSRecordToEnvironmentCleared reports if the "DNSRecordToEnvironment" edge to the Environment entity was cleared.
 func (m *DNSRecordMutation) DNSRecordToEnvironmentCleared() bool {
 	return m.cleared_DNSRecordToEnvironment
 }
@@ -5604,7 +5604,7 @@ func (m *DiskMutation) ClearDiskToHost() {
 	m.cleared_DiskToHost = true
 }
 
-// DiskToHostCleared returns if the "DiskToHost" edge to the Host entity was cleared.
+// DiskToHostCleared reports if the "DiskToHost" edge to the Host entity was cleared.
 func (m *DiskMutation) DiskToHostCleared() bool {
 	return m.cleared_DiskToHost
 }
@@ -6438,7 +6438,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToUser() {
 	m.cleared_EnvironmentToUser = true
 }
 
-// EnvironmentToUserCleared returns if the "EnvironmentToUser" edge to the User entity was cleared.
+// EnvironmentToUserCleared reports if the "EnvironmentToUser" edge to the User entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToUserCleared() bool {
 	return m.cleared_EnvironmentToUser
 }
@@ -6491,7 +6491,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToHost() {
 	m.cleared_EnvironmentToHost = true
 }
 
-// EnvironmentToHostCleared returns if the "EnvironmentToHost" edge to the Host entity was cleared.
+// EnvironmentToHostCleared reports if the "EnvironmentToHost" edge to the Host entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToHostCleared() bool {
 	return m.cleared_EnvironmentToHost
 }
@@ -6544,7 +6544,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToCompetition() {
 	m.cleared_EnvironmentToCompetition = true
 }
 
-// EnvironmentToCompetitionCleared returns if the "EnvironmentToCompetition" edge to the Competition entity was cleared.
+// EnvironmentToCompetitionCleared reports if the "EnvironmentToCompetition" edge to the Competition entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToCompetitionCleared() bool {
 	return m.cleared_EnvironmentToCompetition
 }
@@ -6597,7 +6597,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToIdentity() {
 	m.cleared_EnvironmentToIdentity = true
 }
 
-// EnvironmentToIdentityCleared returns if the "EnvironmentToIdentity" edge to the Identity entity was cleared.
+// EnvironmentToIdentityCleared reports if the "EnvironmentToIdentity" edge to the Identity entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToIdentityCleared() bool {
 	return m.cleared_EnvironmentToIdentity
 }
@@ -6650,7 +6650,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToCommand() {
 	m.cleared_EnvironmentToCommand = true
 }
 
-// EnvironmentToCommandCleared returns if the "EnvironmentToCommand" edge to the Command entity was cleared.
+// EnvironmentToCommandCleared reports if the "EnvironmentToCommand" edge to the Command entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToCommandCleared() bool {
 	return m.cleared_EnvironmentToCommand
 }
@@ -6703,7 +6703,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToScript() {
 	m.cleared_EnvironmentToScript = true
 }
 
-// EnvironmentToScriptCleared returns if the "EnvironmentToScript" edge to the Script entity was cleared.
+// EnvironmentToScriptCleared reports if the "EnvironmentToScript" edge to the Script entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToScriptCleared() bool {
 	return m.cleared_EnvironmentToScript
 }
@@ -6756,7 +6756,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToFileDownload() {
 	m.cleared_EnvironmentToFileDownload = true
 }
 
-// EnvironmentToFileDownloadCleared returns if the "EnvironmentToFileDownload" edge to the FileDownload entity was cleared.
+// EnvironmentToFileDownloadCleared reports if the "EnvironmentToFileDownload" edge to the FileDownload entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToFileDownloadCleared() bool {
 	return m.cleared_EnvironmentToFileDownload
 }
@@ -6809,7 +6809,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToFileDelete() {
 	m.cleared_EnvironmentToFileDelete = true
 }
 
-// EnvironmentToFileDeleteCleared returns if the "EnvironmentToFileDelete" edge to the FileDelete entity was cleared.
+// EnvironmentToFileDeleteCleared reports if the "EnvironmentToFileDelete" edge to the FileDelete entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToFileDeleteCleared() bool {
 	return m.cleared_EnvironmentToFileDelete
 }
@@ -6862,7 +6862,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToFileExtract() {
 	m.cleared_EnvironmentToFileExtract = true
 }
 
-// EnvironmentToFileExtractCleared returns if the "EnvironmentToFileExtract" edge to the FileExtract entity was cleared.
+// EnvironmentToFileExtractCleared reports if the "EnvironmentToFileExtract" edge to the FileExtract entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToFileExtractCleared() bool {
 	return m.cleared_EnvironmentToFileExtract
 }
@@ -6915,7 +6915,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToIncludedNetwork() {
 	m.cleared_EnvironmentToIncludedNetwork = true
 }
 
-// EnvironmentToIncludedNetworkCleared returns if the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
+// EnvironmentToIncludedNetworkCleared reports if the "EnvironmentToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToIncludedNetworkCleared() bool {
 	return m.cleared_EnvironmentToIncludedNetwork
 }
@@ -6968,7 +6968,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToFinding() {
 	m.cleared_EnvironmentToFinding = true
 }
 
-// EnvironmentToFindingCleared returns if the "EnvironmentToFinding" edge to the Finding entity was cleared.
+// EnvironmentToFindingCleared reports if the "EnvironmentToFinding" edge to the Finding entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToFindingCleared() bool {
 	return m.cleared_EnvironmentToFinding
 }
@@ -7021,7 +7021,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToDNSRecord() {
 	m.cleared_EnvironmentToDNSRecord = true
 }
 
-// EnvironmentToDNSRecordCleared returns if the "EnvironmentToDNSRecord" edge to the DNSRecord entity was cleared.
+// EnvironmentToDNSRecordCleared reports if the "EnvironmentToDNSRecord" edge to the DNSRecord entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToDNSRecordCleared() bool {
 	return m.cleared_EnvironmentToDNSRecord
 }
@@ -7074,7 +7074,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToDNS() {
 	m.cleared_EnvironmentToDNS = true
 }
 
-// EnvironmentToDNSCleared returns if the "EnvironmentToDNS" edge to the DNS entity was cleared.
+// EnvironmentToDNSCleared reports if the "EnvironmentToDNS" edge to the DNS entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToDNSCleared() bool {
 	return m.cleared_EnvironmentToDNS
 }
@@ -7127,7 +7127,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToNetwork() {
 	m.cleared_EnvironmentToNetwork = true
 }
 
-// EnvironmentToNetworkCleared returns if the "EnvironmentToNetwork" edge to the Network entity was cleared.
+// EnvironmentToNetworkCleared reports if the "EnvironmentToNetwork" edge to the Network entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToNetworkCleared() bool {
 	return m.cleared_EnvironmentToNetwork
 }
@@ -7180,7 +7180,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToHostDependency() {
 	m.cleared_EnvironmentToHostDependency = true
 }
 
-// EnvironmentToHostDependencyCleared returns if the "EnvironmentToHostDependency" edge to the HostDependency entity was cleared.
+// EnvironmentToHostDependencyCleared reports if the "EnvironmentToHostDependency" edge to the HostDependency entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToHostDependencyCleared() bool {
 	return m.cleared_EnvironmentToHostDependency
 }
@@ -7233,7 +7233,7 @@ func (m *EnvironmentMutation) ClearEnvironmentToBuild() {
 	m.cleared_EnvironmentToBuild = true
 }
 
-// EnvironmentToBuildCleared returns if the "EnvironmentToBuild" edge to the Build entity was cleared.
+// EnvironmentToBuildCleared reports if the "EnvironmentToBuild" edge to the Build entity was cleared.
 func (m *EnvironmentMutation) EnvironmentToBuildCleared() bool {
 	return m.cleared_EnvironmentToBuild
 }
@@ -8267,7 +8267,7 @@ func (m *FileDeleteMutation) ClearFileDeleteToEnvironment() {
 	m.cleared_FileDeleteToEnvironment = true
 }
 
-// FileDeleteToEnvironmentCleared returns if the "FileDeleteToEnvironment" edge to the Environment entity was cleared.
+// FileDeleteToEnvironmentCleared reports if the "FileDeleteToEnvironment" edge to the Environment entity was cleared.
 func (m *FileDeleteMutation) FileDeleteToEnvironmentCleared() bool {
 	return m.cleared_FileDeleteToEnvironment
 }
@@ -8990,7 +8990,7 @@ func (m *FileDownloadMutation) ClearFileDownloadToEnvironment() {
 	m.cleared_FileDownloadToEnvironment = true
 }
 
-// FileDownloadToEnvironmentCleared returns if the "FileDownloadToEnvironment" edge to the Environment entity was cleared.
+// FileDownloadToEnvironmentCleared reports if the "FileDownloadToEnvironment" edge to the Environment entity was cleared.
 func (m *FileDownloadMutation) FileDownloadToEnvironmentCleared() bool {
 	return m.cleared_FileDownloadToEnvironment
 }
@@ -9647,7 +9647,7 @@ func (m *FileExtractMutation) ClearFileExtractToEnvironment() {
 	m.cleared_FileExtractToEnvironment = true
 }
 
-// FileExtractToEnvironmentCleared returns if the "FileExtractToEnvironment" edge to the Environment entity was cleared.
+// FileExtractToEnvironmentCleared reports if the "FileExtractToEnvironment" edge to the Environment entity was cleared.
 func (m *FileExtractMutation) FileExtractToEnvironmentCleared() bool {
 	return m.cleared_FileExtractToEnvironment
 }
@@ -10231,7 +10231,7 @@ func (m *FindingMutation) ClearFindingToUser() {
 	m.cleared_FindingToUser = true
 }
 
-// FindingToUserCleared returns if the "FindingToUser" edge to the User entity was cleared.
+// FindingToUserCleared reports if the "FindingToUser" edge to the User entity was cleared.
 func (m *FindingMutation) FindingToUserCleared() bool {
 	return m.cleared_FindingToUser
 }
@@ -10279,7 +10279,7 @@ func (m *FindingMutation) ClearFindingToHost() {
 	m.cleared_FindingToHost = true
 }
 
-// FindingToHostCleared returns if the "FindingToHost" edge to the Host entity was cleared.
+// FindingToHostCleared reports if the "FindingToHost" edge to the Host entity was cleared.
 func (m *FindingMutation) FindingToHostCleared() bool {
 	return m.cleared_FindingToHost
 }
@@ -10318,7 +10318,7 @@ func (m *FindingMutation) ClearFindingToScript() {
 	m.cleared_FindingToScript = true
 }
 
-// FindingToScriptCleared returns if the "FindingToScript" edge to the Script entity was cleared.
+// FindingToScriptCleared reports if the "FindingToScript" edge to the Script entity was cleared.
 func (m *FindingMutation) FindingToScriptCleared() bool {
 	return m.cleared_FindingToScript
 }
@@ -10357,7 +10357,7 @@ func (m *FindingMutation) ClearFindingToEnvironment() {
 	m.cleared_FindingToEnvironment = true
 }
 
-// FindingToEnvironmentCleared returns if the "FindingToEnvironment" edge to the Environment entity was cleared.
+// FindingToEnvironmentCleared reports if the "FindingToEnvironment" edge to the Environment entity was cleared.
 func (m *FindingMutation) FindingToEnvironmentCleared() bool {
 	return m.cleared_FindingToEnvironment
 }
@@ -10919,7 +10919,7 @@ func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisionedHost() {
 	m.cleared_GinFileMiddlewareToProvisionedHost = true
 }
 
-// GinFileMiddlewareToProvisionedHostCleared returns if the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// GinFileMiddlewareToProvisionedHostCleared reports if the "GinFileMiddlewareToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisionedHostCleared() bool {
 	return m.cleared_GinFileMiddlewareToProvisionedHost
 }
@@ -10958,7 +10958,7 @@ func (m *GinFileMiddlewareMutation) ClearGinFileMiddlewareToProvisioningStep() {
 	m.cleared_GinFileMiddlewareToProvisioningStep = true
 }
 
-// GinFileMiddlewareToProvisioningStepCleared returns if the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+// GinFileMiddlewareToProvisioningStepCleared reports if the "GinFileMiddlewareToProvisioningStep" edge to the ProvisioningStep entity was cleared.
 func (m *GinFileMiddlewareMutation) GinFileMiddlewareToProvisioningStepCleared() bool {
 	return m.cleared_GinFileMiddlewareToProvisioningStep
 }
@@ -11895,7 +11895,7 @@ func (m *HostMutation) ClearHostToDisk() {
 	m.cleared_HostToDisk = true
 }
 
-// HostToDiskCleared returns if the "HostToDisk" edge to the Disk entity was cleared.
+// HostToDiskCleared reports if the "HostToDisk" edge to the Disk entity was cleared.
 func (m *HostMutation) HostToDiskCleared() bool {
 	return m.cleared_HostToDisk
 }
@@ -11939,7 +11939,7 @@ func (m *HostMutation) ClearHostToUser() {
 	m.cleared_HostToUser = true
 }
 
-// HostToUserCleared returns if the "HostToUser" edge to the User entity was cleared.
+// HostToUserCleared reports if the "HostToUser" edge to the User entity was cleared.
 func (m *HostMutation) HostToUserCleared() bool {
 	return m.cleared_HostToUser
 }
@@ -11987,7 +11987,7 @@ func (m *HostMutation) ClearHostToEnvironment() {
 	m.cleared_HostToEnvironment = true
 }
 
-// HostToEnvironmentCleared returns if the "HostToEnvironment" edge to the Environment entity was cleared.
+// HostToEnvironmentCleared reports if the "HostToEnvironment" edge to the Environment entity was cleared.
 func (m *HostMutation) HostToEnvironmentCleared() bool {
 	return m.cleared_HostToEnvironment
 }
@@ -12031,7 +12031,7 @@ func (m *HostMutation) ClearHostToIncludedNetwork() {
 	m.cleared_HostToIncludedNetwork = true
 }
 
-// HostToIncludedNetworkCleared returns if the "HostToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
+// HostToIncludedNetworkCleared reports if the "HostToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
 func (m *HostMutation) HostToIncludedNetworkCleared() bool {
 	return m.cleared_HostToIncludedNetwork
 }
@@ -12084,7 +12084,7 @@ func (m *HostMutation) ClearDependOnHostToHostDependency() {
 	m.cleared_DependOnHostToHostDependency = true
 }
 
-// DependOnHostToHostDependencyCleared returns if the "DependOnHostToHostDependency" edge to the HostDependency entity was cleared.
+// DependOnHostToHostDependencyCleared reports if the "DependOnHostToHostDependency" edge to the HostDependency entity was cleared.
 func (m *HostMutation) DependOnHostToHostDependencyCleared() bool {
 	return m.cleared_DependOnHostToHostDependency
 }
@@ -12137,7 +12137,7 @@ func (m *HostMutation) ClearDependByHostToHostDependency() {
 	m.cleared_DependByHostToHostDependency = true
 }
 
-// DependByHostToHostDependencyCleared returns if the "DependByHostToHostDependency" edge to the HostDependency entity was cleared.
+// DependByHostToHostDependencyCleared reports if the "DependByHostToHostDependency" edge to the HostDependency entity was cleared.
 func (m *HostMutation) DependByHostToHostDependencyCleared() bool {
 	return m.cleared_DependByHostToHostDependency
 }
@@ -12912,7 +12912,7 @@ func (m *HostDependencyMutation) ClearHostDependencyToDependOnHost() {
 	m.cleared_HostDependencyToDependOnHost = true
 }
 
-// HostDependencyToDependOnHostCleared returns if the "HostDependencyToDependOnHost" edge to the Host entity was cleared.
+// HostDependencyToDependOnHostCleared reports if the "HostDependencyToDependOnHost" edge to the Host entity was cleared.
 func (m *HostDependencyMutation) HostDependencyToDependOnHostCleared() bool {
 	return m.cleared_HostDependencyToDependOnHost
 }
@@ -12951,7 +12951,7 @@ func (m *HostDependencyMutation) ClearHostDependencyToDependByHost() {
 	m.cleared_HostDependencyToDependByHost = true
 }
 
-// HostDependencyToDependByHostCleared returns if the "HostDependencyToDependByHost" edge to the Host entity was cleared.
+// HostDependencyToDependByHostCleared reports if the "HostDependencyToDependByHost" edge to the Host entity was cleared.
 func (m *HostDependencyMutation) HostDependencyToDependByHostCleared() bool {
 	return m.cleared_HostDependencyToDependByHost
 }
@@ -12990,7 +12990,7 @@ func (m *HostDependencyMutation) ClearHostDependencyToNetwork() {
 	m.cleared_HostDependencyToNetwork = true
 }
 
-// HostDependencyToNetworkCleared returns if the "HostDependencyToNetwork" edge to the Network entity was cleared.
+// HostDependencyToNetworkCleared reports if the "HostDependencyToNetwork" edge to the Network entity was cleared.
 func (m *HostDependencyMutation) HostDependencyToNetworkCleared() bool {
 	return m.cleared_HostDependencyToNetwork
 }
@@ -13029,7 +13029,7 @@ func (m *HostDependencyMutation) ClearHostDependencyToEnvironment() {
 	m.cleared_HostDependencyToEnvironment = true
 }
 
-// HostDependencyToEnvironmentCleared returns if the "HostDependencyToEnvironment" edge to the Environment entity was cleared.
+// HostDependencyToEnvironmentCleared reports if the "HostDependencyToEnvironment" edge to the Environment entity was cleared.
 func (m *HostDependencyMutation) HostDependencyToEnvironmentCleared() bool {
 	return m.cleared_HostDependencyToEnvironment
 }
@@ -13752,7 +13752,7 @@ func (m *IdentityMutation) ClearIdentityToEnvironment() {
 	m.cleared_IdentityToEnvironment = true
 }
 
-// IdentityToEnvironmentCleared returns if the "IdentityToEnvironment" edge to the Environment entity was cleared.
+// IdentityToEnvironmentCleared reports if the "IdentityToEnvironment" edge to the Environment entity was cleared.
 func (m *IdentityMutation) IdentityToEnvironmentCleared() bool {
 	return m.cleared_IdentityToEnvironment
 }
@@ -14296,7 +14296,7 @@ func (m *IncludedNetworkMutation) ClearIncludedNetworkToTag() {
 	m.cleared_IncludedNetworkToTag = true
 }
 
-// IncludedNetworkToTagCleared returns if the "IncludedNetworkToTag" edge to the Tag entity was cleared.
+// IncludedNetworkToTagCleared reports if the "IncludedNetworkToTag" edge to the Tag entity was cleared.
 func (m *IncludedNetworkMutation) IncludedNetworkToTagCleared() bool {
 	return m.cleared_IncludedNetworkToTag
 }
@@ -14349,7 +14349,7 @@ func (m *IncludedNetworkMutation) ClearIncludedNetworkToHost() {
 	m.cleared_IncludedNetworkToHost = true
 }
 
-// IncludedNetworkToHostCleared returns if the "IncludedNetworkToHost" edge to the Host entity was cleared.
+// IncludedNetworkToHostCleared reports if the "IncludedNetworkToHost" edge to the Host entity was cleared.
 func (m *IncludedNetworkMutation) IncludedNetworkToHostCleared() bool {
 	return m.cleared_IncludedNetworkToHost
 }
@@ -14402,7 +14402,7 @@ func (m *IncludedNetworkMutation) ClearIncludedNetworkToNetwork() {
 	m.cleared_IncludedNetworkToNetwork = true
 }
 
-// IncludedNetworkToNetworkCleared returns if the "IncludedNetworkToNetwork" edge to the Network entity was cleared.
+// IncludedNetworkToNetworkCleared reports if the "IncludedNetworkToNetwork" edge to the Network entity was cleared.
 func (m *IncludedNetworkMutation) IncludedNetworkToNetworkCleared() bool {
 	return m.cleared_IncludedNetworkToNetwork
 }
@@ -14455,7 +14455,7 @@ func (m *IncludedNetworkMutation) ClearIncludedNetworkToEnvironment() {
 	m.cleared_IncludedNetworkToEnvironment = true
 }
 
-// IncludedNetworkToEnvironmentCleared returns if the "IncludedNetworkToEnvironment" edge to the Environment entity was cleared.
+// IncludedNetworkToEnvironmentCleared reports if the "IncludedNetworkToEnvironment" edge to the Environment entity was cleared.
 func (m *IncludedNetworkMutation) IncludedNetworkToEnvironmentCleared() bool {
 	return m.cleared_IncludedNetworkToEnvironment
 }
@@ -15114,7 +15114,7 @@ func (m *NetworkMutation) ClearNetworkToEnvironment() {
 	m.cleared_NetworkToEnvironment = true
 }
 
-// NetworkToEnvironmentCleared returns if the "NetworkToEnvironment" edge to the Environment entity was cleared.
+// NetworkToEnvironmentCleared reports if the "NetworkToEnvironment" edge to the Environment entity was cleared.
 func (m *NetworkMutation) NetworkToEnvironmentCleared() bool {
 	return m.cleared_NetworkToEnvironment
 }
@@ -15158,7 +15158,7 @@ func (m *NetworkMutation) ClearNetworkToHostDependency() {
 	m.cleared_NetworkToHostDependency = true
 }
 
-// NetworkToHostDependencyCleared returns if the "NetworkToHostDependency" edge to the HostDependency entity was cleared.
+// NetworkToHostDependencyCleared reports if the "NetworkToHostDependency" edge to the HostDependency entity was cleared.
 func (m *NetworkMutation) NetworkToHostDependencyCleared() bool {
 	return m.cleared_NetworkToHostDependency
 }
@@ -15211,7 +15211,7 @@ func (m *NetworkMutation) ClearNetworkToIncludedNetwork() {
 	m.cleared_NetworkToIncludedNetwork = true
 }
 
-// NetworkToIncludedNetworkCleared returns if the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
+// NetworkToIncludedNetworkCleared reports if the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity was cleared.
 func (m *NetworkMutation) NetworkToIncludedNetworkCleared() bool {
 	return m.cleared_NetworkToIncludedNetwork
 }
@@ -15848,7 +15848,7 @@ func (m *PlanMutation) ClearPrevPlan() {
 	m.cleared_PrevPlan = true
 }
 
-// PrevPlanCleared returns if the "PrevPlan" edge to the Plan entity was cleared.
+// PrevPlanCleared reports if the "PrevPlan" edge to the Plan entity was cleared.
 func (m *PlanMutation) PrevPlanCleared() bool {
 	return m.cleared_PrevPlan
 }
@@ -15901,7 +15901,7 @@ func (m *PlanMutation) ClearNextPlan() {
 	m.cleared_NextPlan = true
 }
 
-// NextPlanCleared returns if the "NextPlan" edge to the Plan entity was cleared.
+// NextPlanCleared reports if the "NextPlan" edge to the Plan entity was cleared.
 func (m *PlanMutation) NextPlanCleared() bool {
 	return m.cleared_NextPlan
 }
@@ -15949,7 +15949,7 @@ func (m *PlanMutation) ClearPlanToBuild() {
 	m.cleared_PlanToBuild = true
 }
 
-// PlanToBuildCleared returns if the "PlanToBuild" edge to the Build entity was cleared.
+// PlanToBuildCleared reports if the "PlanToBuild" edge to the Build entity was cleared.
 func (m *PlanMutation) PlanToBuildCleared() bool {
 	return m.cleared_PlanToBuild
 }
@@ -15988,7 +15988,7 @@ func (m *PlanMutation) ClearPlanToTeam() {
 	m.cleared_PlanToTeam = true
 }
 
-// PlanToTeamCleared returns if the "PlanToTeam" edge to the Team entity was cleared.
+// PlanToTeamCleared reports if the "PlanToTeam" edge to the Team entity was cleared.
 func (m *PlanMutation) PlanToTeamCleared() bool {
 	return m.cleared_PlanToTeam
 }
@@ -16027,7 +16027,7 @@ func (m *PlanMutation) ClearPlanToProvisionedNetwork() {
 	m.cleared_PlanToProvisionedNetwork = true
 }
 
-// PlanToProvisionedNetworkCleared returns if the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+// PlanToProvisionedNetworkCleared reports if the "PlanToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
 func (m *PlanMutation) PlanToProvisionedNetworkCleared() bool {
 	return m.cleared_PlanToProvisionedNetwork
 }
@@ -16066,7 +16066,7 @@ func (m *PlanMutation) ClearPlanToProvisionedHost() {
 	m.cleared_PlanToProvisionedHost = true
 }
 
-// PlanToProvisionedHostCleared returns if the "PlanToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// PlanToProvisionedHostCleared reports if the "PlanToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *PlanMutation) PlanToProvisionedHostCleared() bool {
 	return m.cleared_PlanToProvisionedHost
 }
@@ -16105,7 +16105,7 @@ func (m *PlanMutation) ClearPlanToProvisioningStep() {
 	m.cleared_PlanToProvisioningStep = true
 }
 
-// PlanToProvisioningStepCleared returns if the "PlanToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+// PlanToProvisioningStepCleared reports if the "PlanToProvisioningStep" edge to the ProvisioningStep entity was cleared.
 func (m *PlanMutation) PlanToProvisioningStepCleared() bool {
 	return m.cleared_PlanToProvisioningStep
 }
@@ -16662,7 +16662,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToStatus() {
 	m.cleared_ProvisionedHostToStatus = true
 }
 
-// ProvisionedHostToStatusCleared returns if the "ProvisionedHostToStatus" edge to the Status entity was cleared.
+// ProvisionedHostToStatusCleared reports if the "ProvisionedHostToStatus" edge to the Status entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToStatusCleared() bool {
 	return m.cleared_ProvisionedHostToStatus
 }
@@ -16701,7 +16701,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToProvisionedNetwork() {
 	m.cleared_ProvisionedHostToProvisionedNetwork = true
 }
 
-// ProvisionedHostToProvisionedNetworkCleared returns if the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+// ProvisionedHostToProvisionedNetworkCleared reports if the "ProvisionedHostToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToProvisionedNetworkCleared() bool {
 	return m.cleared_ProvisionedHostToProvisionedNetwork
 }
@@ -16740,7 +16740,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToHost() {
 	m.cleared_ProvisionedHostToHost = true
 }
 
-// ProvisionedHostToHostCleared returns if the "ProvisionedHostToHost" edge to the Host entity was cleared.
+// ProvisionedHostToHostCleared reports if the "ProvisionedHostToHost" edge to the Host entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToHostCleared() bool {
 	return m.cleared_ProvisionedHostToHost
 }
@@ -16779,7 +16779,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToEndStepPlan() {
 	m.cleared_ProvisionedHostToEndStepPlan = true
 }
 
-// ProvisionedHostToEndStepPlanCleared returns if the "ProvisionedHostToEndStepPlan" edge to the Plan entity was cleared.
+// ProvisionedHostToEndStepPlanCleared reports if the "ProvisionedHostToEndStepPlan" edge to the Plan entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToEndStepPlanCleared() bool {
 	return m.cleared_ProvisionedHostToEndStepPlan
 }
@@ -16823,7 +16823,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToProvisioningStep() {
 	m.cleared_ProvisionedHostToProvisioningStep = true
 }
 
-// ProvisionedHostToProvisioningStepCleared returns if the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+// ProvisionedHostToProvisioningStepCleared reports if the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToProvisioningStepCleared() bool {
 	return m.cleared_ProvisionedHostToProvisioningStep
 }
@@ -16876,7 +16876,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToAgentStatus() {
 	m.cleared_ProvisionedHostToAgentStatus = true
 }
 
-// ProvisionedHostToAgentStatusCleared returns if the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity was cleared.
+// ProvisionedHostToAgentStatusCleared reports if the "ProvisionedHostToAgentStatus" edge to the AgentStatus entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToAgentStatusCleared() bool {
 	return m.cleared_ProvisionedHostToAgentStatus
 }
@@ -16924,7 +16924,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToPlan() {
 	m.cleared_ProvisionedHostToPlan = true
 }
 
-// ProvisionedHostToPlanCleared returns if the "ProvisionedHostToPlan" edge to the Plan entity was cleared.
+// ProvisionedHostToPlanCleared reports if the "ProvisionedHostToPlan" edge to the Plan entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToPlanCleared() bool {
 	return m.cleared_ProvisionedHostToPlan
 }
@@ -16963,7 +16963,7 @@ func (m *ProvisionedHostMutation) ClearProvisionedHostToGinFileMiddleware() {
 	m.cleared_ProvisionedHostToGinFileMiddleware = true
 }
 
-// ProvisionedHostToGinFileMiddlewareCleared returns if the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+// ProvisionedHostToGinFileMiddlewareCleared reports if the "ProvisionedHostToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
 func (m *ProvisionedHostMutation) ProvisionedHostToGinFileMiddlewareCleared() bool {
 	return m.cleared_ProvisionedHostToGinFileMiddleware
 }
@@ -17509,7 +17509,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToStatus() {
 	m.cleared_ProvisionedNetworkToStatus = true
 }
 
-// ProvisionedNetworkToStatusCleared returns if the "ProvisionedNetworkToStatus" edge to the Status entity was cleared.
+// ProvisionedNetworkToStatusCleared reports if the "ProvisionedNetworkToStatus" edge to the Status entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToStatusCleared() bool {
 	return m.cleared_ProvisionedNetworkToStatus
 }
@@ -17548,7 +17548,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToNetwork() {
 	m.cleared_ProvisionedNetworkToNetwork = true
 }
 
-// ProvisionedNetworkToNetworkCleared returns if the "ProvisionedNetworkToNetwork" edge to the Network entity was cleared.
+// ProvisionedNetworkToNetworkCleared reports if the "ProvisionedNetworkToNetwork" edge to the Network entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToNetworkCleared() bool {
 	return m.cleared_ProvisionedNetworkToNetwork
 }
@@ -17587,7 +17587,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToBuild() {
 	m.cleared_ProvisionedNetworkToBuild = true
 }
 
-// ProvisionedNetworkToBuildCleared returns if the "ProvisionedNetworkToBuild" edge to the Build entity was cleared.
+// ProvisionedNetworkToBuildCleared reports if the "ProvisionedNetworkToBuild" edge to the Build entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToBuildCleared() bool {
 	return m.cleared_ProvisionedNetworkToBuild
 }
@@ -17626,7 +17626,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToTeam() {
 	m.cleared_ProvisionedNetworkToTeam = true
 }
 
-// ProvisionedNetworkToTeamCleared returns if the "ProvisionedNetworkToTeam" edge to the Team entity was cleared.
+// ProvisionedNetworkToTeamCleared reports if the "ProvisionedNetworkToTeam" edge to the Team entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToTeamCleared() bool {
 	return m.cleared_ProvisionedNetworkToTeam
 }
@@ -17670,7 +17670,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToProvisionedHost() 
 	m.cleared_ProvisionedNetworkToProvisionedHost = true
 }
 
-// ProvisionedNetworkToProvisionedHostCleared returns if the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// ProvisionedNetworkToProvisionedHostCleared reports if the "ProvisionedNetworkToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToProvisionedHostCleared() bool {
 	return m.cleared_ProvisionedNetworkToProvisionedHost
 }
@@ -17718,7 +17718,7 @@ func (m *ProvisionedNetworkMutation) ClearProvisionedNetworkToPlan() {
 	m.cleared_ProvisionedNetworkToPlan = true
 }
 
-// ProvisionedNetworkToPlanCleared returns if the "ProvisionedNetworkToPlan" edge to the Plan entity was cleared.
+// ProvisionedNetworkToPlanCleared reports if the "ProvisionedNetworkToPlan" edge to the Plan entity was cleared.
 func (m *ProvisionedNetworkMutation) ProvisionedNetworkToPlanCleared() bool {
 	return m.cleared_ProvisionedNetworkToPlan
 }
@@ -18265,7 +18265,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToStatus() {
 	m.cleared_ProvisioningStepToStatus = true
 }
 
-// ProvisioningStepToStatusCleared returns if the "ProvisioningStepToStatus" edge to the Status entity was cleared.
+// ProvisioningStepToStatusCleared reports if the "ProvisioningStepToStatus" edge to the Status entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToStatusCleared() bool {
 	return m.cleared_ProvisioningStepToStatus
 }
@@ -18304,7 +18304,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToProvisionedHost() {
 	m.cleared_ProvisioningStepToProvisionedHost = true
 }
 
-// ProvisioningStepToProvisionedHostCleared returns if the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// ProvisioningStepToProvisionedHostCleared reports if the "ProvisioningStepToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToProvisionedHostCleared() bool {
 	return m.cleared_ProvisioningStepToProvisionedHost
 }
@@ -18343,7 +18343,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToScript() {
 	m.cleared_ProvisioningStepToScript = true
 }
 
-// ProvisioningStepToScriptCleared returns if the "ProvisioningStepToScript" edge to the Script entity was cleared.
+// ProvisioningStepToScriptCleared reports if the "ProvisioningStepToScript" edge to the Script entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToScriptCleared() bool {
 	return m.cleared_ProvisioningStepToScript
 }
@@ -18382,7 +18382,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToCommand() {
 	m.cleared_ProvisioningStepToCommand = true
 }
 
-// ProvisioningStepToCommandCleared returns if the "ProvisioningStepToCommand" edge to the Command entity was cleared.
+// ProvisioningStepToCommandCleared reports if the "ProvisioningStepToCommand" edge to the Command entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToCommandCleared() bool {
 	return m.cleared_ProvisioningStepToCommand
 }
@@ -18421,7 +18421,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToDNSRecord() {
 	m.cleared_ProvisioningStepToDNSRecord = true
 }
 
-// ProvisioningStepToDNSRecordCleared returns if the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity was cleared.
+// ProvisioningStepToDNSRecordCleared reports if the "ProvisioningStepToDNSRecord" edge to the DNSRecord entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToDNSRecordCleared() bool {
 	return m.cleared_ProvisioningStepToDNSRecord
 }
@@ -18460,7 +18460,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToFileDelete() {
 	m.cleared_ProvisioningStepToFileDelete = true
 }
 
-// ProvisioningStepToFileDeleteCleared returns if the "ProvisioningStepToFileDelete" edge to the FileDelete entity was cleared.
+// ProvisioningStepToFileDeleteCleared reports if the "ProvisioningStepToFileDelete" edge to the FileDelete entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDeleteCleared() bool {
 	return m.cleared_ProvisioningStepToFileDelete
 }
@@ -18499,7 +18499,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToFileDownload() {
 	m.cleared_ProvisioningStepToFileDownload = true
 }
 
-// ProvisioningStepToFileDownloadCleared returns if the "ProvisioningStepToFileDownload" edge to the FileDownload entity was cleared.
+// ProvisioningStepToFileDownloadCleared reports if the "ProvisioningStepToFileDownload" edge to the FileDownload entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileDownloadCleared() bool {
 	return m.cleared_ProvisioningStepToFileDownload
 }
@@ -18538,7 +18538,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToFileExtract() {
 	m.cleared_ProvisioningStepToFileExtract = true
 }
 
-// ProvisioningStepToFileExtractCleared returns if the "ProvisioningStepToFileExtract" edge to the FileExtract entity was cleared.
+// ProvisioningStepToFileExtractCleared reports if the "ProvisioningStepToFileExtract" edge to the FileExtract entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToFileExtractCleared() bool {
 	return m.cleared_ProvisioningStepToFileExtract
 }
@@ -18577,7 +18577,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToPlan() {
 	m.cleared_ProvisioningStepToPlan = true
 }
 
-// ProvisioningStepToPlanCleared returns if the "ProvisioningStepToPlan" edge to the Plan entity was cleared.
+// ProvisioningStepToPlanCleared reports if the "ProvisioningStepToPlan" edge to the Plan entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToPlanCleared() bool {
 	return m.cleared_ProvisioningStepToPlan
 }
@@ -18616,7 +18616,7 @@ func (m *ProvisioningStepMutation) ClearProvisioningStepToGinFileMiddleware() {
 	m.cleared_ProvisioningStepToGinFileMiddleware = true
 }
 
-// ProvisioningStepToGinFileMiddlewareCleared returns if the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+// ProvisioningStepToGinFileMiddlewareCleared reports if the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
 func (m *ProvisioningStepMutation) ProvisioningStepToGinFileMiddlewareCleared() bool {
 	return m.cleared_ProvisioningStepToGinFileMiddleware
 }
@@ -19700,7 +19700,7 @@ func (m *ScriptMutation) ClearScriptToUser() {
 	m.cleared_ScriptToUser = true
 }
 
-// ScriptToUserCleared returns if the "ScriptToUser" edge to the User entity was cleared.
+// ScriptToUserCleared reports if the "ScriptToUser" edge to the User entity was cleared.
 func (m *ScriptMutation) ScriptToUserCleared() bool {
 	return m.cleared_ScriptToUser
 }
@@ -19753,7 +19753,7 @@ func (m *ScriptMutation) ClearScriptToFinding() {
 	m.cleared_ScriptToFinding = true
 }
 
-// ScriptToFindingCleared returns if the "ScriptToFinding" edge to the Finding entity was cleared.
+// ScriptToFindingCleared reports if the "ScriptToFinding" edge to the Finding entity was cleared.
 func (m *ScriptMutation) ScriptToFindingCleared() bool {
 	return m.cleared_ScriptToFinding
 }
@@ -19801,7 +19801,7 @@ func (m *ScriptMutation) ClearScriptToEnvironment() {
 	m.cleared_ScriptToEnvironment = true
 }
 
-// ScriptToEnvironmentCleared returns if the "ScriptToEnvironment" edge to the Environment entity was cleared.
+// ScriptToEnvironmentCleared reports if the "ScriptToEnvironment" edge to the Environment entity was cleared.
 func (m *ScriptMutation) ScriptToEnvironmentCleared() bool {
 	return m.cleared_ScriptToEnvironment
 }
@@ -20726,7 +20726,7 @@ func (m *StatusMutation) ClearStatusToBuild() {
 	m.cleared_StatusToBuild = true
 }
 
-// StatusToBuildCleared returns if the "StatusToBuild" edge to the Build entity was cleared.
+// StatusToBuildCleared reports if the "StatusToBuild" edge to the Build entity was cleared.
 func (m *StatusMutation) StatusToBuildCleared() bool {
 	return m.cleared_StatusToBuild
 }
@@ -20765,7 +20765,7 @@ func (m *StatusMutation) ClearStatusToProvisionedNetwork() {
 	m.cleared_StatusToProvisionedNetwork = true
 }
 
-// StatusToProvisionedNetworkCleared returns if the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+// StatusToProvisionedNetworkCleared reports if the "StatusToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
 func (m *StatusMutation) StatusToProvisionedNetworkCleared() bool {
 	return m.cleared_StatusToProvisionedNetwork
 }
@@ -20804,7 +20804,7 @@ func (m *StatusMutation) ClearStatusToProvisionedHost() {
 	m.cleared_StatusToProvisionedHost = true
 }
 
-// StatusToProvisionedHostCleared returns if the "StatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+// StatusToProvisionedHostCleared reports if the "StatusToProvisionedHost" edge to the ProvisionedHost entity was cleared.
 func (m *StatusMutation) StatusToProvisionedHostCleared() bool {
 	return m.cleared_StatusToProvisionedHost
 }
@@ -20843,7 +20843,7 @@ func (m *StatusMutation) ClearStatusToProvisioningStep() {
 	m.cleared_StatusToProvisioningStep = true
 }
 
-// StatusToProvisioningStepCleared returns if the "StatusToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+// StatusToProvisioningStepCleared reports if the "StatusToProvisioningStep" edge to the ProvisioningStep entity was cleared.
 func (m *StatusMutation) StatusToProvisioningStepCleared() bool {
 	return m.cleared_StatusToProvisioningStep
 }
@@ -20882,7 +20882,7 @@ func (m *StatusMutation) ClearStatusToTeam() {
 	m.cleared_StatusToTeam = true
 }
 
-// StatusToTeamCleared returns if the "StatusToTeam" edge to the Team entity was cleared.
+// StatusToTeamCleared reports if the "StatusToTeam" edge to the Team entity was cleared.
 func (m *StatusMutation) StatusToTeamCleared() bool {
 	return m.cleared_StatusToTeam
 }
@@ -21856,7 +21856,7 @@ func (m *TeamMutation) ClearTeamToBuild() {
 	m.cleared_TeamToBuild = true
 }
 
-// TeamToBuildCleared returns if the "TeamToBuild" edge to the Build entity was cleared.
+// TeamToBuildCleared reports if the "TeamToBuild" edge to the Build entity was cleared.
 func (m *TeamMutation) TeamToBuildCleared() bool {
 	return m.cleared_TeamToBuild
 }
@@ -21895,7 +21895,7 @@ func (m *TeamMutation) ClearTeamToStatus() {
 	m.cleared_TeamToStatus = true
 }
 
-// TeamToStatusCleared returns if the "TeamToStatus" edge to the Status entity was cleared.
+// TeamToStatusCleared reports if the "TeamToStatus" edge to the Status entity was cleared.
 func (m *TeamMutation) TeamToStatusCleared() bool {
 	return m.cleared_TeamToStatus
 }
@@ -21939,7 +21939,7 @@ func (m *TeamMutation) ClearTeamToProvisionedNetwork() {
 	m.cleared_TeamToProvisionedNetwork = true
 }
 
-// TeamToProvisionedNetworkCleared returns if the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
+// TeamToProvisionedNetworkCleared reports if the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity was cleared.
 func (m *TeamMutation) TeamToProvisionedNetworkCleared() bool {
 	return m.cleared_TeamToProvisionedNetwork
 }
@@ -21987,7 +21987,7 @@ func (m *TeamMutation) ClearTeamToPlan() {
 	m.cleared_TeamToPlan = true
 }
 
-// TeamToPlanCleared returns if the "TeamToPlan" edge to the Plan entity was cleared.
+// TeamToPlanCleared reports if the "TeamToPlan" edge to the Plan entity was cleared.
 func (m *TeamMutation) TeamToPlanCleared() bool {
 	return m.cleared_TeamToPlan
 }
@@ -22540,7 +22540,7 @@ func (m *UserMutation) ClearUserToTag() {
 	m.cleared_UserToTag = true
 }
 
-// UserToTagCleared returns if the "UserToTag" edge to the Tag entity was cleared.
+// UserToTagCleared reports if the "UserToTag" edge to the Tag entity was cleared.
 func (m *UserMutation) UserToTagCleared() bool {
 	return m.cleared_UserToTag
 }
@@ -22593,7 +22593,7 @@ func (m *UserMutation) ClearUserToEnvironment() {
 	m.cleared_UserToEnvironment = true
 }
 
-// UserToEnvironmentCleared returns if the "UserToEnvironment" edge to the Environment entity was cleared.
+// UserToEnvironmentCleared reports if the "UserToEnvironment" edge to the Environment entity was cleared.
 func (m *UserMutation) UserToEnvironmentCleared() bool {
 	return m.cleared_UserToEnvironment
 }

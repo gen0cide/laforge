@@ -15,14 +15,12 @@ const (
 	FieldConfig = "config"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeCompetitionToDNS holds the string denoting the competitiontodns edge name in mutations.
 	EdgeCompetitionToDNS = "CompetitionToDNS"
 	// EdgeCompetitionToEnvironment holds the string denoting the competitiontoenvironment edge name in mutations.
 	EdgeCompetitionToEnvironment = "CompetitionToEnvironment"
 	// EdgeCompetitionToBuild holds the string denoting the competitiontobuild edge name in mutations.
 	EdgeCompetitionToBuild = "CompetitionToBuild"
-
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
 	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge. The primary key declared below.
@@ -55,7 +53,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Competition type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "competitions"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_competition",
 }

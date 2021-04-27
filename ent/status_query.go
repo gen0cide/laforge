@@ -25,6 +25,7 @@ type StatusQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Status
@@ -55,6 +56,13 @@ func (sq *StatusQuery) Limit(limit int) *StatusQuery {
 // Offset adds an offset step to the query.
 func (sq *StatusQuery) Offset(offset int) *StatusQuery {
 	sq.offset = &offset
+	return sq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (sq *StatusQuery) Unique(unique bool) *StatusQuery {
+	sq.unique = &unique
 	return sq
 }
 
@@ -525,10 +533,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			if fk := nodes[i].build_build_to_status; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].build_build_to_status == nil {
+				continue
 			}
+			fk := *nodes[i].build_build_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(build.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -550,10 +562,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_network_provisioned_network_to_status; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_network_provisioned_network_to_status == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_network_provisioned_network_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(provisionednetwork.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -575,10 +591,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			if fk := nodes[i].provisioned_host_provisioned_host_to_status; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioned_host_provisioned_host_to_status == nil {
+				continue
 			}
+			fk := *nodes[i].provisioned_host_provisioned_host_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -600,10 +620,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			if fk := nodes[i].provisioning_step_provisioning_step_to_status; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].provisioning_step_provisioning_step_to_status == nil {
+				continue
 			}
+			fk := *nodes[i].provisioning_step_provisioning_step_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(provisioningstep.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -625,10 +649,14 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*Status)
 		for i := range nodes {
-			if fk := nodes[i].team_team_to_status; fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].team_team_to_status == nil {
+				continue
 			}
+			fk := *nodes[i].team_team_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(team.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -657,7 +685,7 @@ func (sq *StatusQuery) sqlCount(ctx context.Context) (int, error) {
 func (sq *StatusQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := sq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -674,6 +702,9 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   sq.sql,
 		Unique: true,
+	}
+	if unique := sq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := sq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -700,7 +731,7 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := sq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, status.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -719,7 +750,7 @@ func (sq *StatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range sq.order {
-		p(selector, status.ValidColumn)
+		p(selector)
 	}
 	if offset := sq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -985,7 +1016,7 @@ func (sgb *StatusGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(sgb.fields)+len(sgb.fns))
 	columns = append(columns, sgb.fields...)
 	for _, fn := range sgb.fns {
-		columns = append(columns, fn(selector, status.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(sgb.fields...)
 }

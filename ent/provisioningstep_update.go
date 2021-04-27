@@ -780,6 +780,7 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 // ProvisioningStepUpdateOne is the builder for updating a single ProvisioningStep entity.
 type ProvisioningStepUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *ProvisioningStepMutation
 }
@@ -1058,6 +1059,13 @@ func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToGinFileMiddleware(
 	return psuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (psuo *ProvisioningStepUpdateOne) Select(field string, fields ...string) *ProvisioningStepUpdateOne {
+	psuo.fields = append([]string{field}, fields...)
+	return psuo
+}
+
 // Save executes the query and returns the updated ProvisioningStep entity.
 func (psuo *ProvisioningStepUpdateOne) Save(ctx context.Context) (*ProvisioningStep, error) {
 	var (
@@ -1141,6 +1149,18 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing ProvisioningStep.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := psuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, provisioningstep.FieldID)
+		for _, f := range fields {
+			if !provisioningstep.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != provisioningstep.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := psuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

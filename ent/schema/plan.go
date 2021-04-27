@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -31,7 +32,10 @@ func (Plan) Fields() []ent.Field {
 func (Plan) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("NextPlan", Plan.Type).
-			From("PrevPlan"),
+			From("PrevPlan").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("PlanToBuild", Build.Type).Unique(),
 		edge.To("PlanToTeam", Team.Type).Unique(),
 		edge.To("PlanToProvisionedNetwork", ProvisionedNetwork.Type).Unique(),

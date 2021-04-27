@@ -23,6 +23,7 @@ type DNSQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.DNS
@@ -49,6 +50,13 @@ func (dq *DNSQuery) Limit(limit int) *DNSQuery {
 // Offset adds an offset step to the query.
 func (dq *DNSQuery) Offset(offset int) *DNSQuery {
 	dq.offset = &offset
+	return dq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (dq *DNSQuery) Unique(unique bool) *DNSQuery {
+	dq.unique = &unique
 	return dq
 }
 
@@ -424,7 +432,6 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(dns.DNSToEnvironmentPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -443,13 +450,15 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, dq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DNSToEnvironment": %v`, err)
+			return nil, fmt.Errorf(`query edges "DNSToEnvironment": %w`, err)
 		}
 		query.Where(environment.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -488,7 +497,6 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 			Predicate: func(s *sql.Selector) {
 				s.Where(sql.InValues(dns.DNSToCompetitionPrimaryKey[1], fks...))
 			},
-
 			ScanValues: func() [2]interface{} {
 				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
 			},
@@ -507,13 +515,15 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				if !ok {
 					return fmt.Errorf("unexpected node id in edges: %v", outValue)
 				}
-				edgeids = append(edgeids, inValue)
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
 				edges[inValue] = append(edges[inValue], node)
 				return nil
 			},
 		}
 		if err := sqlgraph.QueryEdges(ctx, dq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "DNSToCompetition": %v`, err)
+			return nil, fmt.Errorf(`query edges "DNSToCompetition": %w`, err)
 		}
 		query.Where(competition.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
@@ -542,7 +552,7 @@ func (dq *DNSQuery) sqlCount(ctx context.Context) (int, error) {
 func (dq *DNSQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := dq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -559,6 +569,9 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 		},
 		From:   dq.sql,
 		Unique: true,
+	}
+	if unique := dq.unique; unique != nil {
+		_spec.Unique = *unique
 	}
 	if fields := dq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
@@ -585,7 +598,7 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := dq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, dns.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -604,7 +617,7 @@ func (dq *DNSQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range dq.order {
-		p(selector, dns.ValidColumn)
+		p(selector)
 	}
 	if offset := dq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -870,7 +883,7 @@ func (dgb *DNSGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
 	columns = append(columns, dgb.fields...)
 	for _, fn := range dgb.fns {
-		columns = append(columns, fn(selector, dns.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(dgb.fields...)
 }

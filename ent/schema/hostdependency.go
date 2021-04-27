@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -25,9 +26,15 @@ func (HostDependency) Fields() []ent.Field {
 func (HostDependency) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("HostDependencyToDependOnHost", Host.Type).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("HostDependencyToDependByHost", Host.Type).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.To("HostDependencyToNetwork", Network.Type).
 			Unique(),
 		edge.From("HostDependencyToEnvironment", Environment.Type).

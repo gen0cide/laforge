@@ -283,6 +283,7 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 // GinFileMiddlewareUpdateOne is the builder for updating a single GinFileMiddleware entity.
 type GinFileMiddlewareUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *GinFileMiddlewareMutation
 }
@@ -368,6 +369,13 @@ func (gfmuo *GinFileMiddlewareUpdateOne) ClearGinFileMiddlewareToProvisioningSte
 	return gfmuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (gfmuo *GinFileMiddlewareUpdateOne) Select(field string, fields ...string) *GinFileMiddlewareUpdateOne {
+	gfmuo.fields = append([]string{field}, fields...)
+	return gfmuo
+}
+
 // Save executes the query and returns the updated GinFileMiddleware entity.
 func (gfmuo *GinFileMiddlewareUpdateOne) Save(ctx context.Context) (*GinFileMiddleware, error) {
 	var (
@@ -435,6 +443,18 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing GinFileMiddleware.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := gfmuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, ginfilemiddleware.FieldID)
+		for _, f := range fields {
+			if !ginfilemiddleware.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != ginfilemiddleware.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := gfmuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

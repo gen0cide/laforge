@@ -29,7 +29,6 @@ const (
 	FieldConfig = "config"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeEnvironmentToUser holds the string denoting the environmenttouser edge name in mutations.
 	EdgeEnvironmentToUser = "EnvironmentToUser"
 	// EdgeEnvironmentToHost holds the string denoting the environmenttohost edge name in mutations.
@@ -62,7 +61,6 @@ const (
 	EdgeEnvironmentToHostDependency = "EnvironmentToHostDependency"
 	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
 	EdgeEnvironmentToBuild = "EnvironmentToBuild"
-
 	// Table holds the table name of the environment in the database.
 	Table = "environments"
 	// EnvironmentToUserTable is the table the holds the EnvironmentToUser relation/edge. The primary key declared below.

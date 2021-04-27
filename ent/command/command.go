@@ -29,12 +29,10 @@ const (
 	FieldVars = "vars"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-
 	// EdgeCommandToUser holds the string denoting the commandtouser edge name in mutations.
 	EdgeCommandToUser = "CommandToUser"
 	// EdgeCommandToEnvironment holds the string denoting the commandtoenvironment edge name in mutations.
 	EdgeCommandToEnvironment = "CommandToEnvironment"
-
 	// Table holds the table name of the command in the database.
 	Table = "commands"
 	// CommandToUserTable is the table the holds the CommandToUser relation/edge.
@@ -69,7 +67,8 @@ var Columns = []string{
 	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Command type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "commands"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"environment_environment_to_command",
 }
