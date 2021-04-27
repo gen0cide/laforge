@@ -288,7 +288,7 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, rend
 		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
-	entEnvironment, err := r.client.Environment.Query().Where(environment.IDEQ(uuid)).Only(ctx)
+	entEnvironment, err := r.client.Environment.Query().Where(environment.IDEQ(uuid)).WithEnvironmentToBuild().Only(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
