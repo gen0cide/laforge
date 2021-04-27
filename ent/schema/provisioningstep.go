@@ -55,10 +55,7 @@ func (ProvisioningStep) Edges() []ent.Edge {
 			Unique(),
 		edge.From("ProvisioningStepToPlan", Plan.Type).
 			Ref("PlanToProvisioningStep").
-			Unique().
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Unique(),
 		edge.From("ProvisioningStepToGinFileMiddleware", GinFileMiddleware.Type).
 			Ref("GinFileMiddlewareToProvisioningStep").
 			Unique(),

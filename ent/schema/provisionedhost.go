@@ -45,16 +45,10 @@ func (ProvisionedHost) Edges() []ent.Edge {
 		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).
 			Ref("ProvisioningStepToProvisionedHost"),
 		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).
-			Ref("AgentStatusToProvisionedHost").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("AgentStatusToProvisionedHost"),
 		edge.From("ProvisionedHostToPlan", Plan.Type).
 			Ref("PlanToProvisionedHost").
-			Unique().
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Unique(),
 		edge.From("ProvisionedHostToGinFileMiddleware", GinFileMiddleware.Type).
 			Ref("GinFileMiddlewareToProvisionedHost").
 			Unique(),

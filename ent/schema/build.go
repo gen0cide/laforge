@@ -39,19 +39,10 @@ func (Build) Edges() []ent.Edge {
 			Unique().
 			Required(),
 		edge.From("BuildToProvisionedNetwork", ProvisionedNetwork.Type).
-			Ref("ProvisionedNetworkToBuild").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("ProvisionedNetworkToBuild"),
 		edge.From("BuildToTeam", Team.Type).
-			Ref("TeamToBuild").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("TeamToBuild"),
 		edge.From("BuildToPlan", Plan.Type).
-			Ref("PlanToBuild").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("PlanToBuild"),
 	}
 }

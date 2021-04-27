@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -40,14 +39,8 @@ func (Network) Edges() []ent.Edge {
 			Ref("EnvironmentToNetwork").
 			Unique(),
 		edge.From("NetworkToHostDependency", HostDependency.Type).
-			Ref("HostDependencyToNetwork").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("HostDependencyToNetwork"),
 		edge.From("NetworkToIncludedNetwork", IncludedNetwork.Type).
-			Ref("IncludedNetworkToNetwork").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("IncludedNetworkToNetwork"),
 	}
 }

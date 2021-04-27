@@ -64,20 +64,11 @@ func (Host) Edges() []ent.Edge {
 			Ref("EnvironmentToHost").
 			Unique(),
 		edge.From("HostToIncludedNetwork", IncludedNetwork.Type).
-			Ref("IncludedNetworkToHost").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("IncludedNetworkToHost"),
 		edge.From("DependOnHostToHostDependency", HostDependency.Type).
 			Ref("HostDependencyToDependOnHost").
-			StructTag(`hcl:"depends_on,block"`).
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			StructTag(`hcl:"depends_on,block"`),
 		edge.From("DependByHostToHostDependency", HostDependency.Type).
-			Ref("HostDependencyToDependByHost").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("HostDependencyToDependByHost"),
 	}
 }

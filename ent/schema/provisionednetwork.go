@@ -34,14 +34,8 @@ func (ProvisionedNetwork) Edges() []ent.Edge {
 		edge.To("ProvisionedNetworkToBuild", Build.Type).Unique(),
 		edge.To("ProvisionedNetworkToTeam", Team.Type).Unique(),
 		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).
-			Ref("ProvisionedHostToProvisionedNetwork").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("ProvisionedHostToProvisionedNetwork"),
 		edge.From("ProvisionedNetworkToPlan", Plan.Type).
-			Ref("PlanToProvisionedNetwork").Unique().
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("PlanToProvisionedNetwork").Unique(),
 	}
 }

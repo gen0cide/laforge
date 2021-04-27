@@ -119,9 +119,6 @@ func (Environment) Edges() []ent.Edge {
 				OnDelete: entsql.Cascade,
 			}),
 		edge.From("EnvironmentToBuild", Build.Type).
-			Ref("BuildToEnvironment").
-			Annotations(entsql.Annotation{
-				OnDelete: entsql.Cascade,
-			}),
+			Ref("BuildToEnvironment"),
 	}
 }
