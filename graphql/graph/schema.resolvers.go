@@ -314,6 +314,22 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 	return b, nil
 }
 
+func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (bool, error) {
+	uuid, err := uuid.Parse(buildUUID)
+
+	if err != nil {
+		return false, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	b, err := r.client.Build.Query().Where(build.IDEQ(uuid)).Only(ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed querying Build: %v", err)
+	}
+
+	return planner.DeleteBuild(ctx, r.client, b)
+}
+
 func (r *networkResolver) ID(ctx context.Context, obj *ent.Network) (string, error) {
 	return obj.ID.String(), nil
 }

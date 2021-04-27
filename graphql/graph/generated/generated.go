@@ -259,6 +259,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateBuild    func(childComplexity int, envUUID string, renderFiles bool) int
+		DeleteBuild    func(childComplexity int, buildUUID string) int
 		ExecutePlan    func(childComplexity int, buildUUID string) int
 		LoadEnviroment func(childComplexity int, envFilePath string) int
 	}
@@ -469,6 +470,7 @@ type MutationResolver interface {
 	LoadEnviroment(ctx context.Context, envFilePath string) ([]*ent.Environment, error)
 	CreateBuild(ctx context.Context, envUUID string, renderFiles bool) (*ent.Build, error)
 	ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error)
+	DeleteBuild(ctx context.Context, buildUUID string) (bool, error)
 }
 type NetworkResolver interface {
 	ID(ctx context.Context, obj *ent.Network) (string, error)
@@ -1600,6 +1602,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateBuild(childComplexity, args["envUUID"].(string), args["renderFiles"].(bool)), true
+
+	case "Mutation.deleteBuild":
+		if e.complexity.Mutation.DeleteBuild == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteBuild_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteBuild(childComplexity, args["buildUUID"].(string)), true
 
 	case "Mutation.executePlan":
 		if e.complexity.Mutation.ExecutePlan == nil {
@@ -2785,6 +2799,7 @@ type Mutation {
   loadEnviroment(envFilePath: String!): [Environment]
   createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
   executePlan(buildUUID: String!): Build
+  deleteBuild(buildUUID: String!): Boolean!
 }
 `, BuiltIn: false},
 }
@@ -2815,6 +2830,21 @@ func (ec *executionContext) field_Mutation_createBuild_args(ctx context.Context,
 		}
 	}
 	args["renderFiles"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteBuild_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["buildUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildUUID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["buildUUID"] = arg0
 	return args, nil
 }
 
@@ -8323,6 +8353,48 @@ func (ec *executionContext) _Mutation_executePlan(ctx context.Context, field gra
 	res := resTmp.(*ent.Build)
 	fc.Result = res
 	return ec.marshalOBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuild(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteBuild(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteBuild_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteBuild(rctx, args["buildUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Network_id(ctx context.Context, field graphql.CollectedField, obj *ent.Network) (ret graphql.Marshaler) {
@@ -14473,6 +14545,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createBuild(ctx, field)
 		case "executePlan":
 			out.Values[i] = ec._Mutation_executePlan(ctx, field)
+		case "deleteBuild":
+			out.Values[i] = ec._Mutation_deleteBuild(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

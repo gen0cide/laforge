@@ -107,7 +107,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		log.Fatalf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
-	for teamNumber := 0; teamNumber <= entEnvironment.TeamCount; teamNumber++ {
+	for teamNumber := 0; teamNumber < entEnvironment.TeamCount; teamNumber++ {
 		wg.Add(1)
 		go createTeam(client, entBuild, teamNumber, &wg)
 	}
