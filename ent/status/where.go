@@ -698,6 +698,34 @@ func HasStatusToTeamWith(preds ...predicate.Team) predicate.Status {
 	})
 }
 
+// HasStatusToPlan applies the HasEdge predicate on the "StatusToPlan" edge.
+func HasStatusToPlan() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToPlanTable, StatusToPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToPlanWith applies the HasEdge predicate on the "StatusToPlan" edge with a given conditions (other predicates).
+func HasStatusToPlanWith(preds ...predicate.Plan) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToPlanTable, StatusToPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {

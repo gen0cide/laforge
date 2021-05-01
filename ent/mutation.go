@@ -15762,6 +15762,8 @@ type PlanMutation struct {
 	cleared_PlanToProvisionedHost    bool
 	_PlanToProvisioningStep          *uuid.UUID
 	cleared_PlanToProvisioningStep   bool
+	_PlanToStatus                    *uuid.UUID
+	cleared_PlanToStatus             bool
 	done                             bool
 	oldValue                         func(context.Context) (*Plan, error)
 	predicates                       []predicate.Plan
@@ -16281,6 +16283,45 @@ func (m *PlanMutation) ResetPlanToProvisioningStep() {
 	m.cleared_PlanToProvisioningStep = false
 }
 
+// SetPlanToStatusID sets the "PlanToStatus" edge to the Status entity by id.
+func (m *PlanMutation) SetPlanToStatusID(id uuid.UUID) {
+	m._PlanToStatus = &id
+}
+
+// ClearPlanToStatus clears the "PlanToStatus" edge to the Status entity.
+func (m *PlanMutation) ClearPlanToStatus() {
+	m.cleared_PlanToStatus = true
+}
+
+// PlanToStatusCleared reports if the "PlanToStatus" edge to the Status entity was cleared.
+func (m *PlanMutation) PlanToStatusCleared() bool {
+	return m.cleared_PlanToStatus
+}
+
+// PlanToStatusID returns the "PlanToStatus" edge ID in the mutation.
+func (m *PlanMutation) PlanToStatusID() (id uuid.UUID, exists bool) {
+	if m._PlanToStatus != nil {
+		return *m._PlanToStatus, true
+	}
+	return
+}
+
+// PlanToStatusIDs returns the "PlanToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PlanToStatusID instead. It exists only for internal usage by the builders.
+func (m *PlanMutation) PlanToStatusIDs() (ids []uuid.UUID) {
+	if id := m._PlanToStatus; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPlanToStatus resets all changes to the "PlanToStatus" edge.
+func (m *PlanMutation) ResetPlanToStatus() {
+	m._PlanToStatus = nil
+	m.cleared_PlanToStatus = false
+}
+
 // Op returns the operation name.
 func (m *PlanMutation) Op() Op {
 	return m.op
@@ -16443,7 +16484,7 @@ func (m *PlanMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PlanMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m._PrevPlan != nil {
 		edges = append(edges, plan.EdgePrevPlan)
 	}
@@ -16464,6 +16505,9 @@ func (m *PlanMutation) AddedEdges() []string {
 	}
 	if m._PlanToProvisioningStep != nil {
 		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	if m._PlanToStatus != nil {
+		edges = append(edges, plan.EdgePlanToStatus)
 	}
 	return edges
 }
@@ -16504,13 +16548,17 @@ func (m *PlanMutation) AddedIDs(name string) []ent.Value {
 		if id := m._PlanToProvisioningStep; id != nil {
 			return []ent.Value{*id}
 		}
+	case plan.EdgePlanToStatus:
+		if id := m._PlanToStatus; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PlanMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removed_PrevPlan != nil {
 		edges = append(edges, plan.EdgePrevPlan)
 	}
@@ -16542,7 +16590,7 @@ func (m *PlanMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PlanMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.cleared_PrevPlan {
 		edges = append(edges, plan.EdgePrevPlan)
 	}
@@ -16563,6 +16611,9 @@ func (m *PlanMutation) ClearedEdges() []string {
 	}
 	if m.cleared_PlanToProvisioningStep {
 		edges = append(edges, plan.EdgePlanToProvisioningStep)
+	}
+	if m.cleared_PlanToStatus {
+		edges = append(edges, plan.EdgePlanToStatus)
 	}
 	return edges
 }
@@ -16585,6 +16636,8 @@ func (m *PlanMutation) EdgeCleared(name string) bool {
 		return m.cleared_PlanToProvisionedHost
 	case plan.EdgePlanToProvisioningStep:
 		return m.cleared_PlanToProvisioningStep
+	case plan.EdgePlanToStatus:
+		return m.cleared_PlanToStatus
 	}
 	return false
 }
@@ -16607,6 +16660,9 @@ func (m *PlanMutation) ClearEdge(name string) error {
 		return nil
 	case plan.EdgePlanToProvisioningStep:
 		m.ClearPlanToProvisioningStep()
+		return nil
+	case plan.EdgePlanToStatus:
+		m.ClearPlanToStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown Plan unique edge %s", name)
@@ -16636,6 +16692,9 @@ func (m *PlanMutation) ResetEdge(name string) error {
 		return nil
 	case plan.EdgePlanToProvisioningStep:
 		m.ResetPlanToProvisioningStep()
+		return nil
+	case plan.EdgePlanToStatus:
+		m.ResetPlanToStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown Plan edge %s", name)
@@ -20500,6 +20559,8 @@ type StatusMutation struct {
 	cleared_StatusToProvisioningStep   bool
 	_StatusToTeam                      *uuid.UUID
 	cleared_StatusToTeam               bool
+	_StatusToPlan                      *uuid.UUID
+	cleared_StatusToPlan               bool
 	done                               bool
 	oldValue                           func(context.Context) (*Status, error)
 	predicates                         []predicate.Status
@@ -21076,6 +21137,45 @@ func (m *StatusMutation) ResetStatusToTeam() {
 	m.cleared_StatusToTeam = false
 }
 
+// SetStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by id.
+func (m *StatusMutation) SetStatusToPlanID(id uuid.UUID) {
+	m._StatusToPlan = &id
+}
+
+// ClearStatusToPlan clears the "StatusToPlan" edge to the Plan entity.
+func (m *StatusMutation) ClearStatusToPlan() {
+	m.cleared_StatusToPlan = true
+}
+
+// StatusToPlanCleared reports if the "StatusToPlan" edge to the Plan entity was cleared.
+func (m *StatusMutation) StatusToPlanCleared() bool {
+	return m.cleared_StatusToPlan
+}
+
+// StatusToPlanID returns the "StatusToPlan" edge ID in the mutation.
+func (m *StatusMutation) StatusToPlanID() (id uuid.UUID, exists bool) {
+	if m._StatusToPlan != nil {
+		return *m._StatusToPlan, true
+	}
+	return
+}
+
+// StatusToPlanIDs returns the "StatusToPlan" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToPlanID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToPlanIDs() (ids []uuid.UUID) {
+	if id := m._StatusToPlan; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToPlan resets all changes to the "StatusToPlan" edge.
+func (m *StatusMutation) ResetStatusToPlan() {
+	m._StatusToPlan = nil
+	m.cleared_StatusToPlan = false
+}
+
 // Op returns the operation name.
 func (m *StatusMutation) Op() Op {
 	return m.op
@@ -21312,7 +21412,7 @@ func (m *StatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m._StatusToBuild != nil {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -21327,6 +21427,9 @@ func (m *StatusMutation) AddedEdges() []string {
 	}
 	if m._StatusToTeam != nil {
 		edges = append(edges, status.EdgeStatusToTeam)
+	}
+	if m._StatusToPlan != nil {
+		edges = append(edges, status.EdgeStatusToPlan)
 	}
 	return edges
 }
@@ -21355,13 +21458,17 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 		if id := m._StatusToTeam; id != nil {
 			return []ent.Value{*id}
 		}
+	case status.EdgeStatusToPlan:
+		if id := m._StatusToPlan; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	return edges
 }
 
@@ -21375,7 +21482,7 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.cleared_StatusToBuild {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -21390,6 +21497,9 @@ func (m *StatusMutation) ClearedEdges() []string {
 	}
 	if m.cleared_StatusToTeam {
 		edges = append(edges, status.EdgeStatusToTeam)
+	}
+	if m.cleared_StatusToPlan {
+		edges = append(edges, status.EdgeStatusToPlan)
 	}
 	return edges
 }
@@ -21408,6 +21518,8 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 		return m.cleared_StatusToProvisioningStep
 	case status.EdgeStatusToTeam:
 		return m.cleared_StatusToTeam
+	case status.EdgeStatusToPlan:
+		return m.cleared_StatusToPlan
 	}
 	return false
 }
@@ -21431,6 +21543,9 @@ func (m *StatusMutation) ClearEdge(name string) error {
 	case status.EdgeStatusToTeam:
 		m.ClearStatusToTeam()
 		return nil
+	case status.EdgeStatusToPlan:
+		m.ClearStatusToPlan()
+		return nil
 	}
 	return fmt.Errorf("unknown Status unique edge %s", name)
 }
@@ -21453,6 +21568,9 @@ func (m *StatusMutation) ResetEdge(name string) error {
 		return nil
 	case status.EdgeStatusToTeam:
 		m.ResetStatusToTeam()
+		return nil
+	case status.EdgeStatusToPlan:
+		m.ResetStatusToPlan()
 		return nil
 	}
 	return fmt.Errorf("unknown Status edge %s", name)

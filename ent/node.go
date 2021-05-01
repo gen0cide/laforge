@@ -1788,7 +1788,7 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pl.ID,
 		Type:   "Plan",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pl.StepNumber); err != nil {
@@ -1882,6 +1882,16 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 	err = pl.QueryPlanToProvisioningStep().
 		Select(provisioningstep.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "Status",
+		Name: "PlanToStatus",
+	}
+	err = pl.QueryPlanToStatus().
+		Select(status.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2359,7 +2369,7 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		ID:     s.ID,
 		Type:   "Status",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(s.State); err != nil {
@@ -2465,6 +2475,16 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 	err = s.QueryStatusToTeam().
 		Select(team.FieldID).
 		Scan(ctx, &node.Edges[4].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "Plan",
+		Name: "StatusToPlan",
+	}
+	err = s.QueryStatusToPlan().
+		Select(plan.FieldID).
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}

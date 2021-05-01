@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -15,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
 )
@@ -182,6 +184,17 @@ func (pu *PlanUpdate) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanUpdate
 	return pu.SetPlanToProvisioningStepID(p.ID)
 }
 
+// SetPlanToStatusID sets the "PlanToStatus" edge to the Status entity by ID.
+func (pu *PlanUpdate) SetPlanToStatusID(id uuid.UUID) *PlanUpdate {
+	pu.mutation.SetPlanToStatusID(id)
+	return pu
+}
+
+// SetPlanToStatus sets the "PlanToStatus" edge to the Status entity.
+func (pu *PlanUpdate) SetPlanToStatus(s *Status) *PlanUpdate {
+	return pu.SetPlanToStatusID(s.ID)
+}
+
 // Mutation returns the PlanMutation object of the builder.
 func (pu *PlanUpdate) Mutation() *PlanMutation {
 	return pu.mutation
@@ -259,6 +272,12 @@ func (pu *PlanUpdate) ClearPlanToProvisioningStep() *PlanUpdate {
 	return pu
 }
 
+// ClearPlanToStatus clears the "PlanToStatus" edge to the Status entity.
+func (pu *PlanUpdate) ClearPlanToStatus() *PlanUpdate {
+	pu.mutation.ClearPlanToStatus()
+	return pu
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PlanUpdate) Save(ctx context.Context) (int, error) {
 	var (
@@ -322,6 +341,9 @@ func (pu *PlanUpdate) check() error {
 		if err := plan.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
+	}
+	if _, ok := pu.mutation.PlanToStatusID(); pu.mutation.PlanToStatusCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"PlanToStatus\"")
 	}
 	return nil
 }
@@ -655,6 +677,41 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.PlanToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   plan.PlanToStatusTable,
+			Columns: []string{plan.PlanToStatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.PlanToStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   plan.PlanToStatusTable,
+			Columns: []string{plan.PlanToStatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plan.Label}
@@ -824,6 +881,17 @@ func (puo *PlanUpdateOne) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanUp
 	return puo.SetPlanToProvisioningStepID(p.ID)
 }
 
+// SetPlanToStatusID sets the "PlanToStatus" edge to the Status entity by ID.
+func (puo *PlanUpdateOne) SetPlanToStatusID(id uuid.UUID) *PlanUpdateOne {
+	puo.mutation.SetPlanToStatusID(id)
+	return puo
+}
+
+// SetPlanToStatus sets the "PlanToStatus" edge to the Status entity.
+func (puo *PlanUpdateOne) SetPlanToStatus(s *Status) *PlanUpdateOne {
+	return puo.SetPlanToStatusID(s.ID)
+}
+
 // Mutation returns the PlanMutation object of the builder.
 func (puo *PlanUpdateOne) Mutation() *PlanMutation {
 	return puo.mutation
@@ -901,6 +969,12 @@ func (puo *PlanUpdateOne) ClearPlanToProvisioningStep() *PlanUpdateOne {
 	return puo
 }
 
+// ClearPlanToStatus clears the "PlanToStatus" edge to the Status entity.
+func (puo *PlanUpdateOne) ClearPlanToStatus() *PlanUpdateOne {
+	puo.mutation.ClearPlanToStatus()
+	return puo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (puo *PlanUpdateOne) Select(field string, fields ...string) *PlanUpdateOne {
@@ -971,6 +1045,9 @@ func (puo *PlanUpdateOne) check() error {
 		if err := plan.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
+	}
+	if _, ok := puo.mutation.PlanToStatusID(); puo.mutation.PlanToStatusCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"PlanToStatus\"")
 	}
 	return nil
 }
@@ -1313,6 +1390,41 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.PlanToStatusCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   plan.PlanToStatusTable,
+			Columns: []string{plan.PlanToStatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.PlanToStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   plan.PlanToStatusTable,
+			Columns: []string{plan.PlanToStatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
 				},
 			},
 		}

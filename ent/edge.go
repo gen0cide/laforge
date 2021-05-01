@@ -532,6 +532,14 @@ func (pl *Plan) PlanToProvisioningStep(ctx context.Context) (*ProvisioningStep, 
 	return result, MaskNotFound(err)
 }
 
+func (pl *Plan) PlanToStatus(ctx context.Context) (*Status, error) {
+	result, err := pl.Edges.PlanToStatusOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToStatus().Only(ctx)
+	}
+	return result, err
+}
+
 func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) (*Status, error) {
 	result, err := ph.Edges.ProvisionedHostToStatusOrErr()
 	if IsNotLoaded(err) {
@@ -784,6 +792,14 @@ func (s *Status) StatusToTeam(ctx context.Context) (*Team, error) {
 	result, err := s.Edges.StatusToTeamOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryStatusToTeam().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToPlan(ctx context.Context) (*Plan, error) {
+	result, err := s.Edges.StatusToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToPlan().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

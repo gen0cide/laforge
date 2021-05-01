@@ -3066,6 +3066,22 @@ func (c *PlanClient) QueryPlanToProvisioningStep(pl *Plan) *ProvisioningStepQuer
 	return query
 }
 
+// QueryPlanToStatus queries the PlanToStatus edge of a Plan.
+func (c *PlanClient) QueryPlanToStatus(pl *Plan) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToStatusTable, plan.PlanToStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PlanClient) Hooks() []Hook {
 	return c.hooks.Plan
@@ -4021,6 +4037,22 @@ func (c *StatusClient) QueryStatusToTeam(s *Status) *TeamQuery {
 			sqlgraph.From(status.Table, status.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToTeamTable, status.StatusToTeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToPlan queries the StatusToPlan edge of a Status.
+func (c *StatusClient) QueryStatusToPlan(s *Status) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToPlanTable, status.StatusToPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

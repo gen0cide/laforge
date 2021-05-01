@@ -97,11 +97,17 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		log.Fatalf("Failed to create Build %v for Enviroment %v. Err: %v", len(entEnvironment.Edges.EnvironmentToBuild), entEnvironment.HclID, err)
 		return nil, err
 	}
+	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = client.Plan.Create().
 		SetType(plan.TypeStartBuild).
 		SetBuildID(entBuild.ID.String()).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(0).
+		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
@@ -146,6 +152,11 @@ func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *syn
 		log.Fatalf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
+	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = client.Plan.Create().
 		AddPrevPlan(buildPlanNode).
 		SetType(plan.TypeStartTeam).
@@ -153,6 +164,7 @@ func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *syn
 		SetPlanToTeam(entTeam).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(1).
+		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create Plan Node for Team %v. Err: %v", teamNumber, err)
@@ -214,6 +226,11 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		log.Fatalf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
+
+	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
+	if err != nil {
+		return nil, err
+	}
 	_, err = client.Plan.Create().
 		AddPrevPlan(teamPlanNode).
 		SetType(plan.TypeProvisionNetwork).
@@ -221,6 +238,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		SetPlanToProvisionedNetwork(entProvisionedNetwork).
 		SetPlanToBuild(entBuild).
 		SetStepNumber(teamPlanNode.StepNumber + 1).
+		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create Plan Node for Provisioned Network  %v. Err: %v", entProvisionedNetwork.Name, err)
@@ -333,6 +351,11 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetProvisionedHostToHost(entHost).
 		Save(ctx)
 
+	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
+	if err != nil {
+		return nil, err
+	}
+
 	endPlanNode, err := client.Plan.Create().
 		AddPrevPlan(prevPlans...).
 		SetType(plan.TypeProvisionHost).
@@ -340,6 +363,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetPlanToProvisionedHost(entProvisionedHost).
 		SetStepNumber(planStepNumber).
 		SetPlanToBuild(currentBuild).
+		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 
 	if err != nil {
@@ -616,6 +640,11 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		}
 	}
 
+	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = client.Plan.Create().
 		AddPrevPlan(prevPlan).
 		SetType(plan.TypeExecuteStep).
@@ -623,6 +652,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		SetPlanToProvisioningStep(entProvisioningStep).
 		SetStepNumber(prevPlan.StepNumber + 1).
 		SetPlanToBuild(currentBuild).
+		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 
 	if err != nil {

@@ -694,13 +694,14 @@ var (
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
-		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
+		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "failed", Type: field.TypeBool, Default: false},
 		{Name: "completed", Type: field.TypeBool, Default: false},
 		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "build_build_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "plan_plan_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
@@ -719,26 +720,32 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "status_provisioned_hosts_ProvisionedHostToStatus",
+				Symbol:     "status_plans_PlanToStatus",
 				Columns:    []*schema.Column{StatusColumns[9]},
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "status_provisioned_hosts_ProvisionedHostToStatus",
+				Columns:    []*schema.Column{StatusColumns[10]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_provisioned_networks_ProvisionedNetworkToStatus",
-				Columns:    []*schema.Column{StatusColumns[10]},
+				Columns:    []*schema.Column{StatusColumns[11]},
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_provisioning_steps_ProvisioningStepToStatus",
-				Columns:    []*schema.Column{StatusColumns[11]},
+				Columns:    []*schema.Column{StatusColumns[12]},
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_teams_TeamToStatus",
-				Columns:    []*schema.Column{StatusColumns[12]},
+				Columns:    []*schema.Column{StatusColumns[13]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1125,10 +1132,11 @@ func init() {
 	ProvisioningStepsTable.ForeignKeys[8].RefTable = FileExtractsTable
 	ScriptsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	StatusTable.ForeignKeys[0].RefTable = BuildsTable
-	StatusTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
-	StatusTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
-	StatusTable.ForeignKeys[3].RefTable = ProvisioningStepsTable
-	StatusTable.ForeignKeys[4].RefTable = TeamsTable
+	StatusTable.ForeignKeys[1].RefTable = PlansTable
+	StatusTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
+	StatusTable.ForeignKeys[3].RefTable = ProvisionedNetworksTable
+	StatusTable.ForeignKeys[4].RefTable = ProvisioningStepsTable
+	StatusTable.ForeignKeys[5].RefTable = TeamsTable
 	TagsTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	TagsTable.ForeignKeys[1].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = PlansTable

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -207,6 +208,25 @@ func (sc *StatusCreate) SetNillableStatusToTeamID(id *uuid.UUID) *StatusCreate {
 // SetStatusToTeam sets the "StatusToTeam" edge to the Team entity.
 func (sc *StatusCreate) SetStatusToTeam(t *Team) *StatusCreate {
 	return sc.SetStatusToTeamID(t.ID)
+}
+
+// SetStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID.
+func (sc *StatusCreate) SetStatusToPlanID(id uuid.UUID) *StatusCreate {
+	sc.mutation.SetStatusToPlanID(id)
+	return sc
+}
+
+// SetNillableStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToPlanID(id *uuid.UUID) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToPlanID(*id)
+	}
+	return sc
+}
+
+// SetStatusToPlan sets the "StatusToPlan" edge to the Plan entity.
+func (sc *StatusCreate) SetStatusToPlan(p *Plan) *StatusCreate {
+	return sc.SetStatusToPlanID(p.ID)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -482,6 +502,26 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.team_team_to_status = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToPlanTable,
+			Columns: []string{status.StatusToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.plan_plan_to_status = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
