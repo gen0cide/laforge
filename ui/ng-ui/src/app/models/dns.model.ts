@@ -2,12 +2,13 @@ import { configMap, ID, Tag, varsMap } from './common.model';
 
 export interface DNSRecord {
   id: ID;
+  hcl_id?: string;
   name: string;
   values: string[];
   type: string;
   zone: string;
   vars: varsMap[];
-  tags: Tag[];
+  dnsRecordToTag: Tag[];
   disabled: boolean;
 }
 
