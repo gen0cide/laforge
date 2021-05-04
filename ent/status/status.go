@@ -39,6 +39,8 @@ const (
 	EdgeStatusToProvisioningStep = "StatusToProvisioningStep"
 	// EdgeStatusToTeam holds the string denoting the statustoteam edge name in mutations.
 	EdgeStatusToTeam = "StatusToTeam"
+	// EdgeStatusToPlan holds the string denoting the statustoplan edge name in mutations.
+	EdgeStatusToPlan = "StatusToPlan"
 	// Table holds the table name of the status in the database.
 	Table = "status"
 	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
@@ -76,6 +78,13 @@ const (
 	StatusToTeamInverseTable = "teams"
 	// StatusToTeamColumn is the table column denoting the StatusToTeam relation/edge.
 	StatusToTeamColumn = "team_team_to_status"
+	// StatusToPlanTable is the table the holds the StatusToPlan relation/edge.
+	StatusToPlanTable = "status"
+	// StatusToPlanInverseTable is the table name for the Plan entity.
+	// It exists in this package in order to avoid circular dependency with the "plan" package.
+	StatusToPlanInverseTable = "plans"
+	// StatusToPlanColumn is the table column denoting the StatusToPlan relation/edge.
+	StatusToPlanColumn = "plan_plan_to_status"
 )
 
 // Columns holds all SQL columns for status fields.
@@ -94,6 +103,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"build_build_to_status",
+	"plan_plan_to_status",
 	"provisioned_host_provisioned_host_to_status",
 	"provisioned_network_provisioned_network_to_status",
 	"provisioning_step_provisioning_step_to_status",
@@ -158,6 +168,7 @@ type StatusFor string
 const (
 	StatusForBuild              StatusFor = "Build"
 	StatusForTeam               StatusFor = "Team"
+	StatusForPlan               StatusFor = "Plan"
 	StatusForProvisionedNetwork StatusFor = "ProvisionedNetwork"
 	StatusForProvisionedHost    StatusFor = "ProvisionedHost"
 	StatusForProvisioningStep   StatusFor = "ProvisioningStep"
@@ -170,7 +181,7 @@ func (sf StatusFor) String() string {
 // StatusForValidator is a validator for the "status_for" field enum values. It is called by the builders before save.
 func StatusForValidator(sf StatusFor) error {
 	switch sf {
-	case StatusForBuild, StatusForTeam, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep:
+	case StatusForBuild, StatusForTeam, StatusForPlan, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for status_for field: %q", sf)

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -36,6 +37,7 @@ type StatusQuery struct {
 	withStatusToProvisionedHost    *ProvisionedHostQuery
 	withStatusToProvisioningStep   *ProvisioningStepQuery
 	withStatusToTeam               *TeamQuery
+	withStatusToPlan               *PlanQuery
 	withFKs                        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -176,6 +178,28 @@ func (sq *StatusQuery) QueryStatusToTeam() *TeamQuery {
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToTeamTable, status.StatusToTeamColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToPlan chains the current query on the "StatusToPlan" edge.
+func (sq *StatusQuery) QueryStatusToPlan() *PlanQuery {
+	query := &PlanQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToPlanTable, status.StatusToPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -369,6 +393,7 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		withStatusToProvisionedHost:    sq.withStatusToProvisionedHost.Clone(),
 		withStatusToProvisioningStep:   sq.withStatusToProvisioningStep.Clone(),
 		withStatusToTeam:               sq.withStatusToTeam.Clone(),
+		withStatusToPlan:               sq.withStatusToPlan.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -427,6 +452,17 @@ func (sq *StatusQuery) WithStatusToTeam(opts ...func(*TeamQuery)) *StatusQuery {
 		opt(query)
 	}
 	sq.withStatusToTeam = query
+	return sq
+}
+
+// WithStatusToPlan tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToPlan(opts ...func(*PlanQuery)) *StatusQuery {
+	query := &PlanQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToPlan = query
 	return sq
 }
 
@@ -496,15 +532,16 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		nodes       = []*Status{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			sq.withStatusToBuild != nil,
 			sq.withStatusToProvisionedNetwork != nil,
 			sq.withStatusToProvisionedHost != nil,
 			sq.withStatusToProvisioningStep != nil,
 			sq.withStatusToTeam != nil,
+			sq.withStatusToPlan != nil,
 		}
 	)
-	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToProvisioningStep != nil || sq.withStatusToTeam != nil {
+	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToProvisioningStep != nil || sq.withStatusToTeam != nil || sq.withStatusToPlan != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -671,6 +708,35 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.StatusToTeam = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToPlan; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
+		for i := range nodes {
+			if nodes[i].plan_plan_to_status == nil {
+				continue
+			}
+			fk := *nodes[i].plan_plan_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(plan.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToPlan = n
 			}
 		}
 	}

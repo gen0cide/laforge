@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
 )
@@ -46,6 +47,8 @@ type Plan struct {
 	HCLPlanToProvisionedHost *ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
 	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
+	// PlanToStatus holds the value of the PlanToStatus edge.
+	HCLPlanToStatus *Status `json:"PlanToStatus,omitempty"`
 	//
 	plan_plan_to_build *uuid.UUID
 }
@@ -66,9 +69,11 @@ type PlanEdges struct {
 	PlanToProvisionedHost *ProvisionedHost `json:"PlanToProvisionedHost,omitempty"`
 	// PlanToProvisioningStep holds the value of the PlanToProvisioningStep edge.
 	PlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
+	// PlanToStatus holds the value of the PlanToStatus edge.
+	PlanToStatus *Status `json:"PlanToStatus,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // PrevPlanOrErr returns the PrevPlan value or an error if the edge
@@ -157,6 +162,20 @@ func (e PlanEdges) PlanToProvisioningStepOrErr() (*ProvisioningStep, error) {
 		return e.PlanToProvisioningStep, nil
 	}
 	return nil, &NotLoadedError{edge: "PlanToProvisioningStep"}
+}
+
+// PlanToStatusOrErr returns the PlanToStatus value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlanEdges) PlanToStatusOrErr() (*Status, error) {
+	if e.loadedTypes[7] {
+		if e.PlanToStatus == nil {
+			// The edge PlanToStatus was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: status.Label}
+		}
+		return e.PlanToStatus, nil
+	}
+	return nil, &NotLoadedError{edge: "PlanToStatus"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -255,6 +274,11 @@ func (pl *Plan) QueryPlanToProvisionedHost() *ProvisionedHostQuery {
 // QueryPlanToProvisioningStep queries the "PlanToProvisioningStep" edge of the Plan entity.
 func (pl *Plan) QueryPlanToProvisioningStep() *ProvisioningStepQuery {
 	return (&PlanClient{config: pl.config}).QueryPlanToProvisioningStep(pl)
+}
+
+// QueryPlanToStatus queries the "PlanToStatus" edge of the Plan entity.
+func (pl *Plan) QueryPlanToStatus() *StatusQuery {
+	return (&PlanClient{config: pl.config}).QueryPlanToStatus(pl)
 }
 
 // Update returns a builder for updating this Plan.

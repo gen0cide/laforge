@@ -44,5 +44,9 @@ func (Plan) Edges() []ent.Edge {
 		edge.To("PlanToProvisionedNetwork", ProvisionedNetwork.Type).Unique(),
 		edge.To("PlanToProvisionedHost", ProvisionedHost.Type).Unique(),
 		edge.To("PlanToProvisioningStep", ProvisioningStep.Type).Unique(),
+		edge.To("PlanToStatus", Status.Type).Unique().Required().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }

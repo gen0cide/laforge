@@ -35,6 +35,8 @@ const (
 	EdgePlanToProvisionedHost = "PlanToProvisionedHost"
 	// EdgePlanToProvisioningStep holds the string denoting the plantoprovisioningstep edge name in mutations.
 	EdgePlanToProvisioningStep = "PlanToProvisioningStep"
+	// EdgePlanToStatus holds the string denoting the plantostatus edge name in mutations.
+	EdgePlanToStatus = "PlanToStatus"
 	// Table holds the table name of the plan in the database.
 	Table = "plans"
 	// PrevPlanTable is the table the holds the PrevPlan relation/edge. The primary key declared below.
@@ -76,6 +78,13 @@ const (
 	PlanToProvisioningStepInverseTable = "provisioning_steps"
 	// PlanToProvisioningStepColumn is the table column denoting the PlanToProvisioningStep relation/edge.
 	PlanToProvisioningStepColumn = "plan_plan_to_provisioning_step"
+	// PlanToStatusTable is the table the holds the PlanToStatus relation/edge.
+	PlanToStatusTable = "status"
+	// PlanToStatusInverseTable is the table name for the Status entity.
+	// It exists in this package in order to avoid circular dependency with the "status" package.
+	PlanToStatusInverseTable = "status"
+	// PlanToStatusColumn is the table column denoting the PlanToStatus relation/edge.
+	PlanToStatusColumn = "plan_plan_to_status"
 )
 
 // Columns holds all SQL columns for plan fields.

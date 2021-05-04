@@ -14,6 +14,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
 )
@@ -174,6 +175,17 @@ func (pc *PlanCreate) SetPlanToProvisioningStep(p *ProvisioningStep) *PlanCreate
 	return pc.SetPlanToProvisioningStepID(p.ID)
 }
 
+// SetPlanToStatusID sets the "PlanToStatus" edge to the Status entity by ID.
+func (pc *PlanCreate) SetPlanToStatusID(id uuid.UUID) *PlanCreate {
+	pc.mutation.SetPlanToStatusID(id)
+	return pc
+}
+
+// SetPlanToStatus sets the "PlanToStatus" edge to the Status entity.
+func (pc *PlanCreate) SetPlanToStatus(s *Status) *PlanCreate {
+	return pc.SetPlanToStatusID(s.ID)
+}
+
 // Mutation returns the PlanMutation object of the builder.
 func (pc *PlanCreate) Mutation() *PlanMutation {
 	return pc.mutation
@@ -247,6 +259,9 @@ func (pc *PlanCreate) check() error {
 	}
 	if _, ok := pc.mutation.BuildID(); !ok {
 		return &ValidationError{Name: "build_id", err: errors.New("ent: missing required field \"build_id\"")}
+	}
+	if _, ok := pc.mutation.PlanToStatusID(); !ok {
+		return &ValidationError{Name: "PlanToStatus", err: errors.New("ent: missing required edge \"PlanToStatus\"")}
 	}
 	return nil
 }
@@ -427,6 +442,25 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: provisioningstep.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.PlanToStatusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   plan.PlanToStatusTable,
+			Columns: []string{plan.PlanToStatusColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
 				},
 			},
 		}

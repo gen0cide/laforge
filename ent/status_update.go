@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -228,6 +229,25 @@ func (su *StatusUpdate) SetStatusToTeam(t *Team) *StatusUpdate {
 	return su.SetStatusToTeamID(t.ID)
 }
 
+// SetStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID.
+func (su *StatusUpdate) SetStatusToPlanID(id uuid.UUID) *StatusUpdate {
+	su.mutation.SetStatusToPlanID(id)
+	return su
+}
+
+// SetNillableStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (su *StatusUpdate) SetNillableStatusToPlanID(id *uuid.UUID) *StatusUpdate {
+	if id != nil {
+		su = su.SetStatusToPlanID(*id)
+	}
+	return su
+}
+
+// SetStatusToPlan sets the "StatusToPlan" edge to the Plan entity.
+func (su *StatusUpdate) SetStatusToPlan(p *Plan) *StatusUpdate {
+	return su.SetStatusToPlanID(p.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (su *StatusUpdate) Mutation() *StatusMutation {
 	return su.mutation
@@ -260,6 +280,12 @@ func (su *StatusUpdate) ClearStatusToProvisioningStep() *StatusUpdate {
 // ClearStatusToTeam clears the "StatusToTeam" edge to the Team entity.
 func (su *StatusUpdate) ClearStatusToTeam() *StatusUpdate {
 	su.mutation.ClearStatusToTeam()
+	return su
+}
+
+// ClearStatusToPlan clears the "StatusToPlan" edge to the Plan entity.
+func (su *StatusUpdate) ClearStatusToPlan() *StatusUpdate {
+	su.mutation.ClearStatusToPlan()
 	return su
 }
 
@@ -595,6 +621,41 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.StatusToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToPlanTable,
+			Columns: []string{status.StatusToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.StatusToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToPlanTable,
+			Columns: []string{status.StatusToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{status.Label}
@@ -809,6 +870,25 @@ func (suo *StatusUpdateOne) SetStatusToTeam(t *Team) *StatusUpdateOne {
 	return suo.SetStatusToTeamID(t.ID)
 }
 
+// SetStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID.
+func (suo *StatusUpdateOne) SetStatusToPlanID(id uuid.UUID) *StatusUpdateOne {
+	suo.mutation.SetStatusToPlanID(id)
+	return suo
+}
+
+// SetNillableStatusToPlanID sets the "StatusToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (suo *StatusUpdateOne) SetNillableStatusToPlanID(id *uuid.UUID) *StatusUpdateOne {
+	if id != nil {
+		suo = suo.SetStatusToPlanID(*id)
+	}
+	return suo
+}
+
+// SetStatusToPlan sets the "StatusToPlan" edge to the Plan entity.
+func (suo *StatusUpdateOne) SetStatusToPlan(p *Plan) *StatusUpdateOne {
+	return suo.SetStatusToPlanID(p.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (suo *StatusUpdateOne) Mutation() *StatusMutation {
 	return suo.mutation
@@ -841,6 +921,12 @@ func (suo *StatusUpdateOne) ClearStatusToProvisioningStep() *StatusUpdateOne {
 // ClearStatusToTeam clears the "StatusToTeam" edge to the Team entity.
 func (suo *StatusUpdateOne) ClearStatusToTeam() *StatusUpdateOne {
 	suo.mutation.ClearStatusToTeam()
+	return suo
+}
+
+// ClearStatusToPlan clears the "StatusToPlan" edge to the Plan entity.
+func (suo *StatusUpdateOne) ClearStatusToPlan() *StatusUpdateOne {
+	suo.mutation.ClearStatusToPlan()
 	return suo
 }
 
@@ -1192,6 +1278,41 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: team.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.StatusToPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToPlanTable,
+			Columns: []string{status.StatusToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.StatusToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToPlanTable,
+			Columns: []string{status.StatusToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
 				},
 			},
 		}
