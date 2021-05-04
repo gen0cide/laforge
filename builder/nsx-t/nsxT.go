@@ -65,6 +65,10 @@ func (nsx *NSX) putNSXsegment(url string, body io.Reader) (response *http.Respon
 	}
 
 	defer response.Body.Close()
+	//bodyBytes, _ := ioutil.ReadAll(response.Body)
+
+	// Convert response body to string - This is to be done in the main method
+	//bodyString := string(bodyBytes)
 
 	return
 }
@@ -182,8 +186,22 @@ func main() {
 	}
 
 	//blue print for testing and adidng network and consuming teh REST API Call
+
+	//Test GET
 	response, err := nsxClient.getNSXsegment("some/url")
 	fmt.Println(response.Status)
+
+	//Test PUT
+	// response, err := nsxClient.getNSXsegment("API end point URL",json_body)
+	// fmt.Println(response.Status)
+
+	//Test PATCH
+	// response, err := nsxClient.getNSXsegment("API end point URL",json_body)
+	// fmt.Println(response.Status)
+
+	//Test DELETE
+	// response, err := nsxClient.getNSXsegment("API end point URL",json_body)
+	// fmt.Println(response.Status)
 
 	// cfg := nsxt.Configuration{
 	// 	BasePath:             "/api/v1",
