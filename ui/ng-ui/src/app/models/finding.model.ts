@@ -23,7 +23,10 @@ export interface Finding {
   description: string;
   severity: FindingSeverity;
   difficulty: FindingDifficulty;
-  maintainer: User;
-  tags: Tag[];
-  Host: Host;
+  // maintainer: User;
+  // tags: Tag[];
+  // Host: Host;
+  findingToUser: User;
+  findingToTag: Tag[];
+  findingToHost: Host;
 }

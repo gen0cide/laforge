@@ -3,6 +3,7 @@ import { Finding } from './finding.model';
 
 export interface Script {
   id: ID;
+  hcl_id?: string;
   name: string;
   language: string;
   description: string;
@@ -14,8 +15,8 @@ export interface Script {
   args: string[];
   disabled: boolean;
   vars: varsMap[];
-  tags: Tag[];
+  scriptToTag: Tag[];
   absPath: string;
-  maintainer: User;
-  findings: Finding[];
+  scriptTouser: User;
+  scriptToFinding: Finding[];
 }

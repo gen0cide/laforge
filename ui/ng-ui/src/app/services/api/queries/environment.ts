@@ -182,13 +182,13 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
       key,
       value
     },
-    maintainer {
+    environmentToUser {
       id,
       name,
       uuid,
       email
     },
-    build {
+    environmentToBuild {
       id,
       revision,
       tags {
@@ -200,36 +200,36 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
         key,
         value
       },
-      maintainer {
+      buildToUser {
         id,
         name,
         uuid,
         email
       },
-      teams {
+      buildToTeam {
         id,
         teamNumber,
-        provisionedNetworks {
+        teamToProvisionedNetwork {
           id,
           name,
           cidr,
-          network {
+          provisionedNetworkToNetwork {
             id,
             vdiVisible
+            vars {
+              key,
+              value
+            },
+            networkToTag {
+              id,
+              name,
+              description
+            },
           },
-          vars {
-            key,
-            value
-          },
-          tags {
-            id,
-            name,
-            description
-          },
-          provisionedHosts {
+          provisionedNetworkToProvisionedHost {
             id,
             subnetIP,
-            host {
+            provisionedHostToHost {
               id,
               hostname,
               OS,
@@ -238,7 +238,7 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
               exposedUDPPorts,
               userGroups,
               overridePassword,
-              maintainer {
+              hostToUser {
                 name,
                 email
               },
@@ -246,15 +246,15 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
                 key,
                 value
               },
-              tags {
+            	hostToTag {
                 name,
                 description
               },
             },
-            provisionedSteps {
+            provisionedHostToProvisioningStep {
               id,
               provisionType,
-              script {
+              provisioningStepToScript {
                 id,
                 name,
                 description,
@@ -262,14 +262,14 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
                 sourceType,
                 disabled
               },
-              command {
+              provisioningStepToCommand {
                 id,
                 name,
                 description,
                 args,
                 disabled
               },
-              DNSRecord {
+              provisioningStepToDNSRecord {
                 id,
                 name,
                 values,
@@ -277,19 +277,18 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
                 zone,
                 disabled
               },
-              fileDownload {
+              provisioningStepToFileDownload {
                 id,
                 source,
                 sourceType,
                 destination,
-                mode,
                 disabled,
               },
-              fileDelete {
+              provisioningStepToFileDelete {
                 id
                 path,
               },
-              fileExtract {
+              provisioningStepToFileExtract {
                 id,
                 source,
                 destination,
