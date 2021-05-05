@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/ent"
-	"github.com/gen0cide/laforge/ent/plan"
 )
 
 func BuildPlan(ctx context.Context, client *ent.Client) error {
@@ -40,56 +39,46 @@ func BuildPlan(ctx context.Context, client *ent.Client) error {
 
 	wg.Wait()
 
-	node, err := client.Plan.Query().Where(plan.TypeEQ("start_build")).Only(ctx)
-
-	if err != nil {
-		log.Fatalf("Failed to Query Plan Start %v. Err: %v", node, err)
-		return err
+	for _, node := range nodes {
+		wg.Add(1)
+		go buildRoutine(node, ctx)
 	}
 
-	for {
-		prevNodes, err := node.PrevPlan(ctx)
-
-		if err != nil {
-			log.Fatalf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
-			return err
-		}
-
-		for _, prevNode := range prevNodes {
-			for {
-				prevStatus, err := prevNode.PlanToStatus(ctx)
-
-				if err != nil {
-					log.Fatalf("Failed to Query Status %v. Err: %v", prevNode, err)
-					return err
-				}
-
-				if prevNode == nil && prevStatus.Completed {
-					break
-				}
-
-				time.Sleep(time.Second)
-			}
-		}
-
-		// go build(node)
-		status, err := node.PlanToStatus(ctx)
-
-		if err != nil {
-			log.Fatalf("Failed to Query Status %v. Err: %v", node, err)
-			return err
-		}
-
-		status.Update().SetState("COMPLETED").Save(ctx)
-		status.Update().SetCompleted(true).Save(ctx)
-
-		if node, err := node.NextPlan(ctx); node == nil {
-			break
-		} else if err != nil {
-			log.Fatalf("Failed to Query Plan Start %v. Err: %v", node, err)
-			return err
-		}
-	}
+	wg.Wait()
 
 	return nil
+}
+
+func buildRoutine(node *ent.Plan, ctx context.Context) {
+	prevNodes, err := node.PrevPlan(ctx)
+
+	if err != nil {
+		log.Fatalf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
+	}
+
+	for _, prevNode := range prevNodes {
+		for {
+			prevStatus, err := prevNode.PlanToStatus(ctx)
+
+			if err != nil {
+				log.Fatalf("Failed to Query Status %v. Err: %v", prevNode, err)
+			}
+
+			if prevNode == nil && prevStatus.Completed {
+				break
+			}
+
+			time.Sleep(time.Second)
+		}
+	}
+
+	// go build(node)
+	status, err := node.PlanToStatus(ctx)
+
+	if err != nil {
+		log.Fatalf("Failed to Query Status %v. Err: %v", node, err)
+	}
+
+	status.Update().SetState("COMPLETED").Save(ctx)
+	status.Update().SetCompleted(true).Save(ctx)
 }
