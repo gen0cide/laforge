@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gen0cide/laforge/builder/vsphere"
+	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -88,7 +88,7 @@ func main() {
 		Description: "Test VM created from Golang",
 		Name:        "Builder-Test",
 		DiskStorage: vsphere.TemplateDiskStorage{
-			DatastoreIdentifier: string(datastore.Identifier),
+			DatastoreIdentifier: datastore.Identifier,
 		},
 		DiskStorageOverrides: []string{},
 		HardwareCustomization: vsphere.HardwareCustomization{
@@ -105,7 +105,7 @@ func main() {
 				{
 					Key: "4000",
 					Value: vsphere.HCNicValue{
-						Identifier: string(network.Identifier),
+						Identifier: network.Identifier,
 					},
 				},
 			},

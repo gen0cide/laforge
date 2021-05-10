@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gen0cide/laforge/builder/vsphere"
+	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 )
 
 func main() {
@@ -21,8 +21,8 @@ func main() {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), VSPHERE_PASSWORD (exists? %t), VSPHERE_CONTENT_LIBRARY (exists? %t), VSPHERE_TEMPLATE_NAME (exists? %t)", urlExists, usernameExists, passwordExists, libraryNameExists, templateNameExists)
 	}
 	vshpere := vsphere.VSphere{
-		Client: httpClient,
-		BaseUrl: baseUrl,	
+		Client:   httpClient,
+		BaseUrl:  baseUrl,
 		Username: username,
 		Password: password,
 	}

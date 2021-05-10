@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gen0cide/laforge/builder/vsphere"
+	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 )
 
 func main() {
@@ -19,17 +19,17 @@ func main() {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
 	}
 	vshpere := vsphere.VSphere{
-		Client: httpClient,
-		BaseUrl: baseUrl,	
+		Client:   httpClient,
+		BaseUrl:  baseUrl,
 		Username: username,
 		Password: password,
 	}
 
-	vmList, err := vshpere.ListVms()
+	folderList, err := vshpere.ListFolders()
 	if err != nil {
-		log.Fatalf("error while getting vm's: %v", err)
+		log.Fatalf("error while getting folders: %v", err)
 	}
-	for _, vm := range vmList {
-		fmt.Printf("%s [%s]: %s\n", vm.Name, vm.Identifier, vm.PowerState)
+	for _, folder := range folderList {
+		fmt.Printf("%s [%s]: %s\n", folder.Name, folder.Identifier, folder.Type)
 	}
 }

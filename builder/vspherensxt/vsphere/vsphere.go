@@ -86,7 +86,7 @@ type Memory struct {
 }
 
 type TemplateDiskStorage struct {
-	DatastoreIdentifier string      `json:"datastore"`
+	DatastoreIdentifier Identifier  `json:"datastore"`
 	StoragePolicyId     null.String `json:"storage_policy"`
 }
 
@@ -130,7 +130,7 @@ type TemplateCpu struct {
 }
 
 type TemplateHomeStorage struct {
-	DatastoreIdentifier string      `json:"datastore"`
+	DatastoreIdentifier Identifier  `json:"datastore"`
 	StoragePolicyId     null.String `json:"storage_policy"`
 }
 
@@ -261,7 +261,7 @@ type MemoryUpdate struct {
 }
 
 type HCNicValue struct {
-	Identifier string `json:"network"`
+	Identifier Identifier `json:"network"`
 }
 
 type HCNic struct {

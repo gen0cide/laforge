@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gen0cide/laforge/builder/vsphere"
+	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 )
 
 func main() {
@@ -19,17 +19,17 @@ func main() {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
 	}
 	vshpere := vsphere.VSphere{
-		Client: httpClient,
-		BaseUrl: baseUrl,	
+		Client:   httpClient,
+		BaseUrl:  baseUrl,
 		Username: username,
 		Password: password,
 	}
 
-	networks, err := vshpere.ListNetworks()
+	resourcePools, err := vshpere.ListResourcePools()
 	if err != nil {
-		log.Fatalf("error while getting networks: %v", err)
+		log.Fatalf("error while getting resource pools: %v", err)
 	}
-	for _, network := range networks {
-		fmt.Printf("%s [%s]: %s\n", network.Name, network.Identifier, network.Type)
+	for _, resourcePool := range resourcePools {
+		fmt.Printf("%s [%s]\n", resourcePool.Name, resourcePool.Identifier)
 	}
 }
