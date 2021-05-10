@@ -1,3 +1,4 @@
+// Package vpshere is for interfaceing with the VSphere REST API
 package vsphere
 
 import (
@@ -18,10 +19,10 @@ import (
 )
 
 type VSphere struct {
-	BaseUrl  string
-	Client   http.Client
-	Username string
-	Password string
+	BaseUrl    string
+	HttpClient http.Client
+	Username   string
+	Password   string
 }
 
 type PowerState string
@@ -310,7 +311,7 @@ func (vs *VSphere) authorize() (sessionToken string, err error) {
 		return
 	}
 	authRequest.SetBasicAuth(vs.Username, vs.Password)
-	authResponse, err := vs.Client.Do(authRequest)
+	authResponse, err := vs.HttpClient.Do(authRequest)
 	if err != nil {
 		return
 	}
@@ -362,7 +363,7 @@ func (vs *VSphere) ListVms() (vms []VirtualMachine, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -386,7 +387,7 @@ func (vs *VSphere) ListDatastores() (datastores []Datastore, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -410,7 +411,7 @@ func (vs *VSphere) GetDatastoreByName(name string) (datastore Datastore, err err
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -442,7 +443,7 @@ func (vs *VSphere) ListFolders() (folders []Folder, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -466,7 +467,7 @@ func (vs *VSphere) GetFolderByName(name string) (folder Folder, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -498,7 +499,7 @@ func (vs *VSphere) ListResourcePools() (resourcePools []ResourcePool, err error)
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -522,7 +523,7 @@ func (vs *VSphere) GetResourcePoolByName(name string) (resourcePool ResourcePool
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -554,7 +555,7 @@ func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -578,7 +579,7 @@ func (vs *VSphere) GetNetworkByName(name string) (network Network, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -671,7 +672,7 @@ func (vs *VSphere) GetTemplate(templateId string) (template Template, err error)
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -702,7 +703,7 @@ func (vs *VSphere) CreateVM(vmSpec VirtualMachineSpec) (err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}
@@ -728,7 +729,7 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	if err != nil {
 		return
 	}
-	response, err := vs.Client.Do(request)
+	response, err := vs.HttpClient.Do(request)
 	if err != nil {
 		return
 	}

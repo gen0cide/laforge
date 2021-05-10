@@ -69,10 +69,10 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 	httpClient := http.Client{}
 
 	client := vsphere.VSphere{
-		Client:   httpClient,
-		BaseUrl:  vsphereBaseUrl,
-		Username: builder.Username,
-		Password: builder.Password,
+		HttpClient: httpClient,
+		BaseUrl:    vsphereBaseUrl,
+		Username:   builder.Username,
+		Password:   builder.Password,
 	}
 
 	datastore, err := client.GetDatastoreByName(datastoreName)

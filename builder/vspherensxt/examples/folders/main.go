@@ -19,10 +19,10 @@ func main() {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
 	}
 	vshpere := vsphere.VSphere{
-		Client:   httpClient,
-		BaseUrl:  baseUrl,
-		Username: username,
-		Password: password,
+		HttpClient: httpClient,
+		BaseUrl:    baseUrl,
+		Username:   username,
+		Password:   password,
 	}
 
 	folderList, err := vshpere.ListFolders()

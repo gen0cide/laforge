@@ -43,10 +43,10 @@ func main() {
 			networkNameExists)
 	}
 	vs := vsphere.VSphere{
-		Client:   httpClient,
-		BaseUrl:  baseUrl,
-		Username: username,
-		Password: password,
+		HttpClient: httpClient,
+		BaseUrl:    baseUrl,
+		Username:   username,
+		Password:   password,
 	}
 
 	datastore, err := vs.GetDatastoreByName(datastoreName)
