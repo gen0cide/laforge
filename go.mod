@@ -21,7 +21,6 @@ require (
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/validator/v10 v10.6.1 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
-	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/websocket v1.4.2
@@ -59,6 +58,4 @@ require (
 	google.golang.org/grpc v1.37.1
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/guregu/null.v4 v4.0.0
-	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.9
 )

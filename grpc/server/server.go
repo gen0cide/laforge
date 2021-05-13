@@ -19,12 +19,6 @@ var (
 	// webPort  = ":5000"
 )
 
-const (
-	TaskFailed    = "Failed"
-	TaskRunning   = "Running"
-	TaskSucceeded = "Completed"
-)
-
 type Server struct {
 	Client *ent.Client
 	pb.UnimplementedLaforgeServer
@@ -116,22 +110,19 @@ func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 
 // InformTaskStatus Updates the status of a Task on a client from the response of the client
 func (s *Server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
-	// TODO: Implement This with ENT
-	// clientID := in.ClientId
-	// tasks := make([]Task, 0)
-	// db.Order("task_id asc").Find(&tasks, map[string]interface{}{"client_id": clientID, "completed": false})
-	// task := tasks[0]
-
-	// switch in.Status {
-	// 	case TaskRunning:
-	// 		task.Status = TaskRunning
-	// 	case TaskFailed:
-	// 		task.Status = TaskFailed
-	// 	case TaskSucceeded:
-	// 		task.Status = TaskSucceeded
-	// 		task.Completed = true
-	// }
-
-	// db.Save(&task)
-	return &pb.TaskStatusReply{Status: TaskSucceeded}, nil
+	uuid, err := uuid.Parse(in.GetTaskId())
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+	entAgentTask, err := s.Client.AgentTask.Query().Where(agenttask.IDEQ(uuid)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed Querying Agent Task %v: %v", uuid, err)
+	}
+	err = entAgentTask.Update().SetState(agenttask.State(in.GetStatus())).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed Updating Agent Task %v: %v", uuid, err)
+	}
+	return &pb.TaskStatusReply{
+		Status: in.GetStatus(),
+	}, nil
 }

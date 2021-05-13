@@ -61,7 +61,7 @@ message TaskReply {
 }
 
 message TaskStatusRequest {
-    string client_id = 1;
+    string task_id = 1;
     string status = 2;
 }
 

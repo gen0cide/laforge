@@ -19,7 +19,6 @@ import (
 
 	"github.com/gen0cide/laforge/grpc/agent/static"
 	pb "github.com/gen0cide/laforge/grpc/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/kardianos/service"
 	"github.com/mholt/archiver"
 	"github.com/shirou/gopsutil/host"
@@ -27,18 +26,19 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
-	TaskFailed    = "Failed"
-	TaskRunning   = "Running"
-	TaskSucceeded = "Completed"
+	TaskFailed    = "FAILED"
+	TaskRunning   = "INPROGRESS"
+	TaskSucceeded = "COMPLETE"
 )
 
 var (
-	logger           service.Logger
-	address          = "localhost:50051"
-	defaultName      = "Laforge Agent"
+	logger  service.Logger
+	address = "localhost:50051"
+	// defaultName      = "Laforge Agent"
 	certFile         = "service.pem"
 	heartbeatSeconds = 10
 	clientID         = "1"
@@ -167,7 +167,7 @@ func RequestTask(c pb.LaforgeClient) {
 	request := &pb.TaskRequest{ClientId: clientID}
 	r, err := c.GetTask(ctx, request)
 
-	taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskRunning}
+	taskRequest := &pb.TaskStatusRequest{TaskId: r.Id, Status: TaskRunning}
 	c.InformTaskStatus(ctx, taskRequest)
 
 	if err != nil {
@@ -180,73 +180,73 @@ func RequestTask(c pb.LaforgeClient) {
 			args := taskArgs[1:]
 			output := ExecuteCommand(command, args...)
 			logger.Infof("Command Output: %s", output)
-			RequestTaskStatusRequest(nil, clientID, c)
+			RequestTaskStatusRequest(nil, r.Id, c)
 		case pb.TaskReply_DOWNLOAD:
 			taskArgs := strings.Split(r.Args, ",")
 			filepath := taskArgs[0]
 			url := taskArgs[1]
 			taskerr := DownloadFile(filepath, url)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_EXTRACT:
 			taskArgs := strings.Split(r.Args, ",")
 			filepath := taskArgs[0]
 			folder := taskArgs[1]
 			taskerr := ExtractArchive(filepath, folder)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_DELETE:
 			taskerr := DeleteObject(r.Args)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_REBOOT:
 			Reboot()
-			taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskSucceeded}
+			taskRequest := &pb.TaskStatusRequest{TaskId: r.Id, Status: TaskSucceeded}
 			c.InformTaskStatus(ctx, taskRequest)
 		case pb.TaskReply_CREATEUSER:
 			taskArgs := strings.Split(r.Args, ",")
 			username := taskArgs[0]
 			password := taskArgs[1]
 			taskerr := CreateUser(username, password)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_ADDTOGROUP:
 			taskArgs := strings.Split(r.Args, ",")
 			group := taskArgs[0]
 			username := taskArgs[1]
 			taskerr := AddUserGroup(group, username)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_CREATEUSERPASS:
 			taskArgs := strings.Split(r.Args, ",")
 			username := taskArgs[0]
 			password := taskArgs[1]
 			taskerr := ChangeUserPassword(username, password)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_VALIDATE:
 			taskArgs := strings.Split(r.Args, ",")
 			filepath := taskArgs[0]
 			md5hash := taskArgs[1]
 			taskerr := ValidateMD5Hash(filepath, md5hash)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		default:
 			logger.Infof("Response Message: %v", r)
-			RequestTaskStatusRequest(nil, clientID, c)
+			RequestTaskStatusRequest(nil, r.Id, c)
 		}
 	}
 }
 
 // RequestTaskStatusRequest Tell the server the status of a completed task
-func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient) {
+func RequestTaskStatusRequest(taskerr error, taskID string, c pb.LaforgeClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if taskerr != nil {
 		logger.Errorf("Error: %v", taskerr)
-		taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskFailed}
+		taskRequest := &pb.TaskStatusRequest{TaskId: taskID, Status: TaskFailed}
 		c.InformTaskStatus(ctx, taskRequest)
 	} else {
-		taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskSucceeded}
+		taskRequest := &pb.TaskStatusRequest{TaskId: taskID, Status: TaskSucceeded}
 		c.InformTaskStatus(ctx, taskRequest)
 	}
 }
 
 // SendHeartBeat Send the GRPC server a Heartbeat with specified parameters
-func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
+func SendHeartBeat(c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	request := &pb.HeartbeatRequest{ClientId: clientID}
@@ -271,18 +271,18 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 		(*request).Load5 = load.Load5
 		(*request).Load15 = load.Load15
 	}
-	(*request).Timestamp = ptypes.TimestampNow()
+	(*request).Timestamp = timestamppb.Now()
 	r, err := c.GetHeartBeat(ctx, request)
 	if err != nil {
 		logger.Errorf("Error: %v", err)
 	} else {
-		taskChannel <- *r
+		taskChannel <- r
 	}
 
 }
 
 // StartTaskRunner Gets a Heartbeat reply from the task channel, and if there are avalible tasks it will request them
-func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
+func StartTaskRunner(c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply) {
 	r := <-taskChannel
 	// logger.Infof("Response Message: %s", r.GetStatus())
 	// logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
@@ -293,7 +293,7 @@ func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 }
 
 // genSendHeartBeat A goroutine that is called, which periodically send a heartbeat to the GRPC Server
-func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
+func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply, wg *sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
 	defer wg.Done()
 	for {
@@ -307,7 +307,7 @@ func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.Heartb
 }
 
 // genStartTaskRunner A goroutine that is called, which checks responses from GRPC server for avalible tasks
-func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
+func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply, wg *sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
 	defer wg.Done()
 	for {
@@ -345,10 +345,10 @@ func (p *program) run() error {
 	c := pb.NewLaforgeClient(conn)
 
 	// START VARS
-	taskChannel := make(chan pb.HeartbeatReply)
+	taskChannel := make(chan *pb.HeartbeatReply)
 	wg.Add(2)
-	go genSendHeartBeat(p, c, taskChannel, wg)
-	go genStartTaskRunner(p, c, taskChannel, wg)
+	go genSendHeartBeat(p, c, taskChannel, &wg)
+	go genStartTaskRunner(p, c, taskChannel, &wg)
 
 	wg.Wait()
 	return nil
