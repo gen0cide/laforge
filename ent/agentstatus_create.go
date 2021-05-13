@@ -111,19 +111,23 @@ func (asc *AgentStatusCreate) SetID(u uuid.UUID) *AgentStatusCreate {
 	return asc
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusCreate {
-	asc.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
+// SetAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (asc *AgentStatusCreate) SetAgentStatusToProvisionedHostID(id uuid.UUID) *AgentStatusCreate {
+	asc.mutation.SetAgentStatusToProvisionedHostID(id)
 	return asc
 }
 
-// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
-func (asc *AgentStatusCreate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusCreate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (asc *AgentStatusCreate) SetNillableAgentStatusToProvisionedHostID(id *uuid.UUID) *AgentStatusCreate {
+	if id != nil {
+		asc = asc.SetAgentStatusToProvisionedHostID(*id)
 	}
-	return asc.AddAgentStatusToProvisionedHostIDs(ids...)
+	return asc
+}
+
+// SetAgentStatusToProvisionedHost sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (asc *AgentStatusCreate) SetAgentStatusToProvisionedHost(p *ProvisionedHost) *AgentStatusCreate {
+	return asc.SetAgentStatusToProvisionedHostID(p.ID)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -371,10 +375,10 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 	}
 	if nodes := asc.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
+			Columns: []string{agentstatus.AgentStatusToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -386,6 +390,7 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.agent_status_agent_status_to_provisioned_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

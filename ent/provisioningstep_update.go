@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -227,6 +228,21 @@ func (psu *ProvisioningStepUpdate) SetProvisioningStepToPlan(p *Plan) *Provision
 	return psu.SetProvisioningStepToPlanID(p.ID)
 }
 
+// AddProvisioningStepToAgentTaskIDs adds the "ProvisioningStepToAgentTask" edge to the AgentTask entity by IDs.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) *ProvisioningStepUpdate {
+	psu.mutation.AddProvisioningStepToAgentTaskIDs(ids...)
+	return psu
+}
+
+// AddProvisioningStepToAgentTask adds the "ProvisioningStepToAgentTask" edges to the AgentTask entity.
+func (psu *ProvisioningStepUpdate) AddProvisioningStepToAgentTask(a ...*AgentTask) *ProvisioningStepUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return psu.AddProvisioningStepToAgentTaskIDs(ids...)
+}
+
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
 func (psu *ProvisioningStepUpdate) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) *ProvisioningStepUpdate {
 	psu.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
@@ -303,6 +319,27 @@ func (psu *ProvisioningStepUpdate) ClearProvisioningStepToFileExtract() *Provisi
 func (psu *ProvisioningStepUpdate) ClearProvisioningStepToPlan() *ProvisioningStepUpdate {
 	psu.mutation.ClearProvisioningStepToPlan()
 	return psu
+}
+
+// ClearProvisioningStepToAgentTask clears all "ProvisioningStepToAgentTask" edges to the AgentTask entity.
+func (psu *ProvisioningStepUpdate) ClearProvisioningStepToAgentTask() *ProvisioningStepUpdate {
+	psu.mutation.ClearProvisioningStepToAgentTask()
+	return psu
+}
+
+// RemoveProvisioningStepToAgentTaskIDs removes the "ProvisioningStepToAgentTask" edge to AgentTask entities by IDs.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) *ProvisioningStepUpdate {
+	psu.mutation.RemoveProvisioningStepToAgentTaskIDs(ids...)
+	return psu
+}
+
+// RemoveProvisioningStepToAgentTask removes "ProvisioningStepToAgentTask" edges to AgentTask entities.
+func (psu *ProvisioningStepUpdate) RemoveProvisioningStepToAgentTask(a ...*AgentTask) *ProvisioningStepUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return psu.RemoveProvisioningStepToAgentTaskIDs(ids...)
 }
 
 // ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -732,6 +769,60 @@ func (psu *ProvisioningStepUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if psu.mutation.ProvisioningStepToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.RemovedProvisioningStepToAgentTaskIDs(); len(nodes) > 0 && !psu.mutation.ProvisioningStepToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psu.mutation.ProvisioningStepToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if psu.mutation.ProvisioningStepToGinFileMiddlewareCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -976,6 +1067,21 @@ func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToPlan(p *Plan) *Provi
 	return psuo.SetProvisioningStepToPlanID(p.ID)
 }
 
+// AddProvisioningStepToAgentTaskIDs adds the "ProvisioningStepToAgentTask" edge to the AgentTask entity by IDs.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) *ProvisioningStepUpdateOne {
+	psuo.mutation.AddProvisioningStepToAgentTaskIDs(ids...)
+	return psuo
+}
+
+// AddProvisioningStepToAgentTask adds the "ProvisioningStepToAgentTask" edges to the AgentTask entity.
+func (psuo *ProvisioningStepUpdateOne) AddProvisioningStepToAgentTask(a ...*AgentTask) *ProvisioningStepUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return psuo.AddProvisioningStepToAgentTaskIDs(ids...)
+}
+
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
 func (psuo *ProvisioningStepUpdateOne) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	psuo.mutation.SetProvisioningStepToGinFileMiddlewareID(id)
@@ -1052,6 +1158,27 @@ func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToFileExtract() *Pro
 func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToPlan() *ProvisioningStepUpdateOne {
 	psuo.mutation.ClearProvisioningStepToPlan()
 	return psuo
+}
+
+// ClearProvisioningStepToAgentTask clears all "ProvisioningStepToAgentTask" edges to the AgentTask entity.
+func (psuo *ProvisioningStepUpdateOne) ClearProvisioningStepToAgentTask() *ProvisioningStepUpdateOne {
+	psuo.mutation.ClearProvisioningStepToAgentTask()
+	return psuo
+}
+
+// RemoveProvisioningStepToAgentTaskIDs removes the "ProvisioningStepToAgentTask" edge to AgentTask entities by IDs.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) *ProvisioningStepUpdateOne {
+	psuo.mutation.RemoveProvisioningStepToAgentTaskIDs(ids...)
+	return psuo
+}
+
+// RemoveProvisioningStepToAgentTask removes "ProvisioningStepToAgentTask" edges to AgentTask entities.
+func (psuo *ProvisioningStepUpdateOne) RemoveProvisioningStepToAgentTask(a ...*AgentTask) *ProvisioningStepUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return psuo.RemoveProvisioningStepToAgentTaskIDs(ids...)
 }
 
 // ClearProvisioningStepToGinFileMiddleware clears the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity.
@@ -1497,6 +1624,60 @@ func (psuo *ProvisioningStepUpdateOne) sqlSave(ctx context.Context) (_node *Prov
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if psuo.mutation.ProvisioningStepToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.RemovedProvisioningStepToAgentTaskIDs(); len(nodes) > 0 && !psuo.mutation.ProvisioningStepToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := psuo.mutation.ProvisioningStepToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
 				},
 			},
 		}

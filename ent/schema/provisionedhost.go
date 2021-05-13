@@ -46,6 +46,8 @@ func (ProvisionedHost) Edges() []ent.Edge {
 			Ref("ProvisioningStepToProvisionedHost"),
 		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).
 			Ref("AgentStatusToProvisionedHost"),
+		edge.From("ProvisionedHostToAgentTask", AgentTask.Type).
+			Ref("AgentTaskToProvisionedHost"),
 		edge.From("ProvisionedHostToPlan", Plan.Type).
 			Ref("PlanToProvisionedHost").
 			Unique(),

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -123,6 +124,21 @@ func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 	return phu.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
+// AddProvisionedHostToAgentTaskIDs adds the "ProvisionedHostToAgentTask" edge to the AgentTask entity by IDs.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
+	phu.mutation.AddProvisionedHostToAgentTaskIDs(ids...)
+	return phu
+}
+
+// AddProvisionedHostToAgentTask adds the "ProvisionedHostToAgentTask" edges to the AgentTask entity.
+func (phu *ProvisionedHostUpdate) AddProvisionedHostToAgentTask(a ...*AgentTask) *ProvisionedHostUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phu.AddProvisionedHostToAgentTaskIDs(ids...)
+}
+
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
 func (phu *ProvisionedHostUpdate) SetProvisionedHostToPlanID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToPlanID(id)
@@ -230,6 +246,27 @@ func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentStatus(a ...*Agent
 		ids[i] = a[i].ID
 	}
 	return phu.RemoveProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// ClearProvisionedHostToAgentTask clears all "ProvisionedHostToAgentTask" edges to the AgentTask entity.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToAgentTask() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToAgentTask()
+	return phu
+}
+
+// RemoveProvisionedHostToAgentTaskIDs removes the "ProvisionedHostToAgentTask" edge to AgentTask entities by IDs.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) *ProvisionedHostUpdate {
+	phu.mutation.RemoveProvisionedHostToAgentTaskIDs(ids...)
+	return phu
+}
+
+// RemoveProvisionedHostToAgentTask removes "ProvisionedHostToAgentTask" edges to AgentTask entities.
+func (phu *ProvisionedHostUpdate) RemoveProvisionedHostToAgentTask(a ...*AgentTask) *ProvisionedHostUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phu.RemoveProvisionedHostToAgentTaskIDs(ids...)
 }
 
 // ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
@@ -536,10 +573,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if phu.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -552,10 +589,10 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.RemovedProvisionedHostToAgentStatusIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -571,15 +608,69 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if nodes := phu.mutation.ProvisionedHostToAgentStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phu.mutation.ProvisionedHostToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.RemovedProvisionedHostToAgentTaskIDs(); len(nodes) > 0 && !phu.mutation.ProvisionedHostToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
 				},
 			},
 		}
@@ -765,6 +856,21 @@ func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentStatus(a ...*Agen
 	return phuo.AddProvisionedHostToAgentStatuIDs(ids...)
 }
 
+// AddProvisionedHostToAgentTaskIDs adds the "ProvisionedHostToAgentTask" edge to the AgentTask entity by IDs.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
+	phuo.mutation.AddProvisionedHostToAgentTaskIDs(ids...)
+	return phuo
+}
+
+// AddProvisionedHostToAgentTask adds the "ProvisionedHostToAgentTask" edges to the AgentTask entity.
+func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToAgentTask(a ...*AgentTask) *ProvisionedHostUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phuo.AddProvisionedHostToAgentTaskIDs(ids...)
+}
+
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
 func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToPlanID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToPlanID(id)
@@ -872,6 +978,27 @@ func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentStatus(a ...*A
 		ids[i] = a[i].ID
 	}
 	return phuo.RemoveProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// ClearProvisionedHostToAgentTask clears all "ProvisionedHostToAgentTask" edges to the AgentTask entity.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToAgentTask() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToAgentTask()
+	return phuo
+}
+
+// RemoveProvisionedHostToAgentTaskIDs removes the "ProvisionedHostToAgentTask" edge to AgentTask entities by IDs.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
+	phuo.mutation.RemoveProvisionedHostToAgentTaskIDs(ids...)
+	return phuo
+}
+
+// RemoveProvisionedHostToAgentTask removes "ProvisionedHostToAgentTask" edges to AgentTask entities.
+func (phuo *ProvisionedHostUpdateOne) RemoveProvisionedHostToAgentTask(a ...*AgentTask) *ProvisionedHostUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phuo.RemoveProvisionedHostToAgentTaskIDs(ids...)
 }
 
 // ClearProvisionedHostToPlan clears the "ProvisionedHostToPlan" edge to the Plan entity.
@@ -1202,10 +1329,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if phuo.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1218,10 +1345,10 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.RemovedProvisionedHostToAgentStatusIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToAgentStatusCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1237,15 +1364,69 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 	}
 	if nodes := phuo.mutation.ProvisionedHostToAgentStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.ProvisionedHostToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.RemovedProvisionedHostToAgentTaskIDs(); len(nodes) > 0 && !phuo.mutation.ProvisionedHostToAgentTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
 				},
 			},
 		}

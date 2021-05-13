@@ -53,6 +53,8 @@ type ProvisioningStep struct {
 	HCLProvisioningStepToFileExtract *FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
 	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
 	HCLProvisioningStepToPlan *Plan `json:"ProvisioningStepToPlan,omitempty"`
+	// ProvisioningStepToAgentTask holds the value of the ProvisioningStepToAgentTask edge.
+	HCLProvisioningStepToAgentTask []*AgentTask `json:"ProvisioningStepToAgentTask,omitempty"`
 	// ProvisioningStepToGinFileMiddleware holds the value of the ProvisioningStepToGinFileMiddleware edge.
 	HCLProvisioningStepToGinFileMiddleware *GinFileMiddleware `json:"ProvisioningStepToGinFileMiddleware,omitempty"`
 	//
@@ -87,11 +89,13 @@ type ProvisioningStepEdges struct {
 	ProvisioningStepToFileExtract *FileExtract `json:"ProvisioningStepToFileExtract,omitempty"`
 	// ProvisioningStepToPlan holds the value of the ProvisioningStepToPlan edge.
 	ProvisioningStepToPlan *Plan `json:"ProvisioningStepToPlan,omitempty"`
+	// ProvisioningStepToAgentTask holds the value of the ProvisioningStepToAgentTask edge.
+	ProvisioningStepToAgentTask []*AgentTask `json:"ProvisioningStepToAgentTask,omitempty"`
 	// ProvisioningStepToGinFileMiddleware holds the value of the ProvisioningStepToGinFileMiddleware edge.
 	ProvisioningStepToGinFileMiddleware *GinFileMiddleware `json:"ProvisioningStepToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // ProvisioningStepToStatusOrErr returns the ProvisioningStepToStatus value or an error if the edge
@@ -220,10 +224,19 @@ func (e ProvisioningStepEdges) ProvisioningStepToPlanOrErr() (*Plan, error) {
 	return nil, &NotLoadedError{edge: "ProvisioningStepToPlan"}
 }
 
+// ProvisioningStepToAgentTaskOrErr returns the ProvisioningStepToAgentTask value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisioningStepEdges) ProvisioningStepToAgentTaskOrErr() ([]*AgentTask, error) {
+	if e.loadedTypes[9] {
+		return e.ProvisioningStepToAgentTask, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisioningStepToAgentTask"}
+}
+
 // ProvisioningStepToGinFileMiddlewareOrErr returns the ProvisioningStepToGinFileMiddleware value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ProvisioningStepEdges) ProvisioningStepToGinFileMiddlewareOrErr() (*GinFileMiddleware, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		if e.ProvisioningStepToGinFileMiddleware == nil {
 			// The edge ProvisioningStepToGinFileMiddleware was loaded in eager-loading,
 			// but was not found.
@@ -398,6 +411,11 @@ func (ps *ProvisioningStep) QueryProvisioningStepToFileExtract() *FileExtractQue
 // QueryProvisioningStepToPlan queries the "ProvisioningStepToPlan" edge of the ProvisioningStep entity.
 func (ps *ProvisioningStep) QueryProvisioningStepToPlan() *PlanQuery {
 	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToPlan(ps)
+}
+
+// QueryProvisioningStepToAgentTask queries the "ProvisioningStepToAgentTask" edge of the ProvisioningStep entity.
+func (ps *ProvisioningStep) QueryProvisioningStepToAgentTask() *AgentTaskQuery {
+	return (&ProvisioningStepClient{config: ps.config}).QueryProvisioningStepToAgentTask(ps)
 }
 
 // QueryProvisioningStepToGinFileMiddleware queries the "ProvisioningStepToGinFileMiddleware" edge of the ProvisioningStep entity.

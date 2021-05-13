@@ -25,13 +25,51 @@ var (
 		{Name: "free_mem", Type: field.TypeInt64},
 		{Name: "used_mem", Type: field.TypeInt64},
 		{Name: "timestamp", Type: field.TypeInt64},
+		{Name: "agent_status_agent_status_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentStatusTable holds the schema information for the "agent_status" table.
 	AgentStatusTable = &schema.Table{
-		Name:        "agent_status",
-		Columns:     AgentStatusColumns,
-		PrimaryKey:  []*schema.Column{AgentStatusColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "agent_status",
+		Columns:    AgentStatusColumns,
+		PrimaryKey: []*schema.Column{AgentStatusColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_status_provisioned_hosts_AgentStatusToProvisionedHost",
+				Columns:    []*schema.Column{AgentStatusColumns[15]},
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// AgentTasksColumns holds the columns for the "agent_tasks" table.
+	AgentTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "command", Type: field.TypeEnum, Enums: []string{"DEFAULT", "DELETE", "REBOOT", "EXTRACT", "DOWNLOAD", "CREATEUSER", "CREATEUSERPASS", "ADDTOGROUP", "EXECUTE", "VALIDATE"}},
+		{Name: "args", Type: field.TypeString},
+		{Name: "number", Type: field.TypeInt},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"AWAITING", "INPROGRESS", "FAILED", "COMPLETE"}},
+		{Name: "agent_task_agent_task_to_provisioning_step", Type: field.TypeUUID, Nullable: true},
+		{Name: "agent_task_agent_task_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
+	}
+	// AgentTasksTable holds the schema information for the "agent_tasks" table.
+	AgentTasksTable = &schema.Table{
+		Name:       "agent_tasks",
+		Columns:    AgentTasksColumns,
+		PrimaryKey: []*schema.Column{AgentTasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_tasks_provisioning_steps_AgentTaskToProvisioningStep",
+				Columns:    []*schema.Column{AgentTasksColumns[5]},
+				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "agent_tasks_provisioned_hosts_AgentTaskToProvisionedHost",
+				Columns:    []*schema.Column{AgentTasksColumns[6]},
+				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// AuthUsersColumns holds the columns for the "auth_users" table.
 	AuthUsersColumns = []*schema.Column{
@@ -887,31 +925,6 @@ var (
 			},
 		},
 	}
-	// AgentStatusAgentStatusToProvisionedHostColumns holds the columns for the "agent_status_AgentStatusToProvisionedHost" table.
-	AgentStatusAgentStatusToProvisionedHostColumns = []*schema.Column{
-		{Name: "agent_status_id", Type: field.TypeUUID},
-		{Name: "provisioned_host_id", Type: field.TypeUUID},
-	}
-	// AgentStatusAgentStatusToProvisionedHostTable holds the schema information for the "agent_status_AgentStatusToProvisionedHost" table.
-	AgentStatusAgentStatusToProvisionedHostTable = &schema.Table{
-		Name:       "agent_status_AgentStatusToProvisionedHost",
-		Columns:    AgentStatusAgentStatusToProvisionedHostColumns,
-		PrimaryKey: []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0], AgentStatusAgentStatusToProvisionedHostColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "agent_status_AgentStatusToProvisionedHost_agent_status_id",
-				Columns:    []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[0]},
-				RefColumns: []*schema.Column{AgentStatusColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "agent_status_AgentStatusToProvisionedHost_provisioned_host_id",
-				Columns:    []*schema.Column{AgentStatusAgentStatusToProvisionedHostColumns[1]},
-				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// CompetitionCompetitionToDNSColumns holds the columns for the "competition_CompetitionToDNS" table.
 	CompetitionCompetitionToDNSColumns = []*schema.Column{
 		{Name: "competition_id", Type: field.TypeUUID},
@@ -1090,6 +1103,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentStatusTable,
+		AgentTasksTable,
 		AuthUsersTable,
 		BuildsTable,
 		CommandsTable,
@@ -1118,7 +1132,6 @@ var (
 		TeamsTable,
 		TokensTable,
 		UsersTable,
-		AgentStatusAgentStatusToProvisionedHostTable,
 		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
 		EnvironmentEnvironmentToIncludedNetworkTable,
@@ -1130,6 +1143,9 @@ var (
 )
 
 func init() {
+	AgentStatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
+	AgentTasksTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
+	AgentTasksTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	BuildsTable.ForeignKeys[1].RefTable = CompetitionsTable
 	CommandsTable.ForeignKeys[0].RefTable = EnvironmentsTable
@@ -1184,8 +1200,6 @@ func init() {
 	UsersTable.ForeignKeys[1].RefTable = FindingsTable
 	UsersTable.ForeignKeys[2].RefTable = HostsTable
 	UsersTable.ForeignKeys[3].RefTable = ScriptsTable
-	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[0].RefTable = AgentStatusTable
-	AgentStatusAgentStatusToProvisionedHostTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[0].RefTable = CompetitionsTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable

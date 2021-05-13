@@ -40,6 +40,8 @@ type ProvisionedHost struct {
 	HCLProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	HCLProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
+	// ProvisionedHostToAgentTask holds the value of the ProvisionedHostToAgentTask edge.
+	HCLProvisionedHostToAgentTask []*AgentTask `json:"ProvisionedHostToAgentTask,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
 	HCLProvisionedHostToPlan *Plan `json:"ProvisionedHostToPlan,omitempty"`
 	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
@@ -66,13 +68,15 @@ type ProvisionedHostEdges struct {
 	ProvisionedHostToProvisioningStep []*ProvisioningStep `json:"ProvisionedHostToProvisioningStep,omitempty"`
 	// ProvisionedHostToAgentStatus holds the value of the ProvisionedHostToAgentStatus edge.
 	ProvisionedHostToAgentStatus []*AgentStatus `json:"ProvisionedHostToAgentStatus,omitempty"`
+	// ProvisionedHostToAgentTask holds the value of the ProvisionedHostToAgentTask edge.
+	ProvisionedHostToAgentTask []*AgentTask `json:"ProvisionedHostToAgentTask,omitempty"`
 	// ProvisionedHostToPlan holds the value of the ProvisionedHostToPlan edge.
 	ProvisionedHostToPlan *Plan `json:"ProvisionedHostToPlan,omitempty"`
 	// ProvisionedHostToGinFileMiddleware holds the value of the ProvisionedHostToGinFileMiddleware edge.
 	ProvisionedHostToGinFileMiddleware *GinFileMiddleware `json:"ProvisionedHostToGinFileMiddleware,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // ProvisionedHostToStatusOrErr returns the ProvisionedHostToStatus value or an error if the edge
@@ -149,10 +153,19 @@ func (e ProvisionedHostEdges) ProvisionedHostToAgentStatusOrErr() ([]*AgentStatu
 	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentStatus"}
 }
 
+// ProvisionedHostToAgentTaskOrErr returns the ProvisionedHostToAgentTask value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProvisionedHostEdges) ProvisionedHostToAgentTaskOrErr() ([]*AgentTask, error) {
+	if e.loadedTypes[6] {
+		return e.ProvisionedHostToAgentTask, nil
+	}
+	return nil, &NotLoadedError{edge: "ProvisionedHostToAgentTask"}
+}
+
 // ProvisionedHostToPlanOrErr returns the ProvisionedHostToPlan value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() (*Plan, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		if e.ProvisionedHostToPlan == nil {
 			// The edge ProvisionedHostToPlan was loaded in eager-loading,
 			// but was not found.
@@ -166,7 +179,7 @@ func (e ProvisionedHostEdges) ProvisionedHostToPlanOrErr() (*Plan, error) {
 // ProvisionedHostToGinFileMiddlewareOrErr returns the ProvisionedHostToGinFileMiddleware value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ProvisionedHostEdges) ProvisionedHostToGinFileMiddlewareOrErr() (*GinFileMiddleware, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		if e.ProvisionedHostToGinFileMiddleware == nil {
 			// The edge ProvisionedHostToGinFileMiddleware was loaded in eager-loading,
 			// but was not found.
@@ -286,6 +299,11 @@ func (ph *ProvisionedHost) QueryProvisionedHostToProvisioningStep() *Provisionin
 // QueryProvisionedHostToAgentStatus queries the "ProvisionedHostToAgentStatus" edge of the ProvisionedHost entity.
 func (ph *ProvisionedHost) QueryProvisionedHostToAgentStatus() *AgentStatusQuery {
 	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToAgentStatus(ph)
+}
+
+// QueryProvisionedHostToAgentTask queries the "ProvisionedHostToAgentTask" edge of the ProvisionedHost entity.
+func (ph *ProvisionedHost) QueryProvisionedHostToAgentTask() *AgentTaskQuery {
+	return (&ProvisionedHostClient{config: ph.config}).QueryProvisionedHostToAgentTask(ph)
 }
 
 // QueryProvisionedHostToPlan queries the "ProvisionedHostToPlan" edge of the ProvisionedHost entity.

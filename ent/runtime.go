@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -46,6 +47,12 @@ func init() {
 	agentstatusDescID := agentstatusFields[0].Descriptor()
 	// agentstatus.DefaultID holds the default value on creation for the id field.
 	agentstatus.DefaultID = agentstatusDescID.Default.(func() uuid.UUID)
+	agenttaskFields := schema.AgentTask{}.Fields()
+	_ = agenttaskFields
+	// agenttaskDescID is the schema descriptor for id field.
+	agenttaskDescID := agenttaskFields[0].Descriptor()
+	// agenttask.DefaultID holds the default value on creation for the id field.
+	agenttask.DefaultID = agenttaskDescID.Default.(func() uuid.UUID)
 	authuserFields := schema.AuthUser{}.Fields()
 	_ = authuserFields
 	// authuserDescID is the schema descriptor for id field.

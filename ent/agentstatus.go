@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/google/uuid"
 )
 
@@ -50,24 +51,29 @@ type AgentStatus struct {
 
 	// Edges put into the main struct to be loaded via hcl
 	// AgentStatusToProvisionedHost holds the value of the AgentStatusToProvisionedHost edge.
-	HCLAgentStatusToProvisionedHost []*ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
+	HCLAgentStatusToProvisionedHost *ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
 	//
-
+	agent_status_agent_status_to_provisioned_host *uuid.UUID
 }
 
 // AgentStatusEdges holds the relations/edges for other nodes in the graph.
 type AgentStatusEdges struct {
 	// AgentStatusToProvisionedHost holds the value of the AgentStatusToProvisionedHost edge.
-	AgentStatusToProvisionedHost []*ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
+	AgentStatusToProvisionedHost *ProvisionedHost `json:"AgentStatusToProvisionedHost,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
 // AgentStatusToProvisionedHostOrErr returns the AgentStatusToProvisionedHost value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentStatusEdges) AgentStatusToProvisionedHostOrErr() ([]*ProvisionedHost, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentStatusEdges) AgentStatusToProvisionedHostOrErr() (*ProvisionedHost, error) {
 	if e.loadedTypes[0] {
+		if e.AgentStatusToProvisionedHost == nil {
+			// The edge AgentStatusToProvisionedHost was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: provisionedhost.Label}
+		}
 		return e.AgentStatusToProvisionedHost, nil
 	}
 	return nil, &NotLoadedError{edge: "AgentStatusToProvisionedHost"}
@@ -85,6 +91,8 @@ func (*AgentStatus) scanValues(columns []string) ([]interface{}, error) {
 		case agentstatus.FieldClientID, agentstatus.FieldHostname, agentstatus.FieldOs, agentstatus.FieldHostID:
 			values[i] = new(sql.NullString)
 		case agentstatus.FieldID:
+			values[i] = new(uuid.UUID)
+		case agentstatus.ForeignKeys[0]: // agent_status_agent_status_to_provisioned_host
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AgentStatus", columns[i])
@@ -190,6 +198,12 @@ func (as *AgentStatus) assignValues(columns []string, values []interface{}) erro
 				return fmt.Errorf("unexpected type %T for field Timestamp", values[i])
 			} else if value.Valid {
 				as.Timestamp = value.Int64
+			}
+		case agentstatus.ForeignKeys[0]:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_status_agent_status_to_provisioned_host", values[i])
+			} else if value != nil {
+				as.agent_status_agent_status_to_provisioned_host = value
 			}
 		}
 	}

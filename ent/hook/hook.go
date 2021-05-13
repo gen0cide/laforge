@@ -22,6 +22,19 @@ func (f AgentStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return f(ctx, mv)
 }
 
+// The AgentTaskFunc type is an adapter to allow the use of ordinary
+// function as AgentTask mutator.
+type AgentTaskFunc func(context.Context, *ent.AgentTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AgentTaskMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The AuthUserFunc type is an adapter to allow the use of ordinary
 // function as AuthUser mutator.
 type AuthUserFunc func(context.Context, *ent.AuthUserMutation) (ent.Value, error)

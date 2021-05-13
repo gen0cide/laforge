@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -46,6 +47,7 @@ type ProvisioningStepQuery struct {
 	withProvisioningStepToFileDownload      *FileDownloadQuery
 	withProvisioningStepToFileExtract       *FileExtractQuery
 	withProvisioningStepToPlan              *PlanQuery
+	withProvisioningStepToAgentTask         *AgentTaskQuery
 	withProvisioningStepToGinFileMiddleware *GinFileMiddlewareQuery
 	withFKs                                 bool
 	// intermediate query (i.e. traversal path).
@@ -282,6 +284,28 @@ func (psq *ProvisioningStepQuery) QueryProvisioningStepToPlan() *PlanQuery {
 	return query
 }
 
+// QueryProvisioningStepToAgentTask chains the current query on the "ProvisioningStepToAgentTask" edge.
+func (psq *ProvisioningStepQuery) QueryProvisioningStepToAgentTask() *AgentTaskQuery {
+	query := &AgentTaskQuery{config: psq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := psq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := psq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, selector),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisioningstep.ProvisioningStepToAgentTaskTable, provisioningstep.ProvisioningStepToAgentTaskColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(psq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryProvisioningStepToGinFileMiddleware chains the current query on the "ProvisioningStepToGinFileMiddleware" edge.
 func (psq *ProvisioningStepQuery) QueryProvisioningStepToGinFileMiddleware() *GinFileMiddlewareQuery {
 	query := &GinFileMiddlewareQuery{config: psq.config}
@@ -494,6 +518,7 @@ func (psq *ProvisioningStepQuery) Clone() *ProvisioningStepQuery {
 		withProvisioningStepToFileDownload:      psq.withProvisioningStepToFileDownload.Clone(),
 		withProvisioningStepToFileExtract:       psq.withProvisioningStepToFileExtract.Clone(),
 		withProvisioningStepToPlan:              psq.withProvisioningStepToPlan.Clone(),
+		withProvisioningStepToAgentTask:         psq.withProvisioningStepToAgentTask.Clone(),
 		withProvisioningStepToGinFileMiddleware: psq.withProvisioningStepToGinFileMiddleware.Clone(),
 		// clone intermediate query.
 		sql:  psq.sql.Clone(),
@@ -600,6 +625,17 @@ func (psq *ProvisioningStepQuery) WithProvisioningStepToPlan(opts ...func(*PlanQ
 	return psq
 }
 
+// WithProvisioningStepToAgentTask tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisioningStepToAgentTask" edge. The optional arguments are used to configure the query builder of the edge.
+func (psq *ProvisioningStepQuery) WithProvisioningStepToAgentTask(opts ...func(*AgentTaskQuery)) *ProvisioningStepQuery {
+	query := &AgentTaskQuery{config: psq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	psq.withProvisioningStepToAgentTask = query
+	return psq
+}
+
 // WithProvisioningStepToGinFileMiddleware tells the query-builder to eager-load the nodes that are connected to
 // the "ProvisioningStepToGinFileMiddleware" edge. The optional arguments are used to configure the query builder of the edge.
 func (psq *ProvisioningStepQuery) WithProvisioningStepToGinFileMiddleware(opts ...func(*GinFileMiddlewareQuery)) *ProvisioningStepQuery {
@@ -677,7 +713,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 		nodes       = []*ProvisioningStep{}
 		withFKs     = psq.withFKs
 		_spec       = psq.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			psq.withProvisioningStepToStatus != nil,
 			psq.withProvisioningStepToProvisionedHost != nil,
 			psq.withProvisioningStepToScript != nil,
@@ -687,6 +723,7 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			psq.withProvisioningStepToFileDownload != nil,
 			psq.withProvisioningStepToFileExtract != nil,
 			psq.withProvisioningStepToPlan != nil,
+			psq.withProvisioningStepToAgentTask != nil,
 			psq.withProvisioningStepToGinFileMiddleware != nil,
 		}
 	)
@@ -973,6 +1010,35 @@ func (psq *ProvisioningStepQuery) sqlAll(ctx context.Context) ([]*ProvisioningSt
 			for i := range nodes {
 				nodes[i].Edges.ProvisioningStepToPlan = n
 			}
+		}
+	}
+
+	if query := psq.withProvisioningStepToAgentTask; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*ProvisioningStep)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProvisioningStepToAgentTask = []*AgentTask{}
+		}
+		query.withFKs = true
+		query.Where(predicate.AgentTask(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisioningstep.ProvisioningStepToAgentTaskColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.agent_task_agent_task_to_provisioning_step
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "agent_task_agent_task_to_provisioning_step" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_task_agent_task_to_provisioning_step" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ProvisioningStepToAgentTask = append(node.Edges.ProvisioningStepToAgentTask, n)
 		}
 	}
 

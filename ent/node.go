@@ -10,6 +10,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -196,6 +197,69 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 	err = as.QueryAgentStatusToProvisionedHost().
 		Select(provisionedhost.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (at *AgentTask) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     at.ID,
+		Type:   "AgentTask",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(at.Command); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "agenttask.Command",
+		Name:  "command",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(at.Args); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "args",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(at.Number); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int",
+		Name:  "number",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(at.State); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "agenttask.State",
+		Name:  "state",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "ProvisioningStep",
+		Name: "AgentTaskToProvisioningStep",
+	}
+	err = at.QueryAgentTaskToProvisioningStep().
+		Select(provisioningstep.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "ProvisionedHost",
+		Name: "AgentTaskToProvisionedHost",
+	}
+	err = at.QueryAgentTaskToProvisionedHost().
+		Select(provisionedhost.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1958,7 +2022,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -2030,22 +2094,32 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
-		Type: "Plan",
-		Name: "ProvisionedHostToPlan",
+		Type: "AgentTask",
+		Name: "ProvisionedHostToAgentTask",
 	}
-	err = ph.QueryProvisionedHostToPlan().
-		Select(plan.FieldID).
+	err = ph.QueryProvisionedHostToAgentTask().
+		Select(agenttask.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[7] = &Edge{
+		Type: "Plan",
+		Name: "ProvisionedHostToPlan",
+	}
+	err = ph.QueryProvisionedHostToPlan().
+		Select(plan.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
 		Type: "GinFileMiddleware",
 		Name: "ProvisionedHostToGinFileMiddleware",
 	}
 	err = ph.QueryProvisionedHostToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
-		Scan(ctx, &node.Edges[7].IDs)
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2144,7 +2218,7 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ps.ID,
 		Type:   "ProvisioningStep",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 10),
+		Edges:  make([]*Edge, 11),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ps.Type); err != nil {
@@ -2254,12 +2328,22 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[9] = &Edge{
+		Type: "AgentTask",
+		Name: "ProvisioningStepToAgentTask",
+	}
+	err = ps.QueryProvisioningStepToAgentTask().
+		Select(agenttask.FieldID).
+		Scan(ctx, &node.Edges[9].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[10] = &Edge{
 		Type: "GinFileMiddleware",
 		Name: "ProvisioningStepToGinFileMiddleware",
 	}
 	err = ps.QueryProvisioningStepToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
-		Scan(ctx, &node.Edges[9].IDs)
+		Scan(ctx, &node.Edges[10].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2816,6 +2900,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
+	case agenttask.Table:
+		n, err := c.AgentTask.Query().
+			Where(agenttask.ID(id)).
+			CollectFields(ctx, "AgentTask").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case authuser.Table:
 		n, err := c.AuthUser.Query().
 			Where(authuser.ID(id)).
@@ -3145,6 +3238,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.AgentStatus.Query().
 			Where(agentstatus.IDIn(ids...)).
 			CollectFields(ctx, "AgentStatus").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case agenttask.Table:
+		nodes, err := c.AgentTask.Query().
+			Where(agenttask.IDIn(ids...)).
+			CollectFields(ctx, "AgentTask").
 			All(ctx)
 		if err != nil {
 			return nil, err

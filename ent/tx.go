@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AgentTask is the client for interacting with the AgentTask builders.
+	AgentTask *AgentTaskClient
 	// AuthUser is the client for interacting with the AuthUser builders.
 	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
@@ -206,6 +208,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AgentStatus = NewAgentStatusClient(tx.config)
+	tx.AgentTask = NewAgentTaskClient(tx.config)
 	tx.AuthUser = NewAuthUserClient(tx.config)
 	tx.Build = NewBuildClient(tx.config)
 	tx.Command = NewCommandClient(tx.config)

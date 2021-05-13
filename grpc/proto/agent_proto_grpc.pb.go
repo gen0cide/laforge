@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // LaforgeClient is the client API for Laforge service.
@@ -90,7 +91,7 @@ type UnsafeLaforgeServer interface {
 }
 
 func RegisterLaforgeServer(s grpc.ServiceRegistrar, srv LaforgeServer) {
-	s.RegisterService(&_Laforge_serviceDesc, srv)
+	s.RegisterService(&Laforge_ServiceDesc, srv)
 }
 
 func _Laforge_GetHeartBeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -147,7 +148,10 @@ func _Laforge_InformTaskStatus_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Laforge_serviceDesc = grpc.ServiceDesc{
+// Laforge_ServiceDesc is the grpc.ServiceDesc for Laforge service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Laforge_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "agent_proto.laforge",
 	HandlerType: (*LaforgeServer)(nil),
 	Methods: []grpc.MethodDesc{

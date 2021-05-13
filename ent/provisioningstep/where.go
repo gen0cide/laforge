@@ -475,6 +475,34 @@ func HasProvisioningStepToPlanWith(preds ...predicate.Plan) predicate.Provisioni
 	})
 }
 
+// HasProvisioningStepToAgentTask applies the HasEdge predicate on the "ProvisioningStepToAgentTask" edge.
+func HasProvisioningStepToAgentTask() predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisioningStepToAgentTaskTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisioningStepToAgentTaskTable, ProvisioningStepToAgentTaskColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisioningStepToAgentTaskWith applies the HasEdge predicate on the "ProvisioningStepToAgentTask" edge with a given conditions (other predicates).
+func HasProvisioningStepToAgentTaskWith(preds ...predicate.AgentTask) predicate.ProvisioningStep {
+	return predicate.ProvisioningStep(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisioningStepToAgentTaskInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisioningStepToAgentTaskTable, ProvisioningStepToAgentTaskColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasProvisioningStepToGinFileMiddleware applies the HasEdge predicate on the "ProvisioningStepToGinFileMiddleware" edge.
 func HasProvisioningStepToGinFileMiddleware() predicate.ProvisioningStep {
 	return predicate.ProvisioningStep(func(s *sql.Selector) {

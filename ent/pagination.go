@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -485,6 +486,233 @@ func (as *AgentStatus) ToEdge(order *AgentStatusOrder) *AgentStatusEdge {
 	return &AgentStatusEdge{
 		Node:   as,
 		Cursor: order.Field.toCursor(as),
+	}
+}
+
+// AgentTaskEdge is the edge representation of AgentTask.
+type AgentTaskEdge struct {
+	Node   *AgentTask `json:"node"`
+	Cursor Cursor     `json:"cursor"`
+}
+
+// AgentTaskConnection is the connection containing edges to AgentTask.
+type AgentTaskConnection struct {
+	Edges      []*AgentTaskEdge `json:"edges"`
+	PageInfo   PageInfo         `json:"pageInfo"`
+	TotalCount int              `json:"totalCount"`
+}
+
+// AgentTaskPaginateOption enables pagination customization.
+type AgentTaskPaginateOption func(*agentTaskPager) error
+
+// WithAgentTaskOrder configures pagination ordering.
+func WithAgentTaskOrder(order *AgentTaskOrder) AgentTaskPaginateOption {
+	if order == nil {
+		order = DefaultAgentTaskOrder
+	}
+	o := *order
+	return func(pager *agentTaskPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAgentTaskOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAgentTaskFilter configures pagination filter.
+func WithAgentTaskFilter(filter func(*AgentTaskQuery) (*AgentTaskQuery, error)) AgentTaskPaginateOption {
+	return func(pager *agentTaskPager) error {
+		if filter == nil {
+			return errors.New("AgentTaskQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type agentTaskPager struct {
+	order  *AgentTaskOrder
+	filter func(*AgentTaskQuery) (*AgentTaskQuery, error)
+}
+
+func newAgentTaskPager(opts []AgentTaskPaginateOption) (*agentTaskPager, error) {
+	pager := &agentTaskPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAgentTaskOrder
+	}
+	return pager, nil
+}
+
+func (p *agentTaskPager) applyFilter(query *AgentTaskQuery) (*AgentTaskQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *agentTaskPager) toCursor(at *AgentTask) Cursor {
+	return p.order.Field.toCursor(at)
+}
+
+func (p *agentTaskPager) applyCursors(query *AgentTaskQuery, after, before *Cursor) *AgentTaskQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultAgentTaskOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *agentTaskPager) applyOrder(query *AgentTaskQuery, reverse bool) *AgentTaskQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultAgentTaskOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultAgentTaskOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to AgentTask.
+func (at *AgentTaskQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AgentTaskPaginateOption,
+) (*AgentTaskConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAgentTaskPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if at, err = pager.applyFilter(at); err != nil {
+		return nil, err
+	}
+
+	conn := &AgentTaskConnection{Edges: []*AgentTaskEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := at.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := at.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	at = pager.applyCursors(at, after, before)
+	at = pager.applyOrder(at, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		at = at.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		at = at.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := at.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *AgentTask
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *AgentTask {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *AgentTask {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*AgentTaskEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &AgentTaskEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// AgentTaskOrderField defines the ordering field of AgentTask.
+type AgentTaskOrderField struct {
+	field    string
+	toCursor func(*AgentTask) Cursor
+}
+
+// AgentTaskOrder defines the ordering of AgentTask.
+type AgentTaskOrder struct {
+	Direction OrderDirection       `json:"direction"`
+	Field     *AgentTaskOrderField `json:"field"`
+}
+
+// DefaultAgentTaskOrder is the default ordering of AgentTask.
+var DefaultAgentTaskOrder = &AgentTaskOrder{
+	Direction: OrderDirectionAsc,
+	Field: &AgentTaskOrderField{
+		field: agenttask.FieldID,
+		toCursor: func(at *AgentTask) Cursor {
+			return Cursor{ID: at.ID}
+		},
+	},
+}
+
+// ToEdge converts AgentTask into AgentTaskEdge.
+func (at *AgentTask) ToEdge(order *AgentTaskOrder) *AgentTaskEdge {
+	if order == nil {
+		order = DefaultAgentTaskOrder
+	}
+	return &AgentTaskEdge{
+		Node:   at,
+		Cursor: order.Field.toCursor(at),
 	}
 }
 

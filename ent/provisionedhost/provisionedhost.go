@@ -25,6 +25,8 @@ const (
 	EdgeProvisionedHostToProvisioningStep = "ProvisionedHostToProvisioningStep"
 	// EdgeProvisionedHostToAgentStatus holds the string denoting the provisionedhosttoagentstatus edge name in mutations.
 	EdgeProvisionedHostToAgentStatus = "ProvisionedHostToAgentStatus"
+	// EdgeProvisionedHostToAgentTask holds the string denoting the provisionedhosttoagenttask edge name in mutations.
+	EdgeProvisionedHostToAgentTask = "ProvisionedHostToAgentTask"
 	// EdgeProvisionedHostToPlan holds the string denoting the provisionedhosttoplan edge name in mutations.
 	EdgeProvisionedHostToPlan = "ProvisionedHostToPlan"
 	// EdgeProvisionedHostToGinFileMiddleware holds the string denoting the provisionedhosttoginfilemiddleware edge name in mutations.
@@ -66,11 +68,20 @@ const (
 	ProvisionedHostToProvisioningStepInverseTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepColumn is the table column denoting the ProvisionedHostToProvisioningStep relation/edge.
 	ProvisionedHostToProvisioningStepColumn = "provisioning_step_provisioning_step_to_provisioned_host"
-	// ProvisionedHostToAgentStatusTable is the table the holds the ProvisionedHostToAgentStatus relation/edge. The primary key declared below.
-	ProvisionedHostToAgentStatusTable = "agent_status_AgentStatusToProvisionedHost"
+	// ProvisionedHostToAgentStatusTable is the table the holds the ProvisionedHostToAgentStatus relation/edge.
+	ProvisionedHostToAgentStatusTable = "agent_status"
 	// ProvisionedHostToAgentStatusInverseTable is the table name for the AgentStatus entity.
 	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
 	ProvisionedHostToAgentStatusInverseTable = "agent_status"
+	// ProvisionedHostToAgentStatusColumn is the table column denoting the ProvisionedHostToAgentStatus relation/edge.
+	ProvisionedHostToAgentStatusColumn = "agent_status_agent_status_to_provisioned_host"
+	// ProvisionedHostToAgentTaskTable is the table the holds the ProvisionedHostToAgentTask relation/edge.
+	ProvisionedHostToAgentTaskTable = "agent_tasks"
+	// ProvisionedHostToAgentTaskInverseTable is the table name for the AgentTask entity.
+	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
+	ProvisionedHostToAgentTaskInverseTable = "agent_tasks"
+	// ProvisionedHostToAgentTaskColumn is the table column denoting the ProvisionedHostToAgentTask relation/edge.
+	ProvisionedHostToAgentTaskColumn = "agent_task_agent_task_to_provisioned_host"
 	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge.
 	ProvisionedHostToPlanTable = "provisioned_hosts"
 	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
@@ -102,12 +113,6 @@ var ForeignKeys = []string{
 	"provisioned_host_provisioned_host_to_host",
 	"provisioned_host_provisioned_host_to_end_step_plan",
 }
-
-var (
-	// ProvisionedHostToAgentStatusPrimaryKey and ProvisionedHostToAgentStatusColumn2 are the table columns denoting the
-	// primary key for the ProvisionedHostToAgentStatus relation (M2M).
-	ProvisionedHostToAgentStatusPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

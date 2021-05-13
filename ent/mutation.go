@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -53,6 +54,7 @@ const (
 
 	// Node types.
 	TypeAgentStatus        = "AgentStatus"
+	TypeAgentTask          = "AgentTask"
 	TypeAuthUser           = "AuthUser"
 	TypeBuild              = "Build"
 	TypeCommand            = "Command"
@@ -114,8 +116,7 @@ type AgentStatusMutation struct {
 	_Timestamp                           *int64
 	add_Timestamp                        *int64
 	clearedFields                        map[string]struct{}
-	_AgentStatusToProvisionedHost        map[uuid.UUID]struct{}
-	removed_AgentStatusToProvisionedHost map[uuid.UUID]struct{}
+	_AgentStatusToProvisionedHost        *uuid.UUID
 	cleared_AgentStatusToProvisionedHost bool
 	done                                 bool
 	oldValue                             func(context.Context) (*AgentStatus, error)
@@ -911,14 +912,9 @@ func (m *AgentStatusMutation) ResetTimestamp() {
 	m.add_Timestamp = nil
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ids.
-func (m *AgentStatusMutation) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) {
-	if m._AgentStatusToProvisionedHost == nil {
-		m._AgentStatusToProvisionedHost = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m._AgentStatusToProvisionedHost[ids[i]] = struct{}{}
-	}
+// SetAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *AgentStatusMutation) SetAgentStatusToProvisionedHostID(id uuid.UUID) {
+	m._AgentStatusToProvisionedHost = &id
 }
 
 // ClearAgentStatusToProvisionedHost clears the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
@@ -931,28 +927,20 @@ func (m *AgentStatusMutation) AgentStatusToProvisionedHostCleared() bool {
 	return m.cleared_AgentStatusToProvisionedHost
 }
 
-// RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (m *AgentStatusMutation) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) {
-	if m.removed_AgentStatusToProvisionedHost == nil {
-		m.removed_AgentStatusToProvisionedHost = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.removed_AgentStatusToProvisionedHost[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAgentStatusToProvisionedHost returns the removed IDs of the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
-func (m *AgentStatusMutation) RemovedAgentStatusToProvisionedHostIDs() (ids []uuid.UUID) {
-	for id := range m.removed_AgentStatusToProvisionedHost {
-		ids = append(ids, id)
+// AgentStatusToProvisionedHostID returns the "AgentStatusToProvisionedHost" edge ID in the mutation.
+func (m *AgentStatusMutation) AgentStatusToProvisionedHostID() (id uuid.UUID, exists bool) {
+	if m._AgentStatusToProvisionedHost != nil {
+		return *m._AgentStatusToProvisionedHost, true
 	}
 	return
 }
 
 // AgentStatusToProvisionedHostIDs returns the "AgentStatusToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentStatusToProvisionedHostID instead. It exists only for internal usage by the builders.
 func (m *AgentStatusMutation) AgentStatusToProvisionedHostIDs() (ids []uuid.UUID) {
-	for id := range m._AgentStatusToProvisionedHost {
-		ids = append(ids, id)
+	if id := m._AgentStatusToProvisionedHost; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -961,7 +949,6 @@ func (m *AgentStatusMutation) AgentStatusToProvisionedHostIDs() (ids []uuid.UUID
 func (m *AgentStatusMutation) ResetAgentStatusToProvisionedHost() {
 	m._AgentStatusToProvisionedHost = nil
 	m.cleared_AgentStatusToProvisionedHost = false
-	m.removed_AgentStatusToProvisionedHost = nil
 }
 
 // Op returns the operation name.
@@ -1433,11 +1420,9 @@ func (m *AgentStatusMutation) AddedEdges() []string {
 func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case agentstatus.EdgeAgentStatusToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m._AgentStatusToProvisionedHost))
-		for id := range m._AgentStatusToProvisionedHost {
-			ids = append(ids, id)
+		if id := m._AgentStatusToProvisionedHost; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -1445,9 +1430,6 @@ func (m *AgentStatusMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentStatusMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removed_AgentStatusToProvisionedHost != nil {
-		edges = append(edges, agentstatus.EdgeAgentStatusToProvisionedHost)
-	}
 	return edges
 }
 
@@ -1455,12 +1437,6 @@ func (m *AgentStatusMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AgentStatusMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case agentstatus.EdgeAgentStatusToProvisionedHost:
-		ids := make([]ent.Value, 0, len(m.removed_AgentStatusToProvisionedHost))
-		for id := range m.removed_AgentStatusToProvisionedHost {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -1488,6 +1464,9 @@ func (m *AgentStatusMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *AgentStatusMutation) ClearEdge(name string) error {
 	switch name {
+	case agentstatus.EdgeAgentStatusToProvisionedHost:
+		m.ClearAgentStatusToProvisionedHost()
+		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus unique edge %s", name)
 }
@@ -1501,6 +1480,625 @@ func (m *AgentStatusMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown AgentStatus edge %s", name)
+}
+
+// AgentTaskMutation represents an operation that mutates the AgentTask nodes in the graph.
+type AgentTaskMutation struct {
+	config
+	op                                  Op
+	typ                                 string
+	id                                  *uuid.UUID
+	command                             *agenttask.Command
+	args                                *string
+	number                              *int
+	addnumber                           *int
+	state                               *agenttask.State
+	clearedFields                       map[string]struct{}
+	_AgentTaskToProvisioningStep        *uuid.UUID
+	cleared_AgentTaskToProvisioningStep bool
+	_AgentTaskToProvisionedHost         *uuid.UUID
+	cleared_AgentTaskToProvisionedHost  bool
+	done                                bool
+	oldValue                            func(context.Context) (*AgentTask, error)
+	predicates                          []predicate.AgentTask
+}
+
+var _ ent.Mutation = (*AgentTaskMutation)(nil)
+
+// agenttaskOption allows management of the mutation configuration using functional options.
+type agenttaskOption func(*AgentTaskMutation)
+
+// newAgentTaskMutation creates new mutation for the AgentTask entity.
+func newAgentTaskMutation(c config, op Op, opts ...agenttaskOption) *AgentTaskMutation {
+	m := &AgentTaskMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAgentTask,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAgentTaskID sets the ID field of the mutation.
+func withAgentTaskID(id uuid.UUID) agenttaskOption {
+	return func(m *AgentTaskMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AgentTask
+		)
+		m.oldValue = func(ctx context.Context) (*AgentTask, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AgentTask.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAgentTask sets the old AgentTask of the mutation.
+func withAgentTask(node *AgentTask) agenttaskOption {
+	return func(m *AgentTaskMutation) {
+		m.oldValue = func(context.Context) (*AgentTask, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AgentTaskMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AgentTaskMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AgentTask entities.
+func (m *AgentTaskMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *AgentTaskMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetCommand sets the "command" field.
+func (m *AgentTaskMutation) SetCommand(a agenttask.Command) {
+	m.command = &a
+}
+
+// Command returns the value of the "command" field in the mutation.
+func (m *AgentTaskMutation) Command() (r agenttask.Command, exists bool) {
+	v := m.command
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommand returns the old "command" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldCommand(ctx context.Context) (v agenttask.Command, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCommand is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCommand requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommand: %w", err)
+	}
+	return oldValue.Command, nil
+}
+
+// ResetCommand resets all changes to the "command" field.
+func (m *AgentTaskMutation) ResetCommand() {
+	m.command = nil
+}
+
+// SetArgs sets the "args" field.
+func (m *AgentTaskMutation) SetArgs(s string) {
+	m.args = &s
+}
+
+// Args returns the value of the "args" field in the mutation.
+func (m *AgentTaskMutation) Args() (r string, exists bool) {
+	v := m.args
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArgs returns the old "args" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldArgs(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldArgs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldArgs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArgs: %w", err)
+	}
+	return oldValue.Args, nil
+}
+
+// ResetArgs resets all changes to the "args" field.
+func (m *AgentTaskMutation) ResetArgs() {
+	m.args = nil
+}
+
+// SetNumber sets the "number" field.
+func (m *AgentTaskMutation) SetNumber(i int) {
+	m.number = &i
+	m.addnumber = nil
+}
+
+// Number returns the value of the "number" field in the mutation.
+func (m *AgentTaskMutation) Number() (r int, exists bool) {
+	v := m.number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumber returns the old "number" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldNumber(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumber: %w", err)
+	}
+	return oldValue.Number, nil
+}
+
+// AddNumber adds i to the "number" field.
+func (m *AgentTaskMutation) AddNumber(i int) {
+	if m.addnumber != nil {
+		*m.addnumber += i
+	} else {
+		m.addnumber = &i
+	}
+}
+
+// AddedNumber returns the value that was added to the "number" field in this mutation.
+func (m *AgentTaskMutation) AddedNumber() (r int, exists bool) {
+	v := m.addnumber
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumber resets all changes to the "number" field.
+func (m *AgentTaskMutation) ResetNumber() {
+	m.number = nil
+	m.addnumber = nil
+}
+
+// SetState sets the "state" field.
+func (m *AgentTaskMutation) SetState(a agenttask.State) {
+	m.state = &a
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *AgentTaskMutation) State() (r agenttask.State, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldState(ctx context.Context) (v agenttask.State, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *AgentTaskMutation) ResetState() {
+	m.state = nil
+}
+
+// SetAgentTaskToProvisioningStepID sets the "AgentTaskToProvisioningStep" edge to the ProvisioningStep entity by id.
+func (m *AgentTaskMutation) SetAgentTaskToProvisioningStepID(id uuid.UUID) {
+	m._AgentTaskToProvisioningStep = &id
+}
+
+// ClearAgentTaskToProvisioningStep clears the "AgentTaskToProvisioningStep" edge to the ProvisioningStep entity.
+func (m *AgentTaskMutation) ClearAgentTaskToProvisioningStep() {
+	m.cleared_AgentTaskToProvisioningStep = true
+}
+
+// AgentTaskToProvisioningStepCleared reports if the "AgentTaskToProvisioningStep" edge to the ProvisioningStep entity was cleared.
+func (m *AgentTaskMutation) AgentTaskToProvisioningStepCleared() bool {
+	return m.cleared_AgentTaskToProvisioningStep
+}
+
+// AgentTaskToProvisioningStepID returns the "AgentTaskToProvisioningStep" edge ID in the mutation.
+func (m *AgentTaskMutation) AgentTaskToProvisioningStepID() (id uuid.UUID, exists bool) {
+	if m._AgentTaskToProvisioningStep != nil {
+		return *m._AgentTaskToProvisioningStep, true
+	}
+	return
+}
+
+// AgentTaskToProvisioningStepIDs returns the "AgentTaskToProvisioningStep" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentTaskToProvisioningStepID instead. It exists only for internal usage by the builders.
+func (m *AgentTaskMutation) AgentTaskToProvisioningStepIDs() (ids []uuid.UUID) {
+	if id := m._AgentTaskToProvisioningStep; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentTaskToProvisioningStep resets all changes to the "AgentTaskToProvisioningStep" edge.
+func (m *AgentTaskMutation) ResetAgentTaskToProvisioningStep() {
+	m._AgentTaskToProvisioningStep = nil
+	m.cleared_AgentTaskToProvisioningStep = false
+}
+
+// SetAgentTaskToProvisionedHostID sets the "AgentTaskToProvisionedHost" edge to the ProvisionedHost entity by id.
+func (m *AgentTaskMutation) SetAgentTaskToProvisionedHostID(id uuid.UUID) {
+	m._AgentTaskToProvisionedHost = &id
+}
+
+// ClearAgentTaskToProvisionedHost clears the "AgentTaskToProvisionedHost" edge to the ProvisionedHost entity.
+func (m *AgentTaskMutation) ClearAgentTaskToProvisionedHost() {
+	m.cleared_AgentTaskToProvisionedHost = true
+}
+
+// AgentTaskToProvisionedHostCleared reports if the "AgentTaskToProvisionedHost" edge to the ProvisionedHost entity was cleared.
+func (m *AgentTaskMutation) AgentTaskToProvisionedHostCleared() bool {
+	return m.cleared_AgentTaskToProvisionedHost
+}
+
+// AgentTaskToProvisionedHostID returns the "AgentTaskToProvisionedHost" edge ID in the mutation.
+func (m *AgentTaskMutation) AgentTaskToProvisionedHostID() (id uuid.UUID, exists bool) {
+	if m._AgentTaskToProvisionedHost != nil {
+		return *m._AgentTaskToProvisionedHost, true
+	}
+	return
+}
+
+// AgentTaskToProvisionedHostIDs returns the "AgentTaskToProvisionedHost" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentTaskToProvisionedHostID instead. It exists only for internal usage by the builders.
+func (m *AgentTaskMutation) AgentTaskToProvisionedHostIDs() (ids []uuid.UUID) {
+	if id := m._AgentTaskToProvisionedHost; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentTaskToProvisionedHost resets all changes to the "AgentTaskToProvisionedHost" edge.
+func (m *AgentTaskMutation) ResetAgentTaskToProvisionedHost() {
+	m._AgentTaskToProvisionedHost = nil
+	m.cleared_AgentTaskToProvisionedHost = false
+}
+
+// Op returns the operation name.
+func (m *AgentTaskMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (AgentTask).
+func (m *AgentTaskMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AgentTaskMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.command != nil {
+		fields = append(fields, agenttask.FieldCommand)
+	}
+	if m.args != nil {
+		fields = append(fields, agenttask.FieldArgs)
+	}
+	if m.number != nil {
+		fields = append(fields, agenttask.FieldNumber)
+	}
+	if m.state != nil {
+		fields = append(fields, agenttask.FieldState)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AgentTaskMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case agenttask.FieldCommand:
+		return m.Command()
+	case agenttask.FieldArgs:
+		return m.Args()
+	case agenttask.FieldNumber:
+		return m.Number()
+	case agenttask.FieldState:
+		return m.State()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AgentTaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case agenttask.FieldCommand:
+		return m.OldCommand(ctx)
+	case agenttask.FieldArgs:
+		return m.OldArgs(ctx)
+	case agenttask.FieldNumber:
+		return m.OldNumber(ctx)
+	case agenttask.FieldState:
+		return m.OldState(ctx)
+	}
+	return nil, fmt.Errorf("unknown AgentTask field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentTaskMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case agenttask.FieldCommand:
+		v, ok := value.(agenttask.Command)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommand(v)
+		return nil
+	case agenttask.FieldArgs:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArgs(v)
+		return nil
+	case agenttask.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumber(v)
+		return nil
+	case agenttask.FieldState:
+		v, ok := value.(agenttask.State)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentTask field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AgentTaskMutation) AddedFields() []string {
+	var fields []string
+	if m.addnumber != nil {
+		fields = append(fields, agenttask.FieldNumber)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AgentTaskMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case agenttask.FieldNumber:
+		return m.AddedNumber()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentTaskMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case agenttask.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumber(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentTask numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AgentTaskMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AgentTaskMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AgentTaskMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AgentTask nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AgentTaskMutation) ResetField(name string) error {
+	switch name {
+	case agenttask.FieldCommand:
+		m.ResetCommand()
+		return nil
+	case agenttask.FieldArgs:
+		m.ResetArgs()
+		return nil
+	case agenttask.FieldNumber:
+		m.ResetNumber()
+		return nil
+	case agenttask.FieldState:
+		m.ResetState()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentTask field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AgentTaskMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._AgentTaskToProvisioningStep != nil {
+		edges = append(edges, agenttask.EdgeAgentTaskToProvisioningStep)
+	}
+	if m._AgentTaskToProvisionedHost != nil {
+		edges = append(edges, agenttask.EdgeAgentTaskToProvisionedHost)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AgentTaskMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case agenttask.EdgeAgentTaskToProvisioningStep:
+		if id := m._AgentTaskToProvisioningStep; id != nil {
+			return []ent.Value{*id}
+		}
+	case agenttask.EdgeAgentTaskToProvisionedHost:
+		if id := m._AgentTaskToProvisionedHost; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AgentTaskMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AgentTaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AgentTaskMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_AgentTaskToProvisioningStep {
+		edges = append(edges, agenttask.EdgeAgentTaskToProvisioningStep)
+	}
+	if m.cleared_AgentTaskToProvisionedHost {
+		edges = append(edges, agenttask.EdgeAgentTaskToProvisionedHost)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AgentTaskMutation) EdgeCleared(name string) bool {
+	switch name {
+	case agenttask.EdgeAgentTaskToProvisioningStep:
+		return m.cleared_AgentTaskToProvisioningStep
+	case agenttask.EdgeAgentTaskToProvisionedHost:
+		return m.cleared_AgentTaskToProvisionedHost
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AgentTaskMutation) ClearEdge(name string) error {
+	switch name {
+	case agenttask.EdgeAgentTaskToProvisioningStep:
+		m.ClearAgentTaskToProvisioningStep()
+		return nil
+	case agenttask.EdgeAgentTaskToProvisionedHost:
+		m.ClearAgentTaskToProvisionedHost()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentTask unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AgentTaskMutation) ResetEdge(name string) error {
+	switch name {
+	case agenttask.EdgeAgentTaskToProvisioningStep:
+		m.ResetAgentTaskToProvisioningStep()
+		return nil
+	case agenttask.EdgeAgentTaskToProvisionedHost:
+		m.ResetAgentTaskToProvisionedHost()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentTask edge %s", name)
 }
 
 // AuthUserMutation represents an operation that mutates the AuthUser nodes in the graph.
@@ -17273,6 +17871,9 @@ type ProvisionedHostMutation struct {
 	_ProvisionedHostToAgentStatus               map[uuid.UUID]struct{}
 	removed_ProvisionedHostToAgentStatus        map[uuid.UUID]struct{}
 	cleared_ProvisionedHostToAgentStatus        bool
+	_ProvisionedHostToAgentTask                 map[uuid.UUID]struct{}
+	removed_ProvisionedHostToAgentTask          map[uuid.UUID]struct{}
+	cleared_ProvisionedHostToAgentTask          bool
 	_ProvisionedHostToPlan                      *uuid.UUID
 	cleared_ProvisionedHostToPlan               bool
 	_ProvisionedHostToGinFileMiddleware         *uuid.UUID
@@ -17665,6 +18266,59 @@ func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentStatus() {
 	m.removed_ProvisionedHostToAgentStatus = nil
 }
 
+// AddProvisionedHostToAgentTaskIDs adds the "ProvisionedHostToAgentTask" edge to the AgentTask entity by ids.
+func (m *ProvisionedHostMutation) AddProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) {
+	if m._ProvisionedHostToAgentTask == nil {
+		m._ProvisionedHostToAgentTask = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._ProvisionedHostToAgentTask[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisionedHostToAgentTask clears the "ProvisionedHostToAgentTask" edge to the AgentTask entity.
+func (m *ProvisionedHostMutation) ClearProvisionedHostToAgentTask() {
+	m.cleared_ProvisionedHostToAgentTask = true
+}
+
+// ProvisionedHostToAgentTaskCleared reports if the "ProvisionedHostToAgentTask" edge to the AgentTask entity was cleared.
+func (m *ProvisionedHostMutation) ProvisionedHostToAgentTaskCleared() bool {
+	return m.cleared_ProvisionedHostToAgentTask
+}
+
+// RemoveProvisionedHostToAgentTaskIDs removes the "ProvisionedHostToAgentTask" edge to the AgentTask entity by IDs.
+func (m *ProvisionedHostMutation) RemoveProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) {
+	if m.removed_ProvisionedHostToAgentTask == nil {
+		m.removed_ProvisionedHostToAgentTask = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisionedHostToAgentTask[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisionedHostToAgentTask returns the removed IDs of the "ProvisionedHostToAgentTask" edge to the AgentTask entity.
+func (m *ProvisionedHostMutation) RemovedProvisionedHostToAgentTaskIDs() (ids []uuid.UUID) {
+	for id := range m.removed_ProvisionedHostToAgentTask {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisionedHostToAgentTaskIDs returns the "ProvisionedHostToAgentTask" edge IDs in the mutation.
+func (m *ProvisionedHostMutation) ProvisionedHostToAgentTaskIDs() (ids []uuid.UUID) {
+	for id := range m._ProvisionedHostToAgentTask {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisionedHostToAgentTask resets all changes to the "ProvisionedHostToAgentTask" edge.
+func (m *ProvisionedHostMutation) ResetProvisionedHostToAgentTask() {
+	m._ProvisionedHostToAgentTask = nil
+	m.cleared_ProvisionedHostToAgentTask = false
+	m.removed_ProvisionedHostToAgentTask = nil
+}
+
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by id.
 func (m *ProvisionedHostMutation) SetProvisionedHostToPlanID(id uuid.UUID) {
 	m._ProvisionedHostToPlan = &id
@@ -17856,7 +18510,7 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisionedHostMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m._ProvisionedHostToStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -17874,6 +18528,9 @@ func (m *ProvisionedHostMutation) AddedEdges() []string {
 	}
 	if m._ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m._ProvisionedHostToAgentTask != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentTask)
 	}
 	if m._ProvisionedHostToPlan != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
@@ -17916,6 +18573,12 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToAgentTask:
+		ids := make([]ent.Value, 0, len(m._ProvisionedHostToAgentTask))
+		for id := range m._ProvisionedHostToAgentTask {
+			ids = append(ids, id)
+		}
+		return ids
 	case provisionedhost.EdgeProvisionedHostToPlan:
 		if id := m._ProvisionedHostToPlan; id != nil {
 			return []ent.Value{*id}
@@ -17930,12 +18593,15 @@ func (m *ProvisionedHostMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisionedHostMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.removed_ProvisionedHostToProvisioningStep != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToProvisioningStep)
 	}
 	if m.removed_ProvisionedHostToAgentStatus != nil {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.removed_ProvisionedHostToAgentTask != nil {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentTask)
 	}
 	return edges
 }
@@ -17956,13 +18622,19 @@ func (m *ProvisionedHostMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case provisionedhost.EdgeProvisionedHostToAgentTask:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisionedHostToAgentTask))
+		for id := range m.removed_ProvisionedHostToAgentTask {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisionedHostMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.cleared_ProvisionedHostToStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToStatus)
 	}
@@ -17980,6 +18652,9 @@ func (m *ProvisionedHostMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisionedHostToAgentStatus {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentStatus)
+	}
+	if m.cleared_ProvisionedHostToAgentTask {
+		edges = append(edges, provisionedhost.EdgeProvisionedHostToAgentTask)
 	}
 	if m.cleared_ProvisionedHostToPlan {
 		edges = append(edges, provisionedhost.EdgeProvisionedHostToPlan)
@@ -18006,6 +18681,8 @@ func (m *ProvisionedHostMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisionedHostToProvisioningStep
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		return m.cleared_ProvisionedHostToAgentStatus
+	case provisionedhost.EdgeProvisionedHostToAgentTask:
+		return m.cleared_ProvisionedHostToAgentTask
 	case provisionedhost.EdgeProvisionedHostToPlan:
 		return m.cleared_ProvisionedHostToPlan
 	case provisionedhost.EdgeProvisionedHostToGinFileMiddleware:
@@ -18061,6 +18738,9 @@ func (m *ProvisionedHostMutation) ResetEdge(name string) error {
 		return nil
 	case provisionedhost.EdgeProvisionedHostToAgentStatus:
 		m.ResetProvisionedHostToAgentStatus()
+		return nil
+	case provisionedhost.EdgeProvisionedHostToAgentTask:
+		m.ResetProvisionedHostToAgentTask()
 		return nil
 	case provisionedhost.EdgeProvisionedHostToPlan:
 		m.ResetProvisionedHostToPlan()
@@ -18834,6 +19514,9 @@ type ProvisioningStepMutation struct {
 	cleared_ProvisioningStepToFileExtract       bool
 	_ProvisioningStepToPlan                     *uuid.UUID
 	cleared_ProvisioningStepToPlan              bool
+	_ProvisioningStepToAgentTask                map[uuid.UUID]struct{}
+	removed_ProvisioningStepToAgentTask         map[uuid.UUID]struct{}
+	cleared_ProvisioningStepToAgentTask         bool
 	_ProvisioningStepToGinFileMiddleware        *uuid.UUID
 	cleared_ProvisioningStepToGinFileMiddleware bool
 	done                                        bool
@@ -19369,6 +20052,59 @@ func (m *ProvisioningStepMutation) ResetProvisioningStepToPlan() {
 	m.cleared_ProvisioningStepToPlan = false
 }
 
+// AddProvisioningStepToAgentTaskIDs adds the "ProvisioningStepToAgentTask" edge to the AgentTask entity by ids.
+func (m *ProvisioningStepMutation) AddProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) {
+	if m._ProvisioningStepToAgentTask == nil {
+		m._ProvisioningStepToAgentTask = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._ProvisioningStepToAgentTask[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProvisioningStepToAgentTask clears the "ProvisioningStepToAgentTask" edge to the AgentTask entity.
+func (m *ProvisioningStepMutation) ClearProvisioningStepToAgentTask() {
+	m.cleared_ProvisioningStepToAgentTask = true
+}
+
+// ProvisioningStepToAgentTaskCleared reports if the "ProvisioningStepToAgentTask" edge to the AgentTask entity was cleared.
+func (m *ProvisioningStepMutation) ProvisioningStepToAgentTaskCleared() bool {
+	return m.cleared_ProvisioningStepToAgentTask
+}
+
+// RemoveProvisioningStepToAgentTaskIDs removes the "ProvisioningStepToAgentTask" edge to the AgentTask entity by IDs.
+func (m *ProvisioningStepMutation) RemoveProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) {
+	if m.removed_ProvisioningStepToAgentTask == nil {
+		m.removed_ProvisioningStepToAgentTask = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_ProvisioningStepToAgentTask[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProvisioningStepToAgentTask returns the removed IDs of the "ProvisioningStepToAgentTask" edge to the AgentTask entity.
+func (m *ProvisioningStepMutation) RemovedProvisioningStepToAgentTaskIDs() (ids []uuid.UUID) {
+	for id := range m.removed_ProvisioningStepToAgentTask {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvisioningStepToAgentTaskIDs returns the "ProvisioningStepToAgentTask" edge IDs in the mutation.
+func (m *ProvisioningStepMutation) ProvisioningStepToAgentTaskIDs() (ids []uuid.UUID) {
+	for id := range m._ProvisioningStepToAgentTask {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProvisioningStepToAgentTask resets all changes to the "ProvisioningStepToAgentTask" edge.
+func (m *ProvisioningStepMutation) ResetProvisioningStepToAgentTask() {
+	m._ProvisioningStepToAgentTask = nil
+	m.cleared_ProvisioningStepToAgentTask = false
+	m.removed_ProvisioningStepToAgentTask = nil
+}
+
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by id.
 func (m *ProvisioningStepMutation) SetProvisioningStepToGinFileMiddlewareID(id uuid.UUID) {
 	m._ProvisioningStepToGinFileMiddleware = &id
@@ -19553,7 +20289,7 @@ func (m *ProvisioningStepMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProvisioningStepMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m._ProvisioningStepToStatus != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -19580,6 +20316,9 @@ func (m *ProvisioningStepMutation) AddedEdges() []string {
 	}
 	if m._ProvisioningStepToPlan != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
+	if m._ProvisioningStepToAgentTask != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToAgentTask)
 	}
 	if m._ProvisioningStepToGinFileMiddleware != nil {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
@@ -19627,6 +20366,12 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 		if id := m._ProvisioningStepToPlan; id != nil {
 			return []ent.Value{*id}
 		}
+	case provisioningstep.EdgeProvisioningStepToAgentTask:
+		ids := make([]ent.Value, 0, len(m._ProvisioningStepToAgentTask))
+		for id := range m._ProvisioningStepToAgentTask {
+			ids = append(ids, id)
+		}
+		return ids
 	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
 		if id := m._ProvisioningStepToGinFileMiddleware; id != nil {
 			return []ent.Value{*id}
@@ -19637,7 +20382,10 @@ func (m *ProvisioningStepMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProvisioningStepMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
+	if m.removed_ProvisioningStepToAgentTask != nil {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToAgentTask)
+	}
 	return edges
 }
 
@@ -19645,13 +20393,19 @@ func (m *ProvisioningStepMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProvisioningStepMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case provisioningstep.EdgeProvisioningStepToAgentTask:
+		ids := make([]ent.Value, 0, len(m.removed_ProvisioningStepToAgentTask))
+		for id := range m.removed_ProvisioningStepToAgentTask {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProvisioningStepMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.cleared_ProvisioningStepToStatus {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToStatus)
 	}
@@ -19678,6 +20432,9 @@ func (m *ProvisioningStepMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ProvisioningStepToPlan {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToPlan)
+	}
+	if m.cleared_ProvisioningStepToAgentTask {
+		edges = append(edges, provisioningstep.EdgeProvisioningStepToAgentTask)
 	}
 	if m.cleared_ProvisioningStepToGinFileMiddleware {
 		edges = append(edges, provisioningstep.EdgeProvisioningStepToGinFileMiddleware)
@@ -19707,6 +20464,8 @@ func (m *ProvisioningStepMutation) EdgeCleared(name string) bool {
 		return m.cleared_ProvisioningStepToFileExtract
 	case provisioningstep.EdgeProvisioningStepToPlan:
 		return m.cleared_ProvisioningStepToPlan
+	case provisioningstep.EdgeProvisioningStepToAgentTask:
+		return m.cleared_ProvisioningStepToAgentTask
 	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
 		return m.cleared_ProvisioningStepToGinFileMiddleware
 	}
@@ -19781,6 +20540,9 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	case provisioningstep.EdgeProvisioningStepToPlan:
 		m.ResetProvisioningStepToPlan()
+		return nil
+	case provisioningstep.EdgeProvisioningStepToAgentTask:
+		m.ResetProvisioningStepToAgentTask()
 		return nil
 	case provisioningstep.EdgeProvisioningStepToGinFileMiddleware:
 		m.ResetProvisioningStepToGinFileMiddleware()

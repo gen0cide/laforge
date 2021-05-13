@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
@@ -52,6 +53,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AgentTask is the client for interacting with the AgentTask builders.
+	AgentTask *AgentTaskClient
 	// AuthUser is the client for interacting with the AuthUser builders.
 	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
@@ -122,6 +125,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AgentStatus = NewAgentStatusClient(c.config)
+	c.AgentTask = NewAgentTaskClient(c.config)
 	c.AuthUser = NewAuthUserClient(c.config)
 	c.Build = NewBuildClient(c.config)
 	c.Command = NewCommandClient(c.config)
@@ -184,6 +188,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AgentTask:          NewAgentTaskClient(cfg),
 		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
@@ -231,6 +236,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:             cfg,
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AgentTask:          NewAgentTaskClient(cfg),
 		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
@@ -289,6 +295,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AgentStatus.Use(hooks...)
+	c.AgentTask.Use(hooks...)
 	c.AuthUser.Use(hooks...)
 	c.Build.Use(hooks...)
 	c.Command.Use(hooks...)
@@ -412,7 +419,7 @@ func (c *AgentStatusClient) QueryAgentStatusToProvisionedHost(as *AgentStatus) *
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
 		return fromV, nil
@@ -423,6 +430,128 @@ func (c *AgentStatusClient) QueryAgentStatusToProvisionedHost(as *AgentStatus) *
 // Hooks returns the client hooks.
 func (c *AgentStatusClient) Hooks() []Hook {
 	return c.hooks.AgentStatus
+}
+
+// AgentTaskClient is a client for the AgentTask schema.
+type AgentTaskClient struct {
+	config
+}
+
+// NewAgentTaskClient returns a client for the AgentTask from the given config.
+func NewAgentTaskClient(c config) *AgentTaskClient {
+	return &AgentTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agenttask.Hooks(f(g(h())))`.
+func (c *AgentTaskClient) Use(hooks ...Hook) {
+	c.hooks.AgentTask = append(c.hooks.AgentTask, hooks...)
+}
+
+// Create returns a create builder for AgentTask.
+func (c *AgentTaskClient) Create() *AgentTaskCreate {
+	mutation := newAgentTaskMutation(c.config, OpCreate)
+	return &AgentTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentTask entities.
+func (c *AgentTaskClient) CreateBulk(builders ...*AgentTaskCreate) *AgentTaskCreateBulk {
+	return &AgentTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentTask.
+func (c *AgentTaskClient) Update() *AgentTaskUpdate {
+	mutation := newAgentTaskMutation(c.config, OpUpdate)
+	return &AgentTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentTaskClient) UpdateOne(at *AgentTask) *AgentTaskUpdateOne {
+	mutation := newAgentTaskMutation(c.config, OpUpdateOne, withAgentTask(at))
+	return &AgentTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentTaskClient) UpdateOneID(id uuid.UUID) *AgentTaskUpdateOne {
+	mutation := newAgentTaskMutation(c.config, OpUpdateOne, withAgentTaskID(id))
+	return &AgentTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentTask.
+func (c *AgentTaskClient) Delete() *AgentTaskDelete {
+	mutation := newAgentTaskMutation(c.config, OpDelete)
+	return &AgentTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AgentTaskClient) DeleteOne(at *AgentTask) *AgentTaskDeleteOne {
+	return c.DeleteOneID(at.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AgentTaskClient) DeleteOneID(id uuid.UUID) *AgentTaskDeleteOne {
+	builder := c.Delete().Where(agenttask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentTask.
+func (c *AgentTaskClient) Query() *AgentTaskQuery {
+	return &AgentTaskQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AgentTask entity by its id.
+func (c *AgentTaskClient) Get(ctx context.Context, id uuid.UUID) (*AgentTask, error) {
+	return c.Query().Where(agenttask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentTaskClient) GetX(ctx context.Context, id uuid.UUID) *AgentTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAgentTaskToProvisioningStep queries the AgentTaskToProvisioningStep edge of a AgentTask.
+func (c *AgentTaskClient) QueryAgentTaskToProvisioningStep(at *AgentTask) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := at.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttask.AgentTaskToProvisioningStepTable, agenttask.AgentTaskToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(at.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTaskToProvisionedHost queries the AgentTaskToProvisionedHost edge of a AgentTask.
+func (c *AgentTaskClient) QueryAgentTaskToProvisionedHost(at *AgentTask) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := at.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttask.AgentTaskToProvisionedHostTable, agenttask.AgentTaskToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(at.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentTaskClient) Hooks() []Hook {
+	return c.hooks.AgentTask
 }
 
 // AuthUserClient is a client for the AuthUser schema.
@@ -3380,7 +3509,23 @@ func (c *ProvisionedHostClient) QueryProvisionedHostToAgentStatus(ph *Provisione
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(agentstatus.Table, agentstatus.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToAgentTask queries the ProvisionedHostToAgentTask edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToAgentTask(ph *ProvisionedHost) *AgentTaskQuery {
+	query := &AgentTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentTaskTable, provisionedhost.ProvisionedHostToAgentTaskColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -3833,6 +3978,22 @@ func (c *ProvisioningStepClient) QueryProvisioningStepToPlan(ps *ProvisioningSte
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToAgentTask queries the ProvisioningStepToAgentTask edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToAgentTask(ps *ProvisioningStep) *AgentTaskQuery {
+	query := &AgentTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisioningstep.ProvisioningStepToAgentTaskTable, provisioningstep.ProvisioningStepToAgentTaskColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil

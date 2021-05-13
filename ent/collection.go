@@ -21,6 +21,18 @@ func (as *AgentStatusQuery) collectField(ctx *graphql.OperationContext, field gr
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (at *AgentTaskQuery) CollectFields(ctx context.Context, satisfies ...string) *AgentTaskQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		at = at.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return at
+}
+
+func (at *AgentTaskQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *AgentTaskQuery {
+	return at
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (au *AuthUserQuery) CollectFields(ctx context.Context, satisfies ...string) *AuthUserQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		au = au.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

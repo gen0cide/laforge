@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
 	"github.com/gen0cide/laforge/ent/filedelete"
@@ -217,6 +218,21 @@ func (psc *ProvisioningStepCreate) SetNillableProvisioningStepToPlanID(id *uuid.
 // SetProvisioningStepToPlan sets the "ProvisioningStepToPlan" edge to the Plan entity.
 func (psc *ProvisioningStepCreate) SetProvisioningStepToPlan(p *Plan) *ProvisioningStepCreate {
 	return psc.SetProvisioningStepToPlanID(p.ID)
+}
+
+// AddProvisioningStepToAgentTaskIDs adds the "ProvisioningStepToAgentTask" edge to the AgentTask entity by IDs.
+func (psc *ProvisioningStepCreate) AddProvisioningStepToAgentTaskIDs(ids ...uuid.UUID) *ProvisioningStepCreate {
+	psc.mutation.AddProvisioningStepToAgentTaskIDs(ids...)
+	return psc
+}
+
+// AddProvisioningStepToAgentTask adds the "ProvisioningStepToAgentTask" edges to the AgentTask entity.
+func (psc *ProvisioningStepCreate) AddProvisioningStepToAgentTask(a ...*AgentTask) *ProvisioningStepCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return psc.AddProvisioningStepToAgentTaskIDs(ids...)
 }
 
 // SetProvisioningStepToGinFileMiddlewareID sets the "ProvisioningStepToGinFileMiddleware" edge to the GinFileMiddleware entity by ID.
@@ -531,6 +547,25 @@ func (psc *ProvisioningStepCreate) createSpec() (*ProvisioningStep, *sqlgraph.Cr
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.plan_plan_to_provisioning_step = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := psc.mutation.ProvisioningStepToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisioningstep.ProvisioningStepToAgentTaskTable,
+			Columns: []string{provisioningstep.ProvisioningStepToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := psc.mutation.ProvisioningStepToGinFileMiddlewareIDs(); len(nodes) > 0 {

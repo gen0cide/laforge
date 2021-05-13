@@ -43,11 +43,13 @@ const (
 	EdgeAgentStatusToProvisionedHost = "AgentStatusToProvisionedHost"
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge. The primary key declared below.
-	AgentStatusToProvisionedHostTable = "agent_status_AgentStatusToProvisionedHost"
+	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge.
+	AgentStatusToProvisionedHostTable = "agent_status"
 	// AgentStatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	AgentStatusToProvisionedHostInverseTable = "provisioned_hosts"
+	// AgentStatusToProvisionedHostColumn is the table column denoting the AgentStatusToProvisionedHost relation/edge.
+	AgentStatusToProvisionedHostColumn = "agent_status_agent_status_to_provisioned_host"
 )
 
 // Columns holds all SQL columns for agentstatus fields.
@@ -69,16 +71,21 @@ var Columns = []string{
 	FieldTimestamp,
 }
 
-var (
-	// AgentStatusToProvisionedHostPrimaryKey and AgentStatusToProvisionedHostColumn2 are the table columns denoting the
-	// primary key for the AgentStatusToProvisionedHost relation (M2M).
-	AgentStatusToProvisionedHostPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "agent_status"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"agent_status_agent_status_to_provisioned_host",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

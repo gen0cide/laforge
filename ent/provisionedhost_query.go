@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -40,6 +41,7 @@ type ProvisionedHostQuery struct {
 	withProvisionedHostToEndStepPlan        *PlanQuery
 	withProvisionedHostToProvisioningStep   *ProvisioningStepQuery
 	withProvisionedHostToAgentStatus        *AgentStatusQuery
+	withProvisionedHostToAgentTask          *AgentTaskQuery
 	withProvisionedHostToPlan               *PlanQuery
 	withProvisionedHostToGinFileMiddleware  *GinFileMiddlewareQuery
 	withFKs                                 bool
@@ -203,7 +205,29 @@ func (phq *ProvisionedHostQuery) QueryProvisionedHostToAgentStatus() *AgentStatu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
 			sqlgraph.To(agentstatus.Table, agentstatus.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToAgentTask chains the current query on the "ProvisionedHostToAgentTask" edge.
+func (phq *ProvisionedHostQuery) QueryProvisionedHostToAgentTask() *AgentTaskQuery {
+	query := &AgentTaskQuery{config: phq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := phq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := phq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentTaskTable, provisionedhost.ProvisionedHostToAgentTaskColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
 		return fromU, nil
@@ -442,6 +466,7 @@ func (phq *ProvisionedHostQuery) Clone() *ProvisionedHostQuery {
 		withProvisionedHostToEndStepPlan:        phq.withProvisionedHostToEndStepPlan.Clone(),
 		withProvisionedHostToProvisioningStep:   phq.withProvisionedHostToProvisioningStep.Clone(),
 		withProvisionedHostToAgentStatus:        phq.withProvisionedHostToAgentStatus.Clone(),
+		withProvisionedHostToAgentTask:          phq.withProvisionedHostToAgentTask.Clone(),
 		withProvisionedHostToPlan:               phq.withProvisionedHostToPlan.Clone(),
 		withProvisionedHostToGinFileMiddleware:  phq.withProvisionedHostToGinFileMiddleware.Clone(),
 		// clone intermediate query.
@@ -513,6 +538,17 @@ func (phq *ProvisionedHostQuery) WithProvisionedHostToAgentStatus(opts ...func(*
 		opt(query)
 	}
 	phq.withProvisionedHostToAgentStatus = query
+	return phq
+}
+
+// WithProvisionedHostToAgentTask tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisionedHostToAgentTask" edge. The optional arguments are used to configure the query builder of the edge.
+func (phq *ProvisionedHostQuery) WithProvisionedHostToAgentTask(opts ...func(*AgentTaskQuery)) *ProvisionedHostQuery {
+	query := &AgentTaskQuery{config: phq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	phq.withProvisionedHostToAgentTask = query
 	return phq
 }
 
@@ -604,13 +640,14 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		nodes       = []*ProvisionedHost{}
 		withFKs     = phq.withFKs
 		_spec       = phq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			phq.withProvisionedHostToStatus != nil,
 			phq.withProvisionedHostToProvisionedNetwork != nil,
 			phq.withProvisionedHostToHost != nil,
 			phq.withProvisionedHostToEndStepPlan != nil,
 			phq.withProvisionedHostToProvisioningStep != nil,
 			phq.withProvisionedHostToAgentStatus != nil,
+			phq.withProvisionedHostToAgentTask != nil,
 			phq.withProvisionedHostToPlan != nil,
 			phq.withProvisionedHostToGinFileMiddleware != nil,
 		}
@@ -787,66 +824,59 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 
 	if query := phq.withProvisionedHostToAgentStatus; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[uuid.UUID]*ProvisionedHost, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.ProvisionedHostToAgentStatus = []*AgentStatus{}
+		nodeids := make(map[uuid.UUID]*ProvisionedHost)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProvisionedHostToAgentStatus = []*AgentStatus{}
 		}
-		var (
-			edgeids []uuid.UUID
-			edges   = make(map[uuid.UUID][]*ProvisionedHost)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-				Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(provisionedhost.ProvisionedHostToAgentStatusPrimaryKey[1], fks...))
-			},
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*uuid.UUID)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*uuid.UUID)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := *eout
-				inValue := *ein
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				if _, ok := edges[inValue]; !ok {
-					edgeids = append(edgeids, inValue)
-				}
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, phq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "ProvisionedHostToAgentStatus": %w`, err)
-		}
-		query.Where(agentstatus.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.AgentStatus(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisionedhost.ProvisionedHostToAgentStatusColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.agent_status_agent_status_to_provisioned_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "agent_status_agent_status_to_provisioned_host" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "ProvisionedHostToAgentStatus" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_provisioned_host" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.ProvisionedHostToAgentStatus = append(nodes[i].Edges.ProvisionedHostToAgentStatus, n)
+			node.Edges.ProvisionedHostToAgentStatus = append(node.Edges.ProvisionedHostToAgentStatus, n)
+		}
+	}
+
+	if query := phq.withProvisionedHostToAgentTask; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*ProvisionedHost)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProvisionedHostToAgentTask = []*AgentTask{}
+		}
+		query.withFKs = true
+		query.Where(predicate.AgentTask(func(s *sql.Selector) {
+			s.Where(sql.InValues(provisionedhost.ProvisionedHostToAgentTaskColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.agent_task_agent_task_to_provisioned_host
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "agent_task_agent_task_to_provisioned_host" is nil for node %v`, n.ID)
 			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_task_agent_task_to_provisioned_host" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ProvisionedHostToAgentTask = append(node.Edges.ProvisionedHostToAgentTask, n)
 		}
 	}
 

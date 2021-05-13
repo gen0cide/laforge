@@ -4,10 +4,26 @@ package ent
 
 import "context"
 
-func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) ([]*ProvisionedHost, error) {
+func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
 	result, err := as.Edges.AgentStatusToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
-		result, err = as.QueryAgentStatusToProvisionedHost().All(ctx)
+		result, err = as.QueryAgentStatusToProvisionedHost().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (at *AgentTask) AgentTaskToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
+	result, err := at.Edges.AgentTaskToProvisioningStepOrErr()
+	if IsNotLoaded(err) {
+		result, err = at.QueryAgentTaskToProvisioningStep().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (at *AgentTask) AgentTaskToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
+	result, err := at.Edges.AgentTaskToProvisionedHostOrErr()
+	if IsNotLoaded(err) {
+		result, err = at.QueryAgentTaskToProvisionedHost().Only(ctx)
 	}
 	return result, err
 }
@@ -596,6 +612,14 @@ func (ph *ProvisionedHost) ProvisionedHostToAgentStatus(ctx context.Context) ([]
 	return result, err
 }
 
+func (ph *ProvisionedHost) ProvisionedHostToAgentTask(ctx context.Context) ([]*AgentTask, error) {
+	result, err := ph.Edges.ProvisionedHostToAgentTaskOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToAgentTask().All(ctx)
+	}
+	return result, err
+}
+
 func (ph *ProvisionedHost) ProvisionedHostToPlan(ctx context.Context) (*Plan, error) {
 	result, err := ph.Edges.ProvisionedHostToPlanOrErr()
 	if IsNotLoaded(err) {
@@ -730,6 +754,14 @@ func (ps *ProvisioningStep) ProvisioningStepToPlan(ctx context.Context) (*Plan, 
 		result, err = ps.QueryProvisioningStepToPlan().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (ps *ProvisioningStep) ProvisioningStepToAgentTask(ctx context.Context) ([]*AgentTask, error) {
+	result, err := ps.Edges.ProvisioningStepToAgentTaskOrErr()
+	if IsNotLoaded(err) {
+		result, err = ps.QueryProvisioningStepToAgentTask().All(ctx)
+	}
+	return result, err
 }
 
 func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Context) (*GinFileMiddleware, error) {

@@ -9,6 +9,9 @@ import (
 // AgentStatus is the predicate function for agentstatus builders.
 type AgentStatus func(*sql.Selector)
 
+// AgentTask is the predicate function for agenttask builders.
+type AgentTask func(*sql.Selector)
+
 // AuthUser is the predicate function for authuser builders.
 type AuthUser func(*sql.Selector)
 

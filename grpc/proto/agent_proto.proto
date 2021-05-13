@@ -43,7 +43,7 @@ message TaskRequest {
 }
 
 message TaskReply {
-  int32 id = 1;
+  string id = 1;
   enum Command {
     DEFAULT = 0;
     DELETE = 1;

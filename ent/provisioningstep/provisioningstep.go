@@ -37,6 +37,8 @@ const (
 	EdgeProvisioningStepToFileExtract = "ProvisioningStepToFileExtract"
 	// EdgeProvisioningStepToPlan holds the string denoting the provisioningsteptoplan edge name in mutations.
 	EdgeProvisioningStepToPlan = "ProvisioningStepToPlan"
+	// EdgeProvisioningStepToAgentTask holds the string denoting the provisioningsteptoagenttask edge name in mutations.
+	EdgeProvisioningStepToAgentTask = "ProvisioningStepToAgentTask"
 	// EdgeProvisioningStepToGinFileMiddleware holds the string denoting the provisioningsteptoginfilemiddleware edge name in mutations.
 	EdgeProvisioningStepToGinFileMiddleware = "ProvisioningStepToGinFileMiddleware"
 	// Table holds the table name of the provisioningstep in the database.
@@ -104,6 +106,13 @@ const (
 	ProvisioningStepToPlanInverseTable = "plans"
 	// ProvisioningStepToPlanColumn is the table column denoting the ProvisioningStepToPlan relation/edge.
 	ProvisioningStepToPlanColumn = "plan_plan_to_provisioning_step"
+	// ProvisioningStepToAgentTaskTable is the table the holds the ProvisioningStepToAgentTask relation/edge.
+	ProvisioningStepToAgentTaskTable = "agent_tasks"
+	// ProvisioningStepToAgentTaskInverseTable is the table name for the AgentTask entity.
+	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
+	ProvisioningStepToAgentTaskInverseTable = "agent_tasks"
+	// ProvisioningStepToAgentTaskColumn is the table column denoting the ProvisioningStepToAgentTask relation/edge.
+	ProvisioningStepToAgentTaskColumn = "agent_task_agent_task_to_provisioning_step"
 	// ProvisioningStepToGinFileMiddlewareTable is the table the holds the ProvisioningStepToGinFileMiddleware relation/edge.
 	ProvisioningStepToGinFileMiddlewareTable = "provisioning_steps"
 	// ProvisioningStepToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.

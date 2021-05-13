@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -119,6 +120,21 @@ func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentStatus(a ...*AgentSta
 		ids[i] = a[i].ID
 	}
 	return phc.AddProvisionedHostToAgentStatuIDs(ids...)
+}
+
+// AddProvisionedHostToAgentTaskIDs adds the "ProvisionedHostToAgentTask" edge to the AgentTask entity by IDs.
+func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentTaskIDs(ids ...uuid.UUID) *ProvisionedHostCreate {
+	phc.mutation.AddProvisionedHostToAgentTaskIDs(ids...)
+	return phc
+}
+
+// AddProvisionedHostToAgentTask adds the "ProvisionedHostToAgentTask" edges to the AgentTask entity.
+func (phc *ProvisionedHostCreate) AddProvisionedHostToAgentTask(a ...*AgentTask) *ProvisionedHostCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return phc.AddProvisionedHostToAgentTaskIDs(ids...)
 }
 
 // SetProvisionedHostToPlanID sets the "ProvisionedHostToPlan" edge to the Plan entity by ID.
@@ -368,15 +384,34 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 	}
 	if nodes := phc.mutation.ProvisionedHostToAgentStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   provisionedhost.ProvisionedHostToAgentStatusTable,
-			Columns: provisionedhost.ProvisionedHostToAgentStatusPrimaryKey,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: agentstatus.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := phc.mutation.ProvisionedHostToAgentTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   provisionedhost.ProvisionedHostToAgentTaskTable,
+			Columns: []string{provisionedhost.ProvisionedHostToAgentTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: agenttask.FieldID,
 				},
 			},
 		}

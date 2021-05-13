@@ -182,19 +182,23 @@ func (asu *AgentStatusUpdate) AddTimestamp(i int64) *AgentStatusUpdate {
 	return asu
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdate {
-	asu.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
+// SetAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (asu *AgentStatusUpdate) SetAgentStatusToProvisionedHostID(id uuid.UUID) *AgentStatusUpdate {
+	asu.mutation.SetAgentStatusToProvisionedHostID(id)
 	return asu
 }
 
-// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
-func (asu *AgentStatusUpdate) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (asu *AgentStatusUpdate) SetNillableAgentStatusToProvisionedHostID(id *uuid.UUID) *AgentStatusUpdate {
+	if id != nil {
+		asu = asu.SetAgentStatusToProvisionedHostID(*id)
 	}
-	return asu.AddAgentStatusToProvisionedHostIDs(ids...)
+	return asu
+}
+
+// SetAgentStatusToProvisionedHost sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (asu *AgentStatusUpdate) SetAgentStatusToProvisionedHost(p *ProvisionedHost) *AgentStatusUpdate {
+	return asu.SetAgentStatusToProvisionedHostID(p.ID)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -202,25 +206,10 @@ func (asu *AgentStatusUpdate) Mutation() *AgentStatusMutation {
 	return asu.mutation
 }
 
-// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearAgentStatusToProvisionedHost clears the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (asu *AgentStatusUpdate) ClearAgentStatusToProvisionedHost() *AgentStatusUpdate {
 	asu.mutation.ClearAgentStatusToProvisionedHost()
 	return asu
-}
-
-// RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdate {
-	asu.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
-	return asu
-}
-
-// RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
-func (asu *AgentStatusUpdate) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return asu.RemoveAgentStatusToProvisionedHostIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -462,10 +451,10 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if asu.mutation.AgentStatusToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
+			Columns: []string{agentstatus.AgentStatusToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -473,34 +462,15 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asu.mutation.RemovedAgentStatusToProvisionedHostIDs(); len(nodes) > 0 && !asu.mutation.AgentStatusToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := asu.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
+			Columns: []string{agentstatus.AgentStatusToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -687,19 +657,23 @@ func (asuo *AgentStatusUpdateOne) AddTimestamp(i int64) *AgentStatusUpdateOne {
 	return asuo
 }
 
-// AddAgentStatusToProvisionedHostIDs adds the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by IDs.
-func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdateOne {
-	asuo.mutation.AddAgentStatusToProvisionedHostIDs(ids...)
+// SetAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToProvisionedHostID(id uuid.UUID) *AgentStatusUpdateOne {
+	asuo.mutation.SetAgentStatusToProvisionedHostID(id)
 	return asuo
 }
 
-// AddAgentStatusToProvisionedHost adds the "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
-func (asuo *AgentStatusUpdateOne) AddAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// SetNillableAgentStatusToProvisionedHostID sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity by ID if the given value is not nil.
+func (asuo *AgentStatusUpdateOne) SetNillableAgentStatusToProvisionedHostID(id *uuid.UUID) *AgentStatusUpdateOne {
+	if id != nil {
+		asuo = asuo.SetAgentStatusToProvisionedHostID(*id)
 	}
-	return asuo.AddAgentStatusToProvisionedHostIDs(ids...)
+	return asuo
+}
+
+// SetAgentStatusToProvisionedHost sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToProvisionedHost(p *ProvisionedHost) *AgentStatusUpdateOne {
+	return asuo.SetAgentStatusToProvisionedHostID(p.ID)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -707,25 +681,10 @@ func (asuo *AgentStatusUpdateOne) Mutation() *AgentStatusMutation {
 	return asuo.mutation
 }
 
-// ClearAgentStatusToProvisionedHost clears all "AgentStatusToProvisionedHost" edges to the ProvisionedHost entity.
+// ClearAgentStatusToProvisionedHost clears the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (asuo *AgentStatusUpdateOne) ClearAgentStatusToProvisionedHost() *AgentStatusUpdateOne {
 	asuo.mutation.ClearAgentStatusToProvisionedHost()
 	return asuo
-}
-
-// RemoveAgentStatusToProvisionedHostIDs removes the "AgentStatusToProvisionedHost" edge to ProvisionedHost entities by IDs.
-func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHostIDs(ids ...uuid.UUID) *AgentStatusUpdateOne {
-	asuo.mutation.RemoveAgentStatusToProvisionedHostIDs(ids...)
-	return asuo
-}
-
-// RemoveAgentStatusToProvisionedHost removes "AgentStatusToProvisionedHost" edges to ProvisionedHost entities.
-func (asuo *AgentStatusUpdateOne) RemoveAgentStatusToProvisionedHost(p ...*ProvisionedHost) *AgentStatusUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return asuo.RemoveAgentStatusToProvisionedHostIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -991,10 +950,10 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 	}
 	if asuo.mutation.AgentStatusToProvisionedHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
+			Columns: []string{agentstatus.AgentStatusToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1002,34 +961,15 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 					Column: provisionedhost.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := asuo.mutation.RemovedAgentStatusToProvisionedHostIDs(); len(nodes) > 0 && !asuo.mutation.AgentStatusToProvisionedHostCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: provisionedhost.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := asuo.mutation.AgentStatusToProvisionedHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   agentstatus.AgentStatusToProvisionedHostTable,
-			Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
+			Columns: []string{agentstatus.AgentStatusToProvisionedHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

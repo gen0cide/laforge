@@ -356,7 +356,7 @@ func HasProvisionedHostToAgentStatus() predicate.ProvisionedHost {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToAgentStatusTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -368,7 +368,35 @@ func HasProvisionedHostToAgentStatusWith(preds ...predicate.AgentStatus) predica
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProvisionedHostToAgentStatusInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedHostToAgentTask applies the HasEdge predicate on the "ProvisionedHostToAgentTask" edge.
+func HasProvisionedHostToAgentTask() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentTaskTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentTaskTable, ProvisionedHostToAgentTaskColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToAgentTaskWith applies the HasEdge predicate on the "ProvisionedHostToAgentTask" edge with a given conditions (other predicates).
+func HasProvisionedHostToAgentTaskWith(preds ...predicate.AgentTask) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentTaskInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentTaskTable, ProvisionedHostToAgentTaskColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

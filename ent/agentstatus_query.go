@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -29,6 +28,7 @@ type AgentStatusQuery struct {
 	predicates []predicate.AgentStatus
 	// eager-loading edges.
 	withAgentStatusToProvisionedHost *ProvisionedHostQuery
+	withFKs                          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,7 +79,7 @@ func (asq *AgentStatusQuery) QueryAgentStatusToProvisionedHost() *ProvisionedHos
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
 		return fromU, nil
@@ -350,11 +350,18 @@ func (asq *AgentStatusQuery) prepareQuery(ctx context.Context) error {
 func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error) {
 	var (
 		nodes       = []*AgentStatus{}
+		withFKs     = asq.withFKs
 		_spec       = asq.querySpec()
 		loadedTypes = [1]bool{
 			asq.withAgentStatusToProvisionedHost != nil,
 		}
 	)
+	if asq.withAgentStatusToProvisionedHost != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, agentstatus.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &AgentStatus{config: asq.config}
 		nodes = append(nodes, node)
@@ -376,66 +383,30 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 	}
 
 	if query := asq.withAgentStatusToProvisionedHost; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[uuid.UUID]*AgentStatus, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.AgentStatusToProvisionedHost = []*ProvisionedHost{}
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_provisioned_host == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_provisioned_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		var (
-			edgeids []uuid.UUID
-			edges   = make(map[uuid.UUID][]*AgentStatus)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   agentstatus.AgentStatusToProvisionedHostTable,
-				Columns: agentstatus.AgentStatusToProvisionedHostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(agentstatus.AgentStatusToProvisionedHostPrimaryKey[0], fks...))
-			},
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*uuid.UUID)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*uuid.UUID)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := *eout
-				inValue := *ein
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				if _, ok := edges[inValue]; !ok {
-					edgeids = append(edgeids, inValue)
-				}
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, asq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "AgentStatusToProvisionedHost": %w`, err)
-		}
-		query.Where(provisionedhost.IDIn(edgeids...))
+		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "AgentStatusToProvisionedHost" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_provisioned_host" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.AgentStatusToProvisionedHost = append(nodes[i].Edges.AgentStatusToProvisionedHost, n)
+				nodes[i].Edges.AgentStatusToProvisionedHost = n
 			}
 		}
 	}

@@ -1400,7 +1400,7 @@ func HasAgentStatusToProvisionedHost() predicate.AgentStatus {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(AgentStatusToProvisionedHostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AgentStatusToProvisionedHostTable, AgentStatusToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToProvisionedHostTable, AgentStatusToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1412,7 +1412,7 @@ func HasAgentStatusToProvisionedHostWith(preds ...predicate.ProvisionedHost) pre
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(AgentStatusToProvisionedHostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AgentStatusToProvisionedHostTable, AgentStatusToProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToProvisionedHostTable, AgentStatusToProvisionedHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
