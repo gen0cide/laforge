@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"time"
@@ -109,9 +110,11 @@ func Login(client *ent.Client) gin.HandlerFunc {
 		var loginVals login
 		username := ""
 		password := ""
+
+		// TODO: Remove test login
 		if err := ctx.ShouldBind(&loginVals); err != nil {
-			username = "black"
-			password = "black"
+			username = "test"
+			password = "test"
 		} else {
 			username = loginVals.Username
 			password = loginVals.Password
@@ -222,7 +225,11 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 }
 
 // ForContext finds the user from the context. REQUIRES Middleware to have run.
-func ForContext(ctx context.Context) *ent.AuthUser {
-	raw, _ := ctx.Value(userCtxKey).(*ent.AuthUser)
-	return raw
+func ForContext(ctx context.Context) (*ent.AuthUser, error) {
+	raw, ok := ctx.Value(userCtxKey).(*ent.AuthUser)
+	if ok {
+		return raw, nil
+	}
+	return nil, errors.New("unable to get authuser from context")
+
 }

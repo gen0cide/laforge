@@ -72,6 +72,19 @@ enum ProvisioningStepType {
   Undefined
 }
 
+enum RoleLevel {
+  ADMIN
+  USER
+  UNDEFINED
+}
+
+enum ProviderType {
+  LOCAL
+  GITHUB
+  OPENID
+  UNDEFINED
+}
+
 type AgentStatus {
   clientId: String!
   hostname: String!
@@ -378,8 +391,18 @@ type User {
 }
 ###
 
+type AuthUser{
+  id: ID!
+  username: String!
+  password: String!
+  role: RoleLevel!
+  provider: ProviderType!
+}
+
+directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
+
 type Query {
-  environments: [Environment]
+  environments: [Environment] @hasRole(roles: [ADMIN,USER])
   environment(envUUID: String!): Environment
   provisionedHost(proHostUUID: String!): ProvisionedHost
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
@@ -389,8 +412,10 @@ type Query {
 }
 
 type Mutation {
-  loadEnviroment(envFilePath: String!): [Environment]
+  loadEnviroment(envFilePath: String!): [Environment] 
   createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
+  createUser(username: String!,password:String!,role: RoleLevel!): AuthUser!
+  deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
 }

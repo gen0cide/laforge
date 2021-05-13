@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -20,6 +21,18 @@ import (
 	"github.com/gen0cide/laforge/planner"
 	"github.com/google/uuid"
 )
+
+func (r *authUserResolver) ID(ctx context.Context, obj *ent.AuthUser) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *authUserResolver) Role(ctx context.Context, obj *ent.AuthUser) (model.RoleLevel, error) {
+	return model.RoleLevel(obj.Role), nil
+}
+
+func (r *authUserResolver) Provider(ctx context.Context, obj *ent.AuthUser) (model.ProviderType, error) {
+	return model.ProviderType(obj.Provider), nil
+}
 
 func (r *buildResolver) ID(ctx context.Context, obj *ent.Build) (string, error) {
 	return obj.ID.String(), nil
@@ -298,6 +311,30 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, rend
 	return planner.CreateBuild(ctx, r.client, entEnvironment)
 }
 
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role model.RoleLevel) (*ent.AuthUser, error) {
+	return r.client.AuthUser.Create().
+		SetUsername(username).
+		SetPassword(password).
+		SetRole(authuser.Role(role)).
+		SetProvider(authuser.ProviderLOCAL).
+		Save(ctx)
+}
+
+func (r *mutationResolver) DeleteUser(ctx context.Context, userUUID string) (bool, error) {
+	uuid, err := uuid.Parse(userUUID)
+
+	if err != nil {
+		return false, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	err = r.client.AuthUser.DeleteOneID(uuid).Exec(ctx)
+
+	if err != nil {
+		return false, err
+	}
+	return true, err
+}
+
 func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error) {
 	uuid, err := uuid.Parse(buildUUID)
 
@@ -564,6 +601,9 @@ func (r *userResolver) ID(ctx context.Context, obj *ent.User) (string, error) {
 	return obj.ID.String(), nil
 }
 
+// AuthUser returns generated.AuthUserResolver implementation.
+func (r *Resolver) AuthUser() generated.AuthUserResolver { return &authUserResolver{r} }
+
 // Build returns generated.BuildResolver implementation.
 func (r *Resolver) Build() generated.BuildResolver { return &buildResolver{r} }
 
@@ -639,6 +679,7 @@ func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
+type authUserResolver struct{ *Resolver }
 type buildResolver struct{ *Resolver }
 type commandResolver struct{ *Resolver }
 type competitionResolver struct{ *Resolver }

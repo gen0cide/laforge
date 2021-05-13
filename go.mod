@@ -47,7 +47,7 @@ require (
 	github.com/ugorji/go v1.2.5 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
-	github.com/vektah/gqlparser/v2 v2.2.0
+	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/vmihailenco/msgpack/v5 v5.3.1
 	github.com/vmware/govmomi v0.25.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect

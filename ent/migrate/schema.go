@@ -839,7 +839,7 @@ var (
 				Symbol:     "tokens_auth_users_AuthUserToToken",
 				Columns:    []*schema.Column{TokensColumns[3]},
 				RefColumns: []*schema.Column{AuthUsersColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

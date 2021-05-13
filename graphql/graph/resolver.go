@@ -1,9 +1,14 @@
 package graph
 
 import (
+	"context"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph/generated"
+	"github.com/gen0cide/laforge/graphql/graph/model"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 //go:generate go run github.com/99designs/gqlgen generate
@@ -18,7 +23,28 @@ type Resolver struct{ client *ent.Client }
 
 // NewSchema creates a graphql executable schema.
 func NewSchema(client *ent.Client) graphql.ExecutableSchema {
-	return generated.NewExecutableSchema(generated.Config{
+	GQLConfig := generated.Config{
 		Resolvers: &Resolver{client},
-	})
+	}
+	GQLConfig.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []model.RoleLevel) (res interface{}, err error) {
+		currentUser, err := auth.ForContext(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, role := range roles {
+			if role.String() == string(currentUser.Role) {
+				return next(ctx)
+			}
+		}
+		return nil, &gqlerror.Error{
+			Message: "not authorized",
+			Extensions: map[string]interface{}{
+				"code": "401",
+			},
+		}
+
+	}
+	return generated.NewExecutableSchema(GQLConfig)
 }

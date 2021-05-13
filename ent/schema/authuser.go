@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -27,6 +28,9 @@ func (AuthUser) Fields() []ent.Field {
 // Edges of the AuthUser.
 func (AuthUser) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("AuthUserToToken", Token.Type),
+		edge.To("AuthUserToToken", Token.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }

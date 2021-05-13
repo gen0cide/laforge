@@ -168,6 +168,51 @@ func (e PlanType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type ProviderType string
+
+const (
+	ProviderTypeLocal     ProviderType = "LOCAL"
+	ProviderTypeGithub    ProviderType = "GITHUB"
+	ProviderTypeOpenid    ProviderType = "OPENID"
+	ProviderTypeUndefined ProviderType = "UNDEFINED"
+)
+
+var AllProviderType = []ProviderType{
+	ProviderTypeLocal,
+	ProviderTypeGithub,
+	ProviderTypeOpenid,
+	ProviderTypeUndefined,
+}
+
+func (e ProviderType) IsValid() bool {
+	switch e {
+	case ProviderTypeLocal, ProviderTypeGithub, ProviderTypeOpenid, ProviderTypeUndefined:
+		return true
+	}
+	return false
+}
+
+func (e ProviderType) String() string {
+	return string(e)
+}
+
+func (e *ProviderType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProviderType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProviderType", str)
+	}
+	return nil
+}
+
+func (e ProviderType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type ProvisionStatus string
 
 const (
@@ -316,5 +361,48 @@ func (e *ProvisioningStepType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ProvisioningStepType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type RoleLevel string
+
+const (
+	RoleLevelAdmin     RoleLevel = "ADMIN"
+	RoleLevelUser      RoleLevel = "USER"
+	RoleLevelUndefined RoleLevel = "UNDEFINED"
+)
+
+var AllRoleLevel = []RoleLevel{
+	RoleLevelAdmin,
+	RoleLevelUser,
+	RoleLevelUndefined,
+}
+
+func (e RoleLevel) IsValid() bool {
+	switch e {
+	case RoleLevelAdmin, RoleLevelUser, RoleLevelUndefined:
+		return true
+	}
+	return false
+}
+
+func (e RoleLevel) String() string {
+	return string(e)
+}
+
+func (e *RoleLevel) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RoleLevel(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RoleLevel", str)
+	}
+	return nil
+}
+
+func (e RoleLevel) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
