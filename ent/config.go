@@ -25,6 +25,7 @@ type config struct {
 // hooks per client, for fast access.
 type hooks struct {
 	AgentStatus        []ent.Hook
+	AuthUser           []ent.Hook
 	Build              []ent.Hook
 	Command            []ent.Hook
 	Competition        []ent.Hook
@@ -50,6 +51,7 @@ type hooks struct {
 	Status             []ent.Hook
 	Tag                []ent.Hook
 	Team               []ent.Hook
+	Token              []ent.Hook
 	User               []ent.Hook
 }
 

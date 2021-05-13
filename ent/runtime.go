@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -30,6 +31,7 @@ import (
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 	"github.com/google/uuid"
 )
@@ -44,6 +46,12 @@ func init() {
 	agentstatusDescID := agentstatusFields[0].Descriptor()
 	// agentstatus.DefaultID holds the default value on creation for the id field.
 	agentstatus.DefaultID = agentstatusDescID.Default.(func() uuid.UUID)
+	authuserFields := schema.AuthUser{}.Fields()
+	_ = authuserFields
+	// authuserDescID is the schema descriptor for id field.
+	authuserDescID := authuserFields[0].Descriptor()
+	// authuser.DefaultID holds the default value on creation for the id field.
+	authuser.DefaultID = authuserDescID.Default.(func() uuid.UUID)
 	buildFields := schema.Build{}.Fields()
 	_ = buildFields
 	// buildDescCompletedPlan is the schema descriptor for completed_plan field.
@@ -222,6 +230,12 @@ func init() {
 	teamDescID := teamFields[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
+	tokenFields := schema.Token{}.Fields()
+	_ = tokenFields
+	// tokenDescID is the schema descriptor for id field.
+	tokenDescID := tokenFields[0].Descriptor()
+	// token.DefaultID holds the default value on creation for the id field.
+	token.DefaultID = tokenDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescID is the schema descriptor for id field.

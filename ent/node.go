@@ -10,6 +10,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -35,6 +36,7 @@ import (
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
@@ -193,6 +195,59 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 	}
 	err = as.QueryAgentStatusToProvisionedHost().
 		Select(provisionedhost.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (au *AuthUser) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     au.ID,
+		Type:   "AuthUser",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(au.Username); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "username",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Password); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "password",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Role); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "authuser.Role",
+		Name:  "role",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Provider); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "authuser.Provider",
+		Name:  "provider",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Token",
+		Name: "AuthUserToToken",
+	}
+	err = au.QueryAuthUserToToken().
+		Select(token.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
@@ -2585,6 +2640,43 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (t *Token) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     t.ID,
+		Type:   "Token",
+		Fields: make([]*Field, 2),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(t.Token); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "token",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "int",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "AuthUser",
+		Name: "TokenToAuthUser",
+	}
+	err = t.QueryTokenToAuthUser().
+		Select(authuser.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
@@ -2719,6 +2811,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		n, err := c.AgentStatus.Query().
 			Where(agentstatus.ID(id)).
 			CollectFields(ctx, "AgentStatus").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case authuser.Table:
+		n, err := c.AuthUser.Query().
+			Where(authuser.ID(id)).
+			CollectFields(ctx, "AuthUser").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -2949,6 +3050,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
+	case token.Table:
+		n, err := c.Token.Query().
+			Where(token.ID(id)).
+			CollectFields(ctx, "Token").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case user.Table:
 		n, err := c.User.Query().
 			Where(user.ID(id)).
@@ -3035,6 +3145,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.AgentStatus.Query().
 			Where(agentstatus.IDIn(ids...)).
 			CollectFields(ctx, "AgentStatus").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case authuser.Table:
+		nodes, err := c.AuthUser.Query().
+			Where(authuser.IDIn(ids...)).
+			CollectFields(ctx, "AuthUser").
 			All(ctx)
 		if err != nil {
 			return nil, err
@@ -3360,6 +3483,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.Team.Query().
 			Where(team.IDIn(ids...)).
 			CollectFields(ctx, "Team").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case token.Table:
+		nodes, err := c.Token.Query().
+			Where(token.IDIn(ids...)).
+			CollectFields(ctx, "Token").
 			All(ctx)
 		if err != nil {
 			return nil, err

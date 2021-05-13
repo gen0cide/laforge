@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -36,6 +37,7 @@ import (
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -50,6 +52,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AuthUser is the client for interacting with the AuthUser builders.
+	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
 	// Command is the client for interacting with the Command builders.
@@ -100,6 +104,8 @@ type Client struct {
 	Tag *TagClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// Token is the client for interacting with the Token builders.
+	Token *TokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -116,6 +122,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AgentStatus = NewAgentStatusClient(c.config)
+	c.AuthUser = NewAuthUserClient(c.config)
 	c.Build = NewBuildClient(c.config)
 	c.Command = NewCommandClient(c.config)
 	c.Competition = NewCompetitionClient(c.config)
@@ -141,6 +148,7 @@ func (c *Client) init() {
 	c.Status = NewStatusClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Team = NewTeamClient(c.config)
+	c.Token = NewTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -176,6 +184,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
@@ -201,6 +210,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
+		Token:              NewTokenClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -221,6 +231,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:             cfg,
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
@@ -246,6 +257,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
+		Token:              NewTokenClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -277,6 +289,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AgentStatus.Use(hooks...)
+	c.AuthUser.Use(hooks...)
 	c.Build.Use(hooks...)
 	c.Command.Use(hooks...)
 	c.Competition.Use(hooks...)
@@ -302,6 +315,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Status.Use(hooks...)
 	c.Tag.Use(hooks...)
 	c.Team.Use(hooks...)
+	c.Token.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -409,6 +423,112 @@ func (c *AgentStatusClient) QueryAgentStatusToProvisionedHost(as *AgentStatus) *
 // Hooks returns the client hooks.
 func (c *AgentStatusClient) Hooks() []Hook {
 	return c.hooks.AgentStatus
+}
+
+// AuthUserClient is a client for the AuthUser schema.
+type AuthUserClient struct {
+	config
+}
+
+// NewAuthUserClient returns a client for the AuthUser from the given config.
+func NewAuthUserClient(c config) *AuthUserClient {
+	return &AuthUserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `authuser.Hooks(f(g(h())))`.
+func (c *AuthUserClient) Use(hooks ...Hook) {
+	c.hooks.AuthUser = append(c.hooks.AuthUser, hooks...)
+}
+
+// Create returns a create builder for AuthUser.
+func (c *AuthUserClient) Create() *AuthUserCreate {
+	mutation := newAuthUserMutation(c.config, OpCreate)
+	return &AuthUserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AuthUser entities.
+func (c *AuthUserClient) CreateBulk(builders ...*AuthUserCreate) *AuthUserCreateBulk {
+	return &AuthUserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AuthUser.
+func (c *AuthUserClient) Update() *AuthUserUpdate {
+	mutation := newAuthUserMutation(c.config, OpUpdate)
+	return &AuthUserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AuthUserClient) UpdateOne(au *AuthUser) *AuthUserUpdateOne {
+	mutation := newAuthUserMutation(c.config, OpUpdateOne, withAuthUser(au))
+	return &AuthUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AuthUserClient) UpdateOneID(id uuid.UUID) *AuthUserUpdateOne {
+	mutation := newAuthUserMutation(c.config, OpUpdateOne, withAuthUserID(id))
+	return &AuthUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AuthUser.
+func (c *AuthUserClient) Delete() *AuthUserDelete {
+	mutation := newAuthUserMutation(c.config, OpDelete)
+	return &AuthUserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AuthUserClient) DeleteOne(au *AuthUser) *AuthUserDeleteOne {
+	return c.DeleteOneID(au.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AuthUserClient) DeleteOneID(id uuid.UUID) *AuthUserDeleteOne {
+	builder := c.Delete().Where(authuser.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AuthUserDeleteOne{builder}
+}
+
+// Query returns a query builder for AuthUser.
+func (c *AuthUserClient) Query() *AuthUserQuery {
+	return &AuthUserQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AuthUser entity by its id.
+func (c *AuthUserClient) Get(ctx context.Context, id uuid.UUID) (*AuthUser, error) {
+	return c.Query().Where(authuser.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AuthUserClient) GetX(ctx context.Context, id uuid.UUID) *AuthUser {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAuthUserToToken queries the AuthUserToToken edge of a AuthUser.
+func (c *AuthUserClient) QueryAuthUserToToken(au *AuthUser) *TokenQuery {
+	query := &TokenQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := au.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(authuser.Table, authuser.FieldID, id),
+			sqlgraph.To(token.Table, token.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, authuser.AuthUserToTokenTable, authuser.AuthUserToTokenColumn),
+		)
+		fromV = sqlgraph.Neighbors(au.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AuthUserClient) Hooks() []Hook {
+	return c.hooks.AuthUser
 }
 
 // BuildClient is a client for the Build schema.
@@ -4307,6 +4427,112 @@ func (c *TeamClient) QueryTeamToPlan(t *Team) *PlanQuery {
 // Hooks returns the client hooks.
 func (c *TeamClient) Hooks() []Hook {
 	return c.hooks.Team
+}
+
+// TokenClient is a client for the Token schema.
+type TokenClient struct {
+	config
+}
+
+// NewTokenClient returns a client for the Token from the given config.
+func NewTokenClient(c config) *TokenClient {
+	return &TokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `token.Hooks(f(g(h())))`.
+func (c *TokenClient) Use(hooks ...Hook) {
+	c.hooks.Token = append(c.hooks.Token, hooks...)
+}
+
+// Create returns a create builder for Token.
+func (c *TokenClient) Create() *TokenCreate {
+	mutation := newTokenMutation(c.config, OpCreate)
+	return &TokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Token entities.
+func (c *TokenClient) CreateBulk(builders ...*TokenCreate) *TokenCreateBulk {
+	return &TokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Token.
+func (c *TokenClient) Update() *TokenUpdate {
+	mutation := newTokenMutation(c.config, OpUpdate)
+	return &TokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TokenClient) UpdateOne(t *Token) *TokenUpdateOne {
+	mutation := newTokenMutation(c.config, OpUpdateOne, withToken(t))
+	return &TokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TokenClient) UpdateOneID(id uuid.UUID) *TokenUpdateOne {
+	mutation := newTokenMutation(c.config, OpUpdateOne, withTokenID(id))
+	return &TokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Token.
+func (c *TokenClient) Delete() *TokenDelete {
+	mutation := newTokenMutation(c.config, OpDelete)
+	return &TokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TokenClient) DeleteOne(t *Token) *TokenDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TokenClient) DeleteOneID(id uuid.UUID) *TokenDeleteOne {
+	builder := c.Delete().Where(token.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TokenDeleteOne{builder}
+}
+
+// Query returns a query builder for Token.
+func (c *TokenClient) Query() *TokenQuery {
+	return &TokenQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Token entity by its id.
+func (c *TokenClient) Get(ctx context.Context, id uuid.UUID) (*Token, error) {
+	return c.Query().Where(token.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TokenClient) GetX(ctx context.Context, id uuid.UUID) *Token {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTokenToAuthUser queries the TokenToAuthUser edge of a Token.
+func (c *TokenClient) QueryTokenToAuthUser(t *Token) *AuthUserQuery {
+	query := &AuthUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(token.Table, token.FieldID, id),
+			sqlgraph.To(authuser.Table, authuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, token.TokenToAuthUserTable, token.TokenToAuthUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TokenClient) Hooks() []Hook {
+	return c.hooks.Token
 }
 
 // UserClient is a client for the User schema.

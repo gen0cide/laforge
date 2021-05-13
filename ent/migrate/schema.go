@@ -33,6 +33,21 @@ var (
 		PrimaryKey:  []*schema.Column{AgentStatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
+	// AuthUsersColumns holds the columns for the "auth_users" table.
+	AuthUsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "username", Type: field.TypeString},
+		{Name: "password", Type: field.TypeString},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"USER", "ADMIN"}},
+		{Name: "provider", Type: field.TypeEnum, Enums: []string{"LOCAL", "GITHUB", "OPENID"}},
+	}
+	// AuthUsersTable holds the schema information for the "auth_users" table.
+	AuthUsersTable = &schema.Table{
+		Name:        "auth_users",
+		Columns:     AuthUsersColumns,
+		PrimaryKey:  []*schema.Column{AuthUsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// BuildsColumns holds the columns for the "builds" table.
 	BuildsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -807,6 +822,27 @@ var (
 			},
 		},
 	}
+	// TokensColumns holds the columns for the "tokens" table.
+	TokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "token", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeInt},
+		{Name: "auth_user_auth_user_to_token", Type: field.TypeUUID, Nullable: true},
+	}
+	// TokensTable holds the schema information for the "tokens" table.
+	TokensTable = &schema.Table{
+		Name:       "tokens",
+		Columns:    TokensColumns,
+		PrimaryKey: []*schema.Column{TokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tokens_auth_users_AuthUserToToken",
+				Columns:    []*schema.Column{TokensColumns[3]},
+				RefColumns: []*schema.Column{AuthUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1054,6 +1090,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentStatusTable,
+		AuthUsersTable,
 		BuildsTable,
 		CommandsTable,
 		CompetitionsTable,
@@ -1079,6 +1116,7 @@ var (
 		StatusTable,
 		TagsTable,
 		TeamsTable,
+		TokensTable,
 		UsersTable,
 		AgentStatusAgentStatusToProvisionedHostTable,
 		CompetitionCompetitionToDNSTable,
@@ -1141,6 +1179,7 @@ func init() {
 	TagsTable.ForeignKeys[1].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = PlansTable
 	TeamsTable.ForeignKeys[1].RefTable = BuildsTable
+	TokensTable.ForeignKeys[0].RefTable = AuthUsersTable
 	UsersTable.ForeignKeys[0].RefTable = CommandsTable
 	UsersTable.ForeignKeys[1].RefTable = FindingsTable
 	UsersTable.ForeignKeys[2].RefTable = HostsTable

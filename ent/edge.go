@@ -12,6 +12,14 @@ func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) ([]*Pro
 	return result, err
 }
 
+func (au *AuthUser) AuthUserToToken(ctx context.Context) ([]*Token, error) {
+	result, err := au.Edges.AuthUserToTokenOrErr()
+	if IsNotLoaded(err) {
+		result, err = au.QueryAuthUserToToken().All(ctx)
+	}
+	return result, err
+}
+
 func (b *Build) BuildToStatus(ctx context.Context) (*Status, error) {
 	result, err := b.Edges.BuildToStatusOrErr()
 	if IsNotLoaded(err) {
@@ -834,6 +842,14 @@ func (t *Team) TeamToPlan(ctx context.Context) (*Plan, error) {
 		result, err = t.QueryTeamToPlan().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (t *Token) TokenToAuthUser(ctx context.Context) (*AuthUser, error) {
+	result, err := t.Edges.TokenToAuthUserOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryTokenToAuthUser().Only(ctx)
+	}
+	return result, err
 }
 
 func (u *User) UserToTag(ctx context.Context) ([]*Tag, error) {

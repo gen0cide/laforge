@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -36,6 +37,7 @@ import (
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 )
 
@@ -58,6 +60,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		agentstatus.Table:        agentstatus.ValidColumn,
+		authuser.Table:           authuser.ValidColumn,
 		build.Table:              build.ValidColumn,
 		command.Table:            command.ValidColumn,
 		competition.Table:        competition.ValidColumn,
@@ -83,6 +86,7 @@ func columnChecker(table string) func(string) error {
 		status.Table:             status.ValidColumn,
 		tag.Table:                tag.ValidColumn,
 		team.Table:               team.ValidColumn,
+		token.Table:              token.ValidColumn,
 		user.Table:               user.ValidColumn,
 	}
 	check, ok := checks[table]

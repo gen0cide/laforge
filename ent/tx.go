@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AuthUser is the client for interacting with the AuthUser builders.
+	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
 	// Command is the client for interacting with the Command builders.
@@ -64,6 +66,8 @@ type Tx struct {
 	Tag *TagClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// Token is the client for interacting with the Token builders.
+	Token *TokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -202,6 +206,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AgentStatus = NewAgentStatusClient(tx.config)
+	tx.AuthUser = NewAuthUserClient(tx.config)
 	tx.Build = NewBuildClient(tx.config)
 	tx.Command = NewCommandClient(tx.config)
 	tx.Competition = NewCompetitionClient(tx.config)
@@ -227,6 +232,7 @@ func (tx *Tx) init() {
 	tx.Status = NewStatusClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
+	tx.Token = NewTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

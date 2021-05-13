@@ -22,6 +22,19 @@ func (f AgentStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return f(ctx, mv)
 }
 
+// The AuthUserFunc type is an adapter to allow the use of ordinary
+// function as AuthUser mutator.
+type AuthUserFunc func(context.Context, *ent.AuthUserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AuthUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AuthUserMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuthUserMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The BuildFunc type is an adapter to allow the use of ordinary
 // function as Build mutator.
 type BuildFunc func(context.Context, *ent.BuildMutation) (ent.Value, error)
@@ -343,6 +356,19 @@ func (f TeamFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	mv, ok := m.(*ent.TeamMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The TokenFunc type is an adapter to allow the use of ordinary
+// function as Token mutator.
+type TokenFunc func(context.Context, *ent.TokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.TokenMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TokenMutation", m)
 	}
 	return f(ctx, mv)
 }

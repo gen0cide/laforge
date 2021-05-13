@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
@@ -40,6 +41,7 @@ import (
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -373,9 +375,7 @@ func (as *AgentStatusQuery) Paginate(
 	}
 
 	conn := &AgentStatusConnection{Edges: []*AgentStatusEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := as.Count(ctx)
@@ -389,8 +389,7 @@ func (as *AgentStatusQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := as.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -486,6 +485,233 @@ func (as *AgentStatus) ToEdge(order *AgentStatusOrder) *AgentStatusEdge {
 	return &AgentStatusEdge{
 		Node:   as,
 		Cursor: order.Field.toCursor(as),
+	}
+}
+
+// AuthUserEdge is the edge representation of AuthUser.
+type AuthUserEdge struct {
+	Node   *AuthUser `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// AuthUserConnection is the connection containing edges to AuthUser.
+type AuthUserConnection struct {
+	Edges      []*AuthUserEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+// AuthUserPaginateOption enables pagination customization.
+type AuthUserPaginateOption func(*authUserPager) error
+
+// WithAuthUserOrder configures pagination ordering.
+func WithAuthUserOrder(order *AuthUserOrder) AuthUserPaginateOption {
+	if order == nil {
+		order = DefaultAuthUserOrder
+	}
+	o := *order
+	return func(pager *authUserPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAuthUserOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAuthUserFilter configures pagination filter.
+func WithAuthUserFilter(filter func(*AuthUserQuery) (*AuthUserQuery, error)) AuthUserPaginateOption {
+	return func(pager *authUserPager) error {
+		if filter == nil {
+			return errors.New("AuthUserQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type authUserPager struct {
+	order  *AuthUserOrder
+	filter func(*AuthUserQuery) (*AuthUserQuery, error)
+}
+
+func newAuthUserPager(opts []AuthUserPaginateOption) (*authUserPager, error) {
+	pager := &authUserPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAuthUserOrder
+	}
+	return pager, nil
+}
+
+func (p *authUserPager) applyFilter(query *AuthUserQuery) (*AuthUserQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *authUserPager) toCursor(au *AuthUser) Cursor {
+	return p.order.Field.toCursor(au)
+}
+
+func (p *authUserPager) applyCursors(query *AuthUserQuery, after, before *Cursor) *AuthUserQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultAuthUserOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *authUserPager) applyOrder(query *AuthUserQuery, reverse bool) *AuthUserQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultAuthUserOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultAuthUserOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to AuthUser.
+func (au *AuthUserQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AuthUserPaginateOption,
+) (*AuthUserConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAuthUserPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if au, err = pager.applyFilter(au); err != nil {
+		return nil, err
+	}
+
+	conn := &AuthUserConnection{Edges: []*AuthUserEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := au.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := au.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	au = pager.applyCursors(au, after, before)
+	au = pager.applyOrder(au, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		au = au.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		au = au.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := au.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *AuthUser
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *AuthUser {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *AuthUser {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*AuthUserEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &AuthUserEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// AuthUserOrderField defines the ordering field of AuthUser.
+type AuthUserOrderField struct {
+	field    string
+	toCursor func(*AuthUser) Cursor
+}
+
+// AuthUserOrder defines the ordering of AuthUser.
+type AuthUserOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *AuthUserOrderField `json:"field"`
+}
+
+// DefaultAuthUserOrder is the default ordering of AuthUser.
+var DefaultAuthUserOrder = &AuthUserOrder{
+	Direction: OrderDirectionAsc,
+	Field: &AuthUserOrderField{
+		field: authuser.FieldID,
+		toCursor: func(au *AuthUser) Cursor {
+			return Cursor{ID: au.ID}
+		},
+	},
+}
+
+// ToEdge converts AuthUser into AuthUserEdge.
+func (au *AuthUser) ToEdge(order *AuthUserOrder) *AuthUserEdge {
+	if order == nil {
+		order = DefaultAuthUserOrder
+	}
+	return &AuthUserEdge{
+		Node:   au,
+		Cursor: order.Field.toCursor(au),
 	}
 }
 
@@ -603,9 +829,7 @@ func (b *BuildQuery) Paginate(
 	}
 
 	conn := &BuildConnection{Edges: []*BuildEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := b.Count(ctx)
@@ -619,8 +843,7 @@ func (b *BuildQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := b.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -833,9 +1056,7 @@ func (c *CommandQuery) Paginate(
 	}
 
 	conn := &CommandConnection{Edges: []*CommandEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := c.Count(ctx)
@@ -849,8 +1070,7 @@ func (c *CommandQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := c.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -1063,9 +1283,7 @@ func (c *CompetitionQuery) Paginate(
 	}
 
 	conn := &CompetitionConnection{Edges: []*CompetitionEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := c.Count(ctx)
@@ -1079,8 +1297,7 @@ func (c *CompetitionQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := c.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -1293,9 +1510,7 @@ func (d *DNSQuery) Paginate(
 	}
 
 	conn := &DNSConnection{Edges: []*DNSEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := d.Count(ctx)
@@ -1309,8 +1524,7 @@ func (d *DNSQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := d.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -1523,9 +1737,7 @@ func (dr *DNSRecordQuery) Paginate(
 	}
 
 	conn := &DNSRecordConnection{Edges: []*DNSRecordEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := dr.Count(ctx)
@@ -1539,8 +1751,7 @@ func (dr *DNSRecordQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := dr.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -1753,9 +1964,7 @@ func (d *DiskQuery) Paginate(
 	}
 
 	conn := &DiskConnection{Edges: []*DiskEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := d.Count(ctx)
@@ -1769,8 +1978,7 @@ func (d *DiskQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := d.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -1983,9 +2191,7 @@ func (e *EnvironmentQuery) Paginate(
 	}
 
 	conn := &EnvironmentConnection{Edges: []*EnvironmentEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := e.Count(ctx)
@@ -1999,8 +2205,7 @@ func (e *EnvironmentQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := e.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -2213,9 +2418,7 @@ func (fd *FileDeleteQuery) Paginate(
 	}
 
 	conn := &FileDeleteConnection{Edges: []*FileDeleteEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := fd.Count(ctx)
@@ -2229,8 +2432,7 @@ func (fd *FileDeleteQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := fd.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -2443,9 +2645,7 @@ func (fd *FileDownloadQuery) Paginate(
 	}
 
 	conn := &FileDownloadConnection{Edges: []*FileDownloadEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := fd.Count(ctx)
@@ -2459,8 +2659,7 @@ func (fd *FileDownloadQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := fd.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -2673,9 +2872,7 @@ func (fe *FileExtractQuery) Paginate(
 	}
 
 	conn := &FileExtractConnection{Edges: []*FileExtractEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := fe.Count(ctx)
@@ -2689,8 +2886,7 @@ func (fe *FileExtractQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := fe.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -2903,9 +3099,7 @@ func (f *FindingQuery) Paginate(
 	}
 
 	conn := &FindingConnection{Edges: []*FindingEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := f.Count(ctx)
@@ -2919,8 +3113,7 @@ func (f *FindingQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := f.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -3133,9 +3326,7 @@ func (gfm *GinFileMiddlewareQuery) Paginate(
 	}
 
 	conn := &GinFileMiddlewareConnection{Edges: []*GinFileMiddlewareEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := gfm.Count(ctx)
@@ -3149,8 +3340,7 @@ func (gfm *GinFileMiddlewareQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := gfm.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -3363,9 +3553,7 @@ func (h *HostQuery) Paginate(
 	}
 
 	conn := &HostConnection{Edges: []*HostEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := h.Count(ctx)
@@ -3379,8 +3567,7 @@ func (h *HostQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := h.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -3593,9 +3780,7 @@ func (hd *HostDependencyQuery) Paginate(
 	}
 
 	conn := &HostDependencyConnection{Edges: []*HostDependencyEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := hd.Count(ctx)
@@ -3609,8 +3794,7 @@ func (hd *HostDependencyQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := hd.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -3823,9 +4007,7 @@ func (i *IdentityQuery) Paginate(
 	}
 
 	conn := &IdentityConnection{Edges: []*IdentityEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := i.Count(ctx)
@@ -3839,8 +4021,7 @@ func (i *IdentityQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := i.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -4053,9 +4234,7 @@ func (in *IncludedNetworkQuery) Paginate(
 	}
 
 	conn := &IncludedNetworkConnection{Edges: []*IncludedNetworkEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := in.Count(ctx)
@@ -4069,8 +4248,7 @@ func (in *IncludedNetworkQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := in.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -4283,9 +4461,7 @@ func (n *NetworkQuery) Paginate(
 	}
 
 	conn := &NetworkConnection{Edges: []*NetworkEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := n.Count(ctx)
@@ -4299,8 +4475,7 @@ func (n *NetworkQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := n.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -4513,9 +4688,7 @@ func (pl *PlanQuery) Paginate(
 	}
 
 	conn := &PlanConnection{Edges: []*PlanEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := pl.Count(ctx)
@@ -4529,8 +4702,7 @@ func (pl *PlanQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := pl.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -4743,9 +4915,7 @@ func (ph *ProvisionedHostQuery) Paginate(
 	}
 
 	conn := &ProvisionedHostConnection{Edges: []*ProvisionedHostEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := ph.Count(ctx)
@@ -4759,8 +4929,7 @@ func (ph *ProvisionedHostQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := ph.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -4973,9 +5142,7 @@ func (pn *ProvisionedNetworkQuery) Paginate(
 	}
 
 	conn := &ProvisionedNetworkConnection{Edges: []*ProvisionedNetworkEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := pn.Count(ctx)
@@ -4989,8 +5156,7 @@ func (pn *ProvisionedNetworkQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := pn.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -5203,9 +5369,7 @@ func (ps *ProvisioningStepQuery) Paginate(
 	}
 
 	conn := &ProvisioningStepConnection{Edges: []*ProvisioningStepEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := ps.Count(ctx)
@@ -5219,8 +5383,7 @@ func (ps *ProvisioningStepQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := ps.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -5433,9 +5596,7 @@ func (s *ScriptQuery) Paginate(
 	}
 
 	conn := &ScriptConnection{Edges: []*ScriptEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := s.Count(ctx)
@@ -5449,8 +5610,7 @@ func (s *ScriptQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := s.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -5663,9 +5823,7 @@ func (s *StatusQuery) Paginate(
 	}
 
 	conn := &StatusConnection{Edges: []*StatusEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := s.Count(ctx)
@@ -5679,8 +5837,7 @@ func (s *StatusQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := s.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -5893,9 +6050,7 @@ func (t *TagQuery) Paginate(
 	}
 
 	conn := &TagConnection{Edges: []*TagEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := t.Count(ctx)
@@ -5909,8 +6064,7 @@ func (t *TagQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := t.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -6123,9 +6277,7 @@ func (t *TeamQuery) Paginate(
 	}
 
 	conn := &TeamConnection{Edges: []*TeamEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := t.Count(ctx)
@@ -6139,8 +6291,7 @@ func (t *TeamQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := t.Clone().Count(ctx)
 		if err != nil {
 			return nil, err
@@ -6234,6 +6385,233 @@ func (t *Team) ToEdge(order *TeamOrder) *TeamEdge {
 		order = DefaultTeamOrder
 	}
 	return &TeamEdge{
+		Node:   t,
+		Cursor: order.Field.toCursor(t),
+	}
+}
+
+// TokenEdge is the edge representation of Token.
+type TokenEdge struct {
+	Node   *Token `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// TokenConnection is the connection containing edges to Token.
+type TokenConnection struct {
+	Edges      []*TokenEdge `json:"edges"`
+	PageInfo   PageInfo     `json:"pageInfo"`
+	TotalCount int          `json:"totalCount"`
+}
+
+// TokenPaginateOption enables pagination customization.
+type TokenPaginateOption func(*tokenPager) error
+
+// WithTokenOrder configures pagination ordering.
+func WithTokenOrder(order *TokenOrder) TokenPaginateOption {
+	if order == nil {
+		order = DefaultTokenOrder
+	}
+	o := *order
+	return func(pager *tokenPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultTokenOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithTokenFilter configures pagination filter.
+func WithTokenFilter(filter func(*TokenQuery) (*TokenQuery, error)) TokenPaginateOption {
+	return func(pager *tokenPager) error {
+		if filter == nil {
+			return errors.New("TokenQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type tokenPager struct {
+	order  *TokenOrder
+	filter func(*TokenQuery) (*TokenQuery, error)
+}
+
+func newTokenPager(opts []TokenPaginateOption) (*tokenPager, error) {
+	pager := &tokenPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultTokenOrder
+	}
+	return pager, nil
+}
+
+func (p *tokenPager) applyFilter(query *TokenQuery) (*TokenQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *tokenPager) toCursor(t *Token) Cursor {
+	return p.order.Field.toCursor(t)
+}
+
+func (p *tokenPager) applyCursors(query *TokenQuery, after, before *Cursor) *TokenQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultTokenOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *tokenPager) applyOrder(query *TokenQuery, reverse bool) *TokenQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultTokenOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultTokenOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Token.
+func (t *TokenQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...TokenPaginateOption,
+) (*TokenConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newTokenPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if t, err = pager.applyFilter(t); err != nil {
+		return nil, err
+	}
+
+	conn := &TokenConnection{Edges: []*TokenEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := t.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := t.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	t = pager.applyCursors(t, after, before)
+	t = pager.applyOrder(t, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		t = t.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		t = t.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := t.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Token
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Token {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Token {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*TokenEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &TokenEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// TokenOrderField defines the ordering field of Token.
+type TokenOrderField struct {
+	field    string
+	toCursor func(*Token) Cursor
+}
+
+// TokenOrder defines the ordering of Token.
+type TokenOrder struct {
+	Direction OrderDirection   `json:"direction"`
+	Field     *TokenOrderField `json:"field"`
+}
+
+// DefaultTokenOrder is the default ordering of Token.
+var DefaultTokenOrder = &TokenOrder{
+	Direction: OrderDirectionAsc,
+	Field: &TokenOrderField{
+		field: token.FieldID,
+		toCursor: func(t *Token) Cursor {
+			return Cursor{ID: t.ID}
+		},
+	},
+}
+
+// ToEdge converts Token into TokenEdge.
+func (t *Token) ToEdge(order *TokenOrder) *TokenEdge {
+	if order == nil {
+		order = DefaultTokenOrder
+	}
+	return &TokenEdge{
 		Node:   t,
 		Cursor: order.Field.toCursor(t),
 	}
@@ -6353,9 +6731,7 @@ func (u *UserQuery) Paginate(
 	}
 
 	conn := &UserConnection{Edges: []*UserEdge{}}
-	if !hasCollectedField(ctx, edgesField) ||
-		first != nil && *first == 0 ||
-		last != nil && *last == 0 {
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
 		if hasCollectedField(ctx, totalCountField) ||
 			hasCollectedField(ctx, pageInfoField) {
 			count, err := u.Count(ctx)
@@ -6369,8 +6745,7 @@ func (u *UserQuery) Paginate(
 		return conn, nil
 	}
 
-	if (after != nil || first != nil || before != nil || last != nil) &&
-		hasCollectedField(ctx, totalCountField) {
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
 		count, err := u.Clone().Count(ctx)
 		if err != nil {
 			return nil, err

@@ -21,6 +21,18 @@ func (as *AgentStatusQuery) collectField(ctx *graphql.OperationContext, field gr
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (au *AuthUserQuery) CollectFields(ctx context.Context, satisfies ...string) *AuthUserQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		au = au.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return au
+}
+
+func (au *AuthUserQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *AuthUserQuery {
+	return au
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (b *BuildQuery) CollectFields(ctx context.Context, satisfies ...string) *BuildQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		b = b.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
@@ -317,6 +329,18 @@ func (t *TeamQuery) CollectFields(ctx context.Context, satisfies ...string) *Tea
 }
 
 func (t *TeamQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *TeamQuery {
+	return t
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (t *TokenQuery) CollectFields(ctx context.Context, satisfies ...string) *TokenQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		t = t.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return t
+}
+
+func (t *TokenQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *TokenQuery {
 	return t
 }
 
