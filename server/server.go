@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
+	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph"
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server"
@@ -23,7 +24,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-const defaultPort = ":80"
+const defaultPort = ":8080"
 
 // Defining the Graphql handler
 func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
@@ -93,6 +94,7 @@ func main() {
 	} else {
 		client = ent.PGOpen(pgHost)
 	}
+	// client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 
 	ctx := context.Background()
 	defer client.Close()
@@ -139,10 +141,19 @@ func main() {
 	})
 	router.Static("/assets/", "./dist/assets")
 	router.GET("/playground", playgroundHandler())
-	// May want to put all this in a API sub group
-	router.POST("/query", gqlHandler)
-	router.GET("/query", gqlHandler)
-	router.GET("/download/:url_id", tempURLHandler(client))
+
+	api := router.Group("/api")
+	api.Use(auth.Middleware(client))
+	api.POST("/local/login", auth.Login(client))
+
+	// TODO: Remove Get Path once Testing is done
+	api.GET("/local/login", auth.Login(client))
+	//
+
+	api.GET("/local/logout", auth.Logout(client))
+	api.POST("/query", gqlHandler)
+	api.GET("/query", gqlHandler)
+	api.GET("/download/:url_id", tempURLHandler(client))
 	go router.Run(port)
 
 	// secure server
