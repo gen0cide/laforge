@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -59,6 +60,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Script() ScriptResolver
 	Status() StatusResolver
+	Subscription() SubscriptionResolver
 	Team() TeamResolver
 	User() UserResolver
 }
@@ -381,6 +383,10 @@ type ComplexityRoot struct {
 		StatusFor func(childComplexity int) int
 	}
 
+	Subscription struct {
+		NewUsers func(childComplexity int) int
+	}
+
 	Team struct {
 		ID                       func(childComplexity int) int
 		TeamNumber               func(childComplexity int) int
@@ -539,6 +545,9 @@ type StatusResolver interface {
 	StatusFor(ctx context.Context, obj *ent.Status) (model.ProvisionStatusFor, error)
 	StartedAt(ctx context.Context, obj *ent.Status) (string, error)
 	EndedAt(ctx context.Context, obj *ent.Status) (string, error)
+}
+type SubscriptionResolver interface {
+	NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error)
 }
 type TeamResolver interface {
 	ID(ctx context.Context, obj *ent.Team) (string, error)
@@ -2309,6 +2318,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.StatusFor(childComplexity), true
 
+	case "Subscription.newUsers":
+		if e.complexity.Subscription.NewUsers == nil {
+			break
+		}
+
+		return e.complexity.Subscription.NewUsers(childComplexity), true
+
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
 			break
@@ -2453,6 +2469,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			first = false
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next()
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -2886,6 +2919,7 @@ type AuthUser{
   provider: ProviderType!
 }
 
+# TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
@@ -2906,7 +2940,10 @@ type Mutation {
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
 }
-`, BuiltIn: false},
+
+type Subscription {
+  newUsers: AuthUser!
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -11701,6 +11738,51 @@ func (ec *executionContext) _Status_error(ctx context.Context, field graphql.Col
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Subscription_newUsers(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().NewUsers(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *ent.AuthUser)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNAuthUser2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAuthUser(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
 func (ec *executionContext) _Team_id(ctx context.Context, field graphql.CollectedField, obj *ent.Team) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -16113,6 +16195,26 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		return graphql.Null
 	}
 	return out
+}
+
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func() graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "newUsers":
+		return ec._Subscription_newUsers(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
 }
 
 var teamImplementors = []string{"Team"}

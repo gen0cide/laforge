@@ -399,6 +399,7 @@ type AuthUser{
   provider: ProviderType!
 }
 
+# TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
@@ -418,4 +419,8 @@ type Mutation {
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
+}
+
+type Subscription {
+  newUsers: AuthUser!
 }

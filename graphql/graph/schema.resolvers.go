@@ -22,6 +22,12 @@ import (
 	"github.com/google/uuid"
 )
 
+var newUserPublishedChannel map[string]chan *ent.AuthUser
+
+func init() {
+	newUserPublishedChannel = map[string]chan *ent.AuthUser{}
+}
+
 func (r *authUserResolver) ID(ctx context.Context, obj *ent.AuthUser) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -312,12 +318,20 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, rend
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role model.RoleLevel) (*ent.AuthUser, error) {
-	return r.client.AuthUser.Create().
+	entAuthUser, err := r.client.AuthUser.Create().
 		SetUsername(username).
 		SetPassword(password).
 		SetRole(authuser.Role(role)).
 		SetProvider(authuser.ProviderLOCAL).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, observer := range newUserPublishedChannel {
+		observer <- entAuthUser
+	}
+
+	return entAuthUser, nil
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, userUUID string) (bool, error) {
@@ -593,6 +607,18 @@ func (r *statusResolver) EndedAt(ctx context.Context, obj *ent.Status) (string, 
 	return obj.EndedAt.String(), nil
 }
 
+func (r *subscriptionResolver) NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error) {
+	UUID := uuid.New().String()
+
+	newUser := make(chan *ent.AuthUser, 1)
+	go func() {
+		<-ctx.Done()
+	}()
+	newUserPublishedChannel[UUID] = newUser
+	return newUser, nil
+
+}
+
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -673,6 +699,9 @@ func (r *Resolver) Script() generated.ScriptResolver { return &scriptResolver{r}
 // Status returns generated.StatusResolver implementation.
 func (r *Resolver) Status() generated.StatusResolver { return &statusResolver{r} }
 
+// Subscription returns generated.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
+
 // Team returns generated.TeamResolver implementation.
 func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 
@@ -701,5 +730,6 @@ type provisioningStepResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type scriptResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
