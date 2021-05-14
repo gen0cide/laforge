@@ -111,6 +111,7 @@ func main() {
 	client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 
 	ctx := context.Background()
+	defer ctx.Done()
 	defer client.Close()
 
 	// Run the auto migration tool.

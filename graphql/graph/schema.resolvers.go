@@ -358,6 +358,8 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
+	go planner.StartBuild(r.client, b)
+
 	return b, nil
 }
 

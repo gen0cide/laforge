@@ -326,6 +326,7 @@ type ProvisionStatusFor string
 const (
 	ProvisionStatusForBuild              ProvisionStatusFor = "Build"
 	ProvisionStatusForTeam               ProvisionStatusFor = "Team"
+	ProvisionStatusForPlan               ProvisionStatusFor = "Plan"
 	ProvisionStatusForProvisionedNetwork ProvisionStatusFor = "ProvisionedNetwork"
 	ProvisionStatusForProvisionedHost    ProvisionStatusFor = "ProvisionedHost"
 	ProvisionStatusForProvisioningStep   ProvisionStatusFor = "ProvisioningStep"
@@ -335,6 +336,7 @@ const (
 var AllProvisionStatusFor = []ProvisionStatusFor{
 	ProvisionStatusForBuild,
 	ProvisionStatusForTeam,
+	ProvisionStatusForPlan,
 	ProvisionStatusForProvisionedNetwork,
 	ProvisionStatusForProvisionedHost,
 	ProvisionStatusForProvisioningStep,
@@ -343,7 +345,7 @@ var AllProvisionStatusFor = []ProvisionStatusFor{
 
 func (e ProvisionStatusFor) IsValid() bool {
 	switch e {
-	case ProvisionStatusForBuild, ProvisionStatusForTeam, ProvisionStatusForProvisionedNetwork, ProvisionStatusForProvisionedHost, ProvisionStatusForProvisioningStep, ProvisionStatusForUndefined:
+	case ProvisionStatusForBuild, ProvisionStatusForTeam, ProvisionStatusForPlan, ProvisionStatusForProvisionedNetwork, ProvisionStatusForProvisionedHost, ProvisionStatusForProvisioningStep, ProvisionStatusForUndefined:
 		return true
 	}
 	return false

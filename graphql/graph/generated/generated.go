@@ -299,6 +299,7 @@ type ComplexityRoot struct {
 		PlanToProvisionedHost    func(childComplexity int) int
 		PlanToProvisionedNetwork func(childComplexity int) int
 		PlanToProvisioningStep   func(childComplexity int) int
+		PlanToStatus             func(childComplexity int) int
 		PlanToTeam               func(childComplexity int) int
 		PrevPlan                 func(childComplexity int) int
 		StepNumber               func(childComplexity int) int
@@ -1847,6 +1848,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plan.PlanToProvisioningStep(childComplexity), true
 
+	case "Plan.PlanToStatus":
+		if e.complexity.Plan.PlanToStatus == nil {
+			break
+		}
+
+		return e.complexity.Plan.PlanToStatus(childComplexity), true
+
 	case "Plan.PlanToTeam":
 		if e.complexity.Plan.PlanToTeam == nil {
 			break
@@ -2581,6 +2589,7 @@ enum ProvisionStatus {
 enum ProvisionStatusFor {
   Build
   Team
+  Plan
   ProvisionedNetwork
   ProvisionedHost
   ProvisioningStep
@@ -2847,6 +2856,7 @@ type Plan {
   PlanToProvisionedNetwork: ProvisionedNetwork!
   PlanToProvisionedHost: ProvisionedHost!
   PlanToProvisioningStep: ProvisioningStep!
+  PlanToStatus: Status!
 }
 
 type ProvisionedHost {
@@ -9626,6 +9636,41 @@ func (ec *executionContext) _Plan_PlanToProvisioningStep(ctx context.Context, fi
 	return ec.marshalNProvisioningStep2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐProvisioningStep(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Plan_PlanToStatus(ctx context.Context, field graphql.CollectedField, obj *ent.Plan) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Plan",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PlanToStatus(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Status)
+	fc.Result = res
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐStatus(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _ProvisionedHost_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedHost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15523,6 +15568,20 @@ func (ec *executionContext) _Plan(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Plan_PlanToProvisioningStep(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "PlanToStatus":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Plan_PlanToStatus(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

@@ -7,6 +7,7 @@ require (
 	entgo.io/ent v0.8.0
 	github.com/99designs/gqlgen v0.13.0
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
+	github.com/UnnoTed/fileb0x v1.1.4 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8
 	github.com/briandowns/formatifier v0.0.0-20150226010542-6d068a6ce63a
