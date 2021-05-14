@@ -23,6 +23,63 @@ type VarsMap struct {
 	Value string `json:"value"`
 }
 
+type AgentCommand string
+
+const (
+	AgentCommandDefault        AgentCommand = "DEFAULT"
+	AgentCommandDelete         AgentCommand = "DELETE"
+	AgentCommandReboot         AgentCommand = "REBOOT"
+	AgentCommandExtract        AgentCommand = "EXTRACT"
+	AgentCommandDownload       AgentCommand = "DOWNLOAD"
+	AgentCommandCreateuser     AgentCommand = "CREATEUSER"
+	AgentCommandCreateuserpass AgentCommand = "CREATEUSERPASS"
+	AgentCommandAddtogroup     AgentCommand = "ADDTOGROUP"
+	AgentCommandExecute        AgentCommand = "EXECUTE"
+	AgentCommandValidate       AgentCommand = "VALIDATE"
+)
+
+var AllAgentCommand = []AgentCommand{
+	AgentCommandDefault,
+	AgentCommandDelete,
+	AgentCommandReboot,
+	AgentCommandExtract,
+	AgentCommandDownload,
+	AgentCommandCreateuser,
+	AgentCommandCreateuserpass,
+	AgentCommandAddtogroup,
+	AgentCommandExecute,
+	AgentCommandValidate,
+}
+
+func (e AgentCommand) IsValid() bool {
+	switch e {
+	case AgentCommandDefault, AgentCommandDelete, AgentCommandReboot, AgentCommandExtract, AgentCommandDownload, AgentCommandCreateuser, AgentCommandCreateuserpass, AgentCommandAddtogroup, AgentCommandExecute, AgentCommandValidate:
+		return true
+	}
+	return false
+}
+
+func (e AgentCommand) String() string {
+	return string(e)
+}
+
+func (e *AgentCommand) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AgentCommand(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AgentCommand", str)
+	}
+	return nil
+}
+
+func (e AgentCommand) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type FindingDifficulty string
 
 const (

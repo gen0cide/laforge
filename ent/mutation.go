@@ -1492,6 +1492,7 @@ type AgentTaskMutation struct {
 	args                                *string
 	number                              *int
 	addnumber                           *int
+	output                              *string
 	state                               *agenttask.State
 	clearedFields                       map[string]struct{}
 	_AgentTaskToProvisioningStep        *uuid.UUID
@@ -1716,6 +1717,55 @@ func (m *AgentTaskMutation) ResetNumber() {
 	m.addnumber = nil
 }
 
+// SetOutput sets the "output" field.
+func (m *AgentTaskMutation) SetOutput(s string) {
+	m.output = &s
+}
+
+// Output returns the value of the "output" field in the mutation.
+func (m *AgentTaskMutation) Output() (r string, exists bool) {
+	v := m.output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutput returns the old "output" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldOutput(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldOutput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldOutput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutput: %w", err)
+	}
+	return oldValue.Output, nil
+}
+
+// ClearOutput clears the value of the "output" field.
+func (m *AgentTaskMutation) ClearOutput() {
+	m.output = nil
+	m.clearedFields[agenttask.FieldOutput] = struct{}{}
+}
+
+// OutputCleared returns if the "output" field was cleared in this mutation.
+func (m *AgentTaskMutation) OutputCleared() bool {
+	_, ok := m.clearedFields[agenttask.FieldOutput]
+	return ok
+}
+
+// ResetOutput resets all changes to the "output" field.
+func (m *AgentTaskMutation) ResetOutput() {
+	m.output = nil
+	delete(m.clearedFields, agenttask.FieldOutput)
+}
+
 // SetState sets the "state" field.
 func (m *AgentTaskMutation) SetState(a agenttask.State) {
 	m.state = &a
@@ -1844,7 +1894,7 @@ func (m *AgentTaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentTaskMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.command != nil {
 		fields = append(fields, agenttask.FieldCommand)
 	}
@@ -1853,6 +1903,9 @@ func (m *AgentTaskMutation) Fields() []string {
 	}
 	if m.number != nil {
 		fields = append(fields, agenttask.FieldNumber)
+	}
+	if m.output != nil {
+		fields = append(fields, agenttask.FieldOutput)
 	}
 	if m.state != nil {
 		fields = append(fields, agenttask.FieldState)
@@ -1871,6 +1924,8 @@ func (m *AgentTaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Args()
 	case agenttask.FieldNumber:
 		return m.Number()
+	case agenttask.FieldOutput:
+		return m.Output()
 	case agenttask.FieldState:
 		return m.State()
 	}
@@ -1888,6 +1943,8 @@ func (m *AgentTaskMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldArgs(ctx)
 	case agenttask.FieldNumber:
 		return m.OldNumber(ctx)
+	case agenttask.FieldOutput:
+		return m.OldOutput(ctx)
 	case agenttask.FieldState:
 		return m.OldState(ctx)
 	}
@@ -1919,6 +1976,13 @@ func (m *AgentTaskMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNumber(v)
+		return nil
+	case agenttask.FieldOutput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutput(v)
 		return nil
 	case agenttask.FieldState:
 		v, ok := value.(agenttask.State)
@@ -1971,7 +2035,11 @@ func (m *AgentTaskMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentTaskMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(agenttask.FieldOutput) {
+		fields = append(fields, agenttask.FieldOutput)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1984,6 +2052,11 @@ func (m *AgentTaskMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentTaskMutation) ClearField(name string) error {
+	switch name {
+	case agenttask.FieldOutput:
+		m.ClearOutput()
+		return nil
+	}
 	return fmt.Errorf("unknown AgentTask nullable field %s", name)
 }
 
@@ -1999,6 +2072,9 @@ func (m *AgentTaskMutation) ResetField(name string) error {
 		return nil
 	case agenttask.FieldNumber:
 		m.ResetNumber()
+		return nil
+	case agenttask.FieldOutput:
+		m.ResetOutput()
 		return nil
 	case agenttask.FieldState:
 		m.ResetState()

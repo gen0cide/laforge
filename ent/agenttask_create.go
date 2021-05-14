@@ -40,6 +40,20 @@ func (atc *AgentTaskCreate) SetNumber(i int) *AgentTaskCreate {
 	return atc
 }
 
+// SetOutput sets the "output" field.
+func (atc *AgentTaskCreate) SetOutput(s string) *AgentTaskCreate {
+	atc.mutation.SetOutput(s)
+	return atc
+}
+
+// SetNillableOutput sets the "output" field if the given value is not nil.
+func (atc *AgentTaskCreate) SetNillableOutput(s *string) *AgentTaskCreate {
+	if s != nil {
+		atc.SetOutput(*s)
+	}
+	return atc
+}
+
 // SetState sets the "state" field.
 func (atc *AgentTaskCreate) SetState(a agenttask.State) *AgentTaskCreate {
 	atc.mutation.SetState(a)
@@ -219,6 +233,14 @@ func (atc *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 			Column: agenttask.FieldNumber,
 		})
 		_node.Number = value
+	}
+	if value, ok := atc.mutation.Output(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: agenttask.FieldOutput,
+		})
+		_node.Output = &value
 	}
 	if value, ok := atc.mutation.State(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

@@ -106,6 +106,13 @@ func Number(v int) predicate.AgentTask {
 	})
 }
 
+// Output applies equality check predicate on the "output" field. It's identical to OutputEQ.
+func Output(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldOutput), v))
+	})
+}
+
 // CommandEQ applies the EQ predicate on the "command" field.
 func CommandEQ(v Command) predicate.AgentTask {
 	return predicate.AgentTask(func(s *sql.Selector) {
@@ -338,6 +345,131 @@ func NumberLT(v int) predicate.AgentTask {
 func NumberLTE(v int) predicate.AgentTask {
 	return predicate.AgentTask(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldNumber), v))
+	})
+}
+
+// OutputEQ applies the EQ predicate on the "output" field.
+func OutputEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldOutput), v))
+	})
+}
+
+// OutputNEQ applies the NEQ predicate on the "output" field.
+func OutputNEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldOutput), v))
+	})
+}
+
+// OutputIn applies the In predicate on the "output" field.
+func OutputIn(vs ...string) predicate.AgentTask {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentTask(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldOutput), v...))
+	})
+}
+
+// OutputNotIn applies the NotIn predicate on the "output" field.
+func OutputNotIn(vs ...string) predicate.AgentTask {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentTask(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldOutput), v...))
+	})
+}
+
+// OutputGT applies the GT predicate on the "output" field.
+func OutputGT(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldOutput), v))
+	})
+}
+
+// OutputGTE applies the GTE predicate on the "output" field.
+func OutputGTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldOutput), v))
+	})
+}
+
+// OutputLT applies the LT predicate on the "output" field.
+func OutputLT(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldOutput), v))
+	})
+}
+
+// OutputLTE applies the LTE predicate on the "output" field.
+func OutputLTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldOutput), v))
+	})
+}
+
+// OutputContains applies the Contains predicate on the "output" field.
+func OutputContains(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldOutput), v))
+	})
+}
+
+// OutputHasPrefix applies the HasPrefix predicate on the "output" field.
+func OutputHasPrefix(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldOutput), v))
+	})
+}
+
+// OutputHasSuffix applies the HasSuffix predicate on the "output" field.
+func OutputHasSuffix(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldOutput), v))
+	})
+}
+
+// OutputIsNil applies the IsNil predicate on the "output" field.
+func OutputIsNil() predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldOutput)))
+	})
+}
+
+// OutputNotNil applies the NotNil predicate on the "output" field.
+func OutputNotNil() predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldOutput)))
+	})
+}
+
+// OutputEqualFold applies the EqualFold predicate on the "output" field.
+func OutputEqualFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldOutput), v))
+	})
+}
+
+// OutputContainsFold applies the ContainsFold predicate on the "output" field.
+func OutputContainsFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldOutput), v))
 	})
 }
 

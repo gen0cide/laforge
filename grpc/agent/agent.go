@@ -167,7 +167,10 @@ func RequestTask(c pb.LaforgeClient) {
 	request := &pb.TaskRequest{ClientId: clientID}
 	r, err := c.GetTask(ctx, request)
 
-	taskRequest := &pb.TaskStatusRequest{TaskId: r.Id, Status: TaskRunning}
+	taskRequest := &pb.TaskStatusRequest{
+		TaskId: r.GetId(),
+		Status: TaskRunning,
+	}
 	c.InformTaskStatus(ctx, taskRequest)
 
 	if err != nil {

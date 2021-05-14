@@ -47,6 +47,7 @@ var (
 		{Name: "command", Type: field.TypeEnum, Enums: []string{"DEFAULT", "DELETE", "REBOOT", "EXTRACT", "DOWNLOAD", "CREATEUSER", "CREATEUSERPASS", "ADDTOGROUP", "EXECUTE", "VALIDATE"}},
 		{Name: "args", Type: field.TypeString},
 		{Name: "number", Type: field.TypeInt},
+		{Name: "output", Type: field.TypeString, Nullable: true},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"AWAITING", "INPROGRESS", "FAILED", "COMPLETE"}},
 		{Name: "agent_task_agent_task_to_provisioning_step", Type: field.TypeUUID, Nullable: true},
 		{Name: "agent_task_agent_task_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
@@ -59,13 +60,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_tasks_provisioning_steps_AgentTaskToProvisioningStep",
-				Columns:    []*schema.Column{AgentTasksColumns[5]},
+				Columns:    []*schema.Column{AgentTasksColumns[6]},
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "agent_tasks_provisioned_hosts_AgentTaskToProvisionedHost",
-				Columns:    []*schema.Column{AgentTasksColumns[6]},
+				Columns:    []*schema.Column{AgentTasksColumns[7]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

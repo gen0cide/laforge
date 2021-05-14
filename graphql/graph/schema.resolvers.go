@@ -8,6 +8,8 @@ import (
 	"fmt"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
@@ -21,12 +23,6 @@ import (
 	"github.com/gen0cide/laforge/planner"
 	"github.com/google/uuid"
 )
-
-var newUserPublishedChannel map[string]chan *ent.AuthUser
-
-func init() {
-	newUserPublishedChannel = map[string]chan *ent.AuthUser{}
-}
 
 func (r *authUserResolver) ID(ctx context.Context, obj *ent.AuthUser) (string, error) {
 	return obj.ID.String(), nil
@@ -381,6 +377,34 @@ func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (b
 	return planner.DeleteBuild(ctx, r.client, b)
 }
 
+func (r *mutationResolver) CreateTask(ctx context.Context, proHostUUID string, command model.AgentCommand, args string) (bool, error) {
+	uuid, err := uuid.Parse(proHostUUID)
+
+	if err != nil {
+		return false, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	ph, err := r.client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed querying Provisioned Host %v: %v", proHostUUID, err)
+	}
+	taskCount, err := ph.QueryProvisionedHostToAgentTask().Count(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed querying Number of Tasks: %v", err)
+	}
+	_, err = r.client.AgentTask.Create().
+		SetCommand(agenttask.Command(command.String())).
+		SetArgs(args).
+		SetNumber(taskCount).
+		SetState(agenttask.StateAWAITING).
+		SetAgentTaskToProvisionedHost(ph).
+		Save(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed Creating Agent Task: %v", err)
+	}
+	return true, nil
+}
+
 func (r *networkResolver) ID(ctx context.Context, obj *ent.Network) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -435,7 +459,9 @@ func (r *provisionedHostResolver) ProvisionedHostToAgentStatus(ctx context.Conte
 	}
 
 	if check {
-		a, err := obj.QueryProvisionedHostToAgentStatus().Only(ctx)
+		a, err := obj.QueryProvisionedHostToAgentStatus().Order(
+			ent.Desc(agentstatus.FieldTimestamp),
+		).First(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed querying Agent Status: %v", err)
 		}
@@ -616,7 +642,6 @@ func (r *subscriptionResolver) NewUsers(ctx context.Context) (<-chan *ent.AuthUs
 	}()
 	newUserPublishedChannel[UUID] = newUser
 	return newUser, nil
-
 }
 
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {

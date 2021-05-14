@@ -94,11 +94,10 @@ func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 	if err != nil {
 		if err != err.(*ent.NotFoundError) {
 			return &pb.TaskReply{Id: "", Command: pb.TaskReply_DEFAULT}, nil
+		} else {
+			return nil, err
 		}
-	} else {
-		return nil, err
 	}
-
 	return &pb.TaskReply{
 		Id: entAgentTask.ID.String(),
 		Command: pb.TaskReply_Command(
@@ -110,6 +109,9 @@ func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 
 // InformTaskStatus Updates the status of a Task on a client from the response of the client
 func (s *Server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest) (*pb.TaskStatusReply, error) {
+	if in.GetTaskId() == "" {
+		return nil, nil
+	}
 	uuid, err := uuid.Parse(in.GetTaskId())
 	if err != nil {
 		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)

@@ -21,6 +21,12 @@ import (
 // Resolver is the resolver root.
 type Resolver struct{ client *ent.Client }
 
+var newUserPublishedChannel map[string]chan *ent.AuthUser
+
+func init() {
+	newUserPublishedChannel = map[string]chan *ent.AuthUser{}
+}
+
 // NewSchema creates a graphql executable schema.
 func NewSchema(client *ent.Client) graphql.ExecutableSchema {
 	GQLConfig := generated.Config{

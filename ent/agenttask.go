@@ -24,6 +24,8 @@ type AgentTask struct {
 	Args string `json:"args,omitempty"`
 	// Number holds the value of the "number" field.
 	Number int `json:"number,omitempty"`
+	// Output holds the value of the "output" field.
+	Output *string `json:"output,omitempty"`
 	// State holds the value of the "state" field.
 	State agenttask.State `json:"state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -86,7 +88,7 @@ func (*AgentTask) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case agenttask.FieldNumber:
 			values[i] = new(sql.NullInt64)
-		case agenttask.FieldCommand, agenttask.FieldArgs, agenttask.FieldState:
+		case agenttask.FieldCommand, agenttask.FieldArgs, agenttask.FieldOutput, agenttask.FieldState:
 			values[i] = new(sql.NullString)
 		case agenttask.FieldID:
 			values[i] = new(uuid.UUID)
@@ -132,6 +134,13 @@ func (at *AgentTask) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field number", values[i])
 			} else if value.Valid {
 				at.Number = int(value.Int64)
+			}
+		case agenttask.FieldOutput:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field output", values[i])
+			} else if value.Valid {
+				at.Output = new(string)
+				*at.Output = value.String
 			}
 		case agenttask.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -195,6 +204,10 @@ func (at *AgentTask) String() string {
 	builder.WriteString(at.Args)
 	builder.WriteString(", number=")
 	builder.WriteString(fmt.Sprintf("%v", at.Number))
+	if v := at.Output; v != nil {
+		builder.WriteString(", output=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", state=")
 	builder.WriteString(fmt.Sprintf("%v", at.State))
 	builder.WriteByte(')')

@@ -85,6 +85,19 @@ enum ProviderType {
   UNDEFINED
 }
 
+enum AgentCommand{
+  DEFAULT
+	DELETE
+	REBOOT
+	EXTRACT
+	DOWNLOAD
+	CREATEUSER
+	CREATEUSERPASS
+	ADDTOGROUP
+	EXECUTE
+	VALIDATE
+}
+
 type AgentStatus {
   clientId: String!
   hostname: String!
@@ -419,6 +432,7 @@ type Mutation {
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
+  createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean!
 }
 
 type Subscription {

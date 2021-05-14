@@ -21,6 +21,8 @@ const (
 	FieldArgs = "args"
 	// FieldNumber holds the string denoting the number field in the database.
 	FieldNumber = "number"
+	// FieldOutput holds the string denoting the output field in the database.
+	FieldOutput = "output"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// EdgeAgentTaskToProvisioningStep holds the string denoting the agenttasktoprovisioningstep edge name in mutations.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldCommand,
 	FieldArgs,
 	FieldNumber,
+	FieldOutput,
 	FieldState,
 }
 

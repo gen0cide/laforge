@@ -31,6 +31,7 @@ func (AgentTask) Fields() []ent.Field {
 		),
 		field.String("args"),
 		field.Int("number"),
+		field.String("output").Nillable().Optional(),
 		field.Enum("state").Values("AWAITING", "INPROGRESS", "FAILED", "COMPLETE"),
 	}
 }
