@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt"
+	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
 )
@@ -15,7 +16,8 @@ type Builder interface {
 	Name() string
 	Description() string
 	Author() string
-	DeployHost(ctx context.Context, host *ent.Host) (err error)
+	DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
+	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
 
 // NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T
@@ -33,6 +35,16 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 	vsphereBaseUrl, exists := env.Config["vsphere_base_url"]
 	if !exists {
 		err = errors.New("vsphere_base_url doesn't exist in the environment configuration")
+		return
+	}
+	nsxtUsername, exists := env.Config["nsxt_username"]
+	if !exists {
+		err = errors.New("nsxt_username doesn't exist in the environment configuration")
+		return
+	}
+	nsxtPassword, exists := env.Config["nsxt_password"]
+	if !exists {
+		err = errors.New("nsxt_password doesn't exist in the environment configuration")
 		return
 	}
 	nsxtBaseUrl, exists := env.Config["nsxt_base_url"]
@@ -68,24 +80,31 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 
 	httpClient := http.Client{}
 
-	client := vsphere.VSphere{
+	nsxtClient := nsxt.NSXTClient{
+		HttpClient: httpClient,
+		BaseUrl:    nsxtBaseUrl,
+		Username:   nsxtUsername,
+		Password:   nsxtPassword,
+	}
+
+	vsphereClient := vsphere.VSphere{
 		HttpClient: httpClient,
 		BaseUrl:    vsphereBaseUrl,
-		Username:   builder.Username,
-		Password:   builder.Password,
+		Username:   vsphereUsername,
+		Password:   vspherePassword,
 	}
 
-	datastore, err := client.GetDatastoreByName(datastoreName)
+	datastore, err := vsphereClient.GetDatastoreByName(datastoreName)
 	if err != nil {
 		return
 	}
 
-	resourcePool, err := client.GetResourcePoolByName(resourcePoolName)
+	resourcePool, err := vsphereClient.GetResourcePoolByName(resourcePoolName)
 	if err != nil {
 		return
 	}
 
-	folder, err := client.GetFolderByName(folderName)
+	folder, err := vsphereClient.GetFolderByName(folderName)
 	if err != nil {
 		return
 	}
@@ -94,9 +113,9 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		HttpClient:                httpClient,
 		Username:                  vsphereUsername,
 		Password:                  vspherePassword,
-		NsxtUrl:                   nsxtBaseUrl,
+		NsxtClient:                nsxtClient,
 		TemplatePrefix:            templatePrefix,
-		VSphereClient:             client,
+		VSphereClient:             vsphereClient,
 		VSphereContentLibraryName: contentLibraryName,
 		VSphereDatastore:          datastore,
 		VSphereResourcePool:       resourcePool,

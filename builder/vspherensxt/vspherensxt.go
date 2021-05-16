@@ -4,8 +4,10 @@ package vspherensxt
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
 	"gopkg.in/guregu/null.v4"
@@ -23,9 +25,9 @@ type VSphereNSXTBuilder struct {
 	HttpClient                http.Client
 	Username                  string
 	Password                  string
-	NsxtUrl                   string
-	TemplatePrefix            string
+	NsxtClient                nsxt.NSXTClient
 	VSphereClient             vsphere.VSphere
+	TemplatePrefix            string
 	VSphereContentLibraryName string
 	VSphereDatastore          vsphere.Datastore
 	VSphereResourcePool       vsphere.ResourcePool
@@ -49,7 +51,8 @@ func (builder *VSphereNSXTBuilder) Author() string {
 }
 
 // DeployHost deploys a given host from the environment to VSphere
-func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, host *ent.Host) (err error) {
+func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error) {
+	host := provisionedHost.HCLProvisionedHostToHost
 	cpuCount := 0
 	memorySize := 0
 	switch host.InstanceSize {
@@ -140,5 +143,50 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, host *ent.Hos
 	if err != nil {
 		return
 	}
+	return
+}
+
+func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
+	build := provisionedNetwork.HCLProvisionedNetworkToBuild
+	environment := provisionedNetwork.HCLProvisionedNetworkToBuild.HCLBuildToEnvironment
+	network := provisionedNetwork.HCLProvisionedNetworkToNetwork
+	team := provisionedNetwork.HCLProvisionedNetworkToTeam
+
+	tier1Name := (environment.Name + "-Team-" + fmt.Sprint(team.TeamNumber) + "-V" + fmt.Sprint(build.Revision))
+	tier1Exists, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
+	if err != nil {
+		return
+	}
+	if !tier1Exists {
+		tier0Path, tier0PathExists := network.Vars["nsxt_tier0_path"]
+		if !tier0PathExists {
+			tier0s, err := builder.NsxtClient.GetTier0s()
+			if err != nil {
+				return err
+			}
+			if len(tier0s) > 1 {
+				return errors.New("tier0_path doesn't exist in the network vars for " + network.Name + " and multiple (" + fmt.Sprint(len(tier0s)) + ") Tier 0s found.")
+			}
+			if len(tier0s) == 0 {
+				return errors.New("tier0_path doesn't exist in the network vars for " + network.Name + " and no Tier 0s found.")
+			}
+			tier0Path = tier0s[0].Path
+		}
+
+		edgeClusterPath, edgeClusterPathExists := network.Vars["nsxt_edge_cluster_path"]
+		if !edgeClusterPathExists {
+			return errors.New("nsxt_edge_cluster_path doesn't exist in the network vars for " + network.Name)
+		}
+
+		err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, edgeClusterPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	networkName := (environment.Name + "-Team-" + fmt.Sprint(team.TeamNumber) + network.Name + "-V" + fmt.Sprint(build.Revision))
+	// cidrParts := strings.Split(network.Cidr, "/")
+	// gatewayAddress := strings.Join(strings.Split(cidrParts[0], ".")[:2], ".") + ".254/" + cidrParts
+	err = builder.NsxtClient.CreateNetworkSegment(networkName, ("/infra/tier-1s/" + tier1Name), network.Cidr)
 	return
 }
