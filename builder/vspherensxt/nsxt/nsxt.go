@@ -3,9 +3,14 @@ package nsxt
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type NSXTClient struct {
@@ -13,6 +18,8 @@ type NSXTClient struct {
 	HttpClient http.Client
 	Username   string
 	Password   string
+	Cert       tls.Certificate
+	CACert     tls.Certificate
 }
 
 type NSXTResourceType string
@@ -149,12 +156,52 @@ type NSXTListTier0Result struct {
 	SortAscending bool        `json:"sort_ascending"`
 }
 
-func (nsxt *NSXTClient) generateAuthorizedRequest(method string, path string) (request *http.Request, err error) {
+func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client http.Client, err error) {
+	// fmt.Printf("Cert Path: %s\n", certPath)
+	// fmt.Printf("Key Path: %s\n", keyPath)
+	// fmt.Printf("CA Cert Path: %s\n", caCertPath)
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		return
+	}
+	caCert, err := ioutil.ReadFile(caCertPath)
+	if err != nil {
+		return
+	}
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		caCertPool = x509.NewCertPool()
+	}
+	ok := caCertPool.AppendCertsFromPEM(caCert)
+	if !ok {
+		err = errors.New("failed to add Root CA to Certificate Pool")
+		return
+	}
+
+	tlsConfig := tls.Config{
+		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            caCertPool,
+		GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+			return &cert, nil
+		},
+	}
+	transport := http.Transport{
+		TLSClientConfig: &tlsConfig,
+	}
+	client = http.Client{
+		Transport: &transport,
+		Timeout:   10 * time.Second,
+	}
+	return
+}
+
+func (nsxt *NSXTClient) generateAuthorizedRequest(method, path string) (request *http.Request, err error) {
 	request, err = http.NewRequest(method, (nsxt.BaseUrl + path), nil)
 	if err != nil {
 		return
 	}
-	request.SetBasicAuth(nsxt.Username, nsxt.Password)
+	request.Header.Set("User-Agent", "LaForge/0.0.1")
 	return
 }
 
@@ -163,7 +210,7 @@ func (nsxt *NSXTClient) generateAuthorizedRequestWithData(method string, path st
 	if err != nil {
 		return
 	}
-	request.SetBasicAuth(nsxt.Username, nsxt.Password)
+	request.Header.Set("User-Agent", "LaForge/0.0.1")
 	request.Header.Add("Content-Type", "application/json")
 	return
 }
@@ -178,7 +225,8 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 					ResourceType: NSXT_Tier1,
 					ID:           name,
 					RouteAdvertisementTypes: []NSXTRouteAdvertisementType{
-						NSXT_Tier1_RA_NAT,
+						// NSXT_Tier1_RA_NAT,
+						NSXT_Tier1_RA_CONNECTED,
 					},
 					Tier0Path: tier0Path,
 					Children: []NSXTChildLocaleServices{
@@ -248,7 +296,7 @@ func (nsxt *NSXTClient) CreateNetworkSegment(name string, tier1path string, gate
 		return
 	}
 	if response.StatusCode != 200 {
-		err = errors.New("recieved status " + response.Status + " from NSX-T while adding segment " + name)
+		err = errors.New("recieved status " + fmt.Sprint(response.StatusCode) + " from NSX-T while adding segment " + name)
 		return
 	}
 	return
@@ -268,7 +316,8 @@ func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, err error) {
 	} else if response.StatusCode == 404 {
 		exists = false
 	} else {
-		err = errors.New("Unkown error occurred while checking if Tier 1 " + name + " exists")
+		err = errors.New("Unknown error occurred while checking if Tier 1 " + name + " exists; Status = " + response.Status)
+		return false, err
 	}
 	return
 }

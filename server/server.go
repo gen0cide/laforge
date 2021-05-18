@@ -100,15 +100,15 @@ func playgroundHandler() gin.HandlerFunc {
 
 func main() {
 
-	// pgHost, ok := os.LookupEnv("PG_HOST")
-	// client := &ent.Client{}
+	pgHost, ok := os.LookupEnv("PG_HOST")
+	client := &ent.Client{}
 
-	// if !ok {
-	// 	client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
-	// } else {
-	// 	client = ent.PGOpen(pgHost)
-	// }
-	client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
+	if !ok {
+		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
+	} else {
+		client = ent.PGOpen(pgHost)
+	}
+	// client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 
 	ctx := context.Background()
 	defer ctx.Done()

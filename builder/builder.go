@@ -16,6 +16,7 @@ type Builder interface {
 	Name() string
 	Description() string
 	Author() string
+	Version() string
 	DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
 	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
@@ -37,14 +38,19 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		err = errors.New("vsphere_base_url doesn't exist in the environment configuration")
 		return
 	}
-	nsxtUsername, exists := env.Config["nsxt_username"]
+	nsxtCertPath, exists := env.Config["nsxt_cert_path"]
 	if !exists {
-		err = errors.New("nsxt_username doesn't exist in the environment configuration")
+		err = errors.New("nsxt_cert_path doesn't exist in the environment configuration")
 		return
 	}
-	nsxtPassword, exists := env.Config["nsxt_password"]
+	nsxtCACertPath, exists := env.Config["nsxt_ca_cert_path"]
 	if !exists {
-		err = errors.New("nsxt_password doesn't exist in the environment configuration")
+		err = errors.New("nsxt_ca_cert_path doesn't exist in the environment configuration")
+		return
+	}
+	nsxtKeyPath, exists := env.Config["nsxt_key_path"]
+	if !exists {
+		err = errors.New("nsxt_key_path doesn't exist in the environment configuration")
 		return
 	}
 	nsxtBaseUrl, exists := env.Config["nsxt_base_url"]
@@ -80,11 +86,14 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 
 	httpClient := http.Client{}
 
+	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
+	if err != nil {
+		return
+	}
+
 	nsxtClient := nsxt.NSXTClient{
-		HttpClient: httpClient,
+		HttpClient: nsxtHttpClient,
 		BaseUrl:    nsxtBaseUrl,
-		Username:   nsxtUsername,
-		Password:   nsxtPassword,
 	}
 
 	vsphereClient := vsphere.VSphere{
