@@ -156,10 +156,21 @@ type NSXTListTier0Result struct {
 	SortAscending bool        `json:"sort_ascending"`
 }
 
+type NSXTErrorCode int
+
+const (
+	NSXT_Tier1_Has_Children NSXTErrorCode = 500030
+	NSXT_Segment_Has_VMs    NSXTErrorCode = 503040
+)
+
+type NSXTErrorResponse struct {
+	HttpStatus string        `json:"httpStatus"`
+	ErrorCode  NSXTErrorCode `json:"error_code"`
+	ModuleName string        `json:"module_name"`
+	Message    string        `json:"error_message"`
+}
+
 func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client http.Client, err error) {
-	// fmt.Printf("Cert Path: %s\n", certPath)
-	// fmt.Printf("Key Path: %s\n", keyPath)
-	// fmt.Printf("CA Cert Path: %s\n", caCertPath)
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
 		return
@@ -182,6 +193,7 @@ func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client ht
 		InsecureSkipVerify: true,
 		Certificates:       []tls.Certificate{cert},
 		RootCAs:            caCertPool,
+		// Force the http client to send the cert every time, regardless of TLS compatibility
 		GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
 			return &cert, nil
 		},
@@ -263,7 +275,37 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 	return
 }
 
-func (nsxt *NSXTClient) CreateNetworkSegment(name string, tier1path string, gatewayAddress string) (err error) {
+func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, err error) {
+	edgeRoutingRequest, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + name + "/locale-services/" + name + "-Edge-Routing"))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for Edge-Routing: %v", err)
+	}
+	edgeRoutingResponse, err := nsxt.HttpClient.Do(edgeRoutingRequest)
+	if err != nil {
+		return nil, fmt.Errorf("unknown error while deleting Edge-Routing for %s: %v", name, err)
+	}
+	if edgeRoutingResponse.StatusCode != 200 {
+		var nsxtError NSXTErrorResponse
+		json.NewDecoder(edgeRoutingResponse.Body).Decode(&nsxtError)
+		return &nsxtError, nil
+	}
+	tier1Request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + name))
+	if err != nil {
+		return nil, fmt.Errorf("error while making DELETE request for Tier-1: %v", err)
+	}
+	tier1Response, err := nsxt.HttpClient.Do(tier1Request)
+	if err != nil {
+		return nil, fmt.Errorf("unkown error while deleting Tier-1 %s: %v", name, err)
+	}
+	if tier1Response.StatusCode != 200 {
+		var nsxtError NSXTErrorResponse
+		json.NewDecoder(tier1Response.Body).Decode(&nsxtError)
+		return &nsxtError, nil
+	}
+	return
+}
+
+func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddress string) (err error) {
 	payload := NSXTCreateSegmentPayload{
 		ResourceType: "Infra",
 		Children: []NSXTChildSegment{
@@ -298,6 +340,23 @@ func (nsxt *NSXTClient) CreateNetworkSegment(name string, tier1path string, gate
 	if response.StatusCode != 200 {
 		err = errors.New("recieved status " + fmt.Sprint(response.StatusCode) + " from NSX-T while adding segment " + name)
 		return
+	}
+	return
+}
+
+func (nsxt *NSXTClient) DeleteSegment(name string) (nsxtError *NSXTErrorResponse, err error) {
+	segmentRequest, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/segments/" + name))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for the segment %s: %v", name, err)
+	}
+	segmentResponse, err := nsxt.HttpClient.Do(segmentRequest)
+	if err != nil {
+		return nil, fmt.Errorf("unkown error while deleting Segment %s: %v", name, err)
+	}
+	if segmentResponse.StatusCode != 200 {
+		var nsxtError NSXTErrorResponse
+		json.NewDecoder(segmentRequest.Body).Decode(&nsxtError)
+		return &nsxtError, nil
 	}
 	return
 }

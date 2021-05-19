@@ -19,6 +19,7 @@ type Builder interface {
 	Version() string
 	DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
 	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
+	TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
 
 // NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T

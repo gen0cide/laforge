@@ -151,6 +151,22 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 	return
 }
 
+func (builder *VSphereNSXTBuilder) generateRouterName(competition *ent.Competition, team *ent.Team, build *ent.Build) string {
+	buildId, err := build.ID.MarshalText()
+	if err != nil {
+		buildId = []byte(fmt.Sprint(build.Revision))
+	}
+	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + fmt.Sprintf("%s", buildId))
+}
+
+func (builder *VSphereNSXTBuilder) generateNetworkName(competition *ent.Competition, team *ent.Team, network *ent.Network, build *ent.Build) string {
+	buildId, err := build.ID.MarshalText()
+	if err != nil {
+		buildId = []byte(fmt.Sprint(build.Revision))
+	}
+	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + network.Name + "-" + fmt.Sprintf("%s", buildId))
+}
+
 func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
 	build, err := provisionedNetwork.QueryProvisionedNetworkToBuild().Only(ctx)
 	if err != nil {
@@ -173,11 +189,12 @@ func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisione
 		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
 	}
 
-	buildId, err := build.ID.MarshalText()
-	if err != nil {
-		buildId = []byte(fmt.Sprint(build.Revision))
-	}
-	tier1Name := (competition[0].HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + fmt.Sprintf("%s", buildId))
+	// buildId, err := build.ID.MarshalText()
+	// if err != nil {
+	// 	buildId = []byte(fmt.Sprint(build.Revision))
+	// }
+	// tier1Name := (competition[0].HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + fmt.Sprintf("%s", buildId))
+	tier1Name := builder.generateRouterName(competition[0], team, build)
 	tier1Exists, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
 	if err != nil {
 		return
@@ -210,7 +227,8 @@ func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisione
 		}
 	}
 
-	networkName := (competition[0].HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + network.Name + "-" + fmt.Sprintf("%s", buildId))
+	// networkName := (competition[0].HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + network.Name + "-" + fmt.Sprintf("%s", buildId))
+	networkName := builder.generateNetworkName(competition[0], team, network, build)
 	cidrParts := strings.Split(network.Cidr, "/")
 	gatewayAddress, gatewayAddressExists := network.Vars["gateway_address"]
 	if !gatewayAddressExists {
@@ -226,6 +244,55 @@ func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisione
 	}
 
 	fmt.Println("deploying segment \"" + networkName + "\" w/ gateway_addr = " + gatewayAddress)
-	err = builder.NsxtClient.CreateNetworkSegment(networkName, ("/infra/tier-1s/" + tier1Name), gatewayAddress)
+	err = builder.NsxtClient.CreateSegment(networkName, ("/infra/tier-1s/" + tier1Name), gatewayAddress)
+	return
+}
+
+func (builder *VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
+	build, err := provisionedNetwork.QueryProvisionedNetworkToBuild().Only(ctx)
+	if err != nil {
+		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
+	}
+	environment, err := provisionedNetwork.QueryProvisionedNetworkToBuild().QueryBuildToEnvironment().Only(ctx)
+	if err != nil {
+		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
+	}
+	competition, err := environment.EnvironmentToCompetition(ctx)
+	if err != nil {
+		return fmt.Errorf("couldn't query build from environment \"%s\": %v", environment.Name, err)
+	}
+	network, err := provisionedNetwork.QueryProvisionedNetworkToNetwork().Only(ctx)
+	if err != nil {
+		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
+	}
+	team, err := provisionedNetwork.QueryProvisionedNetworkToTeam().Only(ctx)
+	if err != nil {
+		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
+	}
+
+	// Teardown Segment
+	networkName := builder.generateNetworkName(competition[0], team, network, build)
+	nsxtError, err := builder.NsxtClient.DeleteSegment(networkName)
+	if err != nil {
+		return
+	}
+	// Gotta remove those VMs first
+	if nsxtError != nil {
+		if nsxtError.ErrorCode == nsxt.NSXT_Segment_Has_VMs {
+			return fmt.Errorf("nsx-t error: please remove all VMs from segment \"%s\" before deletion", networkName)
+		}
+		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
+
+	// Try to teardown Tier-1
+	tier1Name := builder.generateRouterName(competition[0], team, build)
+	nsxtError, err = builder.NsxtClient.DeleteTier1(tier1Name)
+	if err != nil {
+		return
+	}
+	// If this wasn't the last segment on the Tier 1, don't worry about it
+	if nsxtError != nil && nsxtError.ErrorCode != nsxt.NSXT_Tier1_Has_Children {
+		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
 	return
 }
