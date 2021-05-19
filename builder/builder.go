@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
@@ -19,6 +20,7 @@ type Builder interface {
 	Version() string
 	DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
 	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
+	TeardownHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
 	TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
 
@@ -85,7 +87,9 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		return
 	}
 
-	httpClient := http.Client{}
+	httpClient := http.Client{
+		Timeout: 2 * time.Minute,
+	}
 
 	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
 	if err != nil {

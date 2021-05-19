@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
@@ -58,9 +59,29 @@ func main() {
 
 	fmt.Printf("Found provisioned network \"%s\"\n", pnet.Name)
 
-	fmt.Println("Tearing down network \"" + pnet.Name + "\"")
-	err = vsphereNsxt.TeardownNetwork(ctx, pnet)
+	phost, err := teams[0].QueryTeamToProvisionedNetwork().QueryProvisionedNetworkToProvisionedHost().Only(ctx)
 	if err != nil {
-		log.Fatalf("error while tearing down network: %v", err)
+		log.Fatalf("error querying provisioned networks from team: %v", err)
+	}
+	host, err := phost.QueryProvisionedHostToHost().Only(ctx)
+	if err != nil {
+		log.Fatalf("error querying provisioned networks from team: %v", err)
+	}
+
+	fmt.Printf("Found provisioned host \"%s\"\n", host.Hostname)
+
+	fmt.Printf("Deploying network \"%s\"\n", pnet.Name)
+	err = vsphereNsxt.DeployNetwork(ctx, pnet)
+	if err != nil {
+		log.Fatalf("error while deploying network: %v", err)
+	}
+
+	fmt.Println("Waiting 30 secs for systems to sync...")
+	time.Sleep(30 * time.Second)
+
+	fmt.Printf("Deploying host \"%s\"\n", host.Hostname)
+	err = vsphereNsxt.DeployHost(ctx, phost)
+	if err != nil {
+		log.Fatalf("error while deploying host: %v", err)
 	}
 }

@@ -203,7 +203,7 @@ func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client ht
 	}
 	client = http.Client{
 		Transport: &transport,
-		Timeout:   10 * time.Second,
+		Timeout:   2 * time.Minute,
 	}
 	return
 }

@@ -305,6 +305,10 @@ type DeployTemplatePayload struct {
 	Spec DeployTemplateSpec `json:"spec"`
 }
 
+type VMPowerStateResponse struct {
+	State PowerState `json:"state"`
+}
+
 func (vs *VSphere) authorize() (sessionToken string, err error) {
 	authRequest, err := http.NewRequest("POST", vs.BaseUrl+"/rest/com/vmware/cis/session", nil)
 	if err != nil {
@@ -379,6 +383,34 @@ func (vs *VSphere) ListVms() (vms []VirtualMachine, err error) {
 		return
 	}
 	vms = vmList.Value
+	return
+}
+
+func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
+	request, err := vs.generateAuthorizedRequest("GET", "/rest/vcenter/vm?filter.names.1="+name)
+	if err != nil {
+		return
+	}
+	response, err := vs.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+	if response.Status != "200 OK" {
+		err = errors.New("recieved status " + response.Status + " from VSphere")
+		return
+	}
+
+	defer response.Body.Close()
+	var vmList VirtualMachineList
+	err = json.NewDecoder(response.Body).Decode(&vmList)
+	if err != nil {
+		return
+	}
+	if len(vmList.Value) <= 0 {
+		err = fmt.Errorf("no vm's were found for the name \"%s\"", name)
+		return
+	}
+	vm = vmList.Value[0]
 	return
 }
 
@@ -716,6 +748,72 @@ func (vs *VSphere) CreateVM(vmSpec VirtualMachineSpec) (err error) {
 	return
 }
 
+func (vs *VSphere) GetVMPowerState(vmIdentifier Identifier) (powerState PowerState, err error) {
+	request, err := vs.generateAuthorizedRequest(http.MethodGet, ("/api/vcenter/vm/" + string(vmIdentifier) + "/power"))
+	if err != nil {
+		return
+	}
+	response, err := vs.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+	var responseBody VMPowerStateResponse
+	err = json.NewDecoder(response.Body).Decode(&responseBody)
+	if err != nil {
+		return
+	}
+	return responseBody.State, nil
+}
+
+func (vs *VSphere) ShutdownVM(vmIdentifier Identifier) (err error) {
+	request, err := vs.generateAuthorizedRequest(http.MethodPost, ("/api/vcenter/vm/" + string(vmIdentifier) + "/power?action=stop"))
+	if err != nil {
+		return
+	}
+	response, err := vs.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+	if response.StatusCode != 204 {
+		return fmt.Errorf("error while trying to shutdown VM %s: %s", vmIdentifier, response.Status)
+	}
+	return
+}
+
+func (vs *VSphere) DeleteVM(name string) (err error) {
+	vm, err := vs.GetVm(name)
+	if err != nil {
+		return
+	}
+
+	// Check if the VM is turned on
+	powerState, err := vs.GetVMPowerState(vm.Identifier)
+	if err != nil {
+		return
+	}
+	// Shutdown the VM prior to deleting it
+	if powerState == POWER_STATE_ON || powerState == POWER_STATE_SUSPENDED {
+		fmt.Printf("Shutting down VM %s prior to deletion...\n", vm.Identifier)
+		err = vs.ShutdownVM(vm.Identifier)
+		if err != nil {
+			return err
+		}
+	}
+
+	request, err := vs.generateAuthorizedRequest(http.MethodDelete, ("/rest/vcenter/vm/" + string(vm.Identifier)))
+	if err != nil {
+		return
+	}
+	response, err := vs.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+	if response.StatusCode != 204 {
+		return errors.New("recieved status " + response.Status + " from VSphere while trying to delete the VM: " + name)
+	}
+	return
+}
+
 func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (err error) {
 	requestData := DeployTemplatePayload{
 		Spec: spec,
@@ -724,7 +822,6 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	if err != nil {
 		return
 	}
-	fmt.Printf("%s\n", requestDataString)
 	request, err := vs.generateAuthorizedRequestWithData("POST", "/rest/vcenter/vm-template/library-items/"+templateId+"?action=deploy", bytes.NewBuffer(requestDataString))
 	if err != nil {
 		return
@@ -744,7 +841,7 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	if err != nil {
 		return
 	}
-	fmt.Printf("[DEBUG] | Deployed VM \"%s\" [%s]", spec.Name, string(deploymentBytes))
+	fmt.Printf("Deployed VM \"%s\" [%s]", spec.Name, string(deploymentBytes))
 
 	return
 }
