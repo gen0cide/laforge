@@ -50,19 +50,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("error querying teams from build: %v", err)
 	}
-	pnets, err := teams[0].TeamToProvisionedNetwork(ctx)
-	if err != nil {
-		log.Fatalf("error querying provisioned networks from team: %v", err)
-	}
 
-	fmt.Println("Deploying network \"" + pnets[3].Name + "\"")
-	err = vsphereNsxt.DeployNetwork(ctx, pnets[3])
-	if err != nil {
-		log.Fatalf("error while deploying network: %v", err)
-	}
-	fmt.Println("Deploying network \"" + pnets[4].Name + "\"")
-	err = vsphereNsxt.DeployNetwork(ctx, pnets[4])
-	if err != nil {
-		log.Fatalf("error while deploying network: %v", err)
+	for _, team := range teams {
+		fmt.Printf("Networks for Team %d\n", team.TeamNumber)
+		pnets, err := team.QueryTeamToProvisionedNetwork().All(ctx)
+		if err != nil {
+			log.Fatalf("error while querying provisioned netowrks from team: %v", err)
+		}
+		for _, pnet := range pnets {
+			fmt.Printf("\t%s | %s\n", pnet.Name, pnet.Cidr)
+			err := vsphereNsxt.DeployNetwork(ctx, pnet)
+			if err != nil {
+				fmt.Printf("\tERROR: %v\n", err)
+			} else {
+				fmt.Println("\tOK")
+			}
+		}
 	}
 }

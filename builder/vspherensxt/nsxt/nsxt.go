@@ -16,23 +16,21 @@ import (
 type NSXTClient struct {
 	BaseUrl    string
 	HttpClient http.Client
-	Username   string
-	Password   string
-	Cert       tls.Certificate
-	CACert     tls.Certificate
+	IpPoolName string
 }
 
 type NSXTResourceType string
 
 const (
-	NSXT_Infra               NSXTResourceType = "Infra"
-	NSXT_ChildSegment        NSXTResourceType = "ChildSegment"
-	NSXT_ChildTier1          NSXTResourceType = "ChildTier1"
-	NSXT_ChildLocaleServices NSXTResourceType = "ChildLocaleServices"
-	NSXT_Segment             NSXTResourceType = "Segment"
-	NSXT_Tier0               NSXTResourceType = "Tier0"
-	NSXT_Tier1               NSXTResourceType = "Tier1"
-	NSXT_LocaleServices      NSXTResourceType = "LocaleServices"
+	NSXT_Infra                     NSXTResourceType = "Infra"
+	NSXT_ChildSegment              NSXTResourceType = "ChildSegment"
+	NSXT_ChildTier1                NSXTResourceType = "ChildTier1"
+	NSXT_ChildLocaleServices       NSXTResourceType = "ChildLocaleServices"
+	NSXT_Segment                   NSXTResourceType = "Segment"
+	NSXT_Tier0                     NSXTResourceType = "Tier0"
+	NSXT_Tier1                     NSXTResourceType = "Tier1"
+	NSXT_LocaleServices            NSXTResourceType = "LocaleServices"
+	NSXT_IpAddressPoolStaticSubnet NSXTResourceType = "IpAddressPoolStaticSubnet"
 )
 
 type NSXTSubnet struct {
@@ -170,6 +168,60 @@ type NSXTErrorResponse struct {
 	Message    string        `json:"error_message"`
 }
 
+type NSXTIpAddress string
+
+type NSXTAllocationRange struct {
+	Start NSXTIpAddress `json:"start"`
+	End   NSXTIpAddress `json:"end"`
+}
+
+type NSXTIpSubnet struct {
+	Cidr             NSXTIpAddress         `json:"cidr"`
+	GatewayIp        NSXTIpAddress         `json:"gateway_ip"`
+	DnsNameservers   []NSXTIpAddress       `json:"dns_nameservers"`
+	DnsSuffix        string                `json:"dns_suffix"`
+	AllocationRanges []NSXTAllocationRange `json:"allocation_ranges"`
+	ResourceType     NSXTResourceType      `json:"resource_type"`
+	Id               string                `json:"id"`
+	DisplayName      string                `json:"display_name"`
+	Path             string                `json:"path"`
+	RelativePath     string                `json:"relative_path"`
+	ParentPath       string                `json:"parent_path"`
+	UniqueId         string                `json:"unique_id"`
+	MarkedForDelete  bool                  `json:"marked_for_delete"`
+	Overridden       bool                  `json:"overridden"`
+	CreateUser       string                `json:"_create_user"`
+	CreateTime       uint                  `json:"_create_time"`
+	LastModifiedUser string                `json:"_last_modified_user"`
+	LastModifiedTime uint                  `json:"_last_modified_time"`
+	SystemOwned      bool                  `json:"_system_owned"`
+	Protection       string                `json:"_protection"`
+	Revision         int                   `json:"_revision"`
+}
+
+type NSXTListIpSubnetsResponse struct {
+	Results       []NSXTIpSubnet `json:"results"`
+	ResultCount   int            `json:"result_count"`
+	SortBy        string         `json:"sort_by"`
+	SortAscending bool           `json:"sort_ascending"`
+}
+
+type NSXTNATAction string
+
+const (
+	NSXT_NAT_SNAT NSXTNATAction = "SNAT"
+)
+
+type NSXTIPElementList string
+
+type NSXTNATRule struct {
+	Description       string            `json:"description"`
+	Action            NSXTNATAction     `json:"action"`
+	Id                string            `json:"id"`
+	SourceNetwork     NSXTIPElementList `json:"source_network"`
+	TranslatedNetwork NSXTIPElementList `json:"translated_network"`
+}
+
 func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client http.Client, err error) {
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
@@ -237,8 +289,7 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 					ResourceType: NSXT_Tier1,
 					ID:           name,
 					RouteAdvertisementTypes: []NSXTRouteAdvertisementType{
-						// NSXT_Tier1_RA_NAT,
-						NSXT_Tier1_RA_CONNECTED,
+						NSXT_Tier1_RA_NAT,
 					},
 					Tier0Path: tier0Path,
 					Children: []NSXTChildLocaleServices{
@@ -398,5 +449,70 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, err error) {
 		return
 	}
 	tier0s = tier0ListResult.Results
+	return
+}
+
+func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpSubnet, err error) {
+	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/ip-pools/" + ipPoolName + "/ip-subnets"))
+	if err != nil {
+		return
+	}
+	response, err := nsxt.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+
+	defer response.Body.Close()
+	var ipSubnetsResponse NSXTListIpSubnetsResponse
+	err = json.NewDecoder(response.Body).Decode(&ipSubnetsResponse)
+	if err != nil {
+		return
+	}
+	ipSubnets = ipSubnetsResponse.Results
+	return
+}
+
+func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList, translatedNetwork NSXTIPElementList) (err error) {
+	payload := NSXTNATRule{
+		Description:       "NAT for CPTC Competition",
+		Action:            NSXT_NAT_SNAT,
+		Id:                (tier1Name + "-NAT"),
+		SourceNetwork:     sourceNetwork,
+		TranslatedNetwork: translatedNetwork,
+	}
+
+	jsonString, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"), bytes.NewBuffer(jsonString))
+	if err != nil {
+		return
+	}
+	response, err := nsxt.HttpClient.Do(request)
+	if err != nil {
+		return
+	}
+	if response.StatusCode != 200 {
+		err = fmt.Errorf("error %s while making NAT rules for \"%s\"", response.Status, tier1Name)
+		return
+	}
+	return
+}
+
+func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for the NAT Rule for %s: %v", tier1Name, err)
+	}
+	response, err := nsxt.HttpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("unkown error while deleting NAT Rule for %s: %v", tier1Name, err)
+	}
+	if response.StatusCode != 200 {
+		var nsxtError NSXTErrorResponse
+		json.NewDecoder(response.Body).Decode(&nsxtError)
+		return &nsxtError, nil
+	}
 	return
 }

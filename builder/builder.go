@@ -26,6 +26,11 @@ type Builder interface {
 
 // NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T
 func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSXTBuilder, err error) {
+	laforgeServerUrl, exists := env.Config["laforge_server_url"]
+	if !exists {
+		err = errors.New("laforge_server_url doesn't exist in the environment configuration")
+		return
+	}
 	vsphereUsername, exists := env.Config["vsphere_username"]
 	if !exists {
 		err = errors.New("vsphere_username doesn't exist in the environment configuration")
@@ -59,6 +64,11 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 	nsxtBaseUrl, exists := env.Config["nsxt_base_url"]
 	if !exists {
 		err = errors.New("nsxt_base_url doesn't exist in the environment configuration")
+		return
+	}
+	nsxtIpPoolName, exists := env.Config["nsxt_ip_pool_name"]
+	if !exists {
+		err = errors.New("nsxt_ip_pool_name doesn't exist in the environment configuration")
 		return
 	}
 	contentLibraryName, exists := env.Config["vsphere_content_library"]
@@ -99,10 +109,12 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 	nsxtClient := nsxt.NSXTClient{
 		HttpClient: nsxtHttpClient,
 		BaseUrl:    nsxtBaseUrl,
+		IpPoolName: nsxtIpPoolName,
 	}
 
 	vsphereClient := vsphere.VSphere{
 		HttpClient: httpClient,
+		ServerUrl:  laforgeServerUrl,
 		BaseUrl:    vsphereBaseUrl,
 		Username:   vsphereUsername,
 		Password:   vspherePassword,
