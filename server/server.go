@@ -47,10 +47,10 @@ func tempURLHandler(client *ent.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		urlID := ctx.Param("url_id")
 		fileInfo, err := client.GinFileMiddleware.Query().Where(
-			ginfilemiddleware.And(
-				ginfilemiddleware.URLIDEQ(urlID),
-				ginfilemiddleware.AccessedEQ(false),
-			),
+			// ginfilemiddleware.And(
+			ginfilemiddleware.URLIDEQ(urlID),
+			// 	ginfilemiddleware.AccessedEQ(false),
+			// ),
 		).
 			Only(ctx)
 		if err != nil {
