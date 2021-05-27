@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
@@ -68,7 +69,6 @@ func (builder *VSphereNSXTBuilder) generateVmName(competition *ent.Competition, 
 }
 
 func (builder *VSphereNSXTBuilder) generateRouterName(competition *ent.Competition, team *ent.Team, build *ent.Build) string {
-
 	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + builder.generateBuildID(build))
 }
 
@@ -137,19 +137,33 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 	if err != nil {
 		return
 	}
+	template, err := builder.VSphereClient.GetTemplate(templateId)
+	if err != nil {
+		return
+	}
 
 	nicId, exists := host.Vars["nic_id"]
 	if !exists {
-		template, vsphereErr := builder.VSphereClient.GetTemplate(templateId)
-		if vsphereErr != nil {
-			return vsphereErr
-		}
 		if len(template.Nics) > 0 {
-			nicId = template.Nics[0].Key
+			// nicId = template.Nics[0].Key
+			nicId = "0"
 		} else {
 			err = errors.New("nic_id doesn't exist in the host vars for " + host.Hostname)
 			return err
 		}
+	}
+
+	vmName := builder.generateVmName(competition, team, host, build)
+	guestCustomizationName := (vmName + "-Customization-Spec")
+
+	guestCustomizationSpec, err := builder.VSphereClient.GenerateGuestCustomization(ctx, template, provisionedHost)
+	if err != nil {
+		return
+	}
+
+	err = builder.VSphereClient.CreateGuestCustomization(guestCustomizationName, *guestCustomizationSpec)
+	if err != nil {
+		return
 	}
 
 	templateSpec := vsphere.DeployTemplateSpec{
@@ -158,6 +172,9 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 			DatastoreIdentifier: builder.VSphereDatastore.Identifier,
 		},
 		DiskStorageOverrides: []string{},
+		GuestCustomization: vsphere.DeployGuestCustomization{
+			Name: guestCustomizationName,
+		},
 		HardwareCustomization: vsphere.HardwareCustomization{
 			CpuUpdate: vsphere.CpuUpdate{
 				NumCoresPerSocket: 2,
@@ -177,7 +194,7 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 				},
 			},
 		},
-		Name: builder.generateVmName(competition, team, host, build),
+		Name: vmName,
 		Placement: vsphere.DeployPlacement{
 			ClusterId:      null.String{},
 			FolderId:       null.StringFrom(string(builder.VSphereFolder.Identifier)),
@@ -250,24 +267,70 @@ func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisione
 		if err != nil {
 			return err
 		}
+
+		addressParts := strings.Split(network.Cidr, "/")
+		var natSourceAddress string
+
+		switch addressParts[1] {
+		case "24":
+			octets := strings.Split(addressParts[0], ".")
+			natSourceAddress = octets[0] + "." + octets[1] + ".0.0/16"
+		default:
+			octets := strings.Split(addressParts[0], ".")
+			natSourceAddress = octets[0] + ".0.0.0/8"
+		}
+
+		ipPoolSubnets, err := builder.NsxtClient.GetIpPoolSubnets(builder.NsxtClient.IpPoolName)
+		if err != nil {
+			return err
+		}
+		if len(ipPoolSubnets) <= 0 {
+			return fmt.Errorf("error: no ip subnets found under the IP Pool \"%s\"", builder.NsxtClient.IpPoolName)
+		}
+
+		startingIp := ipPoolSubnets[0].AllocationRanges[0].Start
+		endingIp := ipPoolSubnets[0].AllocationRanges[0].End
+		octets := strings.Split(string(startingIp), ".")
+		endOctets := strings.Split(string(endingIp), ".")
+		lastOctet, err := strconv.Atoi(octets[3])
+		if err != nil {
+			return err
+		}
+		endLastOctet, err := strconv.Atoi(endOctets[3])
+		if err != nil {
+			return err
+		}
+		lastOctet = lastOctet + team.TeamNumber
+		octets[3] = strconv.Itoa(lastOctet)
+		natTranslatedAddress := strings.Join(octets, ".")
+		if lastOctet > endLastOctet {
+			return fmt.Errorf("NAT IP %s is out of the range %s-%s", natTranslatedAddress, startingIp, endingIp)
+		}
+
+		err = builder.NsxtClient.CreateNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress), nsxt.NSXTIPElementList(natTranslatedAddress))
+		if err != nil {
+			return err
+		}
 	}
 
 	networkName := builder.generateNetworkName(competition[0], team, network, build)
 	cidrParts := strings.Split(network.Cidr, "/")
 	gatewayAddress, gatewayAddressExists := network.Vars["gateway_address"]
-	if !gatewayAddressExists {
-		err = errors.New("gateway_address doesn't exist in the network vars for " + network.Name)
-		return
+
+	var octets []string
+	if gatewayAddressExists {
+		octets = strings.Split(gatewayAddress, ".")
+	} else {
+		octets = strings.Split(cidrParts[0], ".")
 	}
 
 	switch cidrParts[1] {
 	case "24":
-		octets := strings.Split(gatewayAddress, ".")
-		octets[2] = octets[2] + fmt.Sprint(team.TeamNumber)
+		octets[3] = "254"
 		gatewayAddress = (strings.Join(octets, ".") + "/" + cidrParts[1])
 	}
 
-	fmt.Println("deploying segment \"" + networkName + "\" w/ gateway_addr = " + gatewayAddress)
+	// fmt.Println("deploying segment \"" + networkName + "\" w/ gateway_addr = " + gatewayAddress)
 	err = builder.NsxtClient.CreateSegment(networkName, ("/infra/tier-1s/" + tier1Name), gatewayAddress)
 	return
 }
@@ -334,8 +397,19 @@ func (builder *VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provisio
 		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 	}
 
-	// Try to teardown Tier-1
 	tier1Name := builder.generateRouterName(competition[0], team, build)
+
+	// Remove NAT Rules
+	nsxtError, err = builder.NsxtClient.DeleteNATRule(tier1Name)
+	if err != nil {
+		return
+	}
+	// Random NSX-T Error
+	if nsxtError != nil {
+		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
+
+	// Try to teardown Tier-1
 	nsxtError, err = builder.NsxtClient.DeleteTier1(tier1Name)
 	if err != nil {
 		return
