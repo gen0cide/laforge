@@ -43,6 +43,7 @@ require (
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/rs/cors v1.7.0
 	github.com/shirou/gopsutil v3.21.4+incompatible
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/ugorji/go v1.2.5 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect

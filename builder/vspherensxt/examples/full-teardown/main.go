@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/environment"
-	"github.com/gen0cide/laforge/ent/provisionednetwork"
 )
 
 func main() {
@@ -52,36 +50,48 @@ func main() {
 	if err != nil {
 		log.Fatalf("error querying teams from build: %v", err)
 	}
-	pnet, err := teams[0].QueryTeamToProvisionedNetwork().Where(provisionednetwork.NameEQ("corp")).Only(ctx)
-	if err != nil {
-		log.Fatalf("error querying provisioned networks from team: %v", err)
-	}
 
-	fmt.Printf("Found provisioned network \"%s\"\n", pnet.Name)
+	for _, team := range teams {
+		fmt.Printf("Networks for Team %d\n", team.TeamNumber)
+		pnets, err := team.QueryTeamToProvisionedNetwork().All(ctx)
+		if err != nil {
+			log.Fatalf("error while querying provisioned netowrks from team: %v", err)
+		}
+		for _, pnet := range pnets {
+			fmt.Printf("\t%s | %s\n", pnet.Name, pnet.Cidr)
 
-	phost, err := teams[0].QueryTeamToProvisionedNetwork().QueryProvisionedNetworkToProvisionedHost().Only(ctx)
-	if err != nil {
-		log.Fatalf("error querying provisioned networks from team: %v", err)
-	}
-	host, err := phost.QueryProvisionedHostToHost().Only(ctx)
-	if err != nil {
-		log.Fatalf("error querying provisioned networks from team: %v", err)
-	}
+			err = vsphereNsxt.TeardownNetwork(ctx, pnet)
+			if err != nil {
+				fmt.Printf("\tERROR: %v\n", err)
+				continue
+			} else {
+				fmt.Println("\tREMOVED")
+			}
 
-	fmt.Printf("Found provisioned host \"%s\"\n", host.Hostname)
+			// phosts, err := pnet.QueryProvisionedNetworkToProvisionedHost().All(ctx)
+			// if err != nil {
+			// 	log.Fatalf("error while querying provisioned hosts from provisioned network: %v", err)
+			// }
+			// if len(phosts) > 0 {
+			// 	fmt.Println("Syncing...")
+			// 	time.Sleep(30 * time.Second)
 
-	fmt.Printf("Tearing down host \"%s\"\n", host.Hostname)
-	err = vsphereNsxt.TeardownHost(ctx, phost)
-	if err != nil {
-		log.Fatalf("error while deploying host: %v", err)
-	}
+			// 	for _, phost := range phosts {
+			// 		host, err := phost.QueryProvisionedHostToHost().Only(ctx)
+			// 		if err != nil {
+			// 			log.Fatalf("error while querying host from provisioned host")
+			// 		}
+			// 		fmt.Printf("\t\t%s | %s\n", host.Hostname, host.OS)
 
-	fmt.Println("Waiting 30 secs for systems to sync...")
-	time.Sleep(30 * time.Second)
-
-	fmt.Printf("Tearing down network \"%s\"\n", pnet.Name)
-	err = vsphereNsxt.TeardownNetwork(ctx, pnet)
-	if err != nil {
-		log.Fatalf("error while deploying network: %v", err)
+			// 		err = vsphereNsxt.TeardownHost(ctx, phost)
+			// 		if err != nil {
+			// 			fmt.Printf("\t\tERROR: %v\n", err)
+			// 			continue
+			// 		} else {
+			// 			fmt.Println("\t\tOK")
+			// 		}
+			// 	}
+			// }
+		}
 	}
 }

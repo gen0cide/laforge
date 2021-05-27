@@ -124,7 +124,7 @@ func main() {
 
 	err = vs.DeployTemplate(templateId, deploymentSpec)
 	if err != nil {
-		log.Fatalf("error while deploying template \""+template.GuestOS+"\": %v", err)
+		log.Fatalf("error while deploying template \"%s\": %v", template.GuestOS, err)
 	}
 
 	fmt.Printf("Successcfully deployed VM \"" + deploymentSpec.Name + "\"!")
