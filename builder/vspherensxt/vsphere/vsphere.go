@@ -420,21 +420,20 @@ type MemoryUpdate struct {
 	Memory int `json:"memory"`
 }
 
-type HCNicValue struct {
+type HCNicUpdateSpec struct {
 	Identifier Identifier `json:"network"`
 }
 
-type HCNic struct {
-	Key   string     `json:"key"`
-	Value HCNicValue `json:"value"`
+type DiskUpdateSpec struct {
+	Capacity int64 `json:"capacity"`
 }
 
 type HardwareCustomization struct {
-	CpuUpdate     CpuUpdate    `json:"cpu_update"`
-	DisksToRemove []string     `json:"disks_to_remove"`
-	DisksToUpdate []string     `json:"disks_to_update"`
-	MemoryUpdate  MemoryUpdate `json:"memory_update"`
-	Nics          []HCNic      `json:"nics"`
+	CpuUpdate     CpuUpdate                  `json:"cpu_update"`
+	DisksToRemove []string                   `json:"disks_to_remove"`
+	DisksToUpdate map[string]DiskUpdateSpec  `json:"disks_to_update"`
+	MemoryUpdate  MemoryUpdate               `json:"memory_update"`
+	Nics          map[string]HCNicUpdateSpec `json:"nics"`
 }
 
 type DeployPlacement struct {
@@ -453,16 +452,33 @@ type DeployGuestCustomization struct {
 	Name string `json:"name"`
 }
 
+type DeploySpecDiskStoragePolicyType string
+
+const (
+	STORAGE_POLICY_USE_SPECIFIED_POLICY DeploySpecDiskStoragePolicyType = "USE_SPECIFIED_POLICY"
+	STORAGE_POLICY_USE_SOURCE_POLICY    DeploySpecDiskStoragePolicyType = "USE_SOURCE_POLICY"
+)
+
+type DeploySpecDiskStoragePolicy struct {
+	Policy null.String                     `json:"policy"`
+	Type   DeploySpecDiskStoragePolicyType `json:"type"`
+}
+
+type DeploySpecDiskStorage struct {
+	Datastore     Identifier                  `json:"datastore"`
+	StoragePolicy DeploySpecDiskStoragePolicy `json:"storage_policy"`
+}
+
 type DeployTemplateSpec struct {
-	Description           string                   `json:"description"`
-	DiskStorage           TemplateDiskStorage      `json:"disk_storage"`
-	DiskStorageOverrides  []string                 `json:"disk_storage_overrides"`
-	GuestCustomization    DeployGuestCustomization `json:"guest_customization"`
-	HardwareCustomization HardwareCustomization    `json:"hardware_customization"`
-	Name                  string                   `json:"name"`
-	Placement             DeployPlacement          `json:"placement"`
-	PoweredOn             bool                     `json:"powered_on"`
-	VmHomeStorage         DeployHomeStorage        `json:"vm_home_storage"`
+	Description           string                           `json:"description"`
+	DiskStorage           TemplateDiskStorage              `json:"disk_storage"`
+	DiskStorageOverrides  map[string]DeploySpecDiskStorage `json:"disk_storage_overrides"`
+	GuestCustomization    DeployGuestCustomization         `json:"guest_customization"`
+	HardwareCustomization HardwareCustomization            `json:"hardware_customization"`
+	Name                  string                           `json:"name"`
+	Placement             DeployPlacement                  `json:"placement"`
+	PoweredOn             bool                             `json:"powered_on"`
+	VmHomeStorage         DeployHomeStorage                `json:"vm_home_storage"`
 }
 
 type DeployTemplatePayload struct {
@@ -696,6 +712,7 @@ func (vs *VSphere) generateAuthorizedRequest(method string, url string) (request
 	if err != nil {
 		return
 	}
+	request.Header.Set("User-Agent", "LaForge/3.0.1")
 	request.Header.Add("vmware-api-session-id", sessionToken)
 	return
 }
@@ -709,6 +726,7 @@ func (vs *VSphere) generateAuthorizedRequestWithData(method string, url string, 
 	if err != nil {
 		return
 	}
+	request.Header.Set("User-Agent", "LaForge/3.0.1")
 	request.Header.Add("vmware-api-session-id", sessionToken)
 	request.Header.Add("Content-Type", "application/json")
 	return
@@ -1249,10 +1267,7 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 		"templateId": templateId,
 		"spec.Name":  spec.Name,
 	}).Debug("vSphere | DeployTemplate")
-	requestData := DeployTemplatePayload{
-		Spec: spec,
-	}
-	requestDataString, err := json.Marshal(requestData)
+	requestDataString, err := json.Marshal(spec)
 	if err != nil {
 		return
 	}
@@ -1264,21 +1279,25 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	if err != nil {
 		return
 	}
-	if response.StatusCode != http.StatusOK {
-		log.WithFields(log.Fields{
-			"status": response.Status,
-		}).Warn("vSphere | Non-Okay Response from DeployTemplate")
-		err = errors.New("received status " + response.Status + " from VSphere")
-		return
-	}
-
 	// DEBUG: output the deployment id for debug purposes
 	defer response.Body.Close()
 	deploymentBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return
 	}
-	fmt.Printf("Deployed VM \"%s\" [%s]", spec.Name, string(deploymentBytes))
+	if response.StatusCode != http.StatusOK {
+		log.WithFields(log.Fields{
+			"status": response.Status,
+		}).Warn("vSphere | Non-Okay Response from DeployTemplate")
+		log.Warnf("%s\n", deploymentBytes)
+		err = errors.New("received status " + response.Status + " from VSphere")
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"name":       spec.Name,
+		"identifier": string(deploymentBytes),
+	}).Debug("Deployed VM from Template")
 
 	return
 }

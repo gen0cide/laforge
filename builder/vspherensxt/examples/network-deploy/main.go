@@ -8,6 +8,7 @@ import (
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/environment"
 )
 
@@ -42,11 +43,11 @@ func main() {
 		log.Fatalf("error while creating vCenter/NSX-T builder: %v", err)
 	}
 
-	builds, err := env.EnvironmentToBuild(ctx)
+	build, err := env.QueryEnvironmentToBuild().Order(ent.Desc(build.FieldRevision)).First(ctx)
 	if err != nil {
 		log.Fatalf("error querying build from env: %v", err)
 	}
-	teams, err := builds[0].BuildToTeam(ctx)
+	teams, err := build.BuildToTeam(ctx)
 	if err != nil {
 		log.Fatalf("error querying teams from build: %v", err)
 	}

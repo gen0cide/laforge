@@ -171,7 +171,7 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 		DiskStorage: vsphere.TemplateDiskStorage{
 			DatastoreIdentifier: builder.VSphereDatastore.Identifier,
 		},
-		DiskStorageOverrides: []string{},
+		DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
 		GuestCustomization: vsphere.DeployGuestCustomization{
 			Name: guestCustomizationName,
 		},
@@ -181,16 +181,13 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 				NumCpus:           cpuCount,
 			},
 			DisksToRemove: []string{},
-			DisksToUpdate: []string{},
+			DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
 			MemoryUpdate: vsphere.MemoryUpdate{
 				Memory: memorySize,
 			},
-			Nics: []vsphere.HCNic{
-				{
-					Key: nicId,
-					Value: vsphere.HCNicValue{
-						Identifier: nsxtNetwork.Identifier,
-					},
+			Nics: map[string]vsphere.HCNicUpdateSpec{
+				nicId: {
+					Identifier: nsxtNetwork.Identifier,
 				},
 			},
 		},

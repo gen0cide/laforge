@@ -265,7 +265,7 @@ func (nsxt *NSXTClient) generateAuthorizedRequest(method, path string) (request 
 	if err != nil {
 		return
 	}
-	request.Header.Set("User-Agent", "LaForge/0.0.1")
+	request.Header.Set("User-Agent", "LaForge/3.0.1")
 	return
 }
 
@@ -274,7 +274,7 @@ func (nsxt *NSXTClient) generateAuthorizedRequestWithData(method string, path st
 	if err != nil {
 		return
 	}
-	request.Header.Set("User-Agent", "LaForge/0.0.1")
+	request.Header.Set("User-Agent", "LaForge/3.0.1")
 	request.Header.Add("Content-Type", "application/json")
 	return
 }

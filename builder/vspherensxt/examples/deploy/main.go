@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v4"
 )
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	httpClient := http.Client{}
 
 	baseUrl, urlExists := os.LookupEnv("VSPHERE_URL")
@@ -53,60 +53,79 @@ func main() {
 	if err != nil {
 		log.Fatalf("error while finding the datastore: %v", err)
 	}
-	fmt.Printf("Found datastore\t\t%s [%s]\n", datastore.Name, datastore.Identifier)
+	log.WithFields(log.Fields{
+		"name":       datastore.Name,
+		"identifier": datastore.Identifier,
+	}).Info("Found datastore")
 
 	folder, err := vs.GetFolderByName(folderName)
 	if err != nil {
 		log.Fatalf("error while finding the folder: %v", err)
 	}
-	fmt.Printf("Found folder\t\t%s [%s]\n", folder.Name, folder.Identifier)
+	log.WithFields(log.Fields{
+		"name":       folder.Name,
+		"identifier": folder.Identifier,
+	}).Info("Found folder")
 
 	resourcePool, err := vs.GetResourcePoolByName(resourcePoolName)
 	if err != nil {
 		log.Fatalf("error while finding the resource pool: %v", err)
 	}
-	fmt.Printf("Found resource pool\t%s [%s]\n", resourcePool.Name, resourcePool.Identifier)
+	log.WithFields(log.Fields{
+		"name":       resourcePool.Name,
+		"identifier": resourcePool.Identifier,
+	}).Info("Found resource pool")
 
 	network, err := vs.GetNetworkByName(networkName)
 	if err != nil {
 		log.Fatalf("error while finding the network: %v", err)
 	}
-	fmt.Printf("Found network\t\t%s [%s]\n", network.Name, network.Identifier)
+	log.WithFields(log.Fields{
+		"name":       network.Name,
+		"identifier": network.Identifier,
+	}).Info("Found network")
 
 	templateId, err := vs.GetTemplateIDByName(libraryName, templateName)
 	if err != nil {
 		log.Fatalf("error while searching content library for \"%s\": %v", templateName, err)
 	}
-	fmt.Printf("Found template\t\t%s [%s]\n", templateName, templateId)
+	log.WithFields(log.Fields{
+		"name":       templateName,
+		"identifier": templateId,
+	}).Info("Found template")
 
 	template, err := vs.GetTemplate(templateId)
 	if err != nil {
 		log.Fatalf("error while getting resource pools: %v", err)
 	}
 
+	deploymentName := "Agent-Deploy-Test-Windows"
+
+	log.Infof("Deploying %s [%s] as %s\n", template.GuestOS, template.Identifier, deploymentName)
+
 	deploymentSpec := vsphere.DeployTemplateSpec{
-		Description: "Test VM created from Golang",
-		Name:        "Builder-Test",
+		Description: "AHHHHHHHHHHHHHHHHHHHH HELLPPPPPPPPPPP",
+		Name:        deploymentName,
 		DiskStorage: vsphere.TemplateDiskStorage{
 			DatastoreIdentifier: datastore.Identifier,
 		},
-		DiskStorageOverrides: []string{},
+		GuestCustomization: vsphere.DeployGuestCustomization{
+			Name: "LaForge-Test-Windows",
+		},
+		DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
 		HardwareCustomization: vsphere.HardwareCustomization{
 			CpuUpdate: vsphere.CpuUpdate{
 				NumCoresPerSocket: 2,
 				NumCpus:           4,
 			},
 			DisksToRemove: []string{},
-			DisksToUpdate: []string{},
+			DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
 			MemoryUpdate: vsphere.MemoryUpdate{
 				Memory: 4096,
 			},
-			Nics: []vsphere.HCNic{
-				{
-					Key: "4000",
-					Value: vsphere.HCNicValue{
-						Identifier: network.Identifier,
-					},
+			Nics: map[string]vsphere.HCNicUpdateSpec{
+				"4000": {
+					Identifier: network.Identifier,
 				},
 			},
 		},
@@ -120,12 +139,10 @@ func main() {
 		},
 	}
 
-	fmt.Printf("Deploying %s [%s] as %s\n", template.GuestOS, template.Identifier, deploymentSpec.Name)
-
 	err = vs.DeployTemplate(templateId, deploymentSpec)
 	if err != nil {
 		log.Fatalf("error while deploying template \"%s\": %v", template.GuestOS, err)
 	}
 
-	fmt.Printf("Successcfully deployed VM \"" + deploymentSpec.Name + "\"!")
+	log.Infof("Successcfully deployed VM \"%s\"!\n", deploymentSpec.Name)
 }
